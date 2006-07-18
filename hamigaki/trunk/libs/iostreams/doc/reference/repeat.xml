@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE library PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Iostreams Library Document Source
+
+  Copyright Takeshi Mouri 2006.
+  Use, modification, and distribution are subject to the
+  Boost Software License, Version 1.0. (See accompanying file
+  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+-->
+<header name="hamigaki/iostreams/repeat.hpp">
+  <namespace name="hamigaki">
+    <namespace name="iostreams">
+      <class name="repetition">
+        <template>
+          <template-type-parameter name="Source"/>
+        </template>
+
+        <purpose><para>クラステンプレート<code>repetition</code>は、Sourceを受け取り、それを指定回数だけ繰り返し読み出すことのできるSourceを形成する。</para></purpose>
+
+        <typedef name="char_type">
+          <type>boost::iostreams::char_type_of&lt; Source &gt;::type</type>
+        </typedef>
+
+        <constructor>
+          <parameter name="src">
+            <paramtype>const Source&amp;</paramtype>
+          </parameter>
+          <parameter name="count">
+            <paramtype>int</paramtype>
+          </parameter>
+          <effects><simpara><code>src</code>の<code>count</code>回のループを形成する。<code>count == -1</code>の場合は、無限ループになる。</simpara></effects>
+        </constructor>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="read">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>char_type*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+
+          <method name="close">
+            <type>void</type>
+          </method>
+        </method-group>
+
+        <free-function-group name="creation">
+          <function name="repeat">
+            <type>repetition&lt; Source &gt;</type>
+            <template>
+              <template-type-parameter name="Source"/>
+            </template>
+            <parameter name="src">
+              <paramtype>const Source&amp;</paramtype>
+            </parameter>
+            <parameter name="count">
+              <paramtype>int</paramtype>
+            </parameter>
+            <returns><simpara><code><classname>repetition</classname>&lt; Source &gt;(src, count)</code></simpara></returns>
+          </function>
+        </free-function-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

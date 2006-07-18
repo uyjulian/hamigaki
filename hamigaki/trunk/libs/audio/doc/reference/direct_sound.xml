@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE library PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Audio Library Document Source
+
+  Copyright Takeshi Mouri 2006.
+  Use, modification, and distribution are subject to the
+  Boost Software License, Version 1.0. (See accompanying file
+  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+-->
+<header name="hamigaki/audio/direct_sound.hpp">
+  <namespace name="hamigaki">
+    <namespace name="audio">
+      <class name="direct_sound_buffer">
+        <typedef name="char_type">
+          <type>char</type>
+        </typedef>
+
+        <typedef name="category">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="write">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>const char*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+          <method name="close">
+            <type>void</type>
+          </method>
+        </method-group>
+
+        <method-group name="queries">
+          <method name="format" cv="const">
+            <type><classname>pcm_format</classname></type>
+            <returns><simpara>フォーマット情報</simpara></returns>
+          </method>
+        </method-group>
+      </class>
+
+      <class name="direct_sound_device">
+        <constructor>
+          <effects>規定のDirectSoundデバイスをオープンする。</effects>
+        </constructor>
+
+        <constructor specifiers="explicit">
+          <parameter name="guid_str">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+          <effects><code>guid_str</code>で識別されるDirectSoundデバイスをオープンする。</effects>
+        </constructor>
+
+        <method-group name="modifier">
+          <method name="set_cooperative_level">
+            <type>void</type>
+            <parameter name="hwnd">
+              <paramtype>void*</paramtype>
+            </parameter>
+            <parameter name="level">
+              <paramtype>unsigned long</paramtype>
+            </parameter>
+            <effects><simpara>協調レベルを設定する。</simpara></effects>
+          </method>
+
+          <method name="format">
+            <type>void</type>
+            <parameter name="f">
+              <paramtype>const <classname>pcm_format</classname>&amp;</paramtype>
+            </parameter>
+            <effects><simpara>プライマリバッファのフォーマットを設定する。</simpara></effects>
+          </method>
+
+          <method name="create_buffer">
+            <type>direct_sound_buffer</type>
+            <parameter name="f">
+              <paramtype>const <classname>pcm_format</classname>&amp;</paramtype>
+            </parameter>
+            <effects><simpara>規定のバッファサイズでDirectSoundバッファを作成する。</simpara></effects>
+          </method>
+
+          <method name="create_buffer">
+            <type>direct_sound_buffer</type>
+            <parameter name="f">
+              <paramtype>const <classname>pcm_format</classname>&amp;</paramtype>
+            </parameter>
+            <parameter name="buffer_size">
+              <paramtype>std::size_t</paramtype>
+            </parameter>
+            <effects><simpara>バッファサイズ=<code>buffer_size</code>でDirectSoundバッファを作成する。</simpara></effects>
+          </method>
+        </method-group>
+      </class>
+
+      <class name="direct_sound_capture_buffer">
+        <typedef name="char_type">
+          <type>char</type>
+        </typedef>
+
+        <typedef name="category">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="read">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>char*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+          <method name="close">
+            <type>void</type>
+          </method>
+        </method-group>
+
+        <method-group name="queries">
+          <method name="format" cv="const">
+            <type><classname>pcm_format</classname></type>
+            <returns><simpara>フォーマット情報</simpara></returns>
+          </method>
+        </method-group>
+      </class>
+
+      <class name="direct_sound_capture">
+        <constructor>
+          <effects>規定のDirectSoundCaptureデバイスをオープンする。</effects>
+        </constructor>
+
+        <constructor specifiers="explicit">
+          <parameter name="guid_str">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+          <effects><code>guid_str</code>で識別されるDirectSoundCaptureデバイスをオープンする。</effects>
+        </constructor>
+
+        <method-group name="modifier">
+          <method name="create_buffer">
+            <type>direct_sound_buffer</type>
+            <parameter name="f">
+              <paramtype>const <classname>pcm_format</classname>&amp;</paramtype>
+            </parameter>
+            <effects><simpara>規定のバッファサイズでDirectSoundCaptureバッファを作成する。</simpara></effects>
+          </method>
+
+          <method name="create_buffer">
+            <type>direct_sound_buffer</type>
+            <parameter name="f">
+              <paramtype>const <classname>pcm_format</classname>&amp;</paramtype>
+            </parameter>
+            <parameter name="buffer_size">
+              <paramtype>std::size_t</paramtype>
+            </parameter>
+            <effects><simpara>バッファサイズ=<code>buffer_size</code>でDirectSoundCaptureバッファを作成する。</simpara></effects>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

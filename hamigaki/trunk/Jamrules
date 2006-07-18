@@ -1,0 +1,75 @@
+# Hamigaki Library top level Jamrules
+
+#  Copyright Takeshi Mouri 2006.
+#  Use, modification, and distribution are subject to the
+#  Boost Software License, Version 1.0. (See accompanying file
+#  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+project hamigaki ;
+
+path-global BOOST_INCLUDE : $(BOOST_INCLUDE) ;
+path-global BOOST_LIBPATH : $(BOOST_LIBPATH) ;
+path-global HAMIGAKI_ROOT : $(HAMIGAKI_ROOT) ;
+
+# This version number is NOT for Boost
+BOOST_VERSION ?= 0.40.0 ;
+
+rule find-boost-lib ( name toolset variant : properties * )
+{
+    if $(OS) = CYGWIN
+    {
+        return $(properties) <find-library>boost_$(name)-gcc-mt-s ;
+    }
+    else if $(NO_BOOST_STD_LIB_NAME)
+    {
+        return $(properties) <find-library>boost_$(name) ;
+    }
+    else
+    {
+        local prefix ;
+        if $(NT)
+        {
+            prefix = libboost_$(name) ;
+        }
+        else
+        {
+            prefix = boost_$(name) ;
+        }
+
+        local backup = $(BOOST_VERSION) ;
+        BOOST_VERSION = ;
+        local tmp =
+            [ common-variant-tag $(toolset) $(variant) : $(properties) ] ;
+        BOOST_VERSION = $(backup) ;
+
+        local result = ;
+        for local x in $(tmp)
+        {
+            local tag = [ MATCH "^<.*><.*><tag><prefix>\(.*\)$" : $(x) ] ;
+            if $(tag)
+            {
+                result += <find-library>$(prefix)$(tag) ;
+            }
+            else
+            {
+                result += $(x) ;
+            }
+        }
+        return $(result) ;
+    }
+}
+
+rule find-boost-thread-lib ( toolset variant : properties * )
+{
+    return [ find-boost-lib thread $(toolset) $(variant) : $(properties) ] ;
+}
+
+rule find-boost-unit_test_framework-lib ( toolset variant : properties * )
+{
+    return [ find-boost-lib unit_test_framework $(toolset) $(variant) : $(properties) ] ;
+}
+
+rule find-boost-filesystem-lib ( toolset variant : properties * )
+{
+    return [ find-boost-lib filesystem $(toolset) $(variant) : $(properties) ] ;
+}

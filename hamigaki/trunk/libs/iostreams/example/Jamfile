@@ -1,0 +1,22 @@
+# Hamigaki Iostreams Library Example Jamfile
+
+#  Copyright Takeshi Mouri 2006.
+#  Use, modification, and distribution are subject to the
+#  Boost Software License, Version 1.0. (See accompanying file
+#  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+subproject libs/iostreams/example ;
+
+exe background_copy_example
+    :
+        background_copy_example.cpp
+    :
+        <define>BOOST_ALL_NO_LIB=1
+        <include>$(HAMIGAKI_ROOT)  <sysinclude>$(HAMIGAKI_ROOT)
+        <include>$(BOOST_INCLUDE)  <sysinclude>$(BOOST_INCLUDE)
+        <library-path>$(BOOST_LIBPATH)
+        <threading>multi
+        <vc-8_0><*><cflags>-wd4996
+        <vc-8_0><*><cflags>-wd4819
+        find-boost-thread-lib
+    ;

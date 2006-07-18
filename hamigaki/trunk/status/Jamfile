@@ -1,0 +1,14 @@
+subproject status ;
+import testing ;
+
+DEPENDS all : test ;
+
+subinclude libs/audio/test ;
+subinclude libs/iostreams/test ;
+subinclude libs/iterator/test ;
+
+{
+    test-suite config
+        : [ run ../libs/config/test/config_info.cpp : : : <test-info>always_show_run_output <sys-include>$(BOOT_INCLUDE) ]
+        ;
+}
