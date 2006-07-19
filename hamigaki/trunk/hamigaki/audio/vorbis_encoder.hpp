@@ -15,6 +15,8 @@
 #include <hamigaki/audio/detail/auto_link/vorbisenc.hpp>
 #include <hamigaki/audio/detail/auto_link/vorbisfile.hpp>
 #include <hamigaki/iostreams/device/file.hpp>
+#include <hamigaki/iostreams/arbitrary_positional_facade.hpp>
+#include <boost/iostreams/detail/closer.hpp>
 #include <boost/iostreams/close.hpp>
 #include <boost/iostreams/write.hpp>
 #include <boost/noncopyable.hpp>
@@ -33,8 +35,13 @@ struct vorbis_encode_params
 namespace detail
 {
 
-class HAMIGAKI_AUDIO_DECL vorbis_encoder_base : boost::noncopyable
+class HAMIGAKI_AUDIO_DECL vorbis_encoder_base
+    : public hamigaki::iostreams::
+        arbitrary_positional_facade<vorbis_encoder_base,float,255>
+    , private boost::noncopyable
 {
+    friend class hamigaki::iostreams::core_access;
+
 public:
     typedef std::streamsize (*write_func)(void*, const char*, std::streamsize);
     typedef void (*close_func)(void*);
@@ -54,11 +61,11 @@ public:
 
     void close();
 
-    std::streamsize write(const float* s, std::streamsize n);
-
 private:
     void* ptr_;
     bool is_open_;
+
+    std::streamsize write_blocks(const float* s, std::streamsize n);
 };
 
 template<typename Sink>
@@ -68,7 +75,6 @@ public:
     typedef float char_type;
 
     using vorbis_encoder_base::write;
-    using vorbis_encoder_base::close;
 
     vorbis_file_sink_impl(
             const Sink& sink, long channels, long rate, float quality)
@@ -89,14 +95,20 @@ public:
             &vorbis_file_sink_impl::close_func);
     }
 
-    ~vorbis_file_sink_impl()
+    void close()
     {
+        bool nothrow = false;
+        boost::iostreams::detail::
+            external_closer<Sink> close_sink(sink_, BOOST_IOS::out, nothrow);
+
         try
         {
-            close();
+            vorbis_encoder_base::close();
         }
         catch (...)
         {
+            nothrow = true;
+            throw;
         }
     }
 

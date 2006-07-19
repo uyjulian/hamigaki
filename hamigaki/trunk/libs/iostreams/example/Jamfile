@@ -20,3 +20,15 @@ exe background_copy_example
         <vc-8_0><*><cflags>-wd4819
         find-boost-thread-lib
     ;
+
+exe base64_encode_sink_example
+    :
+        base64_encode_sink_example.cpp
+    :
+        <define>BOOST_ALL_NO_LIB=1
+        <include>$(HAMIGAKI_ROOT)  <sysinclude>$(HAMIGAKI_ROOT)
+        <include>$(BOOST_INCLUDE)  <sysinclude>$(BOOST_INCLUDE)
+        <library-path>$(BOOST_LIBPATH)
+        <vc-8_0><*><cflags>-wd4996
+        <vc-8_0><*><cflags>-wd4819
+    ;

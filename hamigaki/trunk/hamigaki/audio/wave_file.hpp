@@ -12,6 +12,7 @@
 #include <hamigaki/audio/pcm/format.hpp>
 #include <hamigaki/iostreams/device/file.hpp>
 #include <hamigaki/iostreams/catable.hpp>
+#include <boost/iostreams/detail/closer.hpp>
 #include <boost/iostreams/detail/ios.hpp>
 #include <boost/iostreams/categories.hpp>
 #include <boost/iostreams/close.hpp>
@@ -50,11 +51,6 @@ public:
         start_ = boost::iostreams::position_to_offset(
             boost::iostreams::seek(src_, 0, BOOST_IOS::cur));
         data_size_ = chunk.size;
-    }
-
-    ~wave_file_source_impl()
-    {
-        close();
     }
 
     pcm_format format() const
@@ -233,11 +229,6 @@ public:
             boost::iostreams::seek(sink_, 0, BOOST_IOS::cur));
     }
 
-    ~wave_file_sink_impl()
-    {
-        close();
-    }
-
     pcm_format format() const
     {
         return format_;
@@ -254,7 +245,16 @@ public:
 
     void close()
     {
-        if (is_open_)
+        if (!is_open_)
+            return;
+
+        is_open_ = false;
+
+        bool nothrow = false;
+        boost::iostreams::detail::
+            external_closer<Sink> close_sink(sink_, BOOST_IOS::out, nothrow);
+
+        try
         {
             char buf[4];
 
@@ -265,9 +265,11 @@ public:
             boost::iostreams::seek(sink_, 4, BOOST_IOS::beg);
             encode_uint<little,4>(&buf[0], start_ + 8 + position_ - 8);
             boost::iostreams::write(sink_, buf, sizeof(buf));
-
-            boost::iostreams::close(sink_, BOOST_IOS::out);
-            is_open_ = false;
+        }
+        catch (...)
+        {
+            nothrow = true;
+            throw;
         }
     }
 

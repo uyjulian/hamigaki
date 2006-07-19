@@ -14,9 +14,11 @@
 #include <hamigaki/audio/detail/auto_link/vorbis.hpp>
 #include <hamigaki/audio/detail/auto_link/vorbisfile.hpp>
 #include <hamigaki/iostreams/device/file.hpp>
+#include <hamigaki/iostreams/arbitrary_positional_facade.hpp>
 #include <hamigaki/iostreams/catable.hpp>
 #include <hamigaki/iostreams/traits.hpp>
 #include <boost/iostreams/detail/adapter/direct_adapter.hpp>
+#include <boost/iostreams/detail/closer.hpp>
 #include <boost/iostreams/detail/ios.hpp>
 #include <boost/iostreams/detail/select.hpp>
 #include <boost/iostreams/traits.hpp>
@@ -202,10 +204,17 @@ struct vorbis_seekable_source_traits
 };
 
 template<typename Source>
-class vorbis_file_source_impl : vorbis_file_base
+class vorbis_file_source_impl
+    : public hamigaki::iostreams::
+        arbitrary_positional_facade<vorbis_file_source_impl<Source>,float,255>
+    , private vorbis_file_base
 {
+    friend class hamigaki::iostreams::core_access;
+
 private:
+    typedef vorbis_file_source_impl<Source> self_type;
     typedef vorbis_file_base base_type;
+    typedef typename self_type::arbitrary_positional_facade_ facade_type;
 
     typedef typename
         boost::iostreams::select<
@@ -241,24 +250,49 @@ public:
             source_traits::seek_func,
             source_traits::close_func,
             source_traits::tell_func);
+
+        block_size(base_type::info().channels);
     }
 
-    ~vorbis_file_source_impl()
+    void close()
     {
-        close();
+        bool nothrow = false;
+        boost::iostreams::detail::
+            external_closer<Source> close_src(src_, BOOST_IOS::in, nothrow);
+
+        try
+        {
+            base_type::close();
+        }
+        catch (...)
+        {
+            nothrow = true;
+            throw;
+        }
     }
 
-    std::streamsize read(float* s, std::streamsize n)
+    boost::iostreams::stream_offset total()
     {
-        std::streamsize channels = info().channels;
-        if (n % channels != 0)
-            throw BOOST_IOSTREAMS_FAILURE("invalid read size");
+        return base_type::total() * base_type::info().channels;
+    }
 
+    using base_type::comments;
+    using base_type::vendor;
+    using base_type::info;
+    using facade_type::read;
+    using facade_type::seek;
+
+private:
+    value_type src_;
+
+    std::streamsize read_blocks(float* s, std::streamsize n)
+    {
+        std::streamsize channels = base_type::info().channels;
         std::streamsize total = 0;
         while (n != 0)
         {
             float** buffer;
-            long res = base_type::read(buffer, n / channels);
+            long res = base_type::read(buffer, n);
             if (res == 0)
                 break;
 
@@ -268,57 +302,34 @@ public:
                     *(s++) = buffer[i][j];
             }
 
-            std::streamsize amt = res*channels;
-
-            total += amt;
-            n -= amt;
+            total += res;
+            n -= res;
         }
 
         return total != 0 ? total : -1;
     }
 
-    void close()
-    {
-        base_type::close();
-    }
-
-    std::streampos seek(
+    std::streampos seek_blocks(
         boost::iostreams::stream_offset off, std::ios_base::seekdir way)
     {
-        std::streamsize channels = info().channels;
-        if (off % channels != 0)
-            throw BOOST_IOSTREAMS_FAILURE("invalid offset");
-
         if (way == BOOST_IOS::beg)
         {
-            base_type::seek(off/channels);
+            base_type::seek(off);
             return off;
         }
         else if (way == BOOST_IOS::cur)
         {
             boost::int64_t cur = base_type::tell();
-            base_type::seek(cur + off/channels);
-            return cur * channels + off;
+            base_type::seek(cur + off);
+            return cur + off;
         }
         else
         {
             boost::int64_t end = base_type::total();
-            base_type::seek(end + off/channels);
-            return end * channels + off;
+            base_type::seek(end + off);
+            return end + off;
         }
     }
-
-    boost::iostreams::stream_offset total()
-    {
-        return base_type::total() * info().channels;
-    }
-
-    using base_type::comments;
-    using base_type::vendor;
-    using base_type::info;
-
-private:
-    value_type src_;
 };
 
 } // namespace detail

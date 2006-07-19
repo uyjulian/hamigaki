@@ -82,21 +82,17 @@ public:
         ::vorbis_info_clear(&vi_);
     }
 
-    std::streamsize write(const float* s, std::streamsize n)
+    std::streamsize write_blocks(const float* s, std::streamsize n)
     {
-        if (n % channels_ != 0)
-            throw BOOST_IOSTREAMS_FAILURE("invalid write size");
+        float** buffer = ::vorbis_analysis_buffer(&vd_, n);
 
-        const std::streamsize count = n / channels_;
-        float** buffer = ::vorbis_analysis_buffer(&vd_, count);
-
-        for (std::streamsize i = 0; i < count; ++i)
+        for (std::streamsize i = 0; i < n; ++i)
         {
             for (std::streamsize j = 0; j < channels_; ++j)
                 buffer[j][i] = *(s++);
         }
 
-        write_to_downstream(count);
+        write_to_downstream(n);
 
         return n;
     }
@@ -201,6 +197,7 @@ void vorbis_encoder_base::open(
     vorbisenc& enc = *static_cast<vorbisenc*>(ptr_);
     enc.open(self, channels, rate, quality, write, close);
     is_open_ = true;
+    block_size(channels);
 }
 
 void vorbis_encoder_base::open(
@@ -215,6 +212,7 @@ void vorbis_encoder_base::open(
     vorbisenc& enc = *static_cast<vorbisenc*>(ptr_);
     enc.open(self, channels, rate, params, write, close);
     is_open_ = true;
+    block_size(channels);
 }
 
 void vorbis_encoder_base::close()
@@ -227,10 +225,11 @@ void vorbis_encoder_base::close()
     }
 }
 
-std::streamsize vorbis_encoder_base::write(const float* s, std::streamsize n)
+std::streamsize vorbis_encoder_base::write_blocks(
+    const float* s, std::streamsize n)
 {
     vorbisenc& enc = *static_cast<vorbisenc*>(ptr_);
-    return enc.write(s, n);
+    return enc.write_blocks(s, n);
 }
 
 } // namespace detail

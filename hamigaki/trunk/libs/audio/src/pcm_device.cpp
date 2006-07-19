@@ -13,6 +13,7 @@
 #include <stdexcept>
 
 #if defined(BOOST_WINDOWS)
+    #include <hamigaki/iostreams/arbitrary_positional_facade.hpp>
     #include <boost/ptr_container/ptr_vector.hpp>
     #include <vector>
     #include <windows.h>
@@ -181,11 +182,17 @@ private:
 
 } // namespace
 
-class pcm_sink::impl : boost::noncopyable
+class pcm_sink::impl
+    : public hamigaki::iostreams::
+        arbitrary_positional_facade<pcm_sink::impl, char, 4>
+    , private boost::noncopyable
 {
+    friend class hamigaki::iostreams::core_access;
+
 public:
     impl(const pcm_format& f, std::size_t buffer_size)
-        : sema_(wave_buffer_count, wave_buffer_count)
+        : impl::arbitrary_positional_facade_(f.block_size())
+        , sema_(wave_buffer_count, wave_buffer_count)
         , block_size_(f.block_size())
         , pos_(0), has_buffer_(false), format_(f)
     {
@@ -223,33 +230,6 @@ public:
     pcm_format format() const
     {
         return format_;
-    }
-
-    std::streamsize write(const char* s, std::streamsize n)
-    {
-        if (n % block_size_ != 0)
-            throw BOOST_IOSTREAMS_FAILURE("invalid write size");
-        std::streamsize result = n;
-        while (n != 0)
-        {
-            if (!has_buffer_)
-            {
-                sema_.wait();
-                has_buffer_ = true;
-            }
-
-            std::size_t written;
-            if (buffers_[pos_].write(s, n, written))
-            {
-                has_buffer_ = false;
-                pos_ = (pos_ + 1) % buffers_.size();
-                n -= written;
-                s += written;
-            }
-            else
-                break;
-        }
-        return (result != 0) ? result : -1;
     }
 
     bool flush()
@@ -292,13 +272,44 @@ private:
         semaphore& sema = *reinterpret_cast<semaphore*>(dwInstance);
         sema.release(1);
     }
+
+    std::streamsize write_blocks(const char* s, std::streamsize n)
+    {
+        std::streamsize result = n;
+        while (n != 0)
+        {
+            if (!has_buffer_)
+            {
+                sema_.wait();
+                has_buffer_ = true;
+            }
+
+            std::size_t written;
+            if (buffers_[pos_].write(s, n*block_size_, written))
+            {
+                has_buffer_ = false;
+                pos_ = (pos_ + 1) % buffers_.size();
+                n -= written/block_size_;
+                s += written;
+            }
+            else
+                break;
+        }
+        return (result != 0) ? result : -1;
+    }
 };
 
-class pcm_source::impl : boost::noncopyable
+class pcm_source::impl
+    : public hamigaki::iostreams::
+        arbitrary_positional_facade<pcm_source::impl, char, 4>
+    , private boost::noncopyable
 {
+    friend class hamigaki::iostreams::core_access;
+
 public:
     impl(const pcm_format& f, std::size_t buffer_size)
-        : sema_(0, wave_buffer_count)
+        : impl::arbitrary_positional_facade_(f.block_size())
+        , sema_(0, wave_buffer_count)
         , block_size_(f.block_size())
         , pos_(0), has_buffer_(false), format_(f)
     {
@@ -341,35 +352,6 @@ public:
         return format_;
     }
 
-    std::streamsize read(char* s, std::streamsize n)
-    {
-        if (n % block_size_ != 0)
-            throw BOOST_IOSTREAMS_FAILURE("invalid read size");
-        ::waveInStart(handle_);
-        std::streamsize result = n;
-        while (n != 0)
-        {
-            if (!has_buffer_)
-            {
-                sema_.wait();
-                has_buffer_ = true;
-            }
-
-            std::size_t amt;
-            if (buffers_[pos_].read(s, n, amt))
-            {
-                has_buffer_ = false;
-                buffers_[pos_].add();
-                pos_ = (pos_ + 1) % buffers_.size();
-                n -= amt;
-                s += amt;
-            }
-            else
-                break;
-        }
-        return (result != 0) ? result : -1;
-    }
-
     void close()
     {
         ::waveInStop(handle_);
@@ -403,6 +385,33 @@ private:
 
         semaphore& sema = *reinterpret_cast<semaphore*>(dwInstance);
         sema.release(1);
+    }
+
+    std::streamsize read_blocks(char* s, std::streamsize n)
+    {
+        ::waveInStart(handle_);
+        std::streamsize result = n;
+        while (n != 0)
+        {
+            if (!has_buffer_)
+            {
+                sema_.wait();
+                has_buffer_ = true;
+            }
+
+            std::size_t amt;
+            if (buffers_[pos_].read(s, n*block_size_, amt))
+            {
+                has_buffer_ = false;
+                buffers_[pos_].add();
+                pos_ = (pos_ + 1) % buffers_.size();
+                n -= amt/block_size_;
+                s += amt;
+            }
+            else
+                break;
+        }
+        return (result != 0) ? result : -1;
     }
 };
 

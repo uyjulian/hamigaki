@@ -8,8 +8,10 @@
 #ifndef HAMIGAKI_AUDIO_STEREO_HPP
 #define HAMIGAKI_AUDIO_STEREO_HPP
 
+#include <hamigaki/iostreams/arbitrary_positional_facade.hpp>
 #include <hamigaki/iostreams/catable.hpp>
 #include <boost/iostreams/categories.hpp>
+#include <boost/iostreams/close.hpp>
 #include <boost/iostreams/positioning.hpp>
 #include <boost/iostreams/read.hpp>
 #include <cstring>
@@ -18,7 +20,15 @@ namespace hamigaki { namespace audio {
 
 template<class Source>
 class stereophony
+    : public hamigaki::iostreams::
+        arbitrary_positional_facade<
+            stereophony<Source>,
+            typename boost::iostreams::char_type_of<Source>::type,
+            255
+        >
 {
+    friend class hamigaki::iostreams::core_access;
+
 public:
     typedef typename boost::iostreams::
         char_type_of<Source>::type char_type;
@@ -26,36 +36,18 @@ public:
     struct category
         : public boost::iostreams::input
         , public boost::iostreams::device_tag
+        , public boost::iostreams::closable_tag
     {};
 
     explicit stereophony(const Source& src, unsigned channels=2)
-        : src_(src), channels_(channels)
+        : stereophony<Source>::arbitrary_positional_facade_(channels)
+        , src_(src), channels_(channels)
     {
     }
 
-    std::streamsize read(char_type* s, std::streamsize n)
+    void close()
     {
-        if (channels_ == 1)
-            return boost::iostreams::read(src_, s, n);
-
-        if (n <= 0)
-            return -1;
-
-        if (n % channels_ != 0)
-            throw BOOST_IOSTREAMS_FAILURE("invalid read size");
-
-        const std::streamsize count = n / channels_;
-        for (std::streamsize i = 0; i < count; ++i)
-        {
-            std::streamsize amt = boost::iostreams::read(src_, s, 1);
-            if (amt == -1)
-                return i ? i : -1;
-
-            std::fill_n(s+1, channels_-1, *s);
-            s += channels_;
-        }
-
-        return n;
+        boost::iostreams::close(src_, BOOST_IOS::in);
     }
 
     std::streampos seek(boost::iostreams::stream_offset, BOOST_IOS::seekdir)
@@ -71,6 +63,28 @@ public:
 private:
     Source src_;
     unsigned channels_;
+
+    std::streamsize read_blocks(char_type* s, std::streamsize n)
+    {
+        if (channels_ == 1)
+            return boost::iostreams::read(src_, s, n);
+
+        if (n <= 0)
+            return -1;
+
+        const std::streamsize count = n;
+        for (std::streamsize i = 0; i < count; ++i)
+        {
+            std::streamsize amt = boost::iostreams::read(src_, s, 1);
+            if (amt == -1)
+                return i ? i : -1;
+
+            std::fill_n(s+1, channels_-1, *s);
+            s += channels_;
+        }
+
+        return n;
+    }
 };
 
 template<class Source>

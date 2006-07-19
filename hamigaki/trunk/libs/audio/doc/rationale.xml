@@ -11,6 +11,7 @@
 -->
 <section id="audio.rationale">
   <title>論拠</title>
+<!--
   <section id="audio.rationale.repositional-stream">
     <title>位置復元可能ストリームの論拠</title>
     <para>
@@ -45,4 +46,5 @@
       こうして位置復元可能ストリームが選択された。
     </para>
   </section>
+-->
 </section>

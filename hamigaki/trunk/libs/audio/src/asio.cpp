@@ -320,8 +320,7 @@ asio_source::impl::~impl()
 {
     try
     {
-        if (is_open_)
-            close();
+        close();
     }
     catch (...)
     {
@@ -357,6 +356,9 @@ std::streamsize asio_source::impl::read(char* s, std::streamsize n)
 
 void asio_source::impl::close()
 {
+    if (!is_open_)
+        return;
+
     {
         const critical_section::scoped_lock locking(cs_);
         is_open_ = false;
@@ -417,8 +419,7 @@ asio_sink::impl::~impl()
 {
     try
     {
-        if (is_open_)
-            close();
+        close();
     }
     catch (...)
     {
@@ -460,6 +461,9 @@ std::streamsize asio_sink::impl::write(const char* s, std::streamsize n)
 
 void asio_sink::impl::close()
 {
+    if (!is_open_)
+        return;
+
     const std::size_t buffer_size = buffer_.size()/buffer_count;
     if (write_pos_ % buffer_size != 0)
     {
