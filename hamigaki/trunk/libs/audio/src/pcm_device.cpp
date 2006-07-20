@@ -13,7 +13,7 @@
 #include <stdexcept>
 
 #if defined(BOOST_WINDOWS)
-    #include <hamigaki/iostreams/arbitrary_positional_facade.hpp>
+    #include <hamigaki/iostreams/arbitrary_pos_device_facade.hpp>
     #include <boost/ptr_container/ptr_vector.hpp>
     #include <vector>
     #include <windows.h>
@@ -184,14 +184,14 @@ private:
 
 class pcm_sink::impl
     : public hamigaki::iostreams::
-        arbitrary_positional_facade<pcm_sink::impl, char, 4>
+        arbitrary_pos_device_facade<pcm_sink::impl, char, 4>
     , private boost::noncopyable
 {
     friend class hamigaki::iostreams::core_access;
 
 public:
     impl(const pcm_format& f, std::size_t buffer_size)
-        : impl::arbitrary_positional_facade_(f.block_size())
+        : impl::arbitrary_pos_device_facade_(f.block_size())
         , sema_(wave_buffer_count, wave_buffer_count)
         , block_size_(f.block_size())
         , pos_(0), has_buffer_(false), format_(f)
@@ -301,14 +301,14 @@ private:
 
 class pcm_source::impl
     : public hamigaki::iostreams::
-        arbitrary_positional_facade<pcm_source::impl, char, 4>
+        arbitrary_pos_device_facade<pcm_source::impl, char, 4>
     , private boost::noncopyable
 {
     friend class hamigaki::iostreams::core_access;
 
 public:
     impl(const pcm_format& f, std::size_t buffer_size)
-        : impl::arbitrary_positional_facade_(f.block_size())
+        : impl::arbitrary_pos_device_facade_(f.block_size())
         , sema_(0, wave_buffer_count)
         , block_size_(f.block_size())
         , pos_(0), has_buffer_(false), format_(f)

@@ -1,65 +1,19 @@
-//  arbitrary_positional_facade.hpp: CRTP helper for repositional stream
+//  arbitrary_pos_device_facade.hpp: repositional stream device facade
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef HAMIGAKI_IOSTREAMS_ARBITRARY_POSITIONAL_HELPER_HPP
-#define HAMIGAKI_IOSTREAMS_ARBITRARY_POSITIONAL_HELPER_HPP
+#ifndef HAMIGAKI_IOSTREAMS_ARBITRARY_POS_DEVICE_FACADE_HPP
+#define HAMIGAKI_IOSTREAMS_ARBITRARY_POS_DEVICE_FACADE_HPP
 
-#include <boost/config.hpp>
-#include <boost/iostreams/detail/ios.hpp>
-#include <boost/iostreams/positioning.hpp>
-#include <boost/iostreams/traits.hpp>
-#include <boost/assert.hpp>
+#include <hamigaki/iostreams/core_access.hpp>
 
 namespace hamigaki { namespace iostreams {
 
 template<class Derived, class CharT, std::streamsize MaxBlockSize>
-class arbitrary_positional_facade;
-
-class core_access
-{
-#if defined(BOOST_NO_MEMBER_TEMPLATE_FRIENDS)
-public:
-#else
-    template<class Derived, class CharT, std::streamsize MaxBlockSize>
-    friend class arbitrary_positional_facade;
-#endif
-
-    template<class RepositionalSource, class CharT>
-    static std::streamsize read_blocks(
-        RepositionalSource& src, CharT* s, std::streamsize n)
-    {
-        return src.read_blocks(s, n);
-    }
-
-    template<class RepositionalSink, class CharT>
-    static std::streamsize write_blocks(
-        RepositionalSink& sink, const CharT* s, std::streamsize n)
-    {
-        return sink.write_blocks(s, n);
-    }
-
-    template<class RepositionalSink, class CharT>
-    static void close_with_flush(
-        RepositionalSink& sink, const CharT* s, std::streamsize n)
-    {
-        return sink.close_with_flush(s, n);
-    }
-
-    template<class RepositionalDevice>
-    static std::streampos seek_blocks(
-        RepositionalDevice& dev,
-        boost::iostreams::stream_offset off, BOOST_IOS::seekdir way)
-    {
-        return dev.seek_blocks(off, way);
-    }
-};
-
-template<class Derived, class CharT, std::streamsize MaxBlockSize>
-class arbitrary_positional_facade
+class arbitrary_pos_device_facade
 {
 private:
     typedef CharT char_type;
@@ -70,8 +24,8 @@ private:
     }
 
 protected:
-    typedef arbitrary_positional_facade<
-        Derived,CharT,MaxBlockSize> arbitrary_positional_facade_;
+    typedef arbitrary_pos_device_facade<
+        Derived,CharT,MaxBlockSize> arbitrary_pos_device_facade_;
 
     void block_size(std::streamsize n)
     {
@@ -79,11 +33,11 @@ protected:
     }
 
 public:
-    arbitrary_positional_facade() : block_size_(MaxBlockSize), count_(0)
+    arbitrary_pos_device_facade() : block_size_(MaxBlockSize), count_(0)
     {
     }
 
-    explicit arbitrary_positional_facade(std::streamsize block_size)
+    explicit arbitrary_pos_device_facade(std::streamsize block_size)
         : block_size_(block_size), count_(0)
     {
         BOOST_ASSERT(block_size_ <= MaxBlockSize);
@@ -288,4 +242,4 @@ private:
 
 } } // End namespaces iostreams, hamigaki.
 
-#endif // HAMIGAKI_IOSTREAMS_ARBITRARY_POSITIONAL_HELPER_HPP
+#endif // HAMIGAKI_IOSTREAMS_ARBITRARY_POS_DEVICE_FACADE_HPP

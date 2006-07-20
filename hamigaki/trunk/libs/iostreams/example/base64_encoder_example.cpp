@@ -5,9 +5,10 @@
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#include <hamigaki/iostreams/base64_encoder.hpp>
+#include <hamigaki/iostreams/filter/base64.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/device/back_inserter.hpp> 
+#include <boost/iostreams/compose.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <exception>
 #include <iostream>
@@ -24,7 +25,7 @@ int main()
         std::string dst;
         io::copy(
             io::array_source(src, src+4),
-            io_ex::base64_encoded(io::back_inserter(dst)));
+            io::compose(io_ex::base64_encoder(), io::back_inserter(dst)));
         std::cout << dst << std::endl;
 
         return 0;

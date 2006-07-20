@@ -21,9 +21,9 @@ exe background_copy_example
         find-boost-thread-lib
     ;
 
-exe base64_encode_sink_example
+exe base64_encoder_example
     :
-        base64_encode_sink_example.cpp
+        base64_encoder_example.cpp
     :
         <define>BOOST_ALL_NO_LIB=1
         <include>$(HAMIGAKI_ROOT)  <sysinclude>$(HAMIGAKI_ROOT)
