@@ -1,0 +1,2 @@
+AddType text/plain .hpp
+AddType text/plain .cpp
