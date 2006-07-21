@@ -14,7 +14,7 @@
 #include <hamigaki/audio/detail/auto_link/vorbis.hpp>
 #include <hamigaki/audio/detail/auto_link/vorbisfile.hpp>
 #include <hamigaki/iostreams/device/file.hpp>
-#include <hamigaki/iostreams/arbitrary_pos_device_facade.hpp>
+#include <hamigaki/iostreams/arbitrary_positional_facade.hpp>
 #include <hamigaki/iostreams/catable.hpp>
 #include <hamigaki/iostreams/traits.hpp>
 #include <boost/iostreams/detail/adapter/direct_adapter.hpp>
@@ -206,7 +206,7 @@ struct vorbis_seekable_source_traits
 template<typename Source>
 class vorbis_file_source_impl
     : public hamigaki::iostreams::
-        arbitrary_pos_device_facade<vorbis_file_source_impl<Source>,float,255>
+        arbitrary_positional_facade<vorbis_file_source_impl<Source>,float,255>
     , private vorbis_file_base
 {
     friend class hamigaki::iostreams::core_access;
@@ -214,7 +214,7 @@ class vorbis_file_source_impl
 private:
     typedef vorbis_file_source_impl<Source> self_type;
     typedef vorbis_file_base base_type;
-    typedef typename self_type::arbitrary_pos_device_facade_ facade_type;
+    typedef typename self_type::arbitrary_positional_facade_ facade_type;
 
     typedef typename
         boost::iostreams::select<

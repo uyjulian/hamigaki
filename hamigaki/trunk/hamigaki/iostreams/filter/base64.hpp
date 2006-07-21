@@ -8,15 +8,14 @@
 #ifndef HAMIGAKI_IOSTREAMS_FILTER_BASE64_HPP
 #define HAMIGAKI_IOSTREAMS_FILTER_BASE64_HPP
 
-#include <hamigaki/iostreams/arbitrary_pos_filter_facade.hpp>
-#include <boost/iostreams/read.hpp>
+#include <hamigaki/iostreams/arbitrary_positional_facade.hpp>
 #include <boost/iostreams/write.hpp>
 #include <boost/integer.hpp>
 
 namespace hamigaki { namespace iostreams {
 
 class base64_encoder
-    : public arbitrary_pos_filter_facade<base64_encoder, char, 3>
+    : public arbitrary_positional_facade<base64_encoder, char, 3>
 {
     friend class core_access;
 

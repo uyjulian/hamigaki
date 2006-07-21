@@ -15,7 +15,7 @@
 #include <hamigaki/audio/detail/auto_link/vorbisenc.hpp>
 #include <hamigaki/audio/detail/auto_link/vorbisfile.hpp>
 #include <hamigaki/iostreams/device/file.hpp>
-#include <hamigaki/iostreams/arbitrary_pos_device_facade.hpp>
+#include <hamigaki/iostreams/arbitrary_positional_facade.hpp>
 #include <boost/iostreams/detail/closer.hpp>
 #include <boost/iostreams/close.hpp>
 #include <boost/iostreams/write.hpp>
@@ -37,7 +37,7 @@ namespace detail
 
 class HAMIGAKI_AUDIO_DECL vorbis_encoder_base
     : public hamigaki::iostreams::
-        arbitrary_pos_device_facade<vorbis_encoder_base,float,255>
+        arbitrary_positional_facade<vorbis_encoder_base,float,255>
     , private boost::noncopyable
 {
     friend class hamigaki::iostreams::core_access;

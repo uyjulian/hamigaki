@@ -8,7 +8,7 @@
 #ifndef HAMIGAKI_AUDIO_STEREO_HPP
 #define HAMIGAKI_AUDIO_STEREO_HPP
 
-#include <hamigaki/iostreams/arbitrary_pos_device_facade.hpp>
+#include <hamigaki/iostreams/arbitrary_positional_facade.hpp>
 #include <hamigaki/iostreams/catable.hpp>
 #include <boost/iostreams/categories.hpp>
 #include <boost/iostreams/close.hpp>
@@ -21,7 +21,7 @@ namespace hamigaki { namespace audio {
 template<class Source>
 class stereophony
     : public hamigaki::iostreams::
-        arbitrary_pos_device_facade<
+        arbitrary_positional_facade<
             stereophony<Source>,
             typename boost::iostreams::char_type_of<Source>::type,
             255
@@ -40,7 +40,7 @@ public:
     {};
 
     explicit stereophony(const Source& src, unsigned channels=2)
-        : stereophony<Source>::arbitrary_pos_device_facade_(channels)
+        : stereophony<Source>::arbitrary_positional_facade_(channels)
         , src_(src), channels_(channels)
     {
     }
