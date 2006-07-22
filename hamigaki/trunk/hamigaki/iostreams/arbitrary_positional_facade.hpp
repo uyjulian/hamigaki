@@ -5,8 +5,8 @@
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef HAMIGAKI_IOSTREAMS_DETAIL_ARBITRARY_POSITIONAL_BASE_HPP
-#define HAMIGAKI_IOSTREAMS_DETAIL_ARBITRARY_POSITIONAL_BASE_HPP
+#ifndef HAMIGAKI_IOSTREAMS_ARBITRARY_POSITIONAL_FACADE_HPP
+#define HAMIGAKI_IOSTREAMS_ARBITRARY_POSITIONAL_FACADE_HPP
 
 #include <boost/config.hpp>
 #include <boost/iostreams/detail/ios.hpp>
@@ -305,13 +305,12 @@ private:
 
             if (res != -1)
             {
-                std::streamsize amt = res*block_size_;
-                s += amt;
-                n -= amt;
-                total += amt;
+                s += res;
+                n -= res;
+                total += res;
             }
 
-            if (res < request)
+            if (res < request*block_size_)
                 return total != 0 ? total : -1;
         }
 
@@ -323,7 +322,7 @@ private:
             std::streamsize res =
                 op.read_blocks(derived(), buffer_, 1);
 
-            if (res == 1)
+            if (res > 0)
             {
                 s = std::copy(buffer_, buffer_+n, s);
                 count_ = block_size_ - n;
@@ -351,9 +350,7 @@ private:
 
             if (count_ == block_size_)
             {
-                std::streamsize res =
-                    op.write_blocks(derived(), buffer_, 1);
-                if (res)
+                op.write_blocks(derived(), buffer_, 1);
                 count_ = 0;
             }
         }
@@ -363,19 +360,12 @@ private:
             BOOST_ASSERT(count_ == 0);
 
             std::streamsize request = n/block_size_;
-            std::streamsize res =
-                op.write_blocks(derived(), s, request);
+            op.write_blocks(derived(), s, request);
 
-            if (res != -1)
-            {
-                std::streamsize amt = res*block_size_;
-                s += amt;
-                n -= amt;
-                total += amt;
-            }
-
-            if (res < request)
-                return total != 0 ? total : -1;
+            std::streamsize amt = request*block_size_;
+            s += amt;
+            n -= amt;
+            total += amt;
         }
 
         if (n != 0)
@@ -395,4 +385,4 @@ private:
 
 } } // End namespaces iostreams, hamigaki.
 
-#endif // HAMIGAKI_IOSTREAMS_DETAIL_ARBITRARY_POSITIONAL_BASE_HPP
+#endif // HAMIGAKI_IOSTREAMS_ARBITRARY_POSITIONAL_FACADE_HPP

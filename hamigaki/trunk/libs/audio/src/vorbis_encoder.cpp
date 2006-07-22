@@ -94,7 +94,7 @@ public:
 
         write_to_downstream(n);
 
-        return n;
+        return n * channels_;
     }
 
 private:

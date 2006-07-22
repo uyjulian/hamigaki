@@ -302,7 +302,7 @@ private:
                     *(s++) = buffer[i][j];
             }
 
-            total += res;
+            total += res*channels;
             n -= res;
         }
 

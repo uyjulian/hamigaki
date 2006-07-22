@@ -69,21 +69,19 @@ private:
         if (channels_ == 1)
             return boost::iostreams::read(src_, s, n);
 
-        if (n <= 0)
-            return -1;
-
-        const std::streamsize count = n;
-        for (std::streamsize i = 0; i < count; ++i)
+        std::streamsize total = 0;
+        for (std::streamsize i = 0; i < n; ++i)
         {
             std::streamsize amt = boost::iostreams::read(src_, s, 1);
             if (amt == -1)
-                return i ? i : -1;
+                break;
 
             std::fill_n(s+1, channels_-1, *s);
             s += channels_;
+            total += channels_;
         }
 
-        return n;
+        return (total != 0) ? total : -1;
     }
 };
 

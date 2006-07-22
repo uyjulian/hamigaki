@@ -9,8 +9,11 @@
 #define HAMIGAKI_IOSTREAMS_FILTER_BASE64_HPP
 
 #include <hamigaki/iostreams/arbitrary_positional_facade.hpp>
+#include <boost/iostreams/detail/ios.hpp>
+#include <boost/iostreams/read.hpp>
 #include <boost/iostreams/write.hpp>
 #include <boost/integer.hpp>
+#include <algorithm>
 
 namespace hamigaki { namespace iostreams {
 
@@ -65,7 +68,7 @@ private:
             boost::iostreams::write(sink, buf, sizeof(buf));
             s += 3;
         }
-        return n;
+        return n*3;
     }
 
     template<class Sink>
@@ -85,6 +88,119 @@ private:
 
             boost::iostreams::write(sink, buf, sizeof(buf));
         }
+    }
+};
+
+class base64_decoder
+    : public arbitrary_positional_facade<base64_decoder, char, 3>
+{
+    friend class core_access;
+
+    typedef boost::uint_t<24>::fast uint24_t;
+    typedef boost::uint_t<6>::least uint6_t;
+
+public:
+    typedef char char_type;
+
+    struct category
+        : public boost::iostreams::input
+        , public boost::iostreams::filter_tag
+        , public boost::iostreams::multichar_tag
+        , public boost::iostreams::closable_tag
+    {};
+
+private:
+    static char uint24_to_char(uint24_t n)
+    {
+        return static_cast<char>(static_cast<unsigned char>(n & 0xFF));
+    }
+
+    static uint24_t decode(char c)
+    {
+        // TODO: should support non-ASCII
+        const uint6_t table[] =
+        {
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+
+            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+            0xFF, 0xFF, 0xFF, 0x3E, 0xFF, 0xFF, 0xFF, 0x3F,
+
+            0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B,
+            0x3C, 0x3D, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+
+            0xFF, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
+            0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E,
+
+            0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16,
+            0x17, 0x18, 0x19, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+
+            0xFF, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20,
+            0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28,
+
+            0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30,
+            0x31, 0x32, 0x33, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+        };
+        unsigned char uc = static_cast<unsigned char>(c);
+        if (static_cast<std::size_t>(uc) >= sizeof(table))
+            throw BOOST_IOSTREAMS_FAILURE("bad Base64 sequence");
+        uint6_t val = table[uc];
+        if (val == 0xFF)
+            throw BOOST_IOSTREAMS_FAILURE("bad Base64 sequence");
+        return val;
+    }
+
+    static std::streamsize decode(char* dst, const char* src)
+    {
+        char buf[4];
+        std::copy(src, src+4, buf);
+
+        if (src[3] == '=')
+        {
+            buf[3] = 'A';
+            if (src[2] == '=')
+                buf[2] = 'A';
+        }
+
+        uint24_t tmp =
+            (decode(buf[0]) << 18) |
+            (decode(buf[1]) << 12) |
+            (decode(buf[2]) <<  6) |
+            (decode(buf[3])      ) ;
+
+        std::streamsize n = 0;
+        dst[n++] = uint24_to_char(tmp >> 16);
+        if (src[2] != '=')
+            dst[n++] = uint24_to_char(tmp >>  8);
+        if (src[3] != '=')
+            dst[n++] = uint24_to_char(tmp      );
+        return n;
+    }
+
+    template<class Source>
+    std::streamsize read_blocks(Source& src, char* s, std::streamsize n)
+    {
+        std::streamsize total = 0;
+        for (int i = 0; i < n; ++i)
+        {
+            char buf[4];
+            std::streamsize res =
+                boost::iostreams::read(src, buf, sizeof(buf));
+            if (res == -1)
+                break;
+            std::streamsize amt = decode(s, buf);
+            s += amt;
+            total += amt;;
+        }
+        return (total != 0) ? total : -1;
+    }
+
+    template<class Source>
+    void close_with_flush(Source&, const char*, std::streamsize)
+    {
     }
 };
 
