@@ -39,4 +39,5 @@ test-suite iostreams :
     [ iostreams-test concatenate_test.cpp : ]
     [ iostreams-test lazy_restrict_test.cpp : ]
     [ iostreams-test repeat_test.cpp : ]
+    [ iostreams-test urlsafe_base64_test.cpp : ]
     ;
