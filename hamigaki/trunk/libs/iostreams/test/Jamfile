@@ -35,6 +35,7 @@ rule iostreams-test ( sources + : requirements * )
 
 test-suite iostreams :
     [ iostreams-test background_copy_test.cpp : find-boost-thread-lib ]
+    [ iostreams-test base64_test.cpp : ]
     [ iostreams-test concatenate_test.cpp : ]
     [ iostreams-test lazy_restrict_test.cpp : ]
     [ iostreams-test repeat_test.cpp : ]
