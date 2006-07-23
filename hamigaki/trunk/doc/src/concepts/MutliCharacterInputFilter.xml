@@ -11,7 +11,7 @@
 -->
 <concept name="MutliCharacterInputFilter" category="Iostreams">
   <param name="F" role="filter-type"/>
-  <param name="D" role="source-type"/>
+  <param name="D" role="device-type"/>
 
   <models const="no" testable="yes" concept="Source">
     <type name="D"/>
