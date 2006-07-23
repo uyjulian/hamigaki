@@ -10,7 +10,7 @@
   LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 -->
 <concept name="ClosableDevice" category="Iostreams">
-  <param name="C" role="closable-device-type"/>
+  <param name="C" role="device-type"/>
 
   <associated-type name="category">
     <get-member-type name="type">
@@ -18,7 +18,7 @@
         <type name="C"/>
       </apply-template>
     </get-member-type>
-    <description><simpara>フィルタまたはデバイスのカテゴリ</simpara></description>
+    <description><simpara>デバイスのカテゴリ</simpara></description>
   </associated-type>
 
   <refines const="no" concept="Device"/>

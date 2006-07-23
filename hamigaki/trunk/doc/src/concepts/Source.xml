@@ -10,7 +10,9 @@
   LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 -->
 <concept name="Source" category="Iostreams">
-  <param name="S" role="source-type"/>
+  <param name="S" role="device-type"/>
+
+  <models-sentence>型<arg num="1"/>は<self/>のモデルでなければならない。</models-sentence>
 
   <associated-type name="char_type">
     <get-member-type name="type">
