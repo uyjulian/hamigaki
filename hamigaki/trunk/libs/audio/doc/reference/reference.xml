@@ -11,7 +11,7 @@
 -->
 <library-reference xmlns:xi="http://www.w3.org/2001/XInclude">
   <title>リファレンス</title>
-  <xi:include href="vorbis_comment.xml"/>
+  <xi:include href="vorbis/comment.xml"/>
   <xi:include href="aiff_file.xml"/>
   <xi:include href="amplify.xml"/>
   <xi:include href="asio.xml"/>
