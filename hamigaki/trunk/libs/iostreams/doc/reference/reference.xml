@@ -14,6 +14,7 @@
   <xi:include href="device/file.xml"/>
   <xi:include href="device/tmp_file.xml"/>
   <xi:include href="device/zero.xml"/>
+  <xi:include href="filter/base64.xml"/>
   <xi:include href="background_copy.xml"/>
   <xi:include href="catable.xml"/>
   <xi:include href="concatenate.xml"/>
