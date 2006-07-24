@@ -447,11 +447,17 @@ private:
         for (std::streamsize i = 0, offset = 0;
             i < count; ++i, offset += smp_sz)
         {
+            typedef typename float_t<24>::least float_type;
+            float_type tmp24 = s[i]*8388608;
+
+            if (tmp24 >= 8388608)
+                tmp24 = 8388607;
+            else if (tmp24 < -8388608)
+                tmp24 = -8388608;
+
             detail::cvt_int32<Type>::encode(
                 &buffer_[offset],
-                static_cast<boost::int_least32_t>(
-                    s[i]*static_cast<CharT>(8388608)
-                ) * 256);
+                static_cast<boost::int_least32_t>(tmp24) * 256);
         }
 
         boost::iostreams::write(dev_, &buffer_[0], count*smp_sz);
@@ -751,8 +757,18 @@ private:
         {
             typename integer_encoding_traits<sz>::int_type tmp =
                 detail::decode_uint<E,sz>(&buffer_[offset]);
-            boost::int_least32_t val = static_cast<boost::int_least32_t>(
-                detail::decode_ieee754<float_type,Format>(tmp)*8388608) * 256;
+
+            float_type tmp24 =
+                detail::decode_ieee754<float_type,Format>(tmp)*8388608;
+
+            if (tmp24 >= 8388608)
+                tmp24 = 8388607;
+            else if (tmp24 < -8388608)
+                tmp24 = -8388608;
+
+            boost::int_least32_t val =
+                static_cast<boost::int_least32_t>(tmp24) * 256;
+
             s[i] = static_cast<char_type>(val >> slide_bits);
         }
 
