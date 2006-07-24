@@ -1,4 +1,4 @@
-//  format.hpp: pcm format infomation
+//  pcm_format.hpp: pcm format infomation
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the

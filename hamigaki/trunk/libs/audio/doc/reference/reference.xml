@@ -11,7 +11,6 @@
 -->
 <library-reference xmlns:xi="http://www.w3.org/2001/XInclude">
   <title>リファレンス</title>
-  <xi:include href="pcm_format.xml"/>
   <xi:include href="vorbis_comment.xml"/>
   <xi:include href="aiff_file.xml"/>
   <xi:include href="amplify.xml"/>
@@ -19,6 +18,7 @@
   <xi:include href="background_player.xml"/>
   <xi:include href="direct_sound.xml"/>
   <xi:include href="pcm_device.xml"/>
+  <xi:include href="pcm_format.xml"/>
   <xi:include href="sample_format.xml"/>
   <xi:include href="sine_wave.xml"/>
   <xi:include href="square_wave.xml"/>

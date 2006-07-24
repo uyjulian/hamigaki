@@ -7,7 +7,7 @@
 
 #include <hamigaki/audio/detail/config.hpp>
 #include <hamigaki/audio/detail/auto_link/hamigaki_audio.hpp>
-#include <hamigaki/audio/pcm/format.hpp>
+#include <hamigaki/audio/pcm_format.hpp>
 #include <boost/iostreams/detail/ios.hpp>
 #include <boost/iostreams/categories.hpp>
 #include <boost/shared_ptr.hpp>

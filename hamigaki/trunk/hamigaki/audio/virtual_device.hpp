@@ -8,7 +8,7 @@
 #ifndef HAMIGAKI_AUDIO_VIRTUAL_DEVICE_HPP
 #define HAMIGAKI_AUDIO_VIRTUAL_DEVICE_HPP
 
-#include <hamigaki/audio/pcm/format.hpp>
+#include <hamigaki/audio/pcm_format.hpp>
 #include <hamigaki/iostreams/catable.hpp>
 #include <boost/iostreams/categories.hpp>
 

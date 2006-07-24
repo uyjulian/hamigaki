@@ -9,7 +9,7 @@
   Boost Software License, Version 1.0. (See accompanying file
   LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 -->
-<header name="hamigaki/audio/pcm/format.hpp">
+<header name="hamigaki/audio/pcm_format.hpp">
   <namespace name="hamigaki">
     <namespace name="audio">
       <struct name="pcm_format">

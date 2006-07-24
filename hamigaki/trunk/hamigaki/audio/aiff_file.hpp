@@ -9,7 +9,7 @@
 #define HAMIGAKI_AUDIO_AIFF_FILE_HPP
 
 #include <hamigaki/audio/detail/endian.hpp>
-#include <hamigaki/audio/pcm/format.hpp>
+#include <hamigaki/audio/pcm_format.hpp>
 #include <hamigaki/iostreams/device/file.hpp>
 #include <hamigaki/iostreams/catable.hpp>
 #include <boost/iostreams/detail/closer.hpp>
