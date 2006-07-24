@@ -13,6 +13,14 @@
   <namespace name="hamigaki">
     <namespace name="audio">
       <class name="direct_sound_buffer">
+        <description>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Sink</conceptname></member>
+              <member><conceptname>ClosableDevice</conceptname></member>
+              <member><conceptname>PcmFormatRetrievable</conceptname></member>
+          </simplelist></para>
+        </description>
+
         <typedef name="char_type">
           <type>char</type>
         </typedef>
@@ -98,6 +106,14 @@
       </class>
 
       <class name="direct_sound_capture_buffer">
+        <description>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Source</conceptname></member>
+              <member><conceptname>ClosableDevice</conceptname></member>
+              <member><conceptname>PcmFormatRetrievable</conceptname></member>
+          </simplelist></para>
+        </description>
+
         <typedef name="char_type">
           <type>char</type>
         </typedef>

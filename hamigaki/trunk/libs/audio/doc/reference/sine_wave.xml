@@ -21,6 +21,12 @@
 
         <purpose><para>正弦波を生成するSourceモデル</para></purpose>
 
+        <description>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Source</conceptname></member>
+          </simplelist></para>
+        </description>
+
         <typedef name="char_type">
           <type>CharT</type>
         </typedef>

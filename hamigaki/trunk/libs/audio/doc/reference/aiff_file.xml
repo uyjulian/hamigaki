@@ -22,6 +22,13 @@
 
         <description>
           <para>Sourceを受け取り、AIFFファイルとしてフォーマットを解釈した結果を読み出すことができる。</para>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Source</conceptname></member>
+              <member><conceptname>SeekableDevice</conceptname></member>
+              <member><conceptname>ClosableDevice</conceptname></member>
+              <member><conceptname>OptimallyBuffered</conceptname></member>
+              <member><conceptname>PcmFormatRetrievable</conceptname></member>
+          </simplelist></para>
         </description>
 
         <typedef name="char_type">
@@ -52,7 +59,6 @@
             <parameter name="n">
               <paramtype>std::streamsize</paramtype>
             </parameter>
-            <throws><simpara><code>n</code>がサンプルサイズの倍数でない場合、<code>std::ios_base::failure</code></simpara></throws>
           </method>
 
           <method name="close">
@@ -67,7 +73,6 @@
             <parameter name="way">
               <paramtype>std::ios_base::seekdir</paramtype>
             </parameter>
-            <throws><simpara><code>off</code>がサンプルサイズの倍数でない場合、<code>std::ios_base::failure</code></simpara></throws>
           </method>
         </method-group>
 
@@ -118,6 +123,12 @@
 
         <description>
           <para>受け取ったSinkへPCMデータをAIFFファイルとして書き出すことができる。</para>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Sink</conceptname></member>
+              <member><conceptname>ClosableDevice</conceptname></member>
+              <member><conceptname>OptimallyBuffered</conceptname></member>
+              <member><conceptname>PcmFormatRetrievable</conceptname></member>
+          </simplelist></para>
         </description>
 
         <typedef name="char_type">

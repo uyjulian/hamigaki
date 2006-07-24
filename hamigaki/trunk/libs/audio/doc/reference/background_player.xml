@@ -22,22 +22,25 @@
 
         <purpose><para><code>basic_background_player</code>は<code>hamigaki::iostreams::background_copy</code>をオーディオ操作用に改良したものである。</para></purpose>
 
-        <description><para><code>basic_background_player</code>は次に示す３つの状態をとる。
-          <variablelist>
-            <varlistentry>
-              <term>空(empty)</term>
-              <listitem>再生対象となるSource/Sinkが設定されていない</listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>再生中(playing)</term>
-              <listitem>再生操作のためスレッドが動作している</listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>停止中(stopping)</term>
-              <listitem>再生が完了したか中断された</listitem>
-            </varlistentry>
-          </variablelist>
-        </para><para><note>多くの場合、Source/Sinkはコピーコンストラクタおよびコピー代入演算子によって複製されると、複製元と複製先でデバイスの状態を共有する。このような共有情報を複製元のデバイスを通して変更してはならない。</note></para></description>
+        <description>
+          <para><code>basic_background_player</code>は次に示す３つの状態をとる。
+            <variablelist>
+              <varlistentry>
+                <term>空(empty)</term>
+                <listitem>再生対象となるSource/Sinkが設定されていない</listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>再生中(playing)</term>
+                <listitem>再生操作のためスレッドが動作している</listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>停止中(stopping)</term>
+                <listitem>再生が完了したか中断された</listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+          <para><note>多くの場合、Source/Sinkはコピーコンストラクタおよびコピー代入演算子によって複製されると、複製元と複製先でデバイスの状態を共有する。このような共有情報を複製元のデバイスを通して変更してはならない。</note></para>
+        </description>
 
         <constructor>
           <postconditions>状態=空</postconditions>

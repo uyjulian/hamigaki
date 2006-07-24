@@ -19,6 +19,14 @@
 
         <purpose><para>クラステンプレート<code>amplifier</code>はSourceを受け取り、その各要素を定数倍したSourceを形成する。</para></purpose>
 
+        <description>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Source</conceptname></member>
+              <member><conceptname>ClosableDevice</conceptname></member>
+              <member><conceptname>OptimallyBuffered</conceptname></member>
+          </simplelist></para>
+        </description>
+
         <typedef name="char_type">
           <type>typename boost::iostreams::char_type_of&lt;Source&gt;::type</type>
         </typedef>

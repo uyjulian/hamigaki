@@ -43,7 +43,12 @@
 
         <description>
           <para>Sourceを受け取り、Vorbisデコードした結果を読み出すことができる。</para>
-          <para><classname>basic_vorbis_file_source</classname>はClosable、OptimallyBufferedである。<code>Source</code>がSeekableであれば、<classname>basic_vorbis_file_source</classname>もSeekableである。</para>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Source</conceptname></member>
+              <member><conceptname>SeekableDevice</conceptname>(<code>Source</code>が<conceptname>SeekableDevice</conceptname>である場合)</member>
+              <member><conceptname>ClosableDevice</conceptname></member>
+              <member><conceptname>OptimallyBuffered</conceptname></member>
+          </simplelist></para>
         </description>
 
         <typedef name="char_type">
@@ -75,7 +80,6 @@
             <parameter name="n">
               <paramtype>std::streamsize</paramtype>
             </parameter>
-            <throws><simpara><code>n</code>がチャンネル数の倍数でない場合、<code>std::ios_base::failure</code></simpara></throws>
           </method>
 
           <method name="close">
@@ -90,7 +94,6 @@
             <parameter name="way">
               <paramtype>std::ios_base::seekdir</paramtype>
             </parameter>
-            <throws><simpara><code>off</code>がチャンネル数の倍数でない場合、<code>std::ios_base::failure</code></simpara></throws>
           </method>
         </method-group>
 

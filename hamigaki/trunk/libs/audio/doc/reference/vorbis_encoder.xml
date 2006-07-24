@@ -34,6 +34,11 @@
 
         <description>
           <para>受け取ったSinkへPCMデータをOgg Vorbisエンコードして書き出すことができる。</para>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Sink</conceptname></member>
+              <member><conceptname>ClosableDevice</conceptname></member>
+              <member><conceptname>OptimallyBuffered</conceptname></member>
+          </simplelist></para>
         </description>
 
         <typedef name="char_type">

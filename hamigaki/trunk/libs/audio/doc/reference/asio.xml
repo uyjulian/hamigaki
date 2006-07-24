@@ -28,6 +28,14 @@
       </struct>
 
       <class name="asio_source">
+        <description>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Source</conceptname></member>
+              <member><conceptname>ClosableDevice</conceptname></member>
+              <member><conceptname>SampleFormatRetrievable</conceptname></member>
+          </simplelist></para>
+        </description>
+
         <typedef name="char_type">
           <type>char</type>
         </typedef>
@@ -60,6 +68,14 @@
       </class>
 
       <class name="asio_sink">
+        <description>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Sink</conceptname></member>
+              <member><conceptname>ClosableDevice</conceptname></member>
+              <member><conceptname>SampleFormatRetrievable</conceptname></member>
+          </simplelist></para>
+        </description>
+
         <typedef name="char_type">
           <type>char</type>
         </typedef>

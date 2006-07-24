@@ -20,6 +20,15 @@
 
         <purpose><para>クラステンプレート<code>wide_adaptor</code>はDeviceを受け取り、その文字型をCharTに変換したDeviceを形成する。</para></purpose>
 
+        <description>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Source</conceptname>(<code>Device</code>が<conceptname>Source</conceptname>である場合)</member>
+              <member><conceptname>Sink</conceptname>(<code>Device</code>が<conceptname>Sink</conceptname>である場合)</member>
+              <member><conceptname>ClosableDevice</conceptname></member>
+              <member><conceptname>OptimallyBuffered</conceptname></member>
+          </simplelist></para>
+        </description>
+
         <typedef name="char_type">
           <type>CharT</type>
         </typedef>
