@@ -10,6 +10,7 @@
 
 #include <boost/iterator/transform_iterator.hpp>
 #include <functional>
+#include <iterator>
 
 namespace hamigaki
 {
@@ -18,9 +19,9 @@ namespace detail
 {
 
 template<typename T>
-struct select_first : std::unary_function<T, typename T::first_type>
+struct select_first : std::unary_function<T, const typename T::first_type&>
 {
-    typename T::first_type operator()(const T& x) const
+    const typename T::first_type& operator()(const T& x) const
     {
         return x.first;
     }
@@ -31,12 +32,13 @@ struct select_first : std::unary_function<T, typename T::first_type>
 template <class Iterator>
 class first_iterator :
     public boost::transform_iterator<
-        detail::select_first<typename Iterator::value_type>,
+        detail::select_first<
+            typename std::iterator_traits<Iterator>::value_type>,
         Iterator
     >
 {
     typedef detail::select_first<
-        typename Iterator::value_type> function_type;
+        typename std::iterator_traits<Iterator>::value_type> function_type;
 
     typedef boost::transform_iterator<function_type,Iterator> super_t;
 
