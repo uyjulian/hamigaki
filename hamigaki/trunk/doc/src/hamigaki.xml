@@ -62,6 +62,8 @@
 
   <xi:include href="../../libs/audio/doc/audio.xml"/>
   <xi:include href="../../libs/iostreams/doc/iostreams.xml"/>
+  <xi:include href="../../libs/iterator/doc/iterator.xml"/>
+  <xi:include href="../../libs/thread/doc/thread.xml"/>
 
   <chapter id="concepts">
     <title>コンセプト</title>
