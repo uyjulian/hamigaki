@@ -31,10 +31,16 @@ public:
         boost::iostreams::sink_tag,
         boost::iostreams::closable_tag,
         boost::iostreams::flushable_tag,
+        boost::iostreams::optimally_buffered_tag,
         pcm_format_tag {};
 
     explicit pcm_sink(const pcm_format& f);
     pcm_sink(const pcm_format& f, std::size_t buffer_size);
+
+    std::streamsize optimal_buffer_size() const
+    {
+        return this->format().optimal_buffer_size();
+    }
 
     pcm_format format() const;
 
@@ -55,10 +61,16 @@ public:
     struct category :
         boost::iostreams::source_tag,
         boost::iostreams::closable_tag,
+        boost::iostreams::optimally_buffered_tag,
         pcm_format_tag {};
 
     explicit pcm_source(const pcm_format& f);
     pcm_source(const pcm_format& f, std::size_t buffer_size);
+
+    std::streamsize optimal_buffer_size() const
+    {
+        return this->format().optimal_buffer_size();
+    }
 
     pcm_format format() const;
 

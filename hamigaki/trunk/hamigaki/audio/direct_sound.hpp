@@ -157,12 +157,18 @@ public:
     struct category :
         boost::iostreams::sink_tag,
         boost::iostreams::closable_tag,
+        boost::iostreams::optimally_buffered_tag,
         pcm_format_tag {};
 
     direct_sound_buffer(::IDirectSoundBuffer* p,
         const pcm_format& f, std::size_t buffer_size);
 
     pcm_format format() const;
+
+    std::streamsize optimal_buffer_size() const
+    {
+        return this->format().optimal_buffer_size();
+    }
 
     std::streamsize write(const char* s, std::streamsize n);
     void close();
@@ -200,12 +206,18 @@ public:
     struct category :
         boost::iostreams::source_tag,
         boost::iostreams::closable_tag,
+        boost::iostreams::optimally_buffered_tag,
         pcm_format_tag {};
 
     direct_sound_capture_buffer(::IDirectSoundCaptureBuffer* p,
         const pcm_format& f, std::size_t buffer_size);
 
     pcm_format format() const;
+
+    std::streamsize optimal_buffer_size() const
+    {
+        return this->format().optimal_buffer_size();
+    }
 
     std::streamsize read(char* s, std::streamsize n);
     void close();

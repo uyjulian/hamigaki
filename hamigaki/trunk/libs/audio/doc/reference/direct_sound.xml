@@ -17,6 +17,7 @@
           <para>モデルとなるコンセプト:<simplelist type='inline'>
               <member><conceptname>Sink</conceptname></member>
               <member><conceptname>ClosableDevice</conceptname></member>
+              <member><conceptname>OptimallyBuffered</conceptname></member>
               <member><conceptname>PcmFormatRetrievable</conceptname></member>
           </simplelist></para>
         </description>
@@ -30,6 +31,11 @@
         </typedef>
 
         <method-group name="Boost.Iostreams implementation">
+          <method name="optimal_buffer_size" cv="const">
+            <type>std::streamsize</type>
+            <returns><simpara>200ミリ秒分のバッファサイズ</simpara></returns>
+          </method>
+
           <method name="write">
             <type>std::streamsize</type>
             <parameter name="s">
@@ -110,6 +116,7 @@
           <para>モデルとなるコンセプト:<simplelist type='inline'>
               <member><conceptname>Source</conceptname></member>
               <member><conceptname>ClosableDevice</conceptname></member>
+              <member><conceptname>OptimallyBuffered</conceptname></member>
               <member><conceptname>PcmFormatRetrievable</conceptname></member>
           </simplelist></para>
         </description>
@@ -123,6 +130,11 @@
         </typedef>
 
         <method-group name="Boost.Iostreams implementation">
+          <method name="optimal_buffer_size" cv="const">
+            <type>std::streamsize</type>
+            <returns><simpara>200ミリ秒分のバッファサイズ</simpara></returns>
+          </method>
+
           <method name="read">
             <type>std::streamsize</type>
             <parameter name="s">
