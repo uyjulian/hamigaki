@@ -12,7 +12,7 @@ boostbook doc
     src/hamigaki.xml
     :
     <xsl:param>boost.image.src=../../hamigaki.png
-    <xsl:param>boost.image.alt="\"hamigaki.png (2451 bytes)\""
+    <xsl:param>boost.image.alt=hamigaki.png
     <xsl:param>boost.image.w=96
     <xsl:param>boost.image.h=72
     <xsl:param>boost.max.id.length=40
