@@ -21,9 +21,9 @@ inline nanoseconds microseconds(int usec)
     return hamigaki::thread::nanoseconds(usec*1000);
 }
 
-inline nanoseconds milliseconds(int usec)
+inline nanoseconds milliseconds(int msec)
 {
-    return hamigaki::thread::nanoseconds(usec*1000*1000);
+    return hamigaki::thread::nanoseconds(msec*1000*1000);
 }
 
 struct utc_time : boost::xtime
