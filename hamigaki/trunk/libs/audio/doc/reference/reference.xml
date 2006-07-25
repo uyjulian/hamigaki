@@ -22,6 +22,7 @@
   <xi:include href="sample_format.xml"/>
   <xi:include href="sine_wave.xml"/>
   <xi:include href="square_wave.xml"/>
+  <xi:include href="virtual_device.xml"/>
   <xi:include href="vorbis_encoder.xml"/>
   <xi:include href="vorbis_file.xml"/>
   <xi:include href="wave_file.xml"/>
