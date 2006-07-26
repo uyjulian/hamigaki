@@ -10,6 +10,7 @@
 
 #include <hamigaki/type_traits/member_access_traits.hpp>
 #include <boost/iterator/transform_iterator.hpp>
+#include <boost/type_traits/is_reference.hpp>
 #include <functional>
 #include <iterator>
 
@@ -23,10 +24,16 @@ template<typename Iterator>
 struct select_second
     : std::unary_function<
         typename std::iterator_traits<Iterator>::value_type,
-        typename member_access_traits<
-            typename std::iterator_traits<Iterator>::reference,
+        typename boost::mpl::if_<
+            typename boost::is_reference<
+                typename std::iterator_traits<Iterator>::reference
+            >::type,
+            typename member_access_traits<
+                typename std::iterator_traits<Iterator>::reference,
+                typename std::iterator_traits<Iterator>::value_type::second_type
+            >::reference,
             typename std::iterator_traits<Iterator>::value_type::second_type
-        >::reference
+        >::type
     >
 {
     typename select_second::result_type
