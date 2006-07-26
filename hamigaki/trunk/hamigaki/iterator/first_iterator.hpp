@@ -8,6 +8,7 @@
 #ifndef HAMIGAKI_ITERATOR_FIRST_ITERATOR_HPP
 #define HAMIGAKI_ITERATOR_FIRST_ITERATOR_HPP
 
+#include <hamigaki/type_traits/member_access_traits.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <functional>
 #include <iterator>
@@ -18,10 +19,18 @@ namespace hamigaki
 namespace detail
 {
 
-template<typename T>
-struct select_first : std::unary_function<T, const typename T::first_type&>
+template<typename Iterator>
+struct select_first
+    : std::unary_function<
+        typename std::iterator_traits<Iterator>::value_type,
+        typename member_access_traits<
+            typename std::iterator_traits<Iterator>::reference,
+            typename std::iterator_traits<Iterator>::value_type::first_type
+        >::reference
+    >
 {
-    const typename T::first_type& operator()(const T& x) const
+    typename select_first::result_type
+    operator()(typename std::iterator_traits<Iterator>::reference x) const
     {
         return x.first;
     }
@@ -31,15 +40,9 @@ struct select_first : std::unary_function<T, const typename T::first_type&>
 
 template <class Iterator>
 class first_iterator :
-    public boost::transform_iterator<
-        detail::select_first<
-            typename std::iterator_traits<Iterator>::value_type>,
-        Iterator
-    >
+    public boost::transform_iterator<detail::select_first<Iterator>, Iterator>
 {
-    typedef detail::select_first<
-        typename std::iterator_traits<Iterator>::value_type> function_type;
-
+    typedef detail::select_first<Iterator> function_type;
     typedef boost::transform_iterator<function_type,Iterator> super_t;
 
 public:

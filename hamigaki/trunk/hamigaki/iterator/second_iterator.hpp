@@ -5,9 +5,10 @@
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef HAMIGAKI_ITERATOR_SECOND_ITERATOR_HPP
-#define HAMIGAKI_ITERATOR_SECOND_ITERATOR_HPP
+#ifndef HAMIGAKI_ITERATOR_FIRST_ITERATOR_HPP
+#define HAMIGAKI_ITERATOR_FIRST_ITERATOR_HPP
 
+#include <hamigaki/type_traits/member_access_traits.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <functional>
 #include <iterator>
@@ -18,10 +19,18 @@ namespace hamigaki
 namespace detail
 {
 
-template<typename T>
-struct select_second : std::unary_function<T, const typename T::second_type&>
+template<typename Iterator>
+struct select_second
+    : std::unary_function<
+        typename std::iterator_traits<Iterator>::value_type,
+        typename member_access_traits<
+            typename std::iterator_traits<Iterator>::reference,
+            typename std::iterator_traits<Iterator>::value_type::second_type
+        >::reference
+    >
 {
-    typename const T::second_type& operator()(const T& x) const
+    typename select_second::result_type
+    operator()(typename std::iterator_traits<Iterator>::reference x) const
     {
         return x.second;
     }
@@ -31,15 +40,9 @@ struct select_second : std::unary_function<T, const typename T::second_type&>
 
 template <class Iterator>
 class second_iterator :
-    public boost::transform_iterator<
-        detail::select_second<
-            typename std::iterator_traits<Iterator>::value_type>,
-        Iterator
-    >
+    public boost::transform_iterator<detail::select_second<Iterator>, Iterator>
 {
-    typedef detail::select_second<
-        typename std::iterator_traits<Iterator>::value_type> function_type;
-
+    typedef detail::select_second<Iterator> function_type;
     typedef boost::transform_iterator<function_type,Iterator> super_t;
 
 public:
@@ -59,4 +62,4 @@ inline second_iterator<Iterator> make_second_iterator(const Iterator& x)
 
 } // namespace hamigaki
 
-#endif // HAMIGAKI_ITERATOR_SECOND_ITERATOR_HPP
+#endif // HAMIGAKI_ITERATOR_FIRST_ITERATOR_HPP
