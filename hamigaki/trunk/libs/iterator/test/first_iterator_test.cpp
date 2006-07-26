@@ -44,7 +44,7 @@ void first_iterator_test_mutable()
     typedef hamigaki::first_iterator<test_iter> iter_type;
 
     typedef typename boost::is_convertible<
-        std::iterator_traits<iter_type>::iterator_category,
+        typename std::iterator_traits<iter_type>::iterator_category,
         Category
     >::type category_check;
 
@@ -83,7 +83,7 @@ void first_iterator_test_const()
     typedef hamigaki::first_iterator<test_iter> iter_type;
 
     typedef typename boost::is_convertible<
-        std::iterator_traits<iter_type>::iterator_category,
+        typename std::iterator_traits<iter_type>::iterator_category,
         Category
     >::type category_check;
 
