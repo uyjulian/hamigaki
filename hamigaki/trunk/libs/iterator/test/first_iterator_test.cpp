@@ -5,6 +5,8 @@
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+//  See http://hamigaki.sourceforge.jp/libs/iterator for library home page.
+
 #include <hamigaki/iterator/first_iterator.hpp>
 #include <boost/iterator/iterator_adaptor.hpp>
 #include <boost/test/unit_test.hpp>
@@ -104,6 +106,57 @@ void first_iterator_test_const()
     }
 }
 
+template<class Pointer, class CategoryOrTraversal>
+class non_ref_iterator
+    : public boost::iterator_adaptor<
+        non_ref_iterator<Pointer,CategoryOrTraversal>,
+        Pointer,
+        boost::use_default,
+        CategoryOrTraversal,
+        typename std::iterator_traits<Pointer>::value_type
+    >
+{
+public:
+    non_ref_iterator() {}
+
+    explicit non_ref_iterator(Pointer x)
+        : non_ref_iterator::iterator_adaptor_(x)
+    {
+    }
+};
+
+template<class CategoryOrTraversal, class Category>
+void first_iterator_test_non_ref()
+{
+    typedef non_ref_iterator<
+        const std::pair<int,int>*,
+        CategoryOrTraversal
+    > test_iter;
+
+    typedef hamigaki::first_iterator<test_iter> iter_type;
+
+    typedef typename boost::is_convertible<
+        typename std::iterator_traits<iter_type>::iterator_category,
+        Category
+    >::type category_check;
+
+    BOOST_STATIC_ASSERT(category_check::value);
+
+    std::pair<int,int> data[10];
+    for (int i = 0; i < 10; ++i)
+    {
+        data[i].first = i*2;
+        data[i].second = i*2+1;
+    }
+
+    iter_type iter((test_iter(data)));
+    for (int i = 0; i < 10; ++i)
+    {
+        BOOST_CHECK_EQUAL(*iter, i*2);
+        ++iter;
+    }
+}
+
 void first_iterator_test()
 {
     first_iterator_test_mutable<
@@ -141,6 +194,12 @@ void first_iterator_test()
         std::bidirectional_iterator_tag, std::bidirectional_iterator_tag>();
     first_iterator_test_const<
         std::random_access_iterator_tag, std::random_access_iterator_tag>();
+
+    first_iterator_test_non_ref<
+        boost::single_pass_traversal_tag, std::input_iterator_tag>();
+
+    first_iterator_test_non_ref<
+        std::input_iterator_tag, std::input_iterator_tag>();
 }
 
 ut::test_suite* init_unit_test_suite(int, char* [])

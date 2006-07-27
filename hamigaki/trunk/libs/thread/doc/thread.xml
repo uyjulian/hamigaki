@@ -8,6 +8,8 @@
   Use, modification, and distribution are subject to the
   Boost Software License, Version 1.0. (See accompanying file
   LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/thread for library home page.
 -->
 <library name="Thread" dirname="thread" xmlns:XI="http://www.w3.org/2001/XInclude" id="thread">
 

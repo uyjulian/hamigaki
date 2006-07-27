@@ -5,6 +5,8 @@
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+//  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+
 #define HAMIGAKI_AUDIO_SOURCE
 #include "asio_sink_impl.hpp"
 #include "asio_source_impl.hpp"

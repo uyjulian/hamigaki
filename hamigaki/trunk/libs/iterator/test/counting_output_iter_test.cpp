@@ -5,6 +5,8 @@
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+//  See http://hamigaki.sourceforge.jp/libs/iterator for library home page.
+
 #include <hamigaki/iterator/counting_output_iterator.hpp>
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/test/unit_test.hpp>

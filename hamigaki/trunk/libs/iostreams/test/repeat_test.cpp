@@ -5,6 +5,8 @@
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+//  See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
+
 #include <hamigaki/iostreams/repeat.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/read.hpp>

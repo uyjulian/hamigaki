@@ -5,6 +5,8 @@
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+//  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+
 #if defined(HAMIGAKI_HAS_DXSDK)
 #define HAMIGAKI_AUDIO_SOURCE
 #include <hamigaki/audio/direct_sound.hpp>
