@@ -18,16 +18,22 @@
         <template-type-parameter name="Iterator"/>
       </template>
 
+      <purpose><simpara><code>pair</code>の反復子を基に<code>second</code>のみを反復する</simpara></purpose>
+
+      <description>
+        <para><classname>first_iterator</classname>の<code>second</code>版である。<code>value_type</code>、<code>reference</code>、<code>pointer</code>および<code>iterator_category</code>に関しては、<classname>first_iterator</classname>を参照のこと。</para>
+      </description>
+
       <typedef name="value_type">
-        <type>typename std::iterator_traits&lt;Iterator&gt;::value_type::second_type</type>
+        <type><emphasis>/* see below */</emphasis></type>
       </typedef>
 
       <typedef name="reference">
-        <type>const value_type&amp;</type>
+        <type><emphasis>/* see below */</emphasis></type>
       </typedef>
 
       <typedef name="pointer">
-        <type>const value_type*</type>
+        <type><emphasis>/* see below */</emphasis></type>
       </typedef>
 
       <typedef name="difference_type">
@@ -35,7 +41,7 @@
       </typedef>
 
       <typedef name="iterator_category">
-        <type>typename std::iterator_traits&lt;Iterator&gt;::iterator_category</type>
+        <type><emphasis>/* see below */</emphasis></type>
       </typedef>
 
       <constructor>
