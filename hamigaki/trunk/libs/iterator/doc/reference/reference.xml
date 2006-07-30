@@ -15,9 +15,7 @@
   <title>リファレンス</title>
   <xi:include href="counting_output_iterator.xml"/>
   <xi:include href="first_iterator.xml"/>
-<!--
   <xi:include href="istream_line_iterator.xml"/>
   <xi:include href="ostream_iterator.xml"/>
--->
   <xi:include href="second_iterator.xml"/>
 </library-reference>
