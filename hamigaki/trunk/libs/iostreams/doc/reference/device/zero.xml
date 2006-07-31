@@ -55,11 +55,11 @@
       </class>
 
       <typedef name="zero_source">
-        <type>basic_zero_source&lt; char &gt;</type>
+        <type>basic_zero_source&lt;char&gt;</type>
       </typedef>
 
       <typedef name="wzero_source">
-        <type>basic_zero_source&lt; wchar_t &gt;</type>
+        <type>basic_zero_source&lt;wchar_t&gt;</type>
       </typedef>
     </namespace>
   </namespace>

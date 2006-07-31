@@ -22,7 +22,7 @@
         <purpose><para>クラステンプレート<code>repetition</code>は、Sourceを受け取り、それを指定回数だけ繰り返し読み出すことのできるSourceを形成する。</para></purpose>
 
         <typedef name="char_type">
-          <type>boost::iostreams::char_type_of&lt; Source &gt;::type</type>
+          <type>boost::iostreams::char_type_of&lt;Source&gt;::type</type>
         </typedef>
 
         <constructor>
@@ -53,7 +53,7 @@
 
         <free-function-group name="creation">
           <function name="repeat">
-            <type>repetition&lt; Source &gt;</type>
+            <type>repetition&lt;Source&gt;</type>
             <template>
               <template-type-parameter name="Source"/>
             </template>
@@ -63,7 +63,7 @@
             <parameter name="count">
               <paramtype>int</paramtype>
             </parameter>
-            <returns><simpara><code><classname>repetition</classname>&lt; Source &gt;(src, count)</code></simpara></returns>
+            <returns><simpara><code><classname>repetition</classname>&lt;Source&gt;(src, count)</code></simpara></returns>
           </function>
         </free-function-group>
       </class>

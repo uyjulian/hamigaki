@@ -117,7 +117,7 @@
 
         <free-function-group name="creation">
           <function name="make_vorbis_file_sink">
-            <type>basic_vorbis_file_sink&lt; Sink &gt;</type>
+            <type>basic_vorbis_file_sink&lt;Sink&gt;</type>
             <template>
               <template-type-parameter name="Sink"/>
             </template>
@@ -134,11 +134,11 @@
               <paramtype>float</paramtype>
               <default>0.1f</default>
             </parameter>
-            <returns><simpara><code><classname>basic_vorbis_file_sink</classname>&lt; Sink &gt;(sink, channels, rate, quality)</code></simpara></returns>
+            <returns><simpara><code><classname>basic_vorbis_file_sink</classname>&lt;Sink&gt;(sink, channels, rate, quality)</code></simpara></returns>
           </function>
 
           <function name="make_vorbis_file_sink">
-            <type>basic_vorbis_file_sink&lt; Sink &gt;</type>
+            <type>basic_vorbis_file_sink&lt;Sink&gt;</type>
             <template>
               <template-type-parameter name="Sink"/>
             </template>
@@ -154,7 +154,7 @@
             <parameter name="params">
               <paramtype>const <classname>vorbis_encode_params</classname>&amp;</paramtype>
             </parameter>
-            <returns><simpara><code><classname>basic_vorbis_file_sink</classname>&lt; Sink &gt;(sink, channels, rate, params)</code></simpara></returns>
+            <returns><simpara><code><classname>basic_vorbis_file_sink</classname>&lt;Sink&gt;(sink, channels, rate, params)</code></simpara></returns>
           </function>
         </free-function-group>
       </class>

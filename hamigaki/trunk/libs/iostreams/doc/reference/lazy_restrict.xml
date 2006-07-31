@@ -27,7 +27,7 @@
         である。</para></purpose>
 
         <typedef name="char_type">
-          <type>boost::iostreams::char_type_of&lt; Device &gt;::type</type>
+          <type>boost::iostreams::char_type_of&lt;Device&gt;::type</type>
         </typedef>
 
         <constructor>
@@ -77,7 +77,7 @@
 
         <free-function-group name="creation">
           <function name="lazy_restrict">
-            <type>lazy_restriction&lt; Device &gt;</type>
+            <type>lazy_restriction&lt;Device&gt;</type>
             <template>
               <template-type-parameter name="Device"/>
             </template>
@@ -91,7 +91,7 @@
               <paramtype>boost::iostreams::stream_offset</paramtype>
               <default>-1</default>
             </parameter>
-            <returns><simpara><code><classname>lazy_restriction</classname>&lt; Device &gt;(dev, off, len)</code></simpara></returns>
+            <returns><simpara><code><classname>lazy_restriction</classname>&lt;Device&gt;(dev, off, len)</code></simpara></returns>
           </function>
         </free-function-group>
       </class>

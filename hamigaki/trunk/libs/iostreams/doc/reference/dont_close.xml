@@ -20,7 +20,7 @@
         </template>
 
         <typedef name="char_type">
-          <type>boost::iostreams::char_type_of&lt; Device &gt;::type</type>
+          <type>boost::iostreams::char_type_of&lt;Device&gt;::type</type>
         </typedef>
 
         <constructor>
@@ -78,14 +78,14 @@
 
         <free-function-group name="creation">
           <function name="dont_close">
-            <type>dont_close_device&lt; Device &gt;</type>
+            <type>dont_close_device&lt;Device&gt;</type>
             <template>
               <template-type-parameter name="Device"/>
             </template>
             <parameter name="dev">
               <paramtype>const Device&amp;</paramtype>
             </parameter>
-              <returns><simpara><code><classname>dont_close_device</classname>&lt; Device &gt;(dev)</code></simpara></returns>
+              <returns><simpara><code><classname>dont_close_device</classname>&lt;Device&gt;(dev)</code></simpara></returns>
           </function>
         </free-function-group>
       </class>

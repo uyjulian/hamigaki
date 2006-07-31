@@ -24,7 +24,7 @@
         <description><simpara>多重化したいSourceは、<methodname>push</methodname>()で追加する。<code>basic_multiplexer</code>からの読み出しは、追加した各Sourceから順に1文字ずつ読み出される。</simpara></description>
 
         <typedef name="char_type">
-          <type>boost::iostreams::char_type_of&lt; Device &gt;::type</type>
+          <type>boost::iostreams::char_type_of&lt;Device&gt;::type</type>
         </typedef>
 
         <constructor/>

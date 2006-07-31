@@ -123,14 +123,14 @@
 
         <free-function-group name="creation">
           <function name="make_vorbis_file_source">
-            <type>basic_vorbis_file_source&lt; Source &gt;</type>
+            <type>basic_vorbis_file_source&lt;Source&gt;</type>
             <template>
               <template-type-parameter name="Source"/>
             </template>
             <parameter name="src">
               <paramtype>const Source&amp;</paramtype>
             </parameter>
-            <returns><simpara><code><classname>basic_vorbis_file_source</classname>&lt; Source &gt;(src)</code></simpara></returns>
+            <returns><simpara><code><classname>basic_vorbis_file_source</classname>&lt;Source&gt;(src)</code></simpara></returns>
           </function>
         </free-function-group>
       </class>

@@ -75,7 +75,7 @@
           <type>std::string</type>
 
           <parameter name="comments">
-            <paramtype>const std::pair&lt; const char**, const char** &gt; &amp;</paramtype>
+            <paramtype>const std::pair&lt;const char**, const char**&gt;&amp;</paramtype>
           </parameter>
 
           <parameter name="name">

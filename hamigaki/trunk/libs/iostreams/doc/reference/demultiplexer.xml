@@ -24,7 +24,7 @@
         <description><simpara>分配先のSinkは、<methodname>push</methodname>()で追加する。<code>basic_demultiplexer</code>への書き込みは、追加した各Sinkへ順に1文字ずつ書き出される。</simpara></description>
 
         <typedef name="char_type">
-          <type>boost::iostreams::char_type_of&lt; Device &gt;::type</type>
+          <type>boost::iostreams::char_type_of&lt;Device&gt;::type</type>
         </typedef>
 
         <constructor/>

@@ -48,7 +48,7 @@
 
         <free-function-group name="creation">
           <function name="make_virtual_device">
-            <type>virtual_device&lt; Device &gt;</type>
+            <type>virtual_device&lt;Device&gt;</type>
             <template>
               <template-type-parameter name="Device"/>
             </template>
@@ -58,7 +58,7 @@
             <parameter name="fmt">
               <paramtype>const pcm_format&amp;</paramtype>
             </parameter>
-            <returns><simpara><code><classname>virtual_device</classname>&lt; Device &gt;(dev, fmt)</code></simpara></returns>
+            <returns><simpara><code><classname>virtual_device</classname>&lt;Device&gt;(dev, fmt)</code></simpara></returns>
           </function>
         </free-function-group>
       </class>

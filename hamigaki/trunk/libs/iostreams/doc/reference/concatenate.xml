@@ -26,7 +26,7 @@
         <description><para><classname>concatenation</classname>はClosableである。</para></description>
 
         <typedef name="char_type">
-          <type>boost::iostreams::char_type_of&lt; Source1 &gt;::type</type>
+          <type>boost::iostreams::char_type_of&lt;Source1&gt;::type</type>
         </typedef>
 
         <constructor>
@@ -56,7 +56,7 @@
 
         <free-function-group name="creation">
           <function name="concatenate">
-            <type>concatenation&lt; Source1, Source2 &gt;</type>
+            <type>concatenation&lt;Source1, Source2&gt;</type>
             <template>
               <template-type-parameter name="Source1"/>
               <template-type-parameter name="Source2"/>
@@ -67,7 +67,7 @@
             <parameter name="src2">
               <paramtype>const Source2&amp;</paramtype>
             </parameter>
-            <returns><simpara><code><classname>concatenation</classname>&lt; Source1, Source2 &gt;(src1, src2)</code></simpara></returns>
+            <returns><simpara><code><classname>concatenation</classname>&lt;Source1, Source2&gt;(src1, src2)</code></simpara></returns>
           </function>
         </free-function-group>
       </class>
