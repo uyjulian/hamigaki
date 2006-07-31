@@ -64,6 +64,7 @@
   <xi:include href="../../libs/iostreams/doc/iostreams.xml"/>
   <xi:include href="../../libs/iterator/doc/iterator.xml"/>
   <xi:include href="../../libs/thread/doc/thread.xml"/>
+  <xi:include href="../../libs/type_traits/doc/type_traits.xml"/>
 
   <chapter id="concepts">
     <title>コンセプト</title>

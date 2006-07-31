@@ -5,3 +5,4 @@ enum
 iostreams
 iterator
 thread
+type_traits
