@@ -132,12 +132,14 @@ public:
         , public boost::iostreams::closable_tag
     {};
 
-    file_sink(const std::string& filename, BOOST_IOS::openmode mode=BOOST_IOS::out)
+    file_sink(
+        const std::string& filename, BOOST_IOS::openmode mode=BOOST_IOS::out)
     {
         this->open(filename, mode|BOOST_IOS::out);
     }
 
-    void open(const std::string& filename, BOOST_IOS::openmode mode=BOOST_IOS::out)
+    void open(
+        const std::string& filename, BOOST_IOS::openmode mode=BOOST_IOS::out)
     {
         pimpl_.reset(new impl(filename, mode|BOOST_IOS::out));
     }
