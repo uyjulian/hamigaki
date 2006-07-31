@@ -43,8 +43,12 @@
   <!-- xi:include href="../libs/thread/doc/reference/reference.xml" -->
   <XI:include href="reference/reference.xml"/>
   <!-- xi:include href="../libs/thread/doc/rationale.xml" -->
+<!--
   <XI:include href="rationale.xml"/>
+-->
   <!-- xi:include href="../libs/thread/doc/acknowledgements.xml" -->
+<!--
   <XI:include href="acknowledgements.xml"/>
+-->
 
 </library>

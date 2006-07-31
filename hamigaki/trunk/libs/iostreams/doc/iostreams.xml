@@ -43,7 +43,9 @@
   <!-- xi:include href="../libs/iostreams/doc/reference/reference.xml" -->
   <XI:include href="reference/reference.xml"/>
   <!-- xi:include href="../libs/iostreams/doc/rationale.xml" -->
+<!--
   <XI:include href="rationale.xml"/>
+-->
   <!-- xi:include href="../libs/iostreams/doc/acknowledgements.xml" -->
   <XI:include href="acknowledgements.xml"/>
 

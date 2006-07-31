@@ -43,7 +43,9 @@
   <!-- xi:include href="../libs/iterator/doc/reference/reference.xml" -->
   <XI:include href="reference/reference.xml"/>
   <!-- xi:include href="../libs/iterator/doc/rationale.xml" -->
+<!--
   <XI:include href="rationale.xml"/>
+-->
   <!-- xi:include href="../libs/iterator/doc/acknowledgements.xml" -->
   <XI:include href="acknowledgements.xml"/>
 

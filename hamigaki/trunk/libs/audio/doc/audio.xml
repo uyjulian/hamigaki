@@ -47,7 +47,9 @@
   <!-- xi:include href="../libs/audio/doc/reference/reference.xml" -->
   <XI:include href="reference/reference.xml"/>
   <!-- xi:include href="../libs/audio/doc/rationale.xml" -->
+<!--
   <XI:include href="rationale.xml"/>
+-->
   <!-- xi:include href="../libs/audio/doc/acknowledgements.xml" -->
   <XI:include href="acknowledgements.xml"/>
 
