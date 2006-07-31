@@ -71,7 +71,7 @@
 
       <free-function-group name="creation">
         <function name="make_counting_output_iterator">
-          <type>counting_output_iterator&lt;Incrementable&gt;&amp;</type>
+          <type>counting_output_iterator&lt;Incrementable&gt;</type>
           <parameter name="x">
             <paramtype>Incrementable</paramtype>
           </parameter>
