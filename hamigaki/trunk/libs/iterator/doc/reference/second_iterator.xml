@@ -82,7 +82,7 @@
           <parameter name="x">
             <paramtype>Iterator</paramtype>
           </parameter>
-          <returns><simpara><code>second_iterator&lt;Iterator&gt;&amp;(x)</code></simpara></returns>
+          <returns><simpara><code>second_iterator&lt;Iterator&gt;(x)</code></simpara></returns>
         </function>
       </free-function-group>
 

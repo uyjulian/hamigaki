@@ -75,7 +75,7 @@
           <parameter name="x">
             <paramtype>Incrementable</paramtype>
           </parameter>
-          <returns><simpara><code>counting_output_iterator&lt;Incrementable&gt;&amp;(x)</code></simpara></returns>
+          <returns><simpara><code>counting_output_iterator&lt;Incrementable&gt;(x)</code></simpara></returns>
         </function>
       </free-function-group>
 
