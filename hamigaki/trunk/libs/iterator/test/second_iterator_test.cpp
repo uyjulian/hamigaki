@@ -15,13 +15,13 @@
 
 namespace ut = boost::unit_test;
 
-template<class Pointer, class CategoryOrTraversal>
+template<class Pointer, class Category>
 class test_iterator
     : public boost::iterator_adaptor<
-        test_iterator<Pointer,CategoryOrTraversal>,
+        test_iterator<Pointer,Category>,
         Pointer,
         boost::use_default,
-        CategoryOrTraversal
+        Category
     >
 {
     friend class boost::iterator_core_access;
@@ -35,12 +35,12 @@ public:
     }
 };
 
-template<class CategoryOrTraversal, class Category>
+template<class Category>
 void second_iterator_test_mutable()
 {
     typedef test_iterator<
         std::pair<int,int>*,
-        CategoryOrTraversal
+        Category
     > test_iter;
 
     typedef hamigaki::second_iterator<test_iter> iter_type;
@@ -74,12 +74,12 @@ void second_iterator_test_mutable()
     }
 }
 
-template<class CategoryOrTraversal, class Category>
+template<class Category>
 void second_iterator_test_const()
 {
     typedef test_iterator<
         const std::pair<int,int>*,
-        CategoryOrTraversal
+        Category
     > test_iter;
 
     typedef hamigaki::second_iterator<test_iter> iter_type;
@@ -106,13 +106,13 @@ void second_iterator_test_const()
     }
 }
 
-template<class Pointer, class CategoryOrTraversal>
+template<class Pointer, class Category>
 class non_ref_iterator
     : public boost::iterator_adaptor<
-        non_ref_iterator<Pointer,CategoryOrTraversal>,
+        non_ref_iterator<Pointer,Category>,
         Pointer,
         boost::use_default,
-        CategoryOrTraversal,
+        Category,
         typename std::iterator_traits<Pointer>::value_type
     >
 {
@@ -125,12 +125,12 @@ public:
     }
 };
 
-template<class CategoryOrTraversal, class Category>
+template<class Category>
 void second_iterator_test_non_ref()
 {
     typedef non_ref_iterator<
         const std::pair<int,int>*,
-        CategoryOrTraversal
+        Category
     > test_iter;
 
     typedef hamigaki::second_iterator<test_iter> iter_type;
@@ -159,47 +159,17 @@ void second_iterator_test_non_ref()
 
 void second_iterator_test()
 {
-    second_iterator_test_mutable<
-        boost::single_pass_traversal_tag, std::input_iterator_tag>();
-    second_iterator_test_mutable<
-        boost::forward_traversal_tag, std::forward_iterator_tag>();
-    second_iterator_test_mutable<
-        boost::bidirectional_traversal_tag, std::bidirectional_iterator_tag>();
-    second_iterator_test_mutable<
-        boost::random_access_traversal_tag, std::random_access_iterator_tag>();
+    second_iterator_test_mutable<std::input_iterator_tag>();
+    second_iterator_test_mutable<std::forward_iterator_tag>();
+    second_iterator_test_mutable<std::bidirectional_iterator_tag>();
+    second_iterator_test_mutable<std::random_access_iterator_tag>();
 
-    second_iterator_test_mutable<
-        std::input_iterator_tag, std::input_iterator_tag>();
-    second_iterator_test_mutable<
-        std::forward_iterator_tag, std::forward_iterator_tag>();
-    second_iterator_test_mutable<
-        std::bidirectional_iterator_tag, std::bidirectional_iterator_tag>();
-    second_iterator_test_mutable<
-        std::random_access_iterator_tag, std::random_access_iterator_tag>();
+    second_iterator_test_const<std::input_iterator_tag>();
+    second_iterator_test_const<std::forward_iterator_tag>();
+    second_iterator_test_const<std::bidirectional_iterator_tag>();
+    second_iterator_test_const<std::random_access_iterator_tag>();
 
-    second_iterator_test_const<
-        boost::single_pass_traversal_tag, std::input_iterator_tag>();
-    second_iterator_test_const<
-        boost::forward_traversal_tag, std::forward_iterator_tag>();
-    second_iterator_test_const<
-        boost::bidirectional_traversal_tag, std::bidirectional_iterator_tag>();
-    second_iterator_test_const<
-        boost::random_access_traversal_tag, std::random_access_iterator_tag>();
-
-    second_iterator_test_const<
-        std::input_iterator_tag, std::input_iterator_tag>();
-    second_iterator_test_const<
-        std::forward_iterator_tag, std::forward_iterator_tag>();
-    second_iterator_test_const<
-        std::bidirectional_iterator_tag, std::bidirectional_iterator_tag>();
-    second_iterator_test_const<
-        std::random_access_iterator_tag, std::random_access_iterator_tag>();
-
-    second_iterator_test_non_ref<
-        boost::single_pass_traversal_tag, std::input_iterator_tag>();
-
-    second_iterator_test_non_ref<
-        std::input_iterator_tag, std::input_iterator_tag>();
+    second_iterator_test_non_ref<std::input_iterator_tag>();
 }
 
 ut::test_suite* init_unit_test_suite(int, char* [])

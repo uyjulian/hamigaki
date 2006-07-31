@@ -61,51 +61,6 @@
               </tbody>
             </tgroup>
           </informaltable>
-          また、<code>iterator_category</code>は、<code>typename std::iterator_traits&lt;Iterator&gt;::iterator_category</code>のカテゴリに応じて次のように決定される。
-          <informaltable frame="all">
-            <tgroup cols="2">
-              <thead>
-                <row>
-                  <entry><code>iterator_traits&lt;Iterator&gt;::iterator_category</code></entry>
-                  <entry><code>iterator_category</code></entry>
-                </row>
-              </thead>
-              <tbody>
-                <row>
-                  <entry><code>boost::single_pass_traversal_tag</code></entry>
-                  <entry><code>std::input_iterator_tag</code></entry>
-                </row>
-                <row>
-                  <entry><code>boost::forward_traversal_tag</code></entry>
-                  <entry><code>std::forward_iterator_tag</code></entry>
-                </row>
-                <row>
-                  <entry><code>boost::bidirectional_traversal_tag</code></entry>
-                  <entry><code>std::bidirectional_iterator_tag</code></entry>
-                </row>
-                <row>
-                  <entry><code>boost::random_access_traversal_tag</code></entry>
-                  <entry><code>std::random_access_iterator_tag</code></entry>
-                </row>
-                <row>
-                  <entry><code>std::input_iterator_tag</code></entry>
-                  <entry><code>std::input_iterator_tag</code></entry>
-                </row>
-                <row>
-                  <entry><code>std::forward_iterator_tag</code></entry>
-                  <entry><code>std::forward_iterator_tag</code></entry>
-                </row>
-                <row>
-                  <entry><code>std::bidirectional_iterator_tag</code></entry>
-                  <entry><code>std::bidirectional_iterator_tag</code></entry>
-                </row>
-                <row>
-                  <entry><code>std::random_access_iterator_tag</code></entry>
-                  <entry><code>std::random_access_iterator_tag</code></entry>
-                </row>
-              </tbody>
-            </tgroup>
-          </informaltable>
         </para>
       </description>
 
@@ -126,7 +81,7 @@
       </typedef>
 
       <typedef name="iterator_category">
-        <type><emphasis>/* see below */</emphasis></type>
+        <type>typename std::iterator_traits&lt;Iterator&gt;::iterator_category</type>
       </typedef>
 
       <constructor>
@@ -163,7 +118,7 @@
 
       <free-function-group name="creation">
         <function name="make_first_iterator">
-          <type>first_iterator&lt;Iterator&gt;&amp;</type>
+          <type>first_iterator&lt;Iterator&gt;</type>
           <parameter name="x">
             <paramtype>Iterator</paramtype>
           </parameter>
