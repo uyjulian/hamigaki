@@ -1,4 +1,4 @@
-//  pcm_play.cpp: a simple WAVE player
+//  aiff_play.cpp: a simple AIFF player
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
