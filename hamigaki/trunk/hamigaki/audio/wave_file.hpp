@@ -175,6 +175,9 @@ public:
             boost::iostreams::seek(sink_, 4, BOOST_IOS::beg);
             encode_uint<little,4>(&buf[0], start_ + 8 + position_ - 8);
             boost::iostreams::write(sink_, buf, sizeof(buf));
+
+            boost::iostreams::seek(
+                sink_, start_ + 8 + position_ - 8, BOOST_IOS::cur);
         }
         catch (...)
         {
