@@ -10,7 +10,8 @@
 #ifndef HAMIGAKI_TYPE_TRAITS_MEMBER_ACCESS_TRAITS_HPP
 #define HAMIGAKI_TYPE_TRAITS_MEMBER_ACCESS_TRAITS_HPP
 
-#include <boost/mpl/if.hpp>
+#include <boost/mpl/eval_if.hpp>
+#include <boost/mpl/identity.hpp>
 #include <boost/type_traits/add_const.hpp>
 #include <boost/type_traits/add_cv.hpp>
 #include <boost/type_traits/add_pointer.hpp>
@@ -27,18 +28,18 @@ struct member_access_traits
 {
     typedef typename boost::remove_reference<T>::type class_type;
 
-    typedef typename boost::mpl::if_<
-        typename boost::is_const<class_type>::type,
-        typename boost::mpl::if_<
-            typename boost::is_volatile<class_type>::type,
-            typename boost::add_cv<U>::type,
-            typename boost::add_const<U>::type
-        >::type,
-        typename boost::mpl::if_<
-            typename boost::is_volatile<class_type>::type,
-            typename boost::add_volatile<U>::type,
-            U
-        >::type
+    typedef typename boost::mpl::eval_if<
+        boost::is_const<class_type>,
+        boost::mpl::eval_if<
+            boost::is_volatile<class_type>,
+            boost::add_cv<U>,
+            boost::add_const<U>
+        >,
+        boost::mpl::eval_if<
+            boost::is_volatile<class_type>,
+            boost::add_volatile<U>,
+            boost::mpl::identity<U>
+        >
     >::type member_type;
 
     typedef U value_type;
