@@ -20,6 +20,7 @@
 #include <boost/iostreams/traits.hpp>
 #include <boost/type_traits/is_floating_point.hpp>
 #include <boost/type_traits/is_same.hpp>
+#include <boost/type_traits/is_convertible.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/integer.hpp>
 #include <vector>
@@ -956,7 +957,17 @@ public:
     {
     }
 
-    void close(BOOST_IOS::openmode which = BOOST_IOS::in | BOOST_IOS::out)
+    void close()
+    {
+        close_impl(
+            typename boost::is_convertible<
+                boost::iostreams::mode_of<Device>::type,
+                boost::iostreams::output
+            >::type()
+        );
+    }
+
+    void close(BOOST_IOS::openmode which)
     {
         pimpl_->close(which);
     }
@@ -978,6 +989,16 @@ public:
 
 private:
     boost::shared_ptr<impl_type> pimpl_;
+
+    void close_impl(const boost::false_type&)
+    {
+        pimpl_->close(BOOST_IOS::in);
+    }
+
+    void close_impl(const boost::true_type&)
+    {
+        pimpl_->close(BOOST_IOS::out);
+    }
 };
 
 template<class CharT, class Device>
