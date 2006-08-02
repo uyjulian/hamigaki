@@ -10,32 +10,19 @@
 #ifndef HAMIGAKI_AUDIO_AIFF_FILE_HPP
 #define HAMIGAKI_AUDIO_AIFF_FILE_HPP
 
-#include <hamigaki/audio/detail/endian.hpp>
+#include <hamigaki/audio/detail/iff_base.hpp>
 #include <hamigaki/audio/pcm_format.hpp>
 #include <hamigaki/iostreams/device/file.hpp>
 #include <hamigaki/iostreams/catable.hpp>
 #include <boost/iostreams/detail/closer.hpp>
-#include <boost/iostreams/detail/ios.hpp>
-#include <boost/iostreams/categories.hpp>
 #include <boost/iostreams/close.hpp>
-#include <boost/iostreams/positioning.hpp>
-#include <boost/iostreams/read.hpp>
-#include <boost/iostreams/seek.hpp>
 #include <boost/iostreams/write.hpp>
-#include <boost/cstdint.hpp>
 #include <boost/shared_ptr.hpp>
-#include <cstring>
 
 namespace hamigaki { namespace audio {
 
 namespace detail
 {
-
-struct iff_chunk_header
-{
-    char id[4];
-    boost::uint_least32_t size;
-};
 
 inline boost::uint_least64_t decode_extended(const char* s)
 {
@@ -73,16 +60,26 @@ class aiff_file_source_impl
 public:
     typedef char char_type;
 
+    struct category :
+        boost::iostreams::optimally_buffered_tag,
+        boost::iostreams::input_seekable,
+        boost::iostreams::device_tag,
+        boost::iostreams::closable_tag,
+        pcm_format_tag {};
+
     explicit aiff_file_source_impl(const Source& src)
-        : src_(src), position_(0), is_open_(true)
+        : src_(src), iff_(src_)
     {
-        read_header();
         read_format();
 
-        const iff_chunk_header& chunk = find_chunk("SSND");
-        start_ = boost::iostreams::position_to_offset(
-            boost::iostreams::seek(src_, 8, BOOST_IOS::cur));
-        data_size_ = chunk.size - 8;
+        iff_.next_chunk();
+        if (!iff_.select_chunk("SSND"))
+            throw BOOST_IOSTREAMS_FAILURE("cannot find SSND chunk");
+    }
+
+    std::streamsize optimal_buffer_size() const
+    {
+        return format_.optimal_buffer_size();
     }
 
     pcm_format format() const
@@ -90,118 +87,33 @@ public:
         return format_;
     }
 
-    boost::iostreams::stream_offset total() const
-    {
-        return data_size_;
-    }
-
     std::streamsize read(char_type* s, std::streamsize n)
     {
-        n = (std::min)(n, data_size_-position_);
-        if (n == 0)
-            return -1;
-
-        std::streamsize amt = boost::iostreams::read(src_, s, n);
-        if (amt != n)
-            throw BOOST_IOSTREAMS_FAILURE("PCM read error");
-        position_ += amt;
-        return amt;
+        return iff_.read(s, n);
     }
 
     void close()
     {
-        if (is_open_)
-        {
-            boost::iostreams::close(src_, BOOST_IOS::in);
-            position_ = data_size_;
-            is_open_ = false;
-        }
+        boost::iostreams::close(src_, BOOST_IOS::in);
     }
 
     std::streampos seek(
         boost::iostreams::stream_offset off, BOOST_IOS::seekdir way)
     {
-        if (way == BOOST_IOS::beg)
-        {
-            if ((off < 0) || (off > data_size_))
-                throw BOOST_IOSTREAMS_FAILURE("bad seek");
-            off = start_ + off;
-            return boost::iostreams::seek(src_, off, way) - start_;
-        }
-        else if (way == BOOST_IOS::cur)
-        {
-            std::streamsize pos = position_ + off;
-            if ((pos < 0) || (pos > data_size_))
-                throw BOOST_IOSTREAMS_FAILURE("bad seek");
-            return boost::iostreams::seek(src_, off, way) - start_;
-        }
-        else
-        {
-            std::streamsize pos = data_size_ + off;
-            if ((pos < 0) || (pos > data_size_))
-                throw BOOST_IOSTREAMS_FAILURE("bad seek");
-            off = pos - data_size_;
-            return boost::iostreams::seek(src_, off, way) - start_;
-        }
+        return iff_.seek(off, way);
     }
 
 private:
     Source src_;
+    iff_file_source<Source,big> iff_;
     pcm_format format_;
-    boost::iostreams::stream_offset start_;
-    std::streamsize position_;
-    std::streamsize data_size_;
-    bool is_open_;
-
-    boost::uint_least32_t read_header()
-    {
-        char buf[12];
-        if (boost::iostreams::read(src_, buf, sizeof(buf)) != sizeof(buf))
-            throw BOOST_IOSTREAMS_FAILURE("broken IFF header");
-
-        if (std::memcmp(buf, "FORM", 4) != 0)
-            throw BOOST_IOSTREAMS_FAILURE("bad IFF header");
-
-        if (std::memcmp(buf+8, "AIFF", 4) != 0)
-            throw BOOST_IOSTREAMS_FAILURE("bad IFF format type");
-
-        return decode_uint<big,4>(buf+4);
-    }
-
-    iff_chunk_header raed_chunk_header()
-    {
-        char buf[8];
-        if (boost::iostreams::read(src_, buf, sizeof(buf)) != sizeof(buf))
-            throw BOOST_IOSTREAMS_FAILURE("cannot found chunk");
-
-        iff_chunk_header chunk;
-        std::memcpy(chunk.id, buf, 4);
-        chunk.size = decode_uint<big,4>(buf+4);
-        return chunk;
-    }
-
-    iff_chunk_header find_chunk(const char* id)
-    {
-        iff_chunk_header chunk;
-        while (true)
-        {
-            chunk = raed_chunk_header();
-            if (std::memcmp(chunk.id, id, 4) == 0)
-                break;
-
-            boost::iostreams::seek(src_, chunk.size, BOOST_IOS::cur);
-        }
-        return chunk;
-    }
 
     void read_format()
     {
-        const iff_chunk_header& chunk = raed_chunk_header();
+        if (!iff_.select_chunk("COMM"))
+            throw BOOST_IOSTREAMS_FAILURE("cannot find COMM chunk");
 
         char buf[18];
-        if (chunk.size < sizeof(buf))
-            throw BOOST_IOSTREAMS_FAILURE("bad pcm format");
-
         if (boost::iostreams::read(src_, buf, sizeof(buf)) != sizeof(buf))
             throw BOOST_IOSTREAMS_FAILURE("broken pcm format");
 
@@ -226,10 +138,6 @@ private:
 
         format_.rate = static_cast<long>(rate);
         format_.channels = channels;
-
-        boost::iostreams::stream_offset rest = chunk.size - sizeof(buf);
-        if (rest != 0)
-            boost::iostreams::seek(src_, rest, BOOST_IOS::cur);
     }
 };
 
