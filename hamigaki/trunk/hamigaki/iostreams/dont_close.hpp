@@ -14,6 +14,7 @@
 #include <boost/iostreams/categories.hpp>
 #include <boost/iostreams/detail/adapter/basic_adapter.hpp>
 #include <boost/iostreams/detail/ios.hpp>
+#include <boost/iostreams/flush.hpp>
 #include <boost/iostreams/read.hpp>
 #include <boost/iostreams/traits.hpp>
 #include <boost/type_traits/is_same.hpp>
@@ -45,7 +46,8 @@ public:
     }
 
     void close(BOOST_IOS::openmode which = BOOST_IOS::in | BOOST_IOS::out)
-    { 
+    {
+        boost::iostreams::flush(this->component());
     }
 
     std::streamsize read(char_type* s, std::streamsize n)
