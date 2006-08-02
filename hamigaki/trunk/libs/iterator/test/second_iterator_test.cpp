@@ -9,9 +9,9 @@
 
 #include <hamigaki/iterator/second_iterator.hpp>
 #include <boost/iterator/iterator_adaptor.hpp>
+#include <boost/mpl/assert.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/type_traits/is_convertible.hpp>
-#include <boost/static_assert.hpp>
 
 namespace ut = boost::unit_test;
 
@@ -45,12 +45,10 @@ void second_iterator_test_mutable()
 
     typedef hamigaki::second_iterator<test_iter> iter_type;
 
-    typedef typename boost::is_convertible<
+    BOOST_MPL_ASSERT((boost::is_convertible<
         typename std::iterator_traits<iter_type>::iterator_category,
         Category
-    >::type category_check;
-
-    BOOST_STATIC_ASSERT(category_check::value);
+    >));
 
     std::pair<int,int> data[10];
     for (int i = 0; i < 10; ++i)
@@ -84,12 +82,10 @@ void second_iterator_test_const()
 
     typedef hamigaki::second_iterator<test_iter> iter_type;
 
-    typedef typename boost::is_convertible<
+    BOOST_MPL_ASSERT((boost::is_convertible<
         typename std::iterator_traits<iter_type>::iterator_category,
         Category
-    >::type category_check;
-
-    BOOST_STATIC_ASSERT(category_check::value);
+    >));
 
     std::pair<int,int> data[10];
     for (int i = 0; i < 10; ++i)
@@ -135,12 +131,10 @@ void second_iterator_test_non_ref()
 
     typedef hamigaki::second_iterator<test_iter> iter_type;
 
-    typedef typename boost::is_convertible<
+    BOOST_MPL_ASSERT((boost::is_convertible<
         typename std::iterator_traits<iter_type>::iterator_category,
         Category
-    >::type category_check;
-
-    BOOST_STATIC_ASSERT(category_check::value);
+    >));
 
     std::pair<int,int> data[10];
     for (int i = 0; i < 10; ++i)

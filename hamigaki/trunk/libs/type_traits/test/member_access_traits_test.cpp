@@ -8,9 +8,9 @@
 //  See http://hamigaki.sourceforge.jp/libs/type_traits for library home page.
 
 #include <hamigaki/type_traits/member_access_traits.hpp>
+#include <boost/mpl/assert.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/type_traits/is_same.hpp>
-#include <boost/static_assert.hpp>
 
 namespace ut = boost::unit_test;
 
@@ -19,17 +19,8 @@ void member_access_check()
 {
     typedef hamigaki::member_access_traits<T,U> traits;
 
-    {
-        typedef typename boost::is_same<
-            typename traits::reference, Reference>::type check;
-        BOOST_STATIC_ASSERT(check::value);
-    }
-
-    {
-        typedef typename boost::is_same<
-            typename traits::pointer, Pointer>::type check;
-        BOOST_STATIC_ASSERT(check::value);
-    }
+    BOOST_MPL_ASSERT((boost::is_same<typename traits::reference, Reference>));
+    BOOST_MPL_ASSERT((boost::is_same<typename traits::pointer, Pointer>));
 }
 
 void member_access_traits_test()
