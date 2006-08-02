@@ -6,6 +6,7 @@ DEPENDS all : test ;
 subinclude libs/audio/test ;
 subinclude libs/iostreams/test ;
 subinclude libs/iterator/test ;
+subinclude libs/type_traits/test ;
 
 {
     test-suite config
