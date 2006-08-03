@@ -959,11 +959,11 @@ public:
 
     void close()
     {
-        close_impl(
-            typename boost::is_convertible<
-                boost::iostreams::mode_of<Device>::type,
+        this->close_impl(
+            boost::is_convertible<
+                typename boost::iostreams::mode_of<Device>::type,
                 boost::iostreams::output
-            >::type()
+            >()
         );
     }
 
