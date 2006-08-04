@@ -93,6 +93,8 @@ rule audio-test ( sources + : requirements * )
 
 rule intialize_suite {
     TEST_SUITE =
+      [ audio-test aiff_file_test.cpp
+        <lib>../../iostreams/build/hamigaki_iostreams ]
       [ audio-test pcm_sink_test.cpp ]
       [ audio-test pcm_source_test.cpp ]
       [ audio-test wave_file_test.cpp
