@@ -394,9 +394,7 @@ private:
         else if (type_ == int_a4_be24)
             return write_int<int_a4_be24>(s, n);
         else if (type_ == float_le32)
-            return write_int<int_le32>(s, n);
-        else if (type_ == float_be32)
-            return write_float<big,ieee754_single>(s, n);
+            return write_float<little,ieee754_single>(s, n);
         else if (type_ == float_be32)
             return write_float<big,ieee754_single>(s, n);
         else if (type_ == float_le64)
