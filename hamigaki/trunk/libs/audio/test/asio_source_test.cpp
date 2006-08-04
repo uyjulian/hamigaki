@@ -36,7 +36,7 @@ void asio_source_test()
     io::copy(
         io_ex::tiny_restrict(
             asio.get_source(0),
-            calc_samples_per_note(asio.rate(),100)
+            calc_samples_per_note(static_cast<unsigned>(asio.rate()),100)
         ),
         (io::null_sink())
     );

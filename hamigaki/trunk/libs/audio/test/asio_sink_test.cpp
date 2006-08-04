@@ -34,15 +34,13 @@ void asio_sink_test()
 
     asio.create_buffers(0, 1);
 
-    audio::sample_format_type type = asio.get_sink(0).sample_format();
-
     io::copy(
         io_ex::tiny_restrict(
             audio::amplify(
                 audio::sine_wave_source(asio.rate(), 440.0),
                 0.5f
             ),
-            calc_samples_per_note(asio.rate(),100)
+            calc_samples_per_note(static_cast<unsigned>(asio.rate()),100)
         ),
         audio::widen<float>(asio.get_sink(0))
     );
