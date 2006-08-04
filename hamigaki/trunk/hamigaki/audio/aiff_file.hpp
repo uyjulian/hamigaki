@@ -54,16 +54,9 @@ inline void encode_extended(char* s, boost::uint_least64_t n)
 template<typename Source>
 class aiff_file_source_impl
 {
+    typedef boost::iostreams::stream_offset off_t;
+
 public:
-    typedef char char_type;
-
-    struct category :
-        boost::iostreams::optimally_buffered_tag,
-        boost::iostreams::input_seekable,
-        boost::iostreams::device_tag,
-        boost::iostreams::closable_tag,
-        pcm_format_tag {};
-
     explicit aiff_file_source_impl(const Source& src)
         : src_(src), iff_(src_)
     {
@@ -72,11 +65,15 @@ public:
         iff_.next_chunk();
         if (!iff_.select_chunk("SSND"))
             throw BOOST_IOSTREAMS_FAILURE("cannot find SSND chunk");
-    }
 
-    std::streamsize optimal_buffer_size() const
-    {
-        return format_.optimal_buffer_size();
+        char buf[8];
+        iff_.read(buf, sizeof(buf));
+        off_t offset = decode_uint<big,4>(&buf[0]);
+
+        if (offset != 0)
+            iff_.seek(offset, BOOST_IOS::cur);
+        start_ = 8 + offset;
+        position_ = 0;
     }
 
     pcm_format format() const
@@ -84,9 +81,19 @@ public:
         return format_;
     }
 
-    std::streamsize read(char_type* s, std::streamsize n)
+    std::streamsize read(char* s, std::streamsize n)
     {
-        return iff_.read(s, n);
+        off_t rest = size_ - position_;
+        if (rest < static_cast<off_t>(n))
+            n = static_cast<std::streamsize>(rest);
+        if (n == 0)
+            return -1;
+
+        std::streamsize amt = iff_.read(s, n);
+        if (amt != n)
+            throw BOOST_IOSTREAMS_FAILURE("read error");
+        position_ += amt;
+        return amt;
     }
 
     void close()
@@ -97,13 +104,42 @@ public:
     std::streampos seek(
         boost::iostreams::stream_offset off, BOOST_IOS::seekdir way)
     {
-        return iff_.seek(off, way);
+        if (way == BOOST_IOS::beg)
+        {
+            if ((off < 0) || (off > size_))
+                throw BOOST_IOSTREAMS_FAILURE("bad seek");
+            off = start_ + off;
+        }
+        else if (way == BOOST_IOS::cur)
+        {
+            // Optimization for "tell"
+            if (off == 0)
+                return position_;
+
+            off_t pos = position_ + off;
+            if ((pos < 0) || (pos > size_))
+                throw BOOST_IOSTREAMS_FAILURE("bad seek");
+        }
+        else
+        {
+            off_t pos = size_ + off;
+            if ((pos < 0) || (pos > size_))
+                throw BOOST_IOSTREAMS_FAILURE("bad seek");
+            off = pos - size_;
+        }
+
+        std::streampos pos = iff_.seek(off, way);
+        position_ = boost::iostreams::position_to_offset(pos) - start_;
+        return boost::iostreams::offset_to_position(position_);
     }
 
 private:
     Source src_;
     iff_file_source<Source,big> iff_;
     pcm_format format_;
+    off_t size_;
+    off_t start_;
+    off_t position_;
 
     void read_format()
     {
@@ -115,7 +151,7 @@ private:
             throw BOOST_IOSTREAMS_FAILURE("broken pcm format");
 
         boost::int_least16_t channels = decode_int<big,2>(&buf[0]);
-//      boost::uint_least32_t samples = decode_uint<big,4>(&buf[2]);
+        boost::uint_least32_t samples = decode_uint<big,4>(&buf[2]);
         boost::int_least16_t bits = decode_int<big,2>(&buf[6]);
         boost::uint_least64_t rate = decode_extended(&buf[8]);
 
@@ -135,6 +171,8 @@ private:
 
         format_.rate = static_cast<long>(rate);
         format_.channels = channels;
+
+        size_ = format_.block_size() * samples;
     }
 };
 
@@ -142,24 +180,14 @@ template<typename Sink>
 class aiff_file_sink_impl
 {
 public:
-    typedef char char_type;
-
-    struct category :
-        boost::iostreams::optimally_buffered_tag,
-        boost::iostreams::output,
-        boost::iostreams::device_tag,
-        boost::iostreams::closable_tag,
-        pcm_format_tag {};
-
     aiff_file_sink_impl(const Sink& sink, const pcm_format& fmt)
         : sink_(sink), iff_(sink_, "FORM", "AIFF"), format_(fmt)
     {
         iff_.create_chunk("SSND");
-    }
 
-    std::streamsize optimal_buffer_size() const
-    {
-        return format_.optimal_buffer_size();
+        char buf[8];
+        std::memset(buf, 0, sizeof(buf));
+        iff_.write(buf, sizeof(buf));
     }
 
     pcm_format format() const
@@ -167,7 +195,7 @@ public:
         return format_;
     }
 
-    std::streamsize write(const char_type* s, std::streamsize n)
+    std::streamsize write(const char* s, std::streamsize n)
     {
         return iff_.write(s, n);
     }
@@ -186,7 +214,7 @@ public:
             boost::uint_least32_t size = static_cast<boost::uint_least32_t>(
                 boost::iostreams::position_to_offset(
                     boost::iostreams::seek(iff_, 0, BOOST_IOS::cur))
-            );
+            ) - 8;
 
             write_format(size/format_.block_size());
         }
