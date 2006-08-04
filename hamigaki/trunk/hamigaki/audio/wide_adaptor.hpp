@@ -104,7 +104,7 @@ template<> struct cvt_int32<int_le24>
     static void encode(char* s, boost::int_least32_t n)
     {
         typedef boost::int_t<24>::least int_type;
-        int_type val = static_cast<int_type>(n/65536);
+        int_type val = static_cast<int_type>(n/256);
         detail::encode_int<little,3>(s, val);
     }
 };
@@ -120,7 +120,7 @@ template<> struct cvt_int32<int_be24>
     static void encode(char* s, boost::int_least32_t n)
     {
         typedef boost::int_t<24>::least int_type;
-        int_type val = static_cast<int_type>(n/65536);
+        int_type val = static_cast<int_type>(n/256);
         detail::encode_int<big,3>(s, val);
     }
 };
