@@ -41,21 +41,27 @@ void wave_file_test_aux(const audio::pcm_format& fmt, double freq)
         io_ex::tiny_restrict(
             audio::stereo(
                 audio::amplify(
-                    audio::sine_wave_source(fmt.rate, freq),
+                    audio::basic_sine_wave_source<double>(fmt.rate, freq),
                     0.5f
                 ),
                 fmt.channels
             ),
             fmt.channels*calc_samples_per_note(fmt.rate,100)
         ),
-        audio::widen<float>(
+        audio::widen<double>(
             audio::make_wave_file_sink(io_ex::dont_close(tmp), fmt)
         )
     );
+
+    audio::pcm_format out_fmt;
+    out_fmt.rate = fmt.rate;
+    out_fmt.type = audio::int_le16;
+    out_fmt.channels = fmt.channels;
+
     io::seek(tmp, 0, BOOST_IOS::beg);
     io::copy(
-        audio::make_wave_file_source(tmp),
-        audio::pcm_sink(fmt)
+        audio::widen<double>(audio::make_wave_file_source(tmp)),
+        audio::widen<double>(audio::pcm_sink(out_fmt))
     );
 }
 
@@ -65,7 +71,9 @@ void wave_file_test()
     const audio::sample_format_type types[] =
     {
         audio::uint8,
-        audio::int_le16
+        audio::int_le16,
+        audio::float_le32,
+        audio::float_le64
     };
 
     unsigned short note = 60;
