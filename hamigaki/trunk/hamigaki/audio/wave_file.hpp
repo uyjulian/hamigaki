@@ -14,9 +14,6 @@
 #include <hamigaki/audio/pcm_format.hpp>
 #include <hamigaki/iostreams/device/file.hpp>
 #include <hamigaki/iostreams/catable.hpp>
-#include <boost/iostreams/detail/closer.hpp>
-#include <boost/iostreams/close.hpp>
-#include <boost/iostreams/write.hpp>
 #include <boost/shared_ptr.hpp>
 
 namespace hamigaki { namespace audio {
@@ -128,15 +125,24 @@ class wave_file_sink_impl
 public:
     typedef char char_type;
 
+    struct category :
+        boost::iostreams::optimally_buffered_tag,
+        boost::iostreams::output,
+        boost::iostreams::device_tag,
+        boost::iostreams::closable_tag,
+        pcm_format_tag {};
+
     wave_file_sink_impl(const Sink& sink, const pcm_format& fmt)
-        : sink_(sink), format_(fmt), position_(0), is_open_(true)
+        : sink_(sink), iff_(sink_, "RIFF", "WAVE"), format_(fmt)
     {
-        write_header();
         write_format();
 
-        write_chunk_header("data", 0);
-        start_ = boost::iostreams::position_to_offset(
-            boost::iostreams::seek(sink_, 0, BOOST_IOS::cur));
+        iff_.create_chunk("data");
+    }
+
+    std::streamsize optimal_buffer_size() const
+    {
+        return format_.optimal_buffer_size();
     }
 
     pcm_format format() const
@@ -146,38 +152,18 @@ public:
 
     std::streamsize write(const char_type* s, std::streamsize n)
     {
-        std::streamsize amt = boost::iostreams::write(sink_, s, n);
-        if (amt != n)
-            throw BOOST_IOSTREAMS_FAILURE("PCM write error");
-        position_ += amt;
-        return amt;
+        return iff_.write(s, n);
     }
 
     void close()
     {
-        if (!is_open_)
-            return;
-
-        is_open_ = false;
-
         bool nothrow = false;
         boost::iostreams::detail::
             external_closer<Sink> close_sink(sink_, BOOST_IOS::out, nothrow);
 
         try
         {
-            char buf[4];
-
-            boost::iostreams::seek(sink_, start_-4, BOOST_IOS::beg);
-            encode_uint<little,4>(&buf[0], position_);
-            boost::iostreams::write(sink_, buf, sizeof(buf));
-
-            boost::iostreams::seek(sink_, 4, BOOST_IOS::beg);
-            encode_uint<little,4>(&buf[0], start_ + 8 + position_ - 8);
-            boost::iostreams::write(sink_, buf, sizeof(buf));
-
-            boost::iostreams::seek(
-                sink_, start_ + 8 + position_ - 8, BOOST_IOS::cur);
+            iff_.close();
         }
         catch (...)
         {
@@ -188,35 +174,14 @@ public:
 
 private:
     Sink sink_;
+    iff_file_sink<Sink,little> iff_;
     pcm_format format_;
-    boost::iostreams::stream_offset start_;
-    std::streamsize position_;
-    bool is_open_;
-
-    void write_header()
-    {
-        char buf[12];
-        std::memcpy(buf, "RIFF", 4);
-        std::memset(buf+4, 0, 4);
-        std::memcpy(buf+8, "WAVE", 4);
-
-        boost::iostreams::write(sink_, buf, sizeof(buf));
-    }
-
-    void write_chunk_header(const char* id, boost::uint_least32_t size)
-    {
-        char buf[8];
-        std::memcpy(buf, id, 4);
-        encode_uint<little,4>(&buf[4], size);
-
-        boost::iostreams::write(sink_, buf, sizeof(buf));
-    }
 
     void write_format()
     {
-        char buf[16];
-        write_chunk_header("fmt ", sizeof(buf));
+        iff_.create_chunk("fmt ");
 
+        char buf[16];
         unsigned block_sz = format_.block_size();
         if ((format_.type == float_le32) || (format_.type == float_le64))
             encode_uint<little,2>(buf, 3);
@@ -228,7 +193,7 @@ private:
         encode_uint<little,2>(&buf[12], block_sz);
         encode_uint<little,2>(&buf[14], format_.bits());
 
-        boost::iostreams::write(sink_, buf, sizeof(buf));
+        boost::iostreams::write(iff_, buf, sizeof(buf));
     }
 };
 

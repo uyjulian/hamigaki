@@ -11,11 +11,14 @@
 #define HAMIGAKI_AUDIO_DETAIL_IFF_BASE_HPP
 
 #include <hamigaki/audio/detail/endian.hpp>
+#include <boost/iostreams/detail/closer.hpp>
 #include <boost/iostreams/detail/ios.hpp>
 #include <boost/iostreams/categories.hpp>
+#include <boost/iostreams/close.hpp>
 #include <boost/iostreams/positioning.hpp>
 #include <boost/iostreams/read.hpp>
 #include <boost/iostreams/seek.hpp>
+#include <boost/iostreams/write.hpp>
 #include <boost/cstdint.hpp>
 #include <cstring>
 #include <string>
@@ -303,6 +306,246 @@ public:
         boost::iostreams::stream_offset off, BOOST_IOS::seekdir way)
     {
         return iff_.seek(off, way);
+    }
+
+private:
+    chunk_type root_;
+    iff_type iff_;
+};
+
+template<typename Sink, endianness E>
+class iff_chunk_sink
+{
+    typedef boost::iostreams::stream_offset off_t;
+
+public:
+    typedef char char_type;
+
+    struct category :
+        boost::iostreams::closable_tag,
+        boost::iostreams::output_seekable,
+        boost::iostreams::device_tag {};
+
+    iff_chunk_sink() : snk_ptr_(0)
+    {
+        std::memset(head_.id, 0, sizeof(head_.id));
+        head_.size = 0;
+        start_ = 0;
+        position_ = 0;
+    }
+
+    iff_chunk_sink(Sink& sink, const char* id) : snk_ptr_(&sink)
+    {
+        std::memcpy(head_.id, id, 4);
+        head_.size = 0;
+
+        char buf[8];
+        std::memcpy(buf, id, 4);
+        std::memset(&buf[4], 0, 4);
+        boost::iostreams::write(*snk_ptr_, buf, sizeof(buf));
+
+        start_ = boost::iostreams::position_to_offset(
+            boost::iostreams::seek(*snk_ptr_, 0, BOOST_IOS::cur));
+        position_ = 0;
+    }
+
+    std::string chunk_id() const
+    {
+        return std::string(head_.id, 4);
+    }
+
+    std::streamsize write(const char_type* s, std::streamsize n)
+    {
+        if (snk_ptr_ == 0)
+            throw BOOST_IOSTREAMS_FAILURE("bad write");
+
+        off_t rest = static_cast<off_t>(0xFFFFFFFF) - position_;
+        if (rest < static_cast<off_t>(n))
+            throw BOOST_IOSTREAMS_FAILURE("bad write");
+
+        std::streamsize amt = boost::iostreams::write(*snk_ptr_, s, n);
+        if (amt != n)
+            throw BOOST_IOSTREAMS_FAILURE("write error");
+
+        position_ += amt;
+        if (position_ > static_cast<off_t>(head_.size))
+            head_.size = static_cast<boost::uint_least32_t>(position_);
+        return amt;
+    }
+
+    std::streampos seek(
+        boost::iostreams::stream_offset off, BOOST_IOS::seekdir way)
+    {
+        if (snk_ptr_ == 0)
+            throw BOOST_IOSTREAMS_FAILURE("bad seek");
+
+        if (way == BOOST_IOS::beg)
+        {
+            if ((off < 0) || (off > head_.size))
+                throw BOOST_IOSTREAMS_FAILURE("bad seek");
+            off = start_ + off;
+        }
+        else if (way == BOOST_IOS::cur)
+        {
+            // Optimization for "tell"
+            if (off == 0)
+                return position_;
+
+            off_t pos = position_ + off;
+            if ((pos < 0) || (pos > head_.size))
+                throw BOOST_IOSTREAMS_FAILURE("bad seek");
+        }
+        else
+        {
+            off_t pos = head_.size + off;
+            if ((pos < 0) || (pos > head_.size))
+                throw BOOST_IOSTREAMS_FAILURE("bad seek");
+            off = pos - head_.size;
+        }
+
+        std::streampos pos = boost::iostreams::seek(*snk_ptr_, off, way);
+        position_ = boost::iostreams::position_to_offset(pos) - start_;
+        return boost::iostreams::offset_to_position(position_);
+    }
+
+    void close()
+    {
+        if (snk_ptr_ == 0)
+            return;
+
+        boost::iostreams::seek(*snk_ptr_, start_-4, BOOST_IOS::beg);
+
+        char buf[4];
+        encode_uint<E,4>(&buf[0], head_.size);
+
+        boost::iostreams::write(*snk_ptr_, buf, sizeof(buf));
+        boost::iostreams::seek(*snk_ptr_, head_.size, BOOST_IOS::cur);
+
+        snk_ptr_ = 0;
+        std::memset(head_.id, 0, sizeof(head_.id));
+        head_.size = 0;
+        start_ = 0;
+        position_ = 0;
+    }
+
+private:
+    Sink* snk_ptr_;
+    iff_chunk_header head_;
+    off_t start_;
+    off_t position_;
+};
+
+
+template<typename Sink, endianness E>
+class iff_sink
+{
+    typedef iff_chunk_sink<Sink,E> chunk_type;
+    typedef boost::iostreams::stream_offset off_t;
+
+public:
+    typedef char char_type;
+
+    struct category :
+        boost::iostreams::closable_tag,
+        boost::iostreams::output_seekable,
+        boost::iostreams::device_tag {};
+
+    iff_sink(Sink& sink, const char* type) : sink_(sink)
+    {
+        std::memcpy(type_, type, sizeof(type_));
+        boost::iostreams::write(sink_, type_, sizeof(type_));
+    }
+
+    std::string type() const
+    {
+        return std::string(type_, 4);
+    }
+
+    std::string chunk_id() const
+    {
+        return chunk_.chunk_id();
+    }
+
+    void create_chunk(const char* id)
+    {
+        chunk_.close();
+        chunk_ = chunk_type(sink_, id);
+    }
+
+    std::streamsize write(const char_type* s, std::streamsize n)
+    {
+        return chunk_.write(s, n);
+    }
+
+    std::streampos seek(
+        boost::iostreams::stream_offset off, BOOST_IOS::seekdir way)
+    {
+        return chunk_.seek(off, way);
+    }
+
+    void close()
+    {
+        chunk_.close();
+    }
+
+private:
+    Sink& sink_;
+    char type_[4];
+    chunk_type chunk_;
+};
+
+template<typename Sink, endianness E>
+class iff_file_sink
+{
+    typedef iff_chunk_sink<Sink,E> chunk_type;
+    typedef iff_sink<chunk_type,E> iff_type;
+
+public:
+    typedef char char_type;
+
+    struct category :
+        boost::iostreams::closable_tag,
+        boost::iostreams::output_seekable,
+        boost::iostreams::device_tag {};
+
+    iff_file_sink(Sink& sink, const char* id, const char* type)
+        : root_(sink, id), iff_(root_, type)
+    {
+    }
+
+    std::string type() const
+    {
+        return iff_.type();
+    }
+
+    std::string chunk_id() const
+    {
+        return iff_.chunk_id();
+    }
+
+    void create_chunk(const char* id)
+    {
+        return iff_.create_chunk(id);
+    }
+
+    std::streamsize write(const char_type* s, std::streamsize n)
+    {
+        return iff_.write(s, n);
+    }
+
+    std::streampos seek(
+        boost::iostreams::stream_offset off, BOOST_IOS::seekdir way)
+    {
+        return iff_.seek(off, way);
+    }
+
+    void close()
+    {
+        bool nothrow = false;
+        boost::iostreams::detail::external_closer<chunk_type>
+            close_root(root_, BOOST_IOS::out, nothrow);
+        boost::iostreams::detail::external_closer<iff_type>
+            close_iff(iff_, BOOST_IOS::out, nothrow);
     }
 
 private:
