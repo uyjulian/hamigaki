@@ -25,15 +25,6 @@ template<typename Source>
 class wave_file_source_impl
 {
 public:
-    typedef char char_type;
-
-    struct category :
-        boost::iostreams::optimally_buffered_tag,
-        boost::iostreams::input_seekable,
-        boost::iostreams::device_tag,
-        boost::iostreams::closable_tag,
-        pcm_format_tag {};
-
     explicit wave_file_source_impl(const Source& src)
         : src_(src), iff_(src_)
     {
@@ -44,17 +35,12 @@ public:
             throw BOOST_IOSTREAMS_FAILURE("cannot find fmt chunk");
     }
 
-    std::streamsize optimal_buffer_size() const
-    {
-        return format_.optimal_buffer_size();
-    }
-
     pcm_format format() const
     {
         return format_;
     }
 
-    std::streamsize read(char_type* s, std::streamsize n)
+    std::streamsize read(char* s, std::streamsize n)
     {
         return iff_.read(s, n);
     }
@@ -123,15 +109,6 @@ template<typename Sink>
 class wave_file_sink_impl
 {
 public:
-    typedef char char_type;
-
-    struct category :
-        boost::iostreams::optimally_buffered_tag,
-        boost::iostreams::output,
-        boost::iostreams::device_tag,
-        boost::iostreams::closable_tag,
-        pcm_format_tag {};
-
     wave_file_sink_impl(const Sink& sink, const pcm_format& fmt)
         : sink_(sink), iff_(sink_, "RIFF", "WAVE"), format_(fmt)
     {
@@ -140,17 +117,12 @@ public:
         iff_.create_chunk("data");
     }
 
-    std::streamsize optimal_buffer_size() const
-    {
-        return format_.optimal_buffer_size();
-    }
-
     pcm_format format() const
     {
         return format_;
     }
 
-    std::streamsize write(const char_type* s, std::streamsize n)
+    std::streamsize write(const char* s, std::streamsize n)
     {
         return iff_.write(s, n);
     }
@@ -161,15 +133,8 @@ public:
         boost::iostreams::detail::
             external_closer<Sink> close_sink(sink_, BOOST_IOS::out, nothrow);
 
-        try
-        {
-            iff_.close();
-        }
-        catch (...)
-        {
-            nothrow = true;
-            throw;
-        }
+        boost::iostreams::detail::external_closer<iff_file_sink<Sink,little> >
+            close_iff(iff_, BOOST_IOS::out, nothrow);
     }
 
 private:
