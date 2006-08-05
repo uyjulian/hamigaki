@@ -50,10 +50,12 @@ rule vorbis_config
                 : # build requirements
                   [ common-names ]
                   <include>$(VORBIS_SOURCE)/lib
-                  <include>$(VORBIS_INCLUDE)
-                  <include>$(OGG_INCLUDE)
+                  <sysinclude>$(VORBIS_SOURCE)/lib
+                  <include>$(VORBIS_INCLUDE) <sysinclude>$(VORBIS_INCLUDE)
+                  <include>$(OGG_INCLUDE) <sysinclude>$(OGG_INCLUDE)
                   <vc-8_0><*><cflags>-wd4996
                   <vc-8_0><*><cflags>-wd4819
+                  <cw-8_3><*><cflags>-relax_pointers
                 : # build variants
                   debug release
             ;
@@ -89,7 +91,11 @@ template vorbis
     : # sources
       [ cond $(VORBIS_SOURCE) : <lib>hamigaki_vorbis : ]
     : # build requirements
-      [ unless $(NO_VORBIS) : <include>$(VORBIS_INCLUDE) ]
+      [
+        unless $(NO_VORBIS)
+        :
+        <include>$(VORBIS_INCLUDE) <sysinclude>$(VORBIS_INCLUDE)
+      ]
       [ unless $(NO_VORBIS) OR $(VORBIS_SOURCE)
         : <define>HAMIGAKI_VORBIS_BINARY=$(VORBIS_BINARY) ]
       [ cond $(VORBIS_LIBPATH) : <library-path>$(VORBIS_LIBPATH) : ]

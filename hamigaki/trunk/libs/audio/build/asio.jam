@@ -41,7 +41,11 @@ template asio
     : # sources
       [ cond $(HAVE_ASIO) : ../src/asio.cpp ../src/asio_drivers.cpp : ]
     : # build requirements
-      [ cond $(ASIO_INCLUDE) : <include>$(ASIO_INCLUDE) : ]
+      [ cond $(ASIO_INCLUDE)
+        :
+        <include>$(ASIO_INCLUDE) <sysinclude>$(ASIO_INCLUDE)
+        :
+      ]
       [ unless $(NO_ASIO)
         :
         <define>HAMIGAKI_HAS_ASIO=1

@@ -46,7 +46,7 @@ rule ogg_config
                   $(OGG_SOURCE)/src/$(SOURCES).c
                 : # build requirements
                   [ common-names ]
-                  <include>$(OGG_INCLUDE)
+                  <include>$(OGG_INCLUDE) <sysinclude>$(OGG_INCLUDE)
                   <vc-8_0><*><cflags>-wd4996
                   <vc-8_0><*><cflags>-wd4819
                 : # build variants
@@ -83,7 +83,11 @@ template ogg
     : # sources
       [ cond $(OGG_SOURCE) : <lib>hamigaki_ogg : ]
     : # build requirements
-      [ unless $(NO_OGG) : <include>$(OGG_INCLUDE) ]
+      [
+        unless $(NO_OGG)
+        :
+        <include>$(OGG_INCLUDE) <sysinclude>$(OGG_INCLUDE)
+      ]
       [ unless $(NO_OGG) OR $(OGG_SOURCE)
         : <define>BOOST_OGG_BINARY=$(OGG_BINARY) ]
       [ cond $(OGG_LIBPATH) : <library-path>$(OGG_LIBPATH) : ]

@@ -41,7 +41,12 @@ template dxsdk
     : # sources
       [ cond $(HAVE_DXSDK) : ../src/direct_sound.cpp : ]
     : # build requirements
-      [ cond $(DXSDK_INCLUDE) : <include>$(DXSDK_INCLUDE) : ]
+      [
+        cond $(DXSDK_INCLUDE)
+        :
+        <include>$(DXSDK_INCLUDE) <sysinclude>$(DXSDK_INCLUDE)
+        :
+      ]
       [ cond $(DXSDK_LIBPATH) : <library-path>$(DXSDK_LIBPATH) : ]
       [ unless $(NO_DXSDK)
         :
