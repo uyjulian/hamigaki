@@ -147,7 +147,7 @@ private:
             throw BOOST_IOSTREAMS_FAILURE("cannot find COMM chunk");
 
         char buf[18];
-        if (boost::iostreams::read(src_, buf, sizeof(buf)) != sizeof(buf))
+        if (boost::iostreams::read(iff_, buf, sizeof(buf)) != sizeof(buf))
             throw BOOST_IOSTREAMS_FAILURE("broken pcm format");
 
         boost::int_least16_t channels = decode_int<big,2>(&buf[0]);
@@ -183,6 +183,8 @@ public:
     aiff_file_sink_impl(const Sink& sink, const pcm_format& fmt)
         : sink_(sink), iff_(sink_, "FORM", "AIFF"), format_(fmt)
     {
+        write_format();
+
         iff_.create_chunk("SSND");
 
         char buf[8];
@@ -206,9 +208,6 @@ public:
         boost::iostreams::detail::
             external_closer<Sink> close_sink(sink_, BOOST_IOS::out, nothrow);
 
-        boost::iostreams::detail::external_closer<iff_file_sink<Sink,big> >
-            close_iff(iff_, BOOST_IOS::out, nothrow);
-
         try
         {
             boost::uint_least32_t size = static_cast<boost::uint_least32_t>(
@@ -216,7 +215,13 @@ public:
                     boost::iostreams::seek(iff_, 0, BOOST_IOS::cur))
             ) - 8;
 
-            write_format(size/format_.block_size());
+            iff_.close();
+
+            boost::iostreams::seek(sink_, frames_offset_, BOOST_IOS::beg);
+
+            char buf[4];
+            encode_int<big,4>(&buf[0], size/format_.block_size());
+            boost::iostreams::write(sink_, buf, sizeof(buf));
         }
         catch (...)
         {
@@ -229,18 +234,24 @@ private:
     Sink sink_;
     iff_file_sink<Sink,big> iff_;
     pcm_format format_;
+    boost::iostreams::stream_offset frames_offset_;
 
-    void write_format(boost::uint_least32_t frames)
+    void write_format()
     {
         iff_.create_chunk("COMM");
 
+        frames_offset_ =
+            boost::iostreams::position_to_offset(
+                boost::iostreams::seek(sink_, 0, BOOST_IOS::cur)
+            ) + 2;
+
         char buf[18];
         encode_int<big,2>(&buf[0], format_.channels);
-        encode_int<big,4>(&buf[2], frames);
+        encode_int<big,4>(&buf[2], 0);
         encode_int<big,2>(&buf[6], format_.bits());
         encode_extended(&buf[8], format_.rate);
 
-        boost::iostreams::write(sink_, buf, sizeof(buf));
+        boost::iostreams::write(iff_, buf, sizeof(buf));
     }
 };
 
