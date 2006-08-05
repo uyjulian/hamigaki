@@ -37,7 +37,8 @@ void asio_sink_test()
     io::copy(
         io_ex::tiny_restrict(
             audio::amplify(
-                audio::sine_wave_source(asio.rate(), 440.0),
+                audio::sine_wave_source(
+                    static_cast<unsigned>(asio.rate()), 440.0),
                 0.5f
             ),
             calc_samples_per_note(static_cast<unsigned>(asio.rate()),100)
