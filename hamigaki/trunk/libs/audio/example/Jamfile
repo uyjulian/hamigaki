@@ -163,6 +163,13 @@ exe vorbis_file_example
     :
     ;
 
+exe wav2aif
+    :
+        wav2aif.cpp
+        <template>audio
+    :
+    ;
+
 stage run
     : <exe>aiff_play
       <exe>asio_example
@@ -175,6 +182,7 @@ stage run
       <exe>raw_play
       <exe>vorbis_encoder_example
       <exe>vorbis_file_example
+      <exe>wav2aif
     :
     :
       release
