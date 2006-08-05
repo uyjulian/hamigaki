@@ -26,7 +26,12 @@ void check_array(char (&data)[N],
     typedef std::char_traits<char> traits_type;
 
     for (io::stream_offset i = 0; i < len; ++i)
-        BOOST_CHECK_EQUAL(io::get(src), traits_type::to_int_type(data[i+offset]));
+    {
+        BOOST_CHECK_EQUAL(
+            io::get(src),
+            traits_type::to_int_type(data[i+offset])
+        );
+    }
 
     BOOST_CHECK_EQUAL(io::get(src), traits_type::eof());
 }
@@ -46,7 +51,14 @@ void lazy_restrict_test()
     check_array(
         data, 10, 40,
         io_ex::lazy_restrict(
-            io::detail::wrap_direct(io::array_source(data)), 10, 40));
+            io::detail::wrap_direct(
+#if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
+                io::array_source(&data[0], &data[0] + sizeof(data))
+#else
+                io::array_source(data)
+#endif
+            ), 10, 40)
+    );
 }
 
 ut::test_suite* init_unit_test_suite(int, char* [])

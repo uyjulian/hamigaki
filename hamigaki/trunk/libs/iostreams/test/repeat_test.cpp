@@ -45,7 +45,12 @@ void repeat_test()
 #endif
     check_array(
         data, 3,
-        io_ex::repeat(io::array_source(data), 3));
+#if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
+        io_ex::repeat(io::array_source(&data[0], &data[0]+sizeof(data)), 3)
+#else
+        io_ex::repeat(io::array_source(data), 3)
+#endif
+    );
 }
 
 ut::test_suite* init_unit_test_suite(int, char* [])
