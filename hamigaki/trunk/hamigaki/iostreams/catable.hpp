@@ -28,7 +28,7 @@
                        source BOOST_IOSTREAMS_TEMPLATE_ARGS(arity, T), \
                        Component> \
                        (s, c); \
-        }; \
+        } \
         template< BOOST_PP_ENUM_PARAMS(arity, typename T) \
                   BOOST_PP_COMMA_IF(arity) typename Component > \
         ::hamigaki::iostreams::repetition< \
@@ -39,7 +39,7 @@
             return ::hamigaki::iostreams::repetition< \
                        source BOOST_IOSTREAMS_TEMPLATE_ARGS(arity, T) > \
                        (s, count); \
-        }; \
+        } \
     }}} \
     /**/
 
