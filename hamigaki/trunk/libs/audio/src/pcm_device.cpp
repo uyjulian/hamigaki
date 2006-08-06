@@ -186,7 +186,7 @@ private:
 
 class pcm_sink::impl
     : public hamigaki::iostreams::
-        arbitrary_positional_facade<pcm_sink::impl, char, 4>
+        arbitrary_positional_facade<impl, char, 4>
     , private boost::noncopyable
 {
     friend class hamigaki::iostreams::core_access;
@@ -303,7 +303,7 @@ private:
 
 class pcm_source::impl
     : public hamigaki::iostreams::
-        arbitrary_positional_facade<pcm_source::impl, char, 4>
+        arbitrary_positional_facade<impl, char, 4>
     , private boost::noncopyable
 {
     friend class hamigaki::iostreams::core_access;
