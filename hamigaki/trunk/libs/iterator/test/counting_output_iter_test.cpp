@@ -39,7 +39,7 @@ void counting_output_iter_test()
         std::copy(
             boost::make_counting_iterator(0),
             boost::make_counting_iterator(10),
-            (hamigaki::counting_output_iterator<int>())
+            hamigaki::counting_output_iterator<int>()
         ).base(),
         10
     );
