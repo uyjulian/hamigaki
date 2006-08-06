@@ -76,7 +76,14 @@ class vorbis_file_sink_impl : vorbis_encoder_base
 public:
     typedef float char_type;
 
+#if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
+    std::streamsize write(const char_type* s, std::streamsize n)
+    {
+        return vorbis_encoder_base::write(s, n);
+    }
+#else
     using vorbis_encoder_base::write;
+#endif
 
     vorbis_file_sink_impl(
             const Sink& sink, long channels, long rate, float quality)

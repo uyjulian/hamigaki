@@ -15,12 +15,12 @@
 #include <hamigaki/detail/windows/com_release.hpp>
 #include <hamigaki/detail/cdecl_thunk.hpp>
 
+using namespace hamigaki::detail::windows;
+
 namespace hamigaki { namespace audio {
 
 namespace
 {
-
-using namespace hamigaki::detail::windows;
 
 const std::size_t buffer_count = 4;
 
@@ -718,7 +718,7 @@ bool asio_device::impl::release()
     return --stop_count_ == 0;
 }
 
-void asio_device::impl::buffer_switch(long index, ::ASIOBool direct)
+void asio_device::impl::buffer_switch(long index, ::ASIOBool)
 {
     for (std::size_t i = 0; i < sources_.size(); ++i)
     {
@@ -737,12 +737,12 @@ void asio_device::impl::buffer_switch(long index, ::ASIOBool direct)
     asio_output_ready(pimpl_.get());
 }
 
-void asio_device::impl::sample_rate_changed(::ASIOSampleRate rate)
+void asio_device::impl::sample_rate_changed(::ASIOSampleRate)
 {
 }
 
 long asio_device::impl::asio_message(
-    long selector, long value, void* message, double* opt)
+    long selector, long value, void*, double*)
 {
     if (selector == kAsioSelectorSupported)
         return value == kAsioEngineVersion;
@@ -752,7 +752,7 @@ long asio_device::impl::asio_message(
 }
 
 ::ASIOTime* asio_device::impl::buffer_switch_time_info(
-    ::ASIOTime* params, long index, ::ASIOBool direct)
+    ::ASIOTime*, long, ::ASIOBool)
 {
     return 0;
 }
@@ -887,7 +887,9 @@ asio_device::impl::get_sample_type(bool input, long index)
         return float_le64;
 
     throw std::runtime_error("unsupported ASIO format");
+#if !defined(__BORLANDC__)
     return static_cast<sample_format_type>(0); // dummy
+#endif
 }
 
 std::streamsize asio_device::impl::preferred_buffer_size() const

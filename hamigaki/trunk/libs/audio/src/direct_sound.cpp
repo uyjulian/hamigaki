@@ -19,6 +19,8 @@
 #include <dsound.h>
 #include <windows.h>
 
+using namespace hamigaki::detail::windows;
+
 namespace hamigaki { namespace audio {
 
 namespace direct_sound
@@ -45,8 +47,6 @@ void direct_sound_error::check(long error)
 namespace
 {
 
-using namespace hamigaki::detail::windows;
-
 const std::size_t buffer_count = 4;
 
 struct wave_format_ex : public ::WAVEFORMATEX
@@ -72,9 +72,15 @@ public:
     template<class Interface>
     explicit direct_sound_notify(Interface* buf_ptr)
     {
+        // IID_IDirectSoundNotify
+        const ::GUID iid =
+        {
+            0xB0210783, 0x89CD, 0x11D0,
+            { 0xAF, 0x08, 0x00, 0xA0, 0xC9, 0x25, 0xCD, 0x16 }
+        };
+
         void* tmp;
-        direct_sound_error::check(
-            buf_ptr->QueryInterface(::IID_IDirectSoundNotify, &tmp));
+        direct_sound_error::check(buf_ptr->QueryInterface(iid, &tmp));
         ptr_ = static_cast< ::IDirectSoundNotify*>(tmp);
     }
 
@@ -375,7 +381,9 @@ unsigned get_guid_digit_aux(const std::string& s, std::string::size_type& i)
             return 15;
     }
     throw std::invalid_argument("invalid GUID");
+#if !defined(__BORLANDC__)
     return 0; // dummy
+#endif
 }
 
 unsigned get_guid_digit(const std::string& s, std::string::size_type& i)
@@ -442,7 +450,9 @@ HRESULT direct_sound_capture_create(
     }
     else
         throw std::runtime_error("DirectSoundCaptureCreate() unsupported");
+#if !defined(__BORLANDC__)
     return DSERR_UNSUPPORTED; // dummy
+#endif
 #endif
 }
 

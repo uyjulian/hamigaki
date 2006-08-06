@@ -161,7 +161,9 @@ private:
 template<class ExceptionStorage=hamigaki::thread::exception_storage>
 class basic_background_copy
     : boost::noncopyable
+#if !BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
     , ExceptionStorage // for Empty Base Optimization
+#endif
 {
 public:
     template<typename Source, typename Sink>
@@ -173,7 +175,7 @@ public:
             Source,Sink,ExceptionStorage> impl_type;
 
         pimpl_.reset(new impl_type(
-            src, sink, buffer_size, static_cast<ExceptionStorage&>(*this)));
+            src, sink, buffer_size, except()));
 
         thread_ptr_.reset(
             new boost::thread(
@@ -200,7 +202,7 @@ public:
         {
             thread_ptr_->join();
             thread_ptr_.reset();
-            ExceptionStorage::rethrow();
+            except().rethrow();
         }
         return result;
     }
@@ -209,7 +211,7 @@ public:
     {
         thread_ptr_->join();
         thread_ptr_.reset();
-        ExceptionStorage::rethrow();
+        except().rethrow();
     }
 
     void stop()
@@ -220,7 +222,7 @@ public:
             thread_ptr_->join();
             thread_ptr_.reset();
         }
-        ExceptionStorage::rethrow();
+        except().rethrow();
     }
 
     std::streamsize total()
@@ -230,12 +232,28 @@ public:
 
     const ExceptionStorage& exception() const
     {
+#if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
+        return except_;
+#else
         return static_cast<const ExceptionStorage&>(*this);
+#endif
     }
 
 private:
     std::auto_ptr<detail::bg_copy_base> pimpl_;
     std::auto_ptr<boost::thread> thread_ptr_;
+#if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
+    ExceptionStorage except_;
+#endif
+
+    ExceptionStorage& except()
+    {
+#if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
+        return except_;
+#else
+        return static_cast<ExceptionStorage&>(*this);
+#endif
+    }
 };
 
 typedef basic_background_copy<> background_copy;

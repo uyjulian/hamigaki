@@ -95,7 +95,7 @@ void vorbis_file_base::close()
     }
 }
 
-long vorbis_file_base::read(
+long vorbis_file_base::read_samples(
     float**& buffer, int samples)
 {
     long res = ::ov_read_float(

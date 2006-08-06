@@ -18,7 +18,6 @@
 
 #if defined(BOOST_WINDOWS) && !defined(__GNUC__)
 #pragma comment(lib, "dsound.lib")
-#pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "user32.lib")
 #endif
 

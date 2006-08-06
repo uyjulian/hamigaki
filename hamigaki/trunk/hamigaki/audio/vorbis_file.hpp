@@ -95,7 +95,7 @@ public:
         vorbis::close_func close, vorbis::tell_func tell);
 
     void close();
-    long read(float**& buffer, int samples);
+    long read_samples(float**& buffer, int samples);
     void seek(boost::int64_t pos);
     boost::int64_t tell();
     boost::int64_t total();
@@ -216,7 +216,13 @@ class vorbis_file_source_impl
 private:
     typedef vorbis_file_source_impl<Source> self_type;
     typedef vorbis_file_base base_type;
+#if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
+    typedef hamigaki::iostreams::
+        arbitrary_positional_facade<vorbis_file_source_impl<Source>,float,255>
+    facade_type;
+#else
     typedef typename self_type::arbitrary_positional_facade_ facade_type;
+#endif
 
     typedef typename
         boost::iostreams::select<
@@ -294,7 +300,7 @@ private:
         while (n != 0)
         {
             float** buffer;
-            long res = base_type::read(buffer, n);
+            long res = base_type::read_samples(buffer, n);
             if (res == 0)
                 break;
 
