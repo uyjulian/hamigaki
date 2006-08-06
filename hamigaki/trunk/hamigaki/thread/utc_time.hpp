@@ -15,8 +15,8 @@
 
 namespace hamigaki { namespace thread {
 
-BOOST_STRONG_TYPEDEF(boost::xtime::xtime_sec_t, seconds);
-BOOST_STRONG_TYPEDEF(boost::xtime::xtime_nsec_t, nanoseconds);
+BOOST_STRONG_TYPEDEF(boost::xtime::xtime_sec_t, seconds)
+BOOST_STRONG_TYPEDEF(boost::xtime::xtime_nsec_t, nanoseconds)
 
 inline nanoseconds microseconds(int usec)
 {
