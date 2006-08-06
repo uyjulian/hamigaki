@@ -34,7 +34,7 @@ class counting_output_iterator :
     public std::iterator<std::output_iterator_tag,void,void,void,void>
 {
 public:
-    counting_output_iterator() : base_((Incrementable()))
+    counting_output_iterator() : base_()
     {
     }
 
