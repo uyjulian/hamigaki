@@ -38,7 +38,7 @@ void asio_source_test()
             asio.get_source(0),
             calc_samples_per_note(static_cast<unsigned>(asio.rate()),100)
         ),
-        (io::null_sink())
+        io::null_sink()
     );
 }
 

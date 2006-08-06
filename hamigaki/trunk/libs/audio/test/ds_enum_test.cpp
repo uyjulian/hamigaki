@@ -43,15 +43,15 @@ struct always_false
 
 void direct_sound_enumerate_test()
 {
-    audio::direct_sound_enumerate((create_device()));
+    audio::direct_sound_enumerate(create_device());
 
     {
         std::vector<ds::device_info> vec;
         audio::direct_sound_enumerate_copy(std::back_inserter(vec));
     }
 
-    BOOST_CHECK(audio::direct_sound_find_if((always_true())));
-    BOOST_CHECK(!audio::direct_sound_find_if((always_false())));
+    BOOST_CHECK(audio::direct_sound_find_if(always_true()));
+    BOOST_CHECK(!audio::direct_sound_find_if(always_false()));
 }
 
 ut::test_suite* init_unit_test_suite(int, char* [])
