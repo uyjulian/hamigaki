@@ -11,7 +11,7 @@
 
   See http://hamigaki.sourceforge.jp/libs/type_traits for library home page.
 -->
-<header name="hamigaki/type_traits/first_iterator.hpp">
+<header name="hamigaki/type_traits/member_access_traits.hpp">
   <namespace name="hamigaki">
     <struct name="member_access_traits">
       <template>
