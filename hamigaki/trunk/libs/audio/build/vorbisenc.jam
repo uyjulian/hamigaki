@@ -53,6 +53,7 @@ rule vorbisenc_config
                   <vc-8_0><*><cflags>-wd4996
                   <vc-8_0><*><cflags>-wd4819
                   <cw-8_3><*><cflags>-relax_pointers
+                  <borland-5_8_2><*><cflags>-w-8071
                 : # build variants
                   debug release
             ;
