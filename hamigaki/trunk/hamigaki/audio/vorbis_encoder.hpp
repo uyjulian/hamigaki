@@ -71,25 +71,16 @@ private:
 };
 
 template<typename Sink>
-class vorbis_file_sink_impl : vorbis_encoder_base
+class vorbis_file_sink_impl
 {
 public:
     typedef float char_type;
-
-#if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
-    std::streamsize write(const char_type* s, std::streamsize n)
-    {
-        return vorbis_encoder_base::write(s, n);
-    }
-#else
-    using vorbis_encoder_base::write;
-#endif
 
     vorbis_file_sink_impl(
             const Sink& sink, long channels, long rate, float quality)
         : sink_(sink)
     {
-        vorbis_encoder_base::open(&sink_, channels, rate, quality,
+        base_.open(&sink_, channels, rate, quality,
             &vorbis_file_sink_impl::write_func,
             &vorbis_file_sink_impl::close_func);
     }
@@ -99,7 +90,7 @@ public:
             const vorbis_encode_params& params)
         : sink_(sink)
     {
-        vorbis_encoder_base::open(&sink_, channels, rate, params,
+        base_.open(&sink_, channels, rate, params,
             &vorbis_file_sink_impl::write_func,
             &vorbis_file_sink_impl::close_func);
     }
@@ -112,7 +103,7 @@ public:
 
         try
         {
-            vorbis_encoder_base::close();
+            base_.close();
         }
         catch (...)
         {
@@ -121,7 +112,13 @@ public:
         }
     }
 
+    std::streamsize write(const char_type* s, std::streamsize n)
+    {
+        return base_.write(s, n);
+    }
+
 private:
+    vorbis_encoder_base base_;
     Sink sink_;
 
     static std::streamsize write_func(

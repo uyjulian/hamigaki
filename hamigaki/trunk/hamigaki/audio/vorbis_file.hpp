@@ -209,14 +209,13 @@ template<typename Source>
 class vorbis_file_source_impl
     : public hamigaki::iostreams::
         arbitrary_positional_facade<vorbis_file_source_impl<Source>,float,255>
-    , private vorbis_file_base
 {
     friend class hamigaki::iostreams::core_access;
 
 private:
     typedef vorbis_file_source_impl<Source> self_type;
-    typedef vorbis_file_base base_type;
-#if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
+#if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582)) || \
+    BOOST_WORKAROUND(__MWERKS__, BOOST_TESTED_AT(0x3003))
     typedef hamigaki::iostreams::
         arbitrary_positional_facade<vorbis_file_source_impl<Source>,float,255>
     facade_type;
@@ -252,14 +251,14 @@ public:
     explicit vorbis_file_source_impl(const Source& src)
         : src_(src)
     {
-        base_type::open(
+        base_.open(
             &src_,
             source_traits::read_func,
             source_traits::seek_func,
             source_traits::close_func,
             source_traits::tell_func);
 
-        block_size(base_type::info().channels);
+        facade_type::block_size(base_.info().channels);
     }
 
     void close()
@@ -270,7 +269,7 @@ public:
 
         try
         {
-            base_type::close();
+            base_.close();
         }
         catch (...)
         {
@@ -281,26 +280,39 @@ public:
 
     boost::iostreams::stream_offset total()
     {
-        return base_type::total() * base_type::info().channels;
+        return base_.total() * base_.info().channels;
     }
 
-    using base_type::comments;
-    using base_type::vendor;
-    using base_type::info;
+    std::pair<const char**,const char**> comments() const
+    {
+        return base_.comments();
+    }
+
+    const char* vendor() const
+    {
+        return base_.vendor();
+    }
+
+    vorbis_info info() const
+    {
+        return base_.info();
+    }
+
     using facade_type::read;
     using facade_type::seek;
 
 private:
+    vorbis_file_base base_;
     value_type src_;
 
     std::streamsize read_blocks(float* s, std::streamsize n)
     {
-        std::streamsize channels = base_type::info().channels;
+        std::streamsize channels = base_.info().channels;
         std::streamsize total = 0;
         while (n != 0)
         {
             float** buffer;
-            long res = base_type::read_samples(buffer, n);
+            long res = base_.read_samples(buffer, n);
             if (res == 0)
                 break;
 
@@ -322,19 +334,19 @@ private:
     {
         if (way == BOOST_IOS::beg)
         {
-            base_type::seek(off);
+            base_.seek(off);
             return off;
         }
         else if (way == BOOST_IOS::cur)
         {
-            boost::int64_t cur = base_type::tell();
-            base_type::seek(cur + off);
+            boost::int64_t cur = base_.tell();
+            base_.seek(cur + off);
             return cur + off;
         }
         else
         {
-            boost::int64_t end = base_type::total();
-            base_type::seek(end + off);
+            boost::int64_t end = base_.total();
+            base_.seek(end + off);
             return end + off;
         }
     }
