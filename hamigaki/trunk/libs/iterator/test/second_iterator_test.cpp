@@ -26,11 +26,17 @@ class test_iterator
 {
     friend class boost::iterator_core_access;
 
+    typedef boost::iterator_adaptor<
+        test_iterator<Pointer,Category>,
+        Pointer,
+        boost::use_default,
+        Category
+    > base_type;
+
 public:
     test_iterator() {}
 
-    explicit test_iterator(Pointer x)
-        : test_iterator::iterator_adaptor_(x)
+    explicit test_iterator(Pointer x) : base_type(x)
     {
     }
 };
@@ -112,11 +118,18 @@ class non_ref_iterator
         typename std::iterator_traits<Pointer>::value_type
     >
 {
+    typedef boost::iterator_adaptor<
+        non_ref_iterator<Pointer,Category>,
+        Pointer,
+        boost::use_default,
+        Category,
+        typename std::iterator_traits<Pointer>::value_type
+    > base_type;
+
 public:
     non_ref_iterator() {}
 
-    explicit non_ref_iterator(Pointer x)
-        : non_ref_iterator::iterator_adaptor_(x)
+    explicit non_ref_iterator(Pointer x) : base_type(x)
     {
     }
 };

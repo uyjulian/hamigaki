@@ -7,8 +7,8 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/iterator for library home page.
 
-#ifndef HAMIGAKI_ITERATOR_FIRST_ITERATOR_HPP
-#define HAMIGAKI_ITERATOR_FIRST_ITERATOR_HPP
+#ifndef HAMIGAKI_ITERATOR_SECOND_ITERATOR_HPP
+#define HAMIGAKI_ITERATOR_SECOND_ITERATOR_HPP
 
 #include <hamigaki/type_traits/member_access_traits.hpp>
 #include <boost/iterator/transform_iterator.hpp>
@@ -22,6 +22,7 @@ namespace hamigaki
 namespace detail
 {
 
+#if 0
 template<typename Iterator>
 struct select_second
     : std::unary_function<
@@ -44,6 +45,30 @@ struct select_second
         return x.second;
     }
 };
+#else
+template<typename Iterator>
+struct select_second
+{
+    typedef typename std::iterator_traits<Iterator>::value_type argument_type;
+
+    typedef typename boost::mpl::if_<
+        typename boost::is_reference<
+            typename std::iterator_traits<Iterator>::reference
+        >::type,
+        typename member_access_traits<
+            typename std::iterator_traits<Iterator>::reference,
+            typename std::iterator_traits<Iterator>::value_type::second_type
+        >::reference,
+        typename std::iterator_traits<Iterator>::value_type::second_type
+    >::type result_type;
+
+    result_type
+    operator()(typename std::iterator_traits<Iterator>::reference x) const
+    {
+        return x.second;
+    }
+};
+#endif
 
 } // namespace detail
 
@@ -71,4 +96,4 @@ inline second_iterator<Iterator> make_second_iterator(const Iterator& x)
 
 } // namespace hamigaki
 
-#endif // HAMIGAKI_ITERATOR_FIRST_ITERATOR_HPP
+#endif // HAMIGAKI_ITERATOR_SECOND_ITERATOR_HPP
