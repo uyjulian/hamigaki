@@ -10,6 +10,12 @@
 #ifndef HAMIGAKI_TYPE_TRAITS_MEMBER_ACCESS_TRAITS_HPP
 #define HAMIGAKI_TYPE_TRAITS_MEMBER_ACCESS_TRAITS_HPP
 
+#include <boost/detail/workaround.hpp>
+
+#if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
+    #include <hamigaki/type_traits/detail/borland/member_access_traits.hpp>
+#else
+
 #include <boost/mpl/eval_if.hpp>
 #include <boost/mpl/identity.hpp>
 #include <boost/type_traits/add_const.hpp>
@@ -48,5 +54,7 @@ struct member_access_traits
 };
 
 } // End namespaces hamigaki.
+
+#endif
 
 #endif // HAMIGAKI_TYPE_TRAITS_MEMBER_ACCESS_TRAITS_HPP
