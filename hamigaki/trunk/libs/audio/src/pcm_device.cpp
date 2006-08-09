@@ -186,7 +186,12 @@ private:
 
 class pcm_sink::impl
     : public hamigaki::iostreams::
-        arbitrary_positional_facade<impl, char, 4>
+        arbitrary_positional_facade<
+#if !BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
+            pcm_sink::
+#endif
+            impl, char, 4
+        >
     , private boost::noncopyable
 {
     friend class hamigaki::iostreams::core_access;
@@ -303,7 +308,12 @@ private:
 
 class pcm_source::impl
     : public hamigaki::iostreams::
-        arbitrary_positional_facade<impl, char, 4>
+        arbitrary_positional_facade<
+#if !BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
+            pcm_source::
+#endif
+            impl, char, 4
+        >
     , private boost::noncopyable
 {
     friend class hamigaki::iostreams::core_access;
