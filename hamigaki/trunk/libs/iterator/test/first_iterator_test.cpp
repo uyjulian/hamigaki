@@ -51,10 +51,12 @@ void first_iterator_test_mutable()
 
     typedef hamigaki::first_iterator<test_iter> iter_type;
 
+#if !BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
     BOOST_MPL_ASSERT((boost::is_convertible<
         typename std::iterator_traits<iter_type>::iterator_category,
         Category
     >));
+#endif
 
     std::pair<int,int> data[10];
     for (int i = 0; i < 10; ++i)
@@ -88,10 +90,12 @@ void first_iterator_test_const()
 
     typedef hamigaki::first_iterator<test_iter> iter_type;
 
+#if !BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
     BOOST_MPL_ASSERT((boost::is_convertible<
         typename std::iterator_traits<iter_type>::iterator_category,
         Category
     >));
+#endif
 
     std::pair<int,int> data[10];
     for (int i = 0; i < 10; ++i)
@@ -144,10 +148,12 @@ void first_iterator_test_non_ref()
 
     typedef hamigaki::first_iterator<test_iter> iter_type;
 
+#if !BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
     BOOST_MPL_ASSERT((boost::is_convertible<
         typename std::iterator_traits<iter_type>::iterator_category,
         Category
     >));
+#endif
 
     std::pair<int,int> data[10];
     for (int i = 0; i < 10; ++i)
