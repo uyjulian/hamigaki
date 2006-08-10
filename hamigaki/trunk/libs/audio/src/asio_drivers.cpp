@@ -1,4 +1,4 @@
-//  asio.cpp: ASIO devices
+//  asio_drivers.cpp: ASIO devices
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the

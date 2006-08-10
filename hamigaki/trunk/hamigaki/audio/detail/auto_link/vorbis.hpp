@@ -1,4 +1,4 @@
-//  ogg.hpp: auto-linking for libvorbis
+//  vorbis.hpp: auto-linking for libvorbis
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the

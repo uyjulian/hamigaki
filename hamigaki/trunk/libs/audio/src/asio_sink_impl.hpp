@@ -1,4 +1,4 @@
-//  asio_sink_impl.cpp: declaration of asio_sink::impl
+//  asio_sink_impl.hpp: declaration of asio_sink::impl
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the

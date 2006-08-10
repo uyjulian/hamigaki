@@ -1,4 +1,4 @@
-//  asio_device_impl.cpp: declaration of asio_device::impl
+//  asio_device_impl.hpp: declaration of asio_device::impl
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the

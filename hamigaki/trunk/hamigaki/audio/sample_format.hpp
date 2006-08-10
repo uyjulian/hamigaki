@@ -1,4 +1,4 @@
-//  sample_format_type.hpp: sample format type
+//  sample_format.hpp: sample format type
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the

@@ -1,4 +1,4 @@
-//  asio_source_impl.cpp: declaration of asio_source::impl
+//  asio_source_impl.hpp: declaration of asio_source::impl
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the

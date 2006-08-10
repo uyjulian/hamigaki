@@ -1,4 +1,4 @@
-//  direct_sound_capture_test.cpp: test case for direct_sound_capture
+//  ds_capture_test.cpp: test case for direct_sound_capture
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
