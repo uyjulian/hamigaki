@@ -115,7 +115,8 @@ boost::int64_t vorbis_file_base::tell()
 {
     boost::int64_t pos =
         ::ov_pcm_tell(static_cast<OggVorbis_File*>(file_ptr_));
-    vorbis_error::check(pos);
+    if (pos < 0)
+        throw vorbis_error(static_cast<int>(pos));
     return pos;
 }
 
@@ -123,7 +124,8 @@ boost::int64_t vorbis_file_base::total()
 {
     boost::int64_t pos =
         ::ov_pcm_total(static_cast<OggVorbis_File*>(file_ptr_), -1);
-    vorbis_error::check(pos);
+    if (pos < 0)
+        throw vorbis_error(static_cast<int>(pos));
     return pos;
 }
 

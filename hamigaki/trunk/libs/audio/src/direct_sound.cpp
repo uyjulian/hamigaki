@@ -10,6 +10,7 @@
 #if defined(HAMIGAKI_HAS_DXSDK)
 #define HAMIGAKI_AUDIO_SOURCE
 #include <hamigaki/audio/direct_sound.hpp>
+#include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <cctype>
 #include <stdexcept>
@@ -55,13 +56,20 @@ struct wave_format_ex : public ::WAVEFORMATEX
 
     explicit wave_format_ex(const pcm_format& f)
     {
+        BOOST_ASSERT(f.channels > 0);
+        BOOST_ASSERT(f.channels <= 0xFFFF);
+        BOOST_ASSERT(f.block_size() > 0);
+        BOOST_ASSERT(f.block_size() <= 0xFFFF);
+        BOOST_ASSERT(f.bits() > 0);
+        BOOST_ASSERT(f.bits() <= 0xFFFF);
+
         std::memset(static_cast<type*>(this), 0, sizeof(type));
         wFormatTag = WAVE_FORMAT_PCM;
-        nChannels = f.channels;
+        nChannels = static_cast<unsigned short>(f.channels);
         nSamplesPerSec = f.rate;
-        nBlockAlign = f.block_size();
+        nBlockAlign = static_cast<unsigned short>(f.block_size());
         nAvgBytesPerSec = f.rate * f.block_size();
-        wBitsPerSample = f.bits();
+        wBitsPerSample = static_cast<unsigned short>(f.bits());
         cbSize = 0;
     }
 };
@@ -610,14 +618,17 @@ public:
 
         n1 = get_guid_digit(guid_str, pos);
         n2 = get_guid_digit(guid_str, pos);
-        guid.Data2 = (n1 << 8) | n2;
+        guid.Data2 = static_cast<unsigned short>((n1 << 8) | n2);
 
         n1 = get_guid_digit(guid_str, pos);
         n2 = get_guid_digit(guid_str, pos);
-        guid.Data3 = (n1 << 8) | n2;
+        guid.Data3 = static_cast<unsigned short>((n1 << 8) | n2);
 
         for (std::size_t i = 0; i < 8; ++i)
-            guid.Data4[i] = get_guid_digit(guid_str, pos);
+        {
+            guid.Data4[i] =
+                static_cast<unsigned char>(get_guid_digit(guid_str, pos));
+        }
 
         direct_sound_error::check(::DirectSoundCreate(&guid, &ptr_, 0));
     }
@@ -846,14 +857,17 @@ public:
 
         n1 = get_guid_digit(guid_str, pos);
         n2 = get_guid_digit(guid_str, pos);
-        guid.Data2 = (n1 << 8) | n2;
+        guid.Data2 = static_cast<unsigned short>((n1 << 8) | n2);
 
         n1 = get_guid_digit(guid_str, pos);
         n2 = get_guid_digit(guid_str, pos);
-        guid.Data3 = (n1 << 8) | n2;
+        guid.Data3 = static_cast<unsigned short>((n1 << 8) | n2);
 
         for (std::size_t i = 0; i < 8; ++i)
-            guid.Data4[i] = get_guid_digit(guid_str, pos);
+        {
+            guid.Data4[i] =
+                static_cast<unsigned char>(get_guid_digit(guid_str, pos));
+        }
 
         direct_sound_error::check(
             direct_sound_capture_create(&guid, &ptr_, 0));

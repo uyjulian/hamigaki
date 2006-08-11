@@ -128,8 +128,8 @@ public:
     std::streampos seek(
         boost::iostreams::stream_offset off, BOOST_IOS::seekdir way)
     {
-        ::DWORD low = off & 0xFFFFFFFF;
-        ::LONG high = off >> 32;
+        ::DWORD low = static_cast< ::DWORD>(off & 0xFFFFFFFF);
+        ::LONG high = static_cast< ::DWORD>(off >> 32);
         low = ::SetFilePointer(handle_, low, &high,
             way == BOOST_IOS::beg ? FILE_BEGIN :
             way == BOOST_IOS::cur ? FILE_CURRENT : FILE_END);

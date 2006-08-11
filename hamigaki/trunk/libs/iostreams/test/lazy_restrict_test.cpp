@@ -29,7 +29,9 @@ void check_array(char (&data)[N],
     {
         BOOST_CHECK_EQUAL(
             io::get(src),
-            traits_type::to_int_type(data[i+offset])
+            traits_type::to_int_type(
+                data[static_cast<std::ptrdiff_t>(i+offset)]
+            )
         );
     }
 

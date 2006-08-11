@@ -28,7 +28,7 @@ namespace ut = boost::unit_test;
 
 using namespace hamigaki::audio::test;
 
-void vorbis_file_test_aux(const audio::pcm_format& fmt, double freq)
+void vorbis_file_test_aux(const audio::pcm_format& fmt, float freq)
 {
     std::ostringstream os;
     os

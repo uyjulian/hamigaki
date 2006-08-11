@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
+#include <limits>
 #include <string>
 
 namespace hamigaki { namespace iostreams {
@@ -66,7 +67,14 @@ public:
     std::streampos seek(
         boost::iostreams::stream_offset off, BOOST_IOS::seekdir way)
     {
-        if (std::fseek(pimpl_->fp_, off,
+        typedef boost::iostreams::stream_offset off_t;
+        if ((off > static_cast<off_t>((std::numeric_limits<long>::max)())) ||
+            (off < static_cast<off_t>((std::numeric_limits<long>::min)())))
+        {
+            throw BOOST_IOSTREAMS_FAILURE("bad seek offset");
+        }
+
+        if (std::fseek(pimpl_->fp_, static_cast<long>(off),
             way == BOOST_IOS::beg ? SEEK_SET :
             way == BOOST_IOS::cur ? SEEK_CUR : SEEK_END) != 0)
         {
@@ -160,7 +168,14 @@ public:
     std::streampos seek(
         boost::iostreams::stream_offset off, BOOST_IOS::seekdir way)
     {
-        if (std::fseek(pimpl_->fp_, off,
+        typedef boost::iostreams::stream_offset off_t;
+        if ((off > static_cast<off_t>((std::numeric_limits<long>::max)())) ||
+            (off < static_cast<off_t>((std::numeric_limits<long>::min)())))
+        {
+            throw BOOST_IOSTREAMS_FAILURE("bad seek offset");
+        }
+
+        if (std::fseek(pimpl_->fp_, static_cast<long>(off),
             way == BOOST_IOS::beg ? SEEK_SET :
             way == BOOST_IOS::cur ? SEEK_CUR : SEEK_END) != 0)
         {

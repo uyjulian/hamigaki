@@ -27,7 +27,7 @@ namespace ut = boost::unit_test;
 
 using namespace hamigaki::audio::test;
 
-void aiff_file_test_aux(const audio::pcm_format& fmt, double freq)
+void aiff_file_test_aux(const audio::pcm_format& fmt, float freq)
 {
     std::ostringstream os;
     os

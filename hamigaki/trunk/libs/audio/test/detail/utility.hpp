@@ -17,20 +17,20 @@ namespace hamigaki { namespace audio { namespace test {
 namespace detail
 {
 
-inline double power(double x, double y)
+inline float power(float x, float y)
 {
-    if (y >= 0.0)
+    if (y >= 0.0f)
         return std::pow(x, y);
     else
-        return std::pow(1.0/x, -y);
+        return std::pow(1.0f/x, -y);
 }
 
 } // namespace detail
 
 // calculate the frequency from specified MIDI note number
-inline double calc_frequency(unsigned short note)
+inline float calc_frequency(unsigned short note)
 {
-    return 440.0 * detail::power(2.0, (note-69) / 12.0);
+    return 440.0f * detail::power(2.0f, (note-69) / 12.0f);
 }
 
 inline unsigned calc_samples_per_note(unsigned rate, unsigned tempo)
@@ -42,9 +42,9 @@ inline unsigned short next_note(unsigned short note)
 {
     unsigned offset = note % 12;
     if ((offset == 4) || (offset == 11))
-        return note + 1;
+        return static_cast<unsigned short>(note + 1);
     else
-        return note + 2;
+        return static_cast<unsigned short>(note + 2);
 }
 
 } } } // End namespaces test, audio, hamigaki.
