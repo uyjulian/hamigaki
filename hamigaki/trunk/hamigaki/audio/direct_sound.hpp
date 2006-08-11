@@ -7,6 +7,9 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
 
+#ifndef HAMIGAKI_AUDIO_DIRECT_SOUND_HPP
+#define HAMIGAKI_AUDIO_DIRECT_SOUND_HPP
+
 #include <hamigaki/audio/detail/config.hpp>
 #include <hamigaki/audio/detail/auto_link/hamigaki_audio.hpp>
 #include <hamigaki/audio/pcm_format.hpp>
@@ -15,6 +18,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/optional.hpp>
 #include <string>
+
+#include <boost/config/abi_prefix.hpp>
 
 #if defined(BOOST_WINDOWS) && !defined(__GNUC__)
 #pragma comment(lib, "dsound.lib")
@@ -245,3 +250,7 @@ private:
 };
 
 } } // End namespaces audio, hamigaki.
+
+#include <boost/config/abi_suffix.hpp>
+
+#endif // HAMIGAKI_AUDIO_DIRECT_SOUND_HPP
