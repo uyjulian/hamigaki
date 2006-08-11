@@ -113,7 +113,13 @@ inline T decode_ieee754_impl(typename float_traits<Format>::uint_type n)
     int exp = static_cast<int>(n >> (dig-1)) & exp_mask;
 
     typedef typename traits::mant_type mant_t;
+#if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
+    uint_type mant_mask = 1;
+    mant_mask <<= (dig-1);
+    --mant_mask;
+#else
     const uint_type mant_mask = (static_cast<uint_type>(1) << (dig-1)) - 1;
+#endif
     mant_t mant = static_cast<mant_t>(n & mant_mask);
 
     if ((exp == 0) && (mant == 0))
@@ -126,7 +132,12 @@ inline T decode_ieee754_impl(typename float_traits<Format>::uint_type n)
             return std::numeric_limits<T>::quiet_NaN();
     }
 
+#if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
+    mant_t mant1 = 1;
+    mant |= mant1 << (dig-1);
+#else
     mant |= static_cast<mant_t>(1) << (dig-1);
+#endif
 
     return std::ldexp(static_cast<T>(mant), exp-(traits::exponent_bias+dig-1));
 }
@@ -137,7 +148,12 @@ inline T decode_ieee754(typename float_traits<Format>::uint_type n)
     typedef float_traits<Format> traits;
     typedef typename traits::uint_type uint_type;
     const int bits = traits::bits;
+#if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
+    uint_type sign_mask = 1;
+    sign_mask <<= (bits-1);
+#else
     const uint_type sign_mask = static_cast<uint_type>(1) << (bits-1);
+#endif
 
     T tmp = decode_ieee754_impl<T,Format>(n);
     bool sign = (n & sign_mask) != 0;
@@ -160,9 +176,15 @@ inline typename float_traits<Format>::uint_type encode_ieee754_impl(T x)
         return exp_mask << (dig-1);
     else if (is_nan(x))
     {
+#if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
+        uint_type tmp = 1;
+        tmp <<= (dig-2);
+        return (exp_mask << (dig-1)) | tmp;
+#else
         return
             (exp_mask << (dig-1)) |
             (static_cast<uint_type>(1) << (dig-2));
+#endif
     }
 
     int exp;
@@ -173,10 +195,21 @@ inline typename float_traits<Format>::uint_type encode_ieee754_impl(T x)
     if (mant < mant_t())
         mant = -mant;
 
+#if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
+    uint_type mant_mask = 1;
+    mant_mask <<= (dig-1);
+    --mant_mask;
+
+    const uint_type long_exp = exp;
+    const uint_type long_mant = mant;
+
+    return (long_exp << (dig-1)) | (long_mant & mant_mask) ;
+#else
     const uint_type mant_mask = (static_cast<uint_type>(1) << (dig-1)) - 1;
     return
         (static_cast<uint_type>(exp) << (dig-1)) |
         (static_cast<uint_type>(mant) & mant_mask) ;
+#endif
 }
 
 template<typename T, float_format Format>
@@ -185,7 +218,12 @@ inline typename float_traits<Format>::uint_type encode_ieee754(T x)
     typedef float_traits<Format> traits;
     typedef typename traits::uint_type uint_type;
     const int bits = traits::bits;
+#if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
+    uint_type sign_mask = 1;
+    sign_mask <<= (bits-1);
+#else
     const uint_type sign_mask = static_cast<uint_type>(1) << (bits-1);
+#endif
 
     uint_type tmp = encode_ieee754_impl<T,Format>(std::abs(x));
     if (sign_bit(x))
