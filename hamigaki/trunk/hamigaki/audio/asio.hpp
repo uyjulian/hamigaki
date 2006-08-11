@@ -17,6 +17,8 @@
 #include <boost/shared_ptr.hpp>
 #include <string>
 
+#include <boost/config/abi_prefix.hpp>
+
 #if defined(BOOST_WINDOWS) && !defined(__GNUC__)
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "user32.lib")
@@ -116,5 +118,7 @@ private:
 };
 
 } } // End namespaces audio, hamigaki.
+
+#include <boost/config/abi_suffix.hpp>
 
 #endif // HAMIGAKI_AUDIO_ASIO_HPP
