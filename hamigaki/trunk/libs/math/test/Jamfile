@@ -36,4 +36,5 @@ rule math-test ( sources + : requirements * )
 
 test-suite math :
     [ math-test is_nan_test.cpp : ]
+    [ math-test sign_bit_test.cpp : ]
     ;
