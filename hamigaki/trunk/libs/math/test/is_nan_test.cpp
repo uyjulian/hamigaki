@@ -13,6 +13,11 @@
 #include <string>
 #include <typeinfo>
 
+#if defined(__BORLANDC__)
+    #include <float.h>
+    #pragma option -w-8008 -w-8066
+#endif
+
 #if defined(_M_IX86) && \
     BOOST_WORKAROUND(__BORLANDC__, >= 0x580) && \
     BOOST_WORKAROUND(__BORLANDC__, <= 0x582)
