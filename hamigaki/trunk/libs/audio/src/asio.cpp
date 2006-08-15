@@ -654,9 +654,7 @@ asio_device::impl::get_sample_type(bool input, long index)
         return float_le64;
 
     throw std::runtime_error("unsupported ASIO format");
-#if !defined(__BORLANDC__)
-    return static_cast<sample_format_type>(0); // dummy
-#endif
+    BOOST_UNREACHABLE_RETURN(static_cast<sample_format_type>(0))
 }
 
 std::streamsize asio_device::impl::preferred_buffer_size() const

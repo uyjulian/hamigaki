@@ -356,7 +356,7 @@ private:
             return read_float<big,ieee754_double>(s, n);
         else
             throw BOOST_IOSTREAMS_FAILURE("unsupported format");
-        return -1; // dummy
+        BOOST_UNREACHABLE_RETURN(-1)
     }
 
     std::streamsize write_once(const CharT* s, std::streamsize n)
@@ -403,7 +403,7 @@ private:
             return write_float<big,ieee754_double>(s, n);
         else
             throw BOOST_IOSTREAMS_FAILURE("unsupported format");
-        return -1; // dummy
+        BOOST_UNREACHABLE_RETURN(-1)
     }
 
     template<sample_format_type Type>
@@ -629,7 +629,7 @@ private:
             return read_float<big,ieee754_double>(s, n);
         else
             throw BOOST_IOSTREAMS_FAILURE("unsupported format");
-        return -1; // dummy
+        BOOST_UNREACHABLE_RETURN(-1)
     }
 
     std::streamsize write_once(const char_type* s, std::streamsize n)
@@ -678,7 +678,7 @@ private:
             return write_float<big,ieee754_double>(s, n);
         else
             throw BOOST_IOSTREAMS_FAILURE("unsupported format");
-        return -1; // dummy
+        BOOST_UNREACHABLE_RETURN(-1)
     }
 
     template<sample_format_type Type>

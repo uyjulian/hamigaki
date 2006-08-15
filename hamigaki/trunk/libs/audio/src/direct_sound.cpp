@@ -389,9 +389,7 @@ unsigned get_guid_digit_aux(const std::string& s, std::string::size_type& i)
             return 15;
     }
     throw std::invalid_argument("invalid GUID");
-#if !defined(__BORLANDC__)
-    return 0; // dummy
-#endif
+    BOOST_UNREACHABLE_RETURN(0)
 }
 
 unsigned get_guid_digit(const std::string& s, std::string::size_type& i)
@@ -458,9 +456,7 @@ HRESULT direct_sound_capture_create(
     }
     else
         throw std::runtime_error("DirectSoundCaptureCreate() unsupported");
-#if !defined(__BORLANDC__)
-    return DSERR_UNSUPPORTED; // dummy
-#endif
+    BOOST_UNREACHABLE_RETURN(DSERR_UNSUPPORTED)
 #endif
 }
 
