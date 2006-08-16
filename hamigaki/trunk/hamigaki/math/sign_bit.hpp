@@ -68,6 +68,14 @@ inline bool sign_bit_helper(T t, const boost::true_type&)
     return sign_bit_helper_for_float(t, ::boost::mpl::size_t<sizeof(T)>());
 }
 
+#elif defined(__POWERPC__) || defined(__ppc__)
+
+template<class T>
+inline bool sign_bit_helper(T t, const boost::true_type&)
+{
+    return (*reinterpret_cast<boost::uint32_t*>(&t) & 0x80000000) != 0;
+}
+
 #else
     #error "Sorry, unsupported architecture"
 #endif
