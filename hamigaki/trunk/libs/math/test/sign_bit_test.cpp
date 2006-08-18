@@ -82,7 +82,7 @@ void sign_bit_test_non_number()
 void sign_bit_test()
 {
 #if defined(__BORLANDC__)
-     ::_control87(MCW_EM,MCW_EM);
+     ::_control87(EM_INVALID,MCW_EM);
 #endif
 
     sign_bit_test_aux<float>();
