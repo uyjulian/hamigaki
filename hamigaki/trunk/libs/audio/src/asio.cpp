@@ -8,8 +8,10 @@
 //  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
 
 #define HAMIGAKI_AUDIO_SOURCE
+#define NOMINMAX
 #include "asio_sink_impl.hpp"
 #include "asio_source_impl.hpp"
+#include "detail/asio_stub.hpp"
 #include <boost/assert.hpp>
 
 #include <hamigaki/detail/windows/com_release.hpp>
@@ -64,14 +66,6 @@ boost::shared_ptr< ::IASIO> create_asio(const ::CLSID& clsid)
     ::IASIO* ptr = static_cast< ::IASIO*>(tmp);
     return boost::shared_ptr< ::IASIO>(ptr, com_release());
 }
-
-#if defined(__GNUC__) && defined(__i386__)
-    #include "detail/asio_stub_gcc_x86.ipp"
-#elif defined(__BORLANDC__) && defined(_M_IX86)
-    #include "detail/asio_stub_bcc_x86.ipp"
-#else
-    #include "detail/asio_stub_default.ipp"
-#endif
 
 } // namespace
 
@@ -310,7 +304,7 @@ asio_device::impl::impl(const std::wstring& clsid, void* hwnd)
     : pimpl_(create_asio(clsid_from_string(clsid)))
     , thunks_(sizeof(asio_callbacks)), start_count_(0), stop_count_(0)
 {
-    if (!asio_init(pimpl_.get(), hwnd))
+    if (!detail::asio_init(pimpl_.get(), hwnd))
         throw std::runtime_error("failed initialization of ASIO");
 
     init_thunks();
@@ -322,7 +316,7 @@ asio_device::impl::impl(const std::string& clsid, void* hwnd)
     : pimpl_(create_asio(clsid_from_string(clsid)))
     , thunks_(sizeof(asio_callbacks)), start_count_(0), stop_count_(0)
 {
-    if (!asio_init(pimpl_.get(), hwnd))
+    if (!detail::asio_init(pimpl_.get(), hwnd))
         throw std::runtime_error("failed initialization of ASIO");
 
     init_thunks();
@@ -342,7 +336,7 @@ asio_device::impl::~impl()
 double asio_device::impl::rate() const
 {
     double r;
-    ::ASIOError err = asio_get_sample_rate(pimpl_.get(), &r);
+    ::ASIOError err = detail::asio_get_sample_rate(pimpl_.get(), &r);
     if (err != ASE_OK)
         throw std::runtime_error("failed IASIO::getSampleRate()");
     return r;
@@ -350,7 +344,7 @@ double asio_device::impl::rate() const
 
 void asio_device::impl::rate(double r)
 {
-    ::ASIOError err = asio_set_sample_rate(pimpl_.get(), r);
+    ::ASIOError err = detail::asio_set_sample_rate(pimpl_.get(), r);
     if (err != ASE_OK)
         throw std::runtime_error("failed IASIO::setSampleRate()");
 }
@@ -400,7 +394,7 @@ void asio_device::impl::create_buffers(long in_channels, long out_channels)
         sinks_.push_back(tmp);
     }
 
-    ::ASIOError err = asio_create_buffers(pimpl_.get(),
+    ::ASIOError err = detail::asio_create_buffers(pimpl_.get(),
         &info_[0], info_.size(), buffer_size_, &callbacks_);
     if (err != ASE_OK)
         throw std::runtime_error("cannot create ASIO buffers");
@@ -454,7 +448,7 @@ asio_buffer_info asio_device::impl::buffer_info() const
 {
     asio_buffer_info info;
 
-    ::ASIOError err = asio_get_buffer_size(pimpl_.get(),
+    ::ASIOError err = detail::asio_get_buffer_size(pimpl_.get(),
         &info.min_size, &info.max_size,
         &info.preferred_size, &info.granularity);
     if (err != ASE_OK)
@@ -467,7 +461,7 @@ void asio_device::impl::start()
 {
     if (--start_count_ == 0)
     {
-        ::ASIOError err = asio_start(pimpl_.get());
+        ::ASIOError err = detail::asio_start(pimpl_.get());
         if (err != ASE_OK)
             throw std::runtime_error("cannot start ASIO");
     }
@@ -475,7 +469,7 @@ void asio_device::impl::start()
 
 void asio_device::impl::stop()
 {
-    ::ASIOError err = asio_stop(pimpl_.get());
+    ::ASIOError err = detail::asio_stop(pimpl_.get());
     if (err != ASE_OK)
         throw std::runtime_error("cannot stop ASIO");
 }
@@ -501,7 +495,7 @@ void asio_device::impl::buffer_switch(long index, ::ASIOBool)
             static_cast<char*>(info_[sources_.size()+i].buffers[index]), n);
     }
 
-    asio_output_ready(pimpl_.get());
+    detail::asio_output_ready(pimpl_.get());
 }
 
 void asio_device::impl::sample_rate_changed(::ASIOSampleRate)
@@ -612,7 +606,7 @@ asio_device::impl::get_sample_type(bool input, long index)
     ::ASIOChannelInfo info = {0,};
     info.channel = index;
     info.isInput = input ? ASIOTrue : ASIOFalse;
-    ::ASIOError err = asio_get_channel_info(pimpl_.get(), &info);
+    ::ASIOError err = detail::asio_get_channel_info(pimpl_.get(), &info);
     if (err != ASE_OK)
         throw std::runtime_error("bad ASIO channel number");
 
@@ -663,7 +657,7 @@ std::streamsize asio_device::impl::preferred_buffer_size() const
     long max_size;
     long preferred_size;
     long granularity;
-    ::ASIOError err = asio_get_buffer_size(pimpl_.get(),
+    ::ASIOError err = detail::asio_get_buffer_size(pimpl_.get(),
         &min_size, &max_size, &preferred_size, &granularity);
     if (err != ASE_OK)
         throw std::runtime_error("failed IASIO::getBufferSize()");

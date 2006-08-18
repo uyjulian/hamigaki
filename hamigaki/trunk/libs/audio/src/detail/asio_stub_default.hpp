@@ -1,4 +1,4 @@
-//  asio_stub_default.ipp: ASIO API stub functions
+//  asio_stub_default.hpp: ASIO API stub functions
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
@@ -7,8 +7,12 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
 
-#ifndef HAMIGAKI_AUDIO_DETAIL_ASIO_STUB_DEFAULT_IPP
-#define HAMIGAKI_AUDIO_DETAIL_ASIO_STUB_DEFAULT_IPP
+#ifndef HAMIGAKI_AUDIO_DETAIL_ASIO_STUB_DEFAULT_HPP
+#define HAMIGAKI_AUDIO_DETAIL_ASIO_STUB_DEFAULT_HPP
+
+#include "./iasiodrv.hpp"
+
+namespace hamigaki { namespace audio { namespace detail {
 
 inline ::ASIOBool asio_init(::IASIO* this_ptr, void* sys_handle)
 {
@@ -63,4 +67,6 @@ inline ::ASIOError asio_output_ready(::IASIO* this_ptr)
     return this_ptr->outputReady();
 }
 
-#endif // HAMIGAKI_AUDIO_DETAIL_ASIO_STUB_DEFAULT_IPP
+} } } // End namespaces detail, audio, hamigaki.
+
+#endif // HAMIGAKI_AUDIO_DETAIL_ASIO_STUB_DEFAULT_HPP

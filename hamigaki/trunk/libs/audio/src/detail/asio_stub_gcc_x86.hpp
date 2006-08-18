@@ -1,4 +1,4 @@
-//  asio_stub_gcc_x86.ipp: ASIO API stub functions for gcc/x86
+//  asio_stub_gcc_x86.hpp: ASIO API stub functions for gcc/x86
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
@@ -7,8 +7,12 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
 
-#ifndef HAMIGAKI_AUDIO_DETAIL_ASIO_STUB_GCC_X86_IPP
-#define HAMIGAKI_AUDIO_DETAIL_ASIO_STUB_GCC_X86_IPP
+#ifndef HAMIGAKI_AUDIO_DETAIL_ASIO_STUB_GCC_X86_HPP
+#define HAMIGAKI_AUDIO_DETAIL_ASIO_STUB_GCC_X86_HPP
+
+#include "./iasiodrv.hpp"
+
+namespace hamigaki { namespace audio { namespace detail {
 
 inline ::ASIOBool asio_init(::IASIO* this_ptr, void *sys_handle)
 {
@@ -196,4 +200,6 @@ inline ::ASIOError asio_output_ready(::IASIO* this_ptr)
     return result;
 }
 
-#endif // HAMIGAKI_AUDIO_DETAIL_ASIO_STUB_GCC_X86_IPP
+} } } // End namespaces detail, audio, hamigaki.
+
+#endif // HAMIGAKI_AUDIO_DETAIL_ASIO_STUB_GCC_X86_HPP

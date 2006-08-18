@@ -15,14 +15,8 @@
 #include <boost/noncopyable.hpp>
 #include <vector>
 
-#ifndef WIN32
-    #define WIN32
-#endif
 #include <hamigaki/detail/virtual_memory.hpp>
-#include <objbase.h> // keep before iasiodrv.h
-#include <iasiodrv.h>
-#undef min
-#undef max
+#include "detail/iasiodrv.hpp"
 
 namespace hamigaki { namespace audio {
 

@@ -17,8 +17,6 @@
 
 #include <hamigaki/detail/windows/auto_reset_event.hpp>
 #include <hamigaki/detail/windows/critical_section.hpp>
-#undef min
-#undef max
 
 namespace hamigaki { namespace audio {
 

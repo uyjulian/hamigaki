@@ -8,6 +8,7 @@
 //  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
 
 #define HAMIGAKI_AUDIO_SOURCE
+#define NOMINMAX
 #include <hamigaki/audio/asio/drivers.hpp>
 
 #include <hamigaki/detail/windows/registry.hpp>
