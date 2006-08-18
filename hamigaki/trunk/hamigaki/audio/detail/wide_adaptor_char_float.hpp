@@ -210,8 +210,7 @@ private:
         for (std::streamsize i = 0, offset = 0;
             i < count; ++i, offset += smp_sz)
         {
-            typedef typename float_t<24>::least float_type;
-            float_type tmp24 = s[i]*8388608;
+            float tmp24 = s[i]*8388608;
 
             if (tmp24 >= 8388608)
                 tmp24 = 8388607;
@@ -220,7 +219,7 @@ private:
 
             detail::cvt_int32<Type>::encode(
                 &buffer_[offset],
-                static_cast<boost::int_least32_t>(tmp24) * 256);
+                static_cast<boost::int32_t>(tmp24) * 256);
         }
 
         boost::iostreams::write(dev_, &buffer_[0], count*smp_sz);

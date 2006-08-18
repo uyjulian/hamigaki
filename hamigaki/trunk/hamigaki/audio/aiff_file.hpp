@@ -21,10 +21,10 @@ namespace hamigaki { namespace audio {
 namespace detail
 {
 
-inline boost::uint_least64_t decode_extended(const char* s)
+inline boost::uint64_t decode_extended(const char* s)
 {
-    boost::int_least16_t exp = decode_int<big,2>(s);
-    boost::uint_least64_t mant = decode_uint<big,8>(s+2);
+    boost::int16_t exp = decode_int<big,2>(s);
+    boost::uint64_t mant = decode_uint<big,8>(s+2);
 
     if ((exp == 0) && (mant == 0))
         return 0;
@@ -32,7 +32,7 @@ inline boost::uint_least64_t decode_extended(const char* s)
         return mant >> (63-(exp-16383));
 }
 
-inline void encode_extended(char* s, boost::uint_least64_t n)
+inline void encode_extended(char* s, boost::uint64_t n)
 {
     if (n == 0)
     {
@@ -40,8 +40,8 @@ inline void encode_extended(char* s, boost::uint_least64_t n)
         return;
     }
 
-    boost::int_least16_t exp = 16383+63;
-    boost::uint_least64_t mant = n;
+    boost::int16_t exp = 16383+63;
+    boost::uint64_t mant = n;
     while ((mant & 0x8000000000000000ull) == 0)
     {
         --exp;
@@ -150,10 +150,10 @@ private:
         if (boost::iostreams::read(iff_, buf, sizeof(buf)) != sizeof(buf))
             throw BOOST_IOSTREAMS_FAILURE("broken pcm format");
 
-        boost::int_least16_t channels = decode_int<big,2>(&buf[0]);
-        boost::uint_least32_t samples = decode_uint<big,4>(&buf[2]);
-        boost::int_least16_t bits = decode_int<big,2>(&buf[6]);
-        boost::uint_least64_t rate = decode_extended(&buf[8]);
+        boost::int16_t channels = decode_int<big,2>(&buf[0]);
+        boost::uint32_t samples = decode_uint<big,4>(&buf[2]);
+        boost::int16_t bits = decode_int<big,2>(&buf[6]);
+        boost::uint64_t rate = decode_extended(&buf[8]);
 
         if ((channels == 0) || (rate == 0) || (bits == 0))
             throw BOOST_IOSTREAMS_FAILURE("bad pcm format");
@@ -210,7 +210,7 @@ public:
 
         try
         {
-            boost::uint_least32_t size = static_cast<boost::uint_least32_t>(
+            boost::uint32_t size = static_cast<boost::uint32_t>(
                 boost::iostreams::position_to_offset(
                     boost::iostreams::seek(iff_, 0, BOOST_IOS::cur))
             ) - 8;

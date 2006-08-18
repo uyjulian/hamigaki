@@ -70,10 +70,10 @@ private:
         if (boost::iostreams::read(iff_, buf, sizeof(buf)) != sizeof(buf))
             throw BOOST_IOSTREAMS_FAILURE("broken pcm format");
 
-        boost::uint_least16_t tag = decode_uint<little,2>(buf);
-        boost::uint_least16_t channels = decode_uint<little,2>(&buf[2]);
-        boost::uint_least32_t rate = decode_uint<little,4>(&buf[4]);
-        boost::uint_least16_t bits = decode_uint<little,2>(&buf[14]);
+        boost::uint16_t tag = decode_uint<little,2>(buf);
+        boost::uint16_t channels = decode_uint<little,2>(&buf[2]);
+        boost::uint32_t rate = decode_uint<little,4>(&buf[4]);
+        boost::uint16_t bits = decode_uint<little,2>(&buf[14]);
 
         if ((tag != 1) && (tag != 3))
             throw BOOST_IOSTREAMS_FAILURE("unsupoorted pcm format");

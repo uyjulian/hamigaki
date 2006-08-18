@@ -28,7 +28,7 @@ namespace hamigaki { namespace audio { namespace detail {
 struct iff_chunk_header
 {
     char id[4];
-    boost::uint_least32_t size;
+    boost::uint32_t size;
 };
 
 template<typename Source, endianness E>
@@ -369,7 +369,7 @@ public:
 
         position_ += amt;
         if (position_ > static_cast<off_t>(head_.size))
-            head_.size = static_cast<boost::uint_least32_t>(position_);
+            head_.size = static_cast<boost::uint32_t>(position_);
         return amt;
     }
 

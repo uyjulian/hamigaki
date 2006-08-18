@@ -25,7 +25,7 @@ template<
 >
 class wide_adaptor_char_int
 {
-    static const boost::int_least32_t slide_bits =
+    static const boost::int32_t slide_bits =
         8*(4 - ((Bits/8>=4) + (Bits/8>=3) + (Bits/8>=2) + (Bits/8>=1)));
 
 public:
@@ -221,7 +221,7 @@ private:
         {
             detail::cvt_int32<Type>::encode(
                 &buffer_[offset],
-                static_cast<boost::int_least32_t>(s[i]) << slide_bits);
+                static_cast<boost::int32_t>(s[i]) << slide_bits);
         }
 
         boost::iostreams::write(dev_, &buffer_[0], count*smp_sz);
@@ -233,7 +233,6 @@ private:
     std::streamsize read_float(char_type* s, std::streamsize n)
     {
         typedef float_traits<Format> traits_type;
-        typedef typename float_t<24>::least float_type;
 
         const std::size_t sz = traits_type::bits / 8;
         const std::streamsize smp_sz = static_cast<std::streamsize>(sz);
@@ -256,16 +255,16 @@ private:
             typename integer_encoding_traits<sz>::int_type tmp =
                 detail::decode_uint<E,sz>(&buffer_[offset]);
 
-            float_type tmp24 =
-                detail::decode_ieee754<float_type,Format>(tmp)*8388608;
+            float tmp24 =
+                detail::decode_ieee754<float,Format>(tmp)*8388608;
 
             if (tmp24 >= 8388608)
                 tmp24 = 8388607;
             else if (tmp24 < -8388608)
                 tmp24 = -8388608;
 
-            boost::int_least32_t val =
-                static_cast<boost::int_least32_t>(tmp24) * 256;
+            boost::int32_t val =
+                static_cast<boost::int32_t>(tmp24) * 256;
 
             s[i] = static_cast<char_type>(val >> slide_bits);
         }
@@ -277,7 +276,6 @@ private:
     std::streamsize write_float(const char_type* s, std::streamsize n)
     {
         typedef float_traits<Format> traits_type;
-        typedef typename float_t<24>::least float_type;
 
         const std::size_t sz = traits_type::bits / 8;
         const std::streamsize smp_sz = static_cast<std::streamsize>(sz);
@@ -291,12 +289,12 @@ private:
         for (std::streamsize i = 0, offset = 0;
             i < count; ++i, offset += smp_sz)
         {
-            float_type val = static_cast<float_type>(
-                (static_cast<boost::int_least32_t>(s[i]) << slide_bits)
+            float val = static_cast<float>(
+                (static_cast<boost::int32_t>(s[i]) << slide_bits)
                 / 256) / 8388608;
 
             typename integer_encoding_traits<sz>::int_type tmp =
-                detail::encode_ieee754<float_type,Format>(val);
+                detail::encode_ieee754<float,Format>(val);
             detail::encode_uint<E,sz>(&buffer_[offset], tmp);
         }
 
