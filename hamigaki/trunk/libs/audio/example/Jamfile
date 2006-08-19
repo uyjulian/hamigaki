@@ -81,6 +81,18 @@ exe asio_example
         find-boost-thread-lib
     ;
 
+exe asio_ogg_play
+    :
+        asio_ogg_play.cpp
+        <template>audio
+        <template>asio
+        <template>vorbisfile
+        <template>vorbis
+        <template>ogg
+    :
+        <gcc><*><find-library>ole32
+    ;
+
 exe ds_capture
     :
         ds_capture.cpp
