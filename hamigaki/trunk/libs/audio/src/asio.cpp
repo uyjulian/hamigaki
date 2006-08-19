@@ -24,7 +24,7 @@ namespace hamigaki { namespace audio {
 namespace
 {
 
-const std::size_t buffer_count = 4;
+const std::size_t buffer_count = 8;
 
 struct asio_callbacks
 {
