@@ -71,9 +71,9 @@ public:
         return data_.size();
     }
 
-    const boost::uint8_t* data() const
+    const boost::uint8_t operator[](std::size_t idx) const
     {
-        return data_.data();
+        return data_[idx];
     }
 
     std::string to_string() const
@@ -126,7 +126,7 @@ private:
             s += 2;
             if ((i == 3) || (i == 5) || (i == 7) || (i == 9))
             {
-                if (*s != '-')
+                if (*s != Delim)
                     invalid_uuid();
                 ++s;
             }
