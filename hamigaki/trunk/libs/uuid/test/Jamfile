@@ -13,6 +13,8 @@ import testing ;
 
 DEPENDS all : test ;
 
+{
+
 rule uuid-test ( sources + : requirements * )
 {
     return [
@@ -29,6 +31,7 @@ rule uuid-test ( sources + : requirements * )
         <vc-8_0><*><cflags>-wd4819
         <vc-8_0><*><linkflags>-INCREMENTAL:NO
         <vc-7_1><*><linkflags>-INCREMENTAL:NO
+        <mingw><*><find-library>ole32
         find-boost-unit_test_framework-lib
         $(requirements)
     ] ;
@@ -37,3 +40,24 @@ rule uuid-test ( sources + : requirements * )
 test-suite uuid :
     [ uuid-test uuid_test.cpp : ]
     ;
+
+rule intialize_suite {
+    TEST_SUITE =
+      [ uuid-test uuid_test.cpp : ]
+      ;
+
+    if $(NT)
+    {
+        TEST_SUITE +=
+            [ uuid-test guid_cvt_test.cpp : ]
+            ;
+    }
+}
+
+intialize_suite ;
+
+test-suite "uuid"
+    : $(TEST_SUITE)
+    ;
+
+}
