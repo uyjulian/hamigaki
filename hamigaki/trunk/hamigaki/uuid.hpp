@@ -81,7 +81,7 @@ public:
 #endif
     }
 
-    void copy(::_GUID& id) const
+    const ::_GUID& copy(::_GUID& id) const
     {
 #if defined(BOOST_BIG_ENDIAN)
         std::memcpy(&id, data_.c_array(), 16);
@@ -99,8 +99,14 @@ public:
             tmp[i] = data_[i];
         std::memcpy(&id, tmp, 16);
 #endif
+        return id;
     }
 #endif
+
+    bool is_null() const
+    {
+        return *this == uuid();
+    }
 
     bool operator<(const uuid& rhs) const
     {
