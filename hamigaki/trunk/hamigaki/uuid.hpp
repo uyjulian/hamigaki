@@ -11,10 +11,16 @@
 #include <boost/config.hpp>
 
 #include <hamigaki/hex_format.hpp>
+#include <boost/detail/endian.hpp>
 #include <boost/array.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/operators.hpp>
+#include <cstring>
 #include <string>
+
+#if defined(BOOST_WINDOWS)
+struct _GUID;
+#endif
 
 namespace hamigaki {
 
@@ -28,7 +34,6 @@ public:
 
     explicit uuid(const char* s)
     {
-        std::size_t len = 36;
         if (*s == '{')
         {
             if (std::strlen(s) != 38)
@@ -43,7 +48,6 @@ public:
 #if !defined(BOOST_NO_STD_WSTRING)
     explicit uuid(const wchar_t* s)
     {
-        std::size_t len = 36;
         if (*s == '{')
         {
             if (std::wcslen(s) != 38)
@@ -53,6 +57,28 @@ public:
         else if (std::wcslen(s) != 36)
             invalid_uuid();
         from_string_impl<wchar_t,'-'>(s);
+    }
+#endif
+
+#if defined(BOOST_WINDOWS)
+    uuid(const ::_GUID& id)
+    {
+#if defined(BOOST_BIG_ENDIAN)
+        std::memcpy(data_.c_array(), &id, 16);
+#else
+        boost::uint8_t tmp[16];
+        std::memcpy(tmp, &id, 16);
+        data_[0] = tmp[3];
+        data_[1] = tmp[2];
+        data_[2] = tmp[1];
+        data_[3] = tmp[0];
+        data_[4] = tmp[5];
+        data_[5] = tmp[4];
+        data_[6] = tmp[7];
+        data_[7] = tmp[6];
+        for (std::size_t i = 8; i < 16; ++i)
+            data_[i] = tmp[i];
+#endif
     }
 #endif
 
