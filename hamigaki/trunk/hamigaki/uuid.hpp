@@ -80,6 +80,26 @@ public:
             data_[i] = tmp[i];
 #endif
     }
+
+    void copy(::_GUID& id) const
+    {
+#if defined(BOOST_BIG_ENDIAN)
+        std::memcpy(&id, data_.c_array(), 16);
+#else
+        boost::uint8_t tmp[16];
+        tmp[3] = data_[0];
+        tmp[2] = data_[1];
+        tmp[1] = data_[2];
+        tmp[0] = data_[3];
+        tmp[5] = data_[4];
+        tmp[4] = data_[5];
+        tmp[7] = data_[6];
+        tmp[6] = data_[7];
+        for (std::size_t i = 8; i < 16; ++i)
+            tmp[i] = data_[i];
+        std::memcpy(&id, tmp, 16);
+#endif
+    }
 #endif
 
     bool operator<(const uuid& rhs) const

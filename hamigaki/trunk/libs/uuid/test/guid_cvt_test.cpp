@@ -26,6 +26,10 @@ void guid_test()
         hamigaki::uuid(id).to_guid_string(),
         std::string("{F81D4FAE-7DEC-11D0-A765-00A0C91E6BF6}")
     );
+
+    ::GUID id2;
+    hamigaki::uuid(id).copy(id2);
+    BOOST_CHECK(std::memcmp(&id, &id2, sizeof(::GUID)) == 0);
 }
 
 ut::test_suite* init_unit_test_suite(int, char* [])
