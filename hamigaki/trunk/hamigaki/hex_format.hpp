@@ -67,7 +67,7 @@ struct hex_traits<wchar_t>
             return L"0123456789abcdef"[n];
     }
 
-    static int from_hex(char c)
+    static int from_hex(wchar_t c)
     {
         if ((c >= L'0') && (c <= L'9'))
             return c - L'0';
