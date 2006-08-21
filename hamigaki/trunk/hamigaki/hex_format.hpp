@@ -8,6 +8,7 @@
 #ifndef HAMIGAKI_HEX_FORMAT_HPP
 #define HAMIGAKI_HEX_FORMAT_HPP
 
+#include <boost/detail/workaround.hpp>
 #include <boost/assert.hpp>
 #include <boost/cstdint.hpp>
 #include <stdexcept>
@@ -93,6 +94,14 @@ struct hex_traits<wchar_t>
         }
     }
 };
+
+#if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
+template<>
+struct hex_traits<const char> : hex_traits<char> {};
+
+template<>
+struct hex_traits<const wchar_t> : hex_traits<wchar_t> {};
+#endif
 
 template<typename CharT>
 inline std::basic_string<CharT> to_hex(boost::uint8_t n, bool is_upper)
