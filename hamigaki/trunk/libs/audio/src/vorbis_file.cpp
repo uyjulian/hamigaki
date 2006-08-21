@@ -9,25 +9,10 @@
 
 #define HAMIGAKI_AUDIO_SOURCE
 #include <hamigaki/audio/vorbis_file.hpp>
-#include <boost/detail/endian.hpp>
 #include <vorbis/vorbisfile.h>
 #include <errno.h>
 
 namespace hamigaki { namespace audio {
-
-namespace vorbis
-{
-
-#if defined(BOOST_BIG_ENDIAN)
-const int native_endian = 1;
-#else // BOOST_LITTLE_ENDIAN or BOOST_PDP_ENDIAN
-const int native_endian = 0;
-#endif
-
-const int little_endian = 0;
-const int big_endian = 1;
-
-} // namespace vorbis
 
 vorbis_error::vorbis_error(int error)
     : BOOST_IOSTREAMS_FAILURE("vorbis error"), error_(error) 

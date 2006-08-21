@@ -48,11 +48,6 @@ typedef int (*seek_func)(void*, boost::int64_t, int);
 typedef int (*close_func)(void*);
 typedef long (*tell_func)(void*);
 
-// byte order
-HAMIGAKI_AUDIO_DECL extern const int native_endian;
-HAMIGAKI_AUDIO_DECL extern const int little_endian;
-HAMIGAKI_AUDIO_DECL extern const int big_endian;
-
 } // namespace vorbis
 
 struct vorbis_info
