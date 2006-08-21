@@ -66,10 +66,10 @@
         </constructor>
 
         <constructor specifiers="explicit">
-          <parameter name="guid_str">
-            <paramtype>const std::string&amp;</paramtype>
+          <parameter name="driver_guid">
+            <paramtype>const <classname>uuid</classname>&amp;</paramtype>
           </parameter>
-          <effects><code>guid_str</code>で識別されるDirectSoundデバイスをオープンする。</effects>
+          <effects><code>driver_guid</code>で識別されるDirectSoundデバイスをオープンする。</effects>
         </constructor>
 
         <method-group name="modifier">
@@ -165,10 +165,10 @@
         </constructor>
 
         <constructor specifiers="explicit">
-          <parameter name="guid_str">
-            <paramtype>const std::string&amp;</paramtype>
+          <parameter name="driver_guid">
+            <paramtype>const <classname>uuid</classname>&amp;</paramtype>
           </parameter>
-          <effects><code>guid_str</code>で識別されるDirectSoundCaptureデバイスをオープンする。</effects>
+          <effects><code>driver_guid</code>で識別されるDirectSoundCaptureデバイスをオープンする。</effects>
         </constructor>
 
         <method-group name="modifier">

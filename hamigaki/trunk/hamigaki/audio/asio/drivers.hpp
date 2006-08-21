@@ -11,6 +11,7 @@
 #define HAMIGAKI_AUDIO_ASIO_DRIVERS_HPP
 
 #include <hamigaki/audio/detail/config.hpp>
+#include <hamigaki/uuid.hpp>
 #include <string>
 #include <vector>
 
@@ -22,7 +23,7 @@ namespace hamigaki { namespace audio { namespace asio {
 
 struct driver_info
 {
-    std::string clsid;
+    uuid clsid;
     std::string name;
 };
 

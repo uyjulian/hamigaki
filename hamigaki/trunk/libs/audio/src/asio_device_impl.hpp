@@ -11,6 +11,7 @@
 #define HAMIGAKI_AUDIO_ASIO_DEVICE_IMPL_HPP
 
 #include <hamigaki/audio/asio.hpp>
+#include <hamigaki/uuid.hpp>
 #include <boost/detail/atomic_count.hpp>
 #include <boost/noncopyable.hpp>
 #include <vector>
@@ -27,10 +28,7 @@ private:
     typedef boost::shared_ptr<asio_sink::impl> sink_ptr;
 
 public:
-#if !defined(BOOST_NO_STD_WSTRING)
-    explicit impl(const std::wstring& clsid, void* hwnd=0);
-#endif
-    explicit impl(const std::string& clsid, void* hwnd=0);
+    explicit impl(const uuid& clsid, void* hwnd=0);
     ~impl();
 
     double rate() const;

@@ -337,22 +337,8 @@ private:
 {
     try
     {
-        char guid[64];
-        if (lpGuid)
-        {
-            ::wsprintfA(guid,
-                "{%08X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}",
-                lpGuid->Data1, lpGuid->Data2, lpGuid->Data3,
-                lpGuid->Data4[0], lpGuid->Data4[1],
-                lpGuid->Data4[2], lpGuid->Data4[3],
-                lpGuid->Data4[4], lpGuid->Data4[5],
-                lpGuid->Data4[6], lpGuid->Data4[7]);
-        }
-        else
-            guid[0] = '\0';
-
         direct_sound::device_info info;
-        info.driver_guid = guid;
+        info.driver_guid = lpGuid ? uuid(*lpGuid) : uuid();
         info.description = lpcstrDescription;
         info.module_name = lpcstrModule;
 
@@ -364,39 +350,6 @@ private:
     {
     }
     return FALSE;
-}
-
-unsigned get_guid_digit_aux(const std::string& s, std::string::size_type& i)
-{
-    using namespace std;
-    while (i < s.size())
-    {
-        const char c = s[i++];
-        if (isdigit(c))
-            return c - '0';
-        // support non-ASCII encoding
-        else if ((c == 'A') || (c == 'a'))
-            return 10;
-        else if ((c == 'B') || (c == 'b'))
-            return 11;
-        else if ((c == 'C') || (c == 'c'))
-            return 12;
-        else if ((c == 'D') || (c == 'd'))
-            return 13;
-        else if ((c == 'E') || (c == 'e'))
-            return 14;
-        else if ((c == 'F') || (c == 'f'))
-            return 15;
-    }
-    throw std::invalid_argument("invalid GUID");
-    BOOST_UNREACHABLE_RETURN(0)
-}
-
-unsigned get_guid_digit(const std::string& s, std::string::size_type& i)
-{
-    unsigned n1 = get_guid_digit_aux(s, i);
-    unsigned n2 = get_guid_digit_aux(s, i);
-    return (n1 << 4) | n2;
 }
 
 #if defined(HAMIGAKI_AUDIO_NO_DS_ENUM) || \
@@ -594,38 +547,16 @@ public:
         direct_sound_error::check(::DirectSoundCreate(0, &ptr_, 0));
     }
 
-    explicit impl(const std::string& guid_str)
+    explicit impl(const uuid& driver_guid)
     {
-        if (guid_str.empty())
+        if (driver_guid.is_null())
         {
             direct_sound_error::check(::DirectSoundCreate(0, &ptr_, 0));
             return;
         }
 
         ::GUID guid;
-        std::memset(&guid, 0, sizeof(guid));
-
-        std::string::size_type pos = 0;
-        unsigned n1 = get_guid_digit(guid_str, pos);
-        unsigned n2 = get_guid_digit(guid_str, pos);
-        unsigned n3 = get_guid_digit(guid_str, pos);
-        unsigned n4 = get_guid_digit(guid_str, pos);
-        guid.Data1 = (n1 << 24) | (n2 << 16) | (n3 << 8) | n4;
-
-        n1 = get_guid_digit(guid_str, pos);
-        n2 = get_guid_digit(guid_str, pos);
-        guid.Data2 = static_cast<unsigned short>((n1 << 8) | n2);
-
-        n1 = get_guid_digit(guid_str, pos);
-        n2 = get_guid_digit(guid_str, pos);
-        guid.Data3 = static_cast<unsigned short>((n1 << 8) | n2);
-
-        for (std::size_t i = 0; i < 8; ++i)
-        {
-            guid.Data4[i] =
-                static_cast<unsigned char>(get_guid_digit(guid_str, pos));
-        }
-
+        driver_guid.copy(guid);
         direct_sound_error::check(::DirectSoundCreate(&guid, &ptr_, 0));
     }
 
@@ -708,8 +639,8 @@ direct_sound_device::direct_sound_device()
 {
 }
 
-direct_sound_device::direct_sound_device(const std::string& guid)
-    : pimpl_(new impl(guid))
+direct_sound_device::direct_sound_device(const uuid& driver_guid)
+    : pimpl_(new impl(driver_guid))
 {
 }
 
@@ -832,9 +763,9 @@ public:
         direct_sound_error::check(direct_sound_capture_create(0, &ptr_, 0));
     }
 
-    explicit impl(const std::string& guid_str)
+    explicit impl(const uuid& driver_guid)
     {
-        if (guid_str.empty())
+        if (driver_guid.is_null())
         {
             direct_sound_error::check(
                 direct_sound_capture_create(0, &ptr_, 0));
@@ -842,29 +773,7 @@ public:
         }
 
         ::GUID guid;
-        std::memset(&guid, 0, sizeof(guid));
-
-        std::string::size_type pos = 0;
-        unsigned n1 = get_guid_digit(guid_str, pos);
-        unsigned n2 = get_guid_digit(guid_str, pos);
-        unsigned n3 = get_guid_digit(guid_str, pos);
-        unsigned n4 = get_guid_digit(guid_str, pos);
-        guid.Data1 = (n1 << 24) | (n2 << 16) | (n3 << 8) | n4;
-
-        n1 = get_guid_digit(guid_str, pos);
-        n2 = get_guid_digit(guid_str, pos);
-        guid.Data2 = static_cast<unsigned short>((n1 << 8) | n2);
-
-        n1 = get_guid_digit(guid_str, pos);
-        n2 = get_guid_digit(guid_str, pos);
-        guid.Data3 = static_cast<unsigned short>((n1 << 8) | n2);
-
-        for (std::size_t i = 0; i < 8; ++i)
-        {
-            guid.Data4[i] =
-                static_cast<unsigned char>(get_guid_digit(guid_str, pos));
-        }
-
+        driver_guid.copy(guid);
         direct_sound_error::check(
             direct_sound_capture_create(&guid, &ptr_, 0));
     }
@@ -926,8 +835,8 @@ direct_sound_capture::direct_sound_capture()
 {
 }
 
-direct_sound_capture::direct_sound_capture(const std::string& guid)
-    : pimpl_(new impl(guid))
+direct_sound_capture::direct_sound_capture(const uuid& driver_guid)
+    : pimpl_(new impl(driver_guid))
 {
 }
 

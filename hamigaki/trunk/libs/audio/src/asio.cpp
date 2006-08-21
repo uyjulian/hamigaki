@@ -12,6 +12,7 @@
 #include "asio_sink_impl.hpp"
 #include "asio_source_impl.hpp"
 #include "detail/asio_stub.hpp"
+#include <hamigaki/uuid.hpp>
 #include <boost/assert.hpp>
 
 #include <hamigaki/detail/windows/com_release.hpp>
@@ -34,32 +35,13 @@ struct asio_callbacks
     hamigaki::detail::cdecl_thunk<3> buffer_switch_time_info;
 };
 
-#if !defined(BOOST_NO_STD_WSTRING)
-const ::CLSID clsid_from_string(const std::wstring& s)
+boost::shared_ptr< ::IASIO> create_asio(const uuid& clsid)
 {
-    ::CLSID id;
-    ::CLSIDFromString(const_cast<wchar_t*>(s.c_str()), &id);
-    return id;
-}
-#endif
-const ::CLSID clsid_from_string(const std::string& s)
-{
-    std::vector<wchar_t> wide;
-    wide.reserve(s.size()+1);
-    for (std::size_t i = 0; i < s.size(); ++i)
-        wide.push_back(static_cast<wchar_t>(s[i]));
-    wide.push_back(L'\0');
-
-    ::CLSID id;
-    ::CLSIDFromString(&wide[0], &id);
-    return id;
-}
-
-boost::shared_ptr< ::IASIO> create_asio(const ::CLSID& clsid)
-{
+    ::CLSID raw_id;
+    clsid.copy(raw_id);
     void* tmp = 0;
     ::HRESULT res = ::CoCreateInstance(
-        clsid, 0, CLSCTX_INPROC_SERVER, clsid, &tmp);
+        raw_id, 0, CLSCTX_INPROC_SERVER, raw_id, &tmp);
     if (FAILED(res))
         throw std::runtime_error("cannot create ASIO");
 
@@ -299,21 +281,8 @@ sample_format_type asio_sink::sample_format() const
 }
 
 
-#if !defined(BOOST_NO_STD_WSTRING)
-asio_device::impl::impl(const std::wstring& clsid, void* hwnd)
-    : pimpl_(create_asio(clsid_from_string(clsid)))
-    , thunks_(sizeof(asio_callbacks)), start_count_(0), stop_count_(0)
-{
-    if (!detail::asio_init(pimpl_.get(), hwnd))
-        throw std::runtime_error("failed initialization of ASIO");
-
-    init_thunks();
-
-    buffer_size_ = preferred_buffer_size();
-}
-#endif
-asio_device::impl::impl(const std::string& clsid, void* hwnd)
-    : pimpl_(create_asio(clsid_from_string(clsid)))
+asio_device::impl::impl(const uuid& clsid, void* hwnd)
+    : pimpl_(create_asio(clsid))
     , thunks_(sizeof(asio_callbacks)), start_count_(0), stop_count_(0)
 {
     if (!detail::asio_init(pimpl_.get(), hwnd))
@@ -664,14 +633,7 @@ std::streamsize asio_device::impl::preferred_buffer_size() const
     return preferred_size;
 }
 
-#if !defined(BOOST_NO_STD_WSTRING)
-asio_device::asio_device(const std::wstring& clsid, void* hwnd)
-    : pimpl_(new impl(clsid, hwnd))
-{
-}
-#endif
-
-asio_device::asio_device(const std::string& clsid, void* hwnd)
+asio_device::asio_device(const uuid& clsid, void* hwnd)
     : pimpl_(new impl(clsid, hwnd))
 {
 }

@@ -2,7 +2,9 @@ HTML.manifest
 *.html
 audio
 enum
+hamigaki
 iostreams
 iterator
 thread
 type_traits
+uuid

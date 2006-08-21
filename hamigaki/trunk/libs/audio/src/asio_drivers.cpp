@@ -31,7 +31,7 @@ HAMIGAKI_AUDIO_DECL std::vector<driver_info> driver_list()
 
         registry_key key(HKEY_LOCAL_MACHINE, sub_key_name, KEY_READ);
         driver_info info;
-        info.clsid = key.get_value("CLSID");
+        info.clsid = uuid(key.get_value("CLSID").c_str());
         info.name = key.get_value("Description");
         drivers.push_back(info);
     }

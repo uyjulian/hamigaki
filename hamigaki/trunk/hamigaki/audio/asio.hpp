@@ -13,9 +13,9 @@
 #include <hamigaki/audio/detail/config.hpp>
 #include <hamigaki/audio/detail/auto_link/hamigaki_audio.hpp>
 #include <hamigaki/audio/sample_format.hpp>
+#include <hamigaki/uuid.hpp>
 #include <boost/iostreams/categories.hpp>
 #include <boost/shared_ptr.hpp>
-#include <string>
 
 #include <boost/config/abi_prefix.hpp>
 
@@ -44,10 +44,7 @@ class HAMIGAKI_AUDIO_DECL asio_device
 public:
     class impl;
 
-#if !defined(BOOST_NO_STD_WSTRING)
-    explicit asio_device(const std::wstring& clsid, void* hwnd=0);
-#endif
-    explicit asio_device(const std::string& clsid, void* hwnd=0);
+    explicit asio_device(const uuid& clsid, void* hwnd=0);
 
     double rate() const;
     void rate(double r);

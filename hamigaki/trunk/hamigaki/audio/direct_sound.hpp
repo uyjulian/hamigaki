@@ -13,6 +13,7 @@
 #include <hamigaki/audio/detail/config.hpp>
 #include <hamigaki/audio/detail/auto_link/hamigaki_audio.hpp>
 #include <hamigaki/audio/pcm_format.hpp>
+#include <hamigaki/uuid.hpp>
 #include <boost/iostreams/detail/ios.hpp>
 #include <boost/iostreams/categories.hpp>
 #include <boost/shared_ptr.hpp>
@@ -41,7 +42,7 @@ HAMIGAKI_AUDIO_DECL extern const unsigned long write_primary_level;
 
 struct device_info
 {
-    std::string driver_guid;
+    uuid driver_guid;
     std::string description;
     std::string module_name;
 };
@@ -188,7 +189,7 @@ class HAMIGAKI_AUDIO_DECL direct_sound_device
 {
 public:
     direct_sound_device();
-    explicit direct_sound_device(const std::string& guid_str);
+    explicit direct_sound_device(const uuid& driver_guid);
 
     void set_cooperative_level(void* hwnd, unsigned long level);
 
@@ -237,7 +238,7 @@ class HAMIGAKI_AUDIO_DECL direct_sound_capture
 {
 public:
     direct_sound_capture();
-    explicit direct_sound_capture(const std::string& guid_str);
+    explicit direct_sound_capture(const uuid& driver_guid);
 
     direct_sound_capture_buffer create_buffer(
         const pcm_format& f, std::size_t buffer_size);

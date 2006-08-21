@@ -112,18 +112,7 @@
       <class name="asio_device">
         <constructor specifiers="explicit">
           <parameter name="clsid">
-            <paramtype>const std::string&amp;</paramtype>
-          </parameter>
-          <parameter name="hwnd">
-            <paramtype>void*</paramtype>
-            <default>0</default>
-          </parameter>
-          <effects><code>clsid</code>で識別されるASIOデバイスをオープンする。</effects>
-        </constructor>
-
-        <constructor specifiers="explicit">
-          <parameter name="clsid">
-            <paramtype>const std::wstring&amp;</paramtype>
+            <paramtype>const <classname>uuid</classname>&amp;</paramtype>
           </parameter>
           <parameter name="hwnd">
             <paramtype>void*</paramtype>
