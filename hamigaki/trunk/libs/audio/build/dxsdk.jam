@@ -39,7 +39,13 @@ dxsdk_config ;
 
 template dxsdk
     : # sources
-      [ cond $(HAVE_DXSDK) : ../src/direct_sound.cpp : ]
+      [
+        cond $(HAVE_DXSDK)
+        :
+        ../src/direct_sound.cpp
+        ../src/direct_sound_capture.cpp
+        :
+      ]
     : # build requirements
       [
         cond $(DXSDK_INCLUDE)

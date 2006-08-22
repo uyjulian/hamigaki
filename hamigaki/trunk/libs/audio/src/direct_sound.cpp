@@ -15,8 +15,11 @@
 #include <cctype>
 #include <stdexcept>
 
+#include "detail/direct_sound_notify.hpp"
+#include "detail/wave_format_ex.hpp"
 #include <hamigaki/detail/windows/auto_reset_event.hpp>
 #include <hamigaki/detail/windows/com_release.hpp>
+#include <hamigaki/detail/windows/dynamic_link_library.hpp>
 #include <dsound.h>
 #include <windows.h>
 
@@ -49,63 +52,6 @@ namespace
 {
 
 const std::size_t buffer_count = 4;
-
-struct wave_format_ex : public ::WAVEFORMATEX
-{
-    typedef ::WAVEFORMATEX type;
-
-    explicit wave_format_ex(const pcm_format& f)
-    {
-        BOOST_ASSERT(f.channels > 0);
-        BOOST_ASSERT(f.channels <= 0xFFFF);
-        BOOST_ASSERT(f.block_size() > 0);
-        BOOST_ASSERT(f.block_size() <= 0xFFFF);
-        BOOST_ASSERT(f.bits() > 0);
-        BOOST_ASSERT(f.bits() <= 0xFFFF);
-
-        std::memset(static_cast<type*>(this), 0, sizeof(type));
-        wFormatTag = WAVE_FORMAT_PCM;
-        nChannels = static_cast<unsigned short>(f.channels);
-        nSamplesPerSec = f.rate;
-        nBlockAlign = static_cast<unsigned short>(f.block_size());
-        nAvgBytesPerSec = f.rate * f.block_size();
-        wBitsPerSample = static_cast<unsigned short>(f.bits());
-        cbSize = 0;
-    }
-};
-
-class direct_sound_notify : boost::noncopyable
-{
-public:
-    template<class Interface>
-    explicit direct_sound_notify(Interface* buf_ptr)
-    {
-        // IID_IDirectSoundNotify
-        const ::GUID iid =
-        {
-            0xB0210783, 0x89CD, 0x11D0,
-            { 0xAF, 0x08, 0x00, 0xA0, 0xC9, 0x25, 0xCD, 0x16 }
-        };
-
-        void* tmp;
-        direct_sound_error::check(buf_ptr->QueryInterface(iid, &tmp));
-        ptr_ = static_cast< ::IDirectSoundNotify*>(tmp);
-    }
-
-    ~direct_sound_notify()
-    {
-        ptr_->Release();
-    }
-
-    void set(const ::DSBPOSITIONNOTIFY* data, ::DWORD size)
-    {
-        direct_sound_error::check(
-            ptr_->SetNotificationPositions(size, data));
-    }
-
-private:
-    ::IDirectSoundNotify* ptr_;
-};
 
 class direct_sound_buffer_base : boost::noncopyable
 {
@@ -200,7 +146,7 @@ public:
 
     void set_notification(const ::DSBPOSITIONNOTIFY* data, ::DWORD size)
     {
-        direct_sound_notify notify(ptr_.get());
+        detail::direct_sound_notify notify(ptr_.get());
         notify.set(data, size);
     }
 
@@ -240,97 +186,6 @@ private:
     boost::shared_ptr< ::IDirectSoundBuffer> ptr_;
 };
 
-class direct_sound_capture_buffer_base : boost::noncopyable
-{
-private:
-    struct raw_buffer
-    {
-        raw_buffer() : ptr_(0), size_(0), read_(0)
-        {
-        }
-
-        void* ptr_;
-        ::DWORD size_;
-        ::DWORD read_;
-
-        std::streamsize read(char* s, std::streamsize n)
-        {
-            std::size_t amt = std::min<std::size_t>(n, size_-read_);
-            if (amt != 0)
-            {
-                std::memcpy(s, static_cast<char*>(ptr_)+read_, amt);
-                read_ += amt;
-            }
-            return amt;
-        }
-    };
-
-    class scoped_lock : boost::noncopyable
-    {
-    public:
-        scoped_lock(::IDirectSoundCaptureBuffer* ptr,
-                ::DWORD offset, ::DWORD size)
-            : ptr_(ptr)
-        {
-            direct_sound_error::check(
-                ptr_->Lock(offset, size,
-                    &buf1_.ptr_, &buf1_.size_,
-                    &buf2_.ptr_, &buf2_.size_, 0));
-        }
-
-        ~scoped_lock()
-        {
-            ptr_->Unlock(
-                buf1_.ptr_, buf1_.read_, buf2_.ptr_, buf2_.read_);
-        }
-
-        std::streamsize read(char* s, std::streamsize n)
-        {
-            std::streamsize amt = buf1_.read(s, n);
-            s += amt;
-            n -= amt;
-            amt += buf2_.read(s, n);
-            return amt;
-        }
-
-    private:
-        ::IDirectSoundCaptureBuffer* ptr_;
-        raw_buffer buf1_;
-        raw_buffer buf2_;
-    };
-
-public:
-    explicit direct_sound_capture_buffer_base(
-        const boost::shared_ptr< ::IDirectSoundCaptureBuffer>& ptr) : ptr_(ptr)
-    {
-    }
-
-    void set_notification(const ::DSBPOSITIONNOTIFY* data, ::DWORD size)
-    {
-        direct_sound_notify notify(ptr_.get());
-        notify.set(data, size);
-    }
-
-    std::streamsize read(::DWORD offset, char* s, std::streamsize n)
-    {
-        scoped_lock lock(ptr_.get(), offset, n);
-        return lock.read(s, n);
-    }
-
-    void start()
-    {
-        ptr_->Start(DSCBSTART_LOOPING);
-    }
-
-    void stop()
-    {
-        ptr_->Stop();
-    }
-
-private:
-    boost::shared_ptr< ::IDirectSoundCaptureBuffer> ptr_;
-};
-
 ::BOOL CALLBACK ds_enum_callback_func(
     ::GUID* lpGuid, const char* lpcstrDescription,
     const char* lpcstrModule, void* lpContext)
@@ -352,66 +207,12 @@ private:
     return FALSE;
 }
 
-#if defined(HAMIGAKI_AUDIO_NO_DS_ENUM) || \
-    defined(HAMIGAKI_AUDIO_NO_CREATE_DS_CAPTRUE)
-class dynamic_link_library : boost::noncopyable
-{
-public:
-    explicit dynamic_link_library(const char* name)
-        : handle_(::LoadLibraryA(name))
-    {
-    }
-
-    ~dynamic_link_library()
-    {
-        if (handle_ != 0)
-            ::FreeLibrary(handle_);
-    }
-
-    ::FARPROC get_proc_address(const char* name)
-    {
-        if (handle_ != 0)
-            return ::GetProcAddress(handle_, name);
-        else
-            return 0;
-    }
-
-private:
-    ::HMODULE handle_;
-};
-
+#if defined(HAMIGAKI_AUDIO_NO_DS_ENUM)
 typedef HRESULT (WINAPI *DirectSoundEnumerateFuncPtr)(
     LPDSENUMCALLBACK lpDSEnumCallback,
     LPVOID lpContext
 );
-
-typedef HRESULT (WINAPI *DirectSoundCaptureCreateFuncPtr)(
-    LPGUID lpcGUID,
-    LPDIRECTSOUNDCAPTURE* lplpDSC,
-    LPUNKNOWN pUnkOuter
-);
 #endif
-
-HRESULT direct_sound_capture_create(
-    LPGUID lpcGUID,
-    LPDIRECTSOUNDCAPTURE* lplpDSC,
-    LPUNKNOWN pUnkOuter)
-{
-#if !defined(HAMIGAKI_AUDIO_NO_CREATE_DS_CAPTRUE)
-    return ::DirectSoundCaptureCreate(lpcGUID, lplpDSC, pUnkOuter);
-#else
-    dynamic_link_library dsound("dsound.dll");
-    if (::FARPROC p = dsound.get_proc_address("DirectSoundCaptureCreate"))
-    {
-        DirectSoundCaptureCreateFuncPtr func_ptr =
-            reinterpret_cast<DirectSoundCaptureCreateFuncPtr>(p);
-        return (*func_ptr)(lpcGUID, lplpDSC, pUnkOuter);
-    }
-    else
-        throw std::runtime_error("DirectSoundCaptureCreate() unsupported");
-    BOOST_UNREACHABLE_RETURN(DSERR_UNSUPPORTED)
-#endif
-}
 
 } // namespace
 
@@ -425,14 +226,10 @@ void direct_sound_enumerate_impl(ds_enum_callback_base* ptr)
     ::DirectSoundEnumerateA(&ds_enum_callback_func, ptr);
 #else
     dynamic_link_library dsound("dsound.dll");
-    if (::FARPROC p = dsound.get_proc_address("DirectSoundEnumerateA"))
-    {
-        DirectSoundEnumerateFuncPtr func_ptr =
-            reinterpret_cast<DirectSoundEnumerateFuncPtr>(p);
-        (*func_ptr)(&ds_enum_callback_func, ptr);
-    }
-    else
-        throw std::runtime_error("DirectSoundEnumerateA() unsupported");
+    DirectSoundEnumerateFuncPtr func_ptr =
+        reinterpret_cast<DirectSoundEnumerateFuncPtr>(
+            dsound.get_proc_address("DirectSoundEnumerateA"));
+    (*func_ptr)(&ds_enum_callback_func, ptr);
 #endif
 }
 
@@ -583,14 +380,14 @@ public:
         boost::shared_ptr<
             ::IDirectSoundBuffer> deleter(buf_ptr, com_release());
 
-        wave_format_ex fmt(f);
+        detail::wave_format_ex fmt(f);
         direct_sound_error::check(buf_ptr->SetFormat(&fmt));
     }
 
     ::IDirectSoundBuffer* create_buffer(
         const pcm_format& f, std::size_t buffer_size)
     {
-        wave_format_ex fmt(f);
+        detail::wave_format_ex fmt(f);
 
         ::DSBUFFERDESC desc;
         std::memset(&desc, 0, sizeof(desc));
@@ -673,186 +470,6 @@ direct_sound_buffer direct_sound_device::create_buffer(const pcm_format& f)
     const std::size_t buffer_size = f.optimal_buffer_size();
     ::IDirectSoundBuffer* tmp = pimpl_->create_buffer(f, buffer_size);
     return direct_sound_buffer(tmp, f, buffer_size);
-}
-
-class direct_sound_capture_buffer::impl
-    : private direct_sound_capture_buffer_base
-{
-    typedef direct_sound_capture_buffer_base base_type;
-
-public:
-    impl(const boost::shared_ptr< ::IDirectSoundCaptureBuffer>& ptr,
-            const pcm_format& f, ::DWORD buffer_size)
-        : base_type(ptr), offset_(0), buffer_size_(buffer_size)
-        , is_open_(true), format_(f)
-    {
-        ::DSBPOSITIONNOTIFY pos[buffer_count];
-        for (std::size_t i = 0; i < buffer_count; ++i)
-        {
-            pos[i].dwOffset = buffer_size*(i+1) - 1;
-            events_[i].wait(); // reset
-            pos[i].hEventNotify = events_[i].get();
-        }
-        set_notification(pos, buffer_count);
-    }
-
-    ~impl()
-    {
-        try
-        {
-            close();
-        }
-        catch (...)
-        {
-        }
-    }
-
-    pcm_format format() const
-    {
-        return format_;
-    }
-
-    std::streamsize read(char* s, std::streamsize n)
-    {
-        std::streamsize total = 0;
-        if (offset_ % buffer_size_ == 0)
-            start();
-        while (n != 0)
-        {
-            if (offset_ % buffer_size_ == 0)
-            {
-                std::size_t index = offset_ / buffer_size_;
-                events_[index].wait();
-            }
-
-            std::streamsize size =
-                std::min<std::streamsize>(n,
-                    buffer_size_ - offset_%buffer_size_);
-
-            std::streamsize amt = base_type::read(offset_, s, size);
-            s += amt;
-            n -= amt;
-            total += amt;
-            offset_ += amt;
-            offset_ %= (buffer_size_*buffer_count);
-        }
-        return (total != 0) ? total : -1;
-    }
-
-    void close()
-    {
-        if (!is_open_)
-            return;
-        is_open_ = false;
-        stop();
-    }
-
-private:
-    auto_reset_event events_[buffer_count];
-    ::DWORD offset_;
-    ::DWORD buffer_size_;
-    bool is_open_;
-    pcm_format format_;
-};
-
-class direct_sound_capture::impl : boost::noncopyable
-{
-public:
-    impl()
-    {
-        direct_sound_error::check(direct_sound_capture_create(0, &ptr_, 0));
-    }
-
-    explicit impl(const uuid& driver_guid)
-    {
-        if (driver_guid.is_null())
-        {
-            direct_sound_error::check(
-                direct_sound_capture_create(0, &ptr_, 0));
-            return;
-        }
-
-        ::GUID guid;
-        driver_guid.copy(guid);
-        direct_sound_error::check(
-            direct_sound_capture_create(&guid, &ptr_, 0));
-    }
-
-    ~impl()
-    {
-        ptr_->Release();
-    }
-
-    ::IDirectSoundCaptureBuffer* create_buffer(
-        const pcm_format& f, std::size_t buffer_size)
-    {
-        wave_format_ex fmt(f);
-
-        ::DSCBUFFERDESC desc;
-        std::memset(&desc, 0, sizeof(desc));
-        desc.dwSize = sizeof(desc); 
-        desc.dwFlags = 0;
-        desc.dwBufferBytes = buffer_size * buffer_count;
-        desc.lpwfxFormat = &fmt;
-
-        ::IDirectSoundCaptureBuffer* buf_ptr;
-        direct_sound_error::check(
-            ptr_->CreateCaptureBuffer(&desc, &buf_ptr, 0));
-        return buf_ptr;
-    }
-
-private:
-    ::IDirectSoundCapture* ptr_;
-};
-
-direct_sound_capture_buffer::direct_sound_capture_buffer(
-    ::IDirectSoundCaptureBuffer* p,
-    const pcm_format& f, std::size_t buffer_size)
-{
-    boost::shared_ptr<
-        ::IDirectSoundCaptureBuffer> tmp(p, com_release());
-
-    pimpl_.reset(new impl(tmp, f, buffer_size));
-}
-
-pcm_format direct_sound_capture_buffer::format() const
-{
-    return pimpl_->format();
-}
-
-std::streamsize direct_sound_capture_buffer::read(char* s, std::streamsize n)
-{
-    return pimpl_->read(s, n);
-}
-
-void direct_sound_capture_buffer::close()
-{
-    pimpl_->close();
-}
-
-direct_sound_capture::direct_sound_capture()
-    : pimpl_(new impl)
-{
-}
-
-direct_sound_capture::direct_sound_capture(const uuid& driver_guid)
-    : pimpl_(new impl(driver_guid))
-{
-}
-
-direct_sound_capture_buffer direct_sound_capture::create_buffer(
-    const pcm_format& f, std::size_t buffer_size)
-{
-    ::IDirectSoundCaptureBuffer* tmp = pimpl_->create_buffer(f, buffer_size);
-    return direct_sound_capture_buffer(tmp, f, buffer_size);
-}
-
-direct_sound_capture_buffer
-direct_sound_capture::create_buffer(const pcm_format& f)
-{
-    const std::size_t buffer_size = f.optimal_buffer_size();
-    ::IDirectSoundCaptureBuffer* tmp = pimpl_->create_buffer(f, buffer_size);
-    return direct_sound_capture_buffer(tmp, f, buffer_size);
 }
 
 } } // End namespaces audio, hamigaki.

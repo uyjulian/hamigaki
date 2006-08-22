@@ -19,6 +19,7 @@
     #include <hamigaki/iostreams/arbitrary_positional_facade.hpp>
     #include <boost/ptr_container/ptr_vector.hpp>
     #include <vector>
+    #include "detail/wave_format_ex.hpp"
     #include <windows.h>
     #include <mmsystem.h>
 #else
@@ -204,24 +205,10 @@ public:
         , block_size_(f.block_size())
         , pos_(0), has_buffer_(false), format_(f)
     {
-        BOOST_ASSERT(f.channels > 0);
-        BOOST_ASSERT(f.channels <= 0xFFFF);
-        BOOST_ASSERT(block_size_ > 0);
-        BOOST_ASSERT(block_size_ <= 0xFFFF);
-        BOOST_ASSERT(f.bits() > 0);
-        BOOST_ASSERT(f.bits() <= 0xFFFF);
-
         if (buffer_size % block_size_ != 0)
             throw BOOST_IOSTREAMS_FAILURE("invalid buffer size");
 
-        ::WAVEFORMATEX fmt;
-        fmt.wFormatTag = WAVE_FORMAT_PCM;
-        fmt.nChannels = static_cast<unsigned short>(f.channels);
-        fmt.nSamplesPerSec = f.rate;
-        fmt.nAvgBytesPerSec = f.rate * block_size_;
-        fmt.nBlockAlign = static_cast<unsigned short>(block_size_);
-        fmt.wBitsPerSample = static_cast<unsigned short>(f.bits());
-        fmt.cbSize = 0;
+        detail::wave_format_ex fmt(f);
 
         ::MMRESULT res = ::waveOutOpen(
             &handle_, WAVE_MAPPER, &fmt,
@@ -333,24 +320,10 @@ public:
         , block_size_(f.block_size())
         , pos_(0), has_buffer_(false), format_(f)
     {
-        BOOST_ASSERT(f.channels > 0);
-        BOOST_ASSERT(f.channels <= 0xFFFF);
-        BOOST_ASSERT(block_size_ > 0);
-        BOOST_ASSERT(block_size_ <= 0xFFFF);
-        BOOST_ASSERT(f.bits() > 0);
-        BOOST_ASSERT(f.bits() <= 0xFFFF);
-
         if (buffer_size % block_size_ != 0)
             throw BOOST_IOSTREAMS_FAILURE("invalid buffer size");
 
-        ::WAVEFORMATEX fmt;
-        fmt.wFormatTag = WAVE_FORMAT_PCM;
-        fmt.nChannels = static_cast<unsigned short>(f.channels);
-        fmt.nSamplesPerSec = f.rate;
-        fmt.nAvgBytesPerSec = f.rate * block_size_;
-        fmt.nBlockAlign = static_cast<unsigned short>(block_size_);
-        fmt.wBitsPerSample = static_cast<unsigned short>(f.bits());
-        fmt.cbSize = 0;
+        detail::wave_format_ex fmt(f);
 
         ::MMRESULT res = ::waveInOpen(
             &handle_, WAVE_MAPPER, &fmt,
