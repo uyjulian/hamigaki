@@ -68,6 +68,26 @@ private:
     bool is_open_;
 
     std::streamsize write_blocks(const float* s, std::streamsize n);
+
+#if BOOST_WORKAROUND(_MSC_VER, <= 1400)
+    std::streamsize read_blocks(float* s, std::streamsize n)
+    {
+        BOOST_ASSERT(false);
+        return -1;
+    }
+
+    void close_with_flush(const float* s, std::streamsize n)
+    {
+        BOOST_ASSERT(false);
+    }
+
+    std::streampos seek_blocks(
+        boost::iostreams::stream_offset off, BOOST_IOS::seekdir way)
+    {
+        BOOST_ASSERT(false);
+        return -1;
+    }
+#endif
 };
 
 template<typename Sink>
