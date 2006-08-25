@@ -44,7 +44,6 @@ lib hamigaki_audio
         [ common-names ]
         <include>$(HAMIGAKI_ROOT)  <sysinclude>$(HAMIGAKI_ROOT)
         <include>$(BOOST_INCLUDE)  <sysinclude>$(BOOST_INCLUDE)
-        <vc-8_0><*><runtime-link>static
         <vc-8_0><*><cflags>-wd4996
         <vc-8_0><*><cflags>-wd4819
     :

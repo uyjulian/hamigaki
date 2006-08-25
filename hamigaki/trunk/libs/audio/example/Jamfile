@@ -27,7 +27,6 @@ template audio
       <include>$(HAMIGAKI_ROOT)  <sysinclude>$(HAMIGAKI_ROOT)
       <include>$(BOOST_INCLUDE)  <sysinclude>$(BOOST_INCLUDE)
       <library-path>$(BOOST_LIBPATH)
-      <vc-8_0><*><runtime-link>static
       <vc-8_0><*><cflags>-wd4996
       <vc-8_0><*><cflags>-wd4819
       <mingw><*><find-library>winmm
@@ -181,25 +180,6 @@ exe wav2aif
         wav2aif.cpp
         <template>audio
     :
-    ;
-
-stage run
-    : <exe>aiff_play
-      <exe>asio_example
-      <exe>ds_capture
-      <exe>falcom_play
-      <exe>frog_round
-      <exe>ogg_play
-      <exe>pcm_play
-      <exe>pcm_record
-      <exe>raw_play
-      <exe>vorbis_encoder_example
-      <exe>vorbis_file_example
-      <exe>wav2aif
-    :
-    :
-      release
-      <suppress>true
     ;
 
 }
