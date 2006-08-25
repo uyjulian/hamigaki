@@ -18,7 +18,7 @@
 #include <cstring>
 #include <string>
 
-#if defined(BOOST_WINDOWS)
+#if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
 struct _GUID;
 #endif
 
@@ -60,7 +60,7 @@ public:
     }
 #endif
 
-#if defined(BOOST_WINDOWS)
+#if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
     uuid(const ::_GUID& id)
     {
 #if defined(BOOST_BIG_ENDIAN)
