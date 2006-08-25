@@ -8,18 +8,24 @@
 //  See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
 
 #define HAMIGAKI_IOSTREAMS_SOURCE
+#define NOMINMAX
 #include <hamigaki/iostreams/device/tmp_file.hpp>
 #include <boost/config.hpp>
 #include <boost/iostreams/detail/ios.hpp>
 #include <boost/noncopyable.hpp>
 
 #if defined(BOOST_WINDOWS)
-    #include <cstdlib>
+    #include <hamigaki/detail/random.hpp>
+    #include <boost/format.hpp>
     #include <windows.h>
 #else
     #include <sys/stat.h>
     #include <fcntl.h>
     #include <unistd.h>
+#endif
+
+#if defined(BOOST_WINDOWS)
+using namespace hamigaki::detail;
 #endif
 
 namespace hamigaki { namespace iostreams {
@@ -50,17 +56,14 @@ std::string get_temp_dir()
     return buf;
 }
 
-std::string make_tmp_filename(const std::string& tmpdir)
+std::string make_tmp_filename(const std::string& tmpdir, boost::uint32_t rnd)
 {
-    char buf[MAX_PATH];
-    ::DWORD n = std::rand() ^ ::GetTickCount();
-    ::GetTempFileName(tmpdir.c_str(), "HAM", n, buf);
-    return std::string(buf);
+    return (boost::format("%1%hamigaki_io_%2$08x.tmp") % tmpdir % rnd).str();
 }
 
-::HANDLE create_temp_file(const std::string& tmpdir)
+::HANDLE create_temp_file(const std::string& tmpdir, boost::uint32_t rnd)
 {
-    return ::CreateFile(make_tmp_filename(tmpdir).c_str(),
+    return ::CreateFile(make_tmp_filename(tmpdir, rnd).c_str(),
         GENERIC_READ|GENERIC_WRITE, 0, 0,
         CREATE_NEW, FILE_FLAG_DELETE_ON_CLOSE, 0);
 }
@@ -70,7 +73,7 @@ std::string make_tmp_filename(const std::string& tmpdir)
 class tmp_file::impl : boost::noncopyable
 {
 public:
-    impl()
+    explicit impl(boost::uint32_t seed)
     {
         const std::string& tmpdir = get_temp_dir();
         if (!is_directory(tmpdir))
@@ -78,7 +81,7 @@ public:
 
         for (int i = 0; i < 10; ++i)
         {
-            handle_ = create_temp_file(tmpdir);
+            handle_ = create_temp_file(tmpdir, random_ui32(seed));
             if (handle_ != INVALID_HANDLE_VALUE)
                 break;
         }
@@ -239,7 +242,20 @@ private:
 #endif // not defined(BOOST_WINDOWS)
 
 tmp_file::tmp_file()
+#if defined(BOOST_WINDOWS)
+    : pimpl_(new impl(random_seed()))
+#else
     : pimpl_(new impl())
+#endif
+{
+}
+
+tmp_file::tmp_file(boost::uint32_t seed)
+#if defined(BOOST_WINDOWS)
+   : pimpl_(new impl(seed))
+#else
+    : pimpl_(new impl())
+#endif
 {
 }
 

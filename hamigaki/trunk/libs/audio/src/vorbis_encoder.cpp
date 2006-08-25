@@ -8,16 +8,24 @@
 //  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
 
 #define HAMIGAKI_AUDIO_SOURCE
+#define NOMINMAX
 #include <hamigaki/audio/vorbis_encoder.hpp>
 #include <hamigaki/audio/detail/endian.hpp>
 #include <vorbis/vorbisenc.h>
-#include <cstdlib>
-#include <ctime>
+
+#include <hamigaki/detail/random.hpp>
+
+using namespace hamigaki::detail;
 
 namespace hamigaki { namespace audio {
 
 namespace detail
 {
+
+HAMIGAKI_AUDIO_DECL int random_serial_no()
+{
+    return static_cast<int>(random_i32());
+}
 
 class vorbisenc
 {
@@ -32,7 +40,7 @@ public:
         return rate_;
     }
 
-    void open(void* self, long channels, long rate, float quality,
+    void open(void* self, long channels, long rate, float quality, int serialno,
         vorbis_encoder_base::write_func write,
         vorbis_encoder_base::close_func close)
     {
@@ -46,10 +54,10 @@ public:
 
         ::vorbis_encode_init_vbr(&vi_, channels, rate, quality);
 
-        open_impl();
+        open_impl(serialno);
     }
 
-    void open(void* self, long channels, long rate,
+    void open(void* self, long channels, long rate, int serialno,
         const vorbis_encode_params& params,
         vorbis_encoder_base::write_func write,
         vorbis_encoder_base::close_func close)
@@ -64,7 +72,7 @@ public:
         ::vorbis_encode_init(&vi_, channels, rate,
             params.max_bitrate, params.nominal_bitrate, params.min_bitrate);
 
-        open_impl();
+        open_impl(serialno);
     }
 
     void close()
@@ -114,15 +122,14 @@ private:
     vorbis_encoder_base::write_func write_;
     vorbis_encoder_base::close_func close_;
 
-    void open_impl()
+    void open_impl(int serialno)
     {
         ::vorbis_comment_init(&vc_);
 
         ::vorbis_analysis_init(&vd_, &vi_);
         ::vorbis_block_init(&vd_, &vb_);
 
-        std::srand(std::time(0));
-        ::ogg_stream_init(&os_, std::rand());
+        ::ogg_stream_init(&os_, serialno);
 
         ::ogg_packet header;
         ::ogg_packet header_comm;
@@ -189,7 +196,7 @@ vorbis_encoder_base::~vorbis_encoder_base()
 }
 
 void vorbis_encoder_base::open(
-    void* self, long channels, long rate, float quality,
+    void* self, long channels, long rate, float quality, int serialno,
     vorbis_encoder_base::write_func write,
     vorbis_encoder_base::close_func close)
 {
@@ -197,13 +204,13 @@ void vorbis_encoder_base::open(
         this->close();
 
     vorbisenc& enc = *static_cast<vorbisenc*>(ptr_);
-    enc.open(self, channels, rate, quality, write, close);
+    enc.open(self, channels, rate, quality, serialno, write, close);
     is_open_ = true;
     block_size(channels);
 }
 
 void vorbis_encoder_base::open(
-    void* self, long channels, long rate,
+    void* self, long channels, long rate, int serialno,
     const vorbis_encode_params& params,
     vorbis_encoder_base::write_func write,
     vorbis_encoder_base::close_func close)
@@ -212,7 +219,7 @@ void vorbis_encoder_base::open(
         this->close();
 
     vorbisenc& enc = *static_cast<vorbisenc*>(ptr_);
-    enc.open(self, channels, rate, params, write, close);
+    enc.open(self, channels, rate, serialno, params, write, close);
     is_open_ = true;
     block_size(channels);
 }

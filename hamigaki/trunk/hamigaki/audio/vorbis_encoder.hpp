@@ -37,6 +37,8 @@ struct vorbis_encode_params
 namespace detail
 {
 
+HAMIGAKI_AUDIO_DECL int random_serial_no();
+
 class HAMIGAKI_AUDIO_DECL vorbis_encoder_base
     : public hamigaki::iostreams::
         arbitrary_positional_facade<vorbis_encoder_base,float,255>
@@ -54,10 +56,10 @@ public:
     long channels() const;
     long rate() const;
 
-    void open(void* self, long channels, long rate, float quality,
+    void open(void* self, long channels, long rate, float quality, int serialno,
         write_func write, close_func close);
 
-    void open(void* self, long channels, long rate,
+    void open(void* self, long channels, long rate, int serialno,
         const vorbis_encode_params& params,
         write_func write, close_func close);
 
@@ -97,20 +99,21 @@ public:
     typedef float char_type;
 
     vorbis_file_sink_impl(
-            const Sink& sink, long channels, long rate, float quality)
+            const Sink& sink, long channels, long rate,
+            float quality, int serialno)
         : sink_(sink)
     {
-        base_.open(&sink_, channels, rate, quality,
+        base_.open(&sink_, channels, rate, quality, serialno,
             &vorbis_file_sink_impl::write_func,
             &vorbis_file_sink_impl::close_func);
     }
 
     vorbis_file_sink_impl(
-            const Sink& sink, long channels, long rate,
+            const Sink& sink, long channels, long rate, int serialno,
             const vorbis_encode_params& params)
         : sink_(sink)
     {
-        base_.open(&sink_, channels, rate, params,
+        base_.open(&sink_, channels, rate, serialno, params,
             &vorbis_file_sink_impl::write_func,
             &vorbis_file_sink_impl::close_func);
     }
@@ -173,14 +176,30 @@ public:
 
     basic_vorbis_file_sink(
             const Sink& sink, long channels, long rate, float quality=0.1f)
-        : pimpl_(new impl_type(sink, channels, rate, quality))
+        : pimpl_(new impl_type(
+            sink, channels, rate, quality, detail::random_serial_no()))
+    {
+    }
+
+    basic_vorbis_file_sink(
+            const Sink& sink, long channels, long rate,
+            float quality, int serialno)
+        : pimpl_(new impl_type(sink, channels, rate, quality, serialno))
     {
     }
 
     basic_vorbis_file_sink(
             const Sink& sink, long channels, long rate,
             const vorbis_encode_params& params)
-        : pimpl_(new impl_type(sink, channels, rate, params))
+        : pimpl_(new impl_type(sink, channels, rate,
+            detail::random_serial_no(), params))
+    {
+    }
+
+    basic_vorbis_file_sink(
+            const Sink& sink, long channels, long rate, int serialno,
+            const vorbis_encode_params& params)
+        : pimpl_(new impl_type(sink, channels, rate, serialno, params))
     {
     }
 
@@ -228,9 +247,26 @@ public:
     }
 
     vorbis_file_sink(const std::string& path,
+            long channels, long rate, float quality, int serialno)
+        : base_type(hamigaki::iostreams::file_sink(
+            path, BOOST_IOS::out|BOOST_IOS::binary),
+            channels, rate, quality, serialno)
+    {
+    }
+
+    vorbis_file_sink(const std::string& path,
             long channels, long rate, const vorbis_encode_params& params)
         : base_type(hamigaki::iostreams::file_sink(
             path, BOOST_IOS::out|BOOST_IOS::binary), channels, rate, params)
+    {
+    }
+
+    vorbis_file_sink(const std::string& path,
+            long channels, long rate, int serialno,
+            const vorbis_encode_params& params)
+        : base_type(hamigaki::iostreams::file_sink(
+            path, BOOST_IOS::out|BOOST_IOS::binary),
+            channels, rate, serialno, params)
     {
     }
 };
@@ -245,10 +281,27 @@ make_vorbis_file_sink(
 
 template<typename Sink>
 inline basic_vorbis_file_sink<Sink>
+make_vorbis_file_sink(
+    const Sink& sink, long channels, long rate, float quality, int serialno)
+{
+    return
+        basic_vorbis_file_sink<Sink>(sink, channels, rate, quality, serialno);
+}
+
+template<typename Sink>
+inline basic_vorbis_file_sink<Sink>
 make_vorbis_file_sink(const Sink& sink,
     long channels, long rate, const vorbis_encode_params& params)
 {
     return basic_vorbis_file_sink<Sink>(sink, channels, rate, params);
+}
+
+template<typename Sink>
+inline basic_vorbis_file_sink<Sink>
+make_vorbis_file_sink(const Sink& sink,
+    long channels, long rate, int serialno, const vorbis_encode_params& params)
+{
+    return basic_vorbis_file_sink<Sink>(sink, channels, rate, serialno, params);
 }
 
 } } // End namespaces audio, hamigaki.

@@ -15,6 +15,7 @@
 #include <hamigaki/iostreams/catable.hpp>
 #include <boost/iostreams/categories.hpp>
 #include <boost/iostreams/positioning.hpp>
+#include <boost/cstdint.hpp>
 #include <boost/shared_ptr.hpp>
 #include <string>
 
@@ -33,6 +34,7 @@ public:
     {};
 
     tmp_file();
+    explicit tmp_file(boost::uint32_t seed);
 
     std::streamsize read(char* s, std::streamsize n);
     std::streamsize write(const char* s, std::streamsize n);
