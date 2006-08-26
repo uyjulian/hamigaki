@@ -10,7 +10,7 @@
 
 #include <boost/config.hpp>
 
-#include <boost/crc.hpp>
+#include <hamigaki/hash.hpp>
 #include <boost/cstdint.hpp>
 #include <ctime>
 #include <time.h>
@@ -30,37 +30,48 @@
 
 namespace hamigaki { namespace detail { namespace posix {
 
-template<class Crc, class T>
-inline void crc_process_bytes(Crc& crc, const T& t)
-{
-    crc.process_bytes(&t, sizeof(T));
-}
-
 inline boost::uint32_t random_seed()
 {
-    boost::crc_32_type crc;
+    std::size_t seed = 0;
 
-#if defined(BOOST_HAS_GETTIMEOFDAY)
+#if defined(__i386__)
+    boost::uint32_t low;
+    boost::uint32_t high;
+    __asm__
+    (
+        "rdtsc\n\t"
+        "movl %%eax, %0\n\t"
+        "movl %%edx, %1" ::
+        "m"(low), "m"(high) :
+        "%eax", "%edx"
+    );
+    boost::hash_combine(seed, low);
+    boost::hash_combine(seed, high);
+#elif defined(BOOST_HAS_GETTIMEOFDAY)
     ::timeval tv;
     ::gettimeofday(&tv, 0);
-    crc_process_bytes(crc, tv);
+    seed ^= hamigaki::hash_value_integer(tv.tv_sec);
+    seed ^= hamigaki::hash_value_integer(tv.tv_usec);
 #elif defined(BOOST_HAS_CLOCK_GETTIME)
     ::timespec ts;
-    if (::clock_gettime(CLOCK_REALTIME, &ts) == 0)
-        crc_process_bytes(crc, ts);
-    else
-        crc_process_bytes(crc, std::time(0));
+    ::clock_gettime(CLOCK_REALTIME, &ts)
+    seed ^= hamigaki::hash_value_integer(ts.tv_sec);
+    seed ^= hamigaki::hash_value_integer(ts.tv_nsec);
 #else
-    crc_process_bytes(crc, std::time(0));
+    seed ^= hamigaki::hash_value_integer(std::time(0));
 #endif
 
-    crc_process_bytes(crc, ::getpid());
+    seed ^= hamigaki::hash_value_integer(::getpid());
 
 #if !defined(BOOST_DISABLE_THREADS)
-    crc_process_bytes(crc, ::pthread_self());
+    ::pthread_t tid = ::pthread_self();
+    boost::hash_range(
+        seed,
+        reinterpret_cast<unsigned char*>(&tid),
+        reinterpret_cast<unsigned char*>(&tid + 1)
+    );
 #endif
-
-    return crc.checksum();
+    return hamigaki::hash_value_to_ui32(seed);
 }
 
 } } } // End namespaces posix, detail, hamigaki.

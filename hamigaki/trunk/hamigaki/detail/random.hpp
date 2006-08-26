@@ -8,9 +8,7 @@
 #ifndef HAMIGAKI_DETAIL_RANDOM_HPP
 #define HAMIGAKI_DETAIL_RANDOM_HPP
 
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/uniform_int.hpp>
-#include <boost/random/variate_generator.hpp>
+#include <boost/random/linear_congruential.hpp>
 #include <boost/config.hpp>
 #include <limits>
 
@@ -35,18 +33,11 @@ inline boost::uint32_t random_seed()
 
 inline boost::int32_t random_i32(boost::uint32_t seed)
 {
-    boost::mt19937 rng(seed);
-    boost::uniform_int<boost::int32_t> dist(
-        (std::numeric_limits<boost::int32_t>::min)(),
-        (std::numeric_limits<boost::int32_t>::max)()
-    );
-
-    boost::variate_generator<
-        boost::mt19937&,
-        boost::uniform_int<boost::int32_t>
-    > gen(rng, dist);
-
-    return gen();
+#if defined(BOOST_NO_INTEGRAL_INT64_T)
+    return boost::minstd_rand(seed)();
+#else
+    return boost::rand48(static_cast<boost::int32_t>(seed))();
+#endif
 }
 
 inline boost::int32_t random_i32()
@@ -56,15 +47,7 @@ inline boost::int32_t random_i32()
 
 inline boost::uint32_t random_ui32(boost::uint32_t seed)
 {
-    boost::mt19937 rng(seed);
-    boost::uniform_int<boost::uint32_t> dist(0,0xFFFFFFFF);
-
-    boost::variate_generator<
-        boost::mt19937&,
-        boost::uniform_int<boost::uint32_t>
-    > gen(rng, dist);
-
-    return gen();
+    return static_cast<boost::uint32_t>(random_i32(seed));
 }
 
 inline boost::uint32_t random_ui32()

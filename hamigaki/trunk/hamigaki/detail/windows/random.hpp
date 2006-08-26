@@ -8,35 +8,18 @@
 #ifndef HAMIGAKI_DETAIL_WINDOWS_RANDOM_HPP
 #define HAMIGAKI_DETAIL_WINDOWS_RANDOM_HPP
 
-#include <boost/crc.hpp>
+#include <hamigaki/hash.hpp>
 #include <boost/cstdint.hpp>
 #include <windows.h>
 
 namespace hamigaki { namespace detail { namespace windows {
 
-template<class Crc, class T>
-inline void crc_process_bytes(Crc& crc, const T& t)
-{
-    crc.process_bytes(&t, sizeof(T));
-}
-
 inline boost::uint32_t random_seed()
 {
-    boost::crc_32_type crc;
-
-    ::LARGE_INTEGER c;
-    if (::QueryPerformanceCounter(&c) == TRUE)
-        crc_process_bytes(crc, c);
-    else
-        crc_process_bytes(crc, ::GetTickCount());
-
-    ::SYSTEMTIME st;
-    ::GetSystemTime(&st);
-    crc_process_bytes(crc, st);
-
-    crc_process_bytes(crc, ::GetCurrentThreadId());
-
-    return crc.checksum();
+    std::size_t seed = 0;
+    boost::hash_combine(seed, ::GetTickCount());
+    boost::hash_combine(seed, ::GetCurrentThreadId());
+    return hamigaki::hash_value_to_ui32(seed);
 }
 
 } } } // End namespaces windows, detail, hamigaki.
