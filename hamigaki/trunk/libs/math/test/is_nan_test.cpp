@@ -62,7 +62,7 @@ void is_nan_test_aux()
 void is_nan_test()
 {
 #if defined(__BORLANDC__)
-     ::_control87(EM_INVALID,MCW_EM);
+     ::_control87(MCW_EM,MCW_EM);
 #endif
 
     is_nan_test_aux<float>();
