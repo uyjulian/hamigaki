@@ -21,7 +21,6 @@
 
 #if defined(BOOST_WINDOWS) && !defined(__GNUC__)
 #pragma comment(lib, "ole32.lib")
-#pragma comment(lib, "user32.lib")
 #endif
 
 namespace hamigaki { namespace audio {

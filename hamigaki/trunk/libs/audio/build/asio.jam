@@ -46,12 +46,12 @@ template asio
         <include>$(ASIO_INCLUDE) <sysinclude>$(ASIO_INCLUDE)
         :
       ]
-      [ unless $(NO_ASIO)
+      [
+        unless $(NO_ASIO)
         :
         <define>HAMIGAKI_HAS_ASIO=1
         <mingw><*><find-library>ole32
-        <mingw><*><find-library>user32
         <gcc><*><find-library>ole32
-        <gcc><*><find-library>user32 ]
+      ]
     : # build variants
    ;

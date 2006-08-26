@@ -72,7 +72,6 @@ dll hamigaki_audio
         <vc-8_0><*><cflags>-wd4996
         <vc-8_0><*><cflags>-wd4819
         <mingw><*><find-library>winmm
-        <mingw><*><find-library>user32
     :
         debug release
     ;

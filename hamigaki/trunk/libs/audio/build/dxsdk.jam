@@ -54,12 +54,12 @@ template dxsdk
         :
       ]
       [ cond $(DXSDK_LIBPATH) : <library-path>$(DXSDK_LIBPATH) : ]
-      [ unless $(NO_DXSDK)
+      [
+        unless $(NO_DXSDK)
         :
         <define>HAMIGAKI_HAS_DXSDK=1
         <mingw><*><find-library>dsound
-        <mingw><*><find-library>dxguid
         <gcc><*><find-library>dsound
-        <gcc><*><find-library>dxguid ]
+      ]
     : # build variants
    ;

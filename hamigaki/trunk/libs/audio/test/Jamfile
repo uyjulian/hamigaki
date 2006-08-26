@@ -46,7 +46,6 @@ template audio
       <vc-8_0><*><linkflags>-INCREMENTAL:NO
       <vc-7_1><*><linkflags>-INCREMENTAL:NO
       <mingw><*><find-library>winmm
-      <mingw><*><find-library>user32
       <borland-5_8_2><*><cflags>-w-8062
       <borland-5_8_2><*><cxxflags>-w-8092
     : # build variants
