@@ -30,6 +30,7 @@ rule iostreams-test ( sources + : requirements * )
         <vc-8_0><*><cflags>-wd4819
         <vc-8_0><*><linkflags>-INCREMENTAL:NO
         <vc-7_1><*><linkflags>-INCREMENTAL:NO
+        <borland-5_8_2><*><cflags>-w-8062
         find-boost-unit_test_framework-lib
         $(requirements)
     ] ;
@@ -41,5 +42,6 @@ test-suite iostreams :
     [ iostreams-test concatenate_test.cpp : ]
     [ iostreams-test lazy_restrict_test.cpp : ]
     [ iostreams-test repeat_test.cpp : ]
+    [ iostreams-test tmp_file_test.cpp <lib>../build/hamigaki_iostreams : ]
     [ iostreams-test urlsafe_base64_test.cpp : ]
     ;
