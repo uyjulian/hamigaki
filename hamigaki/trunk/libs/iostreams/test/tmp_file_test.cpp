@@ -27,7 +27,9 @@ void tmp_file_test()
     const std::streamsize size = static_cast<std::streamsize>(sizeof(data));
 
     io_ex::tmp_file tmp;
-    const io_ex::tmp_file dummy[10];
+
+    io_ex::tmp_file dummy[10];
+    dummy[0].close();
 
     BOOST_CHECK_EQUAL(tmp.write(data, size), size);
     BOOST_CHECK_EQUAL(io::position_to_offset(tmp.seek(0, BOOST_IOS::beg)), 0);
