@@ -19,7 +19,9 @@
 #include <boost/shared_ptr.hpp>
 #include <string>
 
-#include <boost/config/abi_prefix.hpp>
+#ifdef BOOST_HAS_ABI_HEADERS
+    #include BOOST_ABI_PREFIX
+#endif
 
 namespace hamigaki { namespace iostreams {
 
@@ -53,6 +55,8 @@ private:
 
 HAMIGAKI_IOSTREAMS_CATABLE(hamigaki::iostreams::tmp_file, 0)
 
-#include <boost/config/abi_suffix.hpp>
+#ifdef BOOST_HAS_ABI_HEADERS
+    #include BOOST_ABI_SUFFIX
+#endif
 
 #endif // HAMIGAKI_IOSTREAMS_DEVICE_TMP_FILE_HPP

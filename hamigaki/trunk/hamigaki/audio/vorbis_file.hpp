@@ -35,7 +35,9 @@
 #include <limits>
 #include <utility>
 
-#include <boost/config/abi_prefix.hpp>
+#ifdef BOOST_HAS_ABI_HEADERS
+    #include BOOST_ABI_PREFIX
+#endif
 
 namespace hamigaki { namespace audio {
 
@@ -440,6 +442,8 @@ make_vorbis_file_source(const Source& src)
 
 HAMIGAKI_IOSTREAMS_CATABLE(hamigaki::audio::basic_vorbis_file_source, 1)
 
-#include <boost/config/abi_suffix.hpp>
+#ifdef BOOST_HAS_ABI_HEADERS
+    #include BOOST_ABI_SUFFIX
+#endif
 
 #endif // HAMIGAKI_AUDIO_VORBIS_FILE_HPP

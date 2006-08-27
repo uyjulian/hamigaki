@@ -16,7 +16,9 @@
 #include <boost/iostreams/categories.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <boost/config/abi_prefix.hpp>
+#ifdef BOOST_HAS_ABI_HEADERS
+    #include BOOST_ABI_PREFIX
+#endif
 
 #if defined(BOOST_WINDOWS) && !defined(__GNUC__)
 #pragma comment(lib, "winmm.lib")
@@ -86,6 +88,8 @@ private:
 
 } } // End namespaces audio, hamigaki.
 
-#include <boost/config/abi_suffix.hpp>
+#ifdef BOOST_HAS_ABI_HEADERS
+    #include BOOST_ABI_SUFFIX
+#endif
 
 #endif // HAMIGAKI_AUDIO_PCM_DEVICE_HPP

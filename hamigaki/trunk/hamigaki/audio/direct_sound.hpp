@@ -20,7 +20,9 @@
 #include <boost/optional.hpp>
 #include <string>
 
-#include <boost/config/abi_prefix.hpp>
+#ifdef BOOST_HAS_ABI_HEADERS
+    #include BOOST_ABI_PREFIX
+#endif
 
 #if defined(BOOST_WINDOWS) && !defined(__GNUC__)
 #pragma comment(lib, "dsound.lib")
@@ -252,6 +254,8 @@ private:
 
 } } // End namespaces audio, hamigaki.
 
-#include <boost/config/abi_suffix.hpp>
+#ifdef BOOST_HAS_ABI_HEADERS
+    #include BOOST_ABI_SUFFIX
+#endif
 
 #endif // HAMIGAKI_AUDIO_DIRECT_SOUND_HPP

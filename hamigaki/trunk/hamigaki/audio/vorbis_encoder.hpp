@@ -23,7 +23,9 @@
 #include <boost/iostreams/write.hpp>
 #include <boost/noncopyable.hpp>
 
-#include <boost/config/abi_prefix.hpp>
+#ifdef BOOST_HAS_ABI_HEADERS
+    #include BOOST_ABI_PREFIX
+#endif
 
 namespace hamigaki { namespace audio {
 
@@ -306,6 +308,8 @@ make_vorbis_file_sink(const Sink& sink,
 
 } } // End namespaces audio, hamigaki.
 
-#include <boost/config/abi_suffix.hpp>
+#ifdef BOOST_HAS_ABI_HEADERS
+    #include BOOST_ABI_SUFFIX
+#endif
 
 #endif // HAMIGAKI_AUDIO_VORBIS_ENCODER_HPP
