@@ -23,6 +23,10 @@
 #include <cstddef>
 #include <stddef.h>
 
+#if defined(__GNUC__)
+    #include <hamigaki/coroutine/detail/gcc/sjlj_context.hpp>
+#endif
+
 #if defined(_MSC_FULL_VER) && (_MSC_FULL_VER >= 13012035)
     #define HAMIGAKI_COROUTINE_HAS_READFSDWORD
     extern "C" unsigned long __readfsdword(unsigned long);
@@ -86,39 +90,51 @@ inline bool is_fiber()
 class fiber : private boost::noncopyable
 {
 public:
-    fiber() : contex_(0), delete_on_exit_(false)
+    fiber() : context_(0), delete_on_exit_(false)
     {
     }
 
     fiber(std::size_t stack_size, start_routine func, void* data)
-        : contex_(::CreateFiber(stack_size, func, data)), delete_on_exit_(true)
+        : context_(::CreateFiber(stack_size, func, data))
+        , delete_on_exit_(true), eh_ctx_(0)
     {
     }
 
     ~fiber()
     {
         if (delete_on_exit_)
-            ::DeleteFiber(contex_);
+            ::DeleteFiber(context_);
     }
 
     void yield_to(fiber& f)
     {
         if (is_fiber())
         {
-            if (contex_ == 0)
-                contex_ = get_current_fiber();
-            ::SwitchToFiber(f.contex_);
+            if (context_ == 0)
+                context_ = get_current_fiber();
+            switch_to(f);
         }
         else
         {
-            contex_ = ::ConvertThreadToFiber(0);
-            ::SwitchToFiber(f.contex_);
+            context_ = ::ConvertThreadToFiber(0);
+            switch_to(f);
         }
     }
 
 private:
-    void* contex_;
+    void* context_;
     bool delete_on_exit_;
+#if defined(__GNUC__)
+    detail::sjlj_context* eh_ctx_;
+#endif
+
+    void switch_to(fiber& f)
+    {
+#if defined(__GNUC__)
+        eh_ctx_ = detail::replace_sjlj_context(f.eh_ctx_);
+#endif
+        ::SwitchToFiber(f.context_);
+    }
 };
 
 } } } // End namespaces detail, coroutine, hamigaki.
