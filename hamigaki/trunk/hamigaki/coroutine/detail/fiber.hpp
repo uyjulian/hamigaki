@@ -23,7 +23,8 @@
 #include <cstddef>
 #include <stddef.h>
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) && defined(__USING_SJLJ_EXCEPTIONS__)
+    #define HAMIGAKI_COROUTINE_USE_SJLJ_CONTEXT
     #include <hamigaki/coroutine/detail/gcc/sjlj_context.hpp>
 #endif
 
@@ -96,7 +97,10 @@ public:
 
     fiber(std::size_t stack_size, start_routine func, void* data)
         : context_(::CreateFiber(stack_size, func, data))
-        , delete_on_exit_(true), eh_ctx_(0)
+        , delete_on_exit_(true)
+#if defined(HAMIGAKI_COROUTINE_USE_SJLJ_CONTEXT)
+        , eh_ctx_(0)
+#endif
     {
     }
 
@@ -124,13 +128,13 @@ public:
 private:
     void* context_;
     bool delete_on_exit_;
-#if defined(__GNUC__)
+#if defined(HAMIGAKI_COROUTINE_USE_SJLJ_CONTEXT)
     detail::sjlj_context* eh_ctx_;
 #endif
 
     void switch_to(fiber& f)
     {
-#if defined(__GNUC__)
+#if defined(HAMIGAKI_COROUTINE_USE_SJLJ_CONTEXT)
         eh_ctx_ = detail::replace_sjlj_context(f.eh_ctx_);
 #endif
         ::SwitchToFiber(f.context_);
