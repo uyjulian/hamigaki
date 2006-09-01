@@ -35,6 +35,60 @@ const unsigned long priority_level = DSSCL_PRIORITY;
 const unsigned long exclusive_level = DSSCL_EXCLUSIVE;
 const unsigned long write_primary_level = DSSCL_WRITEPRIMARY;
 
+namespace detail
+{
+
+namespace
+{
+
+::BOOL CALLBACK enum_devices_callback(
+    ::GUID* lpGuid, const char* lpcstrDescription,
+    const char* lpcstrModule, void* lpContext)
+{
+    try
+    {
+        device_info_iterator::self& self =
+            *reinterpret_cast<device_info_iterator::self*>(lpContext);
+
+        device_info info;
+        info.driver_guid = lpGuid ? uuid(*lpGuid) : uuid();
+        info.description = lpcstrDescription;
+        info.module_name = lpcstrModule;
+
+        self.yield(info);
+
+        return TRUE;
+    }
+    catch (...)
+    {
+    }
+
+    return FALSE;
+}
+
+} // namespace
+
+device_info enum_devices(device_info_iterator::self& self)
+{
+#if !defined(HAMIGAKI_AUDIO_NO_DS_ENUM)
+    ::DirectSoundEnumerateA(&enum_devices_callback, &self);
+#else
+    typedef HRESULT (WINAPI *DirectSoundEnumerateFuncPtr)(
+        LPDSENUMCALLBACK lpDSEnumCallback,
+        LPVOID lpContext
+    );
+
+    dynamic_link_library dsound("dsound.dll");
+    DirectSoundEnumerateFuncPtr func_ptr =
+        reinterpret_cast<DirectSoundEnumerateFuncPtr>(
+            dsound.get_proc_address("DirectSoundEnumerateA"));
+    (*func_ptr)(&enum_devices_callback, &self);
+#endif
+    self.exit();
+}
+
+} // namespace detail
+
 } // namespace direct_sound
 
 direct_sound_error::direct_sound_error(long error)
@@ -186,54 +240,7 @@ private:
     boost::shared_ptr< ::IDirectSoundBuffer> ptr_;
 };
 
-::BOOL CALLBACK ds_enum_callback_func(
-    ::GUID* lpGuid, const char* lpcstrDescription,
-    const char* lpcstrModule, void* lpContext)
-{
-    try
-    {
-        direct_sound::device_info info;
-        info.driver_guid = lpGuid ? uuid(*lpGuid) : uuid();
-        info.description = lpcstrDescription;
-        info.module_name = lpcstrModule;
-
-        detail::ds_enum_callback_base* ptr =
-            static_cast<detail::ds_enum_callback_base*>(lpContext);
-        return ptr->next(info) ? TRUE : FALSE;
-    }
-    catch (...)
-    {
-    }
-    return FALSE;
-}
-
-#if defined(HAMIGAKI_AUDIO_NO_DS_ENUM)
-typedef HRESULT (WINAPI *DirectSoundEnumerateFuncPtr)(
-    LPDSENUMCALLBACK lpDSEnumCallback,
-    LPVOID lpContext
-);
-#endif
-
 } // namespace
-
-namespace detail
-{
-
-HAMIGAKI_AUDIO_DECL
-void direct_sound_enumerate_impl(ds_enum_callback_base* ptr)
-{
-#if !defined(HAMIGAKI_AUDIO_NO_DS_ENUM)
-    ::DirectSoundEnumerateA(&ds_enum_callback_func, ptr);
-#else
-    dynamic_link_library dsound("dsound.dll");
-    DirectSoundEnumerateFuncPtr func_ptr =
-        reinterpret_cast<DirectSoundEnumerateFuncPtr>(
-            dsound.get_proc_address("DirectSoundEnumerateA"));
-    (*func_ptr)(&ds_enum_callback_func, ptr);
-#endif
-}
-
-} // namespace detail
 
 class direct_sound_buffer::impl : private direct_sound_buffer_base
 {

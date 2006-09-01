@@ -9,49 +9,29 @@
 
 #include <hamigaki/audio/direct_sound.hpp>
 #include <boost/test/unit_test.hpp>
-#include <iterator>
-#include <vector>
+#include <algorithm>
+#include <iostream>
 
 namespace audio = hamigaki::audio;
 namespace ds = audio::direct_sound;
 namespace ut = boost::unit_test;
 
-struct create_device
+struct print_device_name
 {
-    bool operator()(const ds::device_info& info) const
+    void operator()(const ds::device_info& info) const
     {
-        audio::direct_sound_device dev(info.driver_guid);
-        return true;
-    }
-};
-
-struct always_true
-{
-    bool operator()(const ds::device_info&) const
-    {
-        return true;
-    }
-};
-
-struct always_false
-{
-    bool operator()(const ds::device_info&) const
-    {
-        return false;
+        std::cout << info.description << '\n';
     }
 };
 
 void direct_sound_enumerate_test()
 {
-    audio::direct_sound_enumerate(create_device());
+    std::pair<
+        ds::device_info_iterator,
+        ds::device_info_iterator> r(ds::device_info_range());
 
-    {
-        std::vector<ds::device_info> vec;
-        audio::direct_sound_enumerate_copy(std::back_inserter(vec));
-    }
-
-    BOOST_CHECK(audio::direct_sound_find_if(always_true()));
-    BOOST_CHECK(!audio::direct_sound_find_if(always_false()));
+    std::cout << "The installed DirectSound drivers:\n";
+    std::for_each(r.first, r.second, print_device_name());
 }
 
 ut::test_suite* init_unit_test_suite(int, char* [])

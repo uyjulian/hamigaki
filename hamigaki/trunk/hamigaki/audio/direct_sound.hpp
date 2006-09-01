@@ -13,12 +13,13 @@
 #include <hamigaki/audio/detail/config.hpp>
 #include <hamigaki/audio/detail/auto_link/hamigaki_audio.hpp>
 #include <hamigaki/audio/pcm_format.hpp>
+#include <hamigaki/coroutine/generator.hpp>
 #include <hamigaki/uuid.hpp>
 #include <boost/iostreams/detail/ios.hpp>
 #include <boost/iostreams/categories.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/optional.hpp>
 #include <string>
+#include <utility>
 
 #ifdef BOOST_HAS_ABI_HEADERS
     #include BOOST_ABI_PREFIX
@@ -49,80 +50,25 @@ struct device_info
     std::string module_name;
 };
 
-} // namespace direct_sound
+typedef hamigaki::coroutine::generator<device_info> device_info_iterator;
 
 namespace detail
 {
 
-class ds_enum_callback_base
-{
-public:
-    virtual ~ds_enum_callback_base(){}
-
-    bool next(const direct_sound::device_info& info)
-    {
-        return do_next(info);
-    }
-
-private:
-    virtual bool do_next(const direct_sound::device_info& info) = 0;
-};
-
-template<class Function>
-struct ds_enum_callback : ds_enum_callback_base
-{
-    explicit ds_enum_callback(Function f) : func_(f)
-    {
-    }
-
-    Function func_;
-
-private:
-    bool do_next(const direct_sound::device_info& info) // virtual
-    {
-        return static_cast<bool>(func_(info));
-    }
-};
-
-HAMIGAKI_AUDIO_DECL
-void direct_sound_enumerate_impl(ds_enum_callback_base* ptr);
-
-template<class OutputIterator>
-struct copy_functor
-{
-    explicit copy_functor(OutputIterator out) : out_(out) {}
-
-    bool operator()(const direct_sound::device_info& info)
-    {
-        out_ = info;
-        ++out_;
-        return true;
-    }
-
-    OutputIterator out_;
-};
-
-template<class Predicate>
-struct find_functor
-{
-    explicit find_functor(Predicate pred) : pred_(pred) {}
-
-    bool operator()(const direct_sound::device_info& info)
-    {
-        if (pred_(info))
-        {
-            info_ = info;
-            return false;
-        }
-        else
-            return true;
-    }
-
-    Predicate pred_;
-    boost::optional<direct_sound::device_info> info_;
-};
+device_info enum_devices(device_info_iterator::self& self);
 
 } // namespace detail
+
+inline std::pair<device_info_iterator,device_info_iterator>
+device_info_range()
+{
+    return std::pair<device_info_iterator,device_info_iterator>(
+        device_info_iterator(detail::enum_devices),
+        device_info_iterator()
+    );
+}
+
+} // namespace direct_sound
 
 class HAMIGAKI_AUDIO_DECL direct_sound_error : public BOOST_IOSTREAMS_FAILURE
 {
@@ -134,29 +80,6 @@ public:
 private:
     long error_;
 };
-
-template<class Function>
-inline Function direct_sound_enumerate(Function f)
-{
-    detail::ds_enum_callback<Function> callback(f);
-    detail::direct_sound_enumerate_impl(&callback);
-    return callback.func_;
-}
-
-template<class OutputIterator>
-inline OutputIterator direct_sound_enumerate_copy(OutputIterator result)
-{
-    return direct_sound_enumerate(
-        detail::copy_functor<OutputIterator>(result)).out_;
-}
-
-template<class Predicate>
-inline boost::optional<direct_sound::device_info>
-direct_sound_find_if(Predicate pred)
-{
-    return direct_sound_enumerate(
-        detail::find_functor<Predicate>(pred)).info_;
-}
 
 class HAMIGAKI_AUDIO_DECL direct_sound_buffer
 {

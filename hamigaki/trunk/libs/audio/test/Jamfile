@@ -111,7 +111,8 @@ rule intialize_suite {
         TEST_SUITE +=
             [ audio-test direct_sound_test.cpp <template>dxsdk ]
             [ audio-test ds_capture_test.cpp <template>dxsdk ]
-            [ audio-test ds_enum_test.cpp <template>dxsdk ] ;
+            [ audio-test ds_enum_test.cpp <template>dxsdk
+              : <test-info>always_show_run_output ] ;
     }
 
     if ! $(NO_VORBIS)
