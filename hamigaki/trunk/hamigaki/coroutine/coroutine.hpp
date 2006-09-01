@@ -30,7 +30,7 @@
 #endif
 
 #if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
-    #define HAMIGAKI_DETAIL_BROKEN_BOOST_FUNCTION
+    #define HAMIGAKI_COROUTINE_BROKEN_BOOST_FUNCTION
     #include <hamigaki/coroutine/detail/borland/function1.hpp>
 #else
     #include <boost/function.hpp>
@@ -39,6 +39,12 @@
 #if defined(_MSC_VER)
     #pragma warning(push)
     #pragma warning(disable:4355)
+#endif
+
+#if defined(_MSC_VER) || defined(__GNUC__)
+    #define HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(result)
+#else
+    #define HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(result) return (result);
 #endif
 
 namespace hamigaki { namespace coroutine {
@@ -125,7 +131,7 @@ public:
 
 private:
     T t_;
-#if defined(HAMIGAKI_DETAIL_BROKEN_BOOST_FUNCTION)
+#if defined(HAMIGAKI_COROUTINE_BROKEN_BOOST_FUNCTION)
     detail::function1<T,self&> func_;
 #else
     boost::function1<T,self&> func_;

@@ -67,6 +67,7 @@ public:
         for (int i = min_; i < max_; ++i)
             self.yield(i);
         self.exit();
+        HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(0)
     }
 
 private:

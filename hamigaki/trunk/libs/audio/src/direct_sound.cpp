@@ -85,6 +85,7 @@ device_info enum_devices(device_info_iterator::self& self)
     (*func_ptr)(&enum_devices_callback, &self);
 #endif
     self.exit();
+    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(device_info())
 }
 
 } // namespace detail
