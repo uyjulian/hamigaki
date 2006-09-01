@@ -43,7 +43,9 @@ extern "C" {
 
 typedef void (__stdcall* start_routine)(void*);
 
-__declspec(dllimport) void* __stdcall CreateFiber(size_t, start_routine, void*);
+__declspec(dllimport)
+void* __stdcall CreateFiber(unsigned long, start_routine, void*);
+
 __declspec(dllimport) void __stdcall DeleteFiber(void*);
 __declspec(dllimport) void* __stdcall ConvertThreadToFiber(void*);
 __declspec(dllimport) void __stdcall SwitchToFiber(void*);
