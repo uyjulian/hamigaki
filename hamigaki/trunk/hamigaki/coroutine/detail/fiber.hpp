@@ -28,6 +28,11 @@
     #include <hamigaki/coroutine/detail/gcc/sjlj_context.hpp>
 #endif
 
+#if defined(__CYGWIN__)
+    #define HAMIGAKI_COROUTINE_USE_CYG_TLS
+    #include <hamigaki/coroutine/detail/cygwin/cyg_tls.hpp>
+#endif
+
 #if defined(_MSC_FULL_VER) && (_MSC_FULL_VER >= 13012035)
     #define HAMIGAKI_COROUTINE_HAS_READFSDWORD
     extern "C" unsigned long __readfsdword(unsigned long);
@@ -125,6 +130,13 @@ public:
         }
     }
 
+#if defined(HAMIGAKI_COROUTINE_USE_CYG_TLS)
+    void copy_cyg_tls_from(fiber& f)
+    {
+        copy_cyg_tls_first(context_, f.context_);
+    }
+#endif
+
 private:
     void* context_;
     bool delete_on_exit_;
@@ -134,6 +146,9 @@ private:
 
     void switch_to(fiber& f)
     {
+#if defined(HAMIGAKI_COROUTINE_USE_CYG_TLS)
+        copy_cyg_tls(f.context_, context_);
+#endif
 #if defined(HAMIGAKI_COROUTINE_USE_SJLJ_CONTEXT)
         eh_ctx_ = detail::replace_sjlj_context(f.eh_ctx_);
 #endif

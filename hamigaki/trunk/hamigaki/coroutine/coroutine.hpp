@@ -88,7 +88,11 @@ public:
     template<class Functor>
     coroutine(std::size_t stack_size, Functor func)
         : func_(func), state_(coro_detail::none)
+#if defined(HAMIGAKI_COROUTINE_USE_CYG_TLS)
+        , callee_(stack_size, startup_helper, this)
+#else
         , callee_(stack_size, startup, this)
+#endif
     {
     }
 
@@ -145,6 +149,16 @@ private:
         coro->state_ = coro_detail::exited;
         coro->callee_.yield_to(coro->caller_);
     }
+
+#if defined(HAMIGAKI_COROUTINE_USE_CYG_TLS)
+    static void __stdcall startup_helper(void* data)
+    {
+        HAMIGAKI_COROUTINE_DETAIL_ALLOCA_CYG_TLS();
+        coroutine* coro = static_cast<coroutine*>(data);
+        coro->callee_.copy_cyg_tls_from(coro->caller_);
+        startup(data);
+    }
+#endif
 };
 
 } } // End namespaces coroutine, hamigaki.
