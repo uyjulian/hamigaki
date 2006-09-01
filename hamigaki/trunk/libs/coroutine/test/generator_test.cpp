@@ -16,6 +16,18 @@ namespace ut = boost::unit_test;
 
 typedef coro::generator<int> generator_type;
 
+bool sentry_value;
+
+struct sentry
+{
+    void do_nothing() {}
+
+    ~sentry()
+    {
+        sentry_value = true;
+    }
+};
+
 class count_generator_body
 {
 public:
@@ -26,6 +38,9 @@ public:
 
     int operator()(generator_type::self& self)
     {
+        sentry gurad;
+        gurad.do_nothing();
+
         for (int i = min_; i < max_-1; ++i)
             self.yield(i);
         return max_-1;
@@ -46,6 +61,9 @@ public:
 
     int operator()(generator_type::self& self)
     {
+        sentry gurad;
+        gurad.do_nothing();
+
         for (int i = min_; i < max_; ++i)
             self.yield(i);
         self.exit();
@@ -62,22 +80,26 @@ void generator_test()
         generator_type gen(count_generator_body(0, 10));
         generator_type end;
 
+        sentry_value = false;
         BOOST_CHECK_EQUAL_COLLECTIONS(
             boost::make_counting_iterator(0),
             boost::make_counting_iterator(10),
             gen, end
         );
+        BOOST_CHECK(sentry_value);
     }
 
     {
         generator_type gen(count_generator_body2(0, 10));
         generator_type end;
 
+        sentry_value = false;
         BOOST_CHECK_EQUAL_COLLECTIONS(
             boost::make_counting_iterator(0),
             boost::make_counting_iterator(10),
             gen, end
         );
+        BOOST_CHECK(sentry_value);
     }
 }
 
