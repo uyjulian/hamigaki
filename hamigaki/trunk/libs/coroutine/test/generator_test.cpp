@@ -10,6 +10,9 @@
 #include <hamigaki/coroutine/generator.hpp>
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/test/unit_test.hpp>
+#include <algorithm>
+#include <iostream>
+#include <iterator>
 
 namespace coro = hamigaki::coroutine;
 namespace ut = boost::unit_test;
@@ -102,6 +105,12 @@ void generator_test()
         );
         BOOST_CHECK(sentry_value);
     }
+
+    std::copy(
+        generator_type(count_generator_body(0, 10)),
+        generator_type(),
+        std::ostream_iterator<int>(std::cout, "\n")
+    );
 }
 
 ut::test_suite* init_unit_test_suite(int, char* [])

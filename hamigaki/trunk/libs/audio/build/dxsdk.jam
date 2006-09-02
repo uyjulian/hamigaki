@@ -60,6 +60,7 @@ template dxsdk
         <define>HAMIGAKI_HAS_DXSDK=1
         <mingw><*><find-library>dsound
         <gcc><*><find-library>dsound
+        [ unless $(NT) : find-boost-thread-lib ]
       ]
     : # build variants
    ;
