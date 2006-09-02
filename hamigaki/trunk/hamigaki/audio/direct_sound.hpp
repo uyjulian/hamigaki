@@ -56,6 +56,7 @@ namespace detail
 {
 
 device_info enum_devices(device_info_iterator::self& self);
+device_info enum_capture_devices(device_info_iterator::self& self);
 
 } // namespace detail
 
@@ -64,6 +65,15 @@ device_info_range()
 {
     return std::pair<device_info_iterator,device_info_iterator>(
         device_info_iterator(detail::enum_devices),
+        device_info_iterator()
+    );
+}
+
+inline std::pair<device_info_iterator,device_info_iterator>
+capture_device_info_range()
+{
+    return std::pair<device_info_iterator,device_info_iterator>(
+        device_info_iterator(detail::enum_capture_devices),
         device_info_iterator()
     );
 }

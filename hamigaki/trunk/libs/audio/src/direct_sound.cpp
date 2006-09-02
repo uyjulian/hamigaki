@@ -88,6 +88,26 @@ device_info enum_devices(device_info_iterator::self& self)
     HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(device_info())
 }
 
+device_info enum_capture_devices(device_info_iterator::self& self)
+{
+#if !defined(HAMIGAKI_AUDIO_NO_DS_ENUM)
+    ::DirectSoundCaptureEnumerateA(&enum_devices_callback, &self);
+#else
+    typedef HRESULT (WINAPI *DirectSoundEnumerateFuncPtr)(
+        LPDSENUMCALLBACK lpDSEnumCallback,
+        LPVOID lpContext
+    );
+
+    dynamic_link_library dsound("dsound.dll");
+    DirectSoundEnumerateFuncPtr func_ptr =
+        reinterpret_cast<DirectSoundEnumerateFuncPtr>(
+            dsound.get_proc_address("DirectSoundCaptureEnumerateA"));
+    (*func_ptr)(&enum_devices_callback, &self);
+#endif
+    self.exit();
+    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(device_info())
+}
+
 } // namespace detail
 
 } // namespace direct_sound
