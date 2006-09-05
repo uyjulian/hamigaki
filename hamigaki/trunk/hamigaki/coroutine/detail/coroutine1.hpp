@@ -46,7 +46,7 @@ public:
     public:
         self(coroutine1* c) : coro_(c) {}
 
-        T1 yield(const R& r)
+        T1 yield(R r)
         {
             coro_->result_ = r;
             swap_context(
@@ -87,7 +87,7 @@ public:
         }
     }
 
-    R operator()(const T1& t1)
+    R operator()(T1 t1)
     {
         arg_ = t1;
         swap_context(caller_, callee_, detail::default_hint());
@@ -96,7 +96,7 @@ public:
         return *result_;
     }
 
-    boost::optional<R> operator()(const T1& t1, const std::nothrow_t&)
+    boost::optional<R> operator()(T1 t1, const std::nothrow_t&)
     {
         arg_ = t1;
         swap_context(caller_, callee_, detail::default_hint());

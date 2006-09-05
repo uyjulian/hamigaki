@@ -23,6 +23,7 @@
 
 #include <hamigaki/coroutine/detail/coroutine0.hpp>
 #include <hamigaki/coroutine/detail/coroutine1.hpp>
+#include <hamigaki/coroutine/detail/coroutine2.hpp>
 
 namespace hamigaki { namespace coroutines {
 
@@ -47,6 +48,17 @@ public:
     template<class Functor>
     coroutine(Functor func, std::ptrdiff_t stack_size=-1)
         : coroutine1<R,T1>(func, stack_size)
+    {
+    }
+};
+
+template<class R, class T1, class T2>
+class coroutine<R(T1,T2)> : public coroutine2<R,T1,T2>
+{
+public:
+    template<class Functor>
+    coroutine(Functor func, std::ptrdiff_t stack_size=-1)
+        : coroutine2<R,T1,T2>(func, stack_size)
     {
     }
 };

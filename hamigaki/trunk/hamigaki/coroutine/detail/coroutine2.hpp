@@ -1,4 +1,4 @@
-//  coroutine0.hpp: coroutine<R>
+//  coroutine2.hpp: coroutine<R,T1>
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
@@ -7,8 +7,8 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/coroutine for library home page.
 
-#ifndef HAMIGAKI_COROUTINE_DETAIL_COROUTINE0_HPP
-#define HAMIGAKI_COROUTINE_DETAIL_COROUTINE0_HPP
+#ifndef HAMIGAKI_COROUTINE_DETAIL_COROUTINE2_HPP
+#define HAMIGAKI_COROUTINE_DETAIL_COROUTINE2_HPP
 
 #include <boost/config.hpp>
 
@@ -18,11 +18,12 @@
 #include <boost/detail/workaround.hpp>
 #include <boost/none.hpp>
 #include <boost/optional.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <new>
 
 #if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
     #define HAMIGAKI_COROUTINE_BROKEN_BOOST_FUNCTION
-    #include <hamigaki/coroutine/detail/borland/function1.hpp>
+    #include <hamigaki/coroutine/detail/borland/function3.hpp>
 #else
     #include <boost/function.hpp>
 #endif
@@ -34,8 +35,9 @@
 
 namespace hamigaki { namespace coroutines {
 
-template<class R, class ContextImpl=detail::default_context_impl>
-class coroutine0 : private boost::noncopyable
+template<class R, class T1, class T2,
+    class ContextImpl=detail::default_context_impl>
+class coroutine2 : private boost::noncopyable
 {
 public:
     class self;
@@ -44,15 +46,16 @@ public:
     class self
     {
     public:
-        self(coroutine0* c) : coro_(c) {}
+        self(coroutine2* c) : coro_(c) {}
 
-        void yield(R r)
+        boost::tuple<T1,T2> yield(R r)
         {
             coro_->result_ = r;
             swap_context(
                 coro_->callee_, coro_->caller_, detail::default_hint());
             if (coro_->state_ == coro_detail::exiting)
                 throw exit_exception();
+            return coro_->arg_;
         }
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
@@ -67,17 +70,17 @@ public:
         }
 
     private:
-        coroutine0* coro_;
+        coroutine2* coro_;
     };
 
     template<class Functor>
-    coroutine0(Functor func, std::ptrdiff_t stack_size=-1)
+    coroutine2(Functor func, std::ptrdiff_t stack_size=-1)
         : func_(func), func_storage_(this), state_(coro_detail::normal)
         , callee_(func_storage_, stack_size)
     {
     }
 
-    ~coroutine0()
+    ~coroutine2()
     {
         if (state_ != coro_detail::exited)
         {
@@ -86,16 +89,18 @@ public:
         }
     }
 
-    R operator()()
+    R operator()(T1 t1, T2 t2)
     {
+        arg_ = boost::make_tuple(t1, t2);
         swap_context(caller_, callee_, detail::default_hint());
         if (state_ == coro_detail::exited)
             throw coroutine_exited();
         return *result_;
     }
 
-    boost::optional<R> operator()(const std::nothrow_t&)
+    boost::optional<R> operator()(T1 t1, T2 t2, const std::nothrow_t&)
     {
+        arg_ = boost::make_tuple(t1, t2);
         swap_context(caller_, callee_, detail::default_hint());
         return result_;
     }
@@ -111,7 +116,7 @@ private:
     class functor
     {
     public:
-        explicit functor(coroutine0* c) : coro_(c)
+        explicit functor(coroutine2* c) : coro_(c)
         {
         }
 
@@ -121,14 +126,15 @@ private:
         }
 
     private:
-        coroutine0* coro_;
+        coroutine2* coro_;
     };
 
     boost::optional<R> result_;
+    boost::tuple<T1,T2> arg_;
 #if defined(HAMIGAKI_COROUTINE_BROKEN_BOOST_FUNCTION)
-    detail::function1<R,self&> func_;
+    detail::function3<R,self&,T1,T2> func_;
 #else
-    boost::function1<R,self&> func_;
+    boost::function3<R,self&,T1,T2> func_;
 #endif
     functor func_storage_;
     coro_detail::state state_;
@@ -140,7 +146,7 @@ private:
         self self(this);
         try
         {
-            result_ = func_(self);
+            result_ = func_(self, boost::get<0>(arg_), boost::get<1>(arg_));
             swap_context(callee_, caller_, detail::default_hint());
         }
         catch (...)
@@ -160,4 +166,4 @@ private:
 
 #undef HAMIGAKI_COROUTINE_BROKEN_BOOST_FUNCTION
 
-#endif // HAMIGAKI_COROUTINE_DETAIL_COROUTINE0_HPP
+#endif // HAMIGAKI_COROUTINE_DETAIL_COROUTINE2_HPP
