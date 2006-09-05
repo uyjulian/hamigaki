@@ -10,6 +10,7 @@
 #ifndef HAMIGAKI_COROUTINE_DETAIL_PTHREAD_CONTEXT_HPP
 #define HAMIGAKI_COROUTINE_DETAIL_PTHREAD_CONTEXT_HPP
 
+#include <hamigaki/coroutine/detail/swap_context_hints.hpp>
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
@@ -24,7 +25,7 @@
     #define HAMIGAKI_COROUTINE_DEBUG(x)
 #endif
 
-namespace hamigaki { namespace coroutine { namespace detail { namespace posix {
+namespace hamigaki { namespace coroutines { namespace detail { namespace posix {
 
 class condition;
 class mutex : private boost::noncopyable
@@ -121,11 +122,10 @@ public:
         data_ptr_->suspended_ = false;
     }
 
-    template<class Hint>
-    static void swap_context(
+    friend void swap_context(
         pthread_context_impl_base& from,
         const pthread_context_impl_base& to,
-        Hint)
+        default_hint)
     {
         from.data_ptr_->mutex_.lock();
         pthread_cleanup_push(&mutex_unlock, &from.data_ptr_->mutex_);
@@ -155,7 +155,7 @@ public:
     typedef pthread_context_impl_base context_impl_base;
 
     template<typename Functor>
-    pthread_context_impl(Functor& f, std::ptrdiff_t stack_size)
+    pthread_context_impl(Functor& f, std::ptrdiff_t)
         : func_ptr_(&f)
     {
         data_ptr_->suspended_ = true;
@@ -180,7 +180,7 @@ private:
     void* func_ptr_;
 
     template<typename T>
-    static inline void* trampoline(void* p)
+    static void* trampoline(void* p)
     {
         pthread_context_impl* this_ = static_cast<pthread_context_impl*>(p);
         this_->data_ptr_->mutex_.lock();
@@ -197,7 +197,7 @@ private:
 
 typedef pthread_context_impl context_impl;
 
-} } } } // End namespaces posix, detail, coroutine, hamigaki.
+} } } } // End namespaces posix, detail, coroutines, hamigaki.
 
 #undef HAMIGAKI_COROUTINE_DEBUG
 

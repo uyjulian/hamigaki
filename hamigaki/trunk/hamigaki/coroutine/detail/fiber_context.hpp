@@ -16,12 +16,21 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 // <===========================================================================
 
-#ifndef HAMIGAKI_COROUTINE_DETAIL_FIBER_HPP
-#define HAMIGAKI_COROUTINE_DETAIL_FIBER_HPP
+#ifndef HAMIGAKI_COROUTINE_DETAIL_FIBER_CONTEXT_HPP
+#define HAMIGAKI_COROUTINE_DETAIL_FIBER_CONTEXT_HPP
 
+#include <hamigaki/coroutine/detail/swap_context_hints.hpp>
+#include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <cstddef>
-#include <stddef.h>
+
+#if !defined(BOOST_DISABLE_ASSERTS) && \
+    (defined(BOOST_ENABLE_ASSERT_HANDLER) || !defined(NDEBUG))
+
+    #define HAMIGAKI_COROUTINE_DEBUG(x) x
+#else
+    #define HAMIGAKI_COROUTINE_DEBUG(x)
+#endif
 
 #if defined(__GNUC__) && defined(__USING_SJLJ_EXCEPTIONS__)
     #define HAMIGAKI_COROUTINE_USE_SJLJ_CONTEXT
@@ -47,7 +56,10 @@ __declspec(dllimport) void __stdcall SwitchToFiber(void*);
 
 } // extern "C"
 
-namespace hamigaki { namespace coroutine { namespace detail {
+namespace hamigaki { namespace coroutines { namespace detail {
+
+namespace windows
+{
 
 #if defined(HAMIGAKI_COROUTINE_HAS_READFSDWORD)
 inline void* get_current_fiber()
@@ -90,51 +102,44 @@ inline bool is_fiber()
     return (p != 0) && (p != reinterpret_cast<void*>(0x00001E00));
 }
 
-class fiber : private boost::noncopyable
+class fiber_context_impl_base
 {
 public:
-    fiber() : context_(0), delete_on_exit_(false)
-    {
-    }
-
-    fiber(std::size_t stack_size, start_routine func, void* data)
-        : context_(::CreateFiber(stack_size, func, data))
-        , delete_on_exit_(true)
+    fiber_context_impl_base()
+        : context_(0)
 #if defined(HAMIGAKI_COROUTINE_USE_SJLJ_CONTEXT)
         , eh_ctx_(0)
 #endif
     {
     }
 
-    ~fiber()
-    {
-        if (delete_on_exit_)
-            ::DeleteFiber(context_);
-    }
-
-    void yield_to(fiber& f)
+    friend void swap_context(
+        fiber_context_impl_base& from,
+        const fiber_context_impl_base& to,
+        default_hint)
     {
         if (is_fiber())
         {
-            if (context_ == 0)
-                context_ = get_current_fiber();
-            switch_to(f);
+            if (from.context_ == 0)
+                from.context_ = get_current_fiber();
+            from.switch_to(to);
         }
         else
         {
-            context_ = ::ConvertThreadToFiber(0);
-            switch_to(f);
+            from.context_ = ::ConvertThreadToFiber(0);
+            from.switch_to(to);
         }
     }
 
-private:
+protected:
     void* context_;
-    bool delete_on_exit_;
+
+private:
 #if defined(HAMIGAKI_COROUTINE_USE_SJLJ_CONTEXT)
     detail::sjlj_context* eh_ctx_;
 #endif
 
-    void switch_to(fiber& f)
+    void switch_to(const fiber_context_impl_base& f)
     {
 #if defined(HAMIGAKI_COROUTINE_USE_SJLJ_CONTEXT)
         eh_ctx_ = detail::replace_sjlj_context(f.eh_ctx_);
@@ -143,6 +148,40 @@ private:
     }
 };
 
-} } } // End namespaces detail, coroutine, hamigaki.
+class fiber_context_impl
+    : public fiber_context_impl_base
+    , private boost::noncopyable
+{
+public:
+    typedef fiber_context_impl_base context_impl_base;
 
-#endif // HAMIGAKI_COROUTINE_DETAIL_FIBER_HPP
+    template<class Functor>
+    fiber_context_impl(Functor& f, std::ptrdiff_t stack_size)
+    {
+        if (stack_size == -1)
+            stack_size = 0;
+        context_ = ::CreateFiber(stack_size, &trampoline<Functor>, &f);
+        BOOST_ASSERT(context_ != 0);
+    }
+
+    ~fiber_context_impl()
+    {
+        ::DeleteFiber(context_);
+    }
+
+private:
+    template<typename T>
+    static void __stdcall trampoline(void* p)
+    {
+        T* func = static_cast<T*>(p);
+        (*func)();
+    }
+};
+
+typedef fiber_context_impl context_impl;
+
+} // namespace windows
+
+} } } // End namespaces detail, coroutines, hamigaki.
+
+#endif // HAMIGAKI_COROUTINE_DETAIL_FIBER_CONTEXT_HPP

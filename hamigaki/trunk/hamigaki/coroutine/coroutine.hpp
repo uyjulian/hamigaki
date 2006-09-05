@@ -21,44 +21,36 @@
 
 #include <boost/config.hpp>
 
-#if defined(BOOST_WINDOWS)
-    #include <hamigaki/coroutine/detail/fiber_coroutine.hpp>
-#else
-    #include <hamigaki/coroutine/detail/thread_coroutine.hpp>
-#endif
+#include <hamigaki/coroutine/detail/coroutine0.hpp>
+#include <hamigaki/coroutine/detail/coroutine1.hpp>
 
-#if defined(_MSC_VER) || defined(__GNUC__)
-    #define HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(result)
-#else
-    #define HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(result) return (result);
-#endif
+namespace hamigaki { namespace coroutines {
 
-namespace hamigaki { namespace coroutine {
+template<class Signature>
+class coroutine;
 
-template<class T>
-class coroutine
-#if defined(BOOST_WINDOWS)
-    : public ::hamigaki::coroutine::fiber_coroutine<T>
-#else
-    : public ::hamigaki::coroutine::thread_coroutine<T>
-#endif
+template<class R>
+class coroutine<R(void)> : public coroutine0<R>
 {
-#if defined(BOOST_WINDOWS)
-    typedef ::hamigaki::coroutine::fiber_coroutine<T> impl_type;
-#else
-    typedef ::hamigaki::coroutine::thread_coroutine<T> impl_type;
-#endif
-
 public:
-    typedef typename impl_type::self self;
-
     template<class Functor>
-    coroutine(std::size_t stack_size, Functor func)
-        : impl_type(stack_size, func)
+    coroutine(Functor func, std::ptrdiff_t stack_size=-1)
+        : coroutine0<R>(func, stack_size)
     {
     }
 };
 
-} } // End namespaces coroutine, hamigaki.
+template<class R, class T1>
+class coroutine<R(T1)> : public coroutine1<R,T1>
+{
+public:
+    template<class Functor>
+    coroutine(Functor func, std::ptrdiff_t stack_size=-1)
+        : coroutine1<R,T1>(func, stack_size)
+    {
+    }
+};
+
+} } // End namespaces coroutines, hamigaki.
 
 #endif // HAMIGAKI_COROUTINE_COROUTINE_HPP

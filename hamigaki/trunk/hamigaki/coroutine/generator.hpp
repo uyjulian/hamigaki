@@ -19,11 +19,11 @@
 #ifndef HAMIGAKI_COROUTINE_GENERATOR_HPP
 #define HAMIGAKI_COROUTINE_GENERATOR_HPP
 
-#include <hamigaki/coroutine/coroutine.hpp>
+#include <hamigaki/coroutine/detail/coroutine0.hpp>
 #include <boost/shared_ptr.hpp>
 #include <iterator>
 
-namespace hamigaki { namespace coroutine {
+namespace hamigaki { namespace coroutines {
 
 template<class T>
 class generator
@@ -32,36 +32,36 @@ class generator
     >
 {
 public:
-    typedef typename coroutine<T>::self self;
+    typedef typename coroutine0<T>::self self;
 
     generator()
     {
     }
 
     template <class Functor>
-    explicit generator(Functor func) : coro_ptr_(new coroutine<T>(0, func))
+    explicit generator(Functor func) : coro_ptr_(new coroutine0<T>(func))
     {
         increment();
     }
 
     bool operator==(const generator& rhs) const
     {
-        return coro_ptr_ == rhs.coro_ptr_;
+        return t_ == rhs.t_;
     }
 
     bool operator!=(const generator& rhs) const
     {
-        return coro_ptr_ != rhs.coro_ptr_;
+        return t_ != rhs.t_;
     }
 
     const T& operator*() const
     {
-        return coro_ptr_->result();
+        return t_.get();
     }
 
     const T* operator->() const
     {
-        return &coro_ptr_->result();
+        return t_.get_ptr();
     }
 
     generator& operator++()
@@ -78,16 +78,17 @@ public:
     }
 
 private:
-    boost::shared_ptr<coroutine<T> > coro_ptr_;
+    boost::shared_ptr<coroutine0<T> > coro_ptr_;
+    boost::optional<T> t_;
 
     void increment()
     {
-        coro_ptr_->yield();
-        if (coro_ptr_->exited())
+        t_ = (*coro_ptr_)(std::nothrow);
+        if (!t_)
             coro_ptr_.reset();
     }
 };
 
-} } // End namespaces coroutine, hamigaki.
+} } // End namespaces coroutines, hamigaki.
 
 #endif // HAMIGAKI_COROUTINE_GENERATOR_HPP

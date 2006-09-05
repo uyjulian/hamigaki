@@ -10,7 +10,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-namespace hamigaki { namespace coroutine { namespace detail {
+namespace hamigaki { namespace coroutines { namespace detail {
 
 template<class R, class T1>
 struct function1_base
@@ -55,6 +55,6 @@ private:
     boost::shared_ptr<function1_base<R,T1> > pimpl_;
 };
 
-} } } // End namespaces detail, coroutine, hamigaki.
+} } } // End namespaces detail, coroutines, hamigaki.
 
 #endif // HAMIGAKI_COROUTINE_DETAIL_BORLAND_FUNCTION1_HPP

@@ -18,7 +18,7 @@ void _Unwind_SjLj_Unregister(SjLj_Function_Context* fc);
 
 } // extern "C"
 
-namespace hamigaki { namespace coroutine { namespace detail {
+namespace hamigaki { namespace coroutines { namespace detail {
 
 struct sjlj_context
 {
@@ -35,6 +35,6 @@ inline sjlj_context* replace_sjlj_context(sjlj_context* ctx)
     return old;
 }
 
-} } } // End namespaces detail, coroutine, hamigaki.
+} } } // End namespaces detail, coroutines, hamigaki.
 
 #endif // HAMIGAKI_COROUTINE_DETAIL_GCC_SJLJ_CONTEXT_HPP

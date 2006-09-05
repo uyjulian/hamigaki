@@ -14,7 +14,7 @@
 #include <iostream>
 #include <iterator>
 
-namespace coro = hamigaki::coroutine;
+namespace coro = hamigaki::coroutines;
 namespace ut = boost::unit_test;
 
 typedef coro::generator<int> generator_type;

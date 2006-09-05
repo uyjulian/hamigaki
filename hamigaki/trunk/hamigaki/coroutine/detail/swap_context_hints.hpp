@@ -1,4 +1,4 @@
-//  exception.hpp: the exception classes for Hamigaki.Coroutine
+//  swap_context_hints.hpp: hint classes for swap_context()
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
@@ -16,17 +16,13 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 // <===========================================================================
 
-#ifndef HAMIGAKI_COROUTINE_EXCEPTION_HPP
-#define HAMIGAKI_COROUTINE_EXCEPTION_HPP
+#ifndef HAMIGAKI_COROUTINE_DETAIL_SWAP_CONTEXT_HINTS_HPP
+#define HAMIGAKI_COROUTINE_DETAIL_SWAP_CONTEXT_HINTS_HPP
 
-#include <exception>
+namespace hamigaki { namespace coroutines { namespace detail {
 
-namespace hamigaki { namespace coroutines {
+class default_hint {};
 
-class exception_base : public std::exception {};
-class exit_exception : public exception_base {};
-class coroutine_exited : public exception_base {};
+} } } // End namespaces detail, coroutines, hamigaki.
 
-} } // End namespaces coroutines, hamigaki.
-
-#endif // HAMIGAKI_COROUTINE_EXCEPTION_HPP
+#endif // HAMIGAKI_COROUTINE_DETAIL_SWAP_CONTEXT_HINTS_HPP
