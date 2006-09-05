@@ -46,12 +46,12 @@ public:
 
     bool operator==(const generator& rhs) const
     {
-        return t_ == rhs.t_;
+        return coro_ptr_ == rhs.coro_ptr_;
     }
 
     bool operator!=(const generator& rhs) const
     {
-        return t_ != rhs.t_;
+        return coro_ptr_ != rhs.coro_ptr_;
     }
 
     const T& operator*() const
