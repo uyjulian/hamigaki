@@ -36,4 +36,5 @@ rule coroutine-test ( sources + : requirements * )
 
 test-suite coroutine :
     [ coroutine-test generator_test.cpp : <test-info>always_show_run_output ]
+    [ coroutine-test coroutine_test.cpp : <test-info>always_show_run_output ]
     ;

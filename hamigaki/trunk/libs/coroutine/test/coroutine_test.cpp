@@ -1,0 +1,38 @@
+//  coroutine_test.cpp: test case for coroutine
+
+//  Copyright Takeshi Mouri 2006.
+//  Use, modification, and distribution are subject to the
+//  Boost Software License, Version 1.0. (See accompanying file
+//  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+//  See http://hamigaki.sourceforge.jp/libs/coroutine for library home page.
+
+#include <hamigaki/coroutine/coroutine.hpp>
+#include <boost/test/unit_test.hpp>
+#include <iostream>
+
+namespace coro = hamigaki::coroutines;
+namespace ut = boost::unit_test;
+
+typedef coro::coroutine<int(int)> coroutine_type;
+
+int accumulator_body(coroutine_type::self& self, int n)
+{
+    while (true)
+        n = self.yield(n*2);
+}
+
+void coroutine_test()
+{
+    coroutine_type accumulator(accumulator_body);
+    for (int i = 0; i < 10; ++i)
+        std::cout << accumulator(i) << '\n';
+    std::cout << std::endl;
+}
+
+ut::test_suite* init_unit_test_suite(int, char* [])
+{
+    ut::test_suite* test = BOOST_TEST_SUITE("coroutine test");
+    test->add(BOOST_TEST_CASE(&coroutine_test));
+    return test;
+}
