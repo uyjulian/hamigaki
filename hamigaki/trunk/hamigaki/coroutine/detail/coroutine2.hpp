@@ -98,7 +98,7 @@ public:
         return *result_;
     }
 
-    boost::optional<R> operator()(T1 t1, T2 t2, const std::nothrow_t&)
+    boost::optional<R> operator()(const std::nothrow_t&, T1 t1, T2 t2)
     {
         arg_ = boost::make_tuple(t1, t2);
         swap_context(caller_, callee_, detail::default_hint());
