@@ -28,7 +28,7 @@ namespace hamigaki { namespace coroutines {
 template<class T>
 class generator
     : public std::iterator<
-        std::input_iterator_tag, T, std::ptrdiff_t, const T, const T&
+        std::input_iterator_tag, T, std::ptrdiff_t, const T*, const T&
     >
 {
 public:
