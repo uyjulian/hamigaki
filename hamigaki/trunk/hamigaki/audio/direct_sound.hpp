@@ -50,7 +50,7 @@ struct device_info
     std::string module_name;
 };
 
-typedef hamigaki::coroutine::generator<device_info> device_info_iterator;
+typedef hamigaki::coroutines::generator<device_info> device_info_iterator;
 
 namespace detail
 {
