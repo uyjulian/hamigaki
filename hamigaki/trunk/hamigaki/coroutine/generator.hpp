@@ -25,21 +25,22 @@
 
 namespace hamigaki { namespace coroutines {
 
-template<class T>
+template<class T, class ContextImpl=detail::default_context_impl>
 class generator
     : public std::iterator<
         std::input_iterator_tag, T, std::ptrdiff_t, const T*, const T&
     >
 {
 public:
-    typedef typename coroutine0<T>::self self;
+    typedef typename coroutine0<T, ContextImpl>::self self;
 
     generator()
     {
     }
 
     template <class Functor>
-    explicit generator(Functor func) : coro_ptr_(new coroutine0<T>(func))
+    explicit generator(Functor func)
+        : coro_ptr_(new coroutine0<T,ContextImpl>(func))
     {
         increment();
     }
@@ -78,7 +79,7 @@ public:
     }
 
 private:
-    boost::shared_ptr<coroutine0<T> > coro_ptr_;
+    boost::shared_ptr<coroutine0<T,ContextImpl> > coro_ptr_;
     boost::optional<T> t_;
 
     void increment()

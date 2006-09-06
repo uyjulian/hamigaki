@@ -37,7 +37,7 @@
 
 namespace hamigaki { namespace coroutines {
 
-template<class Signature>
+template<class Signature, class ContextImpl=detail::default_context_impl>
 class coroutine;
 
 } } // End namespaces coroutines, hamigaki.
