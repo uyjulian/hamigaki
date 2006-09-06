@@ -10,12 +10,17 @@
 #include <hamigaki/coroutine/coroutine.hpp>
 #include <boost/test/unit_test.hpp>
 #include <iostream>
+#include <sstream>
+#include <string>
 
 namespace coro = hamigaki::coroutines;
 namespace ut = boost::unit_test;
 
+typedef std::string my_string; // CodeWarrior workaround
+
 typedef coro::coroutine<int(int)> coroutine_type;
 typedef coro::coroutine<int(int,int)> coroutine_type2;
+typedef coro::coroutine<std::string(my_string,int,int)> coroutine_type3;
 
 int twice_body(coroutine_type::self& self, int n)
 {
@@ -29,6 +34,17 @@ int add_body(coroutine_type2::self& self, int a, int b)
         boost::tie(a, b) = self.yield(a+b);
 }
 
+std::string append_number_body(
+    coroutine_type3::self& self, std::string s, int a, int b)
+{
+    while (true)
+    {
+        std::ostringstream os;
+        os << s << a << b;
+        boost::tie(s, a, b) = self.yield(os.str());
+    }
+}
+
 void coroutine_test()
 {
     coroutine_type twice(twice_body);
@@ -40,6 +56,12 @@ void coroutine_test()
     for (int j = 0; j < 3; ++j)
         for (int i = 0; i < 3; ++i)
             std::cout << add(i,j) << '\n';
+    std::cout << std::endl;
+
+    coroutine_type3 append(append_number_body);
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+            std::cout << append("s", i, j) << '\n';
     std::cout << std::endl;
 }
 

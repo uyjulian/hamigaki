@@ -19,7 +19,7 @@
 #ifndef HAMIGAKI_COROUTINE_GENERATOR_HPP
 #define HAMIGAKI_COROUTINE_GENERATOR_HPP
 
-#include <hamigaki/coroutine/detail/coroutine0.hpp>
+#include <hamigaki/coroutine/coroutine.hpp>
 #include <boost/shared_ptr.hpp>
 #include <iterator>
 

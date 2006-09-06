@@ -19,50 +19,36 @@
 #ifndef HAMIGAKI_COROUTINE_COROUTINE_HPP
 #define HAMIGAKI_COROUTINE_COROUTINE_HPP
 
-#include <boost/config.hpp>
-
-#include <hamigaki/coroutine/detail/coroutine0.hpp>
-#include <hamigaki/coroutine/detail/coroutine1.hpp>
-#include <hamigaki/coroutine/detail/coroutine2.hpp>
+#include <hamigaki/coroutine/detail/coroutine_utility.hpp>
+#include <hamigaki/coroutine/detail/default_context.hpp>
+#include <hamigaki/coroutine/exception.hpp>
+#include <boost/preprocessor/iteration/iterate.hpp>
+#include <boost/preprocessor/arithmetic/dec.hpp>
+#include <boost/preprocessor/arithmetic/inc.hpp>
+#include <boost/preprocessor/iteration/iterate.hpp>
+#include <boost/preprocessor/repetition/enum.hpp>
+#include <boost/preprocessor/repetition/enum_params.hpp>
+#include <boost/preprocessor/cat.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <boost/function.hpp>
+#include <boost/none.hpp>
+#include <boost/optional.hpp>
+#include <new>
 
 namespace hamigaki { namespace coroutines {
 
 template<class Signature>
 class coroutine;
 
-template<class R>
-class coroutine<R(void)> : public coroutine0<R>
-{
-public:
-    template<class Functor>
-    coroutine(Functor func, std::ptrdiff_t stack_size=-1)
-        : coroutine0<R>(func, stack_size)
-    {
-    }
-};
-
-template<class R, class T1>
-class coroutine<R(T1)> : public coroutine1<R,T1>
-{
-public:
-    template<class Functor>
-    coroutine(Functor func, std::ptrdiff_t stack_size=-1)
-        : coroutine1<R,T1>(func, stack_size)
-    {
-    }
-};
-
-template<class R, class T1, class T2>
-class coroutine<R(T1,T2)> : public coroutine2<R,T1,T2>
-{
-public:
-    template<class Functor>
-    coroutine(Functor func, std::ptrdiff_t stack_size=-1)
-        : coroutine2<R,T1,T2>(func, stack_size)
-    {
-    }
-};
-
 } } // End namespaces coroutines, hamigaki.
+
+#define BOOST_PP_ITERATION_PARAMS_1 \
+    (3, \
+    (0,BOOST_PP_DEC(BOOST_FUNCTION_MAX_ARGS), \
+    <hamigaki/coroutine/detail/coroutine_template.hpp>) \
+)
+
+#include BOOST_PP_ITERATE()
+#undef BOOST_PP_ITERATION_PARAMS_1
 
 #endif // HAMIGAKI_COROUTINE_COROUTINE_HPP
