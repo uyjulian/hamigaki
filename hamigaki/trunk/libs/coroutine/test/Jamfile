@@ -28,6 +28,7 @@ rule coroutine-test ( sources + : requirements * )
         <vc-8_0><*><cflags>-wd4819
         <vc-8_0><*><linkflags>-INCREMENTAL:NO
         <vc-7_1><*><linkflags>-INCREMENTAL:NO
+        [ unless $(NT) : <threading>multi ]
         find-boost-unit_test_framework-lib
         $(requirements)
     ] ;
