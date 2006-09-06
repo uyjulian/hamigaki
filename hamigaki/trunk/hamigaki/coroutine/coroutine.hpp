@@ -22,6 +22,7 @@
 #include <hamigaki/coroutine/detail/coroutine_utility.hpp>
 #include <hamigaki/coroutine/detail/default_context.hpp>
 #include <hamigaki/coroutine/exception.hpp>
+#include <boost/mpl/if.hpp>
 #include <boost/preprocessor/iteration/iterate.hpp>
 #include <boost/preprocessor/arithmetic/dec.hpp>
 #include <boost/preprocessor/arithmetic/inc.hpp>
@@ -30,6 +31,8 @@
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <boost/type_traits/is_same.hpp>
+#include <boost/blank.hpp>
 #include <boost/function.hpp>
 #include <boost/none.hpp>
 #include <boost/optional.hpp>
