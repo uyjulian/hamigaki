@@ -1,4 +1,4 @@
-//  fiber.hpp: fiber wrapper class
+//  fiber_context.hpp: Win32 fiber based context implementation
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
