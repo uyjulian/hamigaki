@@ -108,6 +108,11 @@ class HAMIGAKI_COROUTINE_COROUTINE : private boost::noncopyable
             throw exit_exception();
         }
 
+        R result()
+        {
+            return coro_->result_.get();
+        }
+
     private:
         HAMIGAKI_COROUTINE_COROUTINE* coro_;
     };
@@ -139,6 +144,8 @@ class HAMIGAKI_COROUTINE_COROUTINE : private boost::noncopyable
             throw exit_exception();
         }
 
+        void result() {}
+
     private:
         HAMIGAKI_COROUTINE_COROUTINE* coro_;
     };
@@ -159,11 +166,7 @@ public:
 
     ~HAMIGAKI_COROUTINE_COROUTINE()
     {
-        if (state_ != coro_detail::exited)
-        {
-            state_ = coro_detail::exiting;
-            swap_context(caller_, callee_, detail::default_hint());
-        }
+        exit();
     }
 
     R operator()(HAMIGAKI_COROUTINE_PARMS)
@@ -177,10 +180,18 @@ public:
     optional_result_type operator()(
         const std::nothrow_t& HAMIGAKI_COROUTINE_COMMA HAMIGAKI_COROUTINE_PARMS)
     {
-        return this->call(
-            std::nothrow,
+        return this->call_nothrow(
             boost::is_same<R,void>() HAMIGAKI_COROUTINE_COMMA
             HAMIGAKI_COROUTINE_ARGS);
+    }
+
+    void exit()
+    {
+        if (state_ != coro_detail::exited)
+        {
+            state_ = coro_detail::exiting;
+            swap_context(caller_, callee_, detail::default_hint());
+        }
     }
 
     bool exited() const
@@ -231,6 +242,7 @@ private:
 #else
             result_ = func_(self, HAMIGAKI_COROUTINE_GET_ARGS);
 #endif
+
             swap_context(callee_, caller_, detail::default_hint());
         }
         catch (...)
@@ -253,6 +265,7 @@ private:
 #else
             func_(self, HAMIGAKI_COROUTINE_GET_ARGS);
 #endif
+
             swap_context(callee_, caller_, detail::default_hint());
         }
         catch (...)
@@ -262,18 +275,31 @@ private:
         swap_context(callee_, caller_, detail::default_hint());
     }
 
-    R call(
-        const boost::false_type& HAMIGAKI_COROUTINE_COMMA
-        HAMIGAKI_COROUTINE_PARMS)
+    void call_nothrow_impl(HAMIGAKI_COROUTINE_PARMS)
     {
 #if HAMIGAKI_COROUTINE_NUM_ARGS == 1
         arg_ = HAMIGAKI_COROUTINE_ARGS;
 #elif HAMIGAKI_COROUTINE_NUM_ARGS != 0
         arg_ = boost::make_tuple(HAMIGAKI_COROUTINE_ARGS);
 #endif
+
         swap_context(caller_, callee_, detail::default_hint());
+    }
+
+    void call_impl(HAMIGAKI_COROUTINE_PARMS)
+    {
+        this->call_nothrow_impl(HAMIGAKI_COROUTINE_ARGS);
         if (state_ == coro_detail::exited)
             throw coroutine_exited();
+    }
+
+    R call(
+        const boost::false_type& HAMIGAKI_COROUTINE_COMMA
+        HAMIGAKI_COROUTINE_PARMS)
+    {
+        if (state_ == coro_detail::exited)
+            throw coroutine_exited();
+        this->call_impl(HAMIGAKI_COROUTINE_ARGS);
         return *result_;
     }
 
@@ -281,41 +307,27 @@ private:
         const boost::true_type& HAMIGAKI_COROUTINE_COMMA
         HAMIGAKI_COROUTINE_PARMS)
     {
-#if HAMIGAKI_COROUTINE_NUM_ARGS == 1
-        arg_ = HAMIGAKI_COROUTINE_ARGS;
-#elif HAMIGAKI_COROUTINE_NUM_ARGS != 0
-        arg_ = boost::make_tuple(HAMIGAKI_COROUTINE_ARGS);
-#endif
-        swap_context(caller_, callee_, detail::default_hint());
         if (state_ == coro_detail::exited)
             throw coroutine_exited();
+        this->call_impl(HAMIGAKI_COROUTINE_ARGS);
     }
 
-    optional_result_type call(
-        const std::nothrow_t&,
+    optional_result_type call_nothrow(
         const boost::false_type& HAMIGAKI_COROUTINE_COMMA
         HAMIGAKI_COROUTINE_PARMS)
     {
-#if HAMIGAKI_COROUTINE_NUM_ARGS == 1
-        arg_ = HAMIGAKI_COROUTINE_ARGS;
-#elif HAMIGAKI_COROUTINE_NUM_ARGS != 0
-        arg_ = boost::make_tuple(HAMIGAKI_COROUTINE_ARGS);
-#endif
-        swap_context(caller_, callee_, detail::default_hint());
+        if (state_ != coro_detail::exited)
+            this->call_nothrow_impl(HAMIGAKI_COROUTINE_ARGS);
+        if (state_ == coro_detail::exited)
+            result_ = boost::none;
         return result_;
     }
 
-    void call(
-        const std::nothrow_t&,
+    void call_nothrow(
         const boost::true_type& HAMIGAKI_COROUTINE_COMMA
         HAMIGAKI_COROUTINE_PARMS)
     {
-#if HAMIGAKI_COROUTINE_NUM_ARGS == 1
-        arg_ = HAMIGAKI_COROUTINE_ARGS;
-#elif HAMIGAKI_COROUTINE_NUM_ARGS != 0
-        arg_ = boost::make_tuple(HAMIGAKI_COROUTINE_ARGS);
-#endif
-        swap_context(caller_, callee_, detail::default_hint());
+        this->call_nothrow_impl(HAMIGAKI_COROUTINE_ARGS);
     }
 };
 
