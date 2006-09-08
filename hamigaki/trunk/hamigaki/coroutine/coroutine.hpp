@@ -32,16 +32,21 @@
 #include <boost/preprocessor/cat.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/type_traits/is_same.hpp>
+#include <boost/utility/enable_if.hpp>
 #include <boost/blank.hpp>
 #include <boost/function.hpp>
 #include <boost/none.hpp>
 #include <boost/optional.hpp>
+#include <boost/shared_ptr.hpp>
 #include <new>
 
 namespace hamigaki { namespace coroutines {
 
 template<class Signature, class ContextImpl=detail::default_context_impl>
 class coroutine;
+
+template<class Signature, class ContextImpl=detail::default_context_impl>
+class shared_coroutine;
 
 } } // End namespaces coroutines, hamigaki.
 
