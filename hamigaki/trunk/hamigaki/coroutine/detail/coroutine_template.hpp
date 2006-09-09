@@ -15,6 +15,12 @@
 #define HAMIGAKI_COROUTINE_TEMPLATE_ARGS \
     BOOST_PP_ENUM_PARAMS(HAMIGAKI_COROUTINE_NUM_ARGS, T)
 
+#if HAMIGAKI_COROUTINE_NUM_ARGS == 0
+    #define HAMIGAKI_COROUTINE_TMP_ARGS_FOR_FUN void
+#else
+    #define HAMIGAKI_COROUTINE_TMP_ARGS_FOR_FUN HAMIGAKI_COROUTINE_TEMPLATE_ARGS
+#endif
+
 #define HAMIGAKI_COROUTINE_PARM(J,I,D) BOOST_PP_CAT(T,I) BOOST_PP_CAT(a,I)
 
 #define HAMIGAKI_COROUTINE_PARMS \
@@ -407,13 +413,7 @@ public:
     HAMIGAKI_COROUTINE_BASE() {}
 
     template<class Functor>
-    HAMIGAKI_COROUTINE_BASE(Functor func, std::ptrdiff_t stack_size
-#if !defined(BOOST_NO_SFINAE)
-        ,typename boost::disable_if<
-            HAMIGAKI_COROUTINE_IS_COROUTINE<Functor>
-        >::type* = 0
-#endif
-    )
+    HAMIGAKI_COROUTINE_BASE(Functor func, std::ptrdiff_t stack_size)
         : pimpl_(new data_type(func, stack_size))
     {
     }
@@ -488,19 +488,25 @@ class HAMIGAKI_COROUTINE_COROUTINE
 public:
     HAMIGAKI_COROUTINE_COROUTINE() {}
 
-    HAMIGAKI_COROUTINE_COROUTINE(HAMIGAKI_COROUTINE_COROUTINE& x)
+    HAMIGAKI_COROUTINE_COROUTINE(
+        coroutine<R (HAMIGAKI_COROUTINE_TMP_ARGS_FOR_FUN), ContextImpl>& x
+    )
+        : detail::HAMIGAKI_COROUTINE_BASE<
+            R HAMIGAKI_COROUTINE_COMMA
+            HAMIGAKI_COROUTINE_TEMPLATE_ARGS,
+            std::auto_ptr<
+                detail::HAMIGAKI_COROUTINE_DATA<
+                    R HAMIGAKI_COROUTINE_COMMA
+                    HAMIGAKI_COROUTINE_TEMPLATE_ARGS,
+                    ContextImpl
+                >
+            >
+        >(x)
     {
-        this->pimpl_ = x.pimpl_;
     }
 
     template<class Functor>
-    HAMIGAKI_COROUTINE_COROUTINE(Functor func, std::ptrdiff_t stack_size=-1
-#if !defined(BOOST_NO_SFINAE)
-        ,typename boost::disable_if<
-            detail::HAMIGAKI_COROUTINE_IS_COROUTINE<Functor>
-        >::type* = 0
-#endif
-    )
+    HAMIGAKI_COROUTINE_COROUTINE(Functor func, std::ptrdiff_t stack_size=-1)
         : detail::HAMIGAKI_COROUTINE_BASE<
             R HAMIGAKI_COROUTINE_COMMA
             HAMIGAKI_COROUTINE_TEMPLATE_ARGS,
@@ -550,9 +556,21 @@ public:
     {
     }
 
-    HAMIGAKI_COROUTINE_SH_COROUTINE(const HAMIGAKI_COROUTINE_SH_COROUTINE& x)
+    HAMIGAKI_COROUTINE_SH_COROUTINE(
+        shared_coroutine<R(HAMIGAKI_COROUTINE_TMP_ARGS_FOR_FUN), ContextImpl>& x
+    )
+        : detail::HAMIGAKI_COROUTINE_BASE<
+            R HAMIGAKI_COROUTINE_COMMA
+            HAMIGAKI_COROUTINE_TEMPLATE_ARGS,
+            boost::shared_ptr<
+                detail::HAMIGAKI_COROUTINE_DATA<
+                    R HAMIGAKI_COROUTINE_COMMA
+                    HAMIGAKI_COROUTINE_TEMPLATE_ARGS,
+                    ContextImpl
+                >
+            >
+        >(x)
     {
-        this->pimpl_ = x.pimpl_;
     }
 
     explicit HAMIGAKI_COROUTINE_SH_COROUTINE(
@@ -565,14 +583,15 @@ public:
         this->pimpl_ = x.get_ptr();
     }
 
-    template<class Functor>
-    HAMIGAKI_COROUTINE_SH_COROUTINE(Functor func, std::ptrdiff_t stack_size=-1
-#if !defined(BOOST_NO_SFINAE)
-        ,typename boost::disable_if<
-            detail::HAMIGAKI_COROUTINE_IS_COROUTINE<Functor>
-        >::type* = 0
-#endif
+    explicit HAMIGAKI_COROUTINE_SH_COROUTINE(
+        coroutine<R (HAMIGAKI_COROUTINE_TMP_ARGS_FOR_FUN), ContextImpl>& x
     )
+    {
+        this->pimpl_ = x.get_ptr();
+    }
+
+    template<class Functor>
+    HAMIGAKI_COROUTINE_SH_COROUTINE(Functor func, std::ptrdiff_t stack_size=-1)
         : detail::HAMIGAKI_COROUTINE_BASE<
             R HAMIGAKI_COROUTINE_COMMA
             HAMIGAKI_COROUTINE_TEMPLATE_ARGS,
@@ -604,33 +623,36 @@ template<class R HAMIGAKI_COROUTINE_COMMA
     HAMIGAKI_COROUTINE_TEMPLATE_PARMS,
     class ContextImpl
 >
-#if HAMIGAKI_COROUTINE_NUM_ARGS == 0
-class coroutine<R(void), ContextImpl>
-#else
-class coroutine<R(HAMIGAKI_COROUTINE_TEMPLATE_ARGS), ContextImpl>
-#endif
+class coroutine<R(HAMIGAKI_COROUTINE_TMP_ARGS_FOR_FUN), ContextImpl>
     : public HAMIGAKI_COROUTINE_COROUTINE<
         R HAMIGAKI_COROUTINE_COMMA HAMIGAKI_COROUTINE_TEMPLATE_ARGS,
         ContextImpl>
 {
+private:
+    typedef
+        HAMIGAKI_COROUTINE_COROUTINE<
+            R HAMIGAKI_COROUTINE_COMMA
+            HAMIGAKI_COROUTINE_TEMPLATE_ARGS,
+            ContextImpl
+        > base_type;
+
 public:
     coroutine()
     {
     }
 
-    template<class Functor>
-    coroutine(Functor func, std::ptrdiff_t stack_size=-1
-#if !defined(BOOST_NO_SFINAE)
-        ,typename boost::disable_if<
-            detail::HAMIGAKI_COROUTINE_IS_COROUTINE<Functor>
-        >::type* = 0
-#endif
+    coroutine(
+        HAMIGAKI_COROUTINE_COROUTINE<
+                R HAMIGAKI_COROUTINE_COMMA HAMIGAKI_COROUTINE_TEMPLATE_ARGS,
+                ContextImpl>& x
     )
-        : HAMIGAKI_COROUTINE_COROUTINE<
-            R HAMIGAKI_COROUTINE_COMMA
-            HAMIGAKI_COROUTINE_TEMPLATE_ARGS,
-            ContextImpl
-        >(func, stack_size)
+        : base_type(x)
+    {
+    }
+
+    template<class Functor>
+    coroutine(Functor func, std::ptrdiff_t stack_size=-1)
+        : base_type(func, stack_size)
     {
     }
 };
@@ -639,11 +661,7 @@ template<class R HAMIGAKI_COROUTINE_COMMA
     HAMIGAKI_COROUTINE_TEMPLATE_PARMS,
     class ContextImpl
 >
-#if HAMIGAKI_COROUTINE_NUM_ARGS == 0
-class shared_coroutine<R(void), ContextImpl>
-#else
-class shared_coroutine<R(HAMIGAKI_COROUTINE_TEMPLATE_ARGS), ContextImpl>
-#endif
+class shared_coroutine<R(HAMIGAKI_COROUTINE_TMP_ARGS_FOR_FUN), ContextImpl>
     : public HAMIGAKI_COROUTINE_SH_COROUTINE<
         R HAMIGAKI_COROUTINE_COMMA HAMIGAKI_COROUTINE_TEMPLATE_ARGS,
         ContextImpl>
@@ -660,13 +678,7 @@ public:
     shared_coroutine() {}
 
     template<class Functor>
-    shared_coroutine(Functor func, std::ptrdiff_t stack_size=-1
-#if !defined(BOOST_NO_SFINAE)
-        ,typename boost::disable_if<
-            detail::HAMIGAKI_COROUTINE_IS_COROUTINE<Functor>
-        >::type* = 0
-#endif
-    )
+    shared_coroutine(Functor func, std::ptrdiff_t stack_size=-1)
         : base_type(func, stack_size)
     {
     }
@@ -687,6 +699,13 @@ public:
             HAMIGAKI_COROUTINE_TEMPLATE_ARGS,
             ContextImpl
         >& x)
+        : base_type(x)
+    {
+    }
+
+    shared_coroutine(
+        coroutine<R(HAMIGAKI_COROUTINE_TMP_ARGS_FOR_FUN), ContextImpl>& x
+    )
         : base_type(x)
     {
     }
@@ -712,6 +731,7 @@ public:
 #undef HAMIGAKI_COROUTINE_NUM_ARGS
 #undef HAMIGAKI_COROUTINE_TEMPLATE_PARMS
 #undef HAMIGAKI_COROUTINE_TEMPLATE_ARGS
+#undef HAMIGAKI_COROUTINE_TMP_ARGS_FOR_FUN
 #undef HAMIGAKI_COROUTINE_PARM
 #undef HAMIGAKI_COROUTINE_PARMS
 #undef HAMIGAKI_COROUTINE_ARGS
