@@ -158,15 +158,43 @@ private:
 
         HAMIGAKI_COROUTINE_CORO_ARG_TYPE yield(R r)
         {
-            coro_->result_ = r;
+            (*coro_->result_ptr_) = r;
             swap_context(
                 coro_->callee_, coro_->caller_, detail::default_hint());
             if (coro_->state_ == coro_detail::exiting)
                 throw exit_exception();
-#if HAMIGAKI_COROUTINE_NUM_ARGS != 0
-            return coro_->arg_;
-#endif
+            return coro_->arguments();
         }
+
+        template<class Coroutine>
+        HAMIGAKI_COROUTINE_CORO_ARG_TYPE yield_to(Coroutine& c)
+        {
+            return this->yield_to_impl(c);
+        }
+
+        template<class Coroutine, class TT1>
+        HAMIGAKI_COROUTINE_CORO_ARG_TYPE yield_to(Coroutine& c, TT1 a1)
+        {
+            c.pimpl_->arg_ = a1;
+            return this->yield_to_impl(c);
+        }
+
+        #define HAMIGAKI_COROUTINE_YIELD_TO_GEN(Z,N,D) \
+        template<class Coroutine, BOOST_PP_ENUM_PARAMS(N,typename TT)> \
+        HAMIGAKI_COROUTINE_CORO_ARG_TYPE yield_to( \
+            Coroutine& c, \
+            BOOST_PP_ENUM_BINARY_PARAMS(N,TT,a) \
+        ) \
+        { \
+            c.pimpl_->arg_ = boost::make_tuple(BOOST_PP_ENUM_PARAMS(N,a)); \
+            return this->yield_to_impl(c); \
+        }
+        /**/
+
+        BOOST_PP_REPEAT_FROM_TO(
+            2, BOOST_FUNCTION_MAX_ARGS, HAMIGAKI_COROUTINE_YIELD_TO_GEN, _)
+
+        #undef HAMIGAKI_COROUTINE_YIELD_TO_GEN
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
         __declspec(noreturn)
@@ -186,6 +214,22 @@ private:
 
     private:
         HAMIGAKI_COROUTINE_DATA* coro_;
+
+        template<class Coroutine>
+        HAMIGAKI_COROUTINE_CORO_ARG_TYPE yield_to_impl(Coroutine& c)
+        {
+            c.pimpl_->result_ptr_ = coro_->result_ptr_;
+
+            std::swap(coro_->caller_, c.pimpl_->caller_);
+            swap_context(
+                coro_->callee_, c.pimpl_->callee_, detail::default_hint());
+            if (coro_->state_ == coro_detail::exiting)
+                throw exit_exception();
+
+#if HAMIGAKI_COROUTINE_NUM_ARGS != 0
+            return coro_->arg_;
+#endif
+        }
     };
 
     class self_no_result
@@ -199,10 +243,38 @@ private:
                 coro_->callee_, coro_->caller_, detail::default_hint());
             if (coro_->state_ == coro_detail::exiting)
                 throw exit_exception();
-#if HAMIGAKI_COROUTINE_NUM_ARGS != 0
-            return coro_->arg_;
-#endif
+            return coro_->arguments();
         }
+
+        template<class Coroutine>
+        HAMIGAKI_COROUTINE_CORO_ARG_TYPE yield_to(Coroutine& c)
+        {
+            return this->yield_to_impl(c);
+        }
+
+        template<class Coroutine, class TT1>
+        HAMIGAKI_COROUTINE_CORO_ARG_TYPE yield_to(Coroutine& c, TT1 a1)
+        {
+            c.pimpl_->arg_ = a1;
+            return this->yield_to_impl(c);
+        }
+
+        #define HAMIGAKI_COROUTINE_YIELD_TO_GEN(Z,N,D) \
+        template<class Coroutine, BOOST_PP_ENUM_PARAMS(N,typename TT)> \
+        HAMIGAKI_COROUTINE_CORO_ARG_TYPE yield_to( \
+            Coroutine& c, \
+            BOOST_PP_ENUM_BINARY_PARAMS(N,TT,a) \
+        ) \
+        { \
+            c.pimpl_->arg_ = boost::make_tuple(BOOST_PP_ENUM_PARAMS(N,a)); \
+            return this->yield_to_impl(c); \
+        }
+        /**/
+
+        BOOST_PP_REPEAT_FROM_TO(
+            2, BOOST_FUNCTION_MAX_ARGS, HAMIGAKI_COROUTINE_YIELD_TO_GEN, _)
+
+        #undef HAMIGAKI_COROUTINE_YIELD_TO_GEN
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
         __declspec(noreturn)
@@ -219,6 +291,20 @@ private:
 
     private:
         HAMIGAKI_COROUTINE_DATA* coro_;
+
+        template<class Coroutine>
+        HAMIGAKI_COROUTINE_CORO_ARG_TYPE yield_to_impl(Coroutine& c)
+        {
+            std::swap(coro_->caller_, c.pimpl_->caller_);
+            swap_context(
+                coro_->callee_, c.pimpl_->callee_, detail::default_hint());
+            if (coro_->state_ == coro_detail::exiting)
+                throw exit_exception();
+
+#if HAMIGAKI_COROUTINE_NUM_ARGS != 0
+            return coro_->arg_;
+#endif
+        }
     };
 
 public:
@@ -323,6 +409,7 @@ private:
     };
 
     result_storage_type result_;
+    result_storage_type* result_ptr_;
 #if HAMIGAKI_COROUTINE_NUM_ARGS != 0
     HAMIGAKI_COROUTINE_CORO_ARG_TYPE arg_;
 #endif
@@ -340,11 +427,11 @@ private:
         try
         {
 #if HAMIGAKI_COROUTINE_NUM_ARGS == 0
-            result_ = func_(self);
+            (*result_ptr_) = func_(self);
 #elif HAMIGAKI_COROUTINE_NUM_ARGS == 1
-            result_ = func_(self, arg_);
+            (*result_ptr_) = func_(self, arg_);
 #else
-            result_ = func_(self, HAMIGAKI_COROUTINE_GET_ARGS);
+            (*result_ptr_) = func_(self, HAMIGAKI_COROUTINE_GET_ARGS);
 #endif
 
             swap_context(callee_, caller_, detail::default_hint());
@@ -381,6 +468,8 @@ private:
 
     void call_nothrow_impl(HAMIGAKI_COROUTINE_PARMS)
     {
+        result_ptr_ = &result_;
+
 #if HAMIGAKI_COROUTINE_NUM_ARGS == 1
         arg_ = HAMIGAKI_COROUTINE_ARGS;
 #elif HAMIGAKI_COROUTINE_NUM_ARGS != 0
@@ -396,6 +485,13 @@ private:
         if (state_ == coro_detail::exited)
             throw coroutine_exited();
     }
+
+    HAMIGAKI_COROUTINE_CORO_ARG_TYPE arguments()
+    {
+#if HAMIGAKI_COROUTINE_NUM_ARGS != 0
+        return arg_;
+#endif
+    }
 };
 
 template<class R HAMIGAKI_COROUTINE_COMMA
@@ -408,6 +504,7 @@ private:
     typedef typename data_type::optional_result_type optional_result_type;
 
 public:
+    typedef R result_type;
     typedef typename data_type::self self;
 
     HAMIGAKI_COROUTINE_BASE() {}
@@ -453,7 +550,8 @@ public:
         return pimpl_.get() == 0;
     }
 
-protected:
+// TODO
+//protected:
     Pointer pimpl_;
 };
 
