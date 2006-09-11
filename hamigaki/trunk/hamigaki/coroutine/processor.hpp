@@ -26,10 +26,6 @@ public:
     typedef shared_coroutine1<void,T,ContextImpl> coroutine_type;
     typedef typename coroutine_type::self self;
 
-    processor()
-    {
-    }
-
     template <class Functor>
     explicit processor(Functor func) : coro_(func)
     {
