@@ -39,6 +39,7 @@ test-suite coroutine :
     [ coroutine-test coro_config_test.cpp : <test-info>always_show_run_output ]
     [ coroutine-test coro_copy_test.cpp ]
     [ coroutine-test coroutine_test.cpp : <test-info>always_show_run_output ]
+    [ coroutine-test processor_test.cpp : <test-info>always_show_run_output ]
     [ coroutine-test yield_to_test.cpp : <test-info>always_show_run_output ]
     [ coroutine-test yield_to_arg_test.cpp : <test-info>always_show_run_output ]
     [ coroutine-test yield_to_res_test.cpp : <test-info>always_show_run_output ]
