@@ -19,8 +19,7 @@
 #ifndef HAMIGAKI_COROUTINE_GENERATOR_HPP
 #define HAMIGAKI_COROUTINE_GENERATOR_HPP
 
-#include <hamigaki/coroutine/coroutine.hpp>
-#include <boost/shared_ptr.hpp>
+#include <hamigaki/coroutine/shared_coroutine.hpp>
 #include <iterator>
 
 namespace hamigaki { namespace coroutines {
@@ -32,27 +31,27 @@ class generator
     >
 {
 public:
-    typedef typename coroutine0<T, ContextImpl>::self self;
+    typedef shared_coroutine0<T,ContextImpl> coroutine_type;
+    typedef typename coroutine_type::self self;
 
     generator()
     {
     }
 
     template <class Functor>
-    explicit generator(Functor func)
-        : coro_ptr_(new coroutine0<T,ContextImpl>(func))
+    explicit generator(Functor func) : coro_(func)
     {
         increment();
     }
 
     bool operator==(const generator& rhs) const
     {
-        return coro_ptr_ == rhs.coro_ptr_;
+        return coro_.empty() && rhs.coro_.empty();
     }
 
     bool operator!=(const generator& rhs) const
     {
-        return coro_ptr_ != rhs.coro_ptr_;
+        return !(*this == rhs);
     }
 
     const T& operator*() const
@@ -79,14 +78,14 @@ public:
     }
 
 private:
-    boost::shared_ptr<coroutine0<T,ContextImpl> > coro_ptr_;
+    coroutine_type coro_;
     boost::optional<T> t_;
 
     void increment()
     {
-        t_ = (*coro_ptr_)(std::nothrow);
+        t_ = coro_(std::nothrow);
         if (!t_)
-            coro_ptr_.reset();
+            coro_ = coroutine_type();
     }
 };
 
