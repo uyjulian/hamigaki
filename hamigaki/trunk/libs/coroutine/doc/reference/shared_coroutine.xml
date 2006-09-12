@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE library PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Coroutine Library Document Source
+
+  Copyright Takeshi Mouri 2006.
+  Use, modification, and distribution are subject to the
+  Boost Software License, Version 1.0. (See accompanying file
+  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/coroutine for library home page.
+-->
+<header name="hamigaki/coroutine/shared_coroutine.hpp">
+  <namespace name="hamigaki">
+    <namespace name="coroutines">
+      <class name="shared_coroutineN">
+        <template>
+          <template-type-parameter name="R"/>
+          <template-type-parameter name="T1"/>
+          <template-type-parameter name="T2"/>
+          <template-varargs/>
+          <template-type-parameter name="TN"/>
+        </template>
+
+        <typedef name="self">
+          <type><classname>selfN</classname>&lt;R, T1, T2, ..., TN&gt;</type>
+        </typedef>
+
+        <constructor>
+          <effects><simpara>ファンクタを保持していない空のコルーチンを生成する。</simpara></effects>
+          <postconditions><code>empty()</code></postconditions>
+        </constructor>
+
+        <constructor>
+          <parameter name="x">
+            <paramtype>const shared_coroutineN&amp;</paramtype>
+          </parameter>
+          <effects><simpara><code>x</code>とコルーチンを共有する。</simpara></effects>
+          <postconditions><code>!empty()</code></postconditions>
+        </constructor>
+
+        <constructor>
+          <template>
+            <template-type-parameter name="Functor"/>
+          </template>
+          <parameter name="f">
+            <paramtype>const Functor&amp;</paramtype>
+          </parameter>
+          <parameter name="stack_size">
+            <paramtype>std::ptrdiff_t</paramtype>
+            <default>-1</default>
+          </parameter>
+          <effects><simpara>スタックサイズが<code>stack_size</code>のコルーチンを生成する。ファンクタ<code>f</code>のコピーがコルーチンのエントリポイントに設定される。</simpara></effects>
+          <postconditions><code>!empty()</code></postconditions>
+        </constructor>
+
+        <method-group name="queries">
+          <method name="exited" cv="const">
+            <type>bool</type>
+            <returns><simpara>コルーチンの保持するファンクタが終了していれば、<code>true</code></simpara></returns>
+          </method>
+
+          <method name="empty" cv="const">
+            <type>bool</type>
+            <returns><simpara>コルーチンがコンテキストを保持していない場合、<code>true</code></simpara></returns>
+          </method>
+        </method-group>
+
+        <method-group name="modifiers">
+          <method name="exit">
+            <type>void</type>
+            <effects><simpara>コルーチンの実行を中断し、終了させる。</simpara></effects>
+            <postconditions><code>exited()</code></postconditions>
+          </method>
+        </method-group>
+
+        <method-group name="invocations">
+          <method name="operator()">
+            <type>R</type>
+            <parameter name="a1"><paramtype>T1</paramtype></parameter>
+            <parameter name="a2"><paramtype>T2</paramtype></parameter>
+            <parameter><paramtype>...</paramtype></parameter>
+            <parameter name="aN"><paramtype>TN</paramtype></parameter>
+          </method>
+
+          <method name="operator()">
+            <type>boost::optional&lt;R&gt;</type>
+            <parameter name=""><paramtype>std::nothrow_t</paramtype></parameter>
+            <parameter name="a1"><paramtype>T1</paramtype></parameter>
+            <parameter name="a2"><paramtype>T2</paramtype></parameter>
+            <parameter><paramtype>...</paramtype></parameter>
+            <parameter name="aN"><paramtype>TN</paramtype></parameter>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

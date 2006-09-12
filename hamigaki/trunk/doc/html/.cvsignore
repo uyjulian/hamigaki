@@ -1,6 +1,7 @@
 HTML.manifest
 *.html
 audio
+coroutine
 enum
 hamigaki
 iostreams
