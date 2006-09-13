@@ -11,18 +11,24 @@
 #define HAMIGAKI_IOSTREAMS_BLOCKING_HPP
 
 #include <boost/iostreams/detail/adapter/non_blocking_adapter.hpp>
+#include <boost/iostreams/detail/template_params.hpp>
 
-#define HAMIGAKI_IOSTREAMS_BLOCKING(Device) \
+#define HAMIGAKI_IOSTREAMS_BLOCKING(device, arity) \
 namespace boost { namespace iostreams { \
-    template<> \
-    class non_blocking_adapter<Device> \
+    template< \
+        BOOST_PP_ENUM_PARAMS(arity, typename T) \
+    > \
+    class non_blocking_adapter< \
+        device BOOST_IOSTREAMS_TEMPLATE_ARGS(arity, T) \
+    > \
     { \
+        typedef device BOOST_IOSTREAMS_TEMPLATE_ARGS(arity, T) device_type; \
     public: \
-        typedef typename char_type_of<Device>::type char_type; \
+        typedef typename char_type_of<device_type>::type char_type; \
         struct category \
-            : boost::iostreams::mode_of<Device>::type \
+            : boost::iostreams::mode_of<device_type>::type \
             , boost::iostreams::device_tag {}; \
-        explicit non_blocking_adapter(Device& dev) : device_(dev) {} \
+        explicit non_blocking_adapter(device_type& dev) : device_(dev) {} \
         std::streamsize read(char_type* s, std::streamsize n) \
         { return boost::iostreams::read(device_, s, n); } \
         std::streamsize write(const char_type* s, std::streamsize n) \
@@ -32,7 +38,7 @@ namespace boost { namespace iostreams { \
             BOOST_IOS::openmode which = BOOST_IOS::in | BOOST_IOS::out) \
         { return boost::iostreams::seek(device_, off, way, which); } \
     public: \
-        Device& device_; \
+        device_type& device_; \
     }; \
 }} \
 /**/
