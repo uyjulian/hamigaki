@@ -24,7 +24,8 @@ namespace boost { namespace iostreams { \
     { \
         typedef device BOOST_IOSTREAMS_TEMPLATE_ARGS(arity, T) device_type; \
     public: \
-        typedef typename char_type_of<device_type>::type char_type; \
+        typedef BOOST_PP_EXPR_IF(arity, typename) \
+            char_type_of<device_type>::type char_type; \
         struct category \
             : boost::iostreams::mode_of<device_type>::type \
             , boost::iostreams::device_tag {}; \
