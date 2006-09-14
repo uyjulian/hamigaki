@@ -11,6 +11,7 @@
 #define HAMIGAKI_IOSTREAMS_DEVICE_ZERO_HPP
 
 #include <hamigaki/iostreams/catable.hpp>
+#include <hamigaki/iostreams/blocking.hpp>
 #include <boost/iostreams/categories.hpp>
 #include <boost/iostreams/positioning.hpp>
 #include <algorithm>
@@ -51,5 +52,6 @@ typedef basic_zero_source<wchar_t>  wzero_source;
 } } // End namespaces iostreams, hamigaki.
 
 HAMIGAKI_IOSTREAMS_CATABLE(hamigaki::iostreams::basic_zero_source, 1)
+HAMIGAKI_IOSTREAMS_BLOCKING(hamigaki::iostreams::basic_zero_source, 1)
 
 #endif // HAMIGAKI_IOSTREAMS_DEVICE_ZERO_HPP
