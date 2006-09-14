@@ -10,7 +10,6 @@
 #define HAMIGAKI_AUDIO_SOURCE
 #define NOMINMAX
 #include <hamigaki/audio/vorbis_encoder.hpp>
-#include <hamigaki/audio/detail/endian.hpp>
 #include <vorbis/vorbisenc.h>
 
 #include <hamigaki/detail/random.hpp>

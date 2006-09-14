@@ -5,16 +5,16 @@
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+//  See http://hamigaki.sourceforge.jp/
 
-#ifndef HAMIGAKI_AUDIO_DETAIL_ENDIAN_HPP
-#define HAMIGAKI_AUDIO_DETAIL_ENDIAN_HPP
+#ifndef HAMIGAKI_ENDIAN_HPP
+#define HAMIGAKI_ENDIAN_HPP
 
 #include <boost/detail/endian.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/integer.hpp>
 
-namespace hamigaki { namespace audio { namespace detail {
+namespace hamigaki {
 
 enum endianness
 {
@@ -63,6 +63,9 @@ struct integer_encoding_traits<8>
     typedef boost::int64_t int_type;
     typedef boost::uint64_t uint_type;
 };
+
+namespace detail
+{
 
 template<typename T, endianness E, std::size_t Size>
 struct encode_uint_impl;
@@ -129,25 +132,6 @@ struct encode_uint_impl<boost::uint64_t,native,8>
         *reinterpret_cast<boost::uint64_t*>(s) = n;
     }
 };
-
-template<endianness E, std::size_t Size>
-inline void encode_uint(
-    char* s, typename integer_encoding_traits<Size>::uint_type n)
-{
-    typedef typename integer_encoding_traits<Size>::uint_type uint_type;
-    encode_uint_impl<uint_type,E,Size>::encode(s, n);
-}
-
-template<endianness E, std::size_t Size>
-inline void encode_int(
-    char* s, typename integer_encoding_traits<Size>::int_type n)
-{
-    typedef typename integer_encoding_traits<Size>::uint_type uint_type;
-    uint_type tmp = (n >= 0)
-        ? static_cast<uint_type>(n)
-        : ~static_cast<uint_type>(-(n + 1));
-    encode_uint_impl<uint_type,E,Size>::encode(s, tmp);
-}
 
 
 template<typename T, endianness E, std::size_t Size>
@@ -220,12 +204,33 @@ struct decode_uint_impl<boost::uint64_t,native,8>
     }
 };
 
+} // namespace detail
+
+template<endianness E, std::size_t Size>
+inline void encode_uint(
+    char* s, typename integer_encoding_traits<Size>::uint_type n)
+{
+    typedef typename integer_encoding_traits<Size>::uint_type uint_type;
+    detail::encode_uint_impl<uint_type,E,Size>::encode(s, n);
+}
+
+template<endianness E, std::size_t Size>
+inline void encode_int(
+    char* s, typename integer_encoding_traits<Size>::int_type n)
+{
+    typedef typename integer_encoding_traits<Size>::uint_type uint_type;
+    uint_type tmp = (n >= 0)
+        ? static_cast<uint_type>(n)
+        : ~static_cast<uint_type>(-(n + 1));
+    detail::encode_uint_impl<uint_type,E,Size>::encode(s, tmp);
+}
+
 template<endianness E, std::size_t Size>
 inline typename integer_encoding_traits<Size>::uint_type
 decode_uint(const char* s)
 {
     typedef typename integer_encoding_traits<Size>::uint_type uint_type;
-    return decode_uint_impl<uint_type,E,Size>::decode(s);
+    return detail::decode_uint_impl<uint_type,E,Size>::decode(s);
 }
 
 template<endianness E, std::size_t Size>
@@ -235,13 +240,13 @@ decode_int(const char* s)
     typedef typename integer_encoding_traits<Size>::int_type int_type;
     typedef typename integer_encoding_traits<Size>::uint_type uint_type;
 
-    uint_type tmp = decode_uint_impl<uint_type,E,Size>::decode(s);
+    uint_type tmp = detail::decode_uint_impl<uint_type,E,Size>::decode(s);
     if ((tmp & (static_cast<uint_type>(1) << (8*Size - 1))) != 0)
         return -static_cast<int_type>(~tmp) - 1;
     else
         return static_cast<int_type>(tmp);
 }
 
-} } } // End namespaces detail, audio, hamigaki.
+} // End namespace hamigaki.
 
-#endif // HAMIGAKI_AUDIO_DETAIL_ENDIAN_HPP
+#endif // HAMIGAKI_ENDIAN_HPP

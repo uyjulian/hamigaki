@@ -253,7 +253,7 @@ private:
             i < count; ++i, offset += smp_sz)
         {
             typename integer_encoding_traits<sz>::int_type tmp =
-                detail::decode_uint<E,sz>(&buffer_[offset]);
+                hamigaki::decode_uint<E,sz>(&buffer_[offset]);
 
             float tmp24 =
                 detail::decode_ieee754<float,Format>(tmp)*8388608;
@@ -295,7 +295,7 @@ private:
 
             typename integer_encoding_traits<sz>::int_type tmp =
                 detail::encode_ieee754<float,Format>(val);
-            detail::encode_uint<E,sz>(&buffer_[offset], tmp);
+            hamigaki::encode_uint<E,sz>(&buffer_[offset], tmp);
         }
 
         boost::iostreams::write(dev_, &buffer_[0], count*smp_sz);

@@ -10,8 +10,8 @@
 #ifndef HAMIGAKI_AUDIO_DETAIL_CVT_INT32_HPP
 #define HAMIGAKI_AUDIO_DETAIL_CVT_INT32_HPP
 
-#include <hamigaki/audio/detail/endian.hpp>
 #include <hamigaki/audio/sample_format.hpp>
+#include <hamigaki/endian.hpp>
 #include <boost/cstdint.hpp>
 
 namespace hamigaki { namespace audio { namespace detail {
@@ -53,14 +53,14 @@ template<> struct cvt_int32<int_le16>
 {
     static boost::int32_t decode(const char* s)
     {
-        boost::int32_t val = detail::decode_int<little,2>(s);
+        boost::int32_t val = hamigaki::decode_int<little,2>(s);
         return val * 65536;
     }
 
     static void encode(char* s, boost::int32_t n)
     {
         boost::int16_t val = static_cast<boost::int16_t>(n/65536);
-        detail::encode_int<little,2>(s, val);
+        hamigaki::encode_int<little,2>(s, val);
     }
 };
 
@@ -68,14 +68,14 @@ template<> struct cvt_int32<int_be16>
 {
     static boost::int32_t decode(const char* s)
     {
-        boost::int32_t val = detail::decode_int<big,2>(s);
+        boost::int32_t val = hamigaki::decode_int<big,2>(s);
         return val * 65536;
     }
 
     static void encode(char* s, boost::int32_t n)
     {
         boost::int16_t val = static_cast<boost::int16_t>(n/65536);
-        detail::encode_int<big,2>(s, val);
+        hamigaki::encode_int<big,2>(s, val);
     }
 };
 
@@ -83,7 +83,7 @@ template<> struct cvt_int32<int_le24>
 {
     static boost::int32_t decode(const char* s)
     {
-        boost::int32_t val = detail::decode_int<little,3>(s);
+        boost::int32_t val = hamigaki::decode_int<little,3>(s);
         return val * 256;
     }
 
@@ -91,7 +91,7 @@ template<> struct cvt_int32<int_le24>
     {
         typedef boost::int_t<24>::least int_type;
         int_type val = static_cast<int_type>(n/256);
-        detail::encode_int<little,3>(s, val);
+        hamigaki::encode_int<little,3>(s, val);
     }
 };
 
@@ -99,7 +99,7 @@ template<> struct cvt_int32<int_be24>
 {
     static boost::int32_t decode(const char* s)
     {
-        boost::int32_t val = detail::decode_int<big,3>(s);
+        boost::int32_t val = hamigaki::decode_int<big,3>(s);
         return val * 256;
     }
 
@@ -107,7 +107,7 @@ template<> struct cvt_int32<int_be24>
     {
         typedef boost::int_t<24>::least int_type;
         int_type val = static_cast<int_type>(n/256);
-        detail::encode_int<big,3>(s, val);
+        hamigaki::encode_int<big,3>(s, val);
     }
 };
 
@@ -115,12 +115,12 @@ template<> struct cvt_int32<int_le32>
 {
     static boost::int32_t decode(const char* s)
     {
-        return detail::decode_int<little,4>(s);
+        return hamigaki::decode_int<little,4>(s);
     }
 
     static void encode(char* s, boost::int32_t n)
     {
-        detail::encode_int<little,4>(s, n);
+        hamigaki::encode_int<little,4>(s, n);
     }
 };
 
@@ -128,12 +128,12 @@ template<> struct cvt_int32<int_be32>
 {
     static boost::int32_t decode(const char* s)
     {
-        return detail::decode_int<big,4>(s);
+        return hamigaki::decode_int<big,4>(s);
     }
 
     static void encode(char* s, boost::int32_t n)
     {
-        detail::encode_int<big,4>(s, n);
+        hamigaki::encode_int<big,4>(s, n);
     }
 };
 
@@ -141,12 +141,12 @@ template<> struct cvt_int32<int_a4_le16>
 {
     static boost::int32_t decode(const char* s)
     {
-        return detail::decode_int<little,4>(s) * 65536;
+        return hamigaki::decode_int<little,4>(s) * 65536;
     }
 
     static void encode(char* s, boost::int32_t n)
     {
-        detail::encode_int<little,4>(s, n/65536);
+        hamigaki::encode_int<little,4>(s, n/65536);
     }
 };
 
@@ -154,12 +154,12 @@ template<> struct cvt_int32<int_a4_be16>
 {
     static boost::int32_t decode(const char* s)
     {
-        return detail::decode_int<big,4>(s) * 65536;
+        return hamigaki::decode_int<big,4>(s) * 65536;
     }
 
     static void encode(char* s, boost::int32_t n)
     {
-        detail::encode_int<big,4>(s, n/65536);
+        hamigaki::encode_int<big,4>(s, n/65536);
     }
 };
 
@@ -167,12 +167,12 @@ template<> struct cvt_int32<int_a4_le18>
 {
     static boost::int32_t decode(const char* s)
     {
-        return detail::decode_int<little,4>(s) * 16384;
+        return hamigaki::decode_int<little,4>(s) * 16384;
     }
 
     static void encode(char* s, boost::int32_t n)
     {
-        detail::encode_int<little,4>(s, n/16384);
+        hamigaki::encode_int<little,4>(s, n/16384);
     }
 };
 
@@ -180,12 +180,12 @@ template<> struct cvt_int32<int_a4_be18>
 {
     static boost::int32_t decode(const char* s)
     {
-        return detail::decode_int<big,4>(s) * 16384;
+        return hamigaki::decode_int<big,4>(s) * 16384;
     }
 
     static void encode(char* s, boost::int32_t n)
     {
-        detail::encode_int<big,4>(s, n/16384);
+        hamigaki::encode_int<big,4>(s, n/16384);
     }
 };
 
@@ -193,12 +193,12 @@ template<> struct cvt_int32<int_a4_le20>
 {
     static boost::int32_t decode(const char* s)
     {
-        return detail::decode_int<little,4>(s) * 4096;
+        return hamigaki::decode_int<little,4>(s) * 4096;
     }
 
     static void encode(char* s, boost::int32_t n)
     {
-        detail::encode_int<little,4>(s, n/4096);
+        hamigaki::encode_int<little,4>(s, n/4096);
     }
 };
 
@@ -206,12 +206,12 @@ template<> struct cvt_int32<int_a4_be20>
 {
     static boost::int32_t decode(const char* s)
     {
-        return detail::decode_int<big,4>(s) * 4096;
+        return hamigaki::decode_int<big,4>(s) * 4096;
     }
 
     static void encode(char* s, boost::int32_t n)
     {
-        detail::encode_int<big,4>(s, n/4096);
+        hamigaki::encode_int<big,4>(s, n/4096);
     }
 };
 
@@ -219,12 +219,12 @@ template<> struct cvt_int32<int_a4_le24>
 {
     static boost::int32_t decode(const char* s)
     {
-        return detail::decode_int<little,4>(s) * 256;
+        return hamigaki::decode_int<little,4>(s) * 256;
     }
 
     static void encode(char* s, boost::int32_t n)
     {
-        detail::encode_int<little,4>(s, n/256);
+        hamigaki::encode_int<little,4>(s, n/256);
     }
 };
 
@@ -232,12 +232,12 @@ template<> struct cvt_int32<int_a4_be24>
 {
     static boost::int32_t decode(const char* s)
     {
-        return detail::decode_int<big,4>(s) * 256;
+        return hamigaki::decode_int<big,4>(s) * 256;
     }
 
     static void encode(char* s, boost::int32_t n)
     {
-        detail::encode_int<big,4>(s, n/256);
+        hamigaki::encode_int<big,4>(s, n/256);
     }
 };
 
