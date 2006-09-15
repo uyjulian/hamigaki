@@ -11,8 +11,10 @@
 #define HAMIGAKI_AUDIO_WAVE_FILE_HPP
 
 #include <hamigaki/audio/detail/iff_base.hpp>
+#include <hamigaki/audio/detail/pcm_wave_format.hpp>
 #include <hamigaki/audio/pcm_format.hpp>
 #include <hamigaki/iostreams/device/file.hpp>
+#include <hamigaki/iostreams/binary_io.hpp>
 #include <hamigaki/iostreams/catable.hpp>
 #include <boost/shared_ptr.hpp>
 
@@ -66,14 +68,13 @@ private:
         if (!iff_.select_chunk("fmt "))
             throw BOOST_IOSTREAMS_FAILURE("cannot find fmt chunk");
 
-        char buf[16];
-        if (boost::iostreams::read(iff_, buf, sizeof(buf)) != sizeof(buf))
-            throw BOOST_IOSTREAMS_FAILURE("broken pcm format");
+        pcm_wave_format fmt;
+        hamigaki::iostreams::binary_read(iff_, fmt);
 
-        boost::uint16_t tag = decode_uint<little,2>(buf);
-        boost::uint16_t channels = decode_uint<little,2>(&buf[2]);
-        boost::uint32_t rate = decode_uint<little,4>(&buf[4]);
-        boost::uint16_t bits = decode_uint<little,2>(&buf[14]);
+        boost::uint16_t tag = fmt.format_tag;
+        boost::uint16_t channels = fmt.channels;
+        boost::uint32_t rate = fmt.samples_per_sec;
+        boost::uint16_t bits = fmt.bits_per_sample;
 
         if ((tag != 1) && (tag != 3))
             throw BOOST_IOSTREAMS_FAILURE("unsupoorted pcm format");
@@ -146,19 +147,19 @@ private:
     {
         iff_.create_chunk("fmt ");
 
-        char buf[16];
+        pcm_wave_format fmt;
         unsigned block_sz = format_.block_size();
         if ((format_.type == float_le32) || (format_.type == float_le64))
-            encode_uint<little,2>(buf, 3);
+            fmt.format_tag = 3;
         else
-            encode_uint<little,2>(buf, 1);
-        encode_uint<little,2>(&buf[2], format_.channels);
-        encode_uint<little,4>(&buf[4], format_.rate);
-        encode_uint<little,4>(&buf[8], format_.rate * block_sz);
-        encode_uint<little,2>(&buf[12], block_sz);
-        encode_uint<little,2>(&buf[14], format_.bits());
+            fmt.format_tag = 1;
+        fmt.channels = format_.channels;
+        fmt.samples_per_sec = format_.rate;
+        fmt.avg_bytes_per_sec = format_.rate * block_sz;
+        fmt.block_align = block_sz;
+        fmt.bits_per_sample = format_.bits();
 
-        boost::iostreams::write(iff_, buf, sizeof(buf));
+        hamigaki::iostreams::binary_write(iff_, fmt);
     }
 };
 

@@ -10,35 +10,34 @@
 #ifndef HAMIGAKI_AUDIO_AIFF_FILE_HPP
 #define HAMIGAKI_AUDIO_AIFF_FILE_HPP
 
+#include <hamigaki/audio/detail/aiff_comm_data.hpp>
 #include <hamigaki/audio/detail/iff_base.hpp>
 #include <hamigaki/audio/pcm_format.hpp>
 #include <hamigaki/iostreams/device/file.hpp>
+#include <hamigaki/iostreams/binary_io.hpp>
 #include <hamigaki/iostreams/catable.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <boost/shared_ptr.hpp>
+#include <utility>
 
 namespace hamigaki { namespace audio {
 
 namespace detail
 {
 
-inline boost::uint64_t decode_extended(const char* s)
+inline boost::uint64_t decode_extended(boost::int16_t exp, boost::uint64_t mant)
 {
-    boost::int16_t exp = decode_int<big,2>(s);
-    boost::uint64_t mant = decode_uint<big,8>(s+2);
-
     if ((exp == 0) && (mant == 0))
         return 0;
     else
         return mant >> (63-(exp-16383));
 }
 
-inline void encode_extended(char* s, boost::uint64_t n)
+inline std::pair<boost::int16_t,boost::uint64_t>
+encode_extended(boost::uint64_t n)
 {
     if (n == 0)
-    {
-        std::memset(s, 0, 10);
-        return;
-    }
+        return std::pair<boost::int16_t,boost::uint64_t>(0, 0);
 
     boost::int16_t exp = 16383+63;
     boost::uint64_t mant = n;
@@ -47,8 +46,7 @@ inline void encode_extended(char* s, boost::uint64_t n)
         --exp;
         mant <<= 1;
     }
-    encode_int<big,2>(s, exp);
-    encode_uint<big,8>(s+2, mant);
+    return std::make_pair(exp, mant);
 }
 
 template<typename Source>
@@ -146,14 +144,13 @@ private:
         if (!iff_.select_chunk("COMM"))
             throw BOOST_IOSTREAMS_FAILURE("cannot find COMM chunk");
 
-        char buf[18];
-        if (boost::iostreams::read(iff_, buf, sizeof(buf)) != sizeof(buf))
-            throw BOOST_IOSTREAMS_FAILURE("broken pcm format");
-
-        boost::int16_t channels = decode_int<big,2>(&buf[0]);
-        boost::uint32_t samples = decode_uint<big,4>(&buf[2]);
-        boost::int16_t bits = decode_int<big,2>(&buf[6]);
-        boost::uint64_t rate = decode_extended(&buf[8]);
+        aiff_comm_data comm;
+        hamigaki::iostreams::binary_read(iff_, comm);
+        boost::int16_t channels = comm.num_channels;
+        boost::uint32_t samples = comm.num_sample_frames;
+        boost::int16_t bits = comm.sample_size;
+        boost::uint64_t rate =
+            decode_extended(comm.sample_rate_exp, comm.sample_rate_mant);
 
         if ((channels == 0) || (rate == 0) || (bits == 0))
             throw BOOST_IOSTREAMS_FAILURE("bad pcm format");
@@ -245,13 +242,14 @@ private:
                 boost::iostreams::seek(sink_, 0, BOOST_IOS::cur)
             ) + 2;
 
-        char buf[18];
-        encode_int<big,2>(&buf[0], format_.channels);
-        encode_int<big,4>(&buf[2], 0);
-        encode_int<big,2>(&buf[6], format_.bits());
-        encode_extended(&buf[8], format_.rate);
+        aiff_comm_data comm;
+        comm.num_channels = format_.channels;
+        comm.num_sample_frames = 0;
+        comm.sample_size = format_.bits();
+        boost::tie(comm.sample_rate_exp, comm.sample_rate_mant) =
+            encode_extended(format_.rate);
 
-        boost::iostreams::write(iff_, buf, sizeof(buf));
+        hamigaki::iostreams::binary_write(iff_, comm);
     }
 };
 
