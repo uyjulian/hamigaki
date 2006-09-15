@@ -32,6 +32,11 @@ public:
         );
     }
 
+    template<std::size_t Size>
+    void operator()(const padding<Size>&)
+    {
+    }
+
 private:
     const char* data_;
     Struct* ptr_;
@@ -53,6 +58,11 @@ public:
             data_ + member_offset<T>::type::value,
             T()(*ptr_)
         );
+    }
+
+    template<std::size_t Size>
+    void operator()(const padding<Size>&)
+    {
     }
 
 private:

@@ -29,13 +29,27 @@ struct member
     static const endianness endian = E;
 
     Type& operator()(Struct& x) const
-    { 
+    {
         return x.*PtrToMember;
     }
 
     const Type& operator()(const Struct& x) const
     { 
         return x.*PtrToMember;
+    }
+};
+
+template<std::size_t Size>
+struct padding
+{
+    typedef void class_type;
+    typedef void member_type;
+
+    static const endianness endian = native;
+
+    template<class Struct>
+    void operator()(const Struct& x) const
+    {
     }
 };
 
@@ -69,6 +83,12 @@ struct member_size<member<Struct, Type, PtrToMember, E> >
         Type,
         typename struct_traits<Type>::members
     >::type type;
+};
+
+template<std::size_t Size>
+struct member_size<padding<Size> >
+{
+    typedef boost::mpl::size_t<Size> type;
 };
 
 
