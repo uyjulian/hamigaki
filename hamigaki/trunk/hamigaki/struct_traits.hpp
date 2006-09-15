@@ -13,10 +13,11 @@
 #include <hamigaki/endian.hpp>
 #include <boost/mpl/accumulate.hpp>
 #include <boost/mpl/begin.hpp>
-#include <boost/mpl/find.hpp>
+#include <boost/mpl/find_if.hpp>
 #include <boost/mpl/iterator_range.hpp>
 #include <boost/mpl/plus.hpp>
 #include <boost/mpl/size_t.hpp>
+#include <boost/type_traits/is_convertible.hpp>
 
 namespace hamigaki {
 
@@ -26,16 +27,11 @@ struct struct_traits
     typedef void members;
 };
 
-template<
-    class Struct, class Type, Type Struct::* PtrToMember,
-    endianness E=native
->
-struct member
+template<class Struct, class Type, Type Struct::* PtrToMember>
+struct member_base
 {
-    typedef Struct class_type;
+    typedef Struct struct_type;
     typedef Type member_type;
-
-    static const endianness endian = E;
 
     Type& operator()(Struct& x) const
     {
@@ -48,10 +44,19 @@ struct member
     }
 };
 
+template<
+    class Struct, class Type, Type Struct::* PtrToMember,
+    endianness E=native
+>
+struct member : member_base<Struct,Type,PtrToMember>
+{
+    static const endianness endian = E;
+};
+
 template<std::size_t Size>
 struct padding
 {
-    typedef void class_type;
+    typedef void struct_type;
     typedef void member_type;
 
     static const endianness endian = native;
@@ -116,19 +121,16 @@ struct struct_size
 
 
 template<class T>
-struct member_offset;
-
-template<class Struct, class Type, Type Struct::* PtrToMember, endianness E>
-struct member_offset<member<Struct, Type, PtrToMember, E> >
+struct member_offset
 {
     typedef typename boost::mpl::accumulate<
         boost::mpl::iterator_range<
             typename boost::mpl::begin<
-                typename struct_traits<Struct>::members
+                typename struct_traits<typename T::struct_type>::members
             >::type,
-            typename boost::mpl::find<
-                typename struct_traits<Struct>::members,
-                member<Struct, Type, PtrToMember, E>
+            typename boost::mpl::find_if<
+                typename struct_traits<typename T::struct_type>::members,
+                boost::is_convertible<boost::mpl::_1,T>
             >::type
         >,
         boost::mpl::size_t<0>,
@@ -136,6 +138,14 @@ struct member_offset<member<Struct, Type, PtrToMember, E> >
             boost::mpl::_1,
             member_size<boost::mpl::_2>
         >
+    >::type type;
+};
+
+template<class Struct, class Type, Type Struct::* PtrToMember>
+struct binary_offset
+{
+    typedef typename member_offset<
+        member_base<Struct, Type, PtrToMember>
     >::type type;
 };
 
