@@ -11,6 +11,12 @@
 
 namespace hamigaki {
 
+template<class T>
+struct struct_traits
+{
+    typedef void members;
+};
+
 template<
     class Struct, class Type, Type Struct::* PtrToMember,
     endianness E=native
@@ -26,8 +32,32 @@ struct member
     { 
         return x.*PtrToMember;
     }
+
+    const Type& operator()(const Struct& x) const
+    { 
+        return x.*PtrToMember;
+    }
 };
 
+template<class T>
+struct struct_size;
+
+namespace detail
+{
+
+template<class T, class Members>
+struct sizeof_impl
+{
+    typedef typename struct_size<T>::type type;
+};
+
+template<class T>
+struct sizeof_impl<T,void>
+{
+    typedef boost::mpl::size_t<sizeof(T)> type;
+};
+
+} // namespace detail
 
 template<class T>
 struct member_size;
@@ -35,12 +65,11 @@ struct member_size;
 template<class Struct, class Type, Type Struct::* PtrToMember, endianness E>
 struct member_size<member<Struct, Type, PtrToMember, E> >
 {
-    typedef boost::mpl::size_t<sizeof(Type)> type;
+    typedef typename detail::sizeof_impl<
+        Type,
+        typename struct_traits<Type>::members
+    >::type type;
 };
-
-
-template<class T>
-struct struct_traits;
 
 
 template<class T>

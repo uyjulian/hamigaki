@@ -23,14 +23,12 @@ public:
     {
     }
 
-    template<class Type, Type Struct::* PtrToMember, endianness E>
-    void operator()(const member<Struct, Type, PtrToMember, E>&)
+    template<class T>
+    void operator()(const T&)
     {
-        typedef member<Struct, Type, PtrToMember, E> member_type;
-
-        binary_io_traits<E,Type>::read(
-            data_ + member_offset<member_type>::type::value,
-            ptr_->*PtrToMember
+        binary_io_traits<T::endian, typename T::member_type>::read(
+            data_ + member_offset<T>::type::value,
+            T()(*ptr_)
         );
     }
 
@@ -48,14 +46,12 @@ public:
     {
     }
 
-    template<class Type, Type Struct::* PtrToMember, endianness E>
-    void operator()(const member<Struct, Type, PtrToMember, E>&)
+    template<class T>
+    void operator()(const T&)
     {
-        typedef member<Struct, Type, PtrToMember, E> member_type;
-
-        binary_io_traits<E,Type>::write(
-            data_ + member_offset<member_type>::type::value,
-            ptr_->*PtrToMember
+        binary_io_traits<T::endian, typename T::member_type>::write(
+            data_ + member_offset<T>::type::value,
+            T()(*ptr_)
         );
     }
 
