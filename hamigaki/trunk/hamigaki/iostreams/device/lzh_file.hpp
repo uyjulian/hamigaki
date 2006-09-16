@@ -1,4 +1,4 @@
-//  lha_file.hpp: lha file device
+//  lzh_file.hpp: LZH file device
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
@@ -11,8 +11,8 @@
 // The current implementation is fake.
 // The real compressed files are not supported yet.
 
-#ifndef HAMIGAKI_IOSTREAMS_DEVICE_LHA_FILE_HPP
-#define HAMIGAKI_IOSTREAMS_DEVICE_LHA_FILE_HPP
+#ifndef HAMIGAKI_IOSTREAMS_DEVICE_LZH_FILE_HPP
+#define HAMIGAKI_IOSTREAMS_DEVICE_LZH_FILE_HPP
 
 #include <hamigaki/iostreams/binary_io.hpp>
 #include <boost/filesystem/path.hpp>
@@ -285,4 +285,4 @@ private:
 
 } } // End namespaces iostreams, hamigaki.
 
-#endif // HAMIGAKI_IOSTREAMS_DEVICE_LHA_FILE_HPP
+#endif // HAMIGAKI_IOSTREAMS_DEVICE_LZH_FILE_HPP
