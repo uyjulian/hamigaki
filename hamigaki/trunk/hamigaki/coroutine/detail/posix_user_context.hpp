@@ -22,6 +22,7 @@
 #include <hamigaki/coroutine/detail/swap_context_hints.hpp>
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/shared_ptr.hpp>
 #include <cstddef>
 #include <ucontext.h>
 
@@ -49,8 +50,9 @@ class user_context_impl_base
 {
 public:
     user_context_impl_base()
+        : context_(new ::ucontext_t)
 #if defined(HAMIGAKI_COROUTINE_USE_SJLJ_CONTEXT)
-        : eh_ctx_(0)
+        , eh_ctx_(0)
 #endif
     {
     }
@@ -64,12 +66,12 @@ public:
         from.eh_ctx_ = detail::replace_sjlj_context(to.eh_ctx_);
 #endif
         HAMIGAKI_COROUTINE_DEBUG(int ret =)
-        ::swapcontext(&from.context_, &to.context_);
+        ::swapcontext(from.context_.get(), to.context_.get());
         BOOST_ASSERT(ret == 0);
     }
 
 protected:
-    ::ucontext_t context_;
+    boost::shared_ptr< ::ucontext_t> context_;
 
 private:
 #if defined(HAMIGAKI_COROUTINE_USE_SJLJ_CONTEXT)
@@ -94,17 +96,17 @@ public:
         : stack_(fix_stack_size(stack_size), PROT_READ|PROT_WRITE|PROT_EXEC)
     {
         HAMIGAKI_COROUTINE_DEBUG(int ret =)
-        ::getcontext(&context_);
+        ::getcontext(context_.get());
         BOOST_ASSERT(ret == 0);
 
-        context_.uc_stack.ss_sp = stack_.address();
-        context_.uc_stack.ss_size = fix_stack_size(stack_size);
-        context_.uc_link = 0;
+        context_->uc_stack.ss_sp = stack_.address();
+        context_->uc_stack.ss_size = fix_stack_size(stack_size);
+        context_->uc_link = 0;
 
         typedef void (*trampoline_pointer)(void*);
         trampoline_pointer tp = &trampoline<Functor>;
 
-        ::makecontext(&context_, reinterpret_cast<void (*)()>(tp), 1, &f);
+        ::makecontext(context_.get(), reinterpret_cast<void (*)()>(tp), 1, &f);
         BOOST_ASSERT(ret == 0);
     }
 
