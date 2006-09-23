@@ -7,10 +7,6 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
 
-// Note:
-// The current implementation is fake.
-// The real compressed files are not supported yet.
-
 #ifndef HAMIGAKI_IOSTREAMS_DEVICE_LZH_FILE_HPP
 #define HAMIGAKI_IOSTREAMS_DEVICE_LZH_FILE_HPP
 
@@ -32,22 +28,167 @@
 
 namespace hamigaki { namespace iostreams { namespace lha {
 
+struct attributes
+{
+    static const boost::uint16_t read_only  = 0x0001;
+    static const boost::uint16_t hidden     = 0x0002;
+    static const boost::uint16_t system     = 0x0004;
+    static const boost::uint16_t directory  = 0x0010;
+    static const boost::uint16_t archive    = 0x0020;
+};
+
+struct basic_header
+{
+    char method[5];
+    boost::uint32_t compressed_size;
+    boost::uint32_t file_size;
+    std::time_t update_time;
+    boost::uint16_t attributes;
+    boost::filesystem::path path;
+    boost::optional<boost::uint16_t> crc16_checksum;
+    boost::optional<char> os;
+};
+
+struct msdos_date_time
+{
+    boost::uint16_t date;
+    boost::uint16_t time;
+
+    int year() const
+    {
+        return 1980 + (date >> 9);
+    }
+
+    int month() const
+    {
+        return (date >> 5) & 0x0F;
+    }
+
+    int day() const
+    {
+        return date & 0x1F;
+    }
+
+    int hours() const
+    {
+        return time >> 11;
+    }
+
+    int minutes() const
+    {
+        return (time >> 5) & 0x3F;
+    }
+
+    int seconds() const
+    {
+        return (time << 1) & 0x3F;
+    }
+
+    std::time_t to_time_t() const
+    {
+        std::tm lt;
+
+        lt.tm_year = year() - 1900;
+        lt.tm_mon = month() - 1;
+        lt.tm_mday = day();
+        lt.tm_hour = hours();
+        lt.tm_min = minutes();
+        lt.tm_sec = seconds();
+        lt.tm_isdst = -1;
+
+        return std::mktime(&lt);
+    }
+};
+
+struct lv0_header
+{
+    boost::uint8_t header_size;
+    boost::uint8_t header_checksum;
+    char method[5];
+    boost::uint32_t compressed_size;
+    boost::uint32_t file_size;
+    msdos_date_time update_date_time;
+    boost::uint16_t attributes;
+};
+
+struct lv1_header
+{
+    boost::uint8_t header_size;
+    boost::uint8_t header_checksum;
+    char method[5];
+    boost::uint32_t skip_size;
+    boost::uint32_t file_size;
+    msdos_date_time update_date_time;
+    boost::uint8_t reserved;
+    boost::uint8_t level;
+};
+
 struct lv2_header
 {
     boost::uint16_t header_size;
-    char signature[5];
+    char method[5];
     boost::uint32_t compressed_size;
     boost::uint32_t file_size;
     boost::int32_t update_time;
     boost::uint8_t reserved;
     boost::uint8_t level;
-    boost::uint16_t crc;
-    char os_type;
 };
 
 } } } // End namespaces lha, iostreams, hamigaki.
 
 namespace hamigaki {
+
+template<>
+struct struct_traits<iostreams::lha::msdos_date_time>
+{
+private:
+    typedef iostreams::lha::msdos_date_time self;
+
+public:
+    typedef boost::mpl::list<
+        member<self, boost::uint16_t, &self::date, little>,
+        member<self, boost::uint16_t, &self::time, little>
+    > members;
+};
+
+template<>
+struct struct_traits<iostreams::lha::lv0_header>
+{
+private:
+    typedef iostreams::lha::lv0_header self;
+    typedef iostreams::lha::msdos_date_time date_time_type;
+
+public:
+    typedef boost::mpl::list<
+        member<self, boost::uint8_t, &self::header_size>,
+        member<self, boost::uint8_t, &self::header_checksum>,
+        member<self, char[5], &self::method>,
+        member<self, boost::uint32_t, &self::compressed_size, little>,
+        member<self, boost::uint32_t, &self::file_size, little>,
+        member<self, date_time_type, &self::update_date_time>,
+        member<self, boost::uint16_t, &self::attributes, little>
+    > members;
+};
+
+template<>
+struct struct_traits<iostreams::lha::lv1_header>
+{
+private:
+    typedef iostreams::lha::lv1_header self;
+    typedef iostreams::lha::msdos_date_time date_time_type;
+
+public:
+    typedef boost::mpl::list<
+        member<self, boost::uint8_t, &self::header_size>,
+        member<self, boost::uint8_t, &self::header_checksum>,
+        member<self, char[5], &self::method>,
+        member<self, boost::uint32_t, &self::skip_size, little>,
+        member<self, boost::uint32_t, &self::file_size, little>,
+        member<self, date_time_type, &self::update_date_time>,
+        member<self, boost::uint8_t, &self::reserved>,
+        member<self, boost::uint8_t, &self::level>
+    > members;
+};
 
 template<>
 struct struct_traits<iostreams::lha::lv2_header>
@@ -58,14 +199,12 @@ private:
 public:
     typedef boost::mpl::list<
         member<self, boost::uint16_t, &self::header_size, little>,
-        member<self, char[5], &self::signature>,
+        member<self, char[5], &self::method>,
         member<self, boost::uint32_t, &self::compressed_size, little>,
         member<self, boost::uint32_t, &self::file_size, little>,
         member<self, boost::int32_t, &self::update_time, little>,
         member<self, boost::uint8_t, &self::reserved>,
-        member<self, boost::uint8_t, &self::level>,
-        member<self, boost::uint16_t, &self::crc, little>,
-        member<self, char, &self::os_type>
+        member<self, boost::uint8_t, &self::level>
     > members;
 };
 
@@ -96,102 +235,175 @@ public:
 
     bool next_entry()
     {
+        image_ = boost::none;
         boost::iostreams::seek(src_, next_offset_, std::ios_base::beg);
+        crc_.reset();
+        header_.path = boost::filesystem::path();
 
-        lha::lv2_header head;
-        boost::crc_16_type crc;
-        if (!read_basic_header(src_, head, crc))
+        char buf[hamigaki::struct_size<lha::lv0_header>::type::value];
+        if (!this->read_basic_header(src_, buf, sizeof(buf)))
             return false;
 
-        // currently support only level2 header
-        if (head.level != 2)
+        boost::crc_16_type crc;
+        crc.process_bytes(buf, sizeof(buf));
+
+        boost::optional<restricted_type> hsrc;
+        char lv = buf[sizeof(buf)-1];
+        // TODO: fix restriction::seek()
+        boost::iostreams::stream_offset extended_start = 0;
+        if (lv == '\0')
+        {
+            lha::lv0_header lv0;
+            hamigaki::binary_read(buf, lv0);
+
+            const std::streamsize rest_size =
+                static_cast<std::streamsize>(lv0.header_size - (sizeof(buf)-2));
+            if (rest_size <= 0)
+                throw BOOST_IOSTREAMS_FAILURE("bad LZH header size");
+
+            hsrc = boost::iostreams::restrict(src_, 0, rest_size);
+
+            std::memcpy(header_.method, lv0.method, 5);
+            header_.compressed_size = lv0.compressed_size;
+            header_.file_size = lv0.file_size;
+            header_.update_time = lv0.update_date_time.to_time_t();
+            header_.attributes = lv0.attributes;
+            header_.path = read_path(*hsrc, crc);
+            header_.crc16_checksum = boost::none;
+            header_.os = boost::none;
+        }
+        else if (lv == '\x01')
+        {
+            lha::lv1_header lv1;
+            hamigaki::binary_read(buf, lv1);
+
+            const std::streamsize rest_size =
+                static_cast<std::streamsize>(lv1.header_size - sizeof(buf));
+            if (rest_size <= 0)
+                throw BOOST_IOSTREAMS_FAILURE("bad LZH header size");
+
+            hsrc = boost::iostreams::restrict(src_, 0, rest_size);
+
+            std::memcpy(header_.method, lv1.method, 5);
+            header_.compressed_size = lv1.skip_size;
+            header_.file_size = lv1.file_size;
+            header_.update_time = lv1.update_date_time.to_time_t();
+
+            if (std::memcmp(lv1.method, "-lhd-", 5) == 0)
+                header_.attributes = lha::attributes::directory;
+            else
+                header_.attributes = lha::attributes::archive;
+
+            header_.path = read_path(*hsrc, crc);
+            header_.crc16_checksum = read_little16(*hsrc, crc);
+            header_.os = get(*hsrc, crc);
+
+            boost::iostreams::seek(*hsrc, 0, BOOST_IOS::end);
+
+            extended_start =
+                boost::iostreams::position_to_offset(
+                    boost::iostreams::seek(src_, 0, BOOST_IOS::cur));
+            hsrc = boost::iostreams::restrict(src_, 0, -1);
+        }
+        else if (lv == '\x02')
+        {
+            lha::lv2_header lv2;
+            hamigaki::binary_read(buf, lv2);
+
+            const std::streamsize rest_size =
+                static_cast<std::streamsize>(lv2.header_size - sizeof(buf));
+            if (rest_size <= 0)
+                throw BOOST_IOSTREAMS_FAILURE("bad LZH header size");
+
+            hsrc = boost::iostreams::restrict(src_, 0, rest_size);
+
+            std::memcpy(header_.method, lv2.method, 5);
+            header_.compressed_size = lv2.compressed_size;
+            header_.file_size = lv2.file_size;
+            header_.update_time = static_cast<std::time_t>(lv2.update_time);
+
+            if (std::memcmp(lv2.method, "-lhd-", 5) == 0)
+                header_.attributes = lha::attributes::directory;
+            else
+                header_.attributes = lha::attributes::archive;
+
+            header_.crc16_checksum = read_little16(*hsrc, crc);
+            header_.os = get(*hsrc, crc);
+        }
+        else
             throw BOOST_IOSTREAMS_FAILURE("unsupported LZH header");
 
-        is_directory_ = (std::memcmp(head.signature, "-lhd-", 5) == 0);
-        checksum_ = head.crc;
+        // currently support only lh0 method
+        if ((std::memcmp(header_.method, "-lhd-", 5) != 0) &&
+            (std::memcmp(header_.method, "-lh0-", 5) != 0) )
+        {
+            throw BOOST_IOSTREAMS_FAILURE("unsupported LZH method");
+        }
 
-        // currently support only lh0 format
-        if (!is_directory_ && (std::memcmp(head.signature, "-lh0-", 5) != 0))
-            throw BOOST_IOSTREAMS_FAILURE("unsupported LZH format");
+        if (lv != '\x0')
+            read_extended_header(*hsrc, crc);
 
-        const std::size_t base_size =
-            hamigaki::struct_size<lha::lv2_header>::type::value;
-
-        read_extended_header(
-            boost::iostreams::restrict(
-                src_, 0, head.header_size - base_size),
-            crc
-        );
+        if (lv == '\x1')
+        {
+            boost::iostreams::stream_offset extended_end =
+                boost::iostreams::position_to_offset(
+                    boost::iostreams::seek(src_, 0, BOOST_IOS::cur));
+            header_.compressed_size -= (extended_end-extended_start-2);
+        }
+        else
+            boost::iostreams::seek(*hsrc, 0, BOOST_IOS::end);
 
         next_offset_ =
             boost::iostreams::position_to_offset(
                 boost::iostreams::seek(src_, 0, std::ios_base::cur)
-            ) + head.compressed_size;
+            ) + header_.compressed_size;
 
-        if (is_directory_)
-            image_ = boost::none;
-        else
-            image_ = boost::iostreams::restrict(src_, 0, head.compressed_size);
-
-        crc_.reset();
+        if ((header_.attributes & lha::attributes::directory) == 0)
+        {
+            image_ =
+                boost::iostreams::restrict(src_, 0, header_.compressed_size);
+        }
 
         return true;
     }
 
-    boost::filesystem::path path() const
+    lha::basic_header header() const
     {
-        return path_;
-    }
-
-    bool is_directory() const
-    {
-        return is_directory_;
+        return header_;
     }
 
     std::streamsize read(char* s, std::streamsize n)
     {
         std::streamsize result = image_->read(s, n);
-        if (result > 0)
-            crc_.process_bytes(s, result);
-        if (result == -1)
+        if (header_.crc16_checksum)
         {
-            if (crc_.checksum() != checksum_)
-                throw BOOST_IOSTREAMS_FAILURE("CRC missmatch");
+            if (result > 0)
+                crc_.process_bytes(s, result);
+            if (result == -1)
+            {
+                if (crc_.checksum() != header_.crc16_checksum.get())
+                    throw BOOST_IOSTREAMS_FAILURE("CRC missmatch");
+            }
         }
         return result;
     }
 
 private:
     Source src_;
-    boost::filesystem::path path_;
-    bool is_directory_;
+    lha::basic_header header_;
     boost::optional<restricted_type> image_;
     boost::iostreams::stream_offset next_offset_;
     boost::crc_16_type crc_;
-    boost::uint16_t checksum_;
 
-    static bool read_basic_header(
-        Source& src, lha::lv2_header& head, boost::crc_16_type& crc)
+    template<class Source2>
+    static char get(Source2& src, boost::crc_16_type& crc)
     {
-        boost::iostreams::non_blocking_adapter<Source> nb(src);
-
-        char buf[hamigaki::struct_size<lha::lv2_header>::type::value];
-        std::streamsize amt = boost::iostreams::read(nb, buf, sizeof(buf));
-
-        if (amt < static_cast<std::streamsize>(sizeof(buf)))
-        {
-            if ((amt <= 0) || (buf[0] != '\0'))
-                throw BOOST_IOSTREAMS_FAILURE("LZH end-mark not found");
-            return false;
-        }
-
-        if (buf[0] == '\0')
-            return false;
-
-        hamigaki::binary_read(buf, head);
-        crc.process_bytes(buf, sizeof(buf));
-
-        return true;
+        char c;
+        boost::iostreams::non_blocking_adapter<Source2> nb(src);
+        if (boost::iostreams::read(nb, &c, 1) != 1)
+            throw boost::iostreams::detail::bad_read();
+        crc.process_byte(c);
+        return c;
     }
 
     template<class Source2>
@@ -200,9 +412,76 @@ private:
         char buf[2];
         boost::iostreams::non_blocking_adapter<Source2> nb(src);
         if (boost::iostreams::read(nb, buf, 2) != 2)
-            throw BOOST_IOSTREAMS_FAILURE("read_little16 error");
+            throw boost::iostreams::detail::bad_read();
         crc.process_bytes(buf, sizeof(buf));
         return hamigaki::decode_uint<hamigaki::little, 2>(buf);
+    }
+
+    template<class Source2>
+    static boost::filesystem::path
+    read_path(Source2& src, boost::crc_16_type& crc)
+    {
+        boost::iostreams::non_blocking_adapter<Source2> nb(src);
+
+        char c;
+        if (boost::iostreams::read(nb, &c, 1) != 1)
+            throw boost::iostreams::detail::bad_read();
+        crc.process_byte(c);
+
+        std::streamsize count = static_cast<unsigned char>(c);
+        boost::scoped_array<char> buffer(new char[count]);
+
+        if (boost::iostreams::read(nb, buffer.get(), count) != count)
+            throw boost::iostreams::detail::bad_read();
+        crc.process_bytes(buffer.get(), count);
+
+        const char* start = buffer.get();
+        const char* cur = start;
+        const char* end = cur + count;
+        boost::filesystem::path ph;
+
+        while (cur != end)
+        {
+            char uc = static_cast<unsigned char>(*cur);
+            if (((uc >  0x80) && (uc < 0xA0)) ||
+                ((uc >= 0xE0) && (uc < 0xFD)) )
+            {
+                if (++cur == end)
+                    break;
+                ++cur;
+            }
+            else if (*cur == '\\')
+            {
+                ph /= std::string(start, cur-start);
+                start = ++cur;
+            }
+            else
+                ++cur;
+        }
+        if (start != cur)
+            ph /= std::string(start, cur-start);
+
+        return ph;
+    }
+
+    static bool read_basic_header(
+        Source& src, char* buffer, std::streamsize size)
+    {
+        boost::iostreams::non_blocking_adapter<Source> nb(src);
+
+        std::streamsize amt = boost::iostreams::read(nb, buffer, size);
+
+        if (amt < size)
+        {
+            if ((amt <= 0) || (buffer[0] != '\0'))
+                throw BOOST_IOSTREAMS_FAILURE("LZH end-mark not found");
+            return false;
+        }
+
+        if (buffer[0] == '\0')
+            return false;
+
+        return true;
     }
 
     static boost::uint16_t parse_common(char* s, boost::uint32_t n)
@@ -279,7 +558,10 @@ private:
         if (crc.checksum() != header_crc.get())
             throw BOOST_IOSTREAMS_FAILURE("CRC missmatch");
 
-        path_ = branch / leaf;
+        if (header_.path.empty())
+            header_.path = branch / leaf;
+        else if (!branch.empty())
+            header_.path = branch / header_.path;
     }
 };
 
