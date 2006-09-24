@@ -24,6 +24,7 @@
   <xi:include href="dont_close.xml"/>
   <xi:include href="lazy_restrict.xml"/>
   <xi:include href="multiplexer.xml"/>
+  <xi:include href="relative_restrict.xml"/>
   <xi:include href="repeat.xml"/>
   <xi:include href="tiny_restrict.xml"/>
   <xi:include href="traits.xml"/>

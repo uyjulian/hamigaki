@@ -11,18 +11,17 @@
 
   See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
 -->
-<header name="hamigaki/iostreams/lazy_restrict.hpp">
+<header name="hamigaki/iostreams/relative_restrict.hpp">
   <namespace name="hamigaki">
     <namespace name="iostreams">
-      <class name="lazy_restriction">
+      <class name="relative_restriction">
         <template>
           <template-type-parameter name="Device"/>
         </template>
 
-        <purpose><para><code>lazy_restriction</code>は<code>boost::iostreams::restriction</code>の変種である。<code>restriction</code>との違いは、
+        <purpose><para><code>relative_restriction</code>は<code>boost::iostreams::restriction</code>の変種である。<code>restriction</code>との違いは、
           <itemizedlist>
             <listitem><para>オフセットの基準はストリームの先頭である</para></listitem>
-            <listitem><para>オフセット位置へのシークは、実際にストリームにアクセスするまで遅延される</para></listitem>
             <listitem><para>ストリームのコピーを行わず、ポインタを保持する</para></listitem>
           </itemizedlist>
         である。</para></purpose>
@@ -77,8 +76,8 @@
         </method-group>
 
         <free-function-group name="creation">
-          <function name="lazy_restrict">
-            <type>lazy_restriction&lt;Device&gt;</type>
+          <function name="relative_restrict">
+            <type>relative_restriction&lt;Device&gt;</type>
             <template>
               <template-type-parameter name="Device"/>
             </template>
@@ -92,7 +91,7 @@
               <paramtype>boost::iostreams::stream_offset</paramtype>
               <default>-1</default>
             </parameter>
-            <returns><simpara><code><classname>lazy_restriction</classname>&lt;Device&gt;(dev, off, len)</code></simpara></returns>
+            <returns><simpara><code><classname>relative_restriction</classname>&lt;Device&gt;(dev, off, len)</code></simpara></returns>
           </function>
         </free-function-group>
       </class>

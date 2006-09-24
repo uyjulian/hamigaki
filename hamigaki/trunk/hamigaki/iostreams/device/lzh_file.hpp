@@ -11,12 +11,12 @@
 #define HAMIGAKI_IOSTREAMS_DEVICE_LZH_FILE_HPP
 
 #include <hamigaki/iostreams/binary_io.hpp>
+#include <hamigaki/iostreams/relative_restrict.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/iostreams/detail/adapter/non_blocking_adapter.hpp>
 #include <boost/iostreams/detail/ios.hpp>
 #include <boost/iostreams/positioning.hpp>
 #include <boost/iostreams/read.hpp>
-#include <boost/iostreams/restrict.hpp>
 #include <boost/iostreams/seek.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/crc.hpp>
@@ -216,7 +216,7 @@ template<class Source>
 class lzh_file_source
 {
 private:
-    typedef boost::iostreams::restriction<Source> restricted_type;
+    typedef hamigaki::iostreams::relative_restriction<Source> restricted_type;
 
 public:
     typedef char char_type;
@@ -250,7 +250,6 @@ public:
         boost::optional<restricted_type> hsrc;
         char lv = buf[sizeof(buf)-1];
         // TODO: fix restriction::seek()
-        boost::iostreams::stream_offset extended_start = 0;
         if (lv == '\0')
         {
             lha::lv0_header lv0;
@@ -261,7 +260,7 @@ public:
             if (rest_size <= 0)
                 throw BOOST_IOSTREAMS_FAILURE("bad LZH header size");
 
-            hsrc = boost::iostreams::restrict(src_, 0, rest_size);
+            hsrc = restricted_type(src_, 0, rest_size);
 
             std::memcpy(header_.method, lv0.method, 5);
             header_.compressed_size = lv0.compressed_size;
@@ -282,7 +281,7 @@ public:
             if (rest_size <= 0)
                 throw BOOST_IOSTREAMS_FAILURE("bad LZH header size");
 
-            hsrc = boost::iostreams::restrict(src_, 0, rest_size);
+            hsrc = restricted_type(src_, 0, rest_size);
 
             std::memcpy(header_.method, lv1.method, 5);
             header_.compressed_size = lv1.skip_size;
@@ -300,10 +299,7 @@ public:
 
             boost::iostreams::seek(*hsrc, 0, BOOST_IOS::end);
 
-            extended_start =
-                boost::iostreams::position_to_offset(
-                    boost::iostreams::seek(src_, 0, BOOST_IOS::cur));
-            hsrc = boost::iostreams::restrict(src_, 0, -1);
+            hsrc = restricted_type(src_, 0, -1);
         }
         else if (lv == '\x02')
         {
@@ -315,7 +311,7 @@ public:
             if (rest_size <= 0)
                 throw BOOST_IOSTREAMS_FAILURE("bad LZH header size");
 
-            hsrc = boost::iostreams::restrict(src_, 0, rest_size);
+            hsrc = restricted_type(src_, 0, rest_size);
 
             std::memcpy(header_.method, lv2.method, 5);
             header_.compressed_size = lv2.compressed_size;
@@ -345,10 +341,10 @@ public:
 
         if (lv == '\x1')
         {
-            boost::iostreams::stream_offset extended_end =
+            boost::iostreams::stream_offset size =
                 boost::iostreams::position_to_offset(
-                    boost::iostreams::seek(src_, 0, BOOST_IOS::cur));
-            header_.compressed_size -= (extended_end-extended_start-2);
+                    boost::iostreams::seek(*hsrc, 0, BOOST_IOS::cur));
+            header_.compressed_size -= (size-2);
         }
         else
             boost::iostreams::seek(*hsrc, 0, BOOST_IOS::end);
@@ -361,7 +357,7 @@ public:
         if ((header_.attributes & lha::attributes::directory) == 0)
         {
             image_ =
-                boost::iostreams::restrict(src_, 0, header_.compressed_size);
+                restricted_type(src_, 0, header_.compressed_size);
         }
 
         return true;

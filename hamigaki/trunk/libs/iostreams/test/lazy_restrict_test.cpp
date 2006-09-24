@@ -49,17 +49,14 @@ void lazy_restrict_test()
 #if BOOST_WORKAROUND(BOOST_MSVC, == 1310)
     io::detail::io_mode_id<io::array_source>::value;
 #endif
+
     // TODO: lazy_restrict requires indirect
+    typedef io::detail::direct_adapter<io::array_source> source_type;
+    source_type src(io::array_source(&data[0], &data[0] + sizeof(data)));
+
     check_array(
         data, 10, 40,
-        io_ex::lazy_restrict(
-            io::detail::wrap_direct(
-#if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
-                io::array_source(&data[0], &data[0] + sizeof(data))
-#else
-                io::array_source(data)
-#endif
-            ), 10, 40)
+        io_ex::lazy_restriction<source_type>(src, 10, 40)
     );
 }
 

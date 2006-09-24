@@ -1,4 +1,4 @@
-//  lazy_restrict.hpp: boost:iostreams::restriction with lazy seek()
+//  relative_restrict.hpp: the relative access version of restriction
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
@@ -16,8 +16,8 @@
 // See http://www.boost.org/libs/iostreams for documentation.
 // <===========================================================================
 
-#ifndef HAMIGAKI_IOSTREAMS_LAZY_SEEK_HPP
-#define HAMIGAKI_IOSTREAMS_LAZY_SEEK_HPP
+#ifndef HAMIGAKI_IOSTREAMS_RELATIVE_RESTRICT_HPP
+#define HAMIGAKI_IOSTREAMS_RELATIVE_RESTRICT_HPP
 
 #include <hamigaki/iostreams/catable.hpp>
 #include <boost/iostreams/categories.hpp>
@@ -29,7 +29,7 @@
 namespace hamigaki { namespace iostreams {
 
 template<class Device>
-class lazy_restriction
+class relative_restriction
 {
 public:
     typedef typename boost::iostreams::
@@ -41,13 +41,13 @@ public:
         , boost::iostreams::optimally_buffered_tag
     {};
 
-    lazy_restriction(Device& dev,
+    relative_restriction(Device& dev,
         boost::iostreams::stream_offset off,
-        boost::iostreams::stream_offset len=-1)
-        : dev_ptr_(&dev), pos_(-1)
+        boost::iostreams::stream_offset len=-1) : dev_ptr_(&dev)
     {
         beg_ = boost::iostreams::position_to_offset(
-            boost::iostreams::seek(*dev_ptr_, 0, BOOST_IOS::cur)) + off;
+            boost::iostreams::seek(*dev_ptr_, off, BOOST_IOS::cur));
+        pos_ = beg_;
         end_ = (len != -1) ? beg_ + len : -1;
     }
 
@@ -58,9 +58,6 @@ public:
 
     std::streamsize read(char_type* s, std::streamsize n)
     {
-        if (pos_ == -1)
-            pos_ = boost::iostreams::seek(*dev_ptr_, beg_, BOOST_IOS::beg);
-
         std::streamsize amt =
             end_ != -1
             ? (std::min)(n, static_cast<std::streamsize>(end_ - pos_))
@@ -76,9 +73,6 @@ public:
 
     std::streamsize write(const char_type* s, std::streamsize n)
     {
-        if (pos_ == -1)
-            pos_ = boost::iostreams::seek(*dev_ptr_, beg_, BOOST_IOS::beg);
-
         if ((end_ != -1) && (pos_ + n >= end_))
             throw BOOST_IOSTREAMS_FAILURE("bad write");
 
@@ -91,9 +85,6 @@ public:
     std::streampos seek(
         boost::iostreams::stream_offset off, BOOST_IOS::seekdir way)
     {
-        if (pos_ == -1)
-            pos_ = beg_;
-
         boost::iostreams::stream_offset next;
         if (way == BOOST_IOS::beg)
             next = beg_ + off;
@@ -128,16 +119,16 @@ private:
 };
 
 template<class Device>
-inline lazy_restriction<Device>
-lazy_restrict(Device& dev,
+inline relative_restriction<Device>
+relative_restrict(Device& dev,
     boost::iostreams::stream_offset off,
     boost::iostreams::stream_offset len=-1)
 {
-    return lazy_restriction<Device>(dev, off, len);
+    return relative_restriction<Device>(dev, off, len);
 }
 
 } } // End namespaces iostreams, hamigaki.
 
-HAMIGAKI_IOSTREAMS_CATABLE(hamigaki::iostreams::lazy_restriction, 1)
+HAMIGAKI_IOSTREAMS_CATABLE(hamigaki::iostreams::relative_restriction, 1)
 
-#endif // HAMIGAKI_IOSTREAMS_LAZY_SEEK_HPP
+#endif // HAMIGAKI_IOSTREAMS_RELATIVE_RESTRICT_HPP
