@@ -75,6 +75,12 @@ public:
     {
     }
 
+    void clear()
+    {
+        tree_.clear();
+        ready_ = false;
+    }
+
     void reserve(std::size_t n)
     {
         tree_.reserve(n);
@@ -175,6 +181,12 @@ public:
     {
         typedef typename huffman_decoder<Value,Bits>::code_type code_type;
 
+        decoder.clear();
+
+        // US-CERT Vulnerability Note VU#381508
+        if (max_ > static_cast<length_type>(Bits))
+            throw std::runtime_error("too long huffman code length found");
+
         if (table_.empty())
         {
             decoder.assign(Value());
@@ -186,20 +198,40 @@ public:
             return;
         }
 
+        // TODO
+        BOOST_STATIC_ASSERT(sizeof(std::size_t)*CHAR_BIT > Bits);
+
         std::vector<std::size_t> count_table(max_+1);
         for (std::size_t i = 0; i < table_.size(); ++i)
+        {
             if (length_type len = table_[i])
-                ++count_table[len];
+            {
+                // US-CERT Vulnerability Note VU#596848
+                if (++count_table[len] > (static_cast<std::size_t>(1) << len))
+                    throw std::runtime_error("bad huffman code length table");
+            }
+        }
 
         std::vector<code_type> base(max_+1);
         for (std::size_t i = 1; i <= max_; ++i)
+        {
+            // US-CERT Vulnerability Note VU#596848
+            if (std::size_t count = count_table[i])
+            {
+                std::size_t max_val =
+                    (static_cast<std::size_t>(1) << i) - base[i-1];
+                if (count > max_val)
+                    throw std::runtime_error("bad huffman code length table");
+            }
+
             base[i] = (base[i-1]<<1) + (count_table[i] << 1);
+        }
 
         for (std::size_t i = 0; i < table_.size(); ++i)
         {
             if (length_type len = table_[i])
             {
-                decoder.push_back(base[len-1] << (16-len), i);
+                decoder.push_back(base[len-1] << (Bits-len), i);
                 ++base[len-1];
             }
         }

@@ -39,6 +39,7 @@ test-suite iostreams :
     [ iostreams-test background_copy_test.cpp : find-boost-thread-lib ]
     [ iostreams-test base64_test.cpp : ]
     [ iostreams-test concatenate_test.cpp : ]
+    [ iostreams-test huffman_test.cpp : ]
     [ iostreams-test lazy_restrict_test.cpp : ]
     [ iostreams-test repeat_test.cpp : ]
     [ iostreams-test tmp_file_test.cpp <lib>../build/hamigaki_iostreams : ]
