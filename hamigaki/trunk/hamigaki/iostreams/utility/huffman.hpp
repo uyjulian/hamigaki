@@ -12,9 +12,10 @@
 
 #include <hamigaki/iostreams/bit_stream.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <boost/assert.hpp>
 #include <boost/integer.hpp>
 #include <boost/next_prior.hpp>
-#include <boost/assert.hpp>
+#include <boost/static_assert.hpp>
 #include <algorithm>
 #include <stdexcept>
 #include <vector>
@@ -88,9 +89,7 @@ public:
 
     void assign(const value_type& x)
     {
-        if (ready_)
-            throw std::runtime_error("huffman tree already setup");
-
+        tree_.clear();
         tree_.push_back(node(x));
         ready_ = true;
     }
@@ -115,7 +114,7 @@ public:
     template<class InputBitStream>
     value_type decode(InputBitStream& bs) const
     {
-        typedef tree_type::const_iterator iter_type;
+        typedef typename tree_type::const_iterator iter_type;
 
         BOOST_ASSERT(ready_);
         BOOST_ASSERT(!tree_.empty());

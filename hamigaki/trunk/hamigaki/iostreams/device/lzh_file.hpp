@@ -10,11 +10,13 @@
 #ifndef HAMIGAKI_IOSTREAMS_DEVICE_LZH_FILE_HPP
 #define HAMIGAKI_IOSTREAMS_DEVICE_LZH_FILE_HPP
 
+#include <hamigaki/iostreams/filter/lzhuff.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>
 #include <hamigaki/iostreams/relative_restrict.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/iostreams/detail/adapter/non_blocking_adapter.hpp>
 #include <boost/iostreams/detail/ios.hpp>
+#include <boost/iostreams/compose.hpp>
 #include <boost/iostreams/positioning.hpp>
 #include <boost/iostreams/read.hpp>
 #include <boost/iostreams/seek.hpp>
@@ -212,11 +214,43 @@ public:
 
 namespace hamigaki { namespace iostreams {
 
+namespace detail
+{
+
+class lzh_source_base
+{
+public:
+    virtual ~lzh_source_base() {}
+    virtual std::streamsize read(char* s, std::streamsize n) = 0;
+};
+
+template<class Source>
+class lzh_source : public lzh_source_base
+{
+public:
+    explicit lzh_source(const Source& src) : src_(src)
+    {
+    }
+
+    std::streamsize read(char* s, std::streamsize n) // virtual
+    {
+        return boost::iostreams::read(src_, s, n);
+    }
+
+private:
+    Source src_;
+};
+
+} // namespace detail
+
 template<class Source>
 class lzh_file_source
 {
 private:
     typedef hamigaki::iostreams::relative_restriction<Source> restricted_type;
+
+    typedef boost::iostreams::composite<
+        lzhuff_decompressor,restricted_type> lzhuff_type;
 
 public:
     typedef char char_type;
@@ -235,7 +269,7 @@ public:
 
     bool next_entry()
     {
-        image_ = boost::none;
+        image_.reset();
         boost::iostreams::seek(src_, next_offset_, std::ios_base::beg);
         crc_.reset();
         header_.path = boost::filesystem::path();
@@ -249,7 +283,6 @@ public:
 
         boost::optional<restricted_type> hsrc;
         char lv = buf[sizeof(buf)-1];
-        // TODO: fix restriction::seek()
         if (lv == '\0')
         {
             lha::lv0_header lv0;
@@ -331,7 +364,11 @@ public:
 
         // currently support only lh0 method
         if ((std::memcmp(header_.method, "-lhd-", 5) != 0) &&
-            (std::memcmp(header_.method, "-lh0-", 5) != 0) )
+            (std::memcmp(header_.method, "-lh0-", 5) != 0) &&
+            (std::memcmp(header_.method, "-lh4-", 5) != 0) &&
+            (std::memcmp(header_.method, "-lh5-", 5) != 0) &&
+            (std::memcmp(header_.method, "-lh6-", 5) != 0) &&
+            (std::memcmp(header_.method, "-lh7-", 5) != 0) )
         {
             throw BOOST_IOSTREAMS_FAILURE("unsupported LZH method");
         }
@@ -356,8 +393,17 @@ public:
 
         if ((header_.attributes & lha::attributes::directory) == 0)
         {
-            image_ =
-                restricted_type(src_, 0, header_.compressed_size);
+            restricted_type plain(src_, 0, header_.compressed_size);
+            if (std::memcmp(header_.method, "-lh0-", 5) == 0)
+                image_.reset(new detail::lzh_source<restricted_type>(plain));
+            else if (std::memcmp(header_.method, "-lh4-", 5) == 0)
+                image_.reset(new_lzhuff_source(plain, 12, header_.file_size));
+            else if (std::memcmp(header_.method, "-lh5-", 5) == 0)
+                image_.reset(new_lzhuff_source(plain, 13, header_.file_size));
+            else if (std::memcmp(header_.method, "-lh6-", 5) == 0)
+                image_.reset(new_lzhuff_source(plain, 15, header_.file_size));
+            else if (std::memcmp(header_.method, "-lh7-", 5) == 0)
+                image_.reset(new_lzhuff_source(plain, 16, header_.file_size));
         }
 
         return true;
@@ -387,9 +433,18 @@ public:
 private:
     Source src_;
     lha::basic_header header_;
-    boost::optional<restricted_type> image_;
+    boost::shared_ptr<detail::lzh_source_base> image_;
     boost::iostreams::stream_offset next_offset_;
     boost::crc_16_type crc_;
+
+    static detail::lzh_source<lzhuff_type>* new_lzhuff_source(
+        const restricted_type& plain,
+        std::size_t window_bits, boost::uint32_t file_size)
+    {
+        return new detail::lzh_source<lzhuff_type>(
+            lzhuff_type(lzhuff_decompressor(window_bits, file_size), plain)
+        );
+    }
 
     template<class Source2>
     static char get(Source2& src, boost::crc_16_type& crc)
@@ -438,7 +493,7 @@ private:
 
         while (cur != end)
         {
-            char uc = static_cast<unsigned char>(*cur);
+            unsigned char uc = static_cast<unsigned char>(*cur);
             if (((uc >  0x80) && (uc < 0xA0)) ||
                 ((uc >= 0xE0) && (uc < 0xFD)) )
             {
@@ -545,14 +600,11 @@ private:
             crc.process_bytes(buf.get(), size);
         }
 
-        if (!header_crc)
+        if (header_crc)
         {
-            throw BOOST_IOSTREAMS_FAILURE(
-                "LZH common extended header not found");
+            if (crc.checksum() != header_crc.get())
+                throw BOOST_IOSTREAMS_FAILURE("CRC missmatch");
         }
-
-        if (crc.checksum() != header_crc.get())
-            throw BOOST_IOSTREAMS_FAILURE("CRC missmatch");
 
         if (header_.path.empty())
             header_.path = branch / leaf;
