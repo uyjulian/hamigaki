@@ -145,8 +145,7 @@ class lzhuff_input
 public:
     typedef boost::uint16_t length_type;
     typedef boost::uint16_t offset_type;
-    typedef std::pair<offset_type,length_type> pair_type;
-    typedef boost::variant<boost::blank,char,pair_type> result_type;
+    typedef literal_or_reference<offset_type,length_type> result_type;
 
     static const length_type min_match_length = 3;
 
@@ -155,10 +154,10 @@ public:
     }
 
     template<class Source>
-    boost::variant<boost::blank,char,pair_type> get(Source& src)
+    result_type get(Source& src)
     {
         if (pos_ == size_)
-            return result_type();
+            return result_type(0, 0);
 
         input_bit_stream_wrapper<left_to_right, Source> bs(filter_, src);
         if (count_ == 0)
@@ -189,7 +188,7 @@ public:
             pos_ += length;
             if (pos_ > size_)
                 throw BOOST_IOSTREAMS_FAILURE("LZH bad image size");
-            return result_type(pair_type(offset, length));
+            return result_type(offset, length);
         }
     }
 

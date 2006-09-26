@@ -14,15 +14,42 @@
 #include <boost/iostreams/traits.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/type_traits/is_same.hpp>
-#include <boost/blank.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/static_assert.hpp>
-#include <boost/variant/get.hpp>
-#include <boost/variant/variant.hpp>
 #include <vector>
 
 namespace hamigaki { namespace iostreams {
+
+template<class Offset, class Length>
+struct literal_or_reference
+{
+    bool is_reference;
+
+    union
+    {
+        char literal;
+
+        struct
+        {
+            Offset offset;
+            Length length;
+        };
+    };
+
+    explicit literal_or_reference(char c)
+    {
+        is_reference = false;
+        literal = c;
+    }
+
+    literal_or_reference(Offset off, Length len)
+    {
+        is_reference = true;
+        offset = off;
+        length = len;
+    }
+};
 
 namespace detail
 {
@@ -32,7 +59,7 @@ class sliding_window_decompress_impl
 {
     typedef typename Input::length_type length_type;
     typedef typename Input::offset_type offset_type;
-    typedef std::pair<offset_type,length_type> pair_type;
+    typedef literal_or_reference<offset_type,length_type> result_type;
     typedef std::char_traits<char> traits_type;
 
     static const length_type min_match_length = Input::min_match_length;
@@ -49,22 +76,48 @@ public:
     }
 
     template<class Source>
-    traits_type::int_type get(Source& src)
+    std::streamsize read(Source& src, char* s, std::streamsize n)
     {
-        if (length_)
-            return traits_type::to_int_type(get_by_reference());
+        std::streamsize total = 0;
 
-        const boost::variant<
-            boost::blank,char,pair_type>& data = input_.get(src);
-        if (data.which() == 1)
-            return traits_type::to_int_type(push_back(boost::get<char>(data)));
-        else if (data.which() == 2)
+        if (length_)
         {
-            boost::tie(offset_, length_) = boost::get<pair_type>(data);
-            return traits_type::to_int_type(get_by_reference());
+            std::streamsize amt = (std::min)
+                (n, static_cast<std::streamsize>(length_));
+
+            copy_from_window(s, amt);
+            s += amt;
+            n -= amt;
+            total += amt;
         }
-        else
-            return traits_type::eof();
+
+        while (n > 0)
+        {
+            const result_type& data = input_.get(src);
+            if (data.is_reference)
+            {
+                offset_ = data.offset;
+                length_ = data.length;
+                if (!length_)
+                    break;
+
+                std::streamsize amt = (std::min)
+                    (n, static_cast<std::streamsize>(length_));
+
+                copy_from_window(s, amt);
+                s += amt;
+                n -= amt;
+                total += amt;
+            }
+            else
+            {
+                *(s++) = push_back(data.literal);
+                --n;
+                ++total;
+            }
+        }
+
+        return (total != 0) ? total : -1;
     }
 
 private:
@@ -83,12 +136,14 @@ private:
         return c;
     }
 
-    char get_by_reference()
+    void copy_from_window(char* s, std::streamsize n)
     {
-        --length_;
-        return push_back(
-            window_[(pos_ + window_size1_ - offset_) & window_size1_]
-        );
+        length_ -= n;
+        for (std::streamsize i = 0; i < n; ++i)
+        {
+            char c = window_[(pos_ + window_size1_ - offset_) & window_size1_];
+            *(s++) = push_back(c);
+        }
     }
 };
 
@@ -105,6 +160,7 @@ public:
     struct category
         : public boost::iostreams::input
         , public boost::iostreams::filter_tag
+        , public boost::iostreams::multichar_tag
     {};
 
     sliding_window_decompress(const Input& input, std::size_t window_bits)
@@ -113,9 +169,9 @@ public:
     }
 
     template<class Source>
-    std::char_traits<char>::int_type get(Source& src)
+    std::streamsize read(Source& src, char* s, std::streamsize n)
     {
-        return pimpl_->get(src);
+        return pimpl_->read(src, s, n);
     }
 
 private:
