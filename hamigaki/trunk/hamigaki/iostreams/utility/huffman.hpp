@@ -32,54 +32,27 @@ public:
 private:
     struct node
     {
-        code_type code;
-        value_type value;
+        value_type next[2];
 
-        node(code_type code, value_type value)
-            : code(code), value(value)
+        node()
         {
-        }
-
-        explicit node(value_type value) : value(value)
-        {
+            next[0] = value_type();
+            next[1] = value_type();
         }
     };
 
     typedef std::vector<node> tree_type;
 
-    struct node_code_less
-    {
-        bool operator()(const node& lhs, const node& rhs) const
-        {
-            return lhs.code < rhs.code;
-        }
-    };
-
-    class node_bit_less
-    {
-    public:
-        explicit node_bit_less(std::size_t bit) : mask_((1 << (Bits-1)) >> bit)
-        {
-        }
-
-        bool operator()(const node& lhs, const node& rhs) const
-        {
-            return (lhs.code & mask_) < (rhs.code & mask_);
-        }
-
-    private:
-        code_type mask_;
-    };
-
 public:
-    huffman_decoder() : ready_(false)
+    huffman_decoder()
     {
+        tree_.push_back(node());
     }
 
     void clear()
     {
         tree_.clear();
-        ready_ = false;
+        tree_.push_back(node());
     }
 
     void reserve(std::size_t n)
@@ -90,59 +63,42 @@ public:
     void assign(const value_type& x)
     {
         tree_.clear();
-        tree_.push_back(node(x));
-        ready_ = true;
+        tree_.push_back(node());
+        tree_.back().next[0] = x;
     }
 
-    void push_back(code_type code, const value_type& value)
+    void push_back(code_type code, std::size_t bits, const value_type& value)
     {
-        if (ready_)
-            throw std::runtime_error("huffman tree already setup");
-
-        tree_.push_back(node(code, value));
-    }
-
-    void sort()
-    {
-        if (ready_)
-            throw std::runtime_error("huffman tree already setup");
-
-        std::sort(tree_.begin(), tree_.end(), node_code_less());
-        ready_ = true;
+        value_type pos = 0;
+        std::size_t bits1 = bits-1;
+        for (std::size_t i = 0; i < bits; ++i)
+        {
+            bool b = code & (1 << (bits1-i));
+            value_type next = tree_[pos].next[b];
+            if (!next)
+            {
+                if (tree_.size() >= (std::numeric_limits<value_type>::max)())
+                    throw std::runtime_error("huffman tree overflow");
+                next = static_cast<value_type>(tree_.size());
+                tree_[pos].next[b] = next;
+                tree_.push_back(node());
+            }
+            pos = next;
+        }
+        tree_[pos].next[0] = value;
     }
 
     template<class InputBitStream>
     value_type decode(InputBitStream& bs) const
     {
-        typedef typename tree_type::const_iterator iter_type;
-
-        BOOST_ASSERT(ready_);
-        BOOST_ASSERT(!tree_.empty());
-
-        code_type code = 0;
-        std::size_t i = 0;
-        iter_type first = tree_.begin();
-        iter_type last = tree_.end();
-        for ( ; boost::next(first) != last; ++i)
-        {
-            code <<= 1;
-            code |= static_cast<code_type>(bs.get_bit());
-
-            boost::tie(first, last) =
-                std::equal_range(
-                    first, last,
-                    node(code << ((Bits-1)-i), value_type()),
-                    node_bit_less(i));
-
-            if (first == last)
-                throw std::runtime_error("unknwon huffman code");
-        }
-        return first->value;
+        value_type pos = 0;
+        while (tree_[pos].next[1])
+            pos = tree_[pos].next[bs.get_bit()];
+        return tree_[pos].next[0];
     }
 
 private:
     tree_type tree_;
-    bool ready_;
 };
 
 template<class Length>
@@ -223,18 +179,17 @@ public:
                     throw std::runtime_error("bad huffman code length table");
             }
 
-            base[i] = (base[i-1]<<1) + (count_table[i] << 1);
+            base[i] = (base[i-1] + count_table[i]) << 1;
         }
 
         for (std::size_t i = 0; i < table_.size(); ++i)
         {
             if (length_type len = table_[i])
             {
-                decoder.push_back(base[len-1] << (Bits-len), i);
+                decoder.push_back(base[len-1], len, i);
                 ++base[len-1];
             }
         }
-        decoder.sort();
     }
 
 private:

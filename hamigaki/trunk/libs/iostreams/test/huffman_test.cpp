@@ -22,8 +22,8 @@ void huffman_test()
     huffman_dec tree;
 
     length_dec decoder;
-    for (int i = 0; i < 65536; ++i)
-        decoder.push_back(16);
+    for (int i = 0; i < 32768; ++i)
+        decoder.push_back(15);
     decoder.decode(tree);
 }
 
@@ -60,11 +60,11 @@ void bad_huffman_test3()
 
     length_dec decoder;
     decoder.push_back(1);
-    for (int i = 0; i < 32768; ++i)
-        decoder.push_back(16);
+    for (int i = 0; i < 16384; ++i)
+        decoder.push_back(15);
     decoder.decode(tree);
 
-    decoder.push_back(16);
+    decoder.push_back(15);
     BOOST_CHECK_THROW(decoder.decode(tree), std::runtime_error);
 }
 
