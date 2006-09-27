@@ -21,30 +21,43 @@ template<>
 class input_bit_filter<left_to_right>
 {
 public:
-    input_bit_filter() : count_(8)
+    input_bit_filter() : count_(0)
     {
     }
 
     template<class Source>
     bool get_bit(Source& src)
     {
-        if (count_ == 8)
+        if (count_ == 0)
         {
             typedef std::char_traits<char> traits;
 
             traits::int_type c = boost::iostreams::get(src);
             if (traits::eq_int_type(c, traits::eof()))
                 throw boost::iostreams::detail::bad_read();
+//return false;
             uc_ = static_cast<unsigned char>(traits::to_char_type(c));
-            count_ = 0;
+            count_ = 8;
         }
 
-        return (uc_ & (1 << (7-count_++))) != 0;
+        static const unsigned char mask[] =
+        {
+            0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80
+        };
+        return (uc_ & mask[--count_]) != 0;
     }
 
     template<class Source>
     unsigned read_bits(Source& src, std::size_t bit_count)
     {
+        if (bit_count < count_)
+        {
+            unsigned tmp =
+                (uc_ >> (count_-bit_count)) & (0xFF >> (8-bit_count));
+
+            count_ -= bit_count;
+            return tmp;
+        }
         unsigned tmp = 0;
         while (bit_count--)
             tmp |= (static_cast<unsigned>(this->get_bit(src)) << bit_count);
