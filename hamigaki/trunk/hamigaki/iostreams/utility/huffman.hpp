@@ -55,11 +55,6 @@ public:
         tree_.push_back(node());
     }
 
-    void reserve(std::size_t n)
-    {
-        tree_.reserve(n);
-    }
-
     void assign(const value_type& x)
     {
         tree_.clear();
@@ -109,6 +104,11 @@ public:
 
     huffman_code_length_decoder() : max_(0), count_(0)
     {
+    }
+
+    void clear()
+    {
+        table_.clear();
     }
 
     void reserve(std::size_t n)
