@@ -11,6 +11,7 @@
 #define HAMIGAKI_IOSTREAMS_BIT_FILTER_HPP
 
 #include <hamigaki/iostreams/bit_stream.hpp>
+#include <boost/shared_array.hpp>
 
 namespace hamigaki { namespace iostreams {
 
@@ -21,43 +22,50 @@ template<>
 class input_bit_filter<left_to_right>
 {
 public:
-    input_bit_filter() : count_(0)
+    static const std::size_t buffer_size = 4096;
+
+    input_bit_filter()
+        : buffer_(new char[buffer_size]), size_(0), index_(0), bit_(0)
     {
     }
 
     template<class Source>
     bool get_bit(Source& src)
     {
-        if (count_ == 0)
+        if (index_ == size_)
         {
-            typedef std::char_traits<char> traits;
-
-            traits::int_type c = boost::iostreams::get(src);
-            if (traits::eq_int_type(c, traits::eof()))
-                throw boost::iostreams::detail::bad_read();
-//return false;
-            uc_ = static_cast<unsigned char>(traits::to_char_type(c));
-            count_ = 8;
+            while (true)
+            {
+                std::streamsize amt =
+                    boost::iostreams::read(src, buffer_.get(), buffer_size);
+                if (amt == -1)
+                    throw boost::iostreams::detail::bad_read();
+                else if (amt)
+                {
+                    size_ = amt;
+                    index_ = 0;
+                    bit_ = 0;
+                    break;
+                }
+            }
         }
 
         static const unsigned char mask[] =
         {
-            0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80
+            0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01
         };
-        return (uc_ & mask[--count_]) != 0;
+        bool result = (buffer_[index_] & mask[bit_]) != 0;
+        if (++bit_ == 8)
+        {
+            bit_ = 0;
+            ++index_;
+        }
+        return result;
     }
 
     template<class Source>
     unsigned read_bits(Source& src, std::size_t bit_count)
     {
-        if (bit_count < count_)
-        {
-            unsigned tmp =
-                (uc_ >> (count_-bit_count)) & (0xFF >> (8-bit_count));
-
-            count_ -= bit_count;
-            return tmp;
-        }
         unsigned tmp = 0;
         while (bit_count--)
             tmp |= (static_cast<unsigned>(this->get_bit(src)) << bit_count);
@@ -65,8 +73,10 @@ public:
     }
 
 private:
-    unsigned char uc_;
-    std::size_t count_;
+    boost::shared_array<char> buffer_;
+    std::size_t size_;
+    std::size_t index_;
+    std::size_t bit_;
 };
 
 template<bit_flow Flow, class Source>
@@ -94,6 +104,7 @@ private:
 };
 
 
+// TODO: buffering
 template<bit_flow Flow>
 class output_bit_filter;
 
