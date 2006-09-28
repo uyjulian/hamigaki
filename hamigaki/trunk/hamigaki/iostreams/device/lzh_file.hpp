@@ -10,6 +10,7 @@
 #ifndef HAMIGAKI_IOSTREAMS_DEVICE_LZH_FILE_HPP
 #define HAMIGAKI_IOSTREAMS_DEVICE_LZH_FILE_HPP
 
+#include <hamigaki/iostreams/device/file.hpp>
 #include <hamigaki/iostreams/filter/lzhuff.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>
 #include <hamigaki/iostreams/relative_restrict.hpp>
@@ -244,7 +245,7 @@ private:
 } // namespace detail
 
 template<class Source>
-class lzh_file_source
+class basic_lzh_file_source
 {
 private:
     typedef hamigaki::iostreams::relative_restriction<Source> restricted_type;
@@ -259,7 +260,8 @@ public:
         boost::iostreams::input,
         boost::iostreams::device_tag {};
 
-    explicit lzh_file_source(const Source& src) : src_(src), next_offset_(0)
+    explicit basic_lzh_file_source(const Source& src)
+        : src_(src), next_offset_(0)
     {
         // TODO: skip data before the archives
 
@@ -610,6 +612,17 @@ private:
             header_.path = branch / leaf;
         else if (!branch.empty())
             header_.path = branch / header_.path;
+    }
+};
+
+class lzh_file_source : public basic_lzh_file_source<file_source>
+{
+    typedef basic_lzh_file_source<file_source> base_type;
+
+public:
+    explicit lzh_file_source(const std::string& filename)
+        : base_type(file_source(filename, BOOST_IOS::binary))
+    {
     }
 };
 
