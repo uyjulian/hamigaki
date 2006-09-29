@@ -41,6 +41,13 @@ struct attributes
     static const boost::uint16_t archive    = 0x0020;
 };
 
+struct windows_timestamp
+{
+    boost::uint64_t creation_time;
+    boost::uint64_t last_write_time;
+    boost::uint64_t last_access_time;
+};
+
 struct basic_header
 {
     char method[5];
@@ -51,6 +58,12 @@ struct basic_header
     boost::filesystem::path path;
     boost::optional<boost::uint16_t> crc16_checksum;
     boost::optional<char> os;
+    boost::optional<windows_timestamp> timestamp;
+
+    bool is_directory() const
+    {
+        return (attributes & attributes::directory) != 0;
+    }
 };
 
 struct msdos_date_time
@@ -152,6 +165,20 @@ public:
     typedef boost::mpl::list<
         member<self, boost::uint16_t, &self::time, little>,
         member<self, boost::uint16_t, &self::date, little>
+    > members;
+};
+
+template<>
+struct struct_traits<iostreams::lha::windows_timestamp>
+{
+private:
+    typedef iostreams::lha::windows_timestamp self;
+
+public:
+    typedef boost::mpl::list<
+        member<self, boost::uint64_t, &self::creation_time, little>,
+        member<self, boost::uint64_t, &self::last_write_time, little>,
+        member<self, boost::uint64_t, &self::last_access_time, little>
     > members;
 };
 
@@ -658,10 +685,22 @@ private:
         return ph;
     }
 
+    static lha::windows_timestamp parse_timestamp(char* s, boost::uint32_t n)
+    {
+        if (n < hamigaki::struct_size<lha::windows_timestamp>::type::value)
+            throw BOOST_IOSTREAMS_FAILURE("bad LZH timestamp extended header");
+
+        lha::windows_timestamp ts;
+        hamigaki::binary_read(s, ts);
+        return ts;
+    }
+
     template<class Source2>
     void read_extended_header(
         Source2& src, boost::crc_16_type& crc, boost::uint16_t next_size)
     {
+        header_.timestamp = boost::none;
+
         boost::iostreams::non_blocking_adapter<Source2> nb(src);
 
         std::string leaf;
@@ -681,10 +720,12 @@ private:
             boost::uint16_t size = next_size - 3;
             if (buf[0] == '\0')
                 header_crc = parse_common(buf.get()+1, size);
-            else if (buf[0] == '\1')
+            else if (buf[0] == '\x01')
                 leaf.assign(buf.get()+1, size);
-            else if (buf[0] == '\2')
+            else if (buf[0] == '\x02')
                 branch = parse_directory(buf.get()+1, size);
+            else if (buf[0] == '\x41')
+                header_.timestamp = parse_timestamp(buf.get()+1, size);
 
             crc.process_bytes(buf.get(), next_size);
             next_size =

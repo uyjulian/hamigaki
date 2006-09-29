@@ -23,6 +23,8 @@
     #define USE_BOOST_IOSTREAMS_FILE
 #endif
 
+#include <boost/config.hpp>
+
 #include <hamigaki/iostreams/device/lzh_file.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -39,9 +41,59 @@
     #define IOEX io_ex
 #endif
 
+#if defined(BOOST_WINDOWS)
+    #include <windows.h>
+#endif
+
 namespace io_ex = hamigaki::iostreams;
 namespace fs = boost::filesystem;
 namespace io = boost::iostreams;
+
+#if defined(BOOST_WINDOWS)
+::FILETIME make_file_time(boost::uint64_t n)
+{
+    ::FILETIME ft;
+    ft.dwLowDateTime = static_cast<boost::uint32_t>(n);
+    ft.dwHighDateTime = static_cast<boost::uint32_t>(n >> 32);
+    return ft;
+}
+
+void set_timestamp_impl(
+    ::HANDLE handle, const io_ex::lha::windows_timestamp& ts)
+{
+    ::FILETIME creation_time = make_file_time(ts.creation_time);
+    ::FILETIME last_write_time = make_file_time(ts.last_write_time);
+    ::FILETIME last_access_time = make_file_time(ts.last_access_time);
+
+    ::SetFileTime(handle, &creation_time,
+        &last_access_time, &last_write_time);
+}
+
+void set_file_timestamp(
+    const fs::path& ph, const io_ex::lha::windows_timestamp& ts)
+{
+    ::HANDLE handle = ::CreateFileA(
+        ph.native_file_string().c_str(), GENERIC_WRITE, 0, 0,
+        OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+    if (handle == INVALID_HANDLE_VALUE)
+        throw std::runtime_error("CreateFile error");
+    set_timestamp_impl(handle, ts);
+    ::CloseHandle(handle);
+}
+
+void set_directory_timestamp(
+    const fs::path& ph, const io_ex::lha::windows_timestamp& ts)
+{
+    ::HANDLE handle = ::CreateFileA(
+        ph.native_directory_string().c_str(), GENERIC_WRITE, 0, 0,
+        OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0);
+    // Win9X does not support FILE_FLAG_BACKUP_SEMANTICS flag
+    if (handle == INVALID_HANDLE_VALUE)
+        return;
+    set_timestamp_impl(handle, ts);
+    ::CloseHandle(handle);
+}
+#endif
 
 int main(int argc, char* argv[])
 {
@@ -59,7 +111,7 @@ int main(int argc, char* argv[])
         do
         {
             const io_ex::lha::basic_header& head = lzh.header();
-            if (head.attributes & io_ex::lha::attributes::directory)
+            if (head.is_directory())
                 fs::create_directories(head.path);
             else
             {
@@ -73,7 +125,18 @@ int main(int argc, char* argv[])
                 );
             }
 
-            fs::last_write_time(head.path, head.update_time);
+#if defined(BOOST_WINDOWS)
+            if (head.timestamp)
+            {
+                if (head.is_directory())
+                    set_directory_timestamp(head.path, *head.timestamp);
+                else
+                    set_file_timestamp(head.path, *head.timestamp);
+            }
+            else
+#endif
+            if (!head.is_directory())
+                fs::last_write_time(head.path, head.update_time);
 
         } while (lzh.next_entry());
 
