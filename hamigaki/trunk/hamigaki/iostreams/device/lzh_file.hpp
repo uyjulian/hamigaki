@@ -54,8 +54,8 @@ struct basic_header
 
 struct msdos_date_time
 {
-    boost::uint16_t date;
     boost::uint16_t time;
+    boost::uint16_t date;
 
     int year() const
     {
@@ -149,8 +149,8 @@ private:
 
 public:
     typedef boost::mpl::list<
-        member<self, boost::uint16_t, &self::date, little>,
-        member<self, boost::uint16_t, &self::time, little>
+        member<self, boost::uint16_t, &self::time, little>,
+        member<self, boost::uint16_t, &self::date, little>
     > members;
 };
 
@@ -364,7 +364,6 @@ public:
         else
             throw BOOST_IOSTREAMS_FAILURE("unsupported LZH header");
 
-        // currently support only lh0 method
         if ((std::memcmp(header_.method, "-lhd-", 5) != 0) &&
             (std::memcmp(header_.method, "-lh0-", 5) != 0) &&
             (std::memcmp(header_.method, "-lh4-", 5) != 0) &&
