@@ -28,6 +28,7 @@
 #include <boost/optional.hpp>
 #include <boost/scoped_array.hpp>
 #include <cstring>
+#include <numeric>
 
 namespace hamigaki { namespace iostreams { namespace lha {
 
@@ -242,6 +243,66 @@ private:
     Source src_;
 };
 
+class lha_checksum
+{
+public:
+    lha_checksum() : sum_(0)
+    {
+    }
+
+    void process_byte(unsigned char byte)
+    {
+        sum_ += byte;
+    }
+
+    void process_bytes(void const* buffer, std::size_t byte_count)
+    {
+        sum_ +=
+            std::accumulate(
+                static_cast<const unsigned char*>(buffer),
+                static_cast<const unsigned char*>(buffer) + byte_count,
+                0u
+            );
+    }
+
+    unsigned char checksum()
+    {
+        return static_cast<unsigned char>(sum_);
+    }
+
+private:
+    unsigned sum_;
+};
+
+class crc16_and_lha_checksum
+{
+public:
+    explicit crc16_and_lha_checksum(boost::crc_16_type& crc) : crc_(crc)
+    {
+    }
+
+    void process_byte(unsigned char byte)
+    {
+        crc_.process_byte(byte);
+        cs_.process_byte(byte);
+    }
+
+    void process_bytes(void const* buffer, std::size_t byte_count)
+    {
+        crc_.process_bytes(buffer, byte_count);
+        cs_.process_bytes(buffer, byte_count);
+    }
+
+    unsigned char checksum()
+    {
+        return cs_.checksum();
+    }
+
+private:
+    boost::crc_16_type& crc_;
+    lha_checksum cs_;
+};
+
 } // namespace detail
 
 template<class Source>
@@ -281,12 +342,15 @@ public:
             return false;
 
         boost::crc_16_type crc;
-        crc.process_bytes(buf, sizeof(buf));
 
         boost::optional<restricted_type> hsrc;
+        boost::uint16_t next_size = 0;
         char lv = buf[sizeof(buf)-1];
         if (lv == '\0')
         {
+            detail::lha_checksum cs;
+            cs.process_bytes(buf+2, sizeof(buf)-2);
+
             lha::lv0_header lv0;
             hamigaki::binary_read(buf, lv0);
 
@@ -302,12 +366,21 @@ public:
             header_.file_size = lv0.file_size;
             header_.update_time = lv0.update_date_time.to_time_t();
             header_.attributes = lv0.attributes;
-            header_.path = read_path(*hsrc, crc);
+            header_.path = read_path(*hsrc, cs);
             header_.crc16_checksum = boost::none;
             header_.os = boost::none;
+
+            skip_unknown_header(*hsrc, cs);
+            if (cs.checksum() != lv0.header_checksum)
+                throw BOOST_IOSTREAMS_FAILURE("LZH header checksum missmatch");
         }
         else if (lv == '\x01')
         {
+            crc.process_bytes(buf, 2);
+
+            detail::crc16_and_lha_checksum cs(crc);
+            cs.process_bytes(buf+2, sizeof(buf)-2);
+
             lha::lv1_header lv1;
             hamigaki::binary_read(buf, lv1);
 
@@ -328,16 +401,21 @@ public:
             else
                 header_.attributes = lha::attributes::archive;
 
-            header_.path = read_path(*hsrc, crc);
-            header_.crc16_checksum = read_little16(*hsrc, crc);
-            header_.os = get(*hsrc, crc);
+            header_.path = read_path(*hsrc, cs);
+            header_.crc16_checksum = read_little16(*hsrc, cs);
+            header_.os = get(*hsrc, cs);
 
-            boost::iostreams::seek(*hsrc, 0, BOOST_IOS::end);
+            skip_unknown_header(*hsrc, cs);
+            next_size = read_little16(src_, cs);
+            if (cs.checksum() != lv1.header_checksum)
+                throw BOOST_IOSTREAMS_FAILURE("LZH header checksum missmatch");
 
             hsrc = restricted_type(src_, 0, -1);
         }
         else if (lv == '\x02')
         {
+            crc.process_bytes(buf, sizeof(buf));
+
             lha::lv2_header lv2;
             hamigaki::binary_read(buf, lv2);
 
@@ -360,6 +438,7 @@ public:
 
             header_.crc16_checksum = read_little16(*hsrc, crc);
             header_.os = get(*hsrc, crc);
+            next_size = read_little16(*hsrc, crc);
         }
         else
             throw BOOST_IOSTREAMS_FAILURE("unsupported LZH header");
@@ -374,18 +453,15 @@ public:
             throw BOOST_IOSTREAMS_FAILURE("unsupported LZH method");
         }
 
-        if (lv != '\x0')
-            read_extended_header(*hsrc, crc);
+        read_extended_header(*hsrc, crc, next_size);
 
         if (lv == '\x1')
         {
             boost::iostreams::stream_offset size =
                 boost::iostreams::position_to_offset(
                     boost::iostreams::seek(*hsrc, 0, BOOST_IOS::cur));
-            header_.compressed_size -= (size-2);
+            header_.compressed_size -= size;
         }
-        else
-            boost::iostreams::seek(*hsrc, 0, BOOST_IOS::end);
 
         next_offset_ =
             boost::iostreams::position_to_offset(
@@ -447,45 +523,44 @@ private:
         );
     }
 
-    template<class Source2>
-    static char get(Source2& src, boost::crc_16_type& crc)
+    template<class Source2, class Checksum>
+    static char get(Source2& src, Checksum& cs)
     {
         char c;
         boost::iostreams::non_blocking_adapter<Source2> nb(src);
         if (boost::iostreams::read(nb, &c, 1) != 1)
             throw boost::iostreams::detail::bad_read();
-        crc.process_byte(c);
+        cs.process_byte(c);
         return c;
     }
 
-    template<class Source2>
-    static boost::uint16_t read_little16(Source2& src, boost::crc_16_type& crc)
+    template<class Source2, class Checksum>
+    static boost::uint16_t read_little16(Source2& src, Checksum& cs)
     {
         char buf[2];
         boost::iostreams::non_blocking_adapter<Source2> nb(src);
         if (boost::iostreams::read(nb, buf, 2) != 2)
             throw boost::iostreams::detail::bad_read();
-        crc.process_bytes(buf, sizeof(buf));
+        cs.process_bytes(buf, sizeof(buf));
         return hamigaki::decode_uint<hamigaki::little, 2>(buf);
     }
 
-    template<class Source2>
-    static boost::filesystem::path
-    read_path(Source2& src, boost::crc_16_type& crc)
+    template<class Source2, class Checksum>
+    static boost::filesystem::path read_path(Source2& src, Checksum& cs)
     {
         boost::iostreams::non_blocking_adapter<Source2> nb(src);
 
         char c;
         if (boost::iostreams::read(nb, &c, 1) != 1)
             throw boost::iostreams::detail::bad_read();
-        crc.process_byte(c);
+        cs.process_byte(c);
 
         std::streamsize count = static_cast<unsigned char>(c);
         boost::scoped_array<char> buffer(new char[count]);
 
         if (boost::iostreams::read(nb, buffer.get(), count) != count)
             throw boost::iostreams::detail::bad_read();
-        crc.process_bytes(buffer.get(), count);
+        cs.process_bytes(buffer.get(), count);
 
         const char* start = buffer.get();
         const char* cur = start;
@@ -514,6 +589,17 @@ private:
             ph /= std::string(start, cur-start);
 
         return ph;
+    }
+
+    template<class Source2, class Checksum>
+    void skip_unknown_header(Source2& src, Checksum& cs)
+    {
+        boost::iostreams::non_blocking_adapter<Source2> nb(src);
+
+        char buf[256];
+        std::streamsize n = boost::iostreams::read(nb, buf, sizeof(buf));
+        if (n)
+            cs.process_bytes(buf, n);
     }
 
     static bool read_basic_header(
@@ -573,38 +659,42 @@ private:
     }
 
     template<class Source2>
-    void read_extended_header(Source2& src, boost::crc_16_type& crc)
+    void read_extended_header(
+        Source2& src, boost::crc_16_type& crc, boost::uint16_t next_size)
     {
         boost::iostreams::non_blocking_adapter<Source2> nb(src);
 
         std::string leaf;
         boost::filesystem::path branch;
         boost::optional<boost::uint16_t> header_crc;
-        while (boost::uint16_t size = read_little16(src, crc))
+        while (next_size)
         {
-            if (size < 3)
+            if (next_size < 3)
                 throw BOOST_IOSTREAMS_FAILURE("bad LZH extended header");
-            size -= 2;
 
-            boost::scoped_array<char> buf(new char[size]);
-            const std::streamsize ssize = static_cast<std::streamsize>(size);
+            boost::scoped_array<char> buf(new char[next_size]);
+            const std::streamsize ssize =
+                static_cast<std::streamsize>(next_size);
             if (boost::iostreams::read(nb, buf.get(), ssize) != ssize)
                 throw BOOST_IOSTREAMS_FAILURE("bad LZH extended header");
 
+            boost::uint16_t size = next_size - 3;
             if (buf[0] == '\0')
-                header_crc = parse_common(buf.get()+1, size-1);
+                header_crc = parse_common(buf.get()+1, size);
             else if (buf[0] == '\1')
-                leaf.assign(buf.get()+1, size-1);
+                leaf.assign(buf.get()+1, size);
             else if (buf[0] == '\2')
-                branch = parse_directory(buf.get()+1, size-1);
+                branch = parse_directory(buf.get()+1, size);
 
-            crc.process_bytes(buf.get(), size);
+            crc.process_bytes(buf.get(), next_size);
+            next_size =
+                hamigaki::decode_uint<hamigaki::little, 2>(buf.get()+1+size);
         }
 
         if (header_crc)
         {
             if (crc.checksum() != header_crc.get())
-                throw BOOST_IOSTREAMS_FAILURE("CRC missmatch");
+                throw BOOST_IOSTREAMS_FAILURE("LZH header CRC missmatch");
         }
 
         if (header_.path.empty())
