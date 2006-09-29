@@ -41,8 +41,13 @@ public:
 
     static const length_type min_match_length = 3;
 
-    explicit lzhuff_input(std::size_t size) : size_(size), pos_(0), count_(0)
+    lzhuff_input(std::size_t window_bits, std::size_t size)
+        : size_(size), pos_(0), count_(0)
     {
+        if (window_bits <= 13)
+            offset_count_bits_ = 4;
+        else
+            offset_count_bits_ = 5;
     }
 
     template<class Source>
@@ -88,6 +93,7 @@ private:
     std::size_t size_;
     std::size_t pos_;
     std::size_t count_;
+    std::size_t offset_count_bits_;
     input_bit_filter<left_to_right> filter_;
     huffman_decoder<boost::uint16_t,16> symbol_decoder_;
     huffman_decoder<boost::uint16_t,16> offset_decoder_;
@@ -181,10 +187,10 @@ private:
     {
         offset_size_huffman_decoder_.clear();
 
-        std::size_t size = bs.read_bits(4);
+        std::size_t size = bs.read_bits(offset_count_bits_);
         if (size == 0)
         {
-            offset_decoder_.assign(bs.read_bits(4));
+            offset_decoder_.assign(bs.read_bits(offset_count_bits_));
             return;
         }
 
@@ -204,7 +210,7 @@ class lzhuff_decompressor
 
 public:
     lzhuff_decompressor(std::size_t window_bits, std::size_t size)
-        : base_type(lha_detail::lzhuff_input(size), window_bits)
+        : base_type(lha_detail::lzhuff_input(window_bits, size), window_bits)
     {
     }
 };
