@@ -73,6 +73,8 @@ int main(int argc, char* argv[])
                 );
             }
 
+            fs::last_write_time(head.path, head.update_time);
+
         } while (lzh.next_entry());
 
         return 0;
