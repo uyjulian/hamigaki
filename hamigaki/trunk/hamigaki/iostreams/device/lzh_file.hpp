@@ -685,7 +685,8 @@ private:
         return ph;
     }
 
-    static lha::windows_timestamp parse_timestamp(char* s, boost::uint32_t n)
+    static lha::windows_timestamp
+    parse_windows_timestamp(char* s, boost::uint32_t n)
     {
         if (n < hamigaki::struct_size<lha::windows_timestamp>::type::value)
             throw BOOST_IOSTREAMS_FAILURE("bad LZH timestamp extended header");
@@ -693,6 +694,15 @@ private:
         lha::windows_timestamp ts;
         hamigaki::binary_read(s, ts);
         return ts;
+    }
+
+    static std::time_t parse_unix_timestamp(char* s, boost::uint32_t n)
+    {
+        if (n < 4)
+            throw BOOST_IOSTREAMS_FAILURE("bad LZH timestamp extended header");
+
+        return static_cast<std::time_t>(
+            hamigaki::decode_int<hamigaki::little, 4>(s));
     }
 
     template<class Source2>
@@ -725,7 +735,9 @@ private:
             else if (buf[0] == '\x02')
                 branch = parse_directory(buf.get()+1, size);
             else if (buf[0] == '\x41')
-                header_.timestamp = parse_timestamp(buf.get()+1, size);
+                header_.timestamp = parse_windows_timestamp(buf.get()+1, size);
+            else if (buf[0] == '\x54')
+                header_.update_time = parse_unix_timestamp(buf.get()+1, size);
 
             crc.process_bytes(buf.get(), next_size);
             next_size =
