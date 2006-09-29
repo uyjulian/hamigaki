@@ -39,6 +39,8 @@ struct attributes
     static const boost::uint16_t system     = 0x0004;
     static const boost::uint16_t directory  = 0x0010;
     static const boost::uint16_t archive    = 0x0020;
+
+    static const boost::uint16_t mask       = 0x0037;
 };
 
 struct windows_timestamp
@@ -48,7 +50,7 @@ struct windows_timestamp
     boost::uint64_t last_access_time;
 };
 
-struct basic_header
+struct header
 {
     char method[5];
     boost::uint32_t compressed_size;
@@ -59,10 +61,19 @@ struct basic_header
     boost::optional<boost::uint16_t> crc16_checksum;
     boost::optional<char> os;
     boost::optional<windows_timestamp> timestamp;
+    boost::optional<boost::uint16_t> permission;
 
     bool is_directory() const
     {
         return (attributes & attributes::directory) != 0;
+    }
+
+    std::string path_string() const
+    {
+        if (is_directory())
+            return path.native_directory_string();
+        else
+            return path.native_file_string();
     }
 };
 
@@ -362,7 +373,7 @@ public:
         image_.reset();
         boost::iostreams::seek(src_, next_offset_, std::ios_base::beg);
         crc_.reset();
-        header_.path = boost::filesystem::path();
+        header_ = lha::header();
 
         char buf[hamigaki::struct_size<lha::lv0_header>::type::value];
         if (!this->read_basic_header(src_, buf, sizeof(buf)))
@@ -513,7 +524,7 @@ public:
         return true;
     }
 
-    lha::basic_header header() const
+    lha::header header() const
     {
         return header_;
     }
@@ -536,7 +547,7 @@ public:
 
 private:
     Source src_;
-    lha::basic_header header_;
+    lha::header header_;
     boost::shared_ptr<detail::lzh_source_base> image_;
     boost::iostreams::stream_offset next_offset_;
     boost::crc_16_type crc_;
@@ -696,6 +707,14 @@ private:
         return ts;
     }
 
+    static boost::uint16_t parse_unix_permission(char* s, boost::uint32_t n)
+    {
+        if (n < 2)
+            throw BOOST_IOSTREAMS_FAILURE("bad LZH permission extended header");
+
+        return hamigaki::decode_uint<hamigaki::little, 2>(s);
+    }
+
     static std::time_t parse_unix_timestamp(char* s, boost::uint32_t n)
     {
         if (n < 4)
@@ -709,8 +728,6 @@ private:
     void read_extended_header(
         Source2& src, boost::crc_16_type& crc, boost::uint16_t next_size)
     {
-        header_.timestamp = boost::none;
-
         boost::iostreams::non_blocking_adapter<Source2> nb(src);
 
         std::string leaf;
@@ -736,6 +753,8 @@ private:
                 branch = parse_directory(buf.get()+1, size);
             else if (buf[0] == '\x41')
                 header_.timestamp = parse_windows_timestamp(buf.get()+1, size);
+            else if (buf[0] == '\x50')
+                header_.permission = parse_unix_permission(buf.get()+1, size);
             else if (buf[0] == '\x54')
                 header_.update_time = parse_unix_timestamp(buf.get()+1, size);
 

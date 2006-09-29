@@ -43,6 +43,8 @@
 
 #if defined(BOOST_WINDOWS)
     #include <windows.h>
+#elif defined(BOOST_HAS_UNISTD_H)
+    #include <sys/stat.h>
 #endif
 
 namespace io_ex = hamigaki::iostreams;
@@ -110,7 +112,7 @@ int main(int argc, char* argv[])
 
         do
         {
-            const io_ex::lha::basic_header& head = lzh.header();
+            const io_ex::lha::header& head = lzh.header();
             if (head.is_directory())
                 fs::create_directories(head.path);
             else
@@ -124,6 +126,16 @@ int main(int argc, char* argv[])
                     1024*8
                 );
             }
+
+#if defined(BOOST_WINDOWS)
+            {
+                ::DWORD attr = head.attributes & io_ex::lha::attributes::mask;
+                ::SetFileAttributes(head.path_string().c_str(), attr);
+            }
+#elif defined(BOOST_HAS_UNISTD_H)
+            if (head.permission)
+                ::chmod(head.path_string().c_str(), *head.permission);
+#endif
 
 #if defined(BOOST_WINDOWS)
             if (head.timestamp)
