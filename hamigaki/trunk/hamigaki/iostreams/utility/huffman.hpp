@@ -55,6 +55,11 @@ public:
         tree_.push_back(node());
     }
 
+    void reserve(std::size_t n)
+    {
+        tree_.reserve(n);
+    }
+
     void assign(const value_type& x)
     {
         tree_.clear();
@@ -137,6 +142,7 @@ public:
         typedef typename huffman_decoder<Value,Bits>::code_type code_type;
 
         decoder.clear();
+        decoder.reserve(count_);
 
         // US-CERT Vulnerability Note VU#381508
         if (max_ > static_cast<length_type>(Bits))
