@@ -41,6 +41,7 @@ test-suite iostreams :
     [ iostreams-test concatenate_test.cpp : ]
     [ iostreams-test huffman_test.cpp : ]
     [ iostreams-test lazy_restrict_test.cpp : ]
+    [ iostreams-test lzss_test.cpp : ]
     [ iostreams-test repeat_test.cpp : ]
     [ iostreams-test tmp_file_test.cpp <lib>../build/hamigaki_iostreams : ]
     [ iostreams-test urlsafe_base64_test.cpp : ]
