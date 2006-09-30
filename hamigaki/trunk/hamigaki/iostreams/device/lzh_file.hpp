@@ -14,6 +14,7 @@
 #include <hamigaki/iostreams/filter/lzhuff.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>
 #include <hamigaki/iostreams/relative_restrict.hpp>
+#include <hamigaki/iostreams/tiny_restrict.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/iostreams/detail/adapter/non_blocking_adapter.hpp>
 #include <boost/iostreams/detail/ios.hpp>
@@ -352,6 +353,8 @@ private:
     typedef boost::iostreams::composite<
         lzhuff_decompressor,restricted_type> lzhuff_type;
 
+    typedef tiny_restriction<lzhuff_type> restricted_lzhuff_type;
+
 public:
     typedef char char_type;
 
@@ -552,12 +555,15 @@ private:
     boost::iostreams::stream_offset next_offset_;
     boost::crc_16_type crc_;
 
-    static detail::lzh_source<lzhuff_type>* new_lzhuff_source(
+    static detail::lzh_source<restricted_lzhuff_type>* new_lzhuff_source(
         const restricted_type& plain,
         std::size_t window_bits, boost::uint32_t file_size)
     {
-        return new detail::lzh_source<lzhuff_type>(
-            lzhuff_type(lzhuff_decompressor(window_bits, file_size), plain)
+        return new detail::lzh_source<restricted_lzhuff_type>(
+            tiny_restrict(
+                lzhuff_type(lzhuff_decompressor(window_bits), plain),
+                file_size
+            )
         );
     }
 
@@ -636,7 +642,7 @@ private:
 
         char buf[256];
         std::streamsize n = boost::iostreams::read(nb, buf, sizeof(buf));
-        if (n)
+        if (n != -1)
             cs.process_bytes(buf, n);
     }
 

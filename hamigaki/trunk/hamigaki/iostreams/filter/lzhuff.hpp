@@ -41,8 +41,7 @@ public:
 
     static const length_type min_match_length = 3;
 
-    lzhuff_input(std::size_t window_bits, std::size_t size)
-        : size_(size), pos_(0), count_(0)
+    explicit lzhuff_input(std::size_t window_bits) : count_(0)
     {
         if (window_bits <= 13)
             offset_count_bits_ = 4;
@@ -53,9 +52,6 @@ public:
     template<class Source>
     result_type get(Source& src)
     {
-        if (pos_ == size_)
-            return result_type(0, 0);
-
         input_bit_stream_wrapper<left_to_right, Source> bs(filter_, src);
         if (count_ == 0)
         {
@@ -70,7 +66,6 @@ public:
         {
             char literal =
                 static_cast<char>(static_cast<unsigned char>(symbol));
-            ++pos_;
             return result_type(literal);
         }
         else
@@ -82,16 +77,11 @@ public:
             if (size > 1)
                 offset = (1 << (size-1)) | bs.read_bits(size-1);
 
-            pos_ += length;
-            if (pos_ > size_)
-                throw BOOST_IOSTREAMS_FAILURE("LZH bad image size");
             return result_type(offset, length);
         }
     }
 
 private:
-    std::size_t size_;
-    std::size_t pos_;
     std::size_t count_;
     std::size_t offset_count_bits_;
     input_bit_filter<left_to_right> filter_;
@@ -209,8 +199,8 @@ class lzhuff_decompressor
     typedef sliding_window_decompress<lha_detail::lzhuff_input> base_type;
 
 public:
-    lzhuff_decompressor(std::size_t window_bits, std::size_t size)
-        : base_type(lha_detail::lzhuff_input(window_bits, size), window_bits)
+    explicit lzhuff_decompressor(std::size_t window_bits)
+        : base_type(lha_detail::lzhuff_input(window_bits), window_bits)
     {
     }
 };
