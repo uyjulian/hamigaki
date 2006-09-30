@@ -104,7 +104,6 @@ private:
 };
 
 
-// TODO: buffering
 template<bit_flow Flow>
 class output_bit_filter;
 
@@ -112,29 +111,51 @@ template<>
 class output_bit_filter<left_to_right>
 {
 public:
-    output_bit_filter() : uc_(0), count_(0)
+    static const std::size_t buffer_size = 4096;
+
+    output_bit_filter()
+        : buffer_(new char[buffer_size]), index_(0), bit_(0)
     {
+        std::memset(buffer_.get(), 0, buffer_size);
     }
 
     template<class Sink>
     void flush(Sink& sink)
     {
-        if (count_ != 0)
+        if (bit_ != 0)
         {
-            boost::iostreams::put(sink, static_cast<char>(uc_));
-            count_ = 0;
+            bit_ = 0;
+            ++index_;
+        }
+
+        if (index_ != 0)
+        {
+            boost::iostreams::write(sink, buffer_.get(), index_);
+            std::memset(buffer_.get(), 0, index_);
+            index_ = 0;
         }
     }
 
     template<class Sink>
     void put_bit(Sink& sink, bool bit)
     {
-        uc_ |= static_cast<unsigned>(bit) << (7-count_);
-
-        if (++count_ == 8)
+        static const unsigned char mask[] =
         {
-            boost::iostreams::put(sink, static_cast<char>(uc_));
-            count_ = 0;
+            0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01
+        };
+
+        if (bit)
+            buffer_[index_] |= mask[bit_];
+
+        if (++bit_ == 8)
+        {
+            bit_ = 0;
+            if (++index_ == buffer_size)
+            {
+                boost::iostreams::write(sink, buffer_.get(), buffer_size);
+                std::memset(buffer_.get(), 0, buffer_size);
+                index_ = 0;
+            }
         }
     }
 
@@ -142,12 +163,13 @@ public:
     void write_bits(Sink& sink, unsigned bits, std::size_t bit_count)
     {
         while (bit_count--)
-            this->write_bits(sink, ((bits >> bit_count) & 1) != 0);
+            this->put_bit(sink, ((bits >> bit_count) & 1) != 0);
     }
 
 private:
-    unsigned char uc_;
-    std::size_t count_;
+    boost::shared_array<char> buffer_;
+    std::size_t index_;
+    std::size_t bit_;
 };
 
 template<bit_flow Flow, class Sink>

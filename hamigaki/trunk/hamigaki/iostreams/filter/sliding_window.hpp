@@ -17,6 +17,8 @@
 #include <boost/cstdint.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/static_assert.hpp>
+#include <algorithm>
+#include <cstring>
 #include <vector>
 
 namespace hamigaki { namespace iostreams {
@@ -60,7 +62,6 @@ class sliding_window_decompress_impl
     typedef typename Input::length_type length_type;
     typedef typename Input::offset_type offset_type;
     typedef literal_or_reference<offset_type,length_type> result_type;
-    typedef std::char_traits<char> traits_type;
 
     static const length_type min_match_length = Input::min_match_length;
 
@@ -147,6 +148,147 @@ private:
     }
 };
 
+template<class Output>
+class sliding_window_compress_impl
+{
+    typedef typename Output::length_type length_type;
+    typedef typename Output::offset_type offset_type;
+    typedef std::pair<offset_type,length_type> pair_type;
+
+    static const length_type min_match_length = Output::min_match_length;
+    static const length_type max_match_length = Output::max_match_length;
+
+public:
+    sliding_window_compress_impl(const Output& output, std::size_t window_bits)
+        : output_(output)
+        , window_size_(1 << window_bits)
+        , window_size1_(window_size_-1)
+        , window_((window_size_<<1) + max_match_length, ' ')
+        , pos_(window_size_)
+        , end_(window_size_)
+    {
+    }
+
+    template<class Sink>
+    std::streamsize write(Sink& sink, const char* s, std::streamsize n)
+    {
+        std::streamsize total = 0;
+
+        while (true)
+        {
+            while (end_ - pos_ >= max_match_length)
+            {
+                pair_type res = search();
+                if (res.second < min_match_length)
+                {
+                    output_.put(sink, window_[pos_]);
+                    ++pos_;
+                }
+                else
+                {
+                    output_.put(sink, res.first, res.second);
+                    pos_ += res.second;
+                }
+
+                if (pos_ >= (window_size_ <<1))
+                {
+                    std::memmove(
+                        &window_[0],
+                        &window_[window_size_],
+                        window_size_+max_match_length
+                    );
+                    pos_ -= window_size_;
+                }
+            }
+
+            if (n > 0)
+            {
+                std::streamsize amt = (std::min)
+                    (n, static_cast<std::streamsize>(window_.size() - end_));
+                std::memcpy(&window_[end_], s, amt);
+                s += amt;
+                n -= amt;
+                end_ += amt;
+                total += amt;
+            }
+            else
+                break;
+        }
+
+        return (total != 0) ? total : -1;
+    }
+
+    template<class Sink>
+    bool flush(Sink& sink)
+    {
+        while (pos_ < end_)
+        {
+            length_type max_len = end_-pos_;
+
+            pair_type res = search();
+            if (res.second > max_len)
+                res.second = max_len;
+
+            if (res.second < min_match_length)
+            {
+                output_.put(sink, window_[pos_]);
+                ++pos_;
+            }
+            else
+            {
+                output_.put(sink, res.first, res.second);
+                pos_ += res.second;
+            }
+
+            if (pos_ >= (window_size_ <<1))
+            {
+                std::memmove(
+                    &window_[0],
+                    &window_[window_size_],
+                    window_size_+max_match_length
+                );
+                pos_ -= window_size_;
+            }
+        }
+
+        return output_.flush(sink);
+    }
+
+private:
+    Output output_;
+    std::size_t window_size_;
+    std::size_t window_size1_;
+    std::vector<char> window_;
+    std::size_t pos_;
+    std::size_t end_;
+
+    // Note: too slow
+    pair_type search()
+    {
+        const char* last = &window_[pos_];
+        const char* start = last - window_size_;
+
+        length_type length = 0;
+        offset_type offset = 0;
+        while (const void* p = std::memchr(start, *last, last-start))
+        {
+            const char* cur = static_cast<const char*>(p);
+
+            const char* end =
+                std::mismatch(cur, cur+max_match_length, last).first;
+
+            length_type len = static_cast<length_type>(end - cur);
+            if (len >= length)
+            {
+                length = len;
+                offset = last-cur - 1;
+            }
+            start = cur + 1;
+        }
+        return pair_type(offset, length);
+    }
+};
+
 } // namespace detail
 
 template<class Input>
@@ -172,6 +314,42 @@ public:
     std::streamsize read(Source& src, char* s, std::streamsize n)
     {
         return pimpl_->read(src, s, n);
+    }
+
+private:
+    boost::shared_ptr<impl_type> pimpl_;
+};
+
+template<class Output>
+class sliding_window_compress
+{
+private:
+    typedef detail::sliding_window_compress_impl<Output> impl_type;
+
+public:
+    typedef char char_type;
+    struct category
+        : public boost::iostreams::output
+        , public boost::iostreams::filter_tag
+        , public boost::iostreams::multichar_tag
+        , public boost::iostreams::flushable_tag
+    {};
+
+    sliding_window_compress(const Output& output, std::size_t window_bits)
+        : pimpl_(new impl_type(output, window_bits))
+    {
+    }
+
+    template<class Sink>
+    bool flush(Sink& sink)
+    {
+        return pimpl_->flush(sink);
+    }
+
+    template<class Sink>
+    std::streamsize write(Sink& sink, const char* s, std::streamsize n)
+    {
+        return pimpl_->write(sink, s, n);
     }
 
 private:
