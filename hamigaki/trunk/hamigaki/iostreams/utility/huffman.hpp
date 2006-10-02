@@ -17,10 +17,86 @@
 #include <boost/next_prior.hpp>
 #include <boost/static_assert.hpp>
 #include <algorithm>
+#include <queue>
 #include <stdexcept>
 #include <vector>
 
 namespace hamigaki { namespace iostreams {
+
+template<class Value, std::size_t Bits>
+class huffman_encoder
+{
+public:
+    typedef typename boost::uint_t<Bits>::least code_type;
+    typedef Value value_type;
+
+    struct node
+    {
+        code_type code;
+        std::size_t bits;
+
+        node() : code(0), bits(0)
+        {
+        }
+
+        node(code_type code, std::size_t bits) : code(code), bits(bits)
+        {
+        }
+    };
+
+    typedef typename std::vector<node>::const_iterator const_iterator;
+
+    void clear()
+    {
+        table_.clear();
+    }
+
+    void reserve(std::size_t n)
+    {
+        table_.reserve(n);
+    }
+
+    void insert(const value_type& value, code_type code, std::size_t bits)
+    {
+        if (static_cast<std::size_t>(value) >= table_.size())
+            table_.resize(value+1);
+        table_[value] = node(code, bits);
+    }
+
+    template<class OutputBitStream>
+    void encode(OutputBitStream& bs, const value_type& value) const
+    {
+        if (table_.empty())
+            return;
+
+        if (static_cast<std::size_t>(value) >= table_.size())
+            throw std::runtime_error("unknwon huffman value");
+
+        const node& x = table_[value];
+        if (x.bits == 0)
+            throw std::runtime_error("unknwon huffman value");
+
+        bs.write_bits(x.code, x.bits);
+    }
+
+    std::size_t size() const
+    {
+        return table_.size();
+    }
+
+    const_iterator begin() const
+    {
+        return table_.begin();
+    }
+
+    const_iterator end() const
+    {
+        return table_.end();
+    }
+
+private:
+    std::vector<node> table_;
+};
 
 template<class Value, std::size_t Bits>
 class huffman_decoder
@@ -67,7 +143,7 @@ public:
         tree_.back().next[0] = x;
     }
 
-    void push_back(code_type code, std::size_t bits, const value_type& value)
+    void insert(code_type code, std::size_t bits, const value_type& value)
     {
         value_type pos = 0;
         std::size_t bits1 = bits-1;
@@ -162,7 +238,8 @@ public:
         // TODO
         BOOST_STATIC_ASSERT(sizeof(std::size_t)*CHAR_BIT > Bits);
 
-        std::vector<std::size_t> count_table(max_+1);
+        std::size_t count_table[Bits+1];
+        std::fill_n(&count_table[0], Bits+1, 0);
         for (std::size_t i = 0; i < table_.size(); ++i)
         {
             if (length_type len = table_[i])
@@ -173,7 +250,8 @@ public:
             }
         }
 
-        std::vector<code_type> base(max_+1);
+        std::size_t base[Bits+1];
+        std::fill_n(&base[0], Bits+1, 0);
         for (std::size_t i = 1; i <= max_; ++i)
         {
             // US-CERT Vulnerability Note VU#596848
@@ -192,7 +270,7 @@ public:
         {
             if (length_type len = table_[i])
             {
-                decoder.push_back(base[len-1], len, i);
+                decoder.insert(base[len-1], len, i);
                 ++base[len-1];
             }
         }
@@ -202,6 +280,202 @@ private:
     std::vector<length_type> table_;
     length_type max_;
     std::size_t count_;
+};
+
+
+template<class Value>
+class huffman
+{
+public:
+    typedef Value value_type;
+
+private:
+    struct node
+    {
+        bool is_leaf;
+        union
+        {
+            value_type value;
+            std::size_t index[2];
+        };
+        std::size_t count;
+        std::size_t depth;
+
+        node(value_type x, std::size_t count)
+            : is_leaf(true), count(count)
+        {
+            value = x;
+        }
+
+        node(std::size_t index1, std::size_t index2, std::size_t count)
+            : is_leaf(false), count(count)
+        {
+            index[0] = index1;
+            index[1] = index2;
+        }
+
+        static void set_depth(
+            std::vector<node>& tree, std::size_t index, std::size_t depth)
+        {
+            node& cur = tree[index];
+            cur.depth = depth;
+
+            if (!cur.is_leaf)
+            {
+                ++depth;
+
+                for (std::size_t i = 0; i < 2; ++i)
+                    set_depth(tree, cur.index[i], depth);
+            }
+        }
+    };
+
+    class node_count_greator
+    {
+    public:
+        explicit node_count_greator(const std::vector<node>& tree) : tree_(tree)
+        {
+        }
+
+        bool operator()(std::size_t lhs, std::size_t rhs) const
+        {
+            return tree_[lhs].count > tree_[rhs].count;
+        }
+
+    private:
+        const std::vector<node>& tree_;
+    };
+
+    class table_count_greator
+    {
+    public:
+        explicit table_count_greator(const std::vector<std::size_t>& table)
+            : table_(table)
+        {
+        }
+
+        bool operator()(std::size_t lhs, std::size_t rhs) const
+        {
+            if (table_[lhs] == table_[rhs])
+                return lhs < rhs;
+            else
+                return table_[lhs] > table_[rhs];
+        }
+
+    private:
+        const std::vector<std::size_t>& table_;
+    };
+
+public:
+    void clear()
+    {
+        table_.clear();
+    }
+
+    void reserve(std::size_t n)
+    {
+        table_.reserve(n);
+    }
+
+    void insert(const value_type& value)
+    {
+        if (static_cast<std::size_t>(value) >= table_.size())
+            table_.resize(value+1);
+        ++(table_[value]);
+    }
+
+    template<std::size_t Bits>
+    void make_encoder(huffman_encoder<Value,Bits>& encoder) const
+    {
+        encoder.clear();
+        encoder.reserve(table_.size());
+
+        std::vector<node> tree;
+        std::vector<std::size_t> order;
+
+        for (std::size_t i = 0; i < table_.size(); ++i)
+        {
+            if (table_[i])
+            {
+                tree.push_back(node(i, table_[i]));
+                order.push_back(i);
+            }
+        }
+
+        if (tree.size() < 2)
+            return;
+
+        typedef std::priority_queue<
+            std::size_t,
+            std::vector<std::size_t>,
+            node_count_greator
+        > queue_type;
+
+        queue_type queue((node_count_greator(tree)));
+
+        const std::size_t count = tree.size();
+        for (std::size_t i = 0; i < count; ++i)
+            queue.push(i);
+
+        while (true)
+        {
+            std::size_t a = queue.top();
+            queue.pop();
+            std::size_t b = queue.top();
+            queue.pop();
+
+            tree.push_back(node(a, b, tree[a].count + tree[b].count));
+            if (queue.empty())
+                break;
+            queue.push(tree.size()-1);
+        }
+
+        node::set_depth(tree, tree.size()-1, 0);
+
+        std::size_t length_count[Bits+1];
+        std::fill_n(length_count, Bits+1, 0);
+        int over = 0;
+        for (std::size_t i = 0; i < count; ++i)
+        {
+            std::size_t depth = tree[i].depth;
+            if (depth <= Bits)
+                ++length_count[depth];
+            else
+                ++over;
+        }
+
+        while (over-- > 0)
+        {
+            for (std::size_t i = Bits-1; i > 0; --i)
+            {
+                if (length_count[i])
+                {
+                    --length_count[i];
+                    length_count[i+1] += 2;
+                }
+            }
+        }
+
+        std::size_t base[Bits+1];
+        std::fill_n(&base[0], Bits+1, 0);
+        for (std::size_t i = 1; i <= Bits; ++i)
+            base[i] = (base[i-1] + length_count[i]) << 1;
+
+        std::sort(order.begin(), order.end(), table_count_greator(table_));
+        std::size_t index = 0;
+        for (std::size_t i = 1; i <= Bits; ++i)
+        {
+            std::size_t count = length_count[i];
+            for (std::size_t j = 0; j < count; ++j)
+            {
+                encoder.insert(order[index++], base[i-1], i);
+                ++base[i-1];
+            }
+        }
+    }
+
+private:
+    std::vector<std::size_t> table_;
 };
 
 } } // End namespaces iostreams, hamigaki.

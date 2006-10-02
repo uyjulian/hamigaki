@@ -17,6 +17,9 @@ namespace ut = boost::unit_test;
 typedef io_ex::huffman_decoder<boost::uint16_t,16> huffman_dec;
 typedef io_ex::huffman_code_length_decoder<boost::uint16_t> length_dec;
 
+typedef io_ex::huffman_encoder<boost::uint16_t,16> huffman_enc;
+typedef io_ex::huffman<boost::uint16_t> huffman;
+
 void huffman_test()
 {
     huffman_dec tree;
@@ -68,6 +71,44 @@ void bad_huffman_test3()
     BOOST_CHECK_THROW(decoder.decode(tree), std::runtime_error);
 }
 
+void huffman_code_check(
+    const huffman_enc& table, char c, boost::uint16_t code, std::size_t bits)
+{
+    if (static_cast<std::size_t>(c) >= table.size())
+    {
+        BOOST_ERROR("out of huffman_enc");
+        return;
+    }
+
+    huffman_enc::const_iterator pos = table.begin() + c;
+
+    BOOST_CHECK_EQUAL(pos->code, code);
+    BOOST_CHECK_EQUAL(pos->bits, bits);
+}
+
+void huffman_encode_test()
+{
+    huffman huff;
+
+    for (int i = 0 ; i < 2; ++i)
+        huff.insert('A');
+    for (int i = 0 ; i < 5; ++i)
+        huff.insert('B');
+    for (int i = 0 ; i < 3; ++i)
+        huff.insert('C');
+    huff.insert('D');
+    huff.insert('E');
+
+    huffman_enc table;
+    huff.make_encoder(table);
+
+    huffman_code_check(table, 'A', 6, 3);
+    huffman_code_check(table, 'B', 0, 1);
+    huffman_code_check(table, 'C', 2, 2);
+    huffman_code_check(table, 'D', 14, 4);
+    huffman_code_check(table, 'E', 15, 4);
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("Huffman test");
@@ -75,5 +116,6 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&bad_huffman_test));
     test->add(BOOST_TEST_CASE(&bad_huffman_test2));
     test->add(BOOST_TEST_CASE(&bad_huffman_test3));
+    test->add(BOOST_TEST_CASE(&huffman_encode_test));
     return test;
 }
