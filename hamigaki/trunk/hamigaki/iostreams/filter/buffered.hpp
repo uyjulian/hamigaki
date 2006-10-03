@@ -1,4 +1,4 @@
-//  byte_filter.hpp: byte stream filter
+//  buffered_filter.hpp: buffered filter
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
@@ -7,17 +7,18 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
 
-#ifndef HAMIGAKI_IOSTREAMS_BYTE_FILTER_HPP
-#define HAMIGAKI_IOSTREAMS_BYTE_FILTER_HPP
+#ifndef HAMIGAKI_IOSTREAMS_FILTER_BUFFERED_HPP
+#define HAMIGAKI_IOSTREAMS_FILTER_BUFFERED_HPP
 
 #include <boost/iostreams/detail/adapter/non_blocking_adapter.hpp>
 #include <boost/iostreams/read.hpp>
 #include <boost/iostreams/write.hpp>
+#include <boost/assert.hpp>
 #include <boost/shared_array.hpp>
 
 namespace hamigaki { namespace iostreams {
 
-class input_byte_filter
+class input_buffered_filter
 {
 public:
     struct category
@@ -25,7 +26,7 @@ public:
         , public boost::iostreams::filter_tag
     {};
 
-    explicit input_byte_filter(std::size_t buffer_size=4096)
+    explicit input_buffered_filter(std::size_t buffer_size=4096)
         : buffer_(new char[buffer_size_]), buffer_size_(buffer_size)
         , size_(0), index_(0)
     {
@@ -62,7 +63,7 @@ private:
 };
 
 
-class output_byte_filter
+class output_buffered_filter
 {
 public:
     typedef char char_type;
@@ -73,7 +74,7 @@ public:
         , public boost::iostreams::flushable_tag
     {};
 
-    explicit output_byte_filter(std::size_t buffer_size=4096)
+    explicit output_buffered_filter(std::size_t buffer_size=4096)
         : buffer_(new char[buffer_size]), buffer_size_(buffer_size), index_(0)
     {
     }
@@ -103,17 +104,18 @@ public:
         return true;
     }
 
-    template<class Sink>
-    bool try_write(Sink& sink, const char* s, std::streamsize n)
+    std::size_t buffer_space() const
     {
-        if (index_+n < buffer_size_)
-        {
-            std::memcpy(&buffer_[index_], s, n);
-            index_ += n;
-            return true;
-        }
-        else
-            return false;
+        return buffer_size_ - index_;
+    }
+
+    template<class Sink>
+    void write_buffer(Sink& sink, const char* s, std::streamsize n)
+    {
+        BOOST_ASSERT(index_+n < buffer_size_);
+
+        std::memcpy(&buffer_[index_], s, n);
+        index_ += n;
     }
 
 private:
@@ -124,4 +126,4 @@ private:
 
 } } // End namespaces iostreams, hamigaki.
 
-#endif // HAMIGAKI_IOSTREAMS_BYTE_FILTER_HPP
+#endif // HAMIGAKI_IOSTREAMS_FILTER_BUFFERED_HPP

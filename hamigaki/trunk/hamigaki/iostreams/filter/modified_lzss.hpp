@@ -10,9 +10,9 @@
 #ifndef HAMIGAKI_IOSTREAMS_FILTER_MODIFIED_LZSS_HPP
 #define HAMIGAKI_IOSTREAMS_FILTER_MODIFIED_LZSS_HPP
 
+#include <hamigaki/iostreams/filter/buffered.hpp>
 #include <hamigaki/iostreams/filter/sliding_window.hpp>
 #include <hamigaki/iostreams/bit_filter.hpp>
-#include <hamigaki/iostreams/byte_filter.hpp>
 #include <hamigaki/endian.hpp>
 #include <boost/iostreams/detail/error.hpp>
 #include <boost/iostreams/detail/ios.hpp>
@@ -78,7 +78,7 @@ public:
     }
 
 private:
-    input_byte_filter filter_;
+    input_buffered_filter filter_;
     std::size_t bit_;
     unsigned char flags_;
 
@@ -160,7 +160,7 @@ public:
     }
 
 private:
-    output_byte_filter filter_;
+    output_buffered_filter filter_;
     char buf_[1 + (LengthBits/8 + OffsetBits/8)*8];
     std::size_t bit_;
     std::streamsize index_;
@@ -168,11 +168,9 @@ private:
     template<class Sink>
     void flush_buffer(Sink& sink)
     {
-        if (!filter_.try_write(sink, buf_, index_))
-        {
+        filter_.write_buffer(sink, buf_, index_);
+        if (filter_.buffer_space() < sizeof(buf_))
             filter_.flush(sink);
-            filter_.try_write(sink, buf_, index_);
-        }
         buf_[0] = '\0';
         bit_ = 0;
         index_ = 1;
