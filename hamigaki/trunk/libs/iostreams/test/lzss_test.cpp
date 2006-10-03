@@ -1,4 +1,4 @@
-//  lzss_test.cpp: test case for Base64 encoder/decoder
+//  lzss_test.cpp: test case for LZSS compressor/decompressor
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
