@@ -107,6 +107,24 @@ struct encode_uint_impl<T,little,Size>
 };
 
 template<>
+struct encode_uint_impl<boost::uint8_t,big,1>
+{
+    static void encode(char* s, boost::uint8_t n)
+    {
+        *s = static_cast<unsigned char>(n);
+    }
+};
+
+template<>
+struct encode_uint_impl<boost::uint8_t,little,1>
+{
+    static void encode(char* s, boost::uint8_t n)
+    {
+        *s = static_cast<unsigned char>(n);
+    }
+};
+
+template<>
 struct encode_uint_impl<boost::uint16_t,native,2>
 {
     static void encode(char* s, boost::uint16_t n)
