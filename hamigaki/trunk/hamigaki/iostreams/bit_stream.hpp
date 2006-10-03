@@ -10,114 +10,61 @@
 #ifndef HAMIGAKI_IOSTREAMS_BIT_STREAM_HPP
 #define HAMIGAKI_IOSTREAMS_BIT_STREAM_HPP
 
-#include <boost/iostreams/detail/error.hpp>
-#include <boost/iostreams/get.hpp>
-#include <boost/iostreams/put.hpp>
+#include <hamigaki/iostreams/bit_filter.hpp>
 
 namespace hamigaki { namespace iostreams {
 
-enum bit_flow
-{
-    left_to_right,
-    right_to_left
-};
-
 template<bit_flow Flow, class Source>
-class input_bit_stream;
-
-template<class Source>
-class input_bit_stream<left_to_right, Source>
+class input_bit_stream
 {
 public:
-    explicit input_bit_stream(Source& src)
-        : src_(src), count_(8)
+    input_bit_stream(input_bit_filter<Flow>& filter, Source& src)
+        : filter_(filter), src_(src)
     {
     }
 
     bool get_bit()
     {
-        if (count_ == 8)
-        {
-            typedef std::char_traits<char> traits;
-
-            traits::int_type c = boost::iostreams::get(src_);
-            if (c == traits::eof())
-                throw boost::iostreams::detail::bad_read();
-            uc_ = static_cast<unsigned char>(traits::to_char_type(c));
-            count_ = 0;
-        }
-
-        return (uc_ & (1 << (7-count_++))) != 0;
+        return filter_.get_bit(src_);
     }
 
     unsigned read_bits(std::size_t bit_count)
     {
-        unsigned tmp = 0;
-        while (bit_count--)
-            tmp |= (static_cast<unsigned>(get_bit()) << bit_count);
-        return tmp;
+        return filter_.read_bits(src_, bit_count);
     }
 
 private:
+    input_bit_filter<Flow>& filter_;
     Source& src_;
-    unsigned char uc_;
-    std::size_t count_;
 };
 
-
 template<bit_flow Flow, class Sink>
-class output_bit_stream;
-
-template<class Sink>
-class output_bit_stream<left_to_right, Sink>
+class output_bit_stream
 {
 public:
-    explicit output_bit_stream(Sink& sink)
-        : sink_(sink), uc_(0), count_(0)
+    output_bit_stream(output_bit_filter<Flow>& filter, Sink& sink)
+        : filter_(filter), sink_(sink)
     {
-    }
-
-    ~output_bit_stream()
-    {
-        try
-        {
-            flush();
-        }
-        catch (...)
-        {
-        }
     }
 
     void flush()
     {
-        if (count_ != 0)
-        {
-            boost::iostreams::put(sink_, static_cast<char>(uc_));
-            count_ = 0;
-        }
+        return filter_.flush(sink_);
     }
 
     void put_bit(bool bit)
     {
-        uc_ |= static_cast<unsigned>(bit) << (7-count_);
-
-        if (++count_ == 8)
-        {
-            boost::iostreams::put(sink_, static_cast<char>(uc_));
-            count_ = 0;
-        }
+        return filter_.put_bit(sink_, bit);
     }
 
     void write_bits(unsigned bits, std::size_t bit_count)
     {
-        while (bit_count--)
-            write_bits(((bits >> bit_count) & 1) != 0);
+        return filter_.write_bits(sink_, bits, bit_count);
     }
 
 private:
+    output_bit_filter<Flow>& filter_;
     Sink& sink_;
-    unsigned char uc_;
-    std::size_t count_;
 };
 
 } } // End namespaces iostreams, hamigaki.

@@ -10,7 +10,6 @@
 #ifndef HAMIGAKI_IOSTREAMS_UTILITY_HUFFMAN_HPP
 #define HAMIGAKI_IOSTREAMS_UTILITY_HUFFMAN_HPP
 
-#include <hamigaki/iostreams/bit_stream.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/assert.hpp>
 #include <boost/integer.hpp>

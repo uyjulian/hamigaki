@@ -11,7 +11,7 @@
 #define HAMIGAKI_IOSTREAMS_FILTER_LZSS_HPP
 
 #include <hamigaki/iostreams/filter/sliding_window.hpp>
-#include <hamigaki/iostreams/bit_filter.hpp>
+#include <hamigaki/iostreams/bit_stream.hpp>
 #include <boost/iostreams/detail/ios.hpp>
 #include <boost/integer.hpp>
 
@@ -33,7 +33,7 @@ public:
     template<class Source>
     result_type get(Source& src)
     {
-        input_bit_stream_wrapper<Flow, Source> bs(filter_, src);
+        input_bit_stream<Flow, Source> bs(filter_, src);
         if (bs.get_bit())
         {
             offset_type offset =
@@ -72,7 +72,7 @@ public:
     template<class Sink>
     bool flush(Sink& sink)
     {
-        output_bit_stream_wrapper<Flow, Sink> bs(filter_, sink);
+        output_bit_stream<Flow, Sink> bs(filter_, sink);
         bs.flush();
         return true;
     }
@@ -80,7 +80,7 @@ public:
     template<class Sink>
     void put(Sink& sink, char literal)
     {
-        output_bit_stream_wrapper<Flow, Sink> bs(filter_, sink);
+        output_bit_stream<Flow, Sink> bs(filter_, sink);
         bs.put_bit(0);
         bs.write_bits(static_cast<unsigned char>(literal), 8);
     }
@@ -88,7 +88,7 @@ public:
     template<class Sink>
     void put(Sink& sink, offset_type offset, length_type length)
     {
-        output_bit_stream_wrapper<Flow, Sink> bs(filter_, sink);
+        output_bit_stream<Flow, Sink> bs(filter_, sink);
         bs.put_bit(1);
         bs.write_bits(offset, OffsetBits);
         bs.write_bits(length, LengthBits);

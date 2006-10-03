@@ -12,7 +12,7 @@
 
 #include <hamigaki/iostreams/filter/sliding_window.hpp>
 #include <hamigaki/iostreams/utility/huffman.hpp>
-#include <hamigaki/iostreams/bit_filter.hpp>
+#include <hamigaki/iostreams/bit_stream.hpp>
 #include <boost/iostreams/detail/ios.hpp>
 
 namespace hamigaki { namespace iostreams {
@@ -52,7 +52,7 @@ public:
     template<class Source>
     result_type get(Source& src)
     {
-        input_bit_stream_wrapper<left_to_right, Source> bs(filter_, src);
+        input_bit_stream<left_to_right, Source> bs(filter_, src);
         if (count_ == 0)
         {
             count_ = static_cast<boost::uint16_t>(bs.read_bits(16));

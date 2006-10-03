@@ -10,18 +10,54 @@
 #ifndef HAMIGAKI_IOSTREAMS_BIT_FILTER_HPP
 #define HAMIGAKI_IOSTREAMS_BIT_FILTER_HPP
 
-#include <hamigaki/iostreams/bit_stream.hpp>
+#include <boost/iostreams/detail/error.hpp>
+#include <boost/iostreams/read.hpp>
+#include <boost/iostreams/write.hpp>
 #include <boost/shared_array.hpp>
 
 namespace hamigaki { namespace iostreams {
 
+enum bit_flow
+{
+    left_to_right,
+    right_to_left
+};
+
 template<bit_flow Flow>
-class input_bit_filter;
+struct bit_stream_traits;
 
 template<>
-class input_bit_filter<left_to_right>
+struct bit_stream_traits<left_to_right>
+{
+    static unsigned char mask(std::size_t bit)
+    {
+        static const unsigned char m[] =
+        {
+            0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01
+        };
+        return m[bit];
+    }
+};
+
+template<>
+struct bit_stream_traits<right_to_left>
+{
+    static unsigned char mask(std::size_t bit)
+    {
+        static const unsigned char m[] =
+        {
+            0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80
+        };
+        return m[bit];
+    }
+};
+
+template<bit_flow Flow>
+class input_bit_filter
 {
 public:
+    typedef bit_stream_traits<Flow> traits_type;
+
     static const std::size_t buffer_size = 4096;
 
     input_bit_filter()
@@ -50,11 +86,7 @@ public:
             }
         }
 
-        static const unsigned char mask[] =
-        {
-            0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01
-        };
-        bool result = (buffer_[index_] & mask[bit_]) != 0;
+        bool result = (buffer_[index_] & traits_type::mask(bit_)) != 0;
         if (++bit_ == 8)
         {
             bit_ = 0;
@@ -79,38 +111,13 @@ private:
     std::size_t bit_;
 };
 
-template<bit_flow Flow, class Source>
-class input_bit_stream_wrapper
-{
-public:
-    input_bit_stream_wrapper(input_bit_filter<Flow>& filter, Source& src)
-        : filter_(filter), src_(src)
-    {
-    }
-
-    bool get_bit()
-    {
-        return filter_.get_bit(src_);
-    }
-
-    unsigned read_bits(std::size_t bit_count)
-    {
-        return filter_.read_bits(src_, bit_count);
-    }
-
-private:
-    input_bit_filter<Flow>& filter_;
-    Source& src_;
-};
-
 
 template<bit_flow Flow>
-class output_bit_filter;
-
-template<>
-class output_bit_filter<left_to_right>
+class output_bit_filter
 {
 public:
+    typedef bit_stream_traits<Flow> traits_type;
+
     static const std::size_t buffer_size = 4096;
 
     output_bit_filter()
@@ -139,13 +146,8 @@ public:
     template<class Sink>
     void put_bit(Sink& sink, bool bit)
     {
-        static const unsigned char mask[] =
-        {
-            0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01
-        };
-
         if (bit)
-            buffer_[index_] |= mask[bit_];
+            buffer_[index_] |= traits_type::mask(bit_);
 
         if (++bit_ == 8)
         {
@@ -170,35 +172,6 @@ private:
     boost::shared_array<char> buffer_;
     std::size_t index_;
     std::size_t bit_;
-};
-
-template<bit_flow Flow, class Sink>
-class output_bit_stream_wrapper
-{
-public:
-    output_bit_stream_wrapper(output_bit_filter<Flow>& filter, Sink& sink)
-        : filter_(filter), sink_(sink)
-    {
-    }
-
-    void flush()
-    {
-        return filter_.flush(sink_);
-    }
-
-    void put_bit(bool bit)
-    {
-        return filter_.put_bit(sink_, bit);
-    }
-
-    void write_bits(unsigned bits, std::size_t bit_count)
-    {
-        return filter_.write_bits(sink_, bits, bit_count);
-    }
-
-private:
-    output_bit_filter<Flow>& filter_;
-    Sink& sink_;
 };
 
 } } // End namespaces iostreams, hamigaki.
