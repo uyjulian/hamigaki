@@ -109,6 +109,24 @@ void huffman_encode_test()
     huffman_code_check(table, 'E', 15, 4);
 }
 
+void huffman_encode_test2()
+{
+    huffman huff;
+
+    huff.insert(2);
+    huff.insert(3);
+    huff.insert(4);
+    huff.insert(2);
+    huff.insert(4);
+
+    huffman_enc table;
+    huff.make_encoder(table);
+
+    huffman_code_check(table, 2, 0, 1);
+    huffman_code_check(table, 3, 2, 2);
+    huffman_code_check(table, 4, 3, 2);
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("Huffman test");
@@ -117,5 +135,6 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&bad_huffman_test2));
     test->add(BOOST_TEST_CASE(&bad_huffman_test3));
     test->add(BOOST_TEST_CASE(&huffman_encode_test));
+    test->add(BOOST_TEST_CASE(&huffman_encode_test2));
     return test;
 }

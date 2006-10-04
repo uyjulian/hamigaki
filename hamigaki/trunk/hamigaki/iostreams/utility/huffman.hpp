@@ -48,6 +48,7 @@ public:
     void clear()
     {
         table_.clear();
+        default_value_ = value_type();
     }
 
     void reserve(std::size_t n)
@@ -78,9 +79,19 @@ public:
         bs.write_bits(x.code, x.bits);
     }
 
+    bool empty() const
+    {
+        return table_.empty();
+    }
+
     std::size_t size() const
     {
         return table_.size();
+    }
+
+    const node& operator[](std::size_t index) const
+    {
+        return table_[index];
     }
 
     const_iterator begin() const
@@ -93,8 +104,19 @@ public:
         return table_.end();
     }
 
+    void default_value(const value_type& x)
+    {
+        default_value_ = x;
+    }
+
+    value_type default_value() const
+    {
+        return default_value_;
+    }
+
 private:
     std::vector<node> table_;
+    value_type default_value_;
 };
 
 template<class Value, std::size_t Bits>
@@ -329,6 +351,24 @@ private:
         }
     };
 
+    struct value_length
+    {
+        value_type value;
+        std::size_t length;
+
+        explicit value_length(value_type value) : value(value)
+        {
+        }
+
+        bool operator<(const value_length& rhs) const
+        {
+            if (length == rhs.length)
+                return value < rhs.value;
+            else
+                return length < rhs.length;
+        }
+    };
+
     class node_count_greator
     {
     public:
@@ -353,12 +393,12 @@ private:
         {
         }
 
-        bool operator()(std::size_t lhs, std::size_t rhs) const
+        bool operator()(const value_length& lhs, const value_length& rhs) const
         {
-            if (table_[lhs] == table_[rhs])
-                return lhs < rhs;
+            if (table_[lhs.value] == table_[rhs.value])
+                return lhs.value < rhs.value;
             else
-                return table_[lhs] > table_[rhs];
+                return table_[lhs.value] > table_[rhs.value];
         }
 
     private:
@@ -390,19 +430,24 @@ public:
         encoder.reserve(table_.size());
 
         std::vector<node> tree;
-        std::vector<std::size_t> order;
+        std::vector<value_length> order;
 
         for (std::size_t i = 0; i < table_.size(); ++i)
         {
             if (table_[i])
             {
                 tree.push_back(node(i, table_[i]));
-                order.push_back(i);
+                order.push_back(value_length(i));
             }
         }
 
-        if (tree.size() < 2)
+        if (tree.empty())
             return;
+        else if (tree.size() == 1)
+        {
+            encoder.default_value(tree.front().value);
+            return;
+        }
 
         typedef std::priority_queue<
             std::size_t,
@@ -466,8 +511,17 @@ public:
         {
             std::size_t count = length_count[i];
             for (std::size_t j = 0; j < count; ++j)
+                order[index++].length = i;
+        }
+        std::sort(order.begin(), order.end());
+
+        index = 0;
+        for (std::size_t i = 1; i <= Bits; ++i)
+        {
+            std::size_t count = length_count[i];
+            for (std::size_t j = 0; j < count; ++j)
             {
-                encoder.insert(order[index++], base[i-1], i);
+                encoder.insert(order[index++].value, base[i-1], i);
                 ++base[i-1];
             }
         }
