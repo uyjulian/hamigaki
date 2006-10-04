@@ -10,10 +10,15 @@
 #ifndef HAMIGAKI_IOSTREAMS_FILTER_LZHUFF_HPP
 #define HAMIGAKI_IOSTREAMS_FILTER_LZHUFF_HPP
 
+#include <hamigaki/iostreams/filter/modified_lzss.hpp>
 #include <hamigaki/iostreams/filter/sliding_window.hpp>
 #include <hamigaki/iostreams/utility/huffman.hpp>
 #include <hamigaki/iostreams/bit_stream.hpp>
+#include <boost/iostreams/detail/adapter/direct_adapter.hpp>
 #include <boost/iostreams/detail/ios.hpp>
+#include <boost/iostreams/device/array.hpp>
+#include <boost/iostreams/compose.hpp>
+#include <boost/assert.hpp>
 
 namespace hamigaki { namespace iostreams {
 
@@ -30,6 +35,21 @@ inline boost::uint16_t decode_code_length(InputBitStream& bs)
             ++n;
     }
     return n;
+}
+
+template<class OutputBitStream>
+inline void encode_code_length(OutputBitStream& bs, boost::uint16_t n)
+{
+    if (n < 7)
+        bs.write_bits(n, 3);
+    else
+    {
+        bs.write_bits(0x07, 3);
+        n -= 7;
+        while (n--)
+            bs.put_bit(true);
+        bs.put_bit(false);
+    }
 }
 
 class lzhuff_input
@@ -191,6 +211,367 @@ private:
     }
 };
 
+class lzhuff_output_impl
+{
+public:
+    typedef char char_type;
+
+    struct category
+        : public boost::iostreams::output
+        , public boost::iostreams::filter_tag
+        , public boost::iostreams::multichar_tag
+        , public boost::iostreams::flushable_tag
+    {};
+
+    typedef boost::uint16_t length_type;
+    typedef boost::uint16_t offset_type;
+    typedef literal_or_reference<offset_type,length_type> result_type;
+
+    static const length_type min_match_length = 3;
+
+    explicit lzhuff_output_impl(std::size_t window_bits)
+    {
+        if (window_bits <= 13)
+            offset_count_bits_ = 4;
+        else
+            offset_count_bits_ = 5;
+    }
+
+    template<class Sink>
+    bool flush(Sink& sink)
+    {
+        filter_.flush(sink);
+        return true;
+    }
+
+    template<class Sink>
+    std::streamsize write(Sink& sink, const char* s, std::streamsize n)
+    {
+        boost::uint16_t count = update_huffman_tree(s, n);
+        write_header(sink, count);
+
+        using boost::iostreams::array_source;
+        typedef boost::iostreams::detail::
+            direct_adapter<array_source> source_type;
+
+        source_type src(array_source(s, s+n));
+
+        hamigaki::iostreams::detail::
+            modified_lzss_input<left_to_right,little,16,8> in;
+
+        output_bit_stream<left_to_right,Sink> bs(filter_, sink);
+        while (true)
+        {
+            const result_type& data = in.get(src);
+            if (data.is_reference)
+            {
+                if (data.length == 0)
+                    break;
+
+                symbol_encoder_.encode(bs, 256+data.length-min_match_length);
+
+                boost::uint8_t bits = bit_length(data.offset);
+                offset_length_encoder_.encode(bs, bits);
+                if (bits)
+                    bs.write_bits(data.offset & ~(1<<bits), bits-1);
+            }
+            else
+            {
+                unsigned char uc = static_cast<unsigned char>(data.literal);
+                symbol_encoder_.encode(bs, uc);
+            }
+        }
+        return n != 0 ? n : -1;
+    }
+
+private:
+    std::size_t offset_count_bits_;
+    huffman_encoder<boost::uint16_t,16> symbol_encoder_;
+    huffman_encoder<boost::uint16_t,16> offset_length_encoder_;
+    huffman_encoder<boost::uint16_t,16> code_length_encoder_;
+    huffman<boost::uint16_t> symbol_huffman_;
+    huffman<boost::uint16_t> offset_length_huffman_;
+    huffman<boost::uint16_t> code_length_huffman_;
+    output_bit_filter<left_to_right> filter_;
+
+    boost::uint8_t bit_length(boost::uint16_t n)
+    {
+        static const boost::uint8_t table[] =
+        {
+            0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4
+        };
+
+        if ((n & 0xFF00) == 0)
+        {
+            if ((n & 0xF0) == 0)
+                return table[n];
+            else
+                return 4 + table[n >> 4];
+        }
+        else
+        {
+            if ((n & 0xF000) == 0)
+                return 8 + table[n >> 8];
+            else
+                return 12 + table[n >> 12];
+        }
+    }
+
+    void update_code_length_huffman_tree()
+    {
+        code_length_huffman_.clear();
+
+        unsigned zero = 0;
+        stdd:size_t size = symbol_encoder_.size();
+        for (std::size_t i = 0; i < size; ++i)
+        {
+            if (std::size_t bits = symbol_encoder_[i].bits)
+            {
+                if (zero)
+                {
+                    if (zero == 1)
+                        code_length_huffman_.insert(0);
+                    else if (zero == 2)
+                    {
+                        code_length_huffman_.insert(0);
+                        code_length_huffman_.insert(0);
+                    }
+                    else if (zero < 19)
+                        code_length_huffman_.insert(1);
+                    else if (zero == 19)
+                    {
+                        code_length_huffman_.insert(0);
+                        code_length_huffman_.insert(1);
+                    }
+                    else
+                        code_length_huffman_.insert(2);
+                }
+                code_length_huffman_.insert(bits + 2);
+                zero = 0;
+            }
+            else
+            {
+                if (++zero == 531)
+                {
+                    code_length_huffman_.insert(2);
+                    zero = 0;
+                }
+            }
+        }
+        BOOST_ASSERT(zero == 0);
+
+        code_length_huffman_.make_encoder(code_length_encoder_);
+    }
+
+    boost::uint16_t update_huffman_tree(const char* s, std::streamsize n)
+    {
+        using boost::iostreams::array_source;
+        typedef boost::iostreams::detail::
+            direct_adapter<array_source> source_type;
+
+        source_type src(array_source(s, s+n));
+
+        hamigaki::iostreams::detail::
+            modified_lzss_input<left_to_right,little,16,8> in;
+
+        symbol_huffman_.clear();
+        offset_length_huffman_.clear();
+        boost::uint16_t count = 0;
+        while (true)
+        {
+            const result_type& data = in.get(src);
+            if (data.is_reference)
+            {
+                if (data.length == 0)
+                    break;
+
+                symbol_huffman_.insert(256 + data.length - min_match_length);
+                offset_length_huffman_.insert(bit_length(data.offset));
+            }
+            else
+            {
+                unsigned char uc = static_cast<unsigned char>(data.literal);
+                symbol_huffman_.insert(uc);
+            }
+            ++count;
+        }
+
+        symbol_huffman_.make_encoder(symbol_encoder_);
+        offset_length_huffman_.make_encoder(offset_length_encoder_);
+
+        update_code_length_huffman_tree();
+
+        return count;
+    }
+
+    template<class OutputBitStream>
+    void write_zero_run_length(OutputBitStream& bs, unsigned n)
+    {
+        if (n == 1)
+            code_length_encoder_.encode(bs, 0);
+        else if (n == 2)
+        {
+            code_length_encoder_.encode(bs, 0);
+            code_length_encoder_.encode(bs, 0);
+        }
+        else if (n < 19)
+        {
+            code_length_encoder_.encode(bs, 1);
+            bs.write_bits(n-3, 4);
+        }
+        else if (n == 19)
+        {
+            code_length_encoder_.encode(bs, 0);
+            code_length_encoder_.encode(bs, 1);
+            bs.write_bits(0x0F, 4);
+        }
+        else
+        {
+            code_length_encoder_.encode(bs, 2);
+            bs.write_bits(n-20, 9);
+        }
+    }
+
+    template<class Sink>
+    void write_header(Sink& sink, boost::uint16_t count)
+    {
+        output_bit_stream<left_to_right,Sink> bs(filter_, sink);
+        bs.write_bits(count, 16);
+
+        if (code_length_encoder_.empty())
+        {
+            bs.write_bits(0, 5);
+            bs.write_bits(code_length_encoder_.default_value(), 5);
+        }
+        else
+        {
+            std::size_t size = code_length_encoder_.size();
+            bs.write_bits(size, 5);
+
+            std::size_t i = 0;
+            for ( ; (i < 3) && (i < size); ++i)
+                encode_code_length(bs, code_length_encoder_[i].bits);
+
+            if (i < size)
+            {
+                unsigned z = 0;
+                for ( ; (z < 3) && (i < size); ++z)
+                {
+                    if (code_length_encoder_[i].bits != 0)
+                        break;
+                    ++i;
+                }
+                bs.write_bits(z, 2);
+
+                for ( ; i < size; ++i)
+                    encode_code_length(bs, code_length_encoder_[i].bits);
+            }
+        }
+
+        if (symbol_encoder_.empty())
+        {
+            bs.write_bits(0, 9);
+            bs.write_bits(symbol_encoder_.default_value(), 9);
+        }
+        else
+        {
+            std::size_t size = symbol_encoder_.size();
+            bs.write_bits(size, 9);
+
+            unsigned zero = 0;
+            for (std::size_t i = 0; i < size; ++i)
+            {
+                if (std::size_t bits = symbol_encoder_[i].bits)
+                {
+                    if (zero)
+                        write_zero_run_length(bs, zero);
+                    code_length_encoder_.encode(bs, 2+bits);
+                    zero = 0;
+                }
+                else
+                {
+                    if (++zero == 531)
+                    {
+                        code_length_encoder_.encode(bs, 2);
+                        bs.write_bits(0x1FF, 9);
+                        zero = 0;
+                    }
+                }
+            }
+            BOOST_ASSERT(zero == 0);
+        }
+
+        if (offset_length_encoder_.empty())
+        {
+            bs.write_bits(0, offset_count_bits_);
+            bs.write_bits(
+                offset_length_encoder_.default_value(), offset_count_bits_);
+        }
+        else
+        {
+            std::size_t size = offset_length_encoder_.size();
+            bs.write_bits(size, offset_count_bits_);
+            for (std::size_t i = 0; i < size; ++i)
+                encode_code_length(bs, offset_length_encoder_[i].bits);
+        }
+    }
+};
+
+class lzhuff_output
+{
+public:
+    typedef boost::uint16_t length_type;
+    typedef boost::uint16_t offset_type;
+
+    static const length_type min_match_length = 3;
+    static const length_type max_match_length = 256;
+    static const std::size_t default_buffer_size = 16*1024;
+
+    explicit lzhuff_output(
+        std::size_t window_bits, std::size_t buffer_size=default_buffer_size)
+        : impl_(window_bits), huffman_buffer_(buffer_size)
+    {
+    }
+
+    template<class Sink>
+    bool flush(Sink& sink)
+    {
+        boost::iostreams::composite<
+            boost::reference_wrapper<lzhuff_output_impl>,
+            boost::reference_wrapper<Sink>
+        > impl(boost::ref(impl_), boost::ref(sink));
+        huffman_buffer_.flush(impl);
+        return impl.flush();
+    }
+
+    template<class Sink>
+    void put(Sink& sink, char literal)
+    {
+        huffman_buffer_.put(make_impl(sink), literal);
+    }
+
+    template<class Sink>
+    void put(Sink& sink, offset_type offset, length_type length)
+    {
+        huffman_buffer_.put(make_impl(sink), offset, length);
+    }
+
+private:
+    lzhuff_output_impl impl_;
+    hamigaki::iostreams::detail::
+        modified_lzss_output<left_to_right,little,16,8> huffman_buffer_;
+
+    template<class Sink>
+    boost::iostreams::composite<
+        boost::reference_wrapper<lzhuff_output_impl>,
+        boost::reference_wrapper<Sink>
+    >
+    make_impl(Sink& sink)
+    {
+        return boost::iostreams::compose(boost::ref(impl_), boost::ref(sink));
+    }
+};
+
 } // namespace lha_detail
 
 class lzhuff_decompressor
@@ -201,6 +582,24 @@ class lzhuff_decompressor
 public:
     explicit lzhuff_decompressor(std::size_t window_bits)
         : base_type(lha_detail::lzhuff_input(window_bits), window_bits)
+    {
+    }
+};
+
+class lzhuff_compressor
+    : public sliding_window_compress<lha_detail::lzhuff_output>
+{
+    typedef sliding_window_compress<lha_detail::lzhuff_output> base_type;
+
+public:
+    explicit lzhuff_compressor(std::size_t window_bits)
+        : base_type(lha_detail::lzhuff_output(window_bits), window_bits)
+    {
+    }
+
+    lzhuff_compressor(std::size_t window_bits, std::size_t buffer_size)
+        : base_type(lha_detail::lzhuff_output(window_bits, buffer_size)
+        , window_bits)
     {
     }
 };
