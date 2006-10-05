@@ -27,7 +27,7 @@ public:
     {};
 
     explicit input_buffered_filter(std::size_t buffer_size=4096)
-        : buffer_(new char[buffer_size_]), buffer_size_(buffer_size)
+        : buffer_(new char[buffer_size]), buffer_size_(buffer_size)
         , size_(0), index_(0)
     {
     }
