@@ -99,7 +99,7 @@ public:
     bool put(Sink& sink, char c)
     {
         buffer_[index_++] = c;
-        if (index == buffer_size_)
+        if (index_ == buffer_size_)
             return this->flush(sink);
         return true;
     }
