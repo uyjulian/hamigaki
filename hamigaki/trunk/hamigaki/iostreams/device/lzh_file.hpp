@@ -18,10 +18,13 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/iostreams/detail/adapter/non_blocking_adapter.hpp>
 #include <boost/iostreams/detail/ios.hpp>
+#include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/iostreams/compose.hpp>
 #include <boost/iostreams/positioning.hpp>
+#include <boost/iostreams/flush.hpp>
 #include <boost/iostreams/read.hpp>
 #include <boost/iostreams/seek.hpp>
+#include <boost/iostreams/write.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/crc.hpp>
 #include <boost/cstdint.hpp>
@@ -29,7 +32,15 @@
 #include <boost/optional.hpp>
 #include <boost/scoped_array.hpp>
 #include <cstring>
+#include <iterator>
 #include <numeric>
+#include <sstream>
+
+#if defined(BOOST_HAS_UNISTD_H)
+    #define HAMIGAKI_IOSTREAMS_LHA_OS_TYPE 'U'
+#else
+    #define HAMIGAKI_IOSTREAMS_LHA_OS_TYPE 'M'
+#endif
 
 namespace hamigaki { namespace iostreams { namespace lha {
 
@@ -63,6 +74,13 @@ struct header
     boost::optional<char> os;
     boost::optional<windows_timestamp> timestamp;
     boost::optional<boost::uint16_t> permission;
+
+    header()
+        : compressed_size(0), file_size(0), update_time(-1)
+        , attributes(attributes::archive)
+    {
+        std::memset(method, 0, 5);
+    }
 
     bool is_directory() const
     {
@@ -280,6 +298,36 @@ public:
 
 private:
     Source src_;
+};
+
+class lzh_sink_base
+{
+public:
+    virtual ~lzh_sink_base() {}
+    virtual std::streamsize write(const char* s, std::streamsize n) = 0;
+    virtual bool flush() = 0;
+};
+
+template<class Sink>
+class lzh_sink : public lzh_sink_base
+{
+public:
+    explicit lzh_sink(const Sink& sink) : sink_(sink)
+    {
+    }
+
+    std::streamsize write(const char* s, std::streamsize n) // virtual
+    {
+        return boost::iostreams::write(sink_, s, n);
+    }
+
+    bool flush() // virtual
+    {
+        return boost::iostreams::flush(sink_);
+    }
+
+private:
+    Sink sink_;
 };
 
 class lha_checksum
@@ -702,6 +750,14 @@ private:
         return ph;
     }
 
+    static boost::uint16_t parse_attributes(char* s, boost::uint32_t n)
+    {
+        if (n < 1)
+            throw BOOST_IOSTREAMS_FAILURE("bad LZH attributes extended header");
+
+        return static_cast<unsigned char>(*s);
+    }
+
     static lha::windows_timestamp
     parse_windows_timestamp(char* s, boost::uint32_t n)
     {
@@ -757,6 +813,8 @@ private:
                 leaf.assign(buf.get()+1, size);
             else if (buf[0] == '\x02')
                 branch = parse_directory(buf.get()+1, size);
+            else if (buf[0] == '\x40')
+                header_.attributes = parse_attributes(buf.get()+1, size);
             else if (buf[0] == '\x41')
                 header_.timestamp = parse_windows_timestamp(buf.get()+1, size);
             else if (buf[0] == '\x50')
@@ -789,6 +847,279 @@ class lzh_file_source : public basic_lzh_file_source<file_source>
 public:
     explicit lzh_file_source(const std::string& filename)
         : base_type(file_source(filename, BOOST_IOS::binary))
+    {
+    }
+};
+
+
+template<class Sink>
+class basic_lzh_file_sink_impl
+{
+private:
+    typedef boost::iostreams::composite<
+        lzhuff_compressor,boost::reference_wrapper<Sink>
+    > lzhuff_type;
+
+public:
+    explicit basic_lzh_file_sink_impl(const Sink& sink) : sink_(sink)
+    {
+        std::memcpy(method_, "-lh5-", 5);
+    }
+
+    void default_method(const char* method)
+    {
+        std::memcpy(method_, method, 5);
+    }
+
+    void create_entry(const lha::header& head)
+    {
+        if (image_)
+            close();
+
+        header_pos_ = boost::iostreams::position_to_offset(
+            boost::iostreams::seek(sink_, 0, BOOST_IOS::cur));
+
+        header_ = head;
+        if (header_.is_directory())
+            std::memcpy(header_.method, "-lhd-", 5);
+        else if (!header_.method[0])
+            std::memcpy(header_.method, method_, 5);
+
+        if ((std::memcmp(header_.method, "-lhd-", 5) != 0) &&
+            (std::memcmp(header_.method, "-lh0-", 5) != 0) &&
+            (std::memcmp(header_.method, "-lh4-", 5) != 0) &&
+            (std::memcmp(header_.method, "-lh5-", 5) != 0) &&
+            (std::memcmp(header_.method, "-lh6-", 5) != 0) &&
+            (std::memcmp(header_.method, "-lh7-", 5) != 0) )
+        {
+            throw BOOST_IOSTREAMS_FAILURE("unsupported LZH method");
+        }
+
+        write_header();
+
+        if (header_.is_directory())
+            return;
+
+        start_pos_ = boost::iostreams::position_to_offset(
+            boost::iostreams::seek(sink_, 0, BOOST_IOS::cur));
+
+        typedef boost::reference_wrapper<Sink> ref_type;
+        ref_type ref(sink_);
+        if (std::memcmp(header_.method, "-lh0-", 5) == 0)
+            image_.reset(new detail::lzh_sink<ref_type>(ref));
+        else if (std::memcmp(header_.method, "-lh4-", 5) == 0)
+            image_.reset(new_lzhuff_sink(ref, 12));
+        else if (std::memcmp(header_.method, "-lh5-", 5) == 0)
+            image_.reset(new_lzhuff_sink(ref, 13));
+        else if (std::memcmp(header_.method, "-lh6-", 5) == 0)
+            image_.reset(new_lzhuff_sink(ref, 15));
+        else if (std::memcmp(header_.method, "-lh7-", 5) == 0)
+            image_.reset(new_lzhuff_sink(ref, 16));
+    }
+
+    void close()
+    {
+        if (header_.is_directory())
+            return;
+
+        image_->flush();
+        image_.reset();
+
+        header_.crc16_checksum = crc_.checksum();
+        crc_.reset();
+
+        std::streamsize next = boost::iostreams::position_to_offset(
+            boost::iostreams::seek(sink_, 0, BOOST_IOS::cur));
+
+        header_.compressed_size =
+            static_cast<boost::uint32_t>(next - start_pos_);
+
+        boost::iostreams::seek(sink_, header_pos_, BOOST_IOS::beg);
+        write_header();
+
+        boost::iostreams::seek(sink_, next, BOOST_IOS::beg);
+    }
+
+    std::streamsize write(const char* s, std::streamsize n)
+    {
+        std::streamsize amt = image_->write(s, n);
+        if (amt != -1)
+        {
+            crc_.process_bytes(s, amt);
+            header_.file_size += amt;
+        }
+        return amt;
+    }
+
+    void write_end_mark()
+    {
+        if (image_)
+            close();
+
+        boost::iostreams::put(sink_, '\0');
+    }
+
+private:
+    Sink sink_;
+    lha::header header_;
+    boost::shared_ptr<detail::lzh_sink_base> image_;
+    char method_[5];
+    std::streamsize header_pos_;
+    std::streamsize start_pos_;
+    boost::crc_16_type crc_;
+
+    template<class Sink>
+    static void write_little16(Sink& sink, boost::uint16_t n)
+    {
+        char buf[2];
+        hamigaki::encode_uint<hamigaki::little,2>(buf, n);
+        sink.write(buf, 2);
+    }
+
+    static std::string convert_path(const boost::filesystem::path& ph)
+    {
+        std::ostringstream os;
+        std::copy(ph.begin(), ph.end(),
+            std::ostream_iterator<std::string>(os, "\xFF"));
+        return os.str();
+    }
+
+    template<class Sink>
+    static void write_extended_header(
+        Sink& sink, boost::uint16_t type, const std::string& s)
+    {
+        write_little16(sink, s.size()+3);
+        boost::iostreams::put(sink, static_cast<unsigned char>(type));
+        if (!s.empty())
+            sink.write(&s[0], s.size());
+    }
+
+    void write_header()
+    {
+        lha::lv2_header lv2;
+        lv2.header_size = 0;
+        std::memcpy(lv2.method, header_.method, 5);
+        lv2.compressed_size = header_.compressed_size;
+        lv2.file_size = header_.file_size;
+        lv2.update_time = header_.update_time;
+        lv2.reserved = static_cast<boost::uint8_t>(lha::attributes::archive);
+        lv2.level = 2;
+
+        std::string buffer;
+        boost::iostreams::back_insert_device<std::string> tmp(buffer);
+        hamigaki::iostreams::binary_write(tmp, lv2);
+        if (header_.crc16_checksum)
+            write_little16(tmp, header_.crc16_checksum.get());
+        else
+            tmp.write("\0", 2);
+
+        if (header_.os)
+            boost::iostreams::put(tmp, header_.os.get());
+        else
+            boost::iostreams::put(tmp, HAMIGAKI_IOSTREAMS_LHA_OS_TYPE);
+
+        if (header_.is_directory())
+        {
+            tmp.write("\x03\x00\x01", 3);
+            write_extended_header(tmp, 0x02, convert_path(header_.path));
+        }
+        else
+        {
+            write_extended_header(tmp, 0x01, header_.path.leaf());
+            write_extended_header(
+                tmp, 0x02, convert_path(header_.path.branch_path()));
+        }
+
+        if (header_.attributes != lha::attributes::archive)
+        {
+            tmp.write("\x04\x00\x40", 3);
+            boost::iostreams::put(
+                tmp, static_cast<unsigned char>(header_.attributes));
+        }
+
+        tmp.write("\x06\x00\x00", 3);
+        std::size_t crc_off = buffer.size();
+        // TODO: timezone
+        tmp.write("\x00\x00\x07", 3);
+
+        // end of extended headers
+        write_little16(tmp, 0);
+
+        hamigaki::encode_uint<hamigaki::little,2>(&buffer[0], buffer.size());
+
+        boost::crc_16_type crc;
+        crc.process_bytes(&buffer[0], buffer.size());
+        hamigaki::encode_uint<
+            hamigaki::little,2>(&buffer[crc_off], crc.checksum());
+
+        boost::iostreams::write(sink_, &buffer[0], buffer.size());
+    }
+
+    static detail::lzh_sink<lzhuff_type>* new_lzhuff_sink(
+        const boost::reference_wrapper<Sink>& plain, std::size_t window_bits)
+    {
+        return new detail::lzh_sink<lzhuff_type>(
+            lzhuff_type(lzhuff_compressor(window_bits), plain)
+        );
+    }
+};
+
+template<class Sink>
+class basic_lzh_file_sink
+{
+private:
+    typedef basic_lzh_file_sink_impl<Sink> impl_type;
+
+public:
+    typedef char char_type;
+
+    struct category
+        : boost::iostreams::output
+        , boost::iostreams::device_tag
+        , boost::iostreams::closable_tag
+    {};
+
+    explicit basic_lzh_file_sink(const Sink& sink)
+        : pimpl_(new impl_type(sink))
+    {
+    }
+
+    void default_method(const char* method)
+    {
+        pimpl_->default_method(method);
+    }
+
+    void create_entry(const lha::header& head)
+    {
+        pimpl_->create_entry(head);
+    }
+
+    void close()
+    {
+        pimpl_->close();
+    }
+
+    std::streamsize write(const char* s, std::streamsize n)
+    {
+        return pimpl_->write(s, n);
+    }
+
+    void write_end_mark()
+    {
+        pimpl_->write_end_mark();
+    }
+
+private:
+    boost::shared_ptr<impl_type> pimpl_;
+};
+
+class lzh_file_sink : public basic_lzh_file_sink<file_sink>
+{
+    typedef basic_lzh_file_sink<file_sink> base_type;
+
+public:
+    explicit lzh_file_sink(const std::string& filename)
+        : base_type(file_sink(filename, BOOST_IOS::binary))
     {
     }
 };

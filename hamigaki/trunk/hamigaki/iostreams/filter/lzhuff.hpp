@@ -545,6 +545,17 @@ public:
     }
 
     template<class Sink>
+    bool flush(boost::reference_wrapper<Sink>& sink)
+    {
+        boost::iostreams::composite<
+            boost::reference_wrapper<lzhuff_output_impl>,
+            boost::reference_wrapper<Sink>
+        > impl(boost::ref(impl_), sink);
+        huffman_buffer_.flush(impl);
+        return impl.flush();
+    }
+
+    template<class Sink>
     void put(Sink& sink, char literal)
     {
         huffman_buffer_.put(make_impl(sink), literal);
@@ -569,6 +580,16 @@ private:
     make_impl(Sink& sink)
     {
         return boost::iostreams::compose(boost::ref(impl_), boost::ref(sink));
+    }
+
+    template<class Sink>
+    boost::iostreams::composite<
+        boost::reference_wrapper<lzhuff_output_impl>,
+        boost::reference_wrapper<Sink>
+    >
+    make_impl(boost::reference_wrapper<Sink>& sink)
+    {
+        return boost::iostreams::compose(boost::ref(impl_), sink);
     }
 };
 
