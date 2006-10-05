@@ -322,7 +322,7 @@ private:
         code_length_huffman_.clear();
 
         unsigned zero = 0;
-        stdd:size_t size = symbol_encoder_.size();
+        std::size_t size = symbol_encoder_.size();
         for (std::size_t i = 0; i < size; ++i)
         {
             if (std::size_t bits = symbol_encoder_[i].bits)
@@ -558,39 +558,49 @@ public:
     template<class Sink>
     void put(Sink& sink, char literal)
     {
-        huffman_buffer_.put(make_impl(sink), literal);
+        boost::iostreams::composite<
+            boost::reference_wrapper<lzhuff_output_impl>,
+            boost::reference_wrapper<Sink>
+        > impl(boost::ref(impl_), boost::ref(sink));
+        huffman_buffer_.put(impl, literal);
+    }
+
+    template<class Sink>
+    void put(boost::reference_wrapper<Sink>& sink, char literal)
+    {
+        boost::iostreams::composite<
+            boost::reference_wrapper<lzhuff_output_impl>,
+            boost::reference_wrapper<Sink>
+        > impl(boost::ref(impl_), sink);
+        huffman_buffer_.put(impl, literal);
     }
 
     template<class Sink>
     void put(Sink& sink, offset_type offset, length_type length)
     {
-        huffman_buffer_.put(make_impl(sink), offset, length);
+        boost::iostreams::composite<
+            boost::reference_wrapper<lzhuff_output_impl>,
+            boost::reference_wrapper<Sink>
+        > impl(boost::ref(impl_), boost::ref(sink));
+        huffman_buffer_.put(impl, offset, length);
+    }
+
+    template<class Sink>
+    void put(
+        boost::reference_wrapper<Sink>& sink,
+        offset_type offset, length_type length)
+    {
+        boost::iostreams::composite<
+            boost::reference_wrapper<lzhuff_output_impl>,
+            boost::reference_wrapper<Sink>
+        > impl(boost::ref(impl_), sink);
+        huffman_buffer_.put(impl, offset, length);
     }
 
 private:
     lzhuff_output_impl impl_;
     hamigaki::iostreams::detail::
         modified_lzss_output<left_to_right,little,16,8> huffman_buffer_;
-
-    template<class Sink>
-    boost::iostreams::composite<
-        boost::reference_wrapper<lzhuff_output_impl>,
-        boost::reference_wrapper<Sink>
-    >
-    make_impl(Sink& sink)
-    {
-        return boost::iostreams::compose(boost::ref(impl_), boost::ref(sink));
-    }
-
-    template<class Sink>
-    boost::iostreams::composite<
-        boost::reference_wrapper<lzhuff_output_impl>,
-        boost::reference_wrapper<Sink>
-    >
-    make_impl(boost::reference_wrapper<Sink>& sink)
-    {
-        return boost::iostreams::compose(boost::ref(impl_), sink);
-    }
 };
 
 } // namespace lha_detail
