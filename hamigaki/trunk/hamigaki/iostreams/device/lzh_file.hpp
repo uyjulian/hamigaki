@@ -615,32 +615,32 @@ private:
         );
     }
 
-    template<class Source2, class Checksum>
-    static char get(Source2& src, Checksum& cs)
+    template<class OtherSource, class Checksum>
+    static char get(OtherSource& src, Checksum& cs)
     {
         char c;
-        boost::iostreams::non_blocking_adapter<Source2> nb(src);
+        boost::iostreams::non_blocking_adapter<OtherSource> nb(src);
         if (boost::iostreams::read(nb, &c, 1) != 1)
             throw boost::iostreams::detail::bad_read();
         cs.process_byte(c);
         return c;
     }
 
-    template<class Source2, class Checksum>
-    static boost::uint16_t read_little16(Source2& src, Checksum& cs)
+    template<class OtherSource, class Checksum>
+    static boost::uint16_t read_little16(OtherSource& src, Checksum& cs)
     {
         char buf[2];
-        boost::iostreams::non_blocking_adapter<Source2> nb(src);
+        boost::iostreams::non_blocking_adapter<OtherSource> nb(src);
         if (boost::iostreams::read(nb, buf, 2) != 2)
             throw boost::iostreams::detail::bad_read();
         cs.process_bytes(buf, sizeof(buf));
         return hamigaki::decode_uint<hamigaki::little, 2>(buf);
     }
 
-    template<class Source2, class Checksum>
-    static boost::filesystem::path read_path(Source2& src, Checksum& cs)
+    template<class OtherSource, class Checksum>
+    static boost::filesystem::path read_path(OtherSource& src, Checksum& cs)
     {
-        boost::iostreams::non_blocking_adapter<Source2> nb(src);
+        boost::iostreams::non_blocking_adapter<OtherSource> nb(src);
 
         char c;
         if (boost::iostreams::read(nb, &c, 1) != 1)
@@ -683,10 +683,10 @@ private:
         return ph;
     }
 
-    template<class Source2, class Checksum>
-    void skip_unknown_header(Source2& src, Checksum& cs)
+    template<class OtherSource, class Checksum>
+    void skip_unknown_header(OtherSource& src, Checksum& cs)
     {
-        boost::iostreams::non_blocking_adapter<Source2> nb(src);
+        boost::iostreams::non_blocking_adapter<OtherSource> nb(src);
 
         char buf[256];
         std::streamsize n = boost::iostreams::read(nb, buf, sizeof(buf));
@@ -786,11 +786,11 @@ private:
             hamigaki::decode_int<hamigaki::little, 4>(s));
     }
 
-    template<class Source2>
+    template<class OtherSource>
     void read_extended_header(
-        Source2& src, boost::crc_16_type& crc, boost::uint16_t next_size)
+        OtherSource& src, boost::crc_16_type& crc, boost::uint16_t next_size)
     {
-        boost::iostreams::non_blocking_adapter<Source2> nb(src);
+        boost::iostreams::non_blocking_adapter<OtherSource> nb(src);
 
         std::string leaf;
         boost::filesystem::path branch;
@@ -968,8 +968,8 @@ private:
     std::streamsize start_pos_;
     boost::crc_16_type crc_;
 
-    template<class Sink>
-    static void write_little16(Sink& sink, boost::uint16_t n)
+    template<class OtherSink>
+    static void write_little16(OtherSink& sink, boost::uint16_t n)
     {
         char buf[2];
         hamigaki::encode_uint<hamigaki::little,2>(buf, n);
@@ -984,9 +984,9 @@ private:
         return os.str();
     }
 
-    template<class Sink>
+    template<class OtherSink>
     static void write_extended_header(
-        Sink& sink, boost::uint16_t type, const std::string& s)
+        OtherSink& sink, boost::uint16_t type, const std::string& s)
     {
         write_little16(sink, s.size()+3);
         boost::iostreams::put(sink, static_cast<unsigned char>(type));
