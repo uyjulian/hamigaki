@@ -64,17 +64,34 @@ int main(int argc, char* argv[])
             head.path = fs::path(argv[i], fs::native);
             if (fs::is_directory(head.path))
                 head.attributes = io_ex::lha::attributes::directory;
+            else
+                head.file_size = fs::file_size(head.path);
             head.update_time = fs::last_write_time(head.path);
 
             lzh.create_entry(head);
 
             if (!fs::is_directory(head.path))
             {
-                io::copy(
-                    IOEX::file_source(
-                        head.path.native_file_string(), std::ios_base::binary),
-                    lzh
-                );
+                try
+                {
+                    io::copy(
+                        IOEX::file_source(
+                            head.path.native_file_string(),
+                            std::ios_base::binary),
+                        lzh
+                    );
+                }
+                catch (const io_ex::lha::give_up_compression&)
+                {
+                    lzh.rewind_entry();
+
+                    io::copy(
+                        IOEX::file_source(
+                            head.path.native_file_string(),
+                            std::ios_base::binary),
+                        lzh
+                    );
+                }
             }
         }
         lzh.write_end_mark();
