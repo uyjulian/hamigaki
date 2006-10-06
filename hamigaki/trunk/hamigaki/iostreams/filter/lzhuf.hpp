@@ -1,4 +1,4 @@
-//  lzhuff.hpp: LZHUFF compression/decompression
+//  lzhuf.hpp: LZHUF compression/decompression
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
@@ -7,8 +7,8 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
 
-#ifndef HAMIGAKI_IOSTREAMS_FILTER_LZHUFF_HPP
-#define HAMIGAKI_IOSTREAMS_FILTER_LZHUFF_HPP
+#ifndef HAMIGAKI_IOSTREAMS_FILTER_LZHUF_HPP
+#define HAMIGAKI_IOSTREAMS_FILTER_LZHUF_HPP
 
 #include <hamigaki/iostreams/filter/modified_lzss.hpp>
 #include <hamigaki/iostreams/filter/sliding_window.hpp>
@@ -52,7 +52,7 @@ inline void encode_code_length(OutputBitStream& bs, boost::uint16_t n)
     }
 }
 
-class lzhuff_input
+class lzhuf_input
 {
 public:
     typedef boost::uint16_t length_type;
@@ -61,7 +61,7 @@ public:
 
     static const length_type min_match_length = 3;
 
-    explicit lzhuff_input(std::size_t window_bits) : count_(0)
+    explicit lzhuf_input(std::size_t window_bits) : count_(0)
     {
         if (window_bits <= 13)
             offset_count_bits_ = 4;
@@ -211,7 +211,7 @@ private:
     }
 };
 
-class lzhuff_output_impl
+class lzhuf_output_impl
 {
 public:
     typedef char char_type;
@@ -229,7 +229,7 @@ public:
 
     static const length_type min_match_length = 3;
 
-    explicit lzhuff_output_impl(std::size_t window_bits)
+    explicit lzhuf_output_impl(std::size_t window_bits)
     {
         if (window_bits <= 13)
             offset_count_bits_ = 4;
@@ -517,7 +517,7 @@ private:
     }
 };
 
-class lzhuff_output
+class lzhuf_output
 {
 public:
     typedef boost::uint16_t length_type;
@@ -527,7 +527,7 @@ public:
     static const length_type max_match_length = 256;
     static const std::size_t default_buffer_size = 16*1024;
 
-    explicit lzhuff_output(
+    explicit lzhuf_output(
         std::size_t window_bits, std::size_t buffer_size=default_buffer_size)
         : impl_(window_bits), huffman_buffer_(buffer_size)
     {
@@ -537,7 +537,7 @@ public:
     bool flush(Sink& sink)
     {
         boost::iostreams::composite<
-            boost::reference_wrapper<lzhuff_output_impl>,
+            boost::reference_wrapper<lzhuf_output_impl>,
             boost::reference_wrapper<Sink>
         > impl(boost::ref(impl_), boost::ref(sink));
         huffman_buffer_.flush(impl);
@@ -548,7 +548,7 @@ public:
     bool flush(boost::reference_wrapper<Sink>& sink)
     {
         boost::iostreams::composite<
-            boost::reference_wrapper<lzhuff_output_impl>,
+            boost::reference_wrapper<lzhuf_output_impl>,
             boost::reference_wrapper<Sink>
         > impl(boost::ref(impl_), sink);
         huffman_buffer_.flush(impl);
@@ -559,7 +559,7 @@ public:
     void put(Sink& sink, char literal)
     {
         boost::iostreams::composite<
-            boost::reference_wrapper<lzhuff_output_impl>,
+            boost::reference_wrapper<lzhuf_output_impl>,
             boost::reference_wrapper<Sink>
         > impl(boost::ref(impl_), boost::ref(sink));
         huffman_buffer_.put(impl, literal);
@@ -569,7 +569,7 @@ public:
     void put(boost::reference_wrapper<Sink>& sink, char literal)
     {
         boost::iostreams::composite<
-            boost::reference_wrapper<lzhuff_output_impl>,
+            boost::reference_wrapper<lzhuf_output_impl>,
             boost::reference_wrapper<Sink>
         > impl(boost::ref(impl_), sink);
         huffman_buffer_.put(impl, literal);
@@ -579,7 +579,7 @@ public:
     void put(Sink& sink, offset_type offset, length_type length)
     {
         boost::iostreams::composite<
-            boost::reference_wrapper<lzhuff_output_impl>,
+            boost::reference_wrapper<lzhuf_output_impl>,
             boost::reference_wrapper<Sink>
         > impl(boost::ref(impl_), boost::ref(sink));
         huffman_buffer_.put(impl, offset, length);
@@ -591,45 +591,45 @@ public:
         offset_type offset, length_type length)
     {
         boost::iostreams::composite<
-            boost::reference_wrapper<lzhuff_output_impl>,
+            boost::reference_wrapper<lzhuf_output_impl>,
             boost::reference_wrapper<Sink>
         > impl(boost::ref(impl_), sink);
         huffman_buffer_.put(impl, offset, length);
     }
 
 private:
-    lzhuff_output_impl impl_;
+    lzhuf_output_impl impl_;
     hamigaki::iostreams::detail::
         modified_lzss_output<left_to_right,little,16,8> huffman_buffer_;
 };
 
 } // namespace lha_detail
 
-class lzhuff_decompressor
-    : public sliding_window_decompress<lha_detail::lzhuff_input>
+class lzhuf_decompressor
+    : public sliding_window_decompress<lha_detail::lzhuf_input>
 {
-    typedef sliding_window_decompress<lha_detail::lzhuff_input> base_type;
+    typedef sliding_window_decompress<lha_detail::lzhuf_input> base_type;
 
 public:
-    explicit lzhuff_decompressor(std::size_t window_bits)
-        : base_type(lha_detail::lzhuff_input(window_bits), window_bits)
+    explicit lzhuf_decompressor(std::size_t window_bits)
+        : base_type(lha_detail::lzhuf_input(window_bits), window_bits)
     {
     }
 };
 
-class lzhuff_compressor
-    : public sliding_window_compress<lha_detail::lzhuff_output>
+class lzhuf_compressor
+    : public sliding_window_compress<lha_detail::lzhuf_output>
 {
-    typedef sliding_window_compress<lha_detail::lzhuff_output> base_type;
+    typedef sliding_window_compress<lha_detail::lzhuf_output> base_type;
 
 public:
-    explicit lzhuff_compressor(std::size_t window_bits)
-        : base_type(lha_detail::lzhuff_output(window_bits), window_bits)
+    explicit lzhuf_compressor(std::size_t window_bits)
+        : base_type(lha_detail::lzhuf_output(window_bits), window_bits)
     {
     }
 
-    lzhuff_compressor(std::size_t window_bits, std::size_t buffer_size)
-        : base_type(lha_detail::lzhuff_output(window_bits, buffer_size)
+    lzhuf_compressor(std::size_t window_bits, std::size_t buffer_size)
+        : base_type(lha_detail::lzhuf_output(window_bits, buffer_size)
         , window_bits)
     {
     }
@@ -637,4 +637,4 @@ public:
 
 } } // End namespaces iostreams, hamigaki.
 
-#endif // HAMIGAKI_IOSTREAMS_FILTER_LZHUFF_HPP
+#endif // HAMIGAKI_IOSTREAMS_FILTER_LZHUF_HPP

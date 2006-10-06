@@ -11,7 +11,7 @@
 #define HAMIGAKI_IOSTREAMS_DEVICE_LZH_FILE_HPP
 
 #include <hamigaki/iostreams/device/file.hpp>
-#include <hamigaki/iostreams/filter/lzhuff.hpp>
+#include <hamigaki/iostreams/filter/lzhuf.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>
 #include <hamigaki/iostreams/relative_restrict.hpp>
 #include <hamigaki/iostreams/tiny_restrict.hpp>
@@ -399,9 +399,9 @@ private:
     typedef hamigaki::iostreams::relative_restriction<Source> restricted_type;
 
     typedef boost::iostreams::composite<
-        lzhuff_decompressor,restricted_type> lzhuff_type;
+        lzhuf_decompressor,restricted_type> lzhuf_type;
 
-    typedef tiny_restriction<lzhuff_type> restricted_lzhuff_type;
+    typedef tiny_restriction<lzhuf_type> restricted_lzhuf_type;
 
 public:
     typedef char char_type;
@@ -563,13 +563,13 @@ public:
             if (std::memcmp(header_.method, "-lh0-", 5) == 0)
                 image_.reset(new detail::lzh_source<restricted_type>(plain));
             else if (std::memcmp(header_.method, "-lh4-", 5) == 0)
-                image_.reset(new_lzhuff_source(plain, 12, header_.file_size));
+                image_.reset(new_lzhuf_source(plain, 12, header_.file_size));
             else if (std::memcmp(header_.method, "-lh5-", 5) == 0)
-                image_.reset(new_lzhuff_source(plain, 13, header_.file_size));
+                image_.reset(new_lzhuf_source(plain, 13, header_.file_size));
             else if (std::memcmp(header_.method, "-lh6-", 5) == 0)
-                image_.reset(new_lzhuff_source(plain, 15, header_.file_size));
+                image_.reset(new_lzhuf_source(plain, 15, header_.file_size));
             else if (std::memcmp(header_.method, "-lh7-", 5) == 0)
-                image_.reset(new_lzhuff_source(plain, 16, header_.file_size));
+                image_.reset(new_lzhuf_source(plain, 16, header_.file_size));
         }
 
         return true;
@@ -603,13 +603,13 @@ private:
     boost::iostreams::stream_offset next_offset_;
     boost::crc_16_type crc_;
 
-    static detail::lzh_source<restricted_lzhuff_type>* new_lzhuff_source(
+    static detail::lzh_source<restricted_lzhuf_type>* new_lzhuf_source(
         const restricted_type& plain,
         std::size_t window_bits, boost::uint32_t file_size)
     {
-        return new detail::lzh_source<restricted_lzhuff_type>(
+        return new detail::lzh_source<restricted_lzhuf_type>(
             tiny_restrict(
-                lzhuff_type(lzhuff_decompressor(window_bits), plain),
+                lzhuf_type(lzhuf_decompressor(window_bits), plain),
                 file_size
             )
         );
@@ -857,8 +857,8 @@ class basic_lzh_file_sink_impl
 {
 private:
     typedef boost::iostreams::composite<
-        lzhuff_compressor,boost::reference_wrapper<Sink>
-    > lzhuff_type;
+        lzhuf_compressor,boost::reference_wrapper<Sink>
+    > lzhuf_type;
 
 public:
     explicit basic_lzh_file_sink_impl(const Sink& sink) : sink_(sink)
@@ -908,13 +908,13 @@ public:
         if (std::memcmp(header_.method, "-lh0-", 5) == 0)
             image_.reset(new detail::lzh_sink<ref_type>(ref));
         else if (std::memcmp(header_.method, "-lh4-", 5) == 0)
-            image_.reset(new_lzhuff_sink(ref, 12));
+            image_.reset(new_lzhuf_sink(ref, 12));
         else if (std::memcmp(header_.method, "-lh5-", 5) == 0)
-            image_.reset(new_lzhuff_sink(ref, 13));
+            image_.reset(new_lzhuf_sink(ref, 13));
         else if (std::memcmp(header_.method, "-lh6-", 5) == 0)
-            image_.reset(new_lzhuff_sink(ref, 15));
+            image_.reset(new_lzhuf_sink(ref, 15));
         else if (std::memcmp(header_.method, "-lh7-", 5) == 0)
-            image_.reset(new_lzhuff_sink(ref, 16));
+            image_.reset(new_lzhuf_sink(ref, 16));
     }
 
     void close()
@@ -1055,11 +1055,11 @@ private:
         boost::iostreams::write(sink_, &buffer[0], buffer.size());
     }
 
-    static detail::lzh_sink<lzhuff_type>* new_lzhuff_sink(
+    static detail::lzh_sink<lzhuf_type>* new_lzhuf_sink(
         const boost::reference_wrapper<Sink>& plain, std::size_t window_bits)
     {
-        return new detail::lzh_sink<lzhuff_type>(
-            lzhuff_type(lzhuff_compressor(window_bits), plain)
+        return new detail::lzh_sink<lzhuf_type>(
+            lzhuf_type(lzhuf_compressor(window_bits), plain)
         );
     }
 };

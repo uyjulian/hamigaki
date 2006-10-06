@@ -41,7 +41,7 @@ test-suite iostreams :
     [ iostreams-test concatenate_test.cpp : ]
     [ iostreams-test huffman_test.cpp : ]
     [ iostreams-test lazy_restrict_test.cpp : ]
-    [ iostreams-test lzhuff_test.cpp : ]
+    [ iostreams-test lzhuf_test.cpp : ]
     [ iostreams-test lzss_test.cpp : ]
     [ iostreams-test modified_lzss_test.cpp : ]
     [ iostreams-test repeat_test.cpp : ]
