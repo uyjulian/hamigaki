@@ -752,10 +752,10 @@ private:
 
     static boost::uint16_t parse_attributes(char* s, boost::uint32_t n)
     {
-        if (n < 1)
+        if (n < 2)
             throw BOOST_IOSTREAMS_FAILURE("bad LZH attributes extended header");
 
-        return static_cast<unsigned char>(*s);
+        return hamigaki::decode_uint<hamigaki::little, 2>(s);
     }
 
     static lha::windows_timestamp
@@ -1032,9 +1032,8 @@ private:
 
         if (header_.attributes != lha::attributes::archive)
         {
-            tmp.write("\x04\x00\x40", 3);
-            boost::iostreams::put(
-                tmp, static_cast<unsigned char>(header_.attributes));
+            tmp.write("\x05\x00\x40", 3);
+            write_little16(tmp, header_.attributes);
         }
 
         tmp.write("\x06\x00\x00", 3);
