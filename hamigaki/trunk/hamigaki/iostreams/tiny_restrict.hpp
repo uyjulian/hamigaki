@@ -19,6 +19,7 @@
 #ifndef HAMIGAKI_IOSTREAMS_TINY_RESTRICT_HPP
 #define HAMIGAKI_IOSTREAMS_TINY_RESTRICT_HPP
 
+#include <hamigaki/iostreams/detail/error.hpp>
 #include <hamigaki/iostreams/catable.hpp>
 #include <boost/iostreams/categories.hpp>
 #include <boost/iostreams/detail/adapter/basic_adapter.hpp>
@@ -74,7 +75,7 @@ public:
     std::streamsize write(const char_type* s, std::streamsize n)
     {
         if ((end_ != -1) && (pos_ + n >= end_))
-            throw BOOST_IOSTREAMS_FAILURE("bad write");
+            throw out_of_restriction("bad write");
 
         std::streamsize result =
             boost::iostreams::write(this->component(), s, n);

@@ -19,6 +19,7 @@
 #ifndef HAMIGAKI_IOSTREAMS_RELATIVE_RESTRICT_HPP
 #define HAMIGAKI_IOSTREAMS_RELATIVE_RESTRICT_HPP
 
+#include <hamigaki/iostreams/detail/error.hpp>
 #include <hamigaki/iostreams/catable.hpp>
 #include <boost/iostreams/categories.hpp>
 #include <boost/iostreams/detail/ios.hpp>
@@ -74,7 +75,7 @@ public:
     std::streamsize write(const char_type* s, std::streamsize n)
     {
         if ((end_ != -1) && (pos_ + n >= end_))
-            throw BOOST_IOSTREAMS_FAILURE("bad write");
+            throw out_of_restriction("bad write");
 
         std::streamsize result = boost::iostreams::write(*dev_ptr_, s, n);
         if (result != -1)
@@ -98,13 +99,13 @@ public:
                 boost::iostreams::seek(*dev_ptr_, off, BOOST_IOS::end));
 
             if (pos_ < beg_)
-                throw BOOST_IOSTREAMS_FAILURE("bad seek");
+                throw out_of_restriction("bad seek");
 
             return boost::iostreams::offset_to_position(pos_ - beg_);
         }
 
         if ((next < beg_) || ((end_ != -1) && (next > end_)))
-            throw BOOST_IOSTREAMS_FAILURE("bad seek");
+            throw out_of_restriction("bad seek");
 
         pos_ = boost::iostreams::position_to_offset(
             boost::iostreams::seek(*dev_ptr_, next, BOOST_IOS::beg));
