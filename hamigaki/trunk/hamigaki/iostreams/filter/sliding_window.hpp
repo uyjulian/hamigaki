@@ -178,7 +178,7 @@ public:
         {
             while (end_ - pos_ >= max_match_length)
             {
-                pair_type res = search();
+                pair_type res = search(max_match_length);
                 if (res.second < min_match_length)
                 {
                     output_.put(sink, window_[pos_]);
@@ -191,15 +191,7 @@ public:
                 }
 
                 if (pos_ >= (window_size_ <<1))
-                {
-                    std::memmove(
-                        &window_[0],
-                        &window_[window_size_],
-                        window_size_+max_match_length
-                    );
-                    pos_ -= window_size_;
-                    end_ -= window_size_;
-                }
+                    slide();
             }
 
             if (n > 0)
@@ -226,10 +218,7 @@ public:
         {
             length_type max_len = end_-pos_;
 
-            pair_type res = search();
-            if (res.second > max_len)
-                res.second = max_len;
-
+            pair_type res = search(max_len);
             if (res.second < min_match_length)
             {
                 output_.put(sink, window_[pos_]);
@@ -242,15 +231,7 @@ public:
             }
 
             if (pos_ >= (window_size_ <<1))
-            {
-                std::memmove(
-                    &window_[0],
-                    &window_[window_size_],
-                    window_size_+max_match_length
-                );
-                pos_ -= window_size_;
-                end_ -= window_size_;
-            }
+                slide();
         }
 
         return output_.flush(sink);
@@ -265,7 +246,7 @@ private:
     std::size_t end_;
 
     // Note: too slow
-    pair_type search()
+    pair_type search(length_type max_len)
     {
         const char* last = &window_[pos_];
         const char* start =
@@ -279,7 +260,7 @@ private:
             const char* cur = static_cast<const char*>(p);
 
             const char* end =
-                std::mismatch(cur, cur+max_match_length, last).first;
+                std::mismatch(cur, cur+max_len, last).first;
 
             length_type len = static_cast<length_type>(end - cur);
             if (len >= length)
@@ -290,6 +271,17 @@ private:
             start = cur + 1;
         }
         return pair_type(offset, length);
+    }
+
+    void slide()
+    {
+        std::memmove(
+            &window_[0],
+            &window_[window_size_],
+            window_size_+max_match_length
+        );
+        pos_ -= window_size_;
+        end_ -= window_size_;
     }
 };
 
