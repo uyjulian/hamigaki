@@ -198,6 +198,7 @@ public:
                         window_size_+max_match_length
                     );
                     pos_ -= window_size_;
+                    end_ -= window_size_;
                 }
             }
 
@@ -248,6 +249,7 @@ public:
                     window_size_+max_match_length
                 );
                 pos_ -= window_size_;
+                end_ -= window_size_;
             }
         }
 
