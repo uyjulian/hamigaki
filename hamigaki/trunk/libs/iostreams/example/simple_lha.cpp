@@ -45,6 +45,55 @@ namespace io_ex = hamigaki::iostreams;
 namespace fs = boost::filesystem;
 namespace io = boost::iostreams;
 
+#if defined(BOOST_WINDOWS)
+inline boost::uint64_t to_uint64(const ::FILETIME& ft)
+{
+    return
+        (static_cast<boost::uint64_t>(ft.dwHighDateTime) << 32) |
+        static_cast<boost::uint64_t>(ft.dwLowDateTime);
+}
+
+void get_timestamp_impl(
+    ::HANDLE handle, io_ex::lha::windows_timestamp& ts)
+{
+    ::FILETIME creation_time, last_write_time, last_access_time;
+    ::GetFileTime(handle, &creation_time,
+        &last_access_time, &last_write_time);
+
+    ts.creation_time = to_uint64(creation_time);
+    ts.last_write_time = to_uint64(last_write_time);
+    ts.last_access_time = to_uint64(last_access_time);
+}
+
+io_ex::lha::windows_timestamp get_file_timestamp(const fs::path& ph)
+{
+    ::HANDLE handle = ::CreateFileA(
+        ph.native_file_string().c_str(), GENERIC_WRITE, 0, 0,
+        OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+    if (handle == INVALID_HANDLE_VALUE)
+        throw std::runtime_error("CreateFile error");
+    io_ex::lha::windows_timestamp ts;
+    get_timestamp_impl(handle, ts);
+    ::CloseHandle(handle);
+    return ts;
+}
+
+boost::optional<io_ex::lha::windows_timestamp>
+get_directory_timestamp(const fs::path& ph)
+{
+    ::HANDLE handle = ::CreateFileA(
+        ph.native_file_string().c_str(), GENERIC_WRITE, 0, 0,
+        OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0);
+    // Win9X does not support FILE_FLAG_BACKUP_SEMANTICS flag
+    if (handle == INVALID_HANDLE_VALUE)
+        return boost::none;
+    io_ex::lha::windows_timestamp ts;
+    get_timestamp_impl(handle, ts);
+    ::CloseHandle(handle);
+    return ts;
+}
+#endif
+
 int main(int argc, char* argv[])
 {
     try
@@ -67,6 +116,14 @@ int main(int argc, char* argv[])
             else
                 head.file_size = fs::file_size(head.path);
             head.update_time = fs::last_write_time(head.path);
+
+#if defined(BOOST_WINDOWS)
+            head.code_page = ::GetACP();
+            if (fs::is_directory(head.path))
+                head.timestamp = get_directory_timestamp(head.path);
+            else
+                head.timestamp = get_file_timestamp(head.path);
+#endif
 
             lzh.create_entry(head);
 

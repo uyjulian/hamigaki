@@ -82,6 +82,7 @@ struct header
     boost::optional<boost::uint16_t> crc16_checksum;
     boost::optional<char> os;
     boost::optional<windows_timestamp> timestamp;
+    boost::optional<boost::uint32_t> code_page;
     boost::optional<boost::uint16_t> permission;
 
     header()
@@ -835,6 +836,14 @@ private:
         return std::make_pair(comp, org);
     }
 
+    static boost::uint32_t parse_code_page(char* s, boost::uint32_t n)
+    {
+        if (n < 2)
+            throw BOOST_IOSTREAMS_FAILURE("bad LZH code page extended header");
+
+        return hamigaki::decode_uint<hamigaki::little, 4>(s);
+    }
+
     static boost::uint16_t parse_unix_permission(char* s, boost::uint32_t n)
     {
         if (n < 2)
@@ -888,6 +897,8 @@ private:
                 boost::tie(header_.compressed_size, header_.file_size)
                     = parse_file_size(buf.get()+1, size);
             }
+            else if (buf[0] == '\x46')
+                header_.code_page = parse_code_page(buf.get()+1, size);
             else if (buf[0] == '\x50')
                 header_.permission = parse_unix_permission(buf.get()+1, size);
             else if (buf[0] == '\x54')
@@ -1097,6 +1108,14 @@ private:
     }
 
     template<class OtherSink>
+    static void write_little32(OtherSink& sink, boost::uint32_t n)
+    {
+        char buf[4];
+        hamigaki::encode_uint<hamigaki::little,4>(buf, n);
+        sink.write(buf, 4);
+    }
+
+    template<class OtherSink>
     static void write_little64(OtherSink& sink, boost::int64_t n)
     {
         char buf[8];
@@ -1163,6 +1182,12 @@ private:
         else
             boost::iostreams::put(tmp, HAMIGAKI_IOSTREAMS_LHA_OS_TYPE);
 
+        if (header_.code_page)
+        {
+            tmp.write("\x07\x00\x46", 3);
+            write_little32(tmp, header_.code_page.get());
+        }
+
         if (header_.is_directory())
         {
             tmp.write("\x03\x00\x01", 3);
@@ -1171,14 +1196,22 @@ private:
         else
         {
             write_extended_header(tmp, 0x01, header_.path.leaf());
-            write_extended_header(
-                tmp, 0x02, convert_path(header_.path.branch_path()));
+
+            const boost::filesystem::path& ph = header_.path.branch_path();
+            if (!ph.empty())
+                write_extended_header(tmp, 0x02, convert_path(ph));
         }
 
         if (header_.attributes != lha::attributes::archive)
         {
             tmp.write("\x05\x00\x40", 3);
             write_little16(tmp, header_.attributes);
+        }
+
+        if (header_.timestamp)
+        {
+            tmp.write("\x1B\x00\x41", 3);
+            hamigaki::iostreams::binary_write(tmp, header_.timestamp.get());
         }
 
         if ((header_.compressed_size != -1) && (header_.file_size != -1))
