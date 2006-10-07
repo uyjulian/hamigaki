@@ -417,27 +417,25 @@ public:
         , pos_(0), end_(len != -1 ? len : -1)
     {
         if (pos_ == end_)
+        {
             overflow_ = true;
+            throw out_of_restriction();
+        }
     }
 
     std::streamsize write(const char_type* s, std::streamsize n)
     {
         std::streamsize amt = n;
         if ((end_ != -1) && (pos_ + n >= end_))
-            amt = (std::min)(static_cast<std::streamsize>(end_-pos_), n);
+        {
+            overflow_ = true;
+            throw out_of_restriction();
+        }
 
         std::streamsize result = boost::iostreams::write(sink_, s, amt);
         if (result != -1)
-        {
             pos_ += result;
-            if (pos_ == end_)
-                overflow_ = true;
-        }
-
-        if ((amt < n) && (result == amt))
-            return n;
-        else
-            return result;
+        return result;
     }
 
 private:
@@ -1015,12 +1013,20 @@ public:
 
         if (image_)
         {
-            image_->flush();
+            try
+            {
+                image_->flush();
+            }
+            catch (const out_of_restriction&)
+            {
+                image_.reset();
+                if (overflow_)
+                    throw lha::give_up_compression();
+                else
+                    throw;
+            }
             image_.reset();
         }
-
-        if (overflow_)
-            throw lha::give_up_compression();
 
         header_.crc16_checksum = crc_.checksum();
         crc_.reset();
@@ -1041,9 +1047,20 @@ public:
 
     std::streamsize write(const char* s, std::streamsize n)
     {
-        std::streamsize amt = image_->write(s, n);
-        if (overflow_)
-            throw lha::give_up_compression();
+        std::streamsize amt;
+        try
+        {
+            amt = image_->write(s, n);
+        }
+        catch (const out_of_restriction&)
+        {
+            image_.reset();
+            if (overflow_)
+                throw lha::give_up_compression();
+            else
+                throw;
+        }
+
         if (amt != -1)
         {
             crc_.process_bytes(s, amt);
