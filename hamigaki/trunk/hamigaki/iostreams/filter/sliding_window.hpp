@@ -162,8 +162,8 @@ public:
     sliding_window_compress_impl(const Output& output, std::size_t window_bits)
         : output_(output)
         , window_size_(1 << window_bits)
-        , window_size1_(window_size_-1)
-        , window_((window_size_<<1) + max_match_length, ' ')
+        , window_size2_(window_size_ <<1 )
+        , window_(window_size2_ + max_match_length, ' ')
         , pos_(0)
         , end_(0)
     {
@@ -190,17 +190,15 @@ public:
                     pos_ += res.second;
                 }
 
-                if (pos_ >= (window_size_ <<1))
+                if (pos_ >= window_size2_)
                     slide();
             }
 
-            if (n > 0)
+            if (total < n)
             {
-                std::streamsize amt = (std::min)
-                    (n, static_cast<std::streamsize>(window_.size() - end_));
-                std::memcpy(&window_[end_], s, amt);
-                s += amt;
-                n -= amt;
+                std::streamsize amt = (std::min)(n-total,
+                    static_cast<std::streamsize>(window_.size() - end_));
+                std::memcpy(&window_[end_], s+total, amt);
                 end_ += amt;
                 total += amt;
             }
@@ -230,7 +228,7 @@ public:
                 pos_ += res.second;
             }
 
-            if (pos_ >= (window_size_ <<1))
+            if (pos_ >= window_size2_)
                 slide();
         }
 
@@ -240,7 +238,7 @@ public:
 private:
     Output output_;
     std::size_t window_size_;
-    std::size_t window_size1_;
+    std::size_t window_size2_;
     std::vector<char> window_;
     std::size_t pos_;
     std::size_t end_;
