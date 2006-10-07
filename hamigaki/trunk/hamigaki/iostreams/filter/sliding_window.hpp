@@ -164,8 +164,8 @@ public:
         , window_size_(1 << window_bits)
         , window_size1_(window_size_-1)
         , window_((window_size_<<1) + max_match_length, ' ')
-        , pos_(window_size_)
-        , end_(window_size_)
+        , pos_(0)
+        , end_(0)
     {
     }
 
@@ -268,7 +268,9 @@ private:
     pair_type search()
     {
         const char* last = &window_[pos_];
-        const char* start = last - window_size_;
+        const char* start =
+            (pos_ >= window_size_)
+            ? last - window_size_ : &window_[0];
 
         length_type length = 0;
         offset_type offset = 0;
