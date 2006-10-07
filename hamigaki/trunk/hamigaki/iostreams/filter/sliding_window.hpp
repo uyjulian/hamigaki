@@ -166,6 +166,7 @@ public:
         , window_(window_size2_ + max_match_length, ' ')
         , pos_(0)
         , end_(0)
+        , last_(0, 0)
     {
     }
 
@@ -180,14 +181,24 @@ public:
             {
                 pair_type res = search(max_match_length);
                 if (res.second < min_match_length)
+                    res.second = 1;
+
+                if (!last_.second)
                 {
-                    output_.put(sink, window_[pos_]);
                     ++pos_;
+                    last_ = res;
+                }
+                else if (last_.second > res.second)
+                {
+                    output_.put(sink, last_.first, last_.second);
+                    pos_ += (last_.second - 1);
+                    last_.second = 0;
                 }
                 else
                 {
-                    output_.put(sink, res.first, res.second);
-                    pos_ += res.second;
+                    output_.put(sink, window_[pos_-1]);
+                    ++pos_;
+                    last_ = res;
                 }
 
                 if (pos_ >= window_size2_)
@@ -212,24 +223,37 @@ public:
     template<class Sink>
     bool flush(Sink& sink)
     {
-        while (pos_ < end_)
+        if (end_ != 0)
         {
-            length_type max_len = end_-pos_;
-
-            pair_type res = search(max_len);
-            if (res.second < min_match_length)
+            while (pos_ <= end_)
             {
-                output_.put(sink, window_[pos_]);
-                ++pos_;
-            }
-            else
-            {
-                output_.put(sink, res.first, res.second);
-                pos_ += res.second;
-            }
+                length_type max_len = end_-pos_;
 
-            if (pos_ >= window_size2_)
-                slide();
+                pair_type res = search(max_len);
+                if (res.second < min_match_length)
+                    res.second = 1;
+
+                if (!last_.second)
+                {
+                    ++pos_;
+                    last_ = res;
+                }
+                else if (last_.second > res.second)
+                {
+                    output_.put(sink, last_.first, last_.second);
+                    pos_ += (last_.second - 1);
+                    last_.second = 0;
+                }
+                else
+                {
+                    output_.put(sink, window_[pos_-1]);
+                    ++pos_;
+                    last_ = res;
+                }
+
+                if (pos_ >= window_size2_)
+                    slide();
+            }
         }
 
         return output_.flush(sink);
@@ -242,6 +266,7 @@ private:
     std::vector<char> window_;
     std::size_t pos_;
     std::size_t end_;
+    pair_type last_;
 
     // Note: too slow
     pair_type search(length_type max_len)
