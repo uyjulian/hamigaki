@@ -188,7 +188,9 @@ public:
                     ++pos_;
                     last_ = res;
                 }
-                else if (last_.second > res.second)
+                else if (
+                    (last_.second >= min_match_length) &&
+                    (last_.second >= res.second))
                 {
                     output_.put(sink, last_.first, last_.second);
                     pos_ += (last_.second - 1);
@@ -223,38 +225,40 @@ public:
     template<class Sink>
     bool flush(Sink& sink)
     {
-        if (end_ != 0)
+        while (pos_ < end_)
         {
-            while (pos_ <= end_)
+            length_type max_len = end_-pos_;
+
+            pair_type res = search(max_len);
+            if (res.second < min_match_length)
+                res.second = 1;
+
+            if (!last_.second)
             {
-                length_type max_len = end_-pos_;
-
-                pair_type res = search(max_len);
-                if (res.second < min_match_length)
-                    res.second = 1;
-
-                if (!last_.second)
-                {
-                    ++pos_;
-                    last_ = res;
-                }
-                else if (last_.second > res.second)
-                {
-                    output_.put(sink, last_.first, last_.second);
-                    pos_ += (last_.second - 1);
-                    last_.second = 0;
-                }
-                else
-                {
-                    output_.put(sink, window_[pos_-1]);
-                    ++pos_;
-                    last_ = res;
-                }
-
-                if (pos_ >= window_size2_)
-                    slide();
+                ++pos_;
+                last_ = res;
             }
+            else if (
+                (last_.second >= min_match_length) &&
+                (last_.second >= res.second))
+            {
+                output_.put(sink, last_.first, last_.second);
+                pos_ += (last_.second - 1);
+                last_.second = 0;
+            }
+            else
+            {
+                output_.put(sink, window_[pos_-1]);
+                ++pos_;
+                last_ = res;
+            }
+
+            if (pos_ >= window_size2_)
+                slide();
         }
+
+        if (last_.second && (pos_ == end_))
+            output_.put(sink, window_[pos_-1]);
 
         return output_.flush(sink);
     }

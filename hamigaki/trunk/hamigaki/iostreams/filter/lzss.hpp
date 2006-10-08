@@ -40,7 +40,8 @@ public:
                 static_cast<offset_type>(bs.read_bits(OffsetBits));
 
             length_type length =
-                static_cast<length_type>(bs.read_bits(LengthBits));
+                static_cast<length_type>(bs.read_bits(LengthBits)) +
+                min_match_length;
 
             return result_type(offset, length);
         }
@@ -91,7 +92,7 @@ public:
         output_bit_stream<Flow, Sink> bs(filter_, sink);
         bs.put_bit(1);
         bs.write_bits(offset, OffsetBits);
-        bs.write_bits(length, LengthBits);
+        bs.write_bits(length-min_match_length, LengthBits);
     }
 
 private:

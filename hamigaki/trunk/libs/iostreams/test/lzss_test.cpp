@@ -74,10 +74,11 @@ void lzss_test()
     BOOST_CHECK(lzss_test_aux("ababababa"));
     BOOST_CHECK(lzss_test_aux("ababababbabababa"));
 
-    BOOST_CHECK(lzss_test_aux(std::string('a', 4096+1)));
+    BOOST_CHECK(lzss_test_aux(std::string(4096+1, 'a')));
+    BOOST_CHECK(lzss_test_aux(std::string(4096*2+1, 'a')));
 
     BOOST_CHECK(lzss_test_aux("ababcbababc"));
-    BOOST_CHECK_EQUAL(lzss_compress("ababcbababc").size(), 10);
+    BOOST_CHECK_EQUAL(lzss_compress("ababcbababc").size(), 10u);
 }
 
 ut::test_suite* init_unit_test_suite(int, char* [])

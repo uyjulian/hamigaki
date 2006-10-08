@@ -73,7 +73,8 @@ void modified_lzss_test()
     BOOST_CHECK(modified_lzss_test_aux("ababababa"));
     BOOST_CHECK(modified_lzss_test_aux("ababababbabababa"));
 
-    BOOST_CHECK(modified_lzss_test_aux(std::string('a', 4096+1)));
+    BOOST_CHECK(modified_lzss_test_aux(std::string(4096+1, 'a')));
+    BOOST_CHECK(modified_lzss_test_aux(std::string(4096*2+1, 'a')));
 }
 
 ut::test_suite* init_unit_test_suite(int, char* [])
