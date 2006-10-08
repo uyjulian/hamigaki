@@ -158,6 +158,12 @@ class sliding_window_compress_impl
     static const length_type min_match_length = Output::min_match_length;
     static const length_type max_match_length = Output::max_match_length;
 
+#if defined(HAMIGAKI_IOSTREAMS_USE_HASH)
+    static const std::size_t hash_table_size = 0x8000;
+    static const std::size_t hash_table_mask = 0x7FFF;
+    static const std::size_t nil = ~static_cast<std::size_t>(0);
+#endif
+
 public:
     sliding_window_compress_impl(const Output& output, std::size_t window_bits)
         : output_(output)
@@ -167,6 +173,11 @@ public:
         , pos_(0)
         , end_(0)
         , last_(0, 0)
+#if defined(HAMIGAKI_IOSTREAMS_USE_HASH)
+        , hash_chain_(window_size2_ + max_match_length)
+        , hash_table_(hash_table_size, nil)
+        , hash_value_(0)
+#endif
     {
     }
 
@@ -193,7 +204,24 @@ public:
                     (last_.second >= res.second))
                 {
                     output_.put(sink, last_.first, last_.second);
+#if defined(HAMIGAKI_IOSTREAMS_USE_HASH)
+                    --last_.second;
+                    while (--last_.second)
+                    {
+                        ++pos_;
+                        const unsigned char uc =
+                            static_cast<unsigned char>(window_[pos_ + 2]);
+                        hash_value_ =
+                            ((hash_value_ << 5) ^ uc) & hash_table_mask;
+
+                        std::size_t prev = hash_table_[hash_value_];
+                        hash_table_[hash_value_] = pos_;
+                        hash_chain_[pos_] = prev;
+                    }
+                    ++pos_;
+#else
                     pos_ += (last_.second - 1);
+#endif
                     last_.second = 0;
                 }
                 else
@@ -214,6 +242,16 @@ public:
                 std::memcpy(&window_[end_], s+total, amt);
                 end_ += amt;
                 total += amt;
+#if defined(HAMIGAKI_IOSTREAMS_USE_HASH)
+                if (pos_ == 0)
+                {
+                    hash_value_ =
+                        (
+                            (static_cast<unsigned char>(window_[0]) << 5) ^
+                            (static_cast<unsigned char>(window_[1])     )
+                        ) & hash_table_mask;
+                }
+#endif
             }
             else
                 break;
@@ -243,7 +281,24 @@ public:
                 (last_.second >= res.second))
             {
                 output_.put(sink, last_.first, last_.second);
+#if defined(HAMIGAKI_IOSTREAMS_USE_HASH)
+                --last_.second;
+                while (--last_.second)
+                {
+                    ++pos_;
+                    const unsigned char uc =
+                        static_cast<unsigned char>(window_[pos_ + 2]);
+                    hash_value_ =
+                        ((hash_value_ << 5) ^ uc) & hash_table_mask;
+
+                    std::size_t prev = hash_table_[hash_value_];
+                    hash_table_[hash_value_] = pos_;
+                    hash_chain_[pos_] = prev;
+                }
+                ++pos_;
+#else
                 pos_ += (last_.second - 1);
+#endif
                 last_.second = 0;
             }
             else
@@ -271,10 +326,44 @@ private:
     std::size_t pos_;
     std::size_t end_;
     pair_type last_;
+#if defined(HAMIGAKI_IOSTREAMS_USE_HASH)
+    std::vector<std::size_t> hash_chain_;
+    std::vector<std::size_t> hash_table_;
+    std::size_t hash_value_;
+#endif
 
     // Note: too slow
     pair_type search(length_type max_len)
     {
+#if defined(HAMIGAKI_IOSTREAMS_USE_HASH)
+        const char* str = &window_[pos_];
+        const unsigned char uc = static_cast<unsigned char>(str[2]);
+        hash_value_ = ((hash_value_ << 5) ^ uc) & hash_table_mask;
+        std::size_t index = hash_table_[hash_value_];
+        length_type length = 0;
+        offset_type offset = 0;
+        while (index != nil)
+        {
+            if (pos_ - index >= window_size_)
+                break;
+
+            const char* cur = &window_[index];
+            const char* end = std::mismatch(cur, cur+max_len, str).first;
+            length_type len = static_cast<length_type>(end - cur);
+            if (len > length)
+            {
+                length = len;
+                offset = str-cur - 1;
+            }
+            index = hash_chain_[index];
+        }
+
+        std::size_t prev = hash_table_[hash_value_];
+        hash_table_[hash_value_] = pos_;
+        hash_chain_[pos_] = prev;
+
+        return pair_type(offset, length);
+#else
         const char* last = &window_[pos_];
         const char* start =
             (pos_ >= window_size_)
@@ -298,6 +387,7 @@ private:
             start = cur + 1;
         }
         return pair_type(offset, length);
+#endif
     }
 
     void slide()
@@ -309,6 +399,28 @@ private:
         );
         pos_ -= window_size_;
         end_ -= window_size_;
+#if defined(HAMIGAKI_IOSTREAMS_USE_HASH)
+        for (std::size_t i = 0; i < hash_table_size; ++i)
+        {
+            std::size_t* ptr = &hash_table_[i];
+            std::size_t index = *ptr;
+            while (index != nil)
+            {
+                if (index < window_size_)
+                {
+                    *ptr = nil;
+                    break;
+                }
+                else
+                {
+                    *ptr = index - window_size_;
+                    index = hash_chain_[index];
+                    ptr = &hash_chain_[*ptr];
+                }
+            }
+            *ptr = nil;
+        }
+#endif
     }
 };
 
