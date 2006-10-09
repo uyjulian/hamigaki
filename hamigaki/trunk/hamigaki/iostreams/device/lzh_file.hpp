@@ -10,6 +10,7 @@
 #ifndef HAMIGAKI_IOSTREAMS_DEVICE_LZH_FILE_HPP
 #define HAMIGAKI_IOSTREAMS_DEVICE_LZH_FILE_HPP
 
+#include <hamigaki/checksum/sum8.hpp>
 #include <hamigaki/iostreams/device/file.hpp>
 #include <hamigaki/iostreams/filter/lzhuf.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>
@@ -340,37 +341,6 @@ private:
     Sink sink_;
 };
 
-class lha_checksum
-{
-public:
-    lha_checksum() : sum_(0)
-    {
-    }
-
-    void process_byte(unsigned char byte)
-    {
-        sum_ += byte;
-    }
-
-    void process_bytes(void const* buffer, std::size_t byte_count)
-    {
-        sum_ +=
-            std::accumulate(
-                static_cast<const unsigned char*>(buffer),
-                static_cast<const unsigned char*>(buffer) + byte_count,
-                0u
-            );
-    }
-
-    unsigned char checksum()
-    {
-        return static_cast<unsigned char>(sum_);
-    }
-
-private:
-    unsigned sum_;
-};
-
 class crc16_and_lha_checksum
 {
 public:
@@ -397,7 +367,7 @@ public:
 
 private:
     boost::crc_16_type& crc_;
-    lha_checksum cs_;
+    hamigaki::checksum::sum8 cs_;
 };
 
 
@@ -493,7 +463,7 @@ public:
         char lv = buf[sizeof(buf)-1];
         if (lv == '\0')
         {
-            detail::lha_checksum cs;
+            hamigaki::checksum::sum8 cs;
             cs.process_bytes(buf+2, sizeof(buf)-2);
 
             lha::lv0_header lv0;

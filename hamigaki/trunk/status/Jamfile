@@ -4,6 +4,7 @@ import testing ;
 DEPENDS all : test ;
 
 subinclude libs/audio/test ;
+subinclude libs/checksum/test ;
 subinclude libs/coroutine/test ;
 subinclude libs/iostreams/test ;
 subinclude libs/iterator/test ;

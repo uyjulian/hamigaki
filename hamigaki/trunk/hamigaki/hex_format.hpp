@@ -141,6 +141,20 @@ inline std::basic_string<CharT> to_hex(
     return s;
 }
 
+template<typename CharT, std::size_t N>
+inline std::basic_string<CharT> to_hex(
+    const boost::array<boost::uint8_t,N>& a, bool is_upper)
+{
+    std::basic_string<CharT> s;
+    for (std::size_t i = 0; i < N; ++i)
+    {
+        boost::uint8_t n = a[i];
+        s += hex_traits<CharT>::to_hex(n / 16, is_upper);
+        s += hex_traits<CharT>::to_hex(n % 16, is_upper);
+    }
+    return s;
+}
+
 template<typename CharT>
 inline boost::uint8_t from_hex(CharT c1, CharT c2)
 {
