@@ -11,7 +11,81 @@
 #define HAMIGAKI_IOSTREAMS_BLOCKING_HPP
 
 #include <boost/iostreams/detail/adapter/non_blocking_adapter.hpp>
+#include <boost/iostreams/detail/error.hpp>
 #include <boost/iostreams/detail/template_params.hpp>
+#include <boost/iostreams/read.hpp>
+#include <boost/iostreams/write.hpp>
+
+namespace hamigaki { namespace iostreams {
+
+template<class Source>
+struct blocking_reader
+{
+    typedef typename boost::iostreams::char_type_of<Source>::type char_type;
+
+    static char_type* read(Source& src, char_type* s, std::streamsize n)
+    {
+        boost::iostreams::non_blocking_adapter<Source> nb(src);
+        if (boost::iostreams::read(nb, s, n) != n)
+            throw boost::iostreams::detail::bad_read();
+        return s;
+    }
+};
+
+template<class Sink>
+struct blocking_writer
+{
+    typedef typename boost::iostreams::char_type_of<Sink>::type char_type;
+
+    static void write(Sink& sink, const char_type* s, std::streamsize n)
+    {
+        boost::iostreams::non_blocking_adapter<Sink> nb(sink);
+        if (boost::iostreams::write(nb, s, n) != n)
+            throw boost::iostreams::detail::bad_write();
+    }
+};
+
+template<class Source>
+inline char blocking_get(Source& src)
+{
+    char c;
+    blocking_reader<Source>::read(src, &c, 1);
+    return c;
+}
+
+template<class Source>
+inline char* blocking_read(Source& src, char* s, std::streamsize n)
+{
+    return blocking_reader<Source>::read(src, s, n);
+}
+
+template<class Source, std::size_t Size>
+inline char* blocking_read(Source& src, char (&s)[Size])
+{
+    return blocking_reader<Source>::
+        read(src, s, static_cast<std::streamsize>(Size));
+}
+
+template<class Sink>
+inline void blocking_put(Sink& sink, char c)
+{
+    blocking_writer<Sink>::write(sink, &c, 1);
+}
+
+template<class Sink>
+inline void blocking_write(Sink& sink, const char* s, std::streamsize n)
+{
+    blocking_writer<Sink>::write(sink, s, n);
+}
+
+template<class Sink, std::size_t Size>
+inline void blocking_write(Sink& sink, const char (&s)[Size])
+{
+    blocking_writer<Sink>::
+        write(sink, s, static_cast<std::streamsize>(Size));
+}
+
+} } // End namespaces iostreams, hamigaki.
 
 #define HAMIGAKI_IOSTREAMS_BLOCKING(device, arity) \
 namespace boost { namespace iostreams { \
@@ -43,5 +117,53 @@ namespace boost { namespace iostreams { \
     }; \
 }} \
 /**/
+
+#define HAMIGAKI_IOSTREAMS_BLOCKING_SOURCE(source, arity) \
+namespace hamigaki { namespace iostreams { \
+    template< \
+        BOOST_PP_ENUM_PARAMS(arity, typename T) \
+    > \
+    struct blocking_reader< \
+        source BOOST_IOSTREAMS_TEMPLATE_ARGS(arity, T) \
+    > \
+    { \
+        typedef source BOOST_IOSTREAMS_TEMPLATE_ARGS(arity, T) source_type; \
+        typedef BOOST_PP_EXPR_IF(arity, typename) \
+            boost::iostreams::char_type_of<source_type>::type char_type; \
+        static char_type* read( \
+            source_type& src, char_type* s, std::streamsize n) \
+        { \
+            if (boost::iostreams::read(src, s, n) != n) \
+                throw boost::iostreams::detail::bad_read(); \
+            return s; \
+        } \
+    }; \
+}} \
+/**/
+
+#define HAMIGAKI_IOSTREAMS_BLOCKING_SINK(sink, arity) \
+namespace hamigaki { namespace iostreams { \
+    template< \
+        BOOST_PP_ENUM_PARAMS(arity, typename T) \
+    > \
+    struct blocking_writer< \
+        sink BOOST_IOSTREAMS_TEMPLATE_ARGS(arity, T) \
+    > \
+    { \
+        typedef sink BOOST_IOSTREAMS_TEMPLATE_ARGS(arity, T) sink_type; \
+        typedef BOOST_PP_EXPR_IF(arity, typename) \
+            boost::iostreams::char_type_of<sink_type>::type char_type; \
+        static void write( \
+            sink_type& src, const char_type* s, std::streamsize n) \
+        { \
+            if (boost::iostreams::write(src, s, n) != n) \
+                throw boost::iostreams::detail::bad_write(); \
+        } \
+    }; \
+}} \
+/**/
+
+HAMIGAKI_IOSTREAMS_BLOCKING_SOURCE(boost::iostreams::non_blocking_adapter, 1);
+HAMIGAKI_IOSTREAMS_BLOCKING_SINK(boost::iostreams::non_blocking_adapter, 1);
 
 #endif // HAMIGAKI_IOSTREAMS_BLOCKING_HPP

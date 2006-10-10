@@ -938,6 +938,8 @@ public:
         header_ = head;
         if (header_.is_directory())
             std::memcpy(header_.method, "-lhd-", 5);
+        else if (header_.file_size < 3)
+            std::memcpy(header_.method, "-lh0-", 5);
         else if (!header_.method[0])
             std::memcpy(header_.method, method_, 5);
 
@@ -1065,30 +1067,6 @@ private:
     boost::crc_16_type crc_;
     boost::int64_t pos_;
 
-    template<class OtherSink>
-    static void write_little16(OtherSink& sink, boost::uint16_t n)
-    {
-        char buf[2];
-        hamigaki::encode_uint<hamigaki::little,2>(buf, n);
-        sink.write(buf, 2);
-    }
-
-    template<class OtherSink>
-    static void write_little32(OtherSink& sink, boost::uint32_t n)
-    {
-        char buf[4];
-        hamigaki::encode_uint<hamigaki::little,4>(buf, n);
-        sink.write(buf, 4);
-    }
-
-    template<class OtherSink>
-    static void write_little64(OtherSink& sink, boost::int64_t n)
-    {
-        char buf[8];
-        hamigaki::encode_int<hamigaki::little,8>(buf, n);
-        sink.write(buf, 8);
-    }
-
     static std::string convert_path(const boost::filesystem::path& ph)
     {
         std::ostringstream os;
@@ -1101,8 +1079,8 @@ private:
     static void write_extended_header(
         OtherSink& sink, boost::uint16_t type, const std::string& s)
     {
-        write_little16(sink, s.size()+3);
-        boost::iostreams::put(sink, static_cast<unsigned char>(type));
+        iostreams::write_uint16<little>(sink, s.size()+3);
+        iostreams::blocking_put(sink, static_cast<unsigned char>(type));
         if (!s.empty())
             sink.write(&s[0], s.size());
     }
@@ -1139,7 +1117,7 @@ private:
         boost::iostreams::back_insert_device<std::string> tmp(buffer);
         hamigaki::iostreams::binary_write(tmp, lv2);
         if (header_.crc16_checksum)
-            write_little16(tmp, header_.crc16_checksum.get());
+            iostreams::write_uint16<little>(tmp, header_.crc16_checksum.get());
         else
             tmp.write("\0", 2);
 
@@ -1151,7 +1129,7 @@ private:
         if (header_.code_page)
         {
             tmp.write("\x07\x00\x46", 3);
-            write_little32(tmp, header_.code_page.get());
+            iostreams::write_uint32<little>(tmp, header_.code_page.get());
         }
 
         if (header_.is_directory())
@@ -1171,7 +1149,7 @@ private:
         if (header_.attributes != lha::attributes::archive)
         {
             tmp.write("\x05\x00\x40", 3);
-            write_little16(tmp, header_.attributes);
+            iostreams::write_uint16<little>(tmp, header_.attributes);
         }
 
         if (header_.timestamp)
@@ -1186,8 +1164,8 @@ private:
                 ((header_.file_size >> 32) != 0))
             {
                 tmp.write("\x13\x00\x42", 3);
-                write_little64(tmp, header_.compressed_size);
-                write_little64(tmp, header_.file_size);
+                iostreams::write_int64<little>(tmp, header_.compressed_size);
+                iostreams::write_int64<little>(tmp, header_.file_size);
             }
         }
 
@@ -1197,7 +1175,7 @@ private:
         tmp.write("\x00\x00\x07", 3);
 
         // end of extended headers
-        write_little16(tmp, 0);
+        iostreams::write_uint16<little>(tmp, 0);
 
         hamigaki::encode_uint<hamigaki::little,2>(&buffer[0], buffer.size());
 
