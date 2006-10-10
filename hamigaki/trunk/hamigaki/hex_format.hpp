@@ -9,6 +9,7 @@
 #define HAMIGAKI_HEX_FORMAT_HPP
 
 #include <boost/detail/workaround.hpp>
+#include <boost/array.hpp>
 #include <boost/assert.hpp>
 #include <boost/cstdint.hpp>
 #include <stdexcept>
