@@ -61,8 +61,7 @@ public:
     std::streamsize write(Sink& snk, const char* s, std::streamsize n)
     {
         std::streamsize result = boost::iostreams::write(snk, s, n);
-        if (result > 0)
-            crc_.process_bytes(s, result);
+        crc_.process_bytes(s, result);
         return result;
     }
 

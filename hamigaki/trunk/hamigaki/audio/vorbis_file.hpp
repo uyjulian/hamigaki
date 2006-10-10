@@ -306,7 +306,7 @@ private:
     {
         std::streamsize channels = base_.info().channels;
         std::streamsize total = 0;
-        while (n != 0)
+        while (n > 0)
         {
             float** buffer;
             long res = base_.read_samples(buffer, n);

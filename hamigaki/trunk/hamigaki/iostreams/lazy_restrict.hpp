@@ -84,8 +84,7 @@ public:
             throw out_of_restriction("bad write");
 
         std::streamsize result = boost::iostreams::write(*dev_ptr_, s, n);
-        if (result != -1)
-            pos_ += result;
+        pos_ += result;
         return result;
     }
 

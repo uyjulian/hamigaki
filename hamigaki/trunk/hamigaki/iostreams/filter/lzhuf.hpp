@@ -247,6 +247,9 @@ public:
     template<class Sink>
     std::streamsize write(Sink& sink, const char* s, std::streamsize n)
     {
+        if (n <= 0)
+            return 0;
+
         boost::uint16_t count = update_huffman_tree(s, n);
         write_header(sink, count);
 
@@ -281,7 +284,7 @@ public:
                 symbol_encoder_.encode(bs, uc);
             }
         }
-        return n != 0 ? n : -1;
+        return n;
     }
 
 private:

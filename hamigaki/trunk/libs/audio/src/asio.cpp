@@ -76,7 +76,7 @@ std::streamsize asio_source::impl::read(char* s, std::streamsize n)
 {
     std::streamsize total = 0;
     const std::size_t buffer_size = buffer_.size()/buffer_count;
-    while (n != 0)
+    while (n > 0)
     {
         if ((read_pos_ % buffer_size) == 0)
         {
@@ -115,6 +115,9 @@ void asio_source::impl::close()
 
 std::streamsize asio_source::impl::write(const char* s, std::streamsize n)
 {
+    if (n <= 0)
+        return 0;
+
     const critical_section::scoped_lock locking(cs_);
 
     const std::size_t buffer_size = buffer_.size()/buffer_count;
@@ -175,7 +178,7 @@ std::streamsize asio_sink::impl::write(const char* s, std::streamsize n)
 {
     std::streamsize total = 0;
     const std::size_t buffer_size = buffer_.size()/buffer_count;
-    while (n != 0)
+    while (n > 0)
     {
         if ((write_pos_ % buffer_size) == 0)
         {
@@ -201,7 +204,7 @@ std::streamsize asio_sink::impl::write(const char* s, std::streamsize n)
             playing_ = true;
         }
     }
-    return (total != 0) ? total : -1;
+    return total;
 }
 
 void asio_sink::impl::close()
@@ -233,6 +236,9 @@ void asio_sink::impl::close()
 
 std::streamsize asio_sink::impl::read(char* s, std::streamsize n)
 {
+    if (n <= 0)
+        return -1;
+
     const critical_section::scoped_lock locking(cs_);
 
     const std::size_t buffer_size = buffer_.size()/buffer_count;

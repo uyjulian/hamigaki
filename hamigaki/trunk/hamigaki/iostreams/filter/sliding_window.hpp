@@ -257,7 +257,7 @@ public:
                 break;
         }
 
-        return (total != 0) ? total : -1;
+        return total;
     }
 
     template<class Sink>

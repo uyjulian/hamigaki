@@ -143,6 +143,9 @@ private:
 
         std::streamsize write(const char* s, std::streamsize n)
         {
+            if (n <= 0)
+                return 0;
+
             std::size_t amt = std::min<std::size_t>(n, size_-written_);
             if (amt != 0)
             {
@@ -301,7 +304,7 @@ public:
     std::streamsize write(const char* s, std::streamsize n)
     {
         std::streamsize total = 0;
-        while (n != 0)
+        while (n > 0)
         {
             if (offset_ % buffer_size_ == 0)
             {
@@ -328,7 +331,7 @@ public:
             if (offset_ % buffer_size_ == 0)
                 play(0);
         }
-        return (total != 0) ? total : -1;
+        return total;
     }
 
     void close()

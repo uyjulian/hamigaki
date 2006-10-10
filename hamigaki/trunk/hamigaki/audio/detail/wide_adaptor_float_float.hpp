@@ -54,14 +54,9 @@ public:
         std::streamsize total = 0;
 
         while (total != n)
-        {
-            std::streamsize amt = write_once(s + total, n - total);
-            if (amt == -1)
-                break;
-            total += amt;
-        }
+            total += write_once(s + total, n - total);
 
-        return (total != 0) ? total : -1;
+        return total;
     }
 
     std::streamsize optimal_buffer_size() const

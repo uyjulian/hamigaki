@@ -278,7 +278,7 @@ private:
     std::streamsize write_blocks(const char* s, std::streamsize n)
     {
         std::streamsize result = n * block_size_;
-        while (n != 0)
+        while (n > 0)
         {
             if (!has_buffer_)
             {
@@ -391,7 +391,7 @@ private:
     {
         ::waveInStart(handle_);
         std::streamsize total = 0;
-        while (n != 0)
+        while (n > 0)
         {
             if (!has_buffer_)
             {
@@ -438,7 +438,7 @@ public:
     std::streamsize write(const char* s, std::streamsize n)
     {
         std::streamsize total = 0;
-        while (n != 0)
+        while (n > 0)
         {
             int amt = ::write(fd_, s, n);
             if (amt < 0)
@@ -447,13 +447,13 @@ public:
             s += amt;
             n -= amt;
         }
-        return (total != 0) ? total : -1;
+        return total;
     }
 
     std::streamsize read(char* s, std::streamsize n)
     {
         std::streamsize total = 0;
-        while (n != 0)
+        while (n > 0)
         {
             int amt = ::read(fd_, s, n);
             if (amt < 0)

@@ -404,8 +404,7 @@ public:
         }
 
         std::streamsize result = boost::iostreams::write(sink_, s, amt);
-        if (result != -1)
-            pos_ += result;
+        pos_ += result;
         return result;
     }
 
@@ -1042,11 +1041,8 @@ public:
                 throw;
         }
 
-        if (amt != -1)
-        {
-            crc_.process_bytes(s, amt);
-            pos_ += amt;
-        }
+        crc_.process_bytes(s, amt);
+        pos_ += amt;
         return amt;
     }
 

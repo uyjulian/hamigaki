@@ -191,7 +191,7 @@ public:
         std::streamsize total = 0;
         if (offset_ % buffer_size_ == 0)
             start();
-        while (n != 0)
+        while (n > 0)
         {
             if (offset_ % buffer_size_ == 0)
             {

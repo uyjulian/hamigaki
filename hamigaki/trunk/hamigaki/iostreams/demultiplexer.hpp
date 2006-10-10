@@ -105,7 +105,7 @@ public:
     std::streamsize write(const CharT* s, std::streamsize n)
     {
         if (sinks_.empty())
-            return (n != 0) ? n : -1;
+            return std::max<std::streamsize>(n, 0);
 
         std::streamsize total = 0;
         while (total < n)
@@ -117,7 +117,7 @@ public:
             ++total;
         }
 
-        return (total != 0) ? total : -1;
+        return total;
     }
 
     void close()

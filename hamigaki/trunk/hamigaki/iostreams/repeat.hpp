@@ -51,7 +51,7 @@ public:
             return -1;
 
         std::streamsize total = 0;
-        while (n != 0)
+        while (n > 0)
         {
             std::streamsize amt = boost::iostreams::read(src_, s, n);
             if (amt == -1)

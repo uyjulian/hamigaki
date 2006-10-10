@@ -79,8 +79,7 @@ public:
 
         std::streamsize result =
             boost::iostreams::write(this->component(), s, n);
-        if (result != -1)
-            pos_ += result;
+        pos_ += result;
         return result;
     }
 

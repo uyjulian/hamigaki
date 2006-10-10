@@ -97,7 +97,7 @@ public:
     std::streamsize read(char* s, std::streamsize n)
     {
         std::streamsize total = 0;
-        while (n != 0)
+        while (n > 0)
         {
             ::DWORD buf_size = n;
             ::DWORD amt;
@@ -115,7 +115,7 @@ public:
     std::streamsize write(const char* s, std::streamsize n)
     {
         std::streamsize total = 0;
-        while (n != 0)
+        while (n > 0)
         {
             ::DWORD buf_size = n;
             ::DWORD amt;
@@ -187,7 +187,7 @@ public:
     std::streamsize read(char* s, std::streamsize n)
     {
         std::streamsize total = 0;
-        while (n != 0)
+        while (n > 0)
         {
             int amt = ::read(fd_, s, n);
             if (amt == -1)
@@ -204,7 +204,7 @@ public:
     std::streamsize write(const char* s, std::streamsize n)
     {
         std::streamsize total = 0;
-        while (n != 0)
+        while (n > 0)
         {
             int amt = ::write(fd_, s, n);
             if (amt == -1)
