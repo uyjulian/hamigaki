@@ -163,7 +163,7 @@ namespace hamigaki { namespace iostreams { \
 }} \
 /**/
 
-HAMIGAKI_IOSTREAMS_BLOCKING_SOURCE(boost::iostreams::non_blocking_adapter, 1);
-HAMIGAKI_IOSTREAMS_BLOCKING_SINK(boost::iostreams::non_blocking_adapter, 1);
+HAMIGAKI_IOSTREAMS_BLOCKING_SOURCE(boost::iostreams::non_blocking_adapter, 1)
+HAMIGAKI_IOSTREAMS_BLOCKING_SINK(boost::iostreams::non_blocking_adapter, 1)
 
 #endif // HAMIGAKI_IOSTREAMS_BLOCKING_HPP
