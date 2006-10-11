@@ -23,7 +23,7 @@ std::string md5checksum(const std::string& s)
 
 void md5_test()
 {
-    BOOST_CHECK_EQUAL(md5checksum("").size(), 32);
+    BOOST_CHECK_EQUAL(md5checksum("").size(), 32u);
 
     BOOST_CHECK_EQUAL(
         md5checksum(""),
