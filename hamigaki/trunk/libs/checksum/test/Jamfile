@@ -35,6 +35,6 @@ rule checksum-test ( sources + : requirements * )
 
 test-suite checksum :
     [ checksum-test md5_test.cpp : ]
-#    [ checksum-test sum8_test.cpp : ]
-#    [ checksum-test xor8_test.cpp : ]
+    [ checksum-test sum8_test.cpp : ]
+    [ checksum-test xor8_test.cpp : ]
     ;
