@@ -66,7 +66,7 @@ inline bool binary_write(Sink& sink, const T& x, const std::nothrow_t&)
 template<class T, class Sink>
 inline bool binary_write(Sink& sink, const T& x, const std::nothrow_t&)
 {
-    binary_write<native>(sink, x, std::nothrow);
+    return binary_write<native>(sink, x, std::nothrow);
 }
 
 template<endianness E, class T, class Sink>
