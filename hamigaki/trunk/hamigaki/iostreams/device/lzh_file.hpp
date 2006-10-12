@@ -20,12 +20,14 @@
 #include <boost/iostreams/detail/adapter/non_blocking_adapter.hpp>
 #include <boost/iostreams/detail/ios.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
+#include <boost/iostreams/close.hpp>
 #include <boost/iostreams/compose.hpp>
 #include <boost/iostreams/positioning.hpp>
 #include <boost/iostreams/flush.hpp>
 #include <boost/iostreams/read.hpp>
 #include <boost/iostreams/seek.hpp>
 #include <boost/iostreams/write.hpp>
+#include <boost/assert.hpp>
 #include <boost/crc.hpp>
 #include <boost/none.hpp>
 #include <boost/scoped_array.hpp>
@@ -158,11 +160,7 @@ public:
         : sink_(sink), overflow_(overflow)
         , pos_(0), end_(len != -1 ? len : -1)
     {
-        if (pos_ == end_)
-        {
-            overflow_ = true;
-            throw out_of_restriction();
-        }
+        BOOST_ASSERT(pos_ != end_);
     }
 
     std::streamsize write(const char_type* s, std::streamsize n)
@@ -332,7 +330,7 @@ public:
 
         read_extended_header(*hsrc, crc, next_size);
 
-        if (lv == '\x1')
+        if (lv == '\x01')
         {
             boost::iostreams::stream_offset size =
                 boost::iostreams::position_to_offset(
@@ -611,31 +609,32 @@ private:
             if (boost::iostreams::read(nb, buf.get(), ssize) != ssize)
                 throw BOOST_IOSTREAMS_FAILURE("bad LZH extended header");
 
+            char* data = buf.get()+1;
             boost::uint16_t size = next_size - 3;
             if (buf[0] == '\0')
-                header_crc = parse_common(buf.get()+1, size);
+                header_crc = parse_common(data, size);
             else if (buf[0] == '\x01')
-                leaf.assign(buf.get()+1, size);
+                leaf.assign(data, size);
             else if (buf[0] == '\x02')
-                branch = parse_directory(buf.get()+1, size);
+                branch = parse_directory(data, size);
             else if (buf[0] == '\x40')
-                header_.attributes = parse_attributes(buf.get()+1, size);
+                header_.attributes = parse_attributes(data, size);
             else if (buf[0] == '\x41')
-                header_.timestamp = parse_windows_timestamp(buf.get()+1, size);
+                header_.timestamp = parse_windows_timestamp(data, size);
             else if (buf[0] == '\x42')
             {
                 boost::tie(header_.compressed_size, header_.file_size)
-                    = parse_file_size(buf.get()+1, size);
+                    = parse_file_size(data, size);
             }
             else if (buf[0] == '\x46')
-                header_.code_page = parse_code_page(buf.get()+1, size);
+                header_.code_page = parse_code_page(data, size);
             else if (buf[0] == '\x50')
-                header_.permission = parse_unix_permission(buf.get()+1, size);
+                header_.permission = parse_unix_permission(data, size);
             else if (buf[0] == '\x54')
-                header_.update_time = parse_unix_timestamp(buf.get()+1, size);
+                header_.update_time = parse_unix_timestamp(data, size);
 
             crc.process_bytes(buf.get(), next_size);
-            next_size = hamigaki::decode_uint<little,2>(buf.get()+1+size);
+            next_size = hamigaki::decode_uint<little,2>(data+size);
         }
 
         if (header_crc)
@@ -851,7 +850,8 @@ public:
         if (image_)
             close();
 
-        boost::iostreams::put(sink_, '\0');
+        iostreams::blocking_put(sink_, '\0');
+        boost::iostreams::close(sink_, BOOST_IOS::out);
     }
 
 private:
@@ -949,7 +949,7 @@ private:
 
         if (header_.is_directory())
         {
-            write_empty_extended_header<0x03>(tmp);
+            write_empty_extended_header<0x01>(tmp);
             write_extended_header(tmp, 0x02, convert_path(header_.path));
         }
         else
@@ -962,10 +962,7 @@ private:
         }
 
         if (header_.attributes != lha::attributes::archive)
-        {
-            tmp.write("\x05\x00\x40", 3);
-            iostreams::write_uint16<little>(tmp, header_.attributes);
-        }
+            write_extended_header<0x40>(tmp, header_.attributes);
 
         if (header_.timestamp)
             write_extended_header<0x41>(tmp, header_.timestamp.get());
@@ -982,6 +979,9 @@ private:
                 );
             }
         }
+
+        if (header_.permission)
+            write_extended_header<0x50>(tmp, header_.permission.get());
 
         tmp.write("\x06\x00\x00", 3);
         std::size_t crc_off = buffer.size();

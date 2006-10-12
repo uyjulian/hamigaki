@@ -68,7 +68,7 @@ void get_timestamp_impl(
 io_ex::lha::windows_timestamp get_file_timestamp(const fs::path& ph)
 {
     ::HANDLE handle = ::CreateFileA(
-        ph.native_file_string().c_str(), GENERIC_WRITE, 0, 0,
+        ph.native_file_string().c_str(), GENERIC_READ, 0, 0,
         OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
     if (handle == INVALID_HANDLE_VALUE)
         throw std::runtime_error("CreateFile error");
@@ -82,7 +82,7 @@ boost::optional<io_ex::lha::windows_timestamp>
 get_directory_timestamp(const fs::path& ph)
 {
     ::HANDLE handle = ::CreateFileA(
-        ph.native_file_string().c_str(), GENERIC_WRITE, 0, 0,
+        ph.native_file_string().c_str(), GENERIC_READ, 0, 0,
         OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0);
     // Win9X does not support FILE_FLAG_BACKUP_SEMANTICS flag
     if (handle == INVALID_HANDLE_VALUE)
@@ -118,11 +118,16 @@ int main(int argc, char* argv[])
             head.update_time = fs::last_write_time(head.path);
 
 #if defined(BOOST_WINDOWS)
+            head.attributes = ::GetFileAttributes(head.path_string().c_str());
             head.code_page = ::GetACP();
             if (fs::is_directory(head.path))
                 head.timestamp = get_directory_timestamp(head.path);
             else
                 head.timestamp = get_file_timestamp(head.path);
+#elif defined(BOOST_HAS_UNISTD_H)
+            struct stat st;
+            if (::stat(head.path_string().c_str(), &st) == 0)
+                head.permission = st.st_mode;
 #endif
 
             lzh.create_entry(head);
