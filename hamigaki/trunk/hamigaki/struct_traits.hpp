@@ -121,6 +121,16 @@ struct struct_size
 
 
 template<class T>
+struct binary_size
+{
+    typedef typename detail::sizeof_impl<
+        T,
+        typename struct_traits<T>::members
+    >::type type;
+};
+
+
+template<class T>
 struct member_offset
 {
     typedef typename boost::mpl::accumulate<

@@ -11,12 +11,12 @@
 #define HAMIGAKI_IOSTREAMS_DEVICE_LZH_FILE_HPP
 
 #include <hamigaki/checksum/sum8.hpp>
+#include <hamigaki/iostreams/detail/lha/lzh_header.hpp>
 #include <hamigaki/iostreams/device/file.hpp>
 #include <hamigaki/iostreams/filter/lzhuf.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>
 #include <hamigaki/iostreams/relative_restrict.hpp>
 #include <hamigaki/iostreams/tiny_restrict.hpp>
-#include <boost/filesystem/path.hpp>
 #include <boost/iostreams/detail/adapter/non_blocking_adapter.hpp>
 #include <boost/iostreams/detail/ios.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
@@ -26,11 +26,8 @@
 #include <boost/iostreams/read.hpp>
 #include <boost/iostreams/seek.hpp>
 #include <boost/iostreams/write.hpp>
-#include <boost/mpl/list.hpp>
 #include <boost/crc.hpp>
-#include <boost/cstdint.hpp>
 #include <boost/none.hpp>
-#include <boost/optional.hpp>
 #include <boost/scoped_array.hpp>
 #include <algorithm>
 #include <cstring>
@@ -54,233 +51,7 @@ public:
     }
 };
 
-struct attributes
-{
-    static const boost::uint16_t read_only  = 0x0001;
-    static const boost::uint16_t hidden     = 0x0002;
-    static const boost::uint16_t system     = 0x0004;
-    static const boost::uint16_t directory  = 0x0010;
-    static const boost::uint16_t archive    = 0x0020;
-
-    static const boost::uint16_t mask       = 0x0037;
-};
-
-struct windows_timestamp
-{
-    boost::uint64_t creation_time;
-    boost::uint64_t last_write_time;
-    boost::uint64_t last_access_time;
-};
-
-struct header
-{
-    char method[5];
-    boost::int64_t compressed_size;
-    boost::int64_t file_size;
-    std::time_t update_time;
-    boost::uint16_t attributes;
-    boost::filesystem::path path;
-    boost::optional<boost::uint16_t> crc16_checksum;
-    boost::optional<char> os;
-    boost::optional<windows_timestamp> timestamp;
-    boost::optional<boost::uint32_t> code_page;
-    boost::optional<boost::uint16_t> permission;
-
-    header()
-        : compressed_size(-1), file_size(-1), update_time(-1)
-        , attributes(attributes::archive)
-    {
-        std::memset(method, 0, 5);
-    }
-
-    bool is_directory() const
-    {
-        return (attributes & attributes::directory) != 0;
-    }
-
-    std::string path_string() const
-    {
-        if (is_directory())
-            return path.native_directory_string();
-        else
-            return path.native_file_string();
-    }
-};
-
-struct msdos_date_time
-{
-    boost::uint16_t time;
-    boost::uint16_t date;
-
-    int year() const
-    {
-        return 1980 + (date >> 9);
-    }
-
-    int month() const
-    {
-        return (date >> 5) & 0x0F;
-    }
-
-    int day() const
-    {
-        return date & 0x1F;
-    }
-
-    int hours() const
-    {
-        return time >> 11;
-    }
-
-    int minutes() const
-    {
-        return (time >> 5) & 0x3F;
-    }
-
-    int seconds() const
-    {
-        return (time << 1) & 0x3F;
-    }
-
-    std::time_t to_time_t() const
-    {
-        std::tm lt;
-
-        lt.tm_year = year() - 1900;
-        lt.tm_mon = month() - 1;
-        lt.tm_mday = day();
-        lt.tm_hour = hours();
-        lt.tm_min = minutes();
-        lt.tm_sec = seconds();
-        lt.tm_isdst = -1;
-
-        return std::mktime(&lt);
-    }
-};
-
-struct lv0_header
-{
-    boost::uint8_t header_size;
-    boost::uint8_t header_checksum;
-    char method[5];
-    boost::uint32_t compressed_size;
-    boost::uint32_t file_size;
-    msdos_date_time update_date_time;
-    boost::uint16_t attributes;
-};
-
-struct lv1_header
-{
-    boost::uint8_t header_size;
-    boost::uint8_t header_checksum;
-    char method[5];
-    boost::uint32_t skip_size;
-    boost::uint32_t file_size;
-    msdos_date_time update_date_time;
-    boost::uint8_t reserved;
-    boost::uint8_t level;
-};
-
-struct lv2_header
-{
-    boost::uint16_t header_size;
-    char method[5];
-    boost::uint32_t compressed_size;
-    boost::uint32_t file_size;
-    boost::int32_t update_time;
-    boost::uint8_t reserved;
-    boost::uint8_t level;
-};
-
 } } } // End namespaces lha, iostreams, hamigaki.
-
-namespace hamigaki {
-
-template<>
-struct struct_traits<iostreams::lha::msdos_date_time>
-{
-private:
-    typedef iostreams::lha::msdos_date_time self;
-
-public:
-    typedef boost::mpl::list<
-        member<self, boost::uint16_t, &self::time, little>,
-        member<self, boost::uint16_t, &self::date, little>
-    > members;
-};
-
-template<>
-struct struct_traits<iostreams::lha::windows_timestamp>
-{
-private:
-    typedef iostreams::lha::windows_timestamp self;
-
-public:
-    typedef boost::mpl::list<
-        member<self, boost::uint64_t, &self::creation_time, little>,
-        member<self, boost::uint64_t, &self::last_write_time, little>,
-        member<self, boost::uint64_t, &self::last_access_time, little>
-    > members;
-};
-
-template<>
-struct struct_traits<iostreams::lha::lv0_header>
-{
-private:
-    typedef iostreams::lha::lv0_header self;
-    typedef iostreams::lha::msdos_date_time date_time_type;
-
-public:
-    typedef boost::mpl::list<
-        member<self, boost::uint8_t, &self::header_size>,
-        member<self, boost::uint8_t, &self::header_checksum>,
-        member<self, char[5], &self::method>,
-        member<self, boost::uint32_t, &self::compressed_size, little>,
-        member<self, boost::uint32_t, &self::file_size, little>,
-        member<self, date_time_type, &self::update_date_time>,
-        member<self, boost::uint16_t, &self::attributes, little>
-    > members;
-};
-
-template<>
-struct struct_traits<iostreams::lha::lv1_header>
-{
-private:
-    typedef iostreams::lha::lv1_header self;
-    typedef iostreams::lha::msdos_date_time date_time_type;
-
-public:
-    typedef boost::mpl::list<
-        member<self, boost::uint8_t, &self::header_size>,
-        member<self, boost::uint8_t, &self::header_checksum>,
-        member<self, char[5], &self::method>,
-        member<self, boost::uint32_t, &self::skip_size, little>,
-        member<self, boost::uint32_t, &self::file_size, little>,
-        member<self, date_time_type, &self::update_date_time>,
-        member<self, boost::uint8_t, &self::reserved>,
-        member<self, boost::uint8_t, &self::level>
-    > members;
-};
-
-template<>
-struct struct_traits<iostreams::lha::lv2_header>
-{
-private:
-    typedef iostreams::lha::lv2_header self;
-
-public:
-    typedef boost::mpl::list<
-        member<self, boost::uint16_t, &self::header_size, little>,
-        member<self, char[5], &self::method>,
-        member<self, boost::uint32_t, &self::compressed_size, little>,
-        member<self, boost::uint32_t, &self::file_size, little>,
-        member<self, boost::int32_t, &self::update_time, little>,
-        member<self, boost::uint8_t, &self::reserved>,
-        member<self, boost::uint8_t, &self::level>
-    > members;
-};
-
-} // End namespace hamigaki.
 
 namespace hamigaki { namespace iostreams {
 
@@ -418,7 +189,7 @@ private:
 } // namespace detail
 
 template<class Source>
-class basic_lzh_file_source
+class basic_lzh_file_source_impl
 {
 private:
     typedef hamigaki::iostreams::relative_restriction<Source> restricted_type;
@@ -429,13 +200,7 @@ private:
     typedef tiny_restriction<lzhuf_type> restricted_lzhuf_type;
 
 public:
-    typedef char char_type;
-
-    struct category :
-        boost::iostreams::input,
-        boost::iostreams::device_tag {};
-
-    explicit basic_lzh_file_source(const Source& src)
+    explicit basic_lzh_file_source_impl(const Source& src)
         : src_(src), next_offset_(0)
     {
         // TODO: skip data before the archives
@@ -475,14 +240,12 @@ public:
 
             hsrc = restricted_type(src_, 0, rest_size);
 
-            std::memcpy(header_.method, lv0.method, 5);
+            header_.method = lv0.method;
             header_.compressed_size = lv0.compressed_size;
             header_.file_size = lv0.file_size;
             header_.update_time = lv0.update_date_time.to_time_t();
             header_.attributes = lv0.attributes;
             header_.path = read_path(*hsrc, cs);
-            header_.crc16_checksum = boost::none;
-            header_.os = boost::none;
 
             skip_unknown_header(*hsrc, cs);
             if (cs.checksum() != lv0.header_checksum)
@@ -505,12 +268,12 @@ public:
 
             hsrc = restricted_type(src_, 0, rest_size);
 
-            std::memcpy(header_.method, lv1.method, 5);
+            header_.method = lv1.method;
             header_.compressed_size = lv1.skip_size;
             header_.file_size = lv1.file_size;
             header_.update_time = lv1.update_date_time.to_time_t();
 
-            if (std::memcmp(lv1.method, "-lhd-", 5) == 0)
+            if (lv1.method == "-lhd-")
                 header_.attributes = lha::attributes::directory;
             else
                 header_.attributes = lha::attributes::archive;
@@ -540,12 +303,12 @@ public:
 
             hsrc = restricted_type(src_, 0, rest_size);
 
-            std::memcpy(header_.method, lv2.method, 5);
+            header_.method = lv2.method;
             header_.compressed_size = lv2.compressed_size;
             header_.file_size = lv2.file_size;
             header_.update_time = static_cast<std::time_t>(lv2.update_time);
 
-            if (std::memcmp(lv2.method, "-lhd-", 5) == 0)
+            if (lv2.method == "-lhd-")
                 header_.attributes = lha::attributes::directory;
             else
                 header_.attributes = lha::attributes::archive;
@@ -557,12 +320,12 @@ public:
         else
             throw BOOST_IOSTREAMS_FAILURE("unsupported LZH header");
 
-        if ((std::memcmp(header_.method, "-lhd-", 5) != 0) &&
-            (std::memcmp(header_.method, "-lh0-", 5) != 0) &&
-            (std::memcmp(header_.method, "-lh4-", 5) != 0) &&
-            (std::memcmp(header_.method, "-lh5-", 5) != 0) &&
-            (std::memcmp(header_.method, "-lh6-", 5) != 0) &&
-            (std::memcmp(header_.method, "-lh7-", 5) != 0) )
+        if ((header_.method != "-lhd-") &&
+            (header_.method != "-lh0-") &&
+            (header_.method != "-lh4-") &&
+            (header_.method != "-lh5-") &&
+            (header_.method != "-lh6-") &&
+            (header_.method != "-lh7-") )
         {
             throw BOOST_IOSTREAMS_FAILURE("unsupported LZH method");
         }
@@ -585,15 +348,15 @@ public:
         if ((header_.attributes & lha::attributes::directory) == 0)
         {
             restricted_type plain(src_, 0, header_.compressed_size);
-            if (std::memcmp(header_.method, "-lh0-", 5) == 0)
+            if (header_.method == "-lh0-")
                 image_.reset(new detail::lzh_source<restricted_type>(plain));
-            else if (std::memcmp(header_.method, "-lh4-", 5) == 0)
+            else if (header_.method == "-lh4-")
                 image_.reset(new_lzhuf_source(plain, 12, header_.file_size));
-            else if (std::memcmp(header_.method, "-lh5-", 5) == 0)
+            else if (header_.method == "-lh5-")
                 image_.reset(new_lzhuf_source(plain, 13, header_.file_size));
-            else if (std::memcmp(header_.method, "-lh6-", 5) == 0)
+            else if (header_.method == "-lh6-")
                 image_.reset(new_lzhuf_source(plain, 15, header_.file_size));
-            else if (std::memcmp(header_.method, "-lh7-", 5) == 0)
+            else if (header_.method == "-lh7-")
                 image_.reset(new_lzhuf_source(plain, 16, header_.file_size));
         }
 
@@ -659,7 +422,7 @@ private:
         if (boost::iostreams::read(nb, buf, 2) != 2)
             throw boost::iostreams::detail::bad_read();
         cs.process_bytes(buf, sizeof(buf));
-        return hamigaki::decode_uint<hamigaki::little, 2>(buf);
+        return hamigaki::decode_uint<little,2>(buf);
     }
 
     template<class OtherSource, class Checksum>
@@ -744,8 +507,7 @@ private:
         if (n < 2)
             throw BOOST_IOSTREAMS_FAILURE("bad LZH common extended header");
 
-        boost::uint16_t header_crc =
-            hamigaki::decode_uint<hamigaki::little,2>(s);
+        boost::uint16_t header_crc = hamigaki::decode_uint<little,2>(s);
 
         s[0] = '\0';
         s[1] = '\0';
@@ -780,7 +542,7 @@ private:
         if (n < 2)
             throw BOOST_IOSTREAMS_FAILURE("bad LZH attributes extended header");
 
-        return hamigaki::decode_uint<hamigaki::little, 2>(s);
+        return hamigaki::decode_uint<little,2>(s);
     }
 
     static lha::windows_timestamp
@@ -800,8 +562,8 @@ private:
         if (n < 16)
             throw BOOST_IOSTREAMS_FAILURE("bad LZH file size extended header");
 
-        boost::int64_t comp = hamigaki::decode_int<hamigaki::little,8>(s);
-        boost::int64_t org = hamigaki::decode_int<hamigaki::little,8>(s);
+        boost::int64_t comp = hamigaki::decode_int<little,8>(s);
+        boost::int64_t org = hamigaki::decode_int<little,8>(s);
         return std::make_pair(comp, org);
     }
 
@@ -810,7 +572,7 @@ private:
         if (n < 2)
             throw BOOST_IOSTREAMS_FAILURE("bad LZH code page extended header");
 
-        return hamigaki::decode_uint<hamigaki::little, 4>(s);
+        return hamigaki::decode_uint<little,4>(s);
     }
 
     static boost::uint16_t parse_unix_permission(char* s, boost::uint32_t n)
@@ -818,7 +580,7 @@ private:
         if (n < 2)
             throw BOOST_IOSTREAMS_FAILURE("bad LZH permission extended header");
 
-        return hamigaki::decode_uint<hamigaki::little, 2>(s);
+        return hamigaki::decode_uint<little,2>(s);
     }
 
     static std::time_t parse_unix_timestamp(char* s, boost::uint32_t n)
@@ -826,8 +588,7 @@ private:
         if (n < 4)
             throw BOOST_IOSTREAMS_FAILURE("bad LZH timestamp extended header");
 
-        return static_cast<std::time_t>(
-            hamigaki::decode_int<hamigaki::little, 4>(s));
+        return static_cast<std::time_t>(hamigaki::decode_int<little,4>(s));
     }
 
     template<class OtherSource>
@@ -874,8 +635,7 @@ private:
                 header_.update_time = parse_unix_timestamp(buf.get()+1, size);
 
             crc.process_bytes(buf.get(), next_size);
-            next_size =
-                hamigaki::decode_uint<hamigaki::little, 2>(buf.get()+1+size);
+            next_size = hamigaki::decode_uint<little,2>(buf.get()+1+size);
         }
 
         if (header_crc)
@@ -889,6 +649,44 @@ private:
         else if (!branch.empty())
             header_.path = branch / header_.path;
     }
+};
+
+
+template<class Source>
+class basic_lzh_file_source
+{
+private:
+    typedef basic_lzh_file_source_impl<Source> impl_type;
+
+public:
+    typedef char char_type;
+
+    struct category :
+        boost::iostreams::input,
+        boost::iostreams::device_tag {};
+
+    explicit basic_lzh_file_source(const Source& src)
+        : pimpl_(new impl_type(src))
+    {
+    }
+
+    bool next_entry()
+    {
+        return pimpl_->next_entry();
+    }
+
+    lha::header header() const
+    {
+        return pimpl_->header();
+    }
+
+    std::streamsize read(char* s, std::streamsize n)
+    {
+        return pimpl_->read(s, n);
+    }
+
+private:
+    boost::shared_ptr<impl_type> pimpl_;
 };
 
 class lzh_file_source : public basic_lzh_file_source<file_source>
@@ -921,7 +719,7 @@ public:
 
     void default_method(const char* method)
     {
-        std::memcpy(method_, method, 5);
+        method_  = method;
     }
 
     void create_entry(const lha::header& head)
@@ -937,18 +735,18 @@ public:
 
         header_ = head;
         if (header_.is_directory())
-            std::memcpy(header_.method, "-lhd-", 5);
+            header_.method = "-lhd-";
         else if (header_.file_size < 3)
-            std::memcpy(header_.method, "-lh0-", 5);
-        else if (!header_.method[0])
-            std::memcpy(header_.method, method_, 5);
+            header_.method = "-lh0-";
+        else if (header_.method.empty())
+            header_.method = method_;
 
-        if ((std::memcmp(header_.method, "-lhd-", 5) != 0) &&
-            (std::memcmp(header_.method, "-lh0-", 5) != 0) &&
-            (std::memcmp(header_.method, "-lh4-", 5) != 0) &&
-            (std::memcmp(header_.method, "-lh5-", 5) != 0) &&
-            (std::memcmp(header_.method, "-lh6-", 5) != 0) &&
-            (std::memcmp(header_.method, "-lh7-", 5) != 0) )
+        if ((header_.method != "-lhd-") &&
+            (header_.method != "-lh0-") &&
+            (header_.method != "-lh4-") &&
+            (header_.method != "-lh5-") &&
+            (header_.method != "-lh6-") &&
+            (header_.method != "-lh7-") )
         {
             throw BOOST_IOSTREAMS_FAILURE("unsupported LZH method");
         }
@@ -961,15 +759,15 @@ public:
         start_pos_ = boost::iostreams::position_to_offset(
             boost::iostreams::seek(sink_, 0, BOOST_IOS::cur));
 
-        if (std::memcmp(header_.method, "-lh0-", 5) == 0)
+        if (header_.method == "-lh0-")
             image_.reset(new detail::lzh_sink<ref_type>(boost::ref(sink_)));
-        else if (std::memcmp(header_.method, "-lh4-", 5) == 0)
+        else if (header_.method == "-lh4-")
             image_.reset(new_lzhuf_sink(12, header_.file_size));
-        else if (std::memcmp(header_.method, "-lh5-", 5) == 0)
+        else if (header_.method == "-lh5-")
             image_.reset(new_lzhuf_sink(13, header_.file_size));
-        else if (std::memcmp(header_.method, "-lh6-", 5) == 0)
+        else if (header_.method == "-lh6-")
             image_.reset(new_lzhuf_sink(15, header_.file_size));
-        else if (std::memcmp(header_.method, "-lh7-", 5) == 0)
+        else if (header_.method == "-lh7-")
             image_.reset(new_lzhuf_sink(16, header_.file_size));
     }
 
@@ -980,7 +778,7 @@ public:
 
         boost::iostreams::seek(sink_, header_pos_, BOOST_IOS::beg);
 
-        std::memcpy(header_.method, "-lh0-", 5);
+        header_.method = "-lh0-";
         write_header();
 
         crc_.reset();
@@ -1075,12 +873,32 @@ private:
         return os.str();
     }
 
+    template<unsigned char Type, class OtherSink>
+    static void write_empty_extended_header(OtherSink& sink)
+    {
+        static const char buf[3] = { '\x03', '\x00', static_cast<char>(Type) };
+        sink.write(buf, 3);
+    }
+
+    template<unsigned char Type, class T, class OtherSink>
+    static void write_extended_header(OtherSink& sink, const T& x)
+    {
+        static const char buf[3] =
+        {
+            static_cast<unsigned char>((binary_size<T>::type::value+3)),
+            static_cast<unsigned char>((binary_size<T>::type::value+3) >> 8),
+            static_cast<char>(Type)
+        };
+        sink.write(buf, 3);
+        iostreams::binary_write<little>(sink, x);
+    }
+
     template<class OtherSink>
     static void write_extended_header(
-        OtherSink& sink, boost::uint16_t type, const std::string& s)
+        OtherSink& sink, unsigned char type, const std::string& s)
     {
         iostreams::write_uint16<little>(sink, s.size()+3);
-        iostreams::blocking_put(sink, static_cast<unsigned char>(type));
+        iostreams::blocking_put(sink, static_cast<char>(type));
         if (!s.empty())
             sink.write(&s[0], s.size());
     }
@@ -1089,7 +907,7 @@ private:
     {
         lha::lv2_header lv2;
         lv2.header_size = 0;
-        std::memcpy(lv2.method, header_.method, 5);
+        lv2.method = header_.method;
 
         if (header_.compressed_size != -1)
         {
@@ -1115,7 +933,7 @@ private:
 
         std::string buffer;
         boost::iostreams::back_insert_device<std::string> tmp(buffer);
-        hamigaki::iostreams::binary_write(tmp, lv2);
+        iostreams::binary_write(tmp, lv2);
         if (header_.crc16_checksum)
             iostreams::write_uint16<little>(tmp, header_.crc16_checksum.get());
         else
@@ -1127,14 +945,11 @@ private:
             boost::iostreams::put(tmp, HAMIGAKI_IOSTREAMS_LHA_OS_TYPE);
 
         if (header_.code_page)
-        {
-            tmp.write("\x07\x00\x46", 3);
-            iostreams::write_uint32<little>(tmp, header_.code_page.get());
-        }
+            write_extended_header<0x46>(tmp, header_.code_page.get());
 
         if (header_.is_directory())
         {
-            tmp.write("\x03\x00\x01", 3);
+            write_empty_extended_header<0x03>(tmp);
             write_extended_header(tmp, 0x02, convert_path(header_.path));
         }
         else
@@ -1153,19 +968,18 @@ private:
         }
 
         if (header_.timestamp)
-        {
-            tmp.write("\x1B\x00\x41", 3);
-            hamigaki::iostreams::binary_write(tmp, header_.timestamp.get());
-        }
+            write_extended_header<0x41>(tmp, header_.timestamp.get());
 
         if ((header_.compressed_size != -1) && (header_.file_size != -1))
         {
             if (((header_.compressed_size >> 32) != 0) ||
                 ((header_.file_size >> 32) != 0))
             {
-                tmp.write("\x13\x00\x42", 3);
-                iostreams::write_int64<little>(tmp, header_.compressed_size);
-                iostreams::write_int64<little>(tmp, header_.file_size);
+                write_extended_header<0x42>(tmp,
+                    lha::file_size_header(
+                        header_.compressed_size, header_.file_size
+                    )
+                );
             }
         }
 
@@ -1177,12 +991,11 @@ private:
         // end of extended headers
         iostreams::write_uint16<little>(tmp, 0);
 
-        hamigaki::encode_uint<hamigaki::little,2>(&buffer[0], buffer.size());
+        hamigaki::encode_uint<little,2>(&buffer[0], buffer.size());
 
         boost::crc_16_type crc;
         crc.process_bytes(&buffer[0], buffer.size());
-        hamigaki::encode_uint<
-            hamigaki::little,2>(&buffer[crc_off], crc.checksum());
+        hamigaki::encode_uint<little,2>(&buffer[crc_off], crc.checksum());
 
         boost::iostreams::write(sink_, &buffer[0], buffer.size());
     }

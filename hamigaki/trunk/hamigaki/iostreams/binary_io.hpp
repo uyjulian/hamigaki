@@ -17,10 +17,10 @@
 
 namespace hamigaki { namespace iostreams {
 
-template<class Source, class T>
+template<endianness E, class T, class Source>
 inline bool binary_read(Source& src, T& x, const std::nothrow_t&)
 {
-    char data[struct_size<T>::type::value];
+    char data[binary_size<T>::type::value];
     std::memset(data, 0, sizeof(data));
 
     const std::streamsize size = static_cast<std::streamsize>(sizeof(data));
@@ -28,21 +28,33 @@ inline bool binary_read(Source& src, T& x, const std::nothrow_t&)
     if (boost::iostreams::read(nb, data, size) != size)
         return false;
 
-    hamigaki::binary_read(data, x);
+    hamigaki::binary_read<E>(data, x);
     return true;
 }
 
-template<class Source, class T>
+template<class T, class Source>
+inline bool binary_read(Source& src, T& x, const std::nothrow_t&)
+{
+    return binary_read<native>(src, x, std::nothrow);
+}
+
+template<endianness E, class T, class Source>
 inline void binary_read(Source& src, T& x)
 {
-    if (!hamigaki::iostreams::binary_read(src, x, std::nothrow))
+    if (!hamigaki::iostreams::binary_read<E>(src, x, std::nothrow))
         throw boost::iostreams::detail::bad_read();
 }
 
-template<class Sink, class T>
+template<class T, class Source>
+inline void binary_read(Source& src, T& x)
+{
+    binary_read<native>(src, x);
+}
+
+template<endianness E, class T, class Sink>
 inline bool binary_write(Sink& sink, const T& x, const std::nothrow_t&)
 {
-    char data[struct_size<T>::type::value];
+    char data[binary_size<T>::type::value];
     std::memset(data, 0, sizeof(data));
     hamigaki::binary_write(data, x);
 
@@ -51,11 +63,23 @@ inline bool binary_write(Sink& sink, const T& x, const std::nothrow_t&)
     return boost::iostreams::write(nb, data, size) == size;
 }
 
-template<class Sink, class T>
+template<class T, class Sink>
+inline bool binary_write(Sink& sink, const T& x, const std::nothrow_t&)
+{
+    binary_write<native>(sink, x, std::nothrow);
+}
+
+template<endianness E, class T, class Sink>
 inline void binary_write(Sink& sink, const T& x)
 {
-    if (!hamigaki::iostreams::binary_write(sink, x, std::nothrow))
+    if (!hamigaki::iostreams::binary_write<E>(sink, x, std::nothrow))
         throw boost::iostreams::detail::bad_write();
+}
+
+template<class T, class Sink>
+inline void binary_write(Sink& sink, const T& x)
+{
+    binary_write<native>(sink, x);
 }
 
 

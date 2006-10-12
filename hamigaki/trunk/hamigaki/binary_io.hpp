@@ -293,10 +293,26 @@ inline void binary_read(const char* s, T& x)
     binary_io_traits<native,T>::read(s, x);
 }
 
-template<class T, endianness E>
+template<endianness E, class T>
 inline void binary_read(const char* s, T& x)
 {
     binary_io_traits<E,T>::read(s, x);
+}
+
+template<class T>
+inline T binary_read(const char* s)
+{
+    T tmp;
+    binary_io_traits<native,T>::read(s, tmp);
+    return tmp;
+}
+
+template<endianness E, class T>
+inline T binary_read(const char* s)
+{
+    T tmp;
+    binary_io_traits<E,T>::read(s, tmp);
+    return tmp;
 }
 
 
@@ -306,7 +322,7 @@ inline void binary_write(char* s, const T& x)
     binary_io_traits<native,T>::write(s, x);
 }
 
-template<class T, endianness E>
+template<endianness E, class T>
 inline void binary_write(char* s, const T& x)
 {
     binary_io_traits<E,T>::write(s, x);
