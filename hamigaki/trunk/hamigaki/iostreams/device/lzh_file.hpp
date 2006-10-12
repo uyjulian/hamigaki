@@ -32,7 +32,6 @@
 #include <boost/none.hpp>
 #include <boost/scoped_array.hpp>
 #include <algorithm>
-#include <cstring>
 #include <iterator>
 #include <numeric>
 #include <sstream>
@@ -711,9 +710,8 @@ private:
 
 public:
     explicit basic_lzh_file_sink_impl(const Sink& sink)
-        : sink_(sink), overflow_(false), pos_(0)
+        : sink_(sink), overflow_(false), method_("-lh5-"), pos_(0)
     {
-        std::memcpy(method_, "-lh5-", 5);
     }
 
     void default_method(const char* method)
@@ -859,7 +857,7 @@ private:
     bool overflow_;
     lha::header header_;
     boost::shared_ptr<detail::lzh_sink_base> image_;
-    char method_[5];
+    lha::compress_method method_;
     boost::iostreams::stream_offset header_pos_;
     boost::iostreams::stream_offset start_pos_;
     boost::crc_16_type crc_;
