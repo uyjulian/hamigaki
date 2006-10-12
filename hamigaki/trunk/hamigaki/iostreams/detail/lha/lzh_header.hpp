@@ -17,6 +17,7 @@
 #include <boost/cstdint.hpp>
 #include <boost/operators.hpp>
 #include <boost/optional.hpp>
+#include <cstring>
 #include <ctime>
 
 namespace hamigaki { namespace iostreams { namespace lha {
