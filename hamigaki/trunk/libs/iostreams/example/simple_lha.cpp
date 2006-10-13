@@ -23,6 +23,7 @@
 #include <boost/filesystem/convenience.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/iostreams/copy.hpp>
+#include <boost/none.hpp>
 #include <clocale>
 #include <exception>
 #include <iostream>
@@ -127,7 +128,14 @@ int main(int argc, char* argv[])
 #elif defined(BOOST_HAS_UNISTD_H)
             struct stat st;
             if (::stat(head.path_string().c_str(), &st) == 0)
+            {
                 head.permission = st.st_mode;
+
+                io_ex::lha::unix_owner owner;
+                owner.gid = st.st_gid;
+                owner.uid = st.st_uid;
+                head.owner = owner;
+            }
 #endif
 
             lzh.create_entry(head);

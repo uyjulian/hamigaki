@@ -135,6 +135,12 @@ int main(int argc, char* argv[])
 #elif defined(BOOST_HAS_UNISTD_H)
             if (head.permission)
                 ::chmod(head.path_string().c_str(), *head.permission);
+            if (head.owner)
+            {
+                ::chown(
+                    head.path_string().c_str(),
+                    head.owner->uid, head.owner->gid);
+            }
 #endif
 
 #if defined(BOOST_WINDOWS)

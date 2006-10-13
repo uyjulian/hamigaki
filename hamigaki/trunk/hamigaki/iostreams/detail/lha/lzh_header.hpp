@@ -79,6 +79,12 @@ struct windows_timestamp
     boost::uint64_t last_access_time;
 };
 
+struct unix_owner
+{
+    boost::uint16_t gid;
+    boost::uint16_t uid;
+};
+
 struct header
 {
     compress_method method;
@@ -92,6 +98,7 @@ struct header
     boost::optional<windows_timestamp> timestamp;
     boost::optional<boost::uint32_t> code_page;
     boost::optional<boost::uint16_t> permission;
+    boost::optional<unix_owner> owner;
 
     header()
         : compressed_size(-1), file_size(-1), update_time(-1)
@@ -249,6 +256,19 @@ public:
         member<self, boost::uint64_t, &self::creation_time, little>,
         member<self, boost::uint64_t, &self::last_write_time, little>,
         member<self, boost::uint64_t, &self::last_access_time, little>
+    > members;
+};
+
+template<>
+struct struct_traits<iostreams::lha::unix_owner>
+{
+private:
+    typedef iostreams::lha::unix_owner self;
+
+public:
+    typedef boost::mpl::list<
+        member<self, boost::uint16_t, &self::gid, little>,
+        member<self, boost::uint16_t, &self::uid, little>
     > members;
 };
 

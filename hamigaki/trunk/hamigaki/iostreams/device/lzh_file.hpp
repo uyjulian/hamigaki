@@ -16,20 +16,15 @@
 #include <hamigaki/iostreams/filter/lzhuf.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>
 #include <hamigaki/iostreams/relative_restrict.hpp>
+#include <hamigaki/iostreams/seek.hpp>
 #include <hamigaki/iostreams/tiny_restrict.hpp>
-#include <boost/iostreams/detail/adapter/non_blocking_adapter.hpp>
 #include <boost/iostreams/detail/ios.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/iostreams/close.hpp>
 #include <boost/iostreams/compose.hpp>
-#include <boost/iostreams/positioning.hpp>
 #include <boost/iostreams/flush.hpp>
-#include <boost/iostreams/read.hpp>
-#include <boost/iostreams/seek.hpp>
-#include <boost/iostreams/write.hpp>
 #include <boost/assert.hpp>
 #include <boost/crc.hpp>
-#include <boost/none.hpp>
 #include <boost/scoped_array.hpp>
 #include <algorithm>
 #include <iterator>
@@ -189,7 +184,7 @@ template<class Source>
 class basic_lzh_file_source_impl
 {
 private:
-    typedef hamigaki::iostreams::relative_restriction<Source> restricted_type;
+    typedef iostreams::relative_restriction<Source> restricted_type;
 
     typedef boost::iostreams::composite<
         lzhuf_decompressor,restricted_type> lzhuf_type;
@@ -209,7 +204,7 @@ public:
     bool next_entry()
     {
         image_.reset();
-        boost::iostreams::seek(src_, next_offset_, std::ios_base::beg);
+        boost::iostreams::seek(src_, next_offset_, BOOST_IOS::beg);
         crc_.reset();
         header_ = lha::header();
 
@@ -330,17 +325,9 @@ public:
         read_extended_header(*hsrc, crc, next_size);
 
         if (lv == '\x01')
-        {
-            boost::iostreams::stream_offset size =
-                boost::iostreams::position_to_offset(
-                    boost::iostreams::seek(*hsrc, 0, BOOST_IOS::cur));
-            header_.compressed_size -= size;
-        }
+            header_.compressed_size -= iostreams::tell_offset(*hsrc);
 
-        next_offset_ =
-            boost::iostreams::position_to_offset(
-                boost::iostreams::seek(src_, 0, std::ios_base::cur)
-            ) + header_.compressed_size;
+        next_offset_ = iostreams::tell_offset(src_) + header_.compressed_size;
 
         if ((header_.attributes & lha::attributes::directory) == 0)
         {
@@ -385,7 +372,7 @@ private:
     Source src_;
     lha::header header_;
     boost::shared_ptr<detail::lzh_source_base> image_;
-    boost::iostreams::stream_offset next_offset_;
+    stream_offset next_offset_;
     boost::crc_16_type crc_;
 
     static detail::lzh_source<restricted_lzhuf_type>* new_lzhuf_source(
@@ -580,6 +567,17 @@ private:
         return hamigaki::decode_uint<little,2>(s);
     }
 
+    static lha::unix_owner
+    parse_unix_owner(char* s, boost::uint32_t n)
+    {
+        if (n < hamigaki::struct_size<lha::unix_owner>::type::value)
+            throw BOOST_IOSTREAMS_FAILURE("bad LZH owner extended header");
+
+        lha::unix_owner owner;
+        hamigaki::binary_read(s, owner);
+        return owner;
+    }
+
     static std::time_t parse_unix_timestamp(char* s, boost::uint32_t n)
     {
         if (n < 4)
@@ -629,6 +627,8 @@ private:
                 header_.code_page = parse_code_page(data, size);
             else if (buf[0] == '\x50')
                 header_.permission = parse_unix_permission(data, size);
+            else if (buf[0] == '\x51')
+                header_.owner = parse_unix_owner(data, size);
             else if (buf[0] == '\x54')
                 header_.update_time = parse_unix_timestamp(data, size);
 
@@ -727,8 +727,7 @@ public:
         if (image_)
             close();
 
-        header_pos_ = boost::iostreams::position_to_offset(
-            boost::iostreams::seek(sink_, 0, BOOST_IOS::cur));
+        header_pos_ = iostreams::tell(sink_);
 
         header_ = head;
         if (header_.is_directory())
@@ -753,8 +752,7 @@ public:
         if (header_.is_directory())
             return;
 
-        start_pos_ = boost::iostreams::position_to_offset(
-            boost::iostreams::seek(sink_, 0, BOOST_IOS::cur));
+        start_pos_ = iostreams::tell(sink_);
 
         if (header_.method == "-lh0-")
             image_.reset(new detail::lzh_sink<ref_type>(boost::ref(sink_)));
@@ -773,7 +771,7 @@ public:
         image_.reset();
         overflow_ = false;
 
-        boost::iostreams::seek(sink_, header_pos_, BOOST_IOS::beg);
+        iostreams::seek(sink_, header_pos_);
 
         header_.method = "-lh0-";
         write_header();
@@ -808,18 +806,16 @@ public:
         header_.crc16_checksum = crc_.checksum();
         crc_.reset();
 
-        boost::iostreams::stream_offset next =
-            boost::iostreams::position_to_offset(
-                boost::iostreams::seek(sink_, 0, BOOST_IOS::cur));
+        std::streampos next = iostreams::tell(sink_);
 
-        header_.compressed_size = next - start_pos_;
+        header_.compressed_size = to_offset(next) - to_offset(start_pos_);
         header_.file_size = pos_;
         pos_ = 0;
 
-        boost::iostreams::seek(sink_, header_pos_, BOOST_IOS::beg);
+        iostreams::seek(sink_, header_pos_);
         write_header();
 
-        boost::iostreams::seek(sink_, next, BOOST_IOS::beg);
+        iostreams::seek(sink_, next);
     }
 
     std::streamsize write(const char* s, std::streamsize n)
@@ -858,8 +854,8 @@ private:
     lha::header header_;
     boost::shared_ptr<detail::lzh_sink_base> image_;
     lha::compress_method method_;
-    boost::iostreams::stream_offset header_pos_;
-    boost::iostreams::stream_offset start_pos_;
+    std::streampos header_pos_;
+    std::streampos start_pos_;
     boost::crc_16_type crc_;
     boost::int64_t pos_;
 
@@ -980,6 +976,9 @@ private:
 
         if (header_.permission)
             write_extended_header<0x50>(tmp, header_.permission.get());
+
+        if (header_.owner)
+            write_extended_header<0x51>(tmp, header_.owner.get());
 
         tmp.write("\x06\x00\x00", 3);
         std::size_t crc_off = buffer.size();
