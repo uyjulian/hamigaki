@@ -19,6 +19,7 @@
 #include <boost/mpl/list.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/integer.hpp>
+#include <boost/integer_traits.hpp>
 #include <boost/shared_ptr.hpp>
 #include <algorithm>
 #include <cstring>
@@ -55,6 +56,11 @@ struct type
     static const char fifo          = '6';
 };
 
+enum file_format
+{
+    posix, ustar, gnu
+};
+
 struct header
 {
     boost::filesystem::path path;
@@ -65,6 +71,7 @@ struct header
     std::time_t modified_time;
     char type;
     boost::filesystem::path link_name;
+    file_format format;
     std::string user_name;
     std::string group_name;
     boost::uint16_t dev_major;
@@ -73,6 +80,11 @@ struct header
     bool is_regular() const
     {
         return (type <= '0') || (type >= '7');
+    }
+
+    bool is_device() const
+    {
+        return (type == type::char_device) || (type == type::block_device);
     }
 };
 
@@ -195,16 +207,35 @@ inline T read_oct(const char (&s)[Size])
     return from_oct<T,char>(begin, delim);
 }
 
+inline std::time_t read_negative_time_t(const char (&s)[12])
+{
+    boost::uint32_t tmp = 0;
+    for (std::size_t i = 0; i < 12; ++i)
+    {
+        tmp <<= 8;
+        tmp |= static_cast<unsigned char>(s[i]);
+    }
+    return static_cast<std::time_t>(static_cast<boost::int32_t>(tmp));
+}
+
+inline std::time_t read_time_t(const char (&s)[12])
+{
+    if (s[0] == '\xFF')
+        return read_negative_time_t(s);
+    else
+        return static_cast<std::time_t>(read_oct<boost::uint32_t>(s));
+}
+
 } // namespace detail
 
-header read_header(const char* block)
+inline header read_header(const char* block)
 {
     using namespace boost::filesystem;
 
     raw_header raw;
     hamigaki::binary_read(block, raw);
 
-    if (std::memcmp(raw.magic, "ustar", 6) != 0)
+    if (std::memcmp(raw.magic, "ustar", 5) != 0)
         throw BOOST_IOSTREAMS_FAILURE("unknown tar header format");
 
     if (!detail::is_valid(raw.uname) || !detail::is_valid(raw.gname))
@@ -219,12 +250,7 @@ header read_header(const char* block)
     head.uid = detail::read_oct<boost::uint32_t>(raw.uid);
     head.gid = detail::read_oct<boost::uint32_t>(raw.gid);
     head.size = detail::read_oct<boost::uint64_t>(raw.size);
-
-    // TODO: support negative time_t
-    boost::uint32_t mtime = detail::read_oct<boost::uint32_t>(raw.mtime);
-    if (mtime & 0x80000000)
-        throw BOOST_IOSTREAMS_FAILURE("unsupported tar header");
-    head.modified_time = static_cast<std::time_t>(mtime);
+    head.modified_time = detail::read_time_t(raw.mtime);
 
     detail::uint17_t chksum = detail::read_oct<detail::uint17_t>(raw.chksum);
     if (detail::cheksum(block) != chksum)
@@ -233,10 +259,23 @@ header read_header(const char* block)
     head.type = raw.typeflag ? raw.typeflag : '0';
     head.link_name = detail::read_string(raw.linkname);
 
+    if (raw.magic[5] == ' ')
+        head.format = gnu;
+    else
+        head.format = ustar;
+
     head.user_name = detail::read_c_string(raw.uname);
     head.group_name = detail::read_c_string(raw.gname);
-    head.dev_major = detail::read_oct<boost::uint16_t>(raw.devmajor);
-    head.dev_minor = detail::read_oct<boost::uint16_t>(raw.devminor);
+    if ((head.format != gnu) || (head.is_device()))
+    {
+        head.dev_major = detail::read_oct<boost::uint16_t>(raw.devmajor);
+        head.dev_minor = detail::read_oct<boost::uint16_t>(raw.devminor);
+    }
+    else
+    {
+        head.dev_major = 0;
+        head.dev_minor = 0;
+    }
 
     return head;
 }
@@ -274,7 +313,40 @@ public:
             blocking_read(src_, block_, 512);
             return false;
         }
+
+        boost::filesystem::path long_link;
+        boost::filesystem::path long_name;
+
+        while (std::memcmp(block_, "././@LongLink", 14) == 0)
+        {
+            tar::raw_header raw;
+            hamigaki::binary_read(block_, raw);
+
+            boost::uint64_t size =
+                tar::detail::read_oct<boost::uint64_t>(raw.size);
+            if (size > boost::integer_traits<std::size_t>::const_max)
+                throw BOOST_IOSTREAMS_FAILURE("too long tar LongLink");
+            else if (size == 0ull)
+                throw BOOST_IOSTREAMS_FAILURE("bad tar LongLink");
+
+            if (raw.typeflag == 'K')
+                long_link = read_long_link(static_cast<std::size_t>(size));
+            else if (raw.typeflag == 'L')
+                long_name = read_long_link(static_cast<std::size_t>(size));
+            else
+                throw BOOST_IOSTREAMS_FAILURE("unsupported tar LongLink");
+
+            blocking_read(src_, block_, 512);
+        }
+
         header_ = tar::read_header(block_);
+
+        if (!long_link.empty())
+            header_.link_name = long_link;
+
+        if (!long_name.empty())
+            header_.path = long_name;
+
         return true;
     }
 
@@ -317,6 +389,30 @@ private:
     tar::header header_;
     boost::uint64_t pos_;
     char block_[512];
+
+    boost::filesystem::path read_long_link(std::size_t size)
+    {
+        using namespace boost::filesystem;
+
+        std::string buf;
+        buf.reserve(size);
+        while (size)
+        {
+            blocking_read(src_, block_, 512);
+            std::size_t amt = (std::min)(size, static_cast<std::size_t>(512));
+            buf.append(block_, amt);
+
+            if (size >= 512)
+                size -= 512;
+            else
+                size = 0;
+        }
+
+        if (*(buf.rbegin()) == '\0')
+            buf.resize(buf.size()-1);
+
+        return path(buf, portable_posix_name);
+    }
 };
 
 template<class Source>
