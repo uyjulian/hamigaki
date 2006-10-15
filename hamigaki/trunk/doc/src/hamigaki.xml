@@ -12,6 +12,8 @@
 <boostbook xmlns:xi="http://www.w3.org/2001/XInclude">
   <title>Hamigaki C++ ライブラリ</title>
 
+  <xi:include href="license.xml"/>
+
   <chapter id="installation">
     <title>インストール</title>
     <para>ほとんどのHamigakiライブラリはライブラリのビルドを必要とする。Boost.Buildでビルドする際は次の変数を設定することにより、ビルドをカスタマイズすることができる。
