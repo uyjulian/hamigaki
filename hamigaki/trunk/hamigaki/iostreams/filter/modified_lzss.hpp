@@ -78,7 +78,7 @@ public:
     }
 
 private:
-    input_buffered_filter filter_;
+    buffered_input_filter filter_;
     std::size_t bit_;
     unsigned char flags_;
 
@@ -160,7 +160,7 @@ public:
     }
 
 private:
-    output_buffered_filter filter_;
+    buffered_output_filter filter_;
     char buf_[1 + (LengthBits/8 + OffsetBits/8)*8];
     std::size_t bit_;
     std::streamsize index_;

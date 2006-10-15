@@ -18,15 +18,17 @@
 
 namespace hamigaki { namespace iostreams {
 
-class input_buffered_filter
+class buffered_input_filter
 {
 public:
+    typedef char char_type;
+
     struct category
         : public boost::iostreams::input
         , public boost::iostreams::filter_tag
     {};
 
-    explicit input_buffered_filter(std::size_t buffer_size=4096)
+    explicit buffered_input_filter(std::size_t buffer_size=4096)
         : buffer_(new char[buffer_size]), buffer_size_(buffer_size)
         , size_(0), index_(0)
     {
@@ -63,7 +65,7 @@ private:
 };
 
 
-class output_buffered_filter
+class buffered_output_filter
 {
 public:
     typedef char char_type;
@@ -74,7 +76,7 @@ public:
         , public boost::iostreams::flushable_tag
     {};
 
-    explicit output_buffered_filter(std::size_t buffer_size=4096)
+    explicit buffered_output_filter(std::size_t buffer_size=4096)
         : buffer_(new char[buffer_size]), buffer_size_(buffer_size), index_(0)
     {
     }
