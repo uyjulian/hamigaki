@@ -245,7 +245,8 @@ inline header read_header(const char* block)
     const path branch(detail::read_string(raw.prefix), portable_posix_name);
 
     header head;
-    head.path = branch / leaf;
+    if ((raw.typeflag != 'K') && (raw.typeflag != 'L'))
+        head.path = branch / leaf;
     head.mode = detail::read_oct<boost::uint16_t>(raw.mode);
     head.uid = detail::read_oct<boost::uint32_t>(raw.uid);
     head.gid = detail::read_oct<boost::uint32_t>(raw.gid);
@@ -317,29 +318,25 @@ public:
         boost::filesystem::path long_link;
         boost::filesystem::path long_name;
 
-        while (std::memcmp(block_, "././@LongLink", 14) == 0)
-        {
-            tar::raw_header raw;
-            hamigaki::binary_read(block_, raw);
+        header_ = tar::read_header(block_);
 
-            boost::uint64_t size =
-                tar::detail::read_oct<boost::uint64_t>(raw.size);
-            if (size > boost::integer_traits<std::size_t>::const_max)
+        while ((header_.type == 'K') || (header_.type == 'L'))
+        {
+            if (header_.size > boost::integer_traits<std::size_t>::const_max)
                 throw BOOST_IOSTREAMS_FAILURE("too long tar LongLink");
-            else if (size == 0ull)
+            else if (header_.size == 0ull)
                 throw BOOST_IOSTREAMS_FAILURE("bad tar LongLink");
 
-            if (raw.typeflag == 'K')
-                long_link = read_long_link(static_cast<std::size_t>(size));
-            else if (raw.typeflag == 'L')
-                long_name = read_long_link(static_cast<std::size_t>(size));
+            std::size_t size = static_cast<std::size_t>(header_.size);
+
+            if (header_.type == 'K')
+                long_link = read_long_link(size);
             else
-                throw BOOST_IOSTREAMS_FAILURE("unsupported tar LongLink");
+                long_name = read_long_link(size);
 
             blocking_read(src_, block_, 512);
+            header_ = tar::read_header(block_);
         }
-
-        header_ = tar::read_header(block_);
 
         if (!long_link.empty())
             header_.link_name = long_link;
