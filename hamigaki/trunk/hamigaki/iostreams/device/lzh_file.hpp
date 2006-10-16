@@ -195,10 +195,6 @@ public:
     explicit basic_lzh_file_source_impl(const Source& src)
         : src_(src), next_offset_(0)
     {
-        // TODO: skip data before the archives
-
-        if (!next_entry())
-            throw BOOST_IOSTREAMS_FAILURE("bad LZH file");
     }
 
     bool next_entry()

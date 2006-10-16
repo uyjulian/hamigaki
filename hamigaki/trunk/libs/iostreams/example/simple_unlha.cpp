@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
         typedef io_ex::basic_lzh_file_source<IOEX::file_source> lzh_type;
         lzh_type lzh(IOEX::file_source(argv[1], std::ios_base::binary));
 
-        do
+        while (lzh.next_entry())
         {
             const io_ex::lha::header& head = lzh.header();
             if (head.is_directory())
@@ -155,8 +155,7 @@ int main(int argc, char* argv[])
 #endif
             if (!head.is_directory())
                 fs::last_write_time(head.path, head.update_time);
-
-        } while (lzh.next_entry());
+        }
 
         return 0;
     }
