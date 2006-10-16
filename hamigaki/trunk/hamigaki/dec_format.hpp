@@ -1,0 +1,113 @@
+//  dec_format.hpp: decimal formatting
+
+//  Copyright Takeshi Mouri 2006.
+//  Use, modification, and distribution are subject to the
+//  Boost Software License, Version 1.0. (See accompanying file
+//  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#ifndef HAMIGAKI_DEC_FORMAT_HPP
+#define HAMIGAKI_DEC_FORMAT_HPP
+
+#include <boost/detail/workaround.hpp>
+#include <boost/array.hpp>
+#include <boost/assert.hpp>
+#include <boost/cstdint.hpp>
+#include <stdexcept>
+#include <string>
+
+namespace hamigaki {
+
+template<class CharT>
+struct dec_traits;
+
+template<>
+struct dec_traits<char>
+{
+    static char to_dec(int n)
+    {
+        return "0123456789"[n];
+    }
+
+    static int from_dec(char c)
+    {
+        if ((c < '0') || (c > '9'))
+            throw std::runtime_error("bad decimal character");
+        return c - '0';
+    }
+};
+
+template<>
+struct dec_traits<wchar_t>
+{
+    static wchar_t to_dec(int n)
+    {
+        return L"0123456789"[n];
+    }
+
+    static int from_dec(wchar_t c)
+    {
+        if ((c < L'0') || (c > L'9'))
+            throw std::runtime_error("bad decimal character");
+        return c - L'0';
+    }
+};
+
+#if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
+template<>
+struct dec_traits<const char> : dec_traits<char> {};
+
+template<>
+struct dec_traits<const wchar_t> : dec_traits<wchar_t> {};
+#endif
+
+template<typename CharT, typename T>
+inline std::basic_string<CharT> to_dec(T n)
+{
+    if (n == T())
+        return "0";
+
+    std::basic_string<CharT> s;
+    while (n)
+    {
+        s += dec_traits<CharT>::to_dec(n % 10);
+        n /= 10;
+    }
+    std::reverse(s.begin(), s.end());
+    return s;
+}
+
+template<typename CharT, std::size_t Size, typename T>
+inline std::basic_string<CharT> to_dec(T n)
+{
+    std::basic_string<CharT> s;
+    for (std::size_t i = 0; i < Size; ++i)
+    {
+        s += dec_traits<CharT>::to_dec(n % 10);
+        n /= 10;
+    }
+    std::reverse(s.begin(), s.end());
+    return s;
+}
+
+template<typename T, typename CharT>
+inline T from_dec(const CharT* first, const CharT* last)
+{
+    T tmp = 0;
+    while (first != last)
+    {
+        tmp *= 10;
+        tmp += dec_traits<CharT>::from_dec(*(first++));
+    }
+    return tmp;
+}
+
+template<typename T, typename CharT>
+inline T from_dec(const std::basic_string<CharT>& s)
+{
+    const CharT* p = s.c_str();
+    return hamigaki::from_dec<T,CharT>(p, p + s.size());
+}
+
+} // End namespace hamigaki.
+
+#endif // HAMIGAKI_DEC_FORMAT_HPP
