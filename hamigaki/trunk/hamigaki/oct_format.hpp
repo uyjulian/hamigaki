@@ -60,44 +60,16 @@ template<>
 struct oct_traits<const wchar_t> : oct_traits<wchar_t> {};
 #endif
 
-template<typename CharT>
-inline std::basic_string<CharT> to_oct(boost::uint8_t n)
+template<typename CharT, std::size_t Size, typename T>
+inline std::basic_string<CharT> to_oct(T n)
 {
     std::basic_string<CharT> s;
-    s += oct_traits<CharT>::to_oct((n >> 6) & 03);
-    s += oct_traits<CharT>::to_oct((n >> 3) & 07);
-    s += oct_traits<CharT>::to_oct((n     ) & 07);
-    return s;
-}
-
-template<typename CharT>
-inline std::basic_string<CharT> to_oct(boost::uint16_t n)
-{
-    std::basic_string<CharT> s;
-    s += oct_traits<CharT>::to_oct((n >> 15) & 01);
-    s += oct_traits<CharT>::to_oct((n >> 12) & 07);
-    s += oct_traits<CharT>::to_oct((n >>  9) & 07);
-    s += oct_traits<CharT>::to_oct((n >>  6) & 07);
-    s += oct_traits<CharT>::to_oct((n >>  3) & 07);
-    s += oct_traits<CharT>::to_oct((n      ) & 07);
-    return s;
-}
-
-template<typename CharT>
-inline std::basic_string<CharT> to_oct(boost::uint32_t n)
-{
-    std::basic_string<CharT> s;
-    s += oct_traits<CharT>::to_oct((n >> 30) & 03);
-    s += oct_traits<CharT>::to_oct((n >> 27) & 07);
-    s += oct_traits<CharT>::to_oct((n >> 24) & 07);
-    s += oct_traits<CharT>::to_oct((n >> 21) & 07);
-    s += oct_traits<CharT>::to_oct((n >> 18) & 07);
-    s += oct_traits<CharT>::to_oct((n >> 15) & 07);
-    s += oct_traits<CharT>::to_oct((n >> 12) & 07);
-    s += oct_traits<CharT>::to_oct((n >>  9) & 07);
-    s += oct_traits<CharT>::to_oct((n >>  6) & 07);
-    s += oct_traits<CharT>::to_oct((n >>  3) & 07);
-    s += oct_traits<CharT>::to_oct((n      ) & 07);
+    for (std::size_t i = 0; i < Size; ++i)
+    {
+        s += oct_traits<CharT>::to_oct(n & 07);
+        n >>= 3;
+    }
+    std::reverse(s.begin(), s.end());
     return s;
 }
 
