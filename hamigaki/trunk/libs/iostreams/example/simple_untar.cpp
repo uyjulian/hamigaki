@@ -22,11 +22,9 @@ int main(int argc, char* argv[])
         if (argc != 2)
             return 1;
 
-        fs::path::default_name_check(fs::no_check);
-
         io_ex::tar_file_source tar(argv[1]);
 
-        do
+        while (tar.next_entry())
         {
             const io_ex::tar::header& head = tar.header();
 
@@ -66,8 +64,7 @@ int main(int argc, char* argv[])
                 std::cout << '\n';
             }
             std::cout << "--------------------------------" << std::endl;
-
-        } while (tar.next_entry());
+        }
 
         std::cout.flush();
 

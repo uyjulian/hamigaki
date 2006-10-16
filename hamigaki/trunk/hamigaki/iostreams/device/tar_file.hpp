@@ -13,13 +13,20 @@
 #include <hamigaki/iostreams/device/file.hpp>
 #include <hamigaki/iostreams/blocking.hpp>
 #include <hamigaki/binary_io.hpp>
+#include <hamigaki/dec_format.hpp>
 #include <hamigaki/oct_format.hpp>
+#include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/iostreams/categories.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/stream.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/integer.hpp>
 #include <boost/integer_traits.hpp>
+#include <boost/optional.hpp>
+#include <boost/ref.hpp>
+#include <boost/scoped_array.hpp>
 #include <boost/shared_ptr.hpp>
 #include <algorithm>
 #include <cstring>
@@ -47,6 +54,7 @@ struct mode
 
 struct type
 {
+    // POSIX.1-1988
     static const char regular       = '0';
     static const char link          = '1';
     static const char symbolic_link = '2';
@@ -54,11 +62,20 @@ struct type
     static const char block_device  = '4';
     static const char directory     = '5';
     static const char fifo          = '6';
+    static const char reserved      = '7';
+
+    // GNU extension
+    static const char long_link     = 'K';
+    static const char long_name     = 'L';
+
+    // POSIX.1-2001
+    static const char global        = 'g';
+    static const char extended      = 'x';
 };
 
 enum file_format
 {
-    posix, ustar, gnu
+    ustar, pax, gnu
 };
 
 struct header
@@ -77,15 +94,37 @@ struct header
     boost::uint16_t dev_major;
     boost::uint16_t dev_minor;
 
+    header()
+        : mode(0644), uid(0), gid(0), size(0), modified_time(0)
+        , type(tar::type::regular), format(ustar), dev_major(0), dev_minor(0)
+    {
+    }
+
     bool is_regular() const
     {
-        return (type <= '0') || (type >= '7');
+        return (type <= type::regular) || (type >= type::reserved);
     }
 
     bool is_device() const
     {
         return (type == type::char_device) || (type == type::block_device);
     }
+
+    bool is_long() const
+    {
+        return (type == type::long_link) || (type == type::long_name);
+    }
+};
+
+struct extended_header
+{
+    boost::filesystem::path path;
+    boost::optional<boost::intmax_t> uid;
+    boost::optional<boost::intmax_t> gid;
+    boost::optional<boost::uintmax_t> size;
+    boost::filesystem::path link_path;
+    std::string user_name;
+    std::string group_name;
 };
 
 struct raw_header
@@ -241,12 +280,11 @@ inline header read_header(const char* block)
     if (!detail::is_valid(raw.uname) || !detail::is_valid(raw.gname))
         throw BOOST_IOSTREAMS_FAILURE("invalid tar header");
 
-    const std::string& leaf = detail::read_string(raw.name);
+    const path leaf(detail::read_string(raw.name), no_check);
     const path branch(detail::read_string(raw.prefix), portable_posix_name);
 
     header head;
-    if ((raw.typeflag != 'K') && (raw.typeflag != 'L'))
-        head.path = branch / leaf;
+    head.path = branch / leaf;
     head.mode = detail::read_oct<boost::uint16_t>(raw.mode);
     head.uid = detail::read_oct<boost::uint32_t>(raw.uid);
     head.gid = detail::read_oct<boost::uint32_t>(raw.gid);
@@ -284,15 +322,20 @@ inline header read_header(const char* block)
 } // namespace tar
 
 template<class Source>
-class basic_tar_file_source_impl
+class basic_ustar_file_source_impl
 {
 public:
-    explicit basic_tar_file_source_impl(const Source& src) : src_(src), pos_(0)
+    typedef char char_type;
+
+    struct category :
+        boost::iostreams::input,
+        boost::iostreams::device_tag {};
+
+    explicit basic_ustar_file_source_impl(const Source& src)
+        : src_(src), pos_(0)
     {
         header_.type = tar::type::directory;
         header_.size = 0;
-        if (!next_entry())
-            throw BOOST_IOSTREAMS_FAILURE("bad tar file");
     }
 
     bool next_entry()
@@ -314,35 +357,7 @@ public:
             blocking_read(src_, block_, 512);
             return false;
         }
-
-        boost::filesystem::path long_link;
-        boost::filesystem::path long_name;
-
         header_ = tar::read_header(block_);
-
-        while ((header_.type == 'K') || (header_.type == 'L'))
-        {
-            if (header_.size > boost::integer_traits<std::size_t>::const_max)
-                throw BOOST_IOSTREAMS_FAILURE("too long tar LongLink");
-            else if (header_.size == 0ull)
-                throw BOOST_IOSTREAMS_FAILURE("bad tar LongLink");
-
-            std::size_t size = static_cast<std::size_t>(header_.size);
-
-            if (header_.type == 'K')
-                long_link = read_long_link(size);
-            else
-                long_name = read_long_link(size);
-
-            blocking_read(src_, block_, 512);
-            header_ = tar::read_header(block_);
-        }
-
-        if (!long_link.empty())
-            header_.link_name = long_link;
-
-        if (!long_name.empty())
-            header_.path = long_name;
 
         return true;
     }
@@ -386,29 +401,214 @@ private:
     tar::header header_;
     boost::uint64_t pos_;
     char block_[512];
+};
 
-    boost::filesystem::path read_long_link(std::size_t size)
+template<class Source>
+class basic_ustar_file_source
+{
+private:
+    typedef basic_ustar_file_source_impl<Source> impl_type;
+
+public:
+    typedef char char_type;
+
+    struct category :
+        boost::iostreams::input,
+        boost::iostreams::device_tag {};
+
+    explicit basic_ustar_file_source(const Source& src)
+        : pimpl_(new impl_type(src))
+    {
+    }
+
+    bool next_entry()
+    {
+        return pimpl_->next_entry();
+    }
+
+    tar::header header() const
+    {
+        return pimpl_->header();
+    }
+
+    std::streamsize read(char* s, std::streamsize n)
+    {
+        return pimpl_->read(s, n);
+    }
+
+private:
+    boost::shared_ptr<impl_type> pimpl_;
+};
+
+class ustar_file_source : public basic_ustar_file_source<file_source>
+{
+    typedef basic_ustar_file_source<file_source> base_type;
+
+public:
+    explicit ustar_file_source(const std::string& filename)
+        : base_type(file_source(filename, BOOST_IOS::binary))
+    {
+    }
+};
+
+
+template<class Source>
+class basic_tar_file_source_impl
+{
+private:
+    typedef basic_ustar_file_source_impl<Source> ustar_type;
+
+public:
+    explicit basic_tar_file_source_impl(const Source& src) : ustar_(src)
+    {
+    }
+
+    bool next_entry()
+    {
+        if (!ustar_.next_entry())
+            return false;
+
+        header_ = ustar_.header();
+
+        if (header_.type == tar::type::global)
+        {
+            read_extended_header(global_);
+
+            if (!ustar_.next_entry())
+                throw boost::iostreams::detail::bad_read();
+
+            header_ = ustar_.header();
+        }
+
+        tar::extended_header ext = global_;
+
+        if (header_.type == tar::type::extended)
+        {
+            read_extended_header(ext);
+
+            if (!ustar_.next_entry())
+                throw boost::iostreams::detail::bad_read();
+
+            header_ = ustar_.header();
+        }
+
+        while (header_.is_long())
+        {
+            if (header_.type == tar::type::long_link)
+                ext.link_path = read_long_link();
+            else
+                ext.path = read_long_link();
+
+            if (!ustar_.next_entry())
+                throw boost::iostreams::detail::bad_read();
+
+            header_ = ustar_.header();
+        }
+
+        if (!ext.link_path.empty())
+            header_.link_name = ext.link_path;
+
+        if (ext.uid)
+            header_.uid = ext.uid.get();
+
+        if (ext.gid)
+            header_.gid = ext.gid.get();
+
+        if (ext.size)
+            header_.size = ext.size.get();
+
+        if (!ext.path.empty())
+            header_.path = ext.path;
+
+        if (!ext.user_name.empty())
+            header_.user_name = ext.user_name;
+
+        if (!ext.group_name.empty())
+            header_.group_name = ext.group_name;
+
+        return true;
+    }
+
+    tar::header header() const
+    {
+        return header_;
+    }
+
+    std::streamsize read(char* s, std::streamsize n)
+    {
+        return ustar_.read(s, n);
+    }
+
+private:
+    ustar_type ustar_;
+    tar::header header_;
+    tar::extended_header global_;
+
+    boost::filesystem::path read_long_link()
     {
         using namespace boost::filesystem;
 
         std::string buf;
-        buf.reserve(size);
-        while (size)
-        {
-            blocking_read(src_, block_, 512);
-            std::size_t amt = (std::min)(size, static_cast<std::size_t>(512));
-            buf.append(block_, amt);
 
-            if (size >= 512)
-                size -= 512;
-            else
-                size = 0;
-        }
+        boost::iostreams::copy(
+            boost::ref(ustar_),
+            boost::iostreams::back_inserter(buf));
 
-        if (*(buf.rbegin()) == '\0')
+        if (!buf.empty() && (*(buf.rbegin()) == '\0'))
             buf.resize(buf.size()-1);
 
         return path(buf, portable_posix_name);
+    }
+
+    void read_extended_header(tar::extended_header& ext)
+    {
+        using namespace boost::filesystem;
+
+        boost::iostreams::stream<
+            boost::reference_wrapper<ustar_type>
+        > is(boost::ref(ustar_));
+
+        std::string size_str;
+        while (std::getline(is, size_str, ' '))
+        {
+            std::size_t size = hamigaki::from_dec<std::size_t>(size_str);
+            if (size < size_str.size() + 1)
+                throw BOOST_IOSTREAMS_FAILURE("bad tar extended header");
+            size -= (size_str.size()+1);
+
+            std::string key;
+            if (!std::getline(is, key, '='))
+                throw BOOST_IOSTREAMS_FAILURE("bad tar extended header");
+
+            if (size <= key.size() + 1)
+                throw BOOST_IOSTREAMS_FAILURE("bad tar extended header");
+            size -= (key.size() + 1);
+
+            boost::scoped_array<char> buf(new char[size]);
+            buf[size-1] = '\0';
+            is.read(&buf[0], size);
+            if (buf[size-1] != '\n')
+                throw BOOST_IOSTREAMS_FAILURE("bad tar extended header");
+            buf[size-1] = '\0';
+
+            const char* beg = buf.get();
+            const char* end = beg + (size - 1);
+
+            if (key == "path")
+                ext.path = path(beg, portable_posix_name);
+            else if (key == "uid")
+                ext.uid = hamigaki::from_dec<boost::intmax_t>(beg, end);
+            else if (key == "gid")
+                ext.gid = hamigaki::from_dec<boost::intmax_t>(beg, end);
+            else if (key == "size")
+                ext.size = hamigaki::from_dec<boost::uintmax_t>(beg, end);
+            else if (key == "linkpath")
+                ext.link_path = path(beg, portable_posix_name);
+            else if (key == "uname")
+                ext.user_name = beg;
+            else if (key == "gname")
+                ext.group_name = beg;
+        }
     }
 };
 
