@@ -9,9 +9,11 @@
 #define HAMIGAKI_DEC_FORMAT_HPP
 
 #include <boost/detail/workaround.hpp>
+#include <boost/mpl/bool.hpp>
 #include <boost/array.hpp>
 #include <boost/assert.hpp>
 #include <boost/cstdint.hpp>
+#include <limits>
 #include <stdexcept>
 #include <string>
 
@@ -60,8 +62,10 @@ template<>
 struct dec_traits<const wchar_t> : dec_traits<wchar_t> {};
 #endif
 
+namespace detail {
+
 template<typename CharT, typename T>
-inline std::basic_string<CharT> to_dec(T n)
+inline std::basic_string<CharT> to_dec_impl(T n, boost::mpl::bool_<false>)
 {
     if (n == T())
         return "0";
@@ -76,21 +80,38 @@ inline std::basic_string<CharT> to_dec(T n)
     return s;
 }
 
-template<typename CharT, std::size_t Size, typename T>
-inline std::basic_string<CharT> to_dec(T n)
+template<typename CharT, typename T>
+inline std::basic_string<CharT> to_dec_impl(T n, boost::mpl::bool_<true>)
 {
+    if (n == T())
+        return "0";
+
     std::basic_string<CharT> s;
-    for (std::size_t i = 0; i < Size; ++i)
+    if (n < T())
     {
-        s += dec_traits<CharT>::to_dec(n % 10);
-        n /= 10;
+        while (n)
+        {
+            T tmp = n / 10;
+            s += dec_traits<CharT>::to_dec(tmp*10 - n);
+            n = tmp;
+        }
+        s.push_back('-');
+    }
+    else
+    {
+        while (n)
+        {
+            s += dec_traits<CharT>::to_dec(n % 10);
+            n /= 10;
+        }
     }
     std::reverse(s.begin(), s.end());
     return s;
 }
 
 template<typename T, typename CharT>
-inline T from_dec(const CharT* first, const CharT* last)
+inline T from_dec_impl(
+    const CharT* first, const CharT* last, boost::mpl::bool_<false>)
 {
     T tmp = 0;
     while (first != last)
@@ -99,6 +120,52 @@ inline T from_dec(const CharT* first, const CharT* last)
         tmp += dec_traits<CharT>::from_dec(*(first++));
     }
     return tmp;
+}
+
+template<typename T, typename CharT>
+inline T from_dec_impl(
+    const CharT* first, const CharT* last, boost::mpl::bool_<true>)
+{
+    if (first == last)
+        return T();
+
+    if (*first == '-')
+    {
+        ++first;
+        T tmp = 0;
+        while (first != last)
+        {
+            tmp *= 10;
+            tmp -= dec_traits<CharT>::from_dec(*(first++));
+        }
+        return tmp;
+    }
+    else
+    {
+        T tmp = 0;
+        while (first != last)
+        {
+            tmp *= 10;
+            tmp += dec_traits<CharT>::from_dec(*(first++));
+        }
+        return tmp;
+    }
+}
+
+} // namespace detail
+
+template<typename CharT, typename T>
+inline std::basic_string<CharT> to_dec(T n)
+{
+    return detail::to_dec_impl<CharT,T>(n,
+        boost::mpl::bool_<std::numeric_limits<T>::is_signed>());
+}
+
+template<typename T, typename CharT>
+inline T from_dec(const CharT* first, const CharT* last)
+{
+    return detail::from_dec_impl<T,CharT>(first, last,
+        boost::mpl::bool_<std::numeric_limits<T>::is_signed>());
 }
 
 template<typename T, typename CharT>
