@@ -91,9 +91,11 @@ inline std::basic_string<CharT> to_dec_impl(T n, boost::mpl::bool_<true>)
     {
         while (n)
         {
-            T tmp = n / 10;
-            s += dec_traits<CharT>::to_dec(tmp*10 - n);
-            n = tmp;
+            T tmp = n % 10;
+            if (tmp > T())
+                tmp -= 10;
+            s += dec_traits<CharT>::to_dec(-tmp);
+            n /= 10;
         }
         s.push_back('-');
     }
