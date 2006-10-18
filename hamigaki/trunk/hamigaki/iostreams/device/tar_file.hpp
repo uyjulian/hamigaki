@@ -245,6 +245,148 @@ public:
     }
 };
 
+
+template<class Sink>
+class basic_tar_file_sink_impl
+{
+private:
+    typedef basic_ustar_file_sink_impl<Sink> ustar_type;
+
+public:
+    explicit basic_tar_file_sink_impl(const Sink& sink) : ustar_(sink)
+    {
+    }
+
+    void create_entry(const tar::header& head)
+    {
+        using namespace boost::filesystem;
+
+        tar::header local = head;
+
+        if (head.format == tar::gnu)
+        {
+            std::string leaf = head.path.leaf();
+            const path& branch = head.path.branch_path();
+            std::string prefix = branch.string();
+            if ((leaf.size() > 100) || (prefix.size() > 155))
+            {
+                const std::string long_name = head.path.string();
+
+                tar::header tmp;
+                tmp.mode = 0;
+                tmp.size = long_name.size()+1;
+                tmp.type = tar::type::long_name;
+                tmp.format = tar::gnu;
+
+                ustar_.create_entry(tmp);
+                ustar_.write(long_name.c_str(), long_name.size()+1);
+                ustar_.close();
+
+                if (leaf.size() > 100)
+                    leaf.resize(100);
+                if (prefix.size() > 155)
+                    prefix.resize(155);
+
+                local.path = path(prefix, no_check);
+                local.path /= path(leaf, no_check);
+            }
+
+            std::string long_link = head.link_name.string();
+            if (long_link.size() > 100)
+            {
+                tar::header tmp;
+                tmp.mode = 0;
+                tmp.size = long_link.size()+1;
+                tmp.type = tar::type::long_link;
+                tmp.format = tar::gnu;
+
+                ustar_.create_entry(tmp);
+                ustar_.write(long_link.c_str(), long_link.size()+1);
+                ustar_.close();
+
+                long_link.resize(100);
+                local.link_name = path(long_link, no_check);
+            }
+        }
+
+        ustar_.create_entry(local);
+    }
+
+    std::streamsize write(const char* s, std::streamsize n)
+    {
+        return ustar_.write(s, n);
+    }
+
+    void close()
+    {
+        ustar_.close();
+    }
+
+    void write_end_mark()
+    {
+        ustar_.write_end_mark();
+    }
+
+private:
+    ustar_type ustar_;
+};
+
+template<class Sink>
+class basic_tar_file_sink
+{
+private:
+    typedef basic_tar_file_sink_impl<Sink> impl_type;
+
+public:
+    typedef char char_type;
+
+    struct category
+        : boost::iostreams::output
+        , boost::iostreams::device_tag
+        , boost::iostreams::closable_tag
+    {};
+
+    explicit basic_tar_file_sink(const Sink& sink)
+        : pimpl_(new impl_type(sink))
+    {
+    }
+
+    void create_entry(const tar::header& head)
+    {
+        pimpl_->create_entry(head);
+    }
+
+    std::streamsize write(const char* s, std::streamsize n)
+    {
+        return pimpl_->write(s, n);
+    }
+
+    void close()
+    {
+        pimpl_->close();
+    }
+
+    void write_end_mark()
+    {
+        pimpl_->write_end_mark();
+    }
+
+private:
+    boost::shared_ptr<impl_type> pimpl_;
+};
+
+class tar_file_sink : public basic_tar_file_sink<file_sink>
+{
+private:
+    typedef basic_tar_file_sink<file_sink> base_type;
+
+public:
+    explicit tar_file_sink(const std::string& filename)
+        : base_type(file_sink(filename, BOOST_IOS::binary))
+    {
+    }
+};
+
 } } // End namespaces iostreams, hamigaki.
 
 #endif // HAMIGAKI_IOSTREAMS_DEVICE_TAR_FILE_HPP

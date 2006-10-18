@@ -61,11 +61,12 @@ int main(int argc, char* argv[])
         if (argc < 3)
             return 1;
 
-        io_ex::ustar_file_sink tar(argv[1]);
+        io_ex::tar_file_sink tar(argv[1]);
 
         for (int i = 2; i < argc; ++i)
         {
             io_ex::tar::header head;
+            head.format = io_ex::tar::gnu;
             head.path = fs::path(argv[i], fs::native);
             if (fs::symbolic_link_exists(head.path))
             {

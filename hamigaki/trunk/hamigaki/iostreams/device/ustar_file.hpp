@@ -369,7 +369,11 @@ inline void write_header(char* block, const header& head)
     raw_header raw;
     std::memset(&raw, 0, sizeof(raw));
 
-    detail::write_string(raw.name, leaf);
+    if (head.is_long())
+        detail::write_string(raw.name, "././@LongLink");
+    else
+        detail::write_string(raw.name, leaf);
+
     detail::write_oct(raw.mode, head.mode);
     detail::write_oct(raw.uid, head.uid);
     detail::write_oct(raw.gid, head.gid);
