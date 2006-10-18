@@ -42,6 +42,8 @@ struct mode
     static const boost::uint16_t other_read     = 00004;
     static const boost::uint16_t other_write    = 00002;
     static const boost::uint16_t other_exec     = 00001;
+
+    static const boost::uint16_t mask           = 07777;
 };
 
 struct type
@@ -74,9 +76,9 @@ struct header
 {
     boost::filesystem::path path;
     boost::uint16_t mode;
-    boost::uint32_t uid;
-    boost::uint32_t gid;
-    boost::uint64_t size;
+    boost::intmax_t uid;
+    boost::intmax_t gid;
+    boost::uintmax_t size;
     std::time_t modified_time;
     char type;
     boost::filesystem::path link_name;
@@ -105,6 +107,14 @@ struct header
     bool is_long() const
     {
         return (type == type::long_link) || (type == type::long_name);
+    }
+
+    std::string path_string() const
+    {
+        if (type == type::directory)
+            return path.native_directory_string();
+        else
+            return path.native_file_string();
     }
 };
 
@@ -246,6 +256,54 @@ inline std::time_t read_time_t(const char (&s)[12])
         return static_cast<std::time_t>(read_oct<boost::uint32_t>(s));
 }
 
+template<std::size_t Size>
+inline void write_string(char (&buf)[Size], const std::string& s)
+{
+    if (s.size() > Size)
+        throw BOOST_IOSTREAMS_FAILURE("invalid tar header");
+
+    if (!s.empty())
+        s.copy(buf, s.size());
+}
+
+template<std::size_t Size>
+inline void write_c_string(char (&buf)[Size], const std::string& s)
+{
+    if (s.size() >= Size)
+        throw BOOST_IOSTREAMS_FAILURE("invalid tar header");
+
+    if (!s.empty())
+        s.copy(buf, s.size());
+}
+
+template<std::size_t Size, class T>
+inline void write_oct(char (&buf)[Size], T x)
+{
+    const std::string& s = to_oct<char,Size-1>(x);
+    s.copy(buf, s.size());
+}
+
+inline void write_negative_time_t(char (&buf)[12], std::time_t t)
+{
+    boost::uint64_t tmp =
+        static_cast<boost::uint64_t>(static_cast<boost::int64_t>(t));
+
+    std::memset(buf, '\xFF', 4);
+    for (std::size_t i = 12-1; i >= 4; --i)
+    {
+        buf[i] = static_cast<char>(static_cast<unsigned char>(tmp));
+        tmp >>= 8;
+    }
+}
+
+inline void write_time_t(char (&buf)[12], std::time_t t)
+{
+    if (t < 0)
+        return write_negative_time_t(buf, t);
+    else
+        return write_oct(buf, static_cast<boost::uint32_t>(t));
+}
+
 } // namespace detail
 
 inline header read_header(const char* block)
@@ -298,6 +356,49 @@ inline header read_header(const char* block)
     }
 
     return head;
+}
+
+inline void write_header(char* block, const header& head)
+{
+    using namespace boost::filesystem;
+
+    const std::string& leaf = head.path.leaf();
+    std::string branch = head.path.branch_path().string();
+    std::string linkname = head.link_name.string();
+
+    raw_header raw;
+    std::memset(&raw, 0, sizeof(raw));
+
+    detail::write_string(raw.name, leaf);
+    detail::write_oct(raw.mode, head.mode);
+    detail::write_oct(raw.uid, head.uid);
+    detail::write_oct(raw.gid, head.gid);
+    detail::write_oct(raw.size, head.size);
+    detail::write_time_t(raw.mtime, head.modified_time);
+    std::memset(raw.chksum, ' ', sizeof(raw.chksum));
+    raw.typeflag = head.type;
+    detail::write_string(raw.linkname, linkname);
+
+    std::strcpy(raw.magic, "ustar");
+    if (head.format == gnu)
+    {
+        raw.magic[5] = ' ';
+        raw.version[0] = ' ';
+        raw.version[1] = '\0';
+    }
+    else
+        std::memcpy(raw.version, "00", 2);
+
+    detail::write_c_string(raw.uname, head.user_name);
+    detail::write_c_string(raw.gname, head.group_name);
+    detail::write_oct(raw.devmajor, head.dev_major);
+    detail::write_oct(raw.devminor, head.dev_minor);
+    detail::write_string(raw.prefix, branch);
+
+    std::memset(block, 0, 512);
+    hamigaki::binary_write(block, raw);
+    detail::write_oct(raw.chksum, detail::cheksum(block));
+    hamigaki::binary_write(block, raw);
 }
 
 } // namespace tar
@@ -428,6 +529,143 @@ class ustar_file_source : public basic_ustar_file_source<file_source>
 public:
     explicit ustar_file_source(const std::string& filename)
         : base_type(file_source(filename, BOOST_IOS::binary))
+    {
+    }
+};
+
+
+template<class Sink>
+class basic_ustar_file_sink_impl
+{
+public:
+    typedef char char_type;
+
+    struct category
+        : boost::iostreams::output
+        , boost::iostreams::device_tag
+        , boost::iostreams::closable_tag
+    {};
+
+    explicit basic_ustar_file_sink_impl(const Sink& sink)
+        : sink_(sink), pos_(0), size_(0)
+    {
+    }
+
+    void create_entry(const tar::header& head)
+    {
+        if (pos_ != size_)
+            throw BOOST_IOSTREAMS_FAILURE("tar entry size mismatch");
+
+        write_header(block_, head);
+        blocking_write(sink_, block_, 512);
+
+        pos_ = 0;
+        size_ = head.is_regular() ? head.size : 0;
+    }
+
+    std::streamsize write(const char* s, std::streamsize n)
+    {
+        if (pos_ + n > size_)
+            throw BOOST_IOSTREAMS_FAILURE("out of tar entry size");
+
+        std::streamsize total = 0;
+        while (total < n)
+        {
+            std::size_t offset = pos_ % 512;
+
+            std::streamsize amt = (std::min)(
+                n-total, static_cast<std::streamsize>(512-offset));
+            std::memcpy(&block_[offset], s+total, amt);
+
+            total += amt;
+            pos_ += amt;
+
+            if (pos_ % 512 == 0)
+                blocking_write(sink_, block_, 512);
+        }
+
+        return total;
+    }
+
+    void close()
+    {
+        if (pos_ != size_)
+            throw BOOST_IOSTREAMS_FAILURE("tar entry size mismatch");
+
+        std::size_t offset = pos_ % 512;
+        if (offset != 0)
+        {
+            std::memset(&block_[offset], 0, 512-offset);
+            blocking_write(sink_, block_, 512);
+        }
+    }
+
+    void write_end_mark()
+    {
+        std::memset(block_, 0, sizeof(block_));
+        blocking_write(sink_, block_, 512);
+        blocking_write(sink_, block_, 512);
+    }
+
+private:
+    Sink sink_;
+    boost::uint64_t pos_;
+    boost::uint64_t size_;
+    char block_[512];
+};
+
+template<class Sink>
+class basic_ustar_file_sink
+{
+private:
+    typedef basic_ustar_file_sink_impl<Sink> impl_type;
+
+public:
+    typedef char char_type;
+
+    struct category
+        : boost::iostreams::output
+        , boost::iostreams::device_tag
+        , boost::iostreams::closable_tag
+    {};
+
+    explicit basic_ustar_file_sink(const Sink& sink)
+        : pimpl_(new impl_type(sink))
+    {
+    }
+
+    void create_entry(const tar::header& head)
+    {
+        pimpl_->create_entry(head);
+    }
+
+    std::streamsize write(const char* s, std::streamsize n)
+    {
+        return pimpl_->write(s, n);
+    }
+
+    void close()
+    {
+        pimpl_->close();
+    }
+
+    void write_end_mark()
+    {
+        pimpl_->write_end_mark();
+    }
+
+private:
+    boost::shared_ptr<impl_type> pimpl_;
+};
+
+class ustar_file_sink : public basic_ustar_file_sink<file_sink>
+{
+private:
+    typedef basic_ustar_file_sink<file_sink> base_type;
+
+public:
+    explicit ustar_file_sink(const std::string& filename)
+        : base_type(file_sink(filename, BOOST_IOS::binary))
     {
     }
 };

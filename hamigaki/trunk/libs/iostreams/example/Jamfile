@@ -61,6 +61,19 @@ exe simple_unlha
         find-boost-filesystem-lib
     ;
 
+exe simple_tar
+    :
+        simple_tar.cpp
+    :
+        <define>BOOST_ALL_NO_LIB=1
+        <include>$(HAMIGAKI_ROOT)  <sysinclude>$(HAMIGAKI_ROOT)
+        <include>$(BOOST_INCLUDE)  <sysinclude>$(BOOST_INCLUDE)
+        <library-path>$(BOOST_LIBPATH)
+        <vc-8_0><*><cflags>-wd4996
+        <vc-8_0><*><cflags>-wd4819
+        find-boost-filesystem-lib
+    ;
+
 exe simple_untar
     :
         simple_untar.cpp
