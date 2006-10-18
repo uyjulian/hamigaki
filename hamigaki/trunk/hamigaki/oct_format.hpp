@@ -73,6 +73,20 @@ inline std::basic_string<CharT> to_oct(T n)
     return s;
 }
 
+template<typename CharT, typename T>
+inline std::basic_string<CharT> to_oct(T n)
+{
+    std::basic_string<CharT> s;
+    while (n)
+    {
+        s += oct_traits<CharT>::to_oct(n & 07);
+        n >>= 3;
+    }
+    s.push_back('0');
+    std::reverse(s.begin(), s.end());
+    return s;
+}
+
 template<typename T, typename CharT>
 inline T from_oct(const CharT* first, const CharT* last)
 {
