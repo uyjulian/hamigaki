@@ -90,7 +90,7 @@ struct header
 
     header()
         : mode(0644), uid(0), gid(0), size(0), modified_time(0)
-        , type(tar::type::regular), format(ustar), dev_major(0), dev_minor(0)
+        , type(tar::type::regular), format(gnu), dev_major(0), dev_minor(0)
     {
     }
 
@@ -320,7 +320,7 @@ inline header read_header(const char* block)
         throw BOOST_IOSTREAMS_FAILURE("invalid tar header");
 
     const path leaf(detail::read_string(raw.name), no_check);
-    const path branch(detail::read_string(raw.prefix), portable_posix_name);
+    const path branch(detail::read_string(raw.prefix), no_check);
 
     header head;
     head.path = branch / leaf;
@@ -395,13 +395,22 @@ inline void write_header(char* block, const header& head)
 
     detail::write_c_string(raw.uname, head.user_name);
     detail::write_c_string(raw.gname, head.group_name);
-    detail::write_oct(raw.devmajor, head.dev_major);
-    detail::write_oct(raw.devminor, head.dev_minor);
+
+    if ((head.format != gnu) || (head.dev_major != 0))
+        detail::write_oct(raw.devmajor, head.dev_major);
+    if ((head.format != gnu) || (head.dev_minor != 0))
+        detail::write_oct(raw.devminor, head.dev_minor);
+
     detail::write_string(raw.prefix, branch);
 
     std::memset(block, 0, 512);
     hamigaki::binary_write(block, raw);
-    detail::write_oct(raw.chksum, detail::cheksum(block));
+
+    const std::string& chksum = to_oct<char>(detail::cheksum(block));
+    chksum.copy(raw.chksum, chksum.size());
+    if (chksum.size() < sizeof(raw.chksum)-1)
+        raw.chksum[chksum.size()] = '\0';
+
     hamigaki::binary_write(block, raw);
 }
 

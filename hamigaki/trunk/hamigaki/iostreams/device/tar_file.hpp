@@ -142,7 +142,7 @@ private:
         if (!buf.empty() && (*(buf.rbegin()) == '\0'))
             buf.resize(buf.size()-1);
 
-        return path(buf, portable_posix_name);
+        return path(buf, no_check);
     }
 
     void read_extended_header(tar::extended_header& ext)
@@ -180,7 +180,7 @@ private:
             const char* end = beg + (size - 1);
 
             if (key == "path")
-                ext.path = path(beg, portable_posix_name);
+                ext.path = path(beg, no_check);
             else if (key == "uid")
                 ext.uid = hamigaki::from_dec<boost::intmax_t>(beg, end);
             else if (key == "gid")
@@ -188,7 +188,7 @@ private:
             else if (key == "size")
                 ext.size = hamigaki::from_dec<boost::uintmax_t>(beg, end);
             else if (key == "linkpath")
-                ext.link_path = path(beg, portable_posix_name);
+                ext.link_path = path(beg, no_check);
             else if (key == "uname")
                 ext.user_name = beg;
             else if (key == "gname")
@@ -265,30 +265,28 @@ public:
 
         if (head.format == tar::gnu)
         {
-            std::string leaf = head.path.leaf();
+            const std::string& leaf = head.path.leaf();
             const path& branch = head.path.branch_path();
-            std::string prefix = branch.string();
+            const std::string prefix = branch.string();
             if ((leaf.size() > 100) || (prefix.size() > 155))
             {
-                const std::string long_name = head.path.string();
+                std::string long_name = head.path.string();
+                if (head.type == tar::type::directory)
+                    long_name += '/';
 
                 tar::header tmp;
                 tmp.mode = 0;
                 tmp.size = long_name.size()+1;
                 tmp.type = tar::type::long_name;
                 tmp.format = tar::gnu;
+                tmp.group_name = "root";
 
                 ustar_.create_entry(tmp);
                 ustar_.write(long_name.c_str(), long_name.size()+1);
                 ustar_.close();
 
-                if (leaf.size() > 100)
-                    leaf.resize(100);
-                if (prefix.size() > 155)
-                    prefix.resize(155);
-
-                local.path = path(prefix, no_check);
-                local.path /= path(leaf, no_check);
+                long_name.resize(100);
+                local.path = path(long_name, no_check);
             }
 
             std::string long_link = head.link_name.string();
@@ -299,6 +297,7 @@ public:
                 tmp.size = long_link.size()+1;
                 tmp.type = tar::type::long_link;
                 tmp.format = tar::gnu;
+                tmp.group_name = "root";
 
                 ustar_.create_entry(tmp);
                 ustar_.write(long_link.c_str(), long_link.size()+1);
