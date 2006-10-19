@@ -251,20 +251,30 @@ inline T read_oct(const char (&s)[Size])
     return from_oct<T,char>(begin, delim);
 }
 
+template<class T, std::size_t Size>
+inline T read_negative_oct(const char (&s)[Size])
+{
+    return static_cast<T>(
+        hamigaki::decode_uint<big,sizeof(T)>(&s[Size-sizeof(T)]));
+}
+
+template<class T, std::size_t Size>
+inline T read_signed_oct(const char (&s)[Size])
+{
+    if ((static_cast<unsigned char>(s[0]) & 0x80) != 0)
+        return read_negative_oct<T>(s);
+    else
+        return read_oct<T>(s);
+}
+
 inline std::time_t read_negative_time_t(const char (&s)[12])
 {
-    boost::uint32_t tmp = 0;
-    for (std::size_t i = 0; i < 12; ++i)
-    {
-        tmp <<= 8;
-        tmp |= static_cast<unsigned char>(s[i]);
-    }
-    return static_cast<std::time_t>(static_cast<boost::int32_t>(tmp));
+    return static_cast<std::time_t>(read_negative_oct<boost::int32_t>(s));
 }
 
 inline std::time_t read_time_t(const char (&s)[12])
 {
-    if (s[0] == '\xFF')
+    if ((static_cast<unsigned char>(s[0]) & 0x80) != 0)
         return read_negative_time_t(s);
     else
         return static_cast<std::time_t>(read_oct<boost::uint32_t>(s));
@@ -297,17 +307,26 @@ inline void write_oct(char (&buf)[Size], T x)
     s.copy(buf, s.size());
 }
 
+template<std::size_t Size, class T>
+inline void write_negative_oct(char (&buf)[Size], T x)
+{
+    if (std::size_t rest = Size-sizeof(T))
+        std::memset(buf, '\xFF', rest);
+    hamigaki::encode_int<big,sizeof(T)>(&buf[Size-sizeof(T)], x);
+}
+
+template<std::size_t Size, class T>
+inline void write_signed_oct(char (&buf)[Size], T x)
+{
+    if (x < 0)
+        return write_negative_oct(buf, x);
+    else
+        return write_oct(buf, x);
+}
+
 inline void write_negative_time_t(char (&buf)[12], std::time_t t)
 {
-    boost::uint64_t tmp =
-        static_cast<boost::uint64_t>(static_cast<boost::int64_t>(t));
-
-    std::memset(buf, '\xFF', 4);
-    for (std::size_t i = 12-1; i >= 4; --i)
-    {
-        buf[i] = static_cast<char>(static_cast<unsigned char>(tmp));
-        tmp >>= 8;
-    }
+    write_negative_oct(buf, static_cast<boost::int64_t>(t));
 }
 
 inline void write_time_t(char (&buf)[12], std::time_t t)
@@ -339,8 +358,8 @@ inline header read_header(const char* block)
     header head;
     head.path = branch / leaf;
     head.mode = detail::read_oct<boost::uint16_t>(raw.mode);
-    head.uid = detail::read_oct<boost::uint32_t>(raw.uid);
-    head.gid = detail::read_oct<boost::uint32_t>(raw.gid);
+    head.uid = detail::read_signed_oct<boost::int32_t>(raw.uid);
+    head.gid = detail::read_signed_oct<boost::int32_t>(raw.gid);
     head.size = detail::read_oct<boost::uint64_t>(raw.size);
     head.modified_time = detail::read_time_t(raw.mtime);
 
@@ -389,8 +408,8 @@ inline void write_header(char* block, const header& head)
         detail::write_string(raw.name, leaf);
 
     detail::write_oct(raw.mode, head.mode);
-    detail::write_oct(raw.uid, head.uid);
-    detail::write_oct(raw.gid, head.gid);
+    detail::write_signed_oct(raw.uid, head.uid);
+    detail::write_signed_oct(raw.gid, head.gid);
     detail::write_oct(raw.size, head.size);
     detail::write_time_t(raw.mtime, head.modified_time);
     std::memset(raw.chksum, ' ', sizeof(raw.chksum));
@@ -451,7 +470,7 @@ public:
     {
         if (header_.is_regular() && (pos_ < header_.size))
         {
-            pos_ = raw_header::round_up_block_size(pos_);
+            pos_ = tar::raw_header::round_up_block_size(pos_);
             while (pos_ < header_.size)
             {
                 blocking_read(src_, block_, sizeof(block_));
