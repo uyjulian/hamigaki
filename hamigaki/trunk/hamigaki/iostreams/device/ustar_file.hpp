@@ -10,21 +10,32 @@
 #ifndef HAMIGAKI_IOSTREAMS_DEVICE_USTAR_FILE_HPP
 #define HAMIGAKI_IOSTREAMS_DEVICE_USTAR_FILE_HPP
 
+#include <boost/config.hpp>
+
 #include <hamigaki/iostreams/device/file.hpp>
 #include <hamigaki/iostreams/blocking.hpp>
 #include <hamigaki/binary_io.hpp>
+#include <hamigaki/dec_format.hpp>
 #include <hamigaki/oct_format.hpp>
 #include <boost/iostreams/categories.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/integer.hpp>
+#include <boost/optional.hpp>
 #include <boost/shared_ptr.hpp>
 #include <algorithm>
 #include <cstring>
 #include <ctime>
 #include <numeric>
 #include <string>
+
+#if defined(BOOST_WINDOWS)
+    extern "C" __declspec(dllimport)
+    unsigned long __stdcall GetCurrentProcessId();
+#elif defined(BOOST_HAS_UNISTD_H)
+    #include <unistd.h>
+#endif
 
 namespace hamigaki { namespace iostreams { namespace tar {
 
@@ -72,6 +83,25 @@ enum file_format
     ustar, pax, gnu
 };
 
+struct timestamp
+{
+    std::time_t seconds;
+    boost::uint32_t nanoseconds;
+
+    timestamp() : seconds(0), nanoseconds(0)
+    {
+    }
+
+    explicit timestamp(std::time_t t) : seconds(t), nanoseconds(0)
+    {
+    }
+
+    timestamp(std::time_t sec, boost::uint32_t nsec)
+        : seconds(sec), nanoseconds(nsec)
+    {
+    }
+};
+
 struct header
 {
     boost::filesystem::path path;
@@ -79,7 +109,9 @@ struct header
     boost::intmax_t uid;
     boost::intmax_t gid;
     boost::uintmax_t size;
-    std::time_t modified_time;
+    boost::optional<timestamp> modified_time;
+    boost::optional<timestamp> access_time;
+    boost::optional<timestamp> change_time;
     char type;
     boost::filesystem::path link_name;
     file_format format;
@@ -89,7 +121,7 @@ struct header
     boost::uint16_t dev_minor;
 
     header()
-        : mode(0644), uid(0), gid(0), size(0), modified_time(0)
+        : mode(0644), uid(0), gid(0), size(0)
         , type(tar::type::regular), format(gnu), dev_major(0), dev_minor(0)
     {
     }
@@ -195,6 +227,23 @@ namespace detail
 
 typedef boost::uint_t<17>::least uint17_t;
 
+#if defined(BOOST_WINDOWS)
+inline unsigned long get_pid()
+{
+    return ::GetCurrentProcessId();
+}
+#elif defined(BOOST_HAS_UNISTD_H)
+inline pid_t get_pid()
+{
+    return ::getpid();
+}
+#else
+inline pid_t get_pid()
+{
+    return 0;
+}
+#endif
+
 inline uint17_t cheksum(const void* block)
 {
     const unsigned char* s = static_cast<const unsigned char*>(block);
@@ -240,7 +289,7 @@ inline std::string read_c_string(const char (&s)[Size])
 }
 
 template<class T, std::size_t Size>
-inline T read_oct(const char (&s)[Size])
+inline T read_oct_impl(const char (&s)[Size], boost::mpl::bool_<false>)
 {
     static const char table[] = " ";
     const char* begin = &s[0];
@@ -259,25 +308,19 @@ inline T read_negative_oct(const char (&s)[Size])
 }
 
 template<class T, std::size_t Size>
-inline T read_signed_oct(const char (&s)[Size])
+inline T read_oct_impl(const char (&s)[Size], boost::mpl::bool_<true>)
 {
     if ((static_cast<unsigned char>(s[0]) & 0x80) != 0)
         return read_negative_oct<T>(s);
     else
-        return read_oct<T>(s);
+        return read_oct_impl<T>(s, boost::mpl::bool_<false>());
 }
 
-inline std::time_t read_negative_time_t(const char (&s)[12])
+template<class T, std::size_t Size>
+inline T read_oct(const char (&s)[Size])
 {
-    return static_cast<std::time_t>(read_negative_oct<boost::int32_t>(s));
-}
-
-inline std::time_t read_time_t(const char (&s)[12])
-{
-    if ((static_cast<unsigned char>(s[0]) & 0x80) != 0)
-        return read_negative_time_t(s);
-    else
-        return static_cast<std::time_t>(read_oct<boost::uint32_t>(s));
+    return read_oct_impl<T,Size>(
+        s, boost::mpl::bool_<std::numeric_limits<T>::is_signed>());
 }
 
 template<std::size_t Size>
@@ -301,7 +344,7 @@ inline void write_c_string(char (&buf)[Size], const std::string& s)
 }
 
 template<std::size_t Size, class T>
-inline void write_oct(char (&buf)[Size], T x)
+inline void write_oct_impl(char (&buf)[Size], T x, boost::mpl::bool_<false>)
 {
     const std::string& s = to_oct<char,Size-1>(x);
     s.copy(buf, s.size());
@@ -316,25 +359,37 @@ inline void write_negative_oct(char (&buf)[Size], T x)
 }
 
 template<std::size_t Size, class T>
-inline void write_signed_oct(char (&buf)[Size], T x)
+inline void write_oct_impl(char (&buf)[Size], T x, boost::mpl::bool_<true>)
 {
     if (x < 0)
         return write_negative_oct(buf, x);
     else
-        return write_oct(buf, x);
+        return write_oct_impl(buf, x, boost::mpl::bool_<false>());
 }
 
-inline void write_negative_time_t(char (&buf)[12], std::time_t t)
+template<std::size_t Size, class T>
+inline void write_oct(char (&buf)[Size], T x)
 {
-    write_negative_oct(buf, static_cast<boost::int64_t>(t));
+    write_oct_impl(buf, x,
+        boost::mpl::bool_<std::numeric_limits<T>::is_signed>());
 }
 
-inline void write_time_t(char (&buf)[12], std::time_t t)
+inline std::string make_ex_header_name(const boost::filesystem::path& ph)
 {
-    if (t < 0)
-        return write_negative_time_t(buf, t);
+    std::string buf;
+    if (ph.has_branch_path())
+        buf += ph.branch_path().string();
     else
-        return write_oct(buf, static_cast<boost::uint32_t>(t));
+        buf += '.';
+    buf += "/PaxHeaders.";
+    buf += to_dec<char>(get_pid());
+    buf += '/';
+    buf += ph.leaf();
+
+    if (buf.size() > raw_header::name_size)
+        buf.resize(raw_header::name_size);
+
+    return buf;
 }
 
 } // namespace detail
@@ -358,10 +413,10 @@ inline header read_header(const char* block)
     header head;
     head.path = branch / leaf;
     head.mode = detail::read_oct<boost::uint16_t>(raw.mode);
-    head.uid = detail::read_signed_oct<boost::int32_t>(raw.uid);
-    head.gid = detail::read_signed_oct<boost::int32_t>(raw.gid);
+    head.uid = detail::read_oct<boost::int32_t>(raw.uid);
+    head.gid = detail::read_oct<boost::int32_t>(raw.gid);
     head.size = detail::read_oct<boost::uint64_t>(raw.size);
-    head.modified_time = detail::read_time_t(raw.mtime);
+    head.modified_time = timestamp(detail::read_oct<std::time_t>(raw.mtime));
 
     detail::uint17_t chksum = detail::read_oct<detail::uint17_t>(raw.chksum);
     if (detail::cheksum(block) != chksum)
@@ -404,17 +459,24 @@ inline void write_header(char* block, const header& head)
 
     if (head.is_long())
         detail::write_string(raw.name, "././@LongLink");
+    else if (head.type == type::extended)
+        detail::write_string(raw.name, detail::make_ex_header_name(head.path));
     else
         detail::write_string(raw.name, leaf);
 
     detail::write_oct(raw.mode, head.mode);
-    detail::write_signed_oct(raw.uid, head.uid);
-    detail::write_signed_oct(raw.gid, head.gid);
+    detail::write_oct(raw.uid, head.uid);
+    detail::write_oct(raw.gid, head.gid);
     detail::write_oct(raw.size, head.size);
-    detail::write_time_t(raw.mtime, head.modified_time);
+    if (head.modified_time)
+        detail::write_oct(raw.mtime, head.modified_time->seconds);
+    else
+        detail::write_oct(raw.mtime, static_cast<std::time_t>(0));
     std::memset(raw.chksum, ' ', sizeof(raw.chksum));
     raw.typeflag = head.type;
-    detail::write_string(raw.linkname, linkname);
+
+    if (head.type != type::extended)
+        detail::write_string(raw.linkname, linkname);
 
     std::strcpy(raw.magic, "ustar");
     if (head.format == gnu)

@@ -11,11 +11,9 @@
 #define HAMIGAKI_IOSTREAMS_DEVICE_TAR_FILE_HPP
 
 #include <hamigaki/iostreams/device/ustar_file.hpp>
-#include <hamigaki/dec_format.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/stream.hpp>
-#include <boost/optional.hpp>
 #include <boost/ref.hpp>
 #include <boost/scoped_array.hpp>
 
@@ -30,6 +28,9 @@ struct extended_header
     boost::optional<boost::intmax_t> uid;
     boost::optional<boost::intmax_t> gid;
     boost::optional<boost::uintmax_t> size;
+    boost::optional<timestamp> modified_time;
+    boost::optional<timestamp> access_time;
+    boost::optional<timestamp> change_time;
     boost::filesystem::path link_path;
     std::string user_name;
     std::string group_name;
@@ -38,9 +39,10 @@ struct extended_header
 namespace detail
 {
 
-std::string
+inline std::string
 make_ex_header_recoed(const std::string& key, const std::string value)
 {
+    // "size key=value\n"
     std::size_t size0 = 1 + key.size() + 1 + value.size() + 1;
     std::size_t size1 = to_dec<char>(size0).size() + size0;
     std::size_t size = to_dec<char>(size1).size() + size0;
@@ -63,9 +65,86 @@ struct is_non_ascii_func
     }
 };
 
-bool is_non_ascii(const std::string& s)
+inline bool is_non_ascii(const std::string& s)
 {
     return std::find_if(s.begin(), s.end(), is_non_ascii_func()) != s.end();
+}
+
+inline boost::uint32_t decode_nsec(const char* beg, const char* end)
+{
+    std::string buf(beg, end);
+    std::size_t size = buf.size();
+    if (size < 9)
+        buf.append(9-size, '0');
+    else
+        buf.resize(9);
+    return from_dec<boost::uint32_t>(buf);
+}
+
+inline timestamp to_timestamp(const std::string& s)
+{
+    if (s.empty() || (s == "-"))
+        return timestamp();
+
+    bool minus = s[0] == '-';
+    std::string::size_type pos = s.find('.');
+    if (pos != std::string::npos)
+    {
+        timestamp tmp;
+        const char* beg = s.c_str();
+        tmp.seconds = from_dec<std::time_t>(beg, beg+pos);
+        tmp.nanoseconds = decode_nsec(beg+pos+1, beg+s.size());
+
+        if (minus)
+        {
+            --(tmp.seconds);
+            tmp.nanoseconds = 1000000000ul - tmp.nanoseconds;
+        }
+        return tmp;
+    }
+    else
+        return timestamp(from_dec<std::time_t>(s));
+}
+
+inline timestamp to_timestamp(const char* beg, const char* end)
+{
+    return detail::to_timestamp(std::string(beg, end));
+}
+
+inline std::string encode_nsec(boost::uint32_t x)
+{
+    std::string buf = to_dec<char>(x);
+    if (buf.size() < 9)
+        buf.insert(buf.begin(), 9-buf.size(), '0');
+    while (*buf.rbegin() == '0')
+        buf.resize(buf.size()-1);
+    return buf;
+}
+
+inline std::string from_timestamp(const timestamp& x)
+{
+    if (x.nanoseconds != 0)
+    {
+        std::time_t sec = x.seconds;
+        boost::uint32_t nsec = x.nanoseconds;
+
+        std::string buf;
+
+        if (sec < 0)
+        {
+            ++sec;
+            nsec = 1000000000ul - nsec;
+            if (sec == 0)
+                buf += '-';
+        }
+
+        buf += to_dec<char>(sec);
+        buf += '.';
+        buf += encode_nsec(nsec);
+        return buf;
+    }
+    else
+        return to_dec<char>(x.seconds);
 }
 
 } // namespace detail
@@ -125,8 +204,8 @@ public:
             header_ = ustar_.header();
         }
 
-        if (!ext.link_path.empty())
-            header_.link_name = ext.link_path;
+        if (!ext.path.empty())
+            header_.path = ext.path;
 
         if (ext.uid)
             header_.uid = ext.uid.get();
@@ -137,8 +216,17 @@ public:
         if (ext.size)
             header_.size = ext.size.get();
 
-        if (!ext.path.empty())
-            header_.path = ext.path;
+        if (ext.modified_time)
+            header_.modified_time = ext.modified_time;
+
+        if (ext.access_time)
+            header_.access_time = ext.access_time;
+
+        if (ext.change_time)
+            header_.change_time = ext.change_time;
+
+        if (!ext.link_path.empty())
+            header_.link_name = ext.link_path;
 
         if (!ext.user_name.empty())
             header_.user_name = ext.user_name;
@@ -222,6 +310,12 @@ private:
                 ext.gid = hamigaki::from_dec<boost::intmax_t>(beg, end);
             else if (key == "size")
                 ext.size = hamigaki::from_dec<boost::uintmax_t>(beg, end);
+            else if (key == "mtime")
+                ext.modified_time = tar::detail::to_timestamp(beg, end);
+            else if (key == "atime")
+                ext.access_time = tar::detail::to_timestamp(beg, end);
+            else if (key == "ctime")
+                ext.change_time = tar::detail::to_timestamp(beg, end);
             else if (key == "linkpath")
                 ext.link_path = path(beg, no_check);
             else if (key == "uname")
@@ -339,6 +433,27 @@ public:
                 local.size = 0;
             }
 
+            if (head.modified_time && (head.modified_time->nanoseconds != 0))
+            {
+                ex += tar::detail::make_ex_header_recoed(
+                    "mtime",
+                    tar::detail::from_timestamp(head.modified_time.get()));
+            }
+
+            if (head.access_time)
+            {
+                ex += tar::detail::make_ex_header_recoed(
+                    "atime",
+                    tar::detail::from_timestamp(head.access_time.get()));
+            }
+
+            if (head.change_time)
+            {
+                ex += tar::detail::make_ex_header_recoed(
+                    "ctime",
+                    tar::detail::from_timestamp(head.change_time.get()));
+            }
+
             if (long_link.size() > tar::raw_header::name_size)
             {
                 ex += tar::detail::make_ex_header_recoed("linkpath", long_link);
@@ -360,7 +475,7 @@ public:
             }
 
             if (!ex.empty())
-                write_extended_header(ex);
+                write_extended_header(head.path, ex);
         }
         else if (head.format == tar::gnu)
         {
@@ -425,9 +540,11 @@ public:
 private:
     ustar_type ustar_;
 
-    void write_extended_header(const std::string& ex)
+    void write_extended_header(
+        const boost::filesystem::path& ph, const std::string& ex)
     {
         tar::header tmp;
+        tmp.path = ph;
         tmp.mode = 0;
         tmp.size = ex.size();
         tmp.type = tar::type::extended;

@@ -77,7 +77,8 @@ int main(int argc, char* argv[])
                 head.type = io_ex::tar::type::directory;
             else
                 head.size = fs::file_size(head.path);
-            head.modified_time = fs::last_write_time(head.path);
+            head.modified_time =
+                io_ex::tar::timestamp(fs::last_write_time(head.path));
 
 #if defined(BOOST_WINDOWS)
             head.user_name = "root";
