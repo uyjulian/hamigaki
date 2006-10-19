@@ -238,7 +238,7 @@ inline pid_t get_pid()
     return ::getpid();
 }
 #else
-inline pid_t get_pid()
+inline int get_pid()
 {
     return 0;
 }
