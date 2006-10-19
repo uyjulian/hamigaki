@@ -35,6 +35,41 @@ struct extended_header
     std::string group_name;
 };
 
+namespace detail
+{
+
+std::string
+make_ex_header_recoed(const std::string& key, const std::string value)
+{
+    std::size_t size0 = 1 + key.size() + 1 + value.size() + 1;
+    std::size_t size1 = to_dec<char>(size0).size() + size0;
+    std::size_t size = to_dec<char>(size1).size() + size0;
+
+    std::string buf = to_dec<char>(size);
+    buf += ' ';
+    buf += key;
+    buf += '=';
+    buf += value;
+    buf += '\n';
+
+    return buf;
+}
+
+struct is_non_ascii_func
+{
+    bool operator()(char c) const
+    {
+        return static_cast<unsigned char>(c) & 0x80;
+    }
+};
+
+bool is_non_ascii(const std::string& s)
+{
+    return std::find_if(s.begin(), s.end(), is_non_ascii_func()) != s.end();
+}
+
+} // namespace detail
+
 } // namespace tar
 
 template<class Source>
@@ -263,12 +298,74 @@ public:
 
         tar::header local = head;
 
-        if (head.format == tar::gnu)
+        const std::string& leaf = head.path.leaf();
+        const path& branch = head.path.branch_path();
+        const std::string prefix = branch.string();
+        std::string long_link = head.link_name.string();
+        if (head.format == tar::pax)
         {
-            const std::string& leaf = head.path.leaf();
-            const path& branch = head.path.branch_path();
-            const std::string prefix = branch.string();
-            if ((leaf.size() > 100) || (prefix.size() > 155))
+            std::string ex;
+            if ((leaf.size() > tar::raw_header::name_size) ||
+                (prefix.size() > tar::raw_header::prefix_size))
+            {
+                std::string long_name = head.path.string();
+                ex += tar::detail::make_ex_header_recoed("path", long_name);
+
+                long_name.resize(tar::raw_header::name_size);
+                local.path = path(long_name, no_check);
+            }
+
+            if ((head.uid < 0) || (head.uid > tar::raw_header::max_uid))
+            {
+                ex += tar::detail::
+                    make_ex_header_recoed("uid", to_dec<char>(head.uid));
+
+                local.uid = 0;
+            }
+
+            if ((head.gid < 0) || (head.gid > tar::raw_header::max_gid))
+            {
+                ex += tar::detail::
+                    make_ex_header_recoed("gid", to_dec<char>(head.gid));
+
+                local.gid = 0;
+            }
+
+            if (head.size > tar::raw_header::max_size)
+            {
+                ex += tar::detail::
+                    make_ex_header_recoed("size", to_dec<char>(head.size));
+
+                local.size = 0;
+            }
+
+            if (long_link.size() > tar::raw_header::name_size)
+            {
+                ex += tar::detail::make_ex_header_recoed("linkpath", long_link);
+
+                long_link.resize(tar::raw_header::name_size);
+                local.link_name = path(long_link, no_check);
+            }
+
+            if (tar::detail::is_non_ascii(head.user_name))
+            {
+                ex += tar::detail::
+                    make_ex_header_recoed("uname", head.user_name);
+            }
+
+            if (tar::detail::is_non_ascii(head.group_name))
+            {
+                ex += tar::detail::
+                    make_ex_header_recoed("gname", head.group_name);
+            }
+
+            if (!ex.empty())
+                write_extended_header(ex);
+        }
+        else if (head.format == tar::gnu)
+        {
+            if ((leaf.size() > tar::raw_header::name_size) ||
+                (prefix.size() > tar::raw_header::prefix_size))
             {
                 std::string long_name = head.path.string();
                 if (head.type == tar::type::directory)
@@ -285,12 +382,11 @@ public:
                 ustar_.write(long_name.c_str(), long_name.size()+1);
                 ustar_.close();
 
-                long_name.resize(100);
+                long_name.resize(tar::raw_header::name_size);
                 local.path = path(long_name, no_check);
             }
 
-            std::string long_link = head.link_name.string();
-            if (long_link.size() > 100)
+            if (long_link.size() > tar::raw_header::name_size)
             {
                 tar::header tmp;
                 tmp.mode = 0;
@@ -303,7 +399,7 @@ public:
                 ustar_.write(long_link.c_str(), long_link.size()+1);
                 ustar_.close();
 
-                long_link.resize(100);
+                long_link.resize(tar::raw_header::name_size);
                 local.link_name = path(long_link, no_check);
             }
         }
@@ -328,6 +424,19 @@ public:
 
 private:
     ustar_type ustar_;
+
+    void write_extended_header(const std::string& ex)
+    {
+        tar::header tmp;
+        tmp.mode = 0;
+        tmp.size = ex.size();
+        tmp.type = tar::type::extended;
+        tmp.format = tar::pax;
+
+        ustar_.create_entry(tmp);
+        ustar_.write(ex.c_str(), ex.size());
+        ustar_.close();
+    }
 };
 
 template<class Sink>

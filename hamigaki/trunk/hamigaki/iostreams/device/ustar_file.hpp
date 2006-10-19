@@ -120,6 +120,14 @@ struct header
 
 struct raw_header
 {
+    static const std::size_t block_size = 512;
+    static const std::size_t name_size = 100;
+    static const std::size_t prefix_size = 155;
+
+    static const boost::intmax_t max_uid = 07777777;
+    static const boost::intmax_t max_gid = 07777777;
+    static const boost::uintmax_t max_size = 077777777777ull;
+
     char name[100];
     char mode[8];
     char uid[8];
@@ -135,7 +143,12 @@ struct raw_header
     char gname[32];
     char devmajor[8];
     char devminor[8];
-    char prefix[155];
+    char prefix[prefix_size];
+
+    static std::size_t round_up_block_size(std::size_t size)
+    {
+        return ((size + block_size - 1) / block_size) * block_size;
+    }
 };
 
 } } } // End namespaces tar, iostreams, hamigaki.
@@ -195,7 +208,8 @@ inline uint17_t cheksum(const void* block)
     uint17_t chksum = 0;
     chksum = std::accumulate(s, s+chksum_offset, chksum);
     chksum += static_cast<uint17_t>(static_cast<unsigned char>(' ') * 8u);
-    chksum = std::accumulate(s+typeflag_offset, s+512, chksum);
+    chksum = std::accumulate(
+        s+typeflag_offset, s+raw_header::block_size, chksum);
     return chksum;
 }
 
@@ -403,7 +417,7 @@ inline void write_header(char* block, const header& head)
 
     detail::write_string(raw.prefix, branch);
 
-    std::memset(block, 0, 512);
+    std::memset(block, 0, raw_header::block_size);
     hamigaki::binary_write(block, raw);
 
     const std::string& chksum = to_oct<char>(detail::cheksum(block));
@@ -437,19 +451,19 @@ public:
     {
         if (header_.is_regular() && (pos_ < header_.size))
         {
-            pos_ = ((pos_ + 511) / 512) * 512;
+            pos_ = raw_header::round_up_block_size(pos_);
             while (pos_ < header_.size)
             {
-                blocking_read(src_, block_, 512);
-                pos_ += 512;
+                blocking_read(src_, block_, sizeof(block_));
+                pos_ += tar::raw_header::block_size;
             }
         }
         pos_ = 0;
 
-        blocking_read(src_, block_, 512);
+        blocking_read(src_, block_, sizeof(block_));
         if (block_[0] == '\0')
         {
-            blocking_read(src_, block_, 512);
+            blocking_read(src_, block_, sizeof(block_));
             return false;
         }
         header_ = tar::read_header(block_);
@@ -474,9 +488,9 @@ public:
             if (rest == 0)
                 break;
 
-            std::size_t offset = pos_ % 512;
+            std::size_t offset = pos_ % sizeof(block_);
             if (offset == 0)
-                blocking_read(src_, block_, 512);
+                blocking_read(src_, block_, sizeof(block_));
 
             rest = (std::min)(rest, static_cast<boost::uint64_t>(512-offset));
 
@@ -495,7 +509,7 @@ private:
     Source src_;
     tar::header header_;
     boost::uint64_t pos_;
-    char block_[512];
+    char block_[tar::raw_header::block_size];
 };
 
 template<class Source>
@@ -570,7 +584,7 @@ public:
             throw BOOST_IOSTREAMS_FAILURE("tar entry size mismatch");
 
         write_header(block_, head);
-        blocking_write(sink_, block_, 512);
+        blocking_write(sink_, block_, sizeof(block_));
 
         pos_ = 0;
         size_ = head.is_regular() ? head.size : 0;
@@ -584,17 +598,17 @@ public:
         std::streamsize total = 0;
         while (total < n)
         {
-            std::size_t offset = pos_ % 512;
+            std::size_t offset = pos_ % sizeof(block_);
 
             std::streamsize amt = (std::min)(
-                n-total, static_cast<std::streamsize>(512-offset));
+                n-total, static_cast<std::streamsize>(sizeof(block_)-offset));
             std::memcpy(&block_[offset], s+total, amt);
 
             total += amt;
             pos_ += amt;
 
-            if (pos_ % 512 == 0)
-                blocking_write(sink_, block_, 512);
+            if (pos_ % sizeof(block_) == 0)
+                blocking_write(sink_, block_, sizeof(block_));
         }
 
         return total;
@@ -605,26 +619,26 @@ public:
         if (pos_ != size_)
             throw BOOST_IOSTREAMS_FAILURE("tar entry size mismatch");
 
-        std::size_t offset = pos_ % 512;
+        std::size_t offset = pos_ % sizeof(block_);
         if (offset != 0)
         {
-            std::memset(&block_[offset], 0, 512-offset);
-            blocking_write(sink_, block_, 512);
+            std::memset(&block_[offset], 0, sizeof(block_)-offset);
+            blocking_write(sink_, block_, sizeof(block_));
         }
     }
 
     void write_end_mark()
     {
         std::memset(block_, 0, sizeof(block_));
-        blocking_write(sink_, block_, 512);
-        blocking_write(sink_, block_, 512);
+        blocking_write(sink_, block_, sizeof(block_));
+        blocking_write(sink_, block_, sizeof(block_));
     }
 
 private:
     Sink sink_;
     boost::uint64_t pos_;
     boost::uint64_t size_;
-    char block_[512];
+    char block_[tar::raw_header::block_size];
 };
 
 template<class Sink>
