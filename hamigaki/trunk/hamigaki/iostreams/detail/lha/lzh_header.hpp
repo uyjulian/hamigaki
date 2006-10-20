@@ -10,15 +10,12 @@
 #ifndef HAMIGAKI_IOSTREAMS_DETAIL_LHA_LZH_HEADER_HPP
 #define HAMIGAKI_IOSTREAMS_DETAIL_LHA_LZH_HEADER_HPP
 
-#include <hamigaki/binary_io.hpp>
+#include <hamigaki/iostreams/detail/msdos_date_time.hpp>
 #include <boost/filesystem/path.hpp>
-#include <boost/mpl/list.hpp>
 #include <boost/mpl/single_view.hpp>
-#include <boost/cstdint.hpp>
 #include <boost/operators.hpp>
 #include <boost/optional.hpp>
 #include <cstring>
-#include <ctime>
 
 namespace hamigaki { namespace iostreams { namespace lha {
 
@@ -120,57 +117,6 @@ struct header
     }
 };
 
-struct msdos_date_time
-{
-    boost::uint16_t time;
-    boost::uint16_t date;
-
-    int year() const
-    {
-        return 1980 + (date >> 9);
-    }
-
-    int month() const
-    {
-        return (date >> 5) & 0x0F;
-    }
-
-    int day() const
-    {
-        return date & 0x1F;
-    }
-
-    int hours() const
-    {
-        return time >> 11;
-    }
-
-    int minutes() const
-    {
-        return (time >> 5) & 0x3F;
-    }
-
-    int seconds() const
-    {
-        return (time << 1) & 0x3F;
-    }
-
-    std::time_t to_time_t() const
-    {
-        std::tm lt;
-
-        lt.tm_year = year() - 1900;
-        lt.tm_mon = month() - 1;
-        lt.tm_mday = day();
-        lt.tm_hour = hours();
-        lt.tm_min = minutes();
-        lt.tm_sec = seconds();
-        lt.tm_isdst = -1;
-
-        return std::mktime(&lt);
-    }
-};
-
 struct lv0_header
 {
     boost::uint8_t header_size;
@@ -233,19 +179,6 @@ public:
 };
 
 template<>
-struct struct_traits<iostreams::lha::msdos_date_time>
-{
-private:
-    typedef iostreams::lha::msdos_date_time self;
-
-public:
-    typedef boost::mpl::list<
-        member<self, boost::uint16_t, &self::time, little>,
-        member<self, boost::uint16_t, &self::date, little>
-    > members;
-};
-
-template<>
 struct struct_traits<iostreams::lha::windows_timestamp>
 {
 private:
@@ -277,7 +210,7 @@ struct struct_traits<iostreams::lha::lv0_header>
 {
 private:
     typedef iostreams::lha::lv0_header self;
-    typedef iostreams::lha::msdos_date_time date_time_type;
+    typedef iostreams::msdos_date_time date_time_type;
 
 public:
     typedef boost::mpl::list<
@@ -296,7 +229,7 @@ struct struct_traits<iostreams::lha::lv1_header>
 {
 private:
     typedef iostreams::lha::lv1_header self;
-    typedef iostreams::lha::msdos_date_time date_time_type;
+    typedef iostreams::msdos_date_time date_time_type;
 
 public:
     typedef boost::mpl::list<
