@@ -29,15 +29,17 @@ int main(int argc, char* argv[])
             const io_ex::zip::header& head = zip.header();
 
             std::cout << head.path.string() << '\n';
-
-            char buf[256];
-            std::streamsize n;
-            while (n = zip.read(buf, sizeof(buf)), n >= 0)
+            if (!head.is_directory())
             {
-                if (n)
-                    std::cout.write(buf, n);
+                char buf[256];
+                std::streamsize n;
+                while (n = zip.read(buf, sizeof(buf)), n >= 0)
+                {
+                    if (n)
+                        std::cout.write(buf, n);
+                }
+                std::cout << '\n';
             }
-            std::cout << '\n';
 
             std::cout << "--------------------------------" << std::endl;
         }

@@ -73,3 +73,31 @@ rule find-boost-filesystem-lib ( toolset variant : properties * )
 {
     return [ find-boost-lib filesystem $(toolset) $(variant) : $(properties) ] ;
 }
+
+rule find-boost-iostreams-lib ( toolset variant : properties * )
+{
+    return [ find-boost-lib iostreams $(toolset) $(variant) : $(properties) ] ;
+}
+
+rule find-boost-zlib-lib ( toolset variant : properties * )
+{
+    if $(ZLIB_SOURCE)
+    {
+        return [ find-boost-lib zlib $(toolset) $(variant) : $(properties) ] ;
+    }
+    else
+    {
+        if ! $(ZLIB_BINARY)
+        {
+            if $(NT) && ! [ MATCH (.*gcc.*) : $(TOOLS) ]
+            {
+                ZLIB_BINARY = "zdll" ;
+            }
+            else 
+            {
+                ZLIB_BINARY = "z" ;
+            }
+        }
+        return $(properties) <find-library>$(ZLIB_BINARY) ;
+    }
+}

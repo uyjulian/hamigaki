@@ -14,8 +14,11 @@
 #include <hamigaki/iostreams/device/file.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/iostreams/filter/zlib.hpp>
 #include <boost/iostreams/categories.hpp>
 #include <boost/mpl/single_view.hpp>
+#include <boost/crc.hpp>
+#include <boost/ref.hpp>
 #include <boost/scoped_array.hpp>
 
 namespace hamigaki { namespace iostreams { namespace zip {
@@ -98,11 +101,23 @@ struct central_directory_footer
 struct header
 {
     boost::filesystem::path path;
+    bool directory;
     boost::uint16_t method;
     std::time_t update_time;
     boost::uint32_t crc32_checksum;
     boost::uint32_t compressed_size;
     boost::uint32_t file_size;
+
+    header()
+        : directory(false), method(0), update_time(0), crc32_checksum(0)
+        , compressed_size(0), file_size(0)
+    {
+    }
+
+    bool is_directory() const
+    {
+        return directory;
+    }
 };
 
 } } } // End namespaces zip, iostreams, hamigaki.
@@ -224,12 +239,19 @@ namespace zip
 namespace detail
 {
 
+inline boost::iostreams::zlib_params make_zlib_params()
+{
+    boost::iostreams::zlib_params params;
+    params.noheader = true;
+    return params;
+}
+
 } // namespace detail
 
 } // namespace zip
 
 template<class Source>
-class basic_zip_file_source_impl
+class basic_raw_zip_file_source_impl
 {
 public:
     typedef char char_type;
@@ -238,17 +260,16 @@ public:
         boost::iostreams::input,
         boost::iostreams::device_tag {};
 
-    explicit basic_zip_file_source_impl(const Source& src)
+    explicit basic_raw_zip_file_source_impl(const Source& src)
         : src_(src), pos_(0)
     {
-        header_.file_size = 0;
     }
 
     bool next_entry()
     {
         using namespace boost::filesystem;
 
-        if (boost::uint32_t rest = header_.file_size - pos_)
+        if (boost::uint32_t rest = header_.compressed_size - pos_)
             boost::iostreams::seek(src_, rest, BOOST_IOS::cur);
         pos_ = 0;
 
@@ -259,10 +280,12 @@ public:
         zip::local_file_header local;
         iostreams::binary_read(src_, local);
 
-        header_.method = local.method;
-        header_.update_time = local.update_date_time.to_time_t();
-        header_.compressed_size = local.compressed_size;
-        header_.file_size = local.file_size;
+        zip::header head;
+        head.method = local.method;
+        head.update_time = local.update_date_time.to_time_t();
+        head.compressed_size = local.compressed_size;
+        head.crc32_checksum = local.crc32_checksum;
+        head.file_size = local.file_size;
 
         if (local.file_name_length != 0)
         {
@@ -271,10 +294,9 @@ public:
 
             blocking_read(src_, &filename[0], local.file_name_length);
             filename[local.file_name_length] = '\0';
-            header_.path = path(&filename[0], no_check);
+            head.path = path(&filename[0], no_check);
+            head.directory = (filename[local.file_name_length-1] == '/');
         }
-        else
-            header_.path = path();
 
         // TODO
         if (local.extra_field_length)
@@ -282,6 +304,8 @@ public:
             boost::scoped_array<char> extra(new char[local.extra_field_length]);
             blocking_read(src_, &extra[0], local.extra_field_length);
         }
+
+        header_ = head;
 
         return true;
     }
@@ -293,14 +317,10 @@ public:
 
     std::streamsize read(char* s, std::streamsize n)
     {
-        // TODO
-        if (header_.method != 0)
+        if ((pos_ >= header_.compressed_size) || (n <= 0))
             return -1;
 
-        if ((pos_ >= header_.file_size) || (n <= 0))
-            return -1;
-
-        boost::uint32_t rest = header_.file_size - pos_;
+        boost::uint32_t rest = header_.compressed_size - pos_;
         std::streamsize amt =
             static_cast<std::streamsize>(
                 (std::min)(static_cast<boost::uint32_t>(n), rest));
@@ -314,6 +334,117 @@ private:
     Source src_;
     zip::header header_;
     boost::uint32_t pos_;
+};
+
+template<class Source>
+class basic_raw_zip_file_source
+{
+private:
+    typedef basic_raw_zip_file_source_impl<Source> impl_type;
+
+public:
+    typedef char char_type;
+
+    struct category :
+        boost::iostreams::input,
+        boost::iostreams::device_tag {};
+
+    explicit basic_raw_zip_file_source(const Source& src)
+        : pimpl_(new impl_type(src))
+    {
+    }
+
+    bool next_entry()
+    {
+        return pimpl_->next_entry();
+    }
+
+    zip::header header() const
+    {
+        return pimpl_->header();
+    }
+
+    std::streamsize read(char* s, std::streamsize n)
+    {
+        return pimpl_->read(s, n);
+    }
+
+private:
+    boost::shared_ptr<impl_type> pimpl_;
+};
+
+class raw_zip_file_source : public basic_raw_zip_file_source<file_source>
+{
+    typedef basic_raw_zip_file_source<file_source> base_type;
+
+public:
+    explicit raw_zip_file_source(const std::string& filename)
+        : base_type(file_source(filename, BOOST_IOS::binary))
+    {
+    }
+};
+
+
+template<class Source>
+class basic_zip_file_source_impl
+{
+private:
+    typedef basic_raw_zip_file_source_impl<Source> raw_type;
+
+public:
+    explicit basic_zip_file_source_impl(const Source& src)
+        : raw_(src), method_(0)
+        , zlib_(zip::detail::make_zlib_params())
+    {
+    }
+
+    bool next_entry()
+    {
+        if (!raw_.next_entry())
+            return false;
+
+        const zip::header& head = raw_.header();
+        method_ = head.method;
+
+        if ((method_ != 0) && (method_ != 8))
+            throw BOOST_IOSTREAMS_FAILURE("unsupported ZIP format");
+
+        crc32_.reset();
+        boost::iostreams::close(zlib_, boost::ref(raw_), BOOST_IOS::in);
+
+        return true;
+    }
+
+    zip::header header() const
+    {
+        return raw_.header();
+    }
+
+    std::streamsize read(char* s, std::streamsize n)
+    {
+        std::streamsize amt = read_impl(s, n);
+        if (amt != -1)
+            crc32_.process_bytes(s, amt);
+        else if (crc32_.checksum() != raw_.header().crc32_checksum)
+            throw BOOST_IOSTREAMS_FAILURE("CRC missmatch");
+        return amt;
+    }
+
+private:
+    raw_type raw_;
+    boost::uint16_t method_;
+    boost::crc_32_type crc32_;
+    boost::iostreams::zlib_decompressor zlib_;
+
+    std::streamsize read_impl(char* s, std::streamsize n)
+    {
+        if (method_ == 0)
+            return raw_.read(s, n);
+        else if (method_ == 8)
+            return boost::iostreams::read(zlib_, boost::ref(raw_), s, n);
+
+        return -1;
+    }
 };
 
 template<class Source>
