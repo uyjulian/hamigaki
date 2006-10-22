@@ -23,9 +23,7 @@ inline bool binary_read(Source& src, T& x, const std::nothrow_t&)
     char data[binary_size<T>::type::value];
     std::memset(data, 0, sizeof(data));
 
-    const std::streamsize size = static_cast<std::streamsize>(sizeof(data));
-    boost::iostreams::non_blocking_adapter<Source> nb(src);
-    if (boost::iostreams::read(nb, data, size) != size)
+    if (!iostreams::blocking_read(src, data, std::nothrow))
         return false;
 
     hamigaki::binary_read<E>(data, x);
@@ -58,9 +56,7 @@ inline bool binary_write(Sink& sink, const T& x, const std::nothrow_t&)
     std::memset(data, 0, sizeof(data));
     hamigaki::binary_write(data, x);
 
-    const std::streamsize size = static_cast<std::streamsize>(sizeof(data));
-    boost::iostreams::non_blocking_adapter<Sink> nb(sink);
-    return boost::iostreams::write(nb, data, size) == size;
+    return iostreams::blocking_write(sink, data, std::nothrow);
 }
 
 template<class T, class Sink>
