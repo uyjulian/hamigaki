@@ -15,6 +15,7 @@
 #include <boost/iostreams/detail/template_params.hpp>
 #include <boost/iostreams/read.hpp>
 #include <boost/iostreams/write.hpp>
+#include <new>
 
 namespace hamigaki { namespace iostreams {
 
@@ -27,7 +28,7 @@ struct blocking_reader
     {
         boost::iostreams::non_blocking_adapter<Source> nb(src);
         if (boost::iostreams::read(nb, s, n) != n)
-            throw boost::iostreams::detail::bad_read();
+            return 0;
         return s;
     }
 };
@@ -37,51 +38,95 @@ struct blocking_writer
 {
     typedef typename boost::iostreams::char_type_of<Sink>::type char_type;
 
-    static void write(Sink& sink, const char_type* s, std::streamsize n)
+    static bool write(Sink& sink, const char_type* s, std::streamsize n)
     {
         boost::iostreams::non_blocking_adapter<Sink> nb(sink);
-        if (boost::iostreams::write(nb, s, n) != n)
-            throw boost::iostreams::detail::bad_write();
+        return (boost::iostreams::write(nb, s, n) == n);
     }
 };
+
+template<class Source>
+inline char* blocking_read(Source& src, char* s, std::streamsize n)
+{
+    if (!blocking_reader<Source>::read(src, s, n))
+        throw boost::iostreams::detail::bad_read();
+    return s;
+}
+
+template<class Source>
+inline char* blocking_read(
+    Source& src, char* s, std::streamsize n, const std::nothrow_t&)
+{
+    return blocking_reader<Source>::read(src, s, n);
+}
 
 template<class Source>
 inline char blocking_get(Source& src)
 {
     char c;
-    blocking_reader<Source>::read(src, &c, 1);
+    iostreams::blocking_read(src, &c, 1);
     return c;
 }
 
 template<class Source>
-inline char* blocking_read(Source& src, char* s, std::streamsize n)
+inline int blocking_get(Source& src, const std::nothrow_t&)
 {
-    return blocking_reader<Source>::read(src, s, n);
+    char c;
+    if (!blocking_reader<Source>::read(src, &c, 1))
+        std::char_traits<char>::eof();
+    return std::char_traits<char>::to_int_type(c);
 }
 
 template<class Source, std::size_t Size>
 inline char* blocking_read(Source& src, char (&s)[Size])
+{
+    return iostreams::blocking_read(src, s, static_cast<std::streamsize>(Size));
+}
+
+template<class Source, std::size_t Size>
+inline char* blocking_read(Source& src, char (&s)[Size], const std::nothrow_t&)
 {
     return blocking_reader<Source>::
         read(src, s, static_cast<std::streamsize>(Size));
 }
 
 template<class Sink>
-inline void blocking_put(Sink& sink, char c)
+inline void blocking_write(Sink& sink, const char* s, std::streamsize n)
 {
-    blocking_writer<Sink>::write(sink, &c, 1);
+    if (!blocking_writer<Sink>::write(sink, s, n))
+        throw boost::iostreams::detail::bad_write();
 }
 
 template<class Sink>
-inline void blocking_write(Sink& sink, const char* s, std::streamsize n)
+inline bool blocking_write(
+    Sink& sink, const char* s, std::streamsize n, const std::nothrow_t&)
 {
-    blocking_writer<Sink>::write(sink, s, n);
+    return blocking_writer<Sink>::write(sink, s, n);
+}
+
+template<class Sink>
+inline void blocking_put(Sink& sink, char c)
+{
+    iostreams::blocking_write(sink, &c, 1);
+}
+
+template<class Sink>
+inline bool blocking_put(Sink& sink, char c, const std::nothrow_t&)
+{
+    return blocking_writer<Sink>::write(sink, &c, 1);
 }
 
 template<class Sink, std::size_t Size>
 inline void blocking_write(Sink& sink, const char (&s)[Size])
 {
-    blocking_writer<Sink>::
+    iostreams::blocking_write(sink, s, static_cast<std::streamsize>(Size));
+}
+
+template<class Sink, std::size_t Size>
+inline bool blocking_write(
+    Sink& sink, const char (&s)[Size], const std::nothrow_t&)
+{
+    return blocking_writer<Sink>::
         write(sink, s, static_cast<std::streamsize>(Size));
 }
 
@@ -134,7 +179,7 @@ namespace hamigaki { namespace iostreams { \
             source_type& src, char_type* s, std::streamsize n) \
         { \
             if (boost::iostreams::read(src, s, n) != n) \
-                throw boost::iostreams::detail::bad_read(); \
+                return 0; \
             return s; \
         } \
     }; \
@@ -153,11 +198,10 @@ namespace hamigaki { namespace iostreams { \
         typedef sink BOOST_IOSTREAMS_TEMPLATE_ARGS(arity, T) sink_type; \
         typedef BOOST_PP_EXPR_IF(arity, typename) \
             boost::iostreams::char_type_of<sink_type>::type char_type; \
-        static void write( \
+        static bool write( \
             sink_type& src, const char_type* s, std::streamsize n) \
         { \
-            if (boost::iostreams::write(src, s, n) != n) \
-                throw boost::iostreams::detail::bad_write(); \
+            return boost::iostreams::write(src, s, n) == n; \
         } \
     }; \
 }} \
