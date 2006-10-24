@@ -10,6 +10,7 @@
 #ifndef HAMIGAKI_IOSTREAMS_DETAIL_LHA_LZH_HEADER_HPP
 #define HAMIGAKI_IOSTREAMS_DETAIL_LHA_LZH_HEADER_HPP
 
+#include <hamigaki/iostreams/detail/msdos_attributes.hpp>
 #include <hamigaki/iostreams/detail/msdos_date_time.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/mpl/single_view.hpp>
@@ -58,17 +59,6 @@ struct compress_method
     }
 };
 
-struct attributes
-{
-    static const boost::uint16_t read_only  = 0x0001;
-    static const boost::uint16_t hidden     = 0x0002;
-    static const boost::uint16_t system     = 0x0004;
-    static const boost::uint16_t directory  = 0x0010;
-    static const boost::uint16_t archive    = 0x0020;
-
-    static const boost::uint16_t mask       = 0x0037;
-};
-
 struct windows_timestamp
 {
     boost::uint64_t creation_time;
@@ -99,13 +89,13 @@ struct header
 
     header()
         : compressed_size(-1), file_size(-1), update_time(-1)
-        , attributes(attributes::archive)
+        , attributes(msdos_attributes::archive)
     {
     }
 
     bool is_directory() const
     {
-        return (attributes & attributes::directory) != 0;
+        return (attributes & msdos_attributes::directory) != 0;
     }
 
     std::string path_string() const

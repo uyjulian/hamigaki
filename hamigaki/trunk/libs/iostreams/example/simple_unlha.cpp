@@ -129,7 +129,7 @@ int main(int argc, char* argv[])
 
 #if defined(BOOST_WINDOWS)
             {
-                ::DWORD attr = head.attributes & io_ex::lha::attributes::mask;
+                ::DWORD attr = head.attributes & io_ex::msdos_attributes::mask;
                 ::SetFileAttributes(head.path_string().c_str(), attr);
             }
 #elif defined(BOOST_HAS_UNISTD_H)

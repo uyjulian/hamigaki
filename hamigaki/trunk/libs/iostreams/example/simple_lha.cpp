@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
             io_ex::lha::header head;
             head.path = fs::path(argv[i], fs::native);
             if (fs::is_directory(head.path))
-                head.attributes = io_ex::lha::attributes::directory;
+                head.attributes = io_ex::msdos_attributes::directory;
             else
                 head.file_size = fs::file_size(head.path);
             head.update_time = fs::last_write_time(head.path);

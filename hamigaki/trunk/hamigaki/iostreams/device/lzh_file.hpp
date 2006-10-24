@@ -262,9 +262,9 @@ public:
             header_.update_time = lv1.update_date_time.to_time_t();
 
             if (lv1.method == "-lhd-")
-                header_.attributes = lha::attributes::directory;
+                header_.attributes = msdos_attributes::directory;
             else
-                header_.attributes = lha::attributes::archive;
+                header_.attributes = msdos_attributes::archive;
 
             header_.path = read_path(*hsrc, cs);
             header_.crc16_checksum = read_little16(*hsrc, cs);
@@ -297,9 +297,9 @@ public:
             header_.update_time = static_cast<std::time_t>(lv2.update_time);
 
             if (lv2.method == "-lhd-")
-                header_.attributes = lha::attributes::directory;
+                header_.attributes = msdos_attributes::directory;
             else
-                header_.attributes = lha::attributes::archive;
+                header_.attributes = msdos_attributes::archive;
 
             header_.crc16_checksum = read_little16(*hsrc, crc);
             header_.os = get(*hsrc, crc);
@@ -325,7 +325,7 @@ public:
 
         next_offset_ = iostreams::tell_offset(src_) + header_.compressed_size;
 
-        if ((header_.attributes & lha::attributes::directory) == 0)
+        if ((header_.attributes & msdos_attributes::directory) == 0)
         {
             restricted_type plain(src_, 0, header_.compressed_size);
             if (header_.method == "-lh0-")
@@ -918,7 +918,7 @@ private:
             lv2.file_size = 0;
 
         lv2.update_time = header_.update_time;
-        lv2.reserved = static_cast<boost::uint8_t>(lha::attributes::archive);
+        lv2.reserved = static_cast<boost::uint8_t>(msdos_attributes::archive);
         lv2.level = 2;
 
         std::string buffer;
@@ -951,7 +951,7 @@ private:
                 write_extended_header(tmp, 0x02, convert_path(ph));
         }
 
-        if (header_.attributes != lha::attributes::archive)
+        if (header_.attributes != msdos_attributes::archive)
             write_extended_header<0x40>(tmp, header_.attributes);
 
         if (header_.timestamp)
