@@ -150,6 +150,14 @@ struct header
     {
         return (attributes & msdos_attributes::directory) != 0;
     }
+
+    std::string path_string() const
+    {
+        if (is_directory())
+            return path.native_directory_string();
+        else
+            return path.native_file_string();
+    }
 };
 
 class header_path_match
@@ -695,6 +703,233 @@ class raw_zip_file_source : public basic_raw_zip_file_source<file_source>
 public:
     explicit raw_zip_file_source(const std::string& filename)
         : base_type(file_source(filename, BOOST_IOS::binary))
+    {
+    }
+};
+
+
+template<class Sink>
+class basic_raw_zip_file_sink_impl
+{
+public:
+    typedef char char_type;
+
+    struct category
+        : boost::iostreams::output
+        , boost::iostreams::device_tag
+        , boost::iostreams::closable_tag
+    {};
+
+    explicit basic_raw_zip_file_sink_impl(const Sink& sink)
+        : sink_(sink), pos_(0)
+    {
+    }
+
+    void create_entry(const zip::header& head)
+    {
+        if (pos_ != header_.compressed_size)
+            throw BOOST_IOSTREAMS_FAILURE("ZIP entry size mismatch");
+
+        static_cast<zip::header&>(header_) = head;
+        if (header_.is_directory())
+        {
+            header_.method = 0;
+            header_.crc32_checksum = 0;
+            header_.compressed_size = 0;
+            header_.file_size = 0;
+        }
+
+        header_.offset =
+            static_cast<boost::uint32_t>(iostreams::tell_offset(sink_));
+
+        write_local_file_header(header_);
+
+        pos_ = 0;
+        headers_.push_back(header_);
+    }
+
+    std::streamsize write(const char* s, std::streamsize n)
+    {
+        blocking_write(sink_, s, n);
+        pos_ += n;
+        return n;
+    }
+
+    void close()
+    {
+        if (pos_ != header_.compressed_size)
+            throw BOOST_IOSTREAMS_FAILURE("ZIP entry size mismatch");
+
+        headers_.back() = header_;
+    }
+
+    void close(
+        boost::uint32_t crc32_checksum, boost::uint32_t file_size)
+    {
+        header_.crc32_checksum = crc32_checksum;
+        header_.compressed_size = pos_;
+        header_.file_size = file_size;
+
+        if (header_.compressed_size != 0)
+        {
+            boost::iostreams::seek(sink_, header_.offset, BOOST_IOS::beg);
+            write_local_file_header(header_);
+            boost::iostreams::seek(sink_, 0, BOOST_IOS::end);
+        }
+
+        headers_.back() = header_;
+    }
+
+    void write_end_mark()
+    {
+        boost::uint32_t start_offset =
+            static_cast<boost::uint32_t>(iostreams::tell_offset(sink_));
+
+        for (std::size_t i = 0; i < headers_.size(); ++i)
+        {
+            const zip::detail::internal_header& head = headers_[i];
+
+            std::string filename = head.path.string();
+            if (head.is_directory())
+                filename += '/';
+
+            zip::file_header file_head;
+            file_head.made_by = 0; // TODO
+            file_head.needed_to_extract = 10; // TODO
+            file_head.flags = 0;
+            file_head.method = head.method;
+            file_head.update_date_time = msdos_date_time(head.update_time);
+            file_head.compressed_size = head.compressed_size;
+            file_head.crc32_checksum = head.crc32_checksum;
+            file_head.file_size = head.file_size;
+            file_head.file_name_length = filename.size();
+            file_head.extra_field_length = 0; // TODO
+            file_head.comment_length = head.comment.size();
+            file_head.disk_number_start = 0; // TODO
+            file_head.internal_attributes = 0; // TODO
+            file_head.external_attributes =
+                head.attributes |
+                (static_cast<boost::uint32_t>(head.permission) << 16);
+            file_head.offset = head.offset;
+
+            iostreams::write_uint32<little>(sink_, zip::file_header::signature);
+            iostreams::binary_write(sink_, file_head);
+
+            if (!filename.empty())
+            {
+                iostreams::blocking_write(
+                    sink_, filename.c_str(), filename.size());
+            }
+
+            if (!head.comment.empty())
+            {
+                iostreams::blocking_write(
+                    sink_, head.comment.c_str(), head.comment.size());
+            }
+        }
+
+        boost::uint32_t end_offset =
+            static_cast<boost::uint32_t>(iostreams::tell_offset(sink_));
+
+        zip::end_of_central_directory footer;
+        footer.disk_number = 0; // TODO
+        footer.start_disk_number = 0; // TODO
+        footer.entries = headers_.size();
+        footer.total_entries = footer.entries; // TODO
+        footer.size = end_offset - start_offset;
+        footer.offset = start_offset;
+        footer.comment_length = 0; //TODO
+
+        iostreams::write_uint32<little>(
+            sink_, zip::end_of_central_directory::signature);
+        iostreams::binary_write(sink_, footer);
+
+        boost::iostreams::close(sink_, BOOST_IOS::out);
+    }
+
+private:
+    Sink sink_;
+    zip::detail::internal_header header_;
+    boost::uint32_t pos_;
+    std::vector<zip::detail::internal_header> headers_;
+
+    void write_local_file_header(const zip::header& head)
+    {
+        std::string filename = head.path.string();
+        if (head.is_directory())
+            filename += '/';
+
+        zip::local_file_header local;
+        local.needed_to_extract = 10; // TODO
+        local.flags = 0;
+        local.method = head.method;
+        local.update_date_time = msdos_date_time(head.update_time);
+        local.crc32_checksum = head.crc32_checksum;
+        local.compressed_size = head.compressed_size;
+        local.file_size = head.file_size;
+        local.file_name_length = filename.size();
+        local.extra_field_length = 0; // TODO
+
+        iostreams::write_uint32<little>(
+            sink_, zip::local_file_header::signature);
+        iostreams::binary_write(sink_, local);
+        if (!filename.empty())
+            iostreams::blocking_write(sink_, filename.c_str(), filename.size());
+    }
+};
+
+template<class Sink>
+class basic_raw_zip_file_sink
+{
+private:
+    typedef basic_raw_zip_file_sink_impl<Sink> impl_type;
+
+public:
+    typedef char char_type;
+
+    struct category
+        : boost::iostreams::output
+        , boost::iostreams::device_tag
+        , boost::iostreams::closable_tag
+    {};
+
+    explicit basic_raw_zip_file_sink(const Sink& sink)
+        : pimpl_(new impl_type(sink))
+    {
+    }
+
+    void create_entry(const zip::header& head)
+    {
+        pimpl_->create_entry(head);
+    }
+
+    std::streamsize write(const char* s, std::streamsize n)
+    {
+        return pimpl_->write(s, n);
+    }
+
+    void close()
+    {
+        pimpl_->close();
+    }
+
+    void write_end_mark()
+    {
+        pimpl_->write_end_mark();
+    }
+
+private:
+    boost::shared_ptr<impl_type> pimpl_;
+};
+
+class raw_zip_file_sink : public basic_raw_zip_file_sink<file_sink>
+{
+private:
+    typedef basic_raw_zip_file_sink<file_sink> base_type;
+
+public:
+    explicit raw_zip_file_sink(const std::string& filename)
+        : base_type(file_sink(filename, BOOST_IOS::binary))
     {
     }
 };

@@ -10,10 +10,16 @@
 #ifndef HAMIGAKI_IOSTREAMS_DETAIL_MSDOS_DATE_TIME_HPP
 #define HAMIGAKI_IOSTREAMS_DETAIL_MSDOS_DATE_TIME_HPP
 
+#include <boost/config.hpp>
+
 #include <hamigaki/binary_io.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/cstdint.hpp>
 #include <ctime>
+
+#if !defined(BOOST_WINDOWS)
+    #include <time.h>
+#endif
 
 namespace hamigaki { namespace iostreams {
 
@@ -21,6 +27,37 @@ struct msdos_date_time
 {
     boost::uint16_t time;
     boost::uint16_t date;
+
+    msdos_date_time() : time(0), date(0)
+    {
+    }
+
+    explicit msdos_date_time(std::time_t t)
+    {
+        if ((t & 1) != 0)
+            ++t;
+
+        std::tm lt;
+
+#if defined(BOOST_WINDOWS)
+        lt = *std::localtime(&t);
+#else
+        ::localtime_r(&t, &lt);
+#endif
+
+        unsigned year = 1900 + lt.tm_year;
+        unsigned month = 1 + lt.tm_mon;
+        unsigned day = lt.tm_mday;
+        unsigned hour = lt.tm_hour;
+        unsigned min = lt.tm_min;
+        unsigned sec = lt.tm_sec;
+
+        time = static_cast<boost::uint16_t>(
+            (hour << 11) | (min << 5) | (sec >> 1));
+
+        date = static_cast<boost::uint16_t>(
+            ((year - 1980) << 9) | (month << 5) | day);
+    }
 
     int year() const
     {

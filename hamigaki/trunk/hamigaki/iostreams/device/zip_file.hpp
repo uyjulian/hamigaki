@@ -159,6 +159,125 @@ public:
     }
 };
 
+
+template<class Sink>
+class basic_zip_file_sink_impl
+{
+private:
+    typedef basic_raw_zip_file_sink_impl<Sink> raw_zip_type;
+
+public:
+    explicit basic_zip_file_sink_impl(const Sink& sink)
+        : raw_(sink), method_(0), size_(0)
+        , zlib_(zip::detail::make_zlib_params())
+    {
+    }
+
+    void create_entry(const zip::header& head)
+    {
+        method_ = head.method;
+        raw_.create_entry(head);
+    }
+
+    std::streamsize write(const char* s, std::streamsize n)
+    {
+        std::streamsize amt = write_impl(s, n);
+        if (amt != 0)
+        {
+            crc32_.process_bytes(s, amt);
+            size_ += amt;
+        }
+        return amt;
+    }
+
+    void close()
+    {
+        if (method_ == 8)
+            boost::iostreams::close(zlib_, boost::ref(raw_), BOOST_IOS::out);
+
+        raw_.close(crc32_.checksum(), size_);
+        crc32_.reset();
+    }
+
+    void write_end_mark()
+    {
+        raw_.write_end_mark();
+    }
+
+private:
+    raw_zip_type raw_;
+    boost::uint16_t method_;
+    boost::crc_32_type crc32_;
+    boost::uint32_t size_;
+    boost::iostreams::zlib_compressor zlib_;
+
+    std::streamsize write_impl(const char* s, std::streamsize n)
+    {
+        if (method_ == 0)
+            return raw_.write(s, n);
+        else if (method_ == 8)
+            return boost::iostreams::write(zlib_, boost::ref(raw_), s, n);
+
+        return n;
+    }
+};
+
+template<class Sink>
+class basic_zip_file_sink
+{
+private:
+    typedef basic_zip_file_sink_impl<Sink> impl_type;
+
+public:
+    typedef char char_type;
+
+    struct category
+        : boost::iostreams::output
+        , boost::iostreams::device_tag
+        , boost::iostreams::closable_tag
+    {};
+
+    explicit basic_zip_file_sink(const Sink& sink)
+        : pimpl_(new impl_type(sink))
+    {
+    }
+
+    void create_entry(const zip::header& head)
+    {
+        pimpl_->create_entry(head);
+    }
+
+    std::streamsize write(const char* s, std::streamsize n)
+    {
+        return pimpl_->write(s, n);
+    }
+
+    void close()
+    {
+        pimpl_->close();
+    }
+
+    void write_end_mark()
+    {
+        pimpl_->write_end_mark();
+    }
+
+private:
+    boost::shared_ptr<impl_type> pimpl_;
+};
+
+class zip_file_sink : public basic_zip_file_sink<file_sink>
+{
+private:
+    typedef basic_zip_file_sink<file_sink> base_type;
+
+public:
+    explicit zip_file_sink(const std::string& filename)
+        : base_type(file_sink(filename, BOOST_IOS::binary))
+    {
+    }
+};
+
 } } // End namespaces iostreams, hamigaki.
 
 #endif // HAMIGAKI_IOSTREAMS_DEVICE_ZIP_FILE_HPP

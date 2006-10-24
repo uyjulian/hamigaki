@@ -82,4 +82,15 @@ exe simple_unzip
         find-boost-zlib-lib
     ;
 
+exe simple_zip
+    :
+        simple_zip.cpp
+        <template>iostreams
+    :
+        [ cond $(ZLIB_LIBPATH) : <library-path>$(ZLIB_LIBPATH) : ]
+        find-boost-filesystem-lib
+        find-boost-iostreams-lib
+        find-boost-zlib-lib
+    ;
+
 }
