@@ -713,6 +713,7 @@ public:
         std::memset(block_, 0, sizeof(block_));
         blocking_write(sink_, block_, sizeof(block_));
         blocking_write(sink_, block_, sizeof(block_));
+        boost::iostreams::close(sink_, BOOST_IOS::out);
     }
 
 private:
