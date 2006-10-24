@@ -52,16 +52,14 @@ public:
         if (!raw_.next_entry())
             return false;
 
-        const zip::header& head = raw_.header();
-        method_ = head.method;
-
-        if ((method_ != 0) && (method_ != 8))
-            throw BOOST_IOSTREAMS_FAILURE("unsupported ZIP format");
-
-        crc32_.reset();
-        boost::iostreams::close(zlib_, boost::ref(raw_), BOOST_IOS::in);
-
+        prepare_reading();
         return true;
+    }
+
+    void select_entry(const boost::filesystem::path& ph)
+    {
+        raw_.select_entry(ph);
+        prepare_reading();
     }
 
     zip::header header() const
@@ -94,6 +92,18 @@ private:
 
         return -1;
     }
+
+    void prepare_reading()
+    {
+        const zip::header& head = raw_.header();
+        method_ = head.method;
+
+        if ((method_ != 0) && (method_ != 8))
+            throw std::runtime_error("unsupported ZIP format");
+
+        crc32_.reset();
+        boost::iostreams::close(zlib_, boost::ref(raw_), BOOST_IOS::in);
+    }
 };
 
 template<class Source>
@@ -117,6 +127,11 @@ public:
     bool next_entry()
     {
         return pimpl_->next_entry();
+    }
+
+    void select_entry(const boost::filesystem::path& ph)
+    {
+        pimpl_->select_entry(ph);
     }
 
     zip::header header() const

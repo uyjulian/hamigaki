@@ -21,6 +21,7 @@
 #include <boost/mpl/single_view.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/optional.hpp>
+#include <stdexcept>
 #include <vector>
 
 namespace hamigaki { namespace iostreams { namespace zip {
@@ -149,6 +150,22 @@ struct header
     {
         return (attributes & msdos_attributes::directory) != 0;
     }
+};
+
+class header_path_match
+{
+public:
+    explicit header_path_match(const boost::filesystem::path& ph) : path_(ph)
+    {
+    }
+
+    bool operator()(const header& head) const
+    {
+        return head.path == path_;
+    }
+
+private:
+    boost::filesystem::path path_;
 };
 
 } } } // End namespaces zip, iostreams, hamigaki.
@@ -344,7 +361,7 @@ inline void seek_end_of_central_dir(Source& src)
 
     } while (pos != 0);
 
-    throw BOOST_IOSTREAMS_FAILURE("cannot find ZIP footer");
+    throw std::runtime_error("cannot find ZIP footer");
 }
 
 template<class Source>
@@ -359,14 +376,14 @@ inline void read_local_extra_field(Source& src, header& head)
         if (ex_head.id == extra_field_id::extended_timestamp)
         {
             if (ex_head.size == 0)
-                throw BOOST_IOSTREAMS_FAILURE("bad ZIP extended timestamp");
+                throw std::runtime_error("bad ZIP extended timestamp");
 
             unsigned char flags = static_cast<unsigned char>(data[0]);
             boost::uint16_t pos = 1;
             if ((flags & 0x01) != 0)
             {
                 if (pos + 4 > ex_head.size)
-                    throw BOOST_IOSTREAMS_FAILURE("bad ZIP extended timestamp");
+                    throw std::runtime_error("bad ZIP extended timestamp");
                 head.modified_time = static_cast<std::time_t>(
                     hamigaki::decode_int<little,4>(&data[pos]));
                 pos += 4;
@@ -374,7 +391,7 @@ inline void read_local_extra_field(Source& src, header& head)
             if ((flags & 0x02) != 0)
             {
                 if (pos + 4 > ex_head.size)
-                    throw BOOST_IOSTREAMS_FAILURE("bad ZIP extended timestamp");
+                    throw std::runtime_error("bad ZIP extended timestamp");
                 head.access_time = static_cast<std::time_t>(
                     hamigaki::decode_int<little,4>(&data[pos]));
                 pos += 4;
@@ -382,7 +399,7 @@ inline void read_local_extra_field(Source& src, header& head)
             if ((flags & 0x04) != 0)
             {
                 if (pos + 4 > ex_head.size)
-                    throw BOOST_IOSTREAMS_FAILURE("bad ZIP extended timestamp");
+                    throw std::runtime_error("bad ZIP extended timestamp");
                 head.creation_time = static_cast<std::time_t>(
                     hamigaki::decode_int<little,4>(&data[pos]));
             }
@@ -407,13 +424,13 @@ inline void read_central_extra_field(Source& src, header& head)
         if (ex_head.id == extra_field_id::extended_timestamp)
         {
             if (ex_head.size == 0)
-                throw BOOST_IOSTREAMS_FAILURE("bad ZIP extended timestamp");
+                throw std::runtime_error("bad ZIP extended timestamp");
 
             unsigned char flags = static_cast<unsigned char>(data[0]);
             if ((flags & 0x01) != 0)
             {
                 if (5 > ex_head.size)
-                    throw BOOST_IOSTREAMS_FAILURE("bad ZIP extended timestamp");
+                    throw std::runtime_error("bad ZIP extended timestamp");
                 head.modified_time = static_cast<std::time_t>(
                     hamigaki::decode_int<little,4>(&data[1]));
             }
@@ -448,57 +465,21 @@ public:
         if (next_index_ >= headers_.size())
             return false;
 
-        zip::detail::internal_header head = headers_[next_index_++];
-        boost::iostreams::seek(src_, head.offset, BOOST_IOS::beg);
-        pos_ = 0;
-
-        boost::uint32_t signature = iostreams::read_uint32<little>(src_);
-        if (signature != zip::local_file_header::signature)
-            throw BOOST_IOSTREAMS_FAILURE("bad ZIP signature");
-
-        zip::local_file_header local;
-        iostreams::binary_read(src_, local);
-
-        head.method = local.method;
-        head.update_time = local.update_date_time.to_time_t();
-        if ((local.flags & zip::flags::has_data_dec) == 0)
-        {
-            head.crc32_checksum = local.crc32_checksum;
-            head.compressed_size = local.compressed_size;
-            head.file_size = local.file_size;
-        }
-
-        if (local.file_name_length != 0)
-        {
-            boost::scoped_array<char>
-                filename(new char[local.file_name_length+1]);
-
-            blocking_read(src_, &filename[0], local.file_name_length);
-            filename[local.file_name_length] = '\0';
-            head.path = path(&filename[0], no_check);
-            if (filename[local.file_name_length-1] == '/')
-                head.attributes |= msdos_attributes::directory;
-        }
-
-        if (local.extra_field_length)
-        {
-            boost::scoped_array<char> extra(new char[local.extra_field_length]);
-            blocking_read(src_, &extra[0], local.extra_field_length);
-
-            using boost::iostreams::array_source;
-            typedef boost::iostreams::detail::
-                direct_adapter<array_source> source_type;
-
-            source_type src(array_source(
-                extra.get(),
-                static_cast<std::size_t>(local.extra_field_length)));
-
-            zip::detail::read_local_extra_field(src, head);
-        }
-
-        header_ = head;
-
+        select_entry(next_index_);
         return true;
+    }
+
+    void select_entry(const boost::filesystem::path& ph)
+    {
+        typedef std::vector<zip::detail::internal_header> headers_type;
+        typedef headers_type::const_iterator iter_type;
+
+        iter_type pos = std::find_if(
+            headers_.begin(), headers_.end(), zip::header_path_match(ph));
+        if (pos == headers_.end())
+            throw std::runtime_error("no such path");
+
+        select_entry(pos - headers_.begin());
     }
 
     zip::header header() const
@@ -545,7 +526,7 @@ private:
         {
             boost::uint32_t signature = iostreams::read_uint32<little>(src_);
             if (signature != zip::file_header::signature)
-                throw BOOST_IOSTREAMS_FAILURE("bad ZIP signature");
+                throw std::runtime_error("bad ZIP signature");
 
             zip::file_header file_head;
             iostreams::binary_read(src_, file_head);
@@ -606,6 +587,63 @@ private:
         boost::iostreams::seek(src_, 0, BOOST_IOS::beg);
         tmp.swap(headers_);
     }
+
+    void select_entry(std::size_t index)
+    {
+        using namespace boost::filesystem;
+
+        zip::detail::internal_header head = headers_[index];
+        next_index_ = ++index;
+
+        boost::iostreams::seek(src_, head.offset, BOOST_IOS::beg);
+        pos_ = 0;
+
+        boost::uint32_t signature = iostreams::read_uint32<little>(src_);
+        if (signature != zip::local_file_header::signature)
+            throw std::runtime_error("bad ZIP signature");
+
+        zip::local_file_header local;
+        iostreams::binary_read(src_, local);
+
+        head.method = local.method;
+        head.update_time = local.update_date_time.to_time_t();
+        if ((local.flags & zip::flags::has_data_dec) == 0)
+        {
+            head.crc32_checksum = local.crc32_checksum;
+            head.compressed_size = local.compressed_size;
+            head.file_size = local.file_size;
+        }
+
+        if (local.file_name_length != 0)
+        {
+            boost::scoped_array<char>
+                filename(new char[local.file_name_length+1]);
+
+            blocking_read(src_, &filename[0], local.file_name_length);
+            filename[local.file_name_length] = '\0';
+            head.path = path(&filename[0], no_check);
+            if (filename[local.file_name_length-1] == '/')
+                head.attributes |= msdos_attributes::directory;
+        }
+
+        if (local.extra_field_length)
+        {
+            boost::scoped_array<char> extra(new char[local.extra_field_length]);
+            blocking_read(src_, &extra[0], local.extra_field_length);
+
+            using boost::iostreams::array_source;
+            typedef boost::iostreams::detail::
+                direct_adapter<array_source> source_type;
+
+            source_type src(array_source(
+                extra.get(),
+                static_cast<std::size_t>(local.extra_field_length)));
+
+            zip::detail::read_local_extra_field(src, head);
+        }
+
+        header_ = head;
+    }
 };
 
 template<class Source>
@@ -629,6 +667,11 @@ public:
     bool next_entry()
     {
         return pimpl_->next_entry();
+    }
+
+    void select_entry(const boost::filesystem::path& ph)
+    {
+        pimpl_->select_entry(ph);
     }
 
     zip::header header() const
