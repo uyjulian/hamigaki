@@ -10,21 +10,29 @@
 #ifndef HAMIGAKI_IOSTREAMS_DEVICE_RAW_ZIP_FILE_HPP
 #define HAMIGAKI_IOSTREAMS_DEVICE_RAW_ZIP_FILE_HPP
 
+#include <hamigaki/iostreams/detail/msdos_attributes.hpp>
 #include <hamigaki/iostreams/detail/msdos_date_time.hpp>
 #include <hamigaki/iostreams/device/file.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>
+#include <hamigaki/iostreams/seek.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/categories.hpp>
 #include <boost/mpl/single_view.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/optional.hpp>
+#include <vector>
 
 namespace hamigaki { namespace iostreams { namespace zip {
 
 struct flags
 {
     static const boost::uint16_t has_data_dec   = 0x0008;
+};
+
+struct internal_attributes
+{
+    static const boost::uint16_t ascii  = 0x0001;
 };
 
 struct extra_field_id
@@ -50,6 +58,8 @@ struct local_file_header
 
 struct data_descriptor
 {
+    static const boost::uint32_t signature = 0x08074B50;
+
     boost::uint32_t crc32_checksum;
     boost::uint32_t compressed_size;
     boost::uint32_t file_size;
@@ -90,7 +100,7 @@ struct digital_signature
     boost::uint16_t size;
 };
 
-struct central_directory_footer
+struct end_of_central_directory
 {
     static const boost::uint32_t signature = 0x06054B50;
 
@@ -112,12 +122,14 @@ struct extra_field_header
 struct header
 {
     boost::filesystem::path path;
-    bool directory;
     boost::uint16_t method;
     std::time_t update_time;
     boost::uint32_t crc32_checksum;
     boost::uint32_t compressed_size;
     boost::uint32_t file_size;
+    boost::uint16_t attributes;
+    boost::uint16_t permission;
+    std::string comment;
 
     boost::optional<std::time_t> modified_time;
     boost::optional<std::time_t> access_time;
@@ -127,14 +139,15 @@ struct header
     boost::optional<boost::uint16_t> gid;
 
     header()
-        : directory(false), method(0), update_time(0), crc32_checksum(0)
+        : method(0), update_time(0), crc32_checksum(0)
         , compressed_size(0), file_size(0)
+        , attributes(msdos_attributes::archive), permission(0644)
     {
     }
 
     bool is_directory() const
     {
-        return directory;
+        return (attributes & msdos_attributes::directory) != 0;
     }
 };
 
@@ -230,10 +243,10 @@ public:
 };
 
 template<>
-struct struct_traits<iostreams::zip::central_directory_footer>
+struct struct_traits<iostreams::zip::end_of_central_directory>
 {
 private:
-    typedef iostreams::zip::central_directory_footer self;
+    typedef iostreams::zip::end_of_central_directory self;
 
 public:
     typedef boost::mpl::list<
@@ -270,14 +283,79 @@ namespace zip
 namespace detail
 {
 
+struct internal_header : public zip::header
+{
+    stream_offset offset;
+
+    internal_header() : offset(-1)
+    {
+    }
+};
+
+inline const char* find_footer_signature(const char* start, const char* last)
+{
+    const char* cur = last - 4;
+    while (cur >= start)
+    {
+        if (cur[0] == 'P')
+        {
+            if ((cur[1] == 'K') && (cur[2] == '\x05') && (cur[3] == '\x06'))
+                return cur;
+        }
+        --cur;
+    }
+    return 0;
+}
+
 template<class Source>
-inline void read_extra_field(Source& src, header& head)
+inline void seek_end_of_central_dir(Source& src)
+{
+    const stream_offset file_size =
+        to_offset(boost::iostreams::seek(src, 0, BOOST_IOS::end));
+
+    std::streamsize entry_size = static_cast<std::streamsize>(
+        binary_size<end_of_central_directory>::type::value);
+    stream_offset pos = file_size - entry_size - 4;
+
+    boost::iostreams::seek(src, pos, BOOST_IOS::beg);
+    boost::uint32_t signature = iostreams::read_uint32<little>(src);
+    if (signature == end_of_central_directory::signature)
+        return;
+
+    char buf[1024];
+    std::streamsize size = static_cast<std::streamsize>(sizeof(buf));
+    do
+    {
+        pos -= size;
+        if (pos < 0)
+        {
+            size += pos;
+            pos = 0;
+        }
+        boost::iostreams::seek(src, pos, BOOST_IOS::beg);
+        iostreams::blocking_read(src, buf, size);
+
+        if (const char* ptr = find_footer_signature(buf, buf + size))
+        {
+            stream_offset offset = (ptr+4) - (buf + size);
+            boost::iostreams::seek(src, offset, BOOST_IOS::cur);
+            return;
+        }
+
+    } while (pos != 0);
+
+    throw BOOST_IOSTREAMS_FAILURE("cannot find ZIP footer");
+}
+
+template<class Source>
+inline void read_local_extra_field(Source& src, header& head)
 {
     extra_field_header ex_head;
     while (iostreams::binary_read(src, ex_head, std::nothrow))
     {
         boost::scoped_array<char> data(new char[ex_head.size]);
-        iostreams::blocking_read(src, data.get(), ex_head.size);
+        if (ex_head.size)
+            iostreams::blocking_read(src, data.get(), ex_head.size);
         if (ex_head.id == extra_field_id::extended_timestamp)
         {
             if (ex_head.size == 0)
@@ -317,6 +395,32 @@ inline void read_extra_field(Source& src, header& head)
     }
 }
 
+template<class Source>
+inline void read_central_extra_field(Source& src, header& head)
+{
+    extra_field_header ex_head;
+    while (iostreams::binary_read(src, ex_head, std::nothrow))
+    {
+        boost::scoped_array<char> data(new char[ex_head.size]);
+        if (ex_head.size)
+            iostreams::blocking_read(src, data.get(), ex_head.size);
+        if (ex_head.id == extra_field_id::extended_timestamp)
+        {
+            if (ex_head.size == 0)
+                throw BOOST_IOSTREAMS_FAILURE("bad ZIP extended timestamp");
+
+            unsigned char flags = static_cast<unsigned char>(data[0]);
+            if ((flags & 0x01) != 0)
+            {
+                if (5 > ex_head.size)
+                    throw BOOST_IOSTREAMS_FAILURE("bad ZIP extended timestamp");
+                head.modified_time = static_cast<std::time_t>(
+                    hamigaki::decode_int<little,4>(&data[1]));
+            }
+        }
+    }
+}
+
 } // namespace detail
 
 } // namespace zip
@@ -332,31 +436,37 @@ public:
         boost::iostreams::device_tag {};
 
     explicit basic_raw_zip_file_source_impl(const Source& src)
-        : src_(src), pos_(0)
+        : src_(src), pos_(0), next_index_(0)
     {
+        read_central_dir();
     }
 
     bool next_entry()
     {
         using namespace boost::filesystem;
 
-        if (boost::uint32_t rest = header_.compressed_size - pos_)
-            boost::iostreams::seek(src_, rest, BOOST_IOS::cur);
+        if (next_index_ >= headers_.size())
+            return false;
+
+        zip::detail::internal_header head = headers_[next_index_++];
+        boost::iostreams::seek(src_, head.offset, BOOST_IOS::beg);
         pos_ = 0;
 
         boost::uint32_t signature = iostreams::read_uint32<little>(src_);
         if (signature != zip::local_file_header::signature)
-            return false;
+            throw BOOST_IOSTREAMS_FAILURE("bad ZIP signature");
 
         zip::local_file_header local;
         iostreams::binary_read(src_, local);
 
-        zip::header head;
         head.method = local.method;
         head.update_time = local.update_date_time.to_time_t();
-        head.compressed_size = local.compressed_size;
-        head.crc32_checksum = local.crc32_checksum;
-        head.file_size = local.file_size;
+        if ((local.flags & zip::flags::has_data_dec) == 0)
+        {
+            head.crc32_checksum = local.crc32_checksum;
+            head.compressed_size = local.compressed_size;
+            head.file_size = local.file_size;
+        }
 
         if (local.file_name_length != 0)
         {
@@ -366,10 +476,10 @@ public:
             blocking_read(src_, &filename[0], local.file_name_length);
             filename[local.file_name_length] = '\0';
             head.path = path(&filename[0], no_check);
-            head.directory = (filename[local.file_name_length-1] == '/');
+            if (filename[local.file_name_length-1] == '/')
+                head.attributes |= msdos_attributes::directory;
         }
 
-        // TODO
         if (local.extra_field_length)
         {
             boost::scoped_array<char> extra(new char[local.extra_field_length]);
@@ -383,7 +493,7 @@ public:
                 extra.get(),
                 static_cast<std::size_t>(local.extra_field_length)));
 
-            zip::detail::read_extra_field(src, head);
+            zip::detail::read_local_extra_field(src, head);
         }
 
         header_ = head;
@@ -415,6 +525,87 @@ private:
     Source src_;
     zip::header header_;
     boost::uint32_t pos_;
+    std::size_t next_index_;
+    std::vector<zip::detail::internal_header> headers_;
+
+    void read_central_dir()
+    {
+        using namespace boost::filesystem;
+        std::vector<zip::detail::internal_header> tmp;
+
+        zip::detail::seek_end_of_central_dir(src_);
+
+        zip::end_of_central_directory footer;
+        iostreams::binary_read(src_, footer);
+
+        tmp.reserve(footer.entries);
+
+        boost::iostreams::seek(src_, footer.offset, BOOST_IOS::beg);
+        for (boost::uint16_t i = 0; i < footer.entries; ++i)
+        {
+            boost::uint32_t signature = iostreams::read_uint32<little>(src_);
+            if (signature != zip::file_header::signature)
+                throw BOOST_IOSTREAMS_FAILURE("bad ZIP signature");
+
+            zip::file_header file_head;
+            iostreams::binary_read(src_, file_head);
+
+            zip::detail::internal_header head;
+            head.method = file_head.method;
+            head.update_time = file_head.update_date_time.to_time_t();
+            head.compressed_size = file_head.compressed_size;
+            head.crc32_checksum = file_head.crc32_checksum;
+            head.file_size = file_head.file_size;
+            head.attributes =
+                static_cast<boost::uint16_t>(file_head.external_attributes);
+            head.permission =
+                static_cast<boost::uint16_t>(file_head.external_attributes>>16);
+            head.offset = file_head.offset;
+
+            if (file_head.file_name_length != 0)
+            {
+                boost::scoped_array<char>
+                    filename(new char[file_head.file_name_length+1]);
+
+                blocking_read(src_, &filename[0], file_head.file_name_length);
+                filename[file_head.file_name_length] = '\0';
+                head.path = path(&filename[0], no_check);
+                if (filename[file_head.file_name_length-1] == '/')
+                    head.attributes |= msdos_attributes::directory;
+            }
+
+            if (file_head.extra_field_length)
+            {
+                boost::scoped_array<char> extra(
+                    new char[file_head.extra_field_length]);
+                blocking_read(src_, &extra[0], file_head.extra_field_length);
+
+                using boost::iostreams::array_source;
+                typedef boost::iostreams::detail::
+                    direct_adapter<array_source> source_type;
+
+                source_type src(array_source(
+                    extra.get(),
+                    static_cast<std::size_t>(file_head.extra_field_length)));
+
+                zip::detail::read_central_extra_field(src, head);
+            }
+
+            if (file_head.comment_length)
+            {
+                boost::scoped_array<char> comment(
+                    new char[file_head.comment_length]);
+                blocking_read(src_, &comment[0], file_head.comment_length);
+                head.comment = std::string(
+                    &comment[0], &comment[0]+file_head.comment_length);
+            }
+
+            tmp.push_back(head);
+        }
+
+        boost::iostreams::seek(src_, 0, BOOST_IOS::beg);
+        tmp.swap(headers_);
+    }
 };
 
 template<class Source>
