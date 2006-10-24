@@ -177,6 +177,7 @@ public:
     {
         method_ = head.method;
         raw_.create_entry(head);
+        size_ = 0;
     }
 
     std::streamsize write(const char* s, std::streamsize n)
