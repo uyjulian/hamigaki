@@ -1,4 +1,4 @@
-//  simple_tar.cpp: a simple LZH compressing program
+//  simple_tar.cpp: a simple tar archiver
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
