@@ -27,6 +27,14 @@ public:
     }
 };
 
+class give_up_compression : public BOOST_IOSTREAMS_FAILURE
+{
+public:
+    give_up_compression() : BOOST_IOSTREAMS_FAILURE("give up compression")
+    {
+    }
+};
+
 } } // End namespaces iostreams, hamigaki.
 
 #endif // HAMIGAKI_IOSTREAMS_DETAIL_ERROR_HPP
