@@ -18,6 +18,7 @@
 #include <hamigaki/iostreams/seek.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/iostreams/device/array.hpp>
+#include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/iostreams/categories.hpp>
 #include <boost/mpl/single_view.hpp>
 #include <boost/scoped_array.hpp>
@@ -447,6 +448,101 @@ inline void read_central_extra_field(Source& src, header& head)
     }
 }
 
+template<class Sink>
+inline void write_local_ex_timestamp(Sink& sink, const header& head)
+{
+    extra_field_header ex_head;
+    ex_head.id = extra_field_id::extended_timestamp;
+    ex_head.size = 1;
+    boost::uint8_t flags = 0;
+    if (head.modified_time)
+    {
+        flags |= 0x01;
+        ex_head.size += 4;
+    }
+    if (head.access_time)
+    {
+        flags |= 0x02;
+        ex_head.size += 4;
+    }
+    if (head.creation_time)
+    {
+        flags |= 0x04;
+        ex_head.size += 4;
+    }
+
+    if (flags != 0)
+    {
+        iostreams::binary_write(sink, ex_head);
+        iostreams::write_uint8<little>(sink, flags);
+        if (flags & 0x01)
+            iostreams::write_int32<little>(sink, head.modified_time.get());
+        if (flags & 0x02)
+            iostreams::write_int32<little>(sink, head.access_time.get());
+        if (flags & 0x04)
+            iostreams::write_int32<little>(sink, head.creation_time.get());
+    }
+}
+
+template<class Sink>
+inline void write_central_ex_timestamp(Sink& sink, const header& head)
+{
+    extra_field_header ex_head;
+    ex_head.id = extra_field_id::extended_timestamp;
+    ex_head.size = 1;
+    boost::uint8_t flags = 0;
+    if (head.modified_time)
+    {
+        flags |= 0x01;
+        ex_head.size += 4;
+    }
+    if (head.access_time)
+        flags |= 0x02;
+    if (head.creation_time)
+        flags |= 0x04;
+
+    if (flags != 0)
+    {
+        iostreams::binary_write(sink, ex_head);
+        iostreams::write_uint8<little>(sink, flags);
+        if (flags & 0x01)
+            iostreams::write_int32<little>(sink, head.modified_time.get());
+    }
+}
+
+template<class Sink>
+inline void write_local_extra_field(Sink& sink, const header& head)
+{
+    write_local_ex_timestamp(sink, head);
+
+    if (head.uid && head.gid)
+    {
+        extra_field_header ex_head;
+        ex_head.id = extra_field_id::info_zip_unix2;
+        ex_head.size = 4;
+
+        iostreams::binary_write(sink, ex_head);
+
+        iostreams::write_uint16<little>(sink, head.uid.get());
+        iostreams::write_uint16<little>(sink, head.gid.get());
+    }
+}
+
+template<class Sink>
+inline void write_central_extra_field(Sink& sink, const header& head)
+{
+    write_central_ex_timestamp(sink, head);
+
+    if (head.uid && head.gid)
+    {
+        extra_field_header ex_head;
+        ex_head.id = extra_field_id::info_zip_unix2;
+        ex_head.size = 0;
+
+        iostreams::binary_write(sink, ex_head);
+    }
+}
+
 } // namespace detail
 
 } // namespace zip
@@ -815,8 +911,13 @@ public:
             if (head.is_directory())
                 filename += '/';
 
+            std::string extra_field;
+            boost::iostreams::
+                back_insert_device<std::string> ex_sink(extra_field);
+            zip::detail::write_central_extra_field(ex_sink, head);
+
             zip::file_header file_head;
-            file_head.made_by = 0; // TODO
+            file_head.made_by = 10; // TODO
             file_head.needed_to_extract = 10; // TODO
             file_head.flags = 0;
             file_head.method = head.method;
@@ -825,7 +926,7 @@ public:
             file_head.crc32_checksum = head.crc32_checksum;
             file_head.file_size = head.file_size;
             file_head.file_name_length = filename.size();
-            file_head.extra_field_length = 0; // TODO
+            file_head.extra_field_length = extra_field.size();
             file_head.comment_length = head.comment.size();
             file_head.disk_number_start = 0; // TODO
             file_head.internal_attributes = 0; // TODO
@@ -838,16 +939,13 @@ public:
             iostreams::binary_write(sink_, file_head);
 
             if (!filename.empty())
-            {
-                iostreams::blocking_write(
-                    sink_, filename.c_str(), filename.size());
-            }
+                iostreams::blocking_write(sink_, filename);
+
+            if (!extra_field.empty())
+                iostreams::blocking_write(sink_, extra_field);
 
             if (!head.comment.empty())
-            {
-                iostreams::blocking_write(
-                    sink_, head.comment.c_str(), head.comment.size());
-            }
+                iostreams::blocking_write(sink_, head.comment);
         }
 
         boost::uint32_t end_offset =
@@ -882,6 +980,10 @@ private:
         if (head.is_directory())
             filename += '/';
 
+        std::string extra_field;
+        boost::iostreams::back_insert_device<std::string> ex_sink(extra_field);
+        zip::detail::write_local_extra_field(ex_sink, head);
+
         zip::local_file_header local;
         local.needed_to_extract = 10; // TODO
         local.flags = 0;
@@ -891,13 +993,15 @@ private:
         local.compressed_size = head.compressed_size;
         local.file_size = head.file_size;
         local.file_name_length = filename.size();
-        local.extra_field_length = 0; // TODO
+        local.extra_field_length = extra_field.size();
 
         iostreams::write_uint32<little>(
             sink_, zip::local_file_header::signature);
         iostreams::binary_write(sink_, local);
         if (!filename.empty())
-            iostreams::blocking_write(sink_, filename.c_str(), filename.size());
+            iostreams::blocking_write(sink_, filename);
+        if (!extra_field.empty())
+            iostreams::blocking_write(sink_, extra_field);
     }
 };
 

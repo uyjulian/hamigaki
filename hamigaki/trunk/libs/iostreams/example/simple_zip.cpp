@@ -45,7 +45,14 @@ int main(int argc, char* argv[])
 
             struct stat st;
             if (::stat(head.path.native_file_string().c_str(), &st) == 0)
+            {
                 head.permission = static_cast<boost::uint16_t>(st.st_mode);
+                head.modified_time = st.st_mtime;
+                head.access_time = st.st_atime;
+#if defined(BOOST_WINDOWS)
+                head.creation_time = st.st_ctime;
+#endif
+            }
 
             zip.create_entry(head);
 
