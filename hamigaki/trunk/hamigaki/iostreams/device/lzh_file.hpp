@@ -37,18 +37,6 @@
     #define HAMIGAKI_IOSTREAMS_LHA_OS_TYPE 'M'
 #endif
 
-namespace hamigaki { namespace iostreams { namespace lha {
-
-class give_up_compression : public BOOST_IOSTREAMS_FAILURE
-{
-public:
-    give_up_compression() : BOOST_IOSTREAMS_FAILURE("give up compression")
-    {
-    }
-};
-
-} } } // End namespaces lha, iostreams, hamigaki.
-
 namespace hamigaki { namespace iostreams {
 
 namespace detail
@@ -163,7 +151,7 @@ public:
         if ((end_ != -1) && (pos_ + n >= end_))
         {
             overflow_ = true;
-            throw out_of_restriction();
+            throw give_up_compression();
         }
 
         std::streamsize result = boost::iostreams::write(sink_, s, amt);
@@ -224,7 +212,7 @@ public:
             const std::streamsize rest_size =
                 static_cast<std::streamsize>(lv0.header_size - (sizeof(buf)-2));
             if (rest_size <= 0)
-                throw BOOST_IOSTREAMS_FAILURE("bad LZH header size");
+                throw std::runtime_error("bad LZH header size");
 
             hsrc = restricted_type(src_, 0, rest_size);
 
@@ -237,7 +225,7 @@ public:
 
             skip_unknown_header(*hsrc, cs);
             if (cs.checksum() != lv0.header_checksum)
-                throw BOOST_IOSTREAMS_FAILURE("LZH header checksum missmatch");
+                throw std::runtime_error("LZH header checksum missmatch");
         }
         else if (lv == '\x01')
         {
@@ -252,7 +240,7 @@ public:
             const std::streamsize rest_size =
                 static_cast<std::streamsize>(lv1.header_size - sizeof(buf));
             if (rest_size <= 0)
-                throw BOOST_IOSTREAMS_FAILURE("bad LZH header size");
+                throw std::runtime_error("bad LZH header size");
 
             hsrc = restricted_type(src_, 0, rest_size);
 
@@ -273,7 +261,7 @@ public:
             skip_unknown_header(*hsrc, cs);
             next_size = read_little16(src_, cs);
             if (cs.checksum() != lv1.header_checksum)
-                throw BOOST_IOSTREAMS_FAILURE("LZH header checksum missmatch");
+                throw std::runtime_error("LZH header checksum missmatch");
 
             hsrc = restricted_type(src_, 0, -1);
         }
@@ -287,7 +275,7 @@ public:
             const std::streamsize rest_size =
                 static_cast<std::streamsize>(lv2.header_size - sizeof(buf));
             if (rest_size <= 0)
-                throw BOOST_IOSTREAMS_FAILURE("bad LZH header size");
+                throw std::runtime_error("bad LZH header size");
 
             hsrc = restricted_type(src_, 0, rest_size);
 
@@ -306,7 +294,7 @@ public:
             next_size = read_little16(*hsrc, crc);
         }
         else
-            throw BOOST_IOSTREAMS_FAILURE("unsupported LZH header");
+            throw std::runtime_error("unsupported LZH header");
 
         if ((header_.method != "-lhd-") &&
             (header_.method != "-lh0-") &&
@@ -315,7 +303,7 @@ public:
             (header_.method != "-lh6-") &&
             (header_.method != "-lh7-") )
         {
-            throw BOOST_IOSTREAMS_FAILURE("unsupported LZH method");
+            throw std::runtime_error("unsupported LZH method");
         }
 
         read_extended_header(*hsrc, crc, next_size);
@@ -472,7 +460,7 @@ private:
         if (amt < size)
         {
             if ((amt <= 0) || (buffer[0] != '\0'))
-                throw BOOST_IOSTREAMS_FAILURE("LZH end-mark not found");
+                throw std::runtime_error("LZH end-mark not found");
             return false;
         }
 
@@ -485,7 +473,7 @@ private:
     static boost::uint16_t parse_common(char* s, boost::uint32_t n)
     {
         if (n < 2)
-            throw BOOST_IOSTREAMS_FAILURE("bad LZH common extended header");
+            throw std::runtime_error("bad LZH common extended header");
 
         boost::uint16_t header_crc = hamigaki::decode_uint<little,2>(s);
 
@@ -499,7 +487,7 @@ private:
     parse_directory(const char* s, boost::uint32_t n)
     {
         if (s[n-1] != '\xFF')
-            throw BOOST_IOSTREAMS_FAILURE("bad LZH directory extended header");
+            throw std::runtime_error("bad LZH directory extended header");
 
         const char* cur = s;
         const char* end = s + n;
@@ -520,7 +508,7 @@ private:
     static boost::uint16_t parse_attributes(char* s, boost::uint32_t n)
     {
         if (n < 2)
-            throw BOOST_IOSTREAMS_FAILURE("bad LZH attributes extended header");
+            throw std::runtime_error("bad LZH attributes extended header");
 
         return hamigaki::decode_uint<little,2>(s);
     }
@@ -529,7 +517,7 @@ private:
     parse_windows_timestamp(char* s, boost::uint32_t n)
     {
         if (n < hamigaki::struct_size<lha::windows_timestamp>::type::value)
-            throw BOOST_IOSTREAMS_FAILURE("bad LZH timestamp extended header");
+            throw std::runtime_error("bad LZH timestamp extended header");
 
         lha::windows_timestamp ts;
         hamigaki::binary_read(s, ts);
@@ -540,7 +528,7 @@ private:
     parse_file_size(char* s, boost::uint32_t n)
     {
         if (n < 16)
-            throw BOOST_IOSTREAMS_FAILURE("bad LZH file size extended header");
+            throw std::runtime_error("bad LZH file size extended header");
 
         boost::int64_t comp = hamigaki::decode_int<little,8>(s);
         boost::int64_t org = hamigaki::decode_int<little,8>(s);
@@ -550,7 +538,7 @@ private:
     static boost::uint32_t parse_code_page(char* s, boost::uint32_t n)
     {
         if (n < 2)
-            throw BOOST_IOSTREAMS_FAILURE("bad LZH code page extended header");
+            throw std::runtime_error("bad LZH code page extended header");
 
         return hamigaki::decode_uint<little,4>(s);
     }
@@ -558,7 +546,7 @@ private:
     static boost::uint16_t parse_unix_permission(char* s, boost::uint32_t n)
     {
         if (n < 2)
-            throw BOOST_IOSTREAMS_FAILURE("bad LZH permission extended header");
+            throw std::runtime_error("bad LZH permission extended header");
 
         return hamigaki::decode_uint<little,2>(s);
     }
@@ -567,7 +555,7 @@ private:
     parse_unix_owner(char* s, boost::uint32_t n)
     {
         if (n < hamigaki::struct_size<lha::unix_owner>::type::value)
-            throw BOOST_IOSTREAMS_FAILURE("bad LZH owner extended header");
+            throw std::runtime_error("bad LZH owner extended header");
 
         lha::unix_owner owner;
         hamigaki::binary_read(s, owner);
@@ -577,7 +565,7 @@ private:
     static std::time_t parse_unix_timestamp(char* s, boost::uint32_t n)
     {
         if (n < 4)
-            throw BOOST_IOSTREAMS_FAILURE("bad LZH timestamp extended header");
+            throw std::runtime_error("bad LZH timestamp extended header");
 
         return static_cast<std::time_t>(hamigaki::decode_int<little,4>(s));
     }
@@ -594,13 +582,13 @@ private:
         while (next_size)
         {
             if (next_size < 3)
-                throw BOOST_IOSTREAMS_FAILURE("bad LZH extended header");
+                throw std::runtime_error("bad LZH extended header");
 
             boost::scoped_array<char> buf(new char[next_size]);
             const std::streamsize ssize =
                 static_cast<std::streamsize>(next_size);
             if (boost::iostreams::read(nb, buf.get(), ssize) != ssize)
-                throw BOOST_IOSTREAMS_FAILURE("bad LZH extended header");
+                throw std::runtime_error("bad LZH extended header");
 
             char* data = buf.get()+1;
             boost::uint16_t size = next_size - 3;
@@ -635,7 +623,7 @@ private:
         if (header_crc)
         {
             if (crc.checksum() != header_crc.get())
-                throw BOOST_IOSTREAMS_FAILURE("LZH header CRC missmatch");
+                throw std::runtime_error("LZH header CRC missmatch");
         }
 
         if (header_.path.empty())
@@ -718,7 +706,7 @@ public:
     void create_entry(const lha::header& head)
     {
         if (overflow_)
-            throw BOOST_IOSTREAMS_FAILURE("need to rewind the current entry");
+            throw std::runtime_error("need to rewind the current entry");
 
         if (image_)
             close();
@@ -740,7 +728,7 @@ public:
             (header_.method != "-lh6-") &&
             (header_.method != "-lh7-") )
         {
-            throw BOOST_IOSTREAMS_FAILURE("unsupported LZH method");
+            throw std::runtime_error("unsupported LZH method");
         }
 
         write_header();
@@ -784,18 +772,7 @@ public:
 
         if (image_)
         {
-            try
-            {
-                image_->flush();
-            }
-            catch (const out_of_restriction&)
-            {
-                image_.reset();
-                if (overflow_)
-                    throw lha::give_up_compression();
-                else
-                    throw;
-            }
+            image_->flush();
             image_.reset();
         }
 
@@ -817,19 +794,7 @@ public:
     std::streamsize write(const char* s, std::streamsize n)
     {
         std::streamsize amt;
-        try
-        {
-            amt = image_->write(s, n);
-        }
-        catch (const out_of_restriction&)
-        {
-            image_.reset();
-            if (overflow_)
-                throw lha::give_up_compression();
-            else
-                throw;
-        }
-
+        amt = image_->write(s, n);
         crc_.process_bytes(s, amt);
         pos_ += amt;
         return amt;

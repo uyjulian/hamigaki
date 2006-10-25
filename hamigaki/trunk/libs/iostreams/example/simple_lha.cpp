@@ -151,7 +151,7 @@ int main(int argc, char* argv[])
                         lzh
                     );
                 }
-                catch (const io_ex::lha::give_up_compression&)
+                catch (const io_ex::give_up_compression&)
                 {
                     lzh.rewind_entry();
 
