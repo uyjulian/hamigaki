@@ -16,6 +16,7 @@
 #include <boost/iostreams/read.hpp>
 #include <boost/iostreams/write.hpp>
 #include <new>
+#include <string>
 
 namespace hamigaki { namespace iostreams {
 
@@ -128,6 +129,21 @@ inline bool blocking_write(
 {
     return blocking_writer<Sink>::
         write(sink, s, static_cast<std::streamsize>(Size));
+}
+
+template<class Sink>
+inline void blocking_write(Sink& sink, const std::string& s)
+{
+    iostreams::blocking_write(
+        sink, s.c_str(), static_cast<std::streamsize>(s.size()));
+}
+
+template<class Sink>
+inline bool blocking_write(
+    Sink& sink, const std::string& s, const std::nothrow_t&)
+{
+    return blocking_writer<Sink>::
+        write(sink, s.c_str(), static_cast<std::streamsize>(s.size()));
 }
 
 } } // End namespaces iostreams, hamigaki.
