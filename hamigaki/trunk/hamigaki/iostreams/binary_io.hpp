@@ -148,8 +148,8 @@ template<endianness E, class Sink>
 inline void write_uint8(Sink& sink, boost::uint8_t x)
 {
     char buf[1];
-    hamigaki::iostreams::blocking_write(
-        sink, hamigaki::encode_uint<E,1>(buf, x));
+    hamigaki::encode_uint<E,1>(buf, x);
+    hamigaki::iostreams::blocking_write(sink, buf);
 }
 
 template<endianness E, class Sink>
