@@ -36,10 +36,11 @@ int main(int argc, char* argv[])
         {
             io_ex::zip::header head;
             head.method = 8;
-//head.method = 0;
             head.path = fs::path(argv[i], fs::native);
             if (fs::is_directory(head.path))
                 head.attributes = io_ex::msdos_attributes::directory;
+            else
+                head.file_size = fs::file_size(head.path);
             head.update_time = fs::last_write_time(head.path);
 
             struct stat st;
@@ -50,12 +51,25 @@ int main(int argc, char* argv[])
 
             if (!head.is_directory())
             {
-                io::copy(
-                    io_ex::file_source(
-                        head.path.native_file_string(),
-                        std::ios_base::binary),
-                    zip
-                );
+                try
+                {
+                    io::copy(
+                        io_ex::file_source(
+                            head.path.native_file_string(),
+                            std::ios_base::binary),
+                        zip
+                    );
+                }
+                catch (const io_ex::give_up_compression&)
+                {
+                    zip.rewind_entry();
+                    io::copy(
+                        io_ex::file_source(
+                            head.path.native_file_string(),
+                            std::ios_base::binary),
+                        zip
+                    );
+                }
             }
         }
         zip.write_end_mark();

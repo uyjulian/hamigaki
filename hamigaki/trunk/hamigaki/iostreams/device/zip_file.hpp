@@ -180,6 +180,14 @@ public:
         size_ = 0;
     }
 
+    void rewind_entry()
+    {
+        raw_.rewind_entry();
+        method_ = 0;
+        size_ = 0;
+        crc32_.reset();
+    }
+
     std::streamsize write(const char* s, std::streamsize n)
     {
         std::streamsize amt = write_impl(s, n);
@@ -246,6 +254,11 @@ public:
     void create_entry(const zip::header& head)
     {
         pimpl_->create_entry(head);
+    }
+
+    void rewind_entry()
+    {
+        pimpl_->rewind_entry();
     }
 
     std::streamsize write(const char* s, std::streamsize n)

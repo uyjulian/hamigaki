@@ -10,6 +10,7 @@
 #ifndef HAMIGAKI_IOSTREAMS_DEVICE_RAW_ZIP_FILE_HPP
 #define HAMIGAKI_IOSTREAMS_DEVICE_RAW_ZIP_FILE_HPP
 
+#include <hamigaki/iostreams/detail/error.hpp>
 #include <hamigaki/iostreams/detail/msdos_attributes.hpp>
 #include <hamigaki/iostreams/detail/msdos_date_time.hpp>
 #include <hamigaki/iostreams/device/file.hpp>
@@ -721,14 +722,17 @@ public:
     {};
 
     explicit basic_raw_zip_file_sink_impl(const Sink& sink)
-        : sink_(sink), pos_(0)
+        : sink_(sink), size_(0), overflow_(false)
     {
     }
 
     void create_entry(const zip::header& head)
     {
-        if (pos_ != header_.compressed_size)
-            throw BOOST_IOSTREAMS_FAILURE("ZIP entry size mismatch");
+        if (overflow_)
+            throw std::runtime_error("need to rewind the current entry");
+
+        if (size_ != header_.compressed_size)
+            throw std::runtime_error("ZIP entry size mismatch");
 
         static_cast<zip::header&>(header_) = head;
         if (header_.is_directory())
@@ -744,20 +748,38 @@ public:
 
         write_local_file_header(header_);
 
-        pos_ = 0;
+        size_ = 0;
         headers_.push_back(header_);
+    }
+
+    void rewind_entry()
+    {
+        header_.method = 0;
+
+        boost::iostreams::seek(sink_, header_.offset, BOOST_IOS::beg);
+        write_local_file_header(header_);
+
+        size_ = 0;
+        overflow_ = false;
+        headers_.back() = header_;
     }
 
     std::streamsize write(const char* s, std::streamsize n)
     {
+        if (size_ + n > header_.file_size)
+        {
+            overflow_ = true;
+            throw give_up_compression();
+        }
+
         blocking_write(sink_, s, n);
-        pos_ += n;
+        size_ += n;
         return n;
     }
 
     void close()
     {
-        if (pos_ != header_.compressed_size)
+        if (size_ != header_.compressed_size)
             throw BOOST_IOSTREAMS_FAILURE("ZIP entry size mismatch");
 
         headers_.back() = header_;
@@ -767,7 +789,7 @@ public:
         boost::uint32_t crc32_checksum, boost::uint32_t file_size)
     {
         header_.crc32_checksum = crc32_checksum;
-        header_.compressed_size = pos_;
+        header_.compressed_size = size_;
         header_.file_size = file_size;
 
         if (header_.compressed_size != 0)
@@ -850,7 +872,8 @@ public:
 private:
     Sink sink_;
     zip::detail::internal_header header_;
-    boost::uint32_t pos_;
+    boost::uint32_t size_;
+    bool overflow_;
     std::vector<zip::detail::internal_header> headers_;
 
     void write_local_file_header(const zip::header& head)
@@ -901,6 +924,11 @@ public:
     void create_entry(const zip::header& head)
     {
         pimpl_->create_entry(head);
+    }
+
+    void rewind_entry()
+    {
+        pimpl_->rewind_entry();
     }
 
     std::streamsize write(const char* s, std::streamsize n)
