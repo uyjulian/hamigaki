@@ -24,6 +24,7 @@
 #elif defined(BOOST_HAS_UNISTD_H)
     #include <grp.h>
     #include <pwd.h>
+    #include <unistd.h>
 #endif
 
 namespace io_ex = hamigaki::iostreams;
