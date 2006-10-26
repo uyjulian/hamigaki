@@ -124,7 +124,7 @@ public:
             header_.file_size = lv0.file_size;
             header_.update_time = lv0.update_date_time.to_time_t();
             header_.attributes = lv0.attributes;
-            header_.path = read_path(*hsrc, cs);
+            boost::tie(header_.path, header_.link_path) = read_path(*hsrc, cs);
 
             skip_unknown_header(*hsrc, cs);
             if (cs.checksum() != lv0.header_checksum)
@@ -157,7 +157,7 @@ public:
             else
                 header_.attributes = msdos_attributes::archive;
 
-            header_.path = read_path(*hsrc, cs);
+            boost::tie(header_.path, header_.link_path) = read_path(*hsrc, cs);
             header_.crc16_checksum = read_little16(*hsrc, cs);
             header_.os = get(*hsrc, cs);
 
@@ -254,8 +254,40 @@ private:
         return hamigaki::decode_uint<little,2>(buf);
     }
 
+    static boost::filesystem::path parse_path_old(const std::string& s)
+    {
+        boost::filesystem::path ph;
+
+        std::string::size_type pos = 0;
+        std::string::size_type start = 0;
+        while (pos < s.size())
+        {
+            unsigned char uc = static_cast<unsigned char>(s[pos]);
+            if (((uc >  0x80) && (uc < 0xA0)) ||
+                ((uc >= 0xE0) && (uc < 0xFD)) )
+            {
+                if (++pos == s.size())
+                    break;
+                ++pos;
+            }
+            else if (s[pos] == '\\')
+            {
+                ph /= s.substr(start, pos-start);
+                start = ++pos;
+            }
+            else
+                ++pos;
+        }
+
+        if (start != s.size())
+            ph /= s.substr(start);
+
+        return ph;
+    }
+
     template<class OtherSource, class Checksum>
-    static boost::filesystem::path read_path(OtherSource& src, Checksum& cs)
+    static std::pair<boost::filesystem::path,boost::filesystem::path>
+    read_path(OtherSource& src, Checksum& cs)
     {
         boost::iostreams::non_blocking_adapter<OtherSource> nb(src);
 
@@ -271,33 +303,22 @@ private:
             throw boost::iostreams::detail::bad_read();
         cs.process_bytes(buffer.get(), count);
 
-        const char* start = buffer.get();
-        const char* cur = start;
-        const char* end = cur + count;
-        boost::filesystem::path ph;
-
-        while (cur != end)
+        const char* s = buffer.get();
+        if (const char* delim =
+            static_cast<const char*>(std::memchr(s, '|', count)))
         {
-            unsigned char uc = static_cast<unsigned char>(*cur);
-            if (((uc >  0x80) && (uc < 0xA0)) ||
-                ((uc >= 0xE0) && (uc < 0xFD)) )
-            {
-                if (++cur == end)
-                    break;
-                ++cur;
-            }
-            else if (*cur == '\\')
-            {
-                ph /= std::string(start, cur-start);
-                start = ++cur;
-            }
-            else
-                ++cur;
+            return std::make_pair(
+                parse_path_old(std::string(s, delim-s)),
+                parse_path_old(std::string(delim+1, s+count-(delim+1)))
+            );
         }
-        if (start != cur)
-            ph /= std::string(start, cur-start);
-
-        return ph;
+        else
+        {
+            return std::make_pair(
+                parse_path_old(std::string(s, count)),
+                boost::filesystem::path()
+            );
+        }
     }
 
     template<class OtherSource, class Checksum>
@@ -342,28 +363,6 @@ private:
         s[1] = '\0';
 
         return header_crc;
-    }
-
-    static boost::filesystem::path
-    parse_directory(const char* s, boost::uint32_t n)
-    {
-        if (s[n-1] != '\xFF')
-            throw std::runtime_error("bad LZH directory extended header");
-
-        const char* cur = s;
-        const char* end = s + n;
-        boost::filesystem::path ph;
-
-        while (cur != end)
-        {
-            const char* delim =
-                static_cast<const char*>(std::memchr(cur, '\xFF', end-cur));
-
-            ph /= std::string(cur, delim-cur);
-            cur = ++delim;
-        }
-
-        return ph;
     }
 
     static boost::uint16_t parse_attributes(char* s, boost::uint32_t n)
@@ -431,14 +430,33 @@ private:
         return static_cast<std::time_t>(hamigaki::decode_int<little,4>(s));
     }
 
+    static boost::filesystem::path parse_path(const std::string& s)
+    {
+        boost::filesystem::path ph;
+
+        std::string::size_type pos = 0;
+        std::string::size_type delim;
+
+        while (delim = s.find('\xFF', pos), delim != std::string::npos)
+        {
+            ph /= s.substr(pos, delim-pos);
+            pos = delim + 1;
+        }
+
+        if (pos != s.size())
+            ph /= s.substr(pos);
+
+        return ph;
+    }
+
     template<class OtherSource>
     void read_extended_header(
         OtherSource& src, boost::crc_16_type& crc, boost::uint16_t next_size)
     {
         boost::iostreams::non_blocking_adapter<OtherSource> nb(src);
 
-        std::string leaf;
-        boost::filesystem::path branch;
+        std::string filename;
+        std::string dirname;
         boost::optional<boost::uint16_t> header_crc;
         while (next_size)
         {
@@ -456,9 +474,9 @@ private:
             if (buf[0] == '\0')
                 header_crc = parse_common(data, size);
             else if (buf[0] == '\x01')
-                leaf.assign(data, size);
+                filename.assign(data, size);
             else if (buf[0] == '\x02')
-                branch = parse_directory(data, size);
+                dirname.assign(data, size);
             else if (buf[0] == '\x40')
                 header_.attributes = parse_attributes(data, size);
             else if (buf[0] == '\x41')
@@ -487,10 +505,24 @@ private:
                 throw std::runtime_error("LZH header CRC missmatch");
         }
 
-        if (header_.path.empty())
-            header_.path = branch / leaf;
-        else if (!branch.empty())
-            header_.path = branch / header_.path;
+        if (!header_.path.empty() && !dirname.empty())
+            filename = header_.path.leaf();
+
+        if (!dirname.empty() && (dirname[dirname.size()-1] != '\xFF'))
+            dirname.push_back('\xFF');
+
+        std::string dir_file = dirname + filename;
+        if (!dir_file.empty())
+        {
+            std::string::size_type delim = dir_file.find('|');
+            if (delim != std::string::npos)
+            {
+                header_.path = parse_path(dir_file.substr(0, delim));
+                header_.link_path = parse_path(dir_file.substr(delim+1));
+            }
+            else
+                header_.path = parse_path(dir_file);
+        }
     }
 };
 
@@ -725,6 +757,29 @@ private:
         {
             write_empty_extended_header<0x01>(tmp);
             write_extended_header(tmp, 0x02, convert_path(header_.path));
+        }
+        else if (!header_.link_path.empty())
+        {
+            if (header_.link_path.has_branch_path())
+            {
+                write_extended_header(tmp, 0x01, header_.link_path.leaf());
+
+                std::string dirname = convert_path(header_.path);
+                *(dirname.rbegin()) = '|';
+                dirname += convert_path(header_.link_path.branch_path());
+                write_extended_header(tmp, 0x02, dirname);
+            }
+            else
+            {
+                std::string filename = header_.path.leaf();
+                filename += '|';
+                filename += header_.link_path.leaf();
+                write_extended_header(tmp, 0x01, filename);
+
+                const boost::filesystem::path& ph = header_.path.branch_path();
+                if (!ph.empty())
+                    write_extended_header(tmp, 0x02, convert_path(ph));
+            }
         }
         else
         {

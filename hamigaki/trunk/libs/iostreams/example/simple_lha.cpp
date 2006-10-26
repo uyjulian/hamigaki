@@ -40,6 +40,7 @@
     #include <windows.h>
 #elif defined(BOOST_HAS_UNISTD_H)
     #include <sys/stat.h>
+    #include <unistd.h>
 #endif
 
 namespace io_ex = hamigaki::iostreams;
@@ -93,6 +94,23 @@ get_directory_timestamp(const fs::path& ph)
     ::CloseHandle(handle);
     return ts;
 }
+#elif defined(BOOST_HAS_UNISTD_H)
+fs::path read_link(const fs::path& ph)
+{
+    const std::string& s = ph.native_file_string();
+
+    struct stat st;
+    if (::lstat(s.c_str(), &st) != 0)
+        throw std::runtime_error("lstat error");
+
+    boost::scoped_array<char> buf(new char[st.st_size+1]);
+    ::ssize_t amt = ::readlink(s.c_str(), &buf[0], st.st_size);
+    if (amt != static_cast< ::ssize_t>(st.st_size))
+        throw std::runtime_error("bad symbolic link");
+
+    buf[st.st_size] = '\0';
+    return fs::path(&buf[0], fs::native);
+}
 #endif
 
 int main(int argc, char* argv[])
@@ -112,7 +130,13 @@ int main(int argc, char* argv[])
         {
             io_ex::lha::header head;
             head.path = fs::path(argv[i], fs::native);
-            if (fs::is_directory(head.path))
+            if (fs::symbolic_link_exists(head.path))
+            {
+#if defined(BOOST_HAS_UNISTD_H)
+                head.link_path = read_link(head.path);
+#endif
+            }
+            else if (fs::is_directory(head.path))
                 head.attributes = io_ex::msdos_attributes::directory;
             else
                 head.file_size = fs::file_size(head.path);
@@ -127,7 +151,7 @@ int main(int argc, char* argv[])
                 head.timestamp = get_file_timestamp(head.path);
 #elif defined(BOOST_HAS_UNISTD_H)
             struct stat st;
-            if (::stat(head.path_string().c_str(), &st) == 0)
+            if (::lstat(head.path_string().c_str(), &st) == 0)
             {
                 head.permission = st.st_mode;
 

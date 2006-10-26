@@ -173,7 +173,7 @@ public:
     void create_entry(const lha::header& head)
     {
         lha::header header = head;
-        if (header.is_directory())
+        if (header.is_directory() || header.is_symbolic_link())
             header.method = "-lhd-";
         else if ((header.file_size != -1) && (header.file_size < 3))
             header.method = "-lh0-";

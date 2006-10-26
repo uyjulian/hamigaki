@@ -80,6 +80,7 @@ struct header
     std::time_t update_time;
     boost::uint16_t attributes;
     boost::filesystem::path path;
+    boost::filesystem::path link_path;
     boost::optional<boost::uint16_t> crc16_checksum;
     boost::optional<char> os;
     boost::optional<windows_timestamp> timestamp;
@@ -95,7 +96,15 @@ struct header
 
     bool is_directory() const
     {
-        return (attributes & msdos_attributes::directory) != 0;
+        if (link_path.empty())
+            return (attributes & msdos_attributes::directory) != 0;
+        else
+            return false;
+    }
+
+    bool is_symbolic_link() const
+    {
+        return !link_path.empty();
     }
 
     std::string path_string() const
