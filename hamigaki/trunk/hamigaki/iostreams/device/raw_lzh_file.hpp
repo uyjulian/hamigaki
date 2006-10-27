@@ -477,6 +477,8 @@ private:
                 filename.assign(data, size);
             else if (buf[0] == '\x02')
                 dirname.assign(data, size);
+            else if (buf[0] == '\x3F')
+                header_.comment.assign(data, size);
             else if (buf[0] == '\x40')
                 header_.attributes = parse_attributes(data, size);
             else if (buf[0] == '\x41')
@@ -492,6 +494,10 @@ private:
                 header_.permission = parse_unix_permission(data, size);
             else if (buf[0] == '\x51')
                 header_.owner = parse_unix_owner(data, size);
+            else if (buf[0] == '\x52')
+                header_.group_name.assign(data, size);
+            else if (buf[0] == '\x53')
+                header_.user_name.assign(data, size);
             else if (buf[0] == '\x54')
                 header_.update_time = parse_unix_timestamp(data, size);
 
@@ -790,6 +796,9 @@ private:
                 write_extended_header(tmp, 0x02, convert_path(ph));
         }
 
+        if (!header_.comment.empty())
+            write_extended_header(tmp, 0x3F, header_.comment);
+
         if (header_.attributes != msdos_attributes::archive)
             write_extended_header<0x40>(tmp, header_.attributes);
 
@@ -814,6 +823,12 @@ private:
 
         if (header_.owner)
             write_extended_header<0x51>(tmp, header_.owner.get());
+
+        if (!header_.group_name.empty())
+            write_extended_header(tmp, 0x52, header_.group_name);
+
+        if (!header_.user_name.empty())
+            write_extended_header(tmp, 0x53, header_.user_name);
 
         tmp.write("\x06\x00\x00", 3);
         std::size_t crc_off = buffer.size();

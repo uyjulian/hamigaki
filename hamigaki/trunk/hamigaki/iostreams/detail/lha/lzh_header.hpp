@@ -87,6 +87,9 @@ struct header
     boost::optional<boost::uint32_t> code_page;
     boost::optional<boost::uint16_t> permission;
     boost::optional<unix_owner> owner;
+    std::string group_name;
+    std::string user_name;
+    std::string comment;
 
     header()
         : compressed_size(-1), file_size(-1), update_time(-1)
