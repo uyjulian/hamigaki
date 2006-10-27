@@ -42,7 +42,7 @@ private:
 
 public:
     explicit basic_zip_file_source_impl(const Source& src)
-        : raw_(src), method_(0)
+        : raw_(src)
         , zlib_(zip::detail::make_zlib_params())
     {
     }
@@ -64,7 +64,7 @@ public:
 
     zip::header header() const
     {
-        return raw_.header();
+        return header_;
     }
 
     std::streamsize read(char* s, std::streamsize n)
@@ -72,22 +72,22 @@ public:
         std::streamsize amt = read_impl(s, n);
         if (amt != -1)
             crc32_.process_bytes(s, amt);
-        else if (crc32_.checksum() != raw_.header().crc32_checksum)
+        else if (crc32_.checksum() != header_.crc32_checksum)
             throw BOOST_IOSTREAMS_FAILURE("CRC missmatch");
         return amt;
     }
 
 private:
     raw_type raw_;
-    boost::uint16_t method_;
+    zip::header header_;
     boost::crc_32_type crc32_;
     boost::iostreams::zlib_decompressor zlib_;
 
     std::streamsize read_impl(char* s, std::streamsize n)
     {
-        if (method_ == 0)
+        if (header_.method == 0)
             return raw_.read(s, n);
-        else if (method_ == 8)
+        else if (header_.method == 8)
             return boost::iostreams::read(zlib_, boost::ref(raw_), s, n);
 
         return -1;
@@ -95,14 +95,26 @@ private:
 
     void prepare_reading()
     {
-        const zip::header& head = raw_.header();
-        method_ = head.method;
+        header_ = raw_.header();
 
-        if ((method_ != 0) && (method_ != 8))
+        if ((header_.method != 0) && (header_.method != 8))
             throw std::runtime_error("unsupported ZIP format");
 
         crc32_.reset();
         boost::iostreams::close(zlib_, boost::ref(raw_), BOOST_IOS::in);
+
+        if ((header_.permission & 0170000) == 0120000)
+        {
+            using namespace boost::filesystem;
+
+            boost::scoped_array<char> buf(new char[header_.file_size+1]);
+            read(buf.get(), header_.file_size);
+            buf[header_.file_size] = '\0';
+
+            header_.link_path = path(buf.get(), no_check);
+            header_.compressed_size = 0;
+            header_.file_size = 0;
+        }
     }
 };
 
@@ -175,9 +187,27 @@ public:
 
     void create_entry(const zip::header& head)
     {
-        method_ = head.method;
-        raw_.create_entry(head);
+        zip::header header = head;
+
+        const std::string link_path = header.link_path.string();
+
+        if (!link_path.empty())
+        {
+            header.method = 0;
+            header.file_size = link_path.size();
+        }
+        else if (header.file_size < 6)
+            header.method = 0;
+
+        method_ = header.method;
+        raw_.create_entry(header);
         size_ = 0;
+
+        if (!link_path.empty())
+        {
+            write(link_path.c_str(), link_path.size());
+            close();
+        }
     }
 
     void rewind_entry()

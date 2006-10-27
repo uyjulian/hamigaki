@@ -29,7 +29,9 @@ int main(int argc, char* argv[])
             const io_ex::zip::header& head = zip.header();
 
             std::cout << head.path.string() << '\n';
-            if (!head.is_directory())
+            if (head.is_symbolic_link())
+                std::cout << "-> " << head.link_path.string() << '\n';
+            else if (!head.is_directory())
             {
                 char buf[256];
                 std::streamsize n;

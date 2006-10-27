@@ -19,9 +19,37 @@
 
 #include <sys/stat.h>
 
+#if defined(BOOST_HAS_UNISTD_H)
+    #include <unistd.h>
+#endif
+
 namespace io_ex = hamigaki::iostreams;
 namespace fs = boost::filesystem;
 namespace io = boost::iostreams;
+
+#if defined(BOOST_HAS_UNISTD_H)
+fs::path read_link(const fs::path& ph)
+{
+    const std::string& s = ph.native_file_string();
+
+    struct stat st;
+    if (::lstat(s.c_str(), &st) != 0)
+        throw std::runtime_error("lstat error");
+
+    boost::scoped_array<char> buf(new char[st.st_size+1]);
+    ::ssize_t amt = ::readlink(s.c_str(), &buf[0], st.st_size);
+    if (amt != static_cast< ::ssize_t>(st.st_size))
+        throw std::runtime_error("bad symbolic link");
+
+    buf[st.st_size] = '\0';
+    return fs::path(&buf[0], fs::native);
+}
+#else
+fs::path read_link(const fs::path& ph)
+{
+    return fs::path();
+}
+#endif
 
 int main(int argc, char* argv[])
 {
@@ -37,14 +65,20 @@ int main(int argc, char* argv[])
             io_ex::zip::header head;
             head.method = 8;
             head.path = fs::path(argv[i], fs::native);
-            if (fs::is_directory(head.path))
+            if (fs::symbolic_link_exists(head.path))
+                head.link_path = read_link(head.path);
+            else if (fs::is_directory(head.path))
                 head.attributes = io_ex::msdos_attributes::directory;
             else
                 head.file_size = fs::file_size(head.path);
             head.update_time = fs::last_write_time(head.path);
 
             struct stat st;
+#if defined(BOOST_HAS_UNISTD_H)
+            if (::lstat(head.path.native_file_string().c_str(), &st) == 0)
+#else
             if (::stat(head.path.native_file_string().c_str(), &st) == 0)
+#endif
             {
                 head.permission = static_cast<boost::uint16_t>(st.st_mode);
                 head.modified_time = st.st_mtime;
@@ -56,7 +90,7 @@ int main(int argc, char* argv[])
 
             zip.create_entry(head);
 
-            if (!head.is_directory())
+            if (!head.is_symbolic_link() && !head.is_directory())
             {
                 try
                 {

@@ -1,4 +1,4 @@
-//  zip_file.hpp: Phil Katz Zip file device
+//  raw_zip_file.hpp: Phil Katz Zip file device (raw version)
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
@@ -125,6 +125,7 @@ struct extra_field_header
 struct header
 {
     boost::filesystem::path path;
+    boost::filesystem::path link_path;
     boost::uint16_t method;
     std::time_t update_time;
     boost::uint32_t crc32_checksum;
@@ -151,6 +152,11 @@ struct header
     bool is_directory() const
     {
         return (attributes & msdos_attributes::directory) != 0;
+    }
+
+    bool is_symbolic_link() const
+    {
+        return !link_path.empty();
     }
 
     std::string path_string() const
@@ -602,7 +608,7 @@ public:
             static_cast<std::streamsize>(
                 (std::min)(static_cast<boost::uint32_t>(n), rest));
 
-        blocking_read(src_, s, amt);
+        iostreams::blocking_read(src_, s, amt);
         pos_ += amt;
         return amt;
     }
@@ -868,7 +874,7 @@ public:
             throw give_up_compression();
         }
 
-        blocking_write(sink_, s, n);
+        iostreams::blocking_write(sink_, s, n);
         size_ += n;
         return n;
     }
