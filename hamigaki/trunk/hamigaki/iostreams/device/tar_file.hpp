@@ -34,6 +34,7 @@ struct extended_header
     boost::filesystem::path link_path;
     std::string user_name;
     std::string group_name;
+    std::string comment;
 };
 
 namespace detail
@@ -234,6 +235,9 @@ public:
         if (!ext.group_name.empty())
             header_.group_name = ext.group_name;
 
+        if (!ext.comment.empty())
+            header_.comment = ext.comment;
+
         return true;
     }
 
@@ -322,6 +326,8 @@ private:
                 ext.user_name = beg;
             else if (key == "gname")
                 ext.group_name = beg;
+            else if (key == "comment")
+                ext.comment = beg;
         }
     }
 };
@@ -472,6 +478,12 @@ public:
             {
                 ex += tar::detail::
                     make_ex_header_recoed("gname", head.group_name);
+            }
+
+            if (!head.comment.empty())
+            {
+                ex += tar::detail::
+                    make_ex_header_recoed("comment", head.comment);
             }
 
             if (!ex.empty())

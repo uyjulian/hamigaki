@@ -119,6 +119,7 @@ struct header
     std::string group_name;
     boost::uint16_t dev_major;
     boost::uint16_t dev_minor;
+    std::string comment;
 
     header()
         : mode(0644), uid(0), gid(0), size(0)
