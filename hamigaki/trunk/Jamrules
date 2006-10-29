@@ -101,3 +101,26 @@ rule find-boost-zlib-lib ( toolset variant : properties * )
         return $(properties) <find-library>$(ZLIB_BINARY) ;
     }
 }
+
+rule find-boost-bzip2-lib ( toolset variant : properties * )
+{
+    if $(BZIP2_SOURCE)
+    {
+        return [ find-boost-lib bzip2 $(toolset) $(variant) : $(properties) ] ;
+    }
+    else
+    {
+        if ! $(BZIP2_BINARY)
+        {
+            if $(NT) && ! [ MATCH (.*gcc.*) : $(TOOLS) ]
+            {
+                BZIP2_BINARY = "libbz2" ;
+            }
+            else 
+            {
+                BZIP2_BINARY = "bz2" ;
+            }
+        }
+        return $(properties) <find-library>$(BZIP2_BINARY) ;
+    }
+}
