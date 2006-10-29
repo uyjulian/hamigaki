@@ -18,6 +18,10 @@
 #include <hamigaki/iostreams/device/lzh_file.hpp>
 #include <hamigaki/iostreams/device/tar_file.hpp>
 #include <hamigaki/iostreams/device/zip_file.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/iostreams/filter/bzip2.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/compose.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/iostreams/copy.hpp>
@@ -34,6 +38,7 @@
 #endif
 
 namespace io_ex = hamigaki::iostreams;
+namespace algo = boost::algorithm;
 namespace fs = boost::filesystem;
 namespace io = boost::iostreams;
 
@@ -478,21 +483,53 @@ int main(int argc, char* argv[])
         fs::path::default_name_check(fs::no_check);
 
         std::auto_ptr<extractor_base> ext_ptr;
-        const std::string& ext = fs::extension(fs::path(argv[1], fs::native));
-        if (ext == ".lzh")
+        const std::string& leaf = fs::path(argv[1], fs::native).leaf();
+        if (algo::ends_with(leaf, ".lzh"))
         {
             ext_ptr.reset(new extractor<
                 io_ex::lzh_file_source>(io_ex::lzh_file_source(argv[1])));
         }
-        else if (ext == ".tar")
+        else if (algo::ends_with(leaf, ".tar"))
         {
             ext_ptr.reset(new extractor<
                 io_ex::tar_file_source>(io_ex::tar_file_source(argv[1])));
         }
-        else if (ext == ".zip")
+        else if (algo::ends_with(leaf, ".zip"))
         {
             ext_ptr.reset(new extractor<
                 io_ex::zip_file_source>(io_ex::zip_file_source(argv[1])));
+        }
+        else if (
+            algo::ends_with(leaf, ".tar.bz2") ||
+            algo::ends_with(leaf, ".tbz") )
+        {
+            typedef io::composite<
+                io::bzip2_decompressor,io_ex::file_source> source_type;
+
+            typedef io_ex::basic_tar_file_source<source_type> tar_type;
+
+            ext_ptr.reset(new extractor<tar_type>(
+                tar_type(io::compose(
+                        io::bzip2_decompressor(),
+                        io_ex::file_source(argv[1])
+                ))
+            ));
+        }
+        else if (
+            algo::ends_with(leaf, ".tar.gz") ||
+            algo::ends_with(leaf, ".tgz") )
+        {
+            typedef io::composite<
+                io::gzip_decompressor,io_ex::file_source> source_type;
+
+            typedef io_ex::basic_tar_file_source<source_type> tar_type;
+
+            ext_ptr.reset(new extractor<tar_type>(
+                tar_type(io::compose(
+                        io::gzip_decompressor(),
+                        io_ex::file_source(argv[1])
+                ))
+            ));
         }
         else
             throw std::runtime_error("unsupported format");
