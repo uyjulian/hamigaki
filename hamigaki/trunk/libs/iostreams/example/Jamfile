@@ -39,6 +39,19 @@ exe base64_encoder_example
     :
     ;
 
+exe extract
+    :
+        extract.cpp
+        <template>iostreams
+    :
+        [ cond $(ZLIB_LIBPATH) : <library-path>$(ZLIB_LIBPATH) : ]
+        [ cond $(BZIP2_LIBPATH) : <library-path>$(BZIP2_LIBPATH) : ]
+        find-boost-filesystem-lib
+        find-boost-iostreams-lib
+        find-boost-zlib-lib
+        find-boost-bzip2-lib
+    ;
+
 exe simple_lha
     :
         simple_lha.cpp
