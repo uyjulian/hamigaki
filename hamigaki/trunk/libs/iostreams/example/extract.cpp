@@ -121,8 +121,6 @@ struct entry
     boost::filesystem::path link_path;
     boost::optional<boost::uintmax_t> compressed_size;
     boost::optional<boost::uintmax_t> file_size;
-    boost::optional<boost::uint16_t> crc16_checksum;
-    boost::optional<boost::uint32_t> crc32_checksum;
     boost::optional<timestamp> last_write_time;
     boost::optional<timestamp> last_access_time;
     boost::optional<timestamp> last_change_time;
@@ -165,7 +163,6 @@ struct header_traits<io_ex::lha::header>
         e.link_path = head.link_path;
         e.compressed_size = head.compressed_size;
         e.file_size = head.file_size;
-        e.crc16_checksum = head.crc16_checksum;
 
         if (head.timestamp)
         {
@@ -254,7 +251,6 @@ struct header_traits<io_ex::zip::header>
         e.link_path = head.link_path;
         e.compressed_size = head.compressed_size;
         e.file_size = head.file_size;
-        e.crc32_checksum = head.crc32_checksum;
 
         if (head.modified_time)
             e.last_write_time = timestamp::from_time_t(*head.modified_time);
@@ -435,36 +431,36 @@ int main(int argc, char* argv[])
         fs::path::default_name_check(fs::no_check);
 
         std::auto_ptr<extractor_base> ext_ptr;
-        const std::string& leaf = fs::path(argv[1], fs::native).leaf();
-        if (algo::ends_with(leaf, ".lzh"))
+        const std::string filename(argv[1]);
+        if (algo::ends_with(filename, ".lzh"))
         {
             ext_ptr.reset(new extractor<
-                io_ex::lzh_file_source>(io_ex::lzh_file_source(argv[1])));
+                io_ex::lzh_file_source>(io_ex::lzh_file_source(filename)));
         }
-        else if (algo::ends_with(leaf, ".tar"))
+        else if (algo::ends_with(filename, ".tar"))
         {
             ext_ptr.reset(new extractor<
-                io_ex::tar_file_source>(io_ex::tar_file_source(argv[1])));
+                io_ex::tar_file_source>(io_ex::tar_file_source(filename)));
         }
-        else if (algo::ends_with(leaf, ".zip"))
+        else if (algo::ends_with(filename, ".zip"))
         {
             ext_ptr.reset(new extractor<
-                io_ex::zip_file_source>(io_ex::zip_file_source(argv[1])));
-        }
-        else if (
-            algo::ends_with(leaf, ".tar.bz2") ||
-            algo::ends_with(leaf, ".tbz2") ||
-            algo::ends_with(leaf, ".tbz") )
-        {
-            ext_ptr.reset(new extractor<
-                io_ex::tbz2_file_source>(io_ex::tbz2_file_source(argv[1])));
+                io_ex::zip_file_source>(io_ex::zip_file_source(filename)));
         }
         else if (
-            algo::ends_with(leaf, ".tar.gz") ||
-            algo::ends_with(leaf, ".tgz") )
+            algo::ends_with(filename, ".tar.bz2") ||
+            algo::ends_with(filename, ".tbz2") ||
+            algo::ends_with(filename, ".tbz") )
         {
             ext_ptr.reset(new extractor<
-                io_ex::tgz_file_source>(io_ex::tgz_file_source(argv[1])));
+                io_ex::tbz2_file_source>(io_ex::tbz2_file_source(filename)));
+        }
+        else if (
+            algo::ends_with(filename, ".tar.gz") ||
+            algo::ends_with(filename, ".tgz") )
+        {
+            ext_ptr.reset(new extractor<
+                io_ex::tgz_file_source>(io_ex::tgz_file_source(filename)));
         }
         else
             throw std::runtime_error("unsupported format");
@@ -472,6 +468,9 @@ int main(int argc, char* argv[])
         while (ext_ptr->next_entry())
         {
             const entry& e = ext_ptr->current_entry();
+
+            std::cout << e.path_string() << '\n';
+
             if (e.type == hard_link_file)
                 ::create_hard_link(e.link_path, e.path);
             else if (e.type == symlink_file)
@@ -499,8 +498,14 @@ int main(int argc, char* argv[])
 #elif defined(BOOST_HAS_UNISTD_H)
             if (e.permission)
                 ::chmod(e.path_string().c_str(), e.permission.get());
-            if (e.uid && e.gid)
-                ::chown(e.path_string().c_str(), e.uid.get(), e.gid.get());
+            if (e.uid || e.gid)
+            {
+                ::chown(
+                    e.path_string().c_str(),
+                    e.uid ? e.uid.get() : -1,
+                    e.gid ? e.gid.get() : -1
+                );
+            }
 #endif
 
 #if defined(BOOST_WINDOWS)
