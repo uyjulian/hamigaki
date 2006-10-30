@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
                 }
             }
         }
-        zip.write_end_mark();
+        zip.close_archive();
         return 0;
     }
     catch (const std::exception& e)

@@ -117,6 +117,8 @@ public:
         boost::iostreams::input,
         boost::iostreams::device_tag {};
 
+    typedef lha::header header_type;
+
     explicit basic_lzh_file_source(const Source& src)
         : pimpl_(new impl_type(src))
     {
@@ -231,9 +233,9 @@ public:
         return amt;
     }
 
-    void write_end_mark()
+    void close_archive()
     {
-        raw_.write_end_mark();
+        raw_.close_archive();
     }
 
 private:
@@ -270,6 +272,8 @@ public:
         , boost::iostreams::closable_tag
     {};
 
+    typedef lha::header header_type;
+
     explicit basic_lzh_file_sink(const Sink& sink)
         : pimpl_(new impl_type(sink))
     {
@@ -300,9 +304,9 @@ public:
         return pimpl_->write(s, n);
     }
 
-    void write_end_mark()
+    void close_archive()
     {
-        pimpl_->write_end_mark();
+        pimpl_->close_archive();
     }
 
 private:

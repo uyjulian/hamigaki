@@ -770,6 +770,8 @@ public:
         boost::iostreams::input,
         boost::iostreams::device_tag {};
 
+    typedef zip::header header_type;
+
     explicit basic_raw_zip_file_source(const Source& src)
         : pimpl_(new impl_type(src))
     {
@@ -904,7 +906,7 @@ public:
         headers_.back() = header_;
     }
 
-    void write_end_mark()
+    void close_archive()
     {
         boost::uint32_t start_offset =
             static_cast<boost::uint32_t>(iostreams::tell_offset(sink_));
@@ -1026,6 +1028,8 @@ public:
         , boost::iostreams::closable_tag
     {};
 
+    typedef zip::header header_type;
+
     explicit basic_raw_zip_file_sink(const Sink& sink)
         : pimpl_(new impl_type(sink))
     {
@@ -1051,9 +1055,9 @@ public:
         pimpl_->close();
     }
 
-    void write_end_mark()
+    void close_archive()
     {
-        pimpl_->write_end_mark();
+        pimpl_->close_archive();
     }
 
 private:

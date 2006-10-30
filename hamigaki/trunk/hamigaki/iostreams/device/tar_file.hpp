@@ -345,6 +345,8 @@ public:
         boost::iostreams::input,
         boost::iostreams::device_tag {};
 
+    typedef tar::header header_type;
+
     explicit basic_tar_file_source(const Source& src)
         : pimpl_(new impl_type(src))
     {
@@ -544,9 +546,9 @@ public:
         ustar_.close();
     }
 
-    void write_end_mark()
+    void close_archive()
     {
-        ustar_.write_end_mark();
+        ustar_.close_archive();
     }
 
 private:
@@ -583,6 +585,8 @@ public:
         , boost::iostreams::closable_tag
     {};
 
+    typedef tar::header header_type;
+
     explicit basic_tar_file_sink(const Sink& sink)
         : pimpl_(new impl_type(sink))
     {
@@ -603,9 +607,9 @@ public:
         pimpl_->close();
     }
 
-    void write_end_mark()
+    void close_archive()
     {
-        pimpl_->write_end_mark();
+        pimpl_->close_archive();
     }
 
 private:

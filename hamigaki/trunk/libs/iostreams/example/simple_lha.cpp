@@ -188,7 +188,7 @@ int main(int argc, char* argv[])
                 }
             }
         }
-        lzh.write_end_mark();
+        lzh.close_archive();
         return 0;
     }
     catch (const std::exception& e)

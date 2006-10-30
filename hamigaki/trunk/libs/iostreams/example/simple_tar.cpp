@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
                 );
             }
         }
-        tar.write_end_mark();
+        tar.close_archive();
         return 0;
     }
     catch (const std::exception& e)
