@@ -16,11 +16,10 @@
 #include <boost/config.hpp>
 
 #include <hamigaki/iostreams/device/lzh_file.hpp>
-#include <hamigaki/iostreams/device/tar_file.hpp>
+#include <hamigaki/iostreams/device/tbz2_file.hpp>
+#include <hamigaki/iostreams/device/tgz_file.hpp>
 #include <hamigaki/iostreams/device/zip_file.hpp>
 #include <boost/algorithm/string/predicate.hpp>
-#include <boost/iostreams/filter/bzip2.hpp>
-#include <boost/iostreams/filter/gzip.hpp>
 #include <boost/iostreams/compose.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -145,19 +144,14 @@ struct entry
     }
 };
 
-template<class Source>
-struct extractor_traits;
+template<class Header>
+struct header_traits;
 
-template<class Source>
-struct extractor_traits<
-    io_ex::basic_lzh_file_source<Source>
->
+template<>
+struct header_traits<io_ex::lha::header>
 {
-    static entry do_current_entry(
-        const io_ex::basic_lzh_file_source<Source>& src)
+    static entry to_entry(const io_ex::lha::header& head)
     {
-        const io_ex::lha::header& head = src.header();
-
         entry e;
 
         if (head.is_symbolic_link())
@@ -203,26 +197,10 @@ struct extractor_traits<
 };
 
 template<>
-struct extractor_traits<io_ex::lzh_file_source>
+struct header_traits<io_ex::tar::header>
 {
-    static entry do_current_entry(const io_ex::lzh_file_source& src)
+    static entry to_entry(const io_ex::tar::header& head)
     {
-        return extractor_traits<
-            io_ex::basic_lzh_file_source<io_ex::file_source>
-        >::do_current_entry(src);
-    }
-};
-
-template<class Source>
-struct extractor_traits<
-    io_ex::basic_tar_file_source<Source>
->
-{
-    static entry do_current_entry(
-        const io_ex::basic_tar_file_source<Source>& src)
-    {
-        const io_ex::tar::header& head = src.header();
-
         entry e;
 
         if (head.type == io_ex::tar::type::link)
@@ -259,26 +237,10 @@ struct extractor_traits<
 };
 
 template<>
-struct extractor_traits<io_ex::tar_file_source>
+struct header_traits<io_ex::zip::header>
 {
-    static entry do_current_entry(const io_ex::tar_file_source& src)
+    static entry to_entry(const io_ex::zip::header& head)
     {
-        return extractor_traits<
-            io_ex::basic_tar_file_source<io_ex::file_source>
-        >::do_current_entry(src);
-    }
-};
-
-template<class Source>
-struct extractor_traits<
-    io_ex::basic_zip_file_source<Source>
->
-{
-    static entry do_current_entry(
-        const io_ex::basic_zip_file_source<Source>& src)
-    {
-        const io_ex::zip::header& head = src.header();
-
         entry e;
 
         if (head.is_symbolic_link())
@@ -316,17 +278,6 @@ struct extractor_traits<
         e.comment = head.comment;
 
         return e;
-    }
-};
-
-template<>
-struct extractor_traits<io_ex::zip_file_source>
-{
-    static entry do_current_entry(const io_ex::zip_file_source& src)
-    {
-        return extractor_traits<
-            io_ex::basic_zip_file_source<io_ex::file_source>
-        >::do_current_entry(src);
     }
 };
 
@@ -379,7 +330,8 @@ private:
 
     entry do_current_entry() const // virtual
     {
-        return extractor_traits<Source>::do_current_entry(src_);
+        typedef typename Source::header_type header_type;
+        return header_traits<header_type>::to_entry(src_.header());
     }
 
     std::streamsize do_read(char* s, std::streamsize n) // virtual
@@ -501,35 +453,18 @@ int main(int argc, char* argv[])
         }
         else if (
             algo::ends_with(leaf, ".tar.bz2") ||
+            algo::ends_with(leaf, ".tbz2") ||
             algo::ends_with(leaf, ".tbz") )
         {
-            typedef io::composite<
-                io::bzip2_decompressor,io_ex::file_source> source_type;
-
-            typedef io_ex::basic_tar_file_source<source_type> tar_type;
-
-            ext_ptr.reset(new extractor<tar_type>(
-                tar_type(io::compose(
-                        io::bzip2_decompressor(),
-                        io_ex::file_source(argv[1])
-                ))
-            ));
+            ext_ptr.reset(new extractor<
+                io_ex::tbz2_file_source>(io_ex::tbz2_file_source(argv[1])));
         }
         else if (
             algo::ends_with(leaf, ".tar.gz") ||
             algo::ends_with(leaf, ".tgz") )
         {
-            typedef io::composite<
-                io::gzip_decompressor,io_ex::file_source> source_type;
-
-            typedef io_ex::basic_tar_file_source<source_type> tar_type;
-
-            ext_ptr.reset(new extractor<tar_type>(
-                tar_type(io::compose(
-                        io::gzip_decompressor(),
-                        io_ex::file_source(argv[1])
-                ))
-            ));
+            ext_ptr.reset(new extractor<
+                io_ex::tgz_file_source>(io_ex::tgz_file_source(argv[1])));
         }
         else
             throw std::runtime_error("unsupported format");
