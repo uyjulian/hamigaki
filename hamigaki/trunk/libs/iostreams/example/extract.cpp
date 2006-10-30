@@ -450,6 +450,7 @@ int main(int argc, char* argv[])
         else if (
             algo::ends_with(filename, ".tar.bz2") ||
             algo::ends_with(filename, ".tbz2") ||
+            algo::ends_with(filename, ".tb2") ||
             algo::ends_with(filename, ".tbz") )
         {
             ext_ptr.reset(new extractor<
