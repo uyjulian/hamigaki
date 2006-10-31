@@ -23,6 +23,19 @@ template iostreams
     : # build variants
     ;
 
+exe archive
+    :
+        archive.cpp
+        <template>iostreams
+    :
+        [ cond $(ZLIB_LIBPATH) : <library-path>$(ZLIB_LIBPATH) : ]
+        [ cond $(BZIP2_LIBPATH) : <library-path>$(BZIP2_LIBPATH) : ]
+        find-boost-filesystem-lib
+        find-boost-iostreams-lib
+        find-boost-zlib-lib
+        find-boost-bzip2-lib
+    ;
+
 exe background_copy_example
     :
         background_copy_example.cpp
