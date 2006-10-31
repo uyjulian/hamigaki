@@ -20,7 +20,6 @@
 #include <hamigaki/iostreams/device/tgz_file.hpp>
 #include <hamigaki/iostreams/device/zip_file.hpp>
 #include <boost/algorithm/string/predicate.hpp>
-#include <boost/iostreams/compose.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/iostreams/copy.hpp>
