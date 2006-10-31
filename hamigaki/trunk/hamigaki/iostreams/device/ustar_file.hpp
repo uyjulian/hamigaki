@@ -295,9 +295,13 @@ inline T read_oct_impl(const char (&s)[Size], boost::mpl::bool_<false>)
     static const char table[] = " ";
     const char* begin = &s[0];
     const char* end = begin + Size;
+    while ((begin != end) && (*begin == ' '))
+        ++begin;
     const char* delim = std::find_first_of(begin, end, &table[0], &table[0]+2);
-    if ((delim == begin) || (delim == end))
+    if (delim == end)
         throw BOOST_IOSTREAMS_FAILURE("invalid tar header");
+    if (delim == begin)
+        return 0;
     return from_oct<T,char>(begin, delim);
 }
 
