@@ -757,6 +757,11 @@ public:
         pimpl_->create_entry(head);
     }
 
+    void rewind_entry()
+    {
+        throw std::runtime_error("unsupported operation");
+    }
+
     std::streamsize write(const char* s, std::streamsize n)
     {
         return pimpl_->write(s, n);
