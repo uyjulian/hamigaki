@@ -497,7 +497,8 @@ int main(int argc, char* argv[])
             else if (fs::is_directory(e.path))
             {
                 e.type = directory_file;
-                e.attributes = io_ex::msdos_attributes::directory;
+                e.attributes = static_cast<
+                    boost::uint16_t>(io_ex::msdos_attributes::directory);
             }
             else
             {
