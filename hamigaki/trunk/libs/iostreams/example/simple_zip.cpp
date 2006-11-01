@@ -63,7 +63,6 @@ int main(int argc, char* argv[])
         for (int i = 2; i < argc; ++i)
         {
             io_ex::zip::header head;
-            head.method = 8;
             head.path = fs::path(argv[i], fs::native);
             if (fs::symbolic_link_exists(head.path))
                 head.link_path = read_link(head.path);

@@ -251,7 +251,6 @@ struct header_traits<io_ex::zip::header>
 
         head.path = e.path;
         head.link_path = e.link_path;
-        head.method = 8;
 
         if (e.last_write_time)
             head.update_time = e.last_write_time->to_time_t();

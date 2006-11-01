@@ -106,6 +106,7 @@ exe simple_unzip
         find-boost-filesystem-lib
         find-boost-iostreams-lib
         find-boost-zlib-lib
+        find-boost-bzip2-lib
     ;
 
 exe simple_zip
@@ -117,6 +118,7 @@ exe simple_zip
         find-boost-filesystem-lib
         find-boost-iostreams-lib
         find-boost-zlib-lib
+        find-boost-bzip2-lib
     ;
 
 }

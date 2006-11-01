@@ -11,6 +11,7 @@
 #define HAMIGAKI_IOSTREAMS_DEVICE_ZIP_FILE_HPP
 
 #include <hamigaki/iostreams/device/raw_zip_file.hpp>
+#include <boost/iostreams/filter/bzip2.hpp>
 #include <boost/iostreams/filter/zlib.hpp>
 #include <boost/crc.hpp>
 #include <boost/ref.hpp>
@@ -82,13 +83,16 @@ private:
     zip::header header_;
     boost::crc_32_type crc32_;
     boost::iostreams::zlib_decompressor zlib_;
+    boost::iostreams::bzip2_decompressor bzip2_;
 
     std::streamsize read_impl(char* s, std::streamsize n)
     {
-        if (header_.method == 0)
+        if (header_.method == zip::method::store)
             return raw_.read(s, n);
-        else if (header_.method == 8)
+        else if (header_.method == zip::method::deflate)
             return boost::iostreams::read(zlib_, boost::ref(raw_), s, n);
+        else if (header_.method == zip::method::bzip2)
+            return boost::iostreams::read(bzip2_, boost::ref(raw_), s, n);
 
         return -1;
     }
@@ -97,11 +101,16 @@ private:
     {
         header_ = raw_.header();
 
-        if ((header_.method != 0) && (header_.method != 8))
+        if ((header_.method != zip::method::store) &&
+            (header_.method != zip::method::deflate) &&
+            (header_.method != zip::method::bzip2) )
+        {
             throw std::runtime_error("unsupported ZIP format");
+        }
 
         crc32_.reset();
         boost::iostreams::close(zlib_, boost::ref(raw_), BOOST_IOS::in);
+        boost::iostreams::close(bzip2_, boost::ref(raw_), BOOST_IOS::in);
 
         if ((header_.permission & 0170000) == 0120000)
         {
@@ -182,7 +191,7 @@ private:
 
 public:
     explicit basic_zip_file_sink_impl(const Sink& sink)
-        : raw_(sink), method_(0), size_(0)
+        : raw_(sink), method_(zip::method::store), size_(0)
         , zlib_(zip::detail::make_zlib_params())
     {
     }
@@ -195,11 +204,11 @@ public:
 
         if (!link_path.empty())
         {
-            header.method = 0;
+            header.method = zip::method::store;
             header.file_size = link_path.size();
         }
         else if (header.file_size < 6)
-            header.method = 0;
+            header.method = zip::method::store;
 
         method_ = header.method;
         raw_.create_entry(header);
@@ -215,7 +224,7 @@ public:
     void rewind_entry()
     {
         raw_.rewind_entry();
-        method_ = 0;
+        method_ = zip::method::store;
         size_ = 0;
         crc32_.reset();
     }
@@ -233,8 +242,10 @@ public:
 
     void close()
     {
-        if (method_ == 8)
+        if (method_ == zip::method::deflate)
             boost::iostreams::close(zlib_, boost::ref(raw_), BOOST_IOS::out);
+        else if (method_ == zip::method::bzip2)
+            boost::iostreams::close(bzip2_, boost::ref(raw_), BOOST_IOS::out);
 
         raw_.close(crc32_.checksum(), size_);
         crc32_.reset();
@@ -251,13 +262,16 @@ private:
     boost::crc_32_type crc32_;
     boost::uint32_t size_;
     boost::iostreams::zlib_compressor zlib_;
+    boost::iostreams::bzip2_compressor bzip2_;
 
     std::streamsize write_impl(const char* s, std::streamsize n)
     {
-        if (method_ == 0)
+        if (method_ == zip::method::store)
             return raw_.write(s, n);
-        else if (method_ == 8)
+        else if (method_ == zip::method::deflate)
             return boost::iostreams::write(zlib_, boost::ref(raw_), s, n);
+        else if (method_ == zip::method::bzip2)
+            return boost::iostreams::write(bzip2_, boost::ref(raw_), s, n);
 
         return n;
     }

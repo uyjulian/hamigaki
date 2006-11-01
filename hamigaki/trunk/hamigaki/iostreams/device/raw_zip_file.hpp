@@ -33,6 +33,13 @@ struct flags
     static const boost::uint16_t has_data_dec   = 0x0008;
 };
 
+struct method
+{
+    static const boost::uint16_t store      = 0;
+    static const boost::uint16_t deflate    = 8;
+    static const boost::uint16_t bzip2      = 12;
+};
+
 struct internal_attributes
 {
     static const boost::uint16_t ascii  = 0x0001;
@@ -143,7 +150,7 @@ struct header
     boost::optional<boost::uint16_t> gid;
 
     header()
-        : method(0), update_time(0), crc32_checksum(0)
+        : method(zip::method::deflate), update_time(0), crc32_checksum(0)
         , compressed_size(0), file_size(0)
         , attributes(msdos_attributes::archive), permission(0644)
     {
@@ -841,7 +848,7 @@ public:
         static_cast<zip::header&>(header_) = head;
         if (header_.is_directory())
         {
-            header_.method = 0;
+            header_.method = zip::method::store;
             header_.crc32_checksum = 0;
             header_.compressed_size = 0;
             header_.file_size = 0;
@@ -858,7 +865,7 @@ public:
 
     void rewind_entry()
     {
-        header_.method = 0;
+        header_.method = zip::method::store;
 
         boost::iostreams::seek(sink_, header_.offset, BOOST_IOS::beg);
         write_local_file_header(header_);
