@@ -30,6 +30,7 @@ namespace hamigaki { namespace iostreams { namespace zip {
 
 struct flags
 {
+    static const boost::uint16_t encrypted      = 0x0001;
     static const boost::uint16_t has_data_dec   = 0x0008;
 };
 
@@ -133,6 +134,8 @@ struct header
 {
     boost::filesystem::path path;
     boost::filesystem::path link_path;
+    boost::uint8_t version;
+    bool encrypted;
     boost::uint16_t method;
     std::time_t update_time;
     boost::uint32_t crc32_checksum;
@@ -150,7 +153,8 @@ struct header
     boost::optional<boost::uint16_t> gid;
 
     header()
-        : method(zip::method::deflate), update_time(0), crc32_checksum(0)
+        : version(20), encrypted(false)
+        , method(zip::method::deflate), update_time(0), crc32_checksum(0)
         , compressed_size(0), file_size(0)
         , attributes(msdos_attributes::archive), permission(0644)
     {
@@ -723,6 +727,9 @@ private:
         zip::local_file_header local;
         iostreams::binary_read(src_, local);
 
+        head.version = static_cast<boost::uint8_t>(local.needed_to_extract);
+        if ((local.flags & zip::flags::encrypted) != 0)
+            head.encrypted = true;
         head.method = local.method;
         head.update_time = local.update_date_time.to_time_t();
         if ((local.flags & zip::flags::has_data_dec) == 0)
@@ -932,9 +939,9 @@ public:
             zip::detail::write_central_extra_field(ex_sink, head);
 
             zip::file_header file_head;
-            file_head.made_by = 10; // TODO
-            file_head.needed_to_extract = 10; // TODO
-            file_head.flags = 0;
+            file_head.made_by = 20;
+            file_head.needed_to_extract = head.version;
+            file_head.flags = head.encrypted ? zip::flags::encrypted : 0;
             file_head.method = head.method;
             file_head.update_date_time = msdos_date_time(head.update_time);
             file_head.compressed_size = head.compressed_size;
@@ -1000,8 +1007,8 @@ private:
         zip::detail::write_local_extra_field(ex_sink, head);
 
         zip::local_file_header local;
-        local.needed_to_extract = 10; // TODO
-        local.flags = 0;
+        local.needed_to_extract = head.version;
+        local.flags = head.encrypted ? zip::flags::encrypted : 0;
         local.method = head.method;
         local.update_date_time = msdos_date_time(head.update_time);
         local.crc32_checksum = head.crc32_checksum;

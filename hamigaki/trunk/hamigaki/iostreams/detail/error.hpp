@@ -35,6 +35,14 @@ public:
     }
 };
 
+class password_incorrect : public BOOST_IOSTREAMS_FAILURE
+{
+public:
+    password_incorrect() : BOOST_IOSTREAMS_FAILURE("password incorrect")
+    {
+    }
+};
+
 } } // End namespaces iostreams, hamigaki.
 
 #endif // HAMIGAKI_IOSTREAMS_DETAIL_ERROR_HPP

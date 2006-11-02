@@ -14,6 +14,7 @@
 #include <boost/iostreams/filter/bzip2.hpp>
 #include <boost/iostreams/filter/zlib.hpp>
 #include <boost/crc.hpp>
+#include <boost/none.hpp>
 #include <boost/ref.hpp>
 
 namespace hamigaki { namespace iostreams {
@@ -31,6 +32,158 @@ inline boost::iostreams::zlib_params make_zlib_params()
     return params;
 }
 
+class zip_encryption_keys
+{
+public:
+    static const std::size_t header_size = 12;
+
+    explicit zip_encryption_keys(const std::string& s)
+        : key0_(boost::detail::reflector<32>::reflect(0x12345678))
+        , key1_(0x23456789)
+        , key2_(boost::detail::reflector<32>::reflect(0x34567890))
+    {
+        for (std::size_t i = 0; i < s.size(); ++i)
+            update_keys(s[i]);
+    }
+
+    char decrypt(char c)
+    {
+        unsigned char uc = static_cast<unsigned char>(c);
+        uc = static_cast<unsigned char>(uc ^ decrypt_byte());
+        c = static_cast<char>(uc);
+        update_keys(c);
+        return c;
+    }
+
+private:
+    typedef boost::crc_optimal<32,0x04C11DB7,0,0,true,true> crc_type;
+
+    crc_type key0_;
+    boost::uint32_t key1_;
+    crc_type key2_;
+
+    void update_keys(char c)
+    {
+        key0_.process_byte(static_cast<unsigned char>(c));
+        key1_ += (key0_.checksum() & 0xFF);
+        key1_ = key1_ * 134775813 + 1;
+        key2_.process_byte(static_cast<unsigned char>(key1_ >> 24));
+    }
+
+    unsigned char decrypt_byte()
+    {
+        boost::uint32_t temp = (key2_.checksum() | 2) & 0xFFFF;
+        return static_cast<unsigned char>((temp * (temp ^ 1)) >> 8);
+    }
+};
+
+template<class Source>
+class zip_decrypter
+{
+private:
+    typedef basic_raw_zip_file_source_impl<Source> raw_type;
+
+public:
+    typedef char char_type;
+
+    struct category :
+        boost::iostreams::input,
+        boost::iostreams::device_tag {};
+
+    explicit zip_decrypter(const Source& src)
+        : raw_(src)
+    {
+    }
+
+    void password(const std::string& pswd)
+    {
+        password_ = pswd;
+    }
+
+    bool next_entry()
+    {
+        if (!raw_.next_entry())
+            return false;
+
+        prepare_reading();
+        return true;
+    }
+
+    void select_entry(const boost::filesystem::path& ph)
+    {
+        raw_.select_entry(ph);
+        prepare_reading();
+    }
+
+    zip::header header() const
+    {
+        return header_;
+    }
+
+    std::streamsize read(char* s, std::streamsize n)
+    {
+        if (header_.encrypted && !keys_)
+            init_keys();
+
+        std::streamsize amt = raw_.read(s, n);
+        if (header_.encrypted)
+        {
+            for (std::streamsize i = 0; i < amt; ++i)
+                s[i] = keys_->decrypt(s[i]);
+        }
+        return amt;
+    }
+
+private:
+    raw_type raw_;
+    zip::header header_;
+    std::string password_;
+    char enc_header_[zip_encryption_keys::header_size];
+    boost::optional<zip_encryption_keys> keys_;
+
+    void prepare_reading()
+    {
+        keys_ = boost::none;
+
+        header_ = raw_.header();
+        if (header_.encrypted)
+        {
+            if (header_.compressed_size < 12)
+                throw std::runtime_error("bad ZIP encryption");
+            header_.compressed_size -= 12;
+
+            raw_.read(enc_header_, sizeof(enc_header_));
+        }
+    }
+
+    void init_keys()
+    {
+        zip_encryption_keys keys(password_);
+
+        char buf[sizeof(enc_header_)];
+        for (std::size_t i = 0; i < sizeof(buf); ++i)
+            buf[i] = keys.decrypt(enc_header_[i]);
+
+        if (header_.version >= 20)
+        {
+            boost::uint16_t cs1 =
+                hamigaki::decode_uint<little,2>(buf + (sizeof(buf)-2));
+            boost::uint16_t cs2 =
+                static_cast<boost::uint16_t>(header_.crc32_checksum >> 16);
+            if (cs1 != cs2)
+                throw password_incorrect();
+        }
+        else
+        {
+            boost::uint8_t cs = static_cast<boost::uint8_t>(buf[sizeof(buf)-1]);
+            if (cs != static_cast<boost::uint8_t>(header_.crc32_checksum >> 24))
+                throw password_incorrect();
+        }
+
+        keys_ = keys;
+    }
+};
+
 } // namespace detail
 
 } // namespace zip
@@ -39,13 +192,18 @@ template<class Source>
 class basic_zip_file_source_impl
 {
 private:
-    typedef basic_raw_zip_file_source_impl<Source> raw_type;
+    typedef zip::detail::zip_decrypter<Source> raw_type;
 
 public:
     explicit basic_zip_file_source_impl(const Source& src)
         : raw_(src)
         , zlib_(zip::detail::make_zlib_params())
     {
+    }
+
+    void password(const std::string& pswd)
+    {
+        raw_.password(pswd);
     }
 
     bool next_entry()
@@ -145,6 +303,11 @@ public:
     explicit basic_zip_file_source(const Source& src)
         : pimpl_(new impl_type(src))
     {
+    }
+
+    void password(const std::string& pswd)
+    {
+        pimpl_->password(pswd);
     }
 
     bool next_entry()
