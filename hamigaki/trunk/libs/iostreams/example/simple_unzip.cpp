@@ -132,7 +132,7 @@ int main(int argc, char* argv[])
         if (argc != 2)
             return 1;
 
-        bool need_pswd = true;;
+        bool need_pswd = true;
         io_ex::zip_file_source zip(argv[1]);
 
         while (zip.next_entry())
