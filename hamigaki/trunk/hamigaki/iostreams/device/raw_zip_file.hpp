@@ -136,6 +136,7 @@ struct header
     boost::filesystem::path link_path;
     boost::uint8_t version;
     bool encrypted;
+    boost::uint16_t encryption_checksum;
     boost::uint16_t method;
     std::time_t update_time;
     boost::uint32_t crc32_checksum;
@@ -153,7 +154,7 @@ struct header
     boost::optional<boost::uint16_t> gid;
 
     header()
-        : version(20), encrypted(false)
+        : version(20), encrypted(false), encryption_checksum(0)
         , method(zip::method::deflate), update_time(0), crc32_checksum(0)
         , compressed_size(0), file_size(0)
         , attributes(msdos_attributes::archive), permission(0644)
@@ -176,6 +177,14 @@ struct header
             return path.native_directory_string();
         else
             return path.native_file_string();
+    }
+
+    bool match_encryption_checksum(boost::uint16_t value) const
+    {
+        if (version < 20)
+            return (value >> 8) == (encryption_checksum >> 8);
+        else
+            return value == encryption_checksum;
     }
 };
 
@@ -654,6 +663,10 @@ private:
             iostreams::binary_read(src_, file_head);
 
             zip::detail::internal_header head;
+            head.version =
+                static_cast<boost::uint8_t>(file_head.needed_to_extract);
+            if ((file_head.flags & zip::flags::encrypted) != 0)
+                head.encrypted = true;
             head.method = file_head.method;
             head.update_time = file_head.update_date_time.to_time_t();
             head.compressed_size = file_head.compressed_size;
@@ -732,8 +745,12 @@ private:
             head.encrypted = true;
         head.method = local.method;
         head.update_time = local.update_date_time.to_time_t();
-        if ((local.flags & zip::flags::has_data_dec) == 0)
+        if ((local.flags & zip::flags::has_data_dec) != 0)
+            head.encryption_checksum = local.update_date_time.time;
+        else
         {
+            head.encryption_checksum =
+                static_cast<boost::uint16_t>(local.crc32_checksum >> 16);
             head.crc32_checksum = local.crc32_checksum;
             head.compressed_size = local.compressed_size;
             head.file_size = local.file_size;

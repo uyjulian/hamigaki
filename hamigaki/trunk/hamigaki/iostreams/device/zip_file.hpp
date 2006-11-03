@@ -164,21 +164,10 @@ private:
         for (std::size_t i = 0; i < sizeof(buf); ++i)
             buf[i] = keys.decrypt(enc_header_[i]);
 
-        if (header_.version >= 20)
-        {
-            boost::uint16_t cs1 =
-                hamigaki::decode_uint<little,2>(buf + (sizeof(buf)-2));
-            boost::uint16_t cs2 =
-                static_cast<boost::uint16_t>(header_.crc32_checksum >> 16);
-            if (cs1 != cs2)
-                throw password_incorrect();
-        }
-        else
-        {
-            boost::uint8_t cs = static_cast<boost::uint8_t>(buf[sizeof(buf)-1]);
-            if (cs != static_cast<boost::uint8_t>(header_.crc32_checksum >> 24))
-                throw password_incorrect();
-        }
+        boost::uint16_t cs =
+            hamigaki::decode_uint<little,2>(buf + (sizeof(buf)-2));
+        if (!header_.match_encryption_checksum(cs))
+            throw password_incorrect();
 
         keys_ = keys;
     }
