@@ -182,9 +182,9 @@ struct header
     bool match_encryption_checksum(boost::uint16_t value) const
     {
         if (version < 20)
-            return (value >> 8) == (encryption_checksum >> 8);
-        else
             return value == encryption_checksum;
+        else
+            return (value >> 8) == (encryption_checksum >> 8);
     }
 };
 
