@@ -11,8 +11,12 @@
 #define HAMIGAKI_IOSTREAMS_DEVICE_ZIP_FILE_HPP
 
 #include <hamigaki/iostreams/device/raw_zip_file.hpp>
+#include <boost/functional/hash/hash.hpp>
 #include <boost/iostreams/filter/bzip2.hpp>
 #include <boost/iostreams/filter/zlib.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_int.hpp>
+#include <boost/random/variate_generator.hpp>
 #include <boost/crc.hpp>
 #include <boost/none.hpp>
 #include <boost/ref.hpp>
@@ -35,8 +39,6 @@ inline boost::iostreams::zlib_params make_zlib_params()
 class zip_encryption_keys
 {
 public:
-    static const std::size_t header_size = 12;
-
     explicit zip_encryption_keys(const std::string& s)
         : key0_(boost::detail::reflector<32>::reflect(0x12345678))
         , key1_(0x23456789)
@@ -53,6 +55,14 @@ public:
         c = static_cast<char>(uc);
         update_keys(c);
         return c;
+    }
+
+    char encrypt(char c)
+    {
+        unsigned char uc = static_cast<unsigned char>(c);
+        uc = static_cast<unsigned char>(uc ^ decrypt_byte());
+        update_keys(c);
+        return static_cast<char>(uc);
     }
 
 private:
@@ -77,6 +87,21 @@ private:
     }
 };
 
+template<typename T>
+inline T binary_hash(const T& x)
+{
+    char buf[sizeof(T)];
+    std::memcpy(buf, &x, sizeof(T));
+    return boost::hash_range(&buf[0], &buf[0]+sizeof(buf));
+}
+
+inline boost::uint32_t make_random_seed()
+{
+    std::size_t val = detail::binary_hash(std::time(0));
+    val ^= detail::binary_hash(std::clock());
+    return static_cast<boost::uint32_t>(val);
+}
+
 template<class Source>
 class zip_decrypter
 {
@@ -86,9 +111,10 @@ private:
 public:
     typedef char char_type;
 
-    struct category :
-        boost::iostreams::input,
-        boost::iostreams::device_tag {};
+    struct category
+        : boost::iostreams::input
+        , boost::iostreams::device_tag
+    {};
 
     explicit zip_decrypter(const Source& src)
         : raw_(src)
@@ -138,7 +164,7 @@ private:
     raw_type raw_;
     zip::header header_;
     std::string password_;
-    char enc_header_[zip_encryption_keys::header_size];
+    char enc_header_[consts::encryption_header_size];
     boost::optional<zip_encryption_keys> keys_;
 
     void prepare_reading()
@@ -170,6 +196,129 @@ private:
             throw password_incorrect();
 
         keys_ = keys;
+    }
+};
+
+template<class Sink>
+class zip_encrypter
+{
+private:
+    typedef basic_raw_zip_file_sink_impl<Sink> raw_zip_type;
+
+public:
+    typedef char char_type;
+
+    struct category
+        : boost::iostreams::output
+        , boost::iostreams::device_tag
+        , boost::iostreams::closable_tag
+    {};
+
+    explicit zip_encrypter(const Sink& sink)
+        : raw_(sink), rand_gen_(make_random_seed())
+    {
+    }
+
+    void password(const std::string& pswd)
+    {
+        password_ = pswd;
+    }
+
+    void create_entry(const zip::header& head)
+    {
+        header_ = head;
+        raw_.create_entry(header_);
+        prepare_writing();
+    }
+
+    void rewind_entry()
+    {
+        raw_.rewind_entry();
+        prepare_writing();
+    }
+
+    std::streamsize write(const char* s, std::streamsize n)
+    {
+        if (keys_)
+        {
+            char buf[1024];
+            std::streamsize total = 0;
+            while (total < n)
+            {
+                std::streamsize amt = (std::min)(
+                    n-total, static_cast<std::streamsize>(sizeof(buf)));
+
+                for (std::streamsize i = 0; i < amt; ++i)
+                    buf[i] = keys_->encrypt(s[total+i]);
+                raw_.write(buf, amt);
+                total += amt;
+            }
+            return total;
+        }
+        else
+            return raw_.write(s, n);
+    }
+
+    // void close();
+
+    void close(boost::uint32_t crc32_checksum, boost::uint32_t file_size)
+    {
+        raw_.close(crc32_checksum, file_size);
+    }
+
+    void close_archive()
+    {
+        raw_.close_archive();
+    }
+
+private:
+    raw_zip_type raw_;
+    boost::mt19937 rand_gen_;
+    zip::header header_;
+    std::string password_;
+    boost::optional<zip_encryption_keys> keys_;
+
+    void prepare_writing()
+    {
+        if (header_.encrypted)
+        {
+            keys_ = zip_encryption_keys(password_);
+
+            char enc_haeder[consts::encryption_header_size];
+
+            boost::variate_generator<
+                boost::mt19937&,
+                boost::uniform_int<unsigned char>
+            > rand(rand_gen_, boost::uniform_int<unsigned char>(0, 0xFF));
+
+            char* beg = &enc_haeder[0];
+            char* end = beg + sizeof(enc_haeder);
+
+            if (header_.version < 20)
+            {
+                end -= 2;
+                hamigaki::encode_uint<little,2>(
+                    end, msdos_date_time(header_.update_time).time);
+            }
+            else
+            {
+                --end;
+                *end = static_cast<char>(static_cast<unsigned char>(
+                    msdos_date_time(header_.update_time).time >> 8));
+            }
+
+            while (beg != end)
+                *(beg++) = static_cast<char>(rand());
+
+            for (std::size_t i = 0; i < sizeof(enc_haeder); ++i)
+                enc_haeder[i] = keys_->encrypt(enc_haeder[i]);
+            raw_.write(enc_haeder, sizeof(enc_haeder));
+
+            if (header_.is_directory())
+                close(0, 0);
+        }
+        else
+            keys_ = boost::none;
     }
 };
 
@@ -283,9 +432,10 @@ private:
 public:
     typedef char char_type;
 
-    struct category :
-        boost::iostreams::input,
-        boost::iostreams::device_tag {};
+    struct category
+        : boost::iostreams::input
+        , boost::iostreams::device_tag
+    {};
 
     typedef zip::header header_type;
 
@@ -339,13 +489,18 @@ template<class Sink>
 class basic_zip_file_sink_impl
 {
 private:
-    typedef basic_raw_zip_file_sink_impl<Sink> raw_zip_type;
+    typedef zip::detail::zip_encrypter<Sink> raw_zip_type;
 
 public:
     explicit basic_zip_file_sink_impl(const Sink& sink)
         : raw_(sink), method_(zip::method::store), size_(0)
         , zlib_(zip::detail::make_zlib_params())
     {
+    }
+
+    void password(const std::string& pswd)
+    {
+        raw_.password(pswd);
     }
 
     void create_entry(const zip::header& head)
@@ -449,6 +604,11 @@ public:
     explicit basic_zip_file_sink(const Sink& sink)
         : pimpl_(new impl_type(sink))
     {
+    }
+
+    void password(const std::string& pswd)
+    {
+        pimpl_->password(pswd);
     }
 
     void create_entry(const zip::header& head)

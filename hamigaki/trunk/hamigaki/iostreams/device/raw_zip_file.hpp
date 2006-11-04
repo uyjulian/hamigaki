@@ -21,12 +21,18 @@
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/iostreams/categories.hpp>
 #include <boost/mpl/single_view.hpp>
-#include <boost/scoped_array.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
+#include <boost/scoped_array.hpp>
 #include <stdexcept>
 #include <vector>
 
 namespace hamigaki { namespace iostreams { namespace zip {
+
+struct consts
+{
+    static const std::size_t encryption_header_size = 12;
+};
 
 struct flags
 {
@@ -574,14 +580,15 @@ inline void write_central_extra_field(Sink& sink, const header& head)
 } // namespace zip
 
 template<class Source>
-class basic_raw_zip_file_source_impl
+class basic_raw_zip_file_source_impl : private boost::noncopyable
 {
 public:
     typedef char char_type;
 
-    struct category :
-        boost::iostreams::input,
-        boost::iostreams::device_tag {};
+    struct category
+        : boost::iostreams::input
+        , boost::iostreams::device_tag
+    {};
 
     explicit basic_raw_zip_file_source_impl(const Source& src)
         : src_(src), pos_(0), next_index_(0)
@@ -797,9 +804,10 @@ private:
 public:
     typedef char char_type;
 
-    struct category :
-        boost::iostreams::input,
-        boost::iostreams::device_tag {};
+    struct category
+        : boost::iostreams::input
+        , boost::iostreams::device_tag
+    {};
 
     typedef zip::header header_type;
 
@@ -845,7 +853,7 @@ public:
 
 
 template<class Sink>
-class basic_raw_zip_file_sink_impl
+class basic_raw_zip_file_sink_impl : private boost::noncopyable
 {
 public:
     typedef char char_type;
@@ -901,7 +909,11 @@ public:
 
     std::streamsize write(const char* s, std::streamsize n)
     {
-        if (size_ + n > header_.file_size)
+        boost::uint32_t max_size = header_.file_size;
+        if (header_.encrypted)
+            max_size += zip::consts::encryption_header_size;
+
+        if (size_ + n > max_size)
         {
             overflow_ = true;
             throw give_up_compression();
@@ -933,6 +945,17 @@ public:
             write_local_file_header(header_);
             boost::iostreams::seek(sink_, 0, BOOST_IOS::end);
         }
+        if (header_.encrypted)
+        {
+            iostreams::write_uint32<little>(
+                sink_, zip::data_descriptor::signature);
+
+            zip::data_descriptor desc;
+            desc.crc32_checksum = header_.crc32_checksum;
+            desc.compressed_size = header_.compressed_size;
+            desc.file_size = header_.file_size;
+            iostreams::binary_write(sink_, desc);
+        }
 
         headers_.back() = header_;
     }
@@ -958,7 +981,9 @@ public:
             zip::file_header file_head;
             file_head.made_by = 20;
             file_head.needed_to_extract = head.version;
-            file_head.flags = head.encrypted ? zip::flags::encrypted : 0;
+            file_head.flags = head.encrypted
+                ? zip::flags::encrypted | zip::flags::has_data_dec
+                : 0;
             file_head.method = head.method;
             file_head.update_date_time = msdos_date_time(head.update_time);
             file_head.compressed_size = head.compressed_size;
@@ -1025,7 +1050,9 @@ private:
 
         zip::local_file_header local;
         local.needed_to_extract = head.version;
-        local.flags = head.encrypted ? zip::flags::encrypted : 0;
+        local.flags = head.encrypted
+            ? zip::flags::encrypted | zip::flags::has_data_dec
+            : 0;
         local.method = head.method;
         local.update_date_time = msdos_date_time(head.update_time);
         local.crc32_checksum = head.crc32_checksum;
