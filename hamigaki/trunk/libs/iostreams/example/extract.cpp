@@ -431,6 +431,9 @@ int main(int argc, char* argv[])
 
         std::auto_ptr<extractor_base> ext_ptr;
         const std::string filename(argv[1]);
+        if (!fs::exists(filename))
+            throw std::runtime_error("file not found");
+
         if (algo::ends_with(filename, ".lzh"))
         {
             ext_ptr.reset(new extractor<
@@ -461,6 +464,58 @@ int main(int argc, char* argv[])
         {
             ext_ptr.reset(new extractor<
                 io_ex::tgz_file_source>(io_ex::tgz_file_source(filename)));
+        }
+        else if (algo::ends_with(filename, ".gz"))
+        {
+            const std::string& leaf = fs::path(filename, fs::native).leaf();
+            if (leaf.size() < 4)
+                throw std::runtime_error("bad filename");
+
+            std::string new_name = leaf.substr(0, leaf.size()-3);
+
+            io::gzip_decompressor gzip;
+            io_ex::file_source src(filename);
+            char buf[4096];
+            std::streamsize amt =
+                io::read(boost::ref(gzip), src, buf, sizeof(buf));
+
+            const std::string& org_name = gzip.file_name();
+            if (!org_name.empty())
+                new_name = org_name;
+
+            std::cout << new_name << '\n';
+
+            io_ex::file_sink sink(new_name);
+            if (amt != -1)
+                io::write(sink, buf, amt);
+
+            io::copy(
+                io::compose(boost::ref(gzip), boost::ref(src)),
+                boost::ref(sink)
+            );
+
+            if (gzip.mtime())
+                fs::last_write_time(new_name, gzip.mtime());
+
+            return 0;
+        }
+        else if (algo::ends_with(filename, ".bz2"))
+        {
+            const std::string& leaf = fs::path(filename, fs::native).leaf();
+            if (leaf.size() < 5)
+                throw std::runtime_error("bad filename");
+
+            const std::string new_name = leaf.substr(0, leaf.size()-4);
+            std::cout << new_name << '\n';
+
+            io::copy(
+                io::compose(
+                    io::bzip2_decompressor(), io_ex::file_source(filename)
+                ),
+                io_ex::file_sink(new_name)
+            );
+
+            return 0;
         }
         else
             throw std::runtime_error("unsupported format");
@@ -526,7 +581,7 @@ int main(int argc, char* argv[])
     }
     catch (const std::exception& e)
     {
-        std::cerr << e.what() << std::endl;
+        std::cerr << "Error: " << e.what() << std::endl;
     }
     return 1;
 }

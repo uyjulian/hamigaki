@@ -481,6 +481,52 @@ int main(int argc, char* argv[])
             arc_ptr.reset(new archiver<
                 io_ex::tgz_file_sink>(io_ex::tgz_file_sink(filename)));
         }
+        else if (algo::ends_with(filename, ".gz"))
+        {
+            if (argc != 3)
+            {
+                throw std::runtime_error(
+                    "gzip cannot contain two files or more");
+            }
+
+            fs::path ph(argv[2], fs::native);
+            if (fs::is_directory(ph))
+                throw std::runtime_error("gzip cannot compress a directory");
+
+            io::gzip_params params;
+            params.file_name = ph.leaf();
+            params.mtime = fs::last_write_time(ph);
+
+            io::copy(
+                io_ex::file_source(argv[2]),
+                io::compose(
+                    io::gzip_compressor(params), io_ex::file_sink(filename)
+                )
+            );
+
+            return 0;
+        }
+        else if (algo::ends_with(filename, ".bz2"))
+        {
+            if (argc != 3)
+            {
+                throw std::runtime_error(
+                    "bzip2 cannot contain two files or more");
+            }
+
+            fs::path ph(argv[2], fs::native);
+            if (fs::is_directory(ph))
+                throw std::runtime_error("bzip2 cannot compress a directory");
+
+            io::copy(
+                io_ex::file_source(argv[2]),
+                io::compose(
+                    io::bzip2_compressor(), io_ex::file_sink(filename)
+                )
+            );
+
+            return 0;
+        }
         else
             throw std::runtime_error("unsupported format");
 
@@ -567,7 +613,7 @@ int main(int argc, char* argv[])
     }
     catch (const std::exception& e)
     {
-        std::cerr << e.what() << std::endl;
+        std::cerr << "Error: " << e.what() << std::endl;
     }
     return 1;
 }
