@@ -34,16 +34,17 @@ enum file_type
 
 typedef unsigned file_attributes;
 
-const file_attributes set_uid       = (1u << 0);
-const file_attributes set_gid       = (1u << 1);
-const file_attributes sticky        = (1u << 2);
-const file_attributes for_system    = (1u << 3);
-const file_attributes for_archive   = (1u << 4);
-const file_attributes temporary     = (1u << 5);
-const file_attributes compressed    = (1u << 6);
-const file_attributes offline       = (1u << 7);
-const file_attributes not_indexed   = (1u << 8);
-const file_attributes encrypted     = (1u << 9);
+const file_attributes set_uid       = (1u <<  0);
+const file_attributes set_gid       = (1u <<  1);
+const file_attributes sticky        = (1u <<  2);
+const file_attributes hidden        = (1u <<  3);
+const file_attributes for_system    = (1u <<  4);
+const file_attributes for_archive   = (1u <<  5);
+const file_attributes temporary     = (1u <<  6);
+const file_attributes compressed    = (1u <<  7);
+const file_attributes offline       = (1u <<  8);
+const file_attributes not_indexed   = (1u <<  9);
+const file_attributes encrypted     = (1u << 10);
 
 
 typedef unsigned file_permissions;
