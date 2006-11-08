@@ -10,9 +10,17 @@
 #ifndef HAMIGAKI_FILESYSTEM_FILE_STATUS_HPP
 #define HAMIGAKI_FILESYSTEM_FILE_STATUS_HPP
 
+#include <hamigaki/filesystem/detail/config.hpp>
+#include <hamigaki/filesystem/detail/auto_link.hpp>
 #include <hamigaki/filesystem/timestamp.hpp>
+#include <boost/filesystem/exception.hpp>
+#include <boost/filesystem/path.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/optional.hpp>
+
+#ifdef BOOST_HAS_ABI_HEADERS
+    #include BOOST_ABI_PREFIX
+#endif
 
 namespace hamigaki { namespace filesystem {
 
@@ -27,7 +35,6 @@ enum file_type
     character_file,
     fifo_file,
     socket_file,
-    sparse_file,    // an extension for TR2
     type_unknown
 };
 
@@ -41,10 +48,11 @@ const file_attributes hidden        = (1u <<  3);
 const file_attributes for_system    = (1u <<  4);
 const file_attributes for_archive   = (1u <<  5);
 const file_attributes temporary     = (1u <<  6);
-const file_attributes compressed    = (1u <<  7);
-const file_attributes offline       = (1u <<  8);
-const file_attributes not_indexed   = (1u <<  9);
-const file_attributes encrypted     = (1u << 10);
+const file_attributes sparse        = (1u <<  7);
+const file_attributes compressed    = (1u <<  8);
+const file_attributes offline       = (1u <<  9);
+const file_attributes not_indexed   = (1u << 10);
+const file_attributes encrypted     = (1u << 11);
 
 
 typedef unsigned file_permissions;
@@ -64,8 +72,7 @@ class file_status
 {
 public:
     explicit file_status(file_type v = status_unknown)
-        : type_(v), attributes_(for_archive), permissions_(0644)
-        , file_size_(0), last_write_time_(0), last_access_time_(0)
+        : type_(v), attributes_(for_archive), permissions_(0644), file_size_(0)
     {
     }
 
@@ -212,6 +219,25 @@ private:
     boost::optional<boost::intmax_t> gid_;
 };
 
+HAMIGAKI_FILESYSTEM_DECL file_status
+status(const boost::filesystem::path& p, int& ec);
+
+inline file_status status(const boost::filesystem::path& p)
+{
+    int ec;
+    const file_status& s = status(p, ec);
+    if (ec != 0)
+    {
+        throw boost::filesystem::filesystem_error(
+            "hamigaki::filesystem::status", p, ec);
+    }
+    return s;
+}
+
 } } // End namespaces filesystem, hamigaki.
+
+#ifdef BOOST_HAS_ABI_HEADERS
+    #include BOOST_ABI_SUFFIX
+#endif
 
 #endif // HAMIGAKI_FILESYSTEM_FILE_STATUS_HPP

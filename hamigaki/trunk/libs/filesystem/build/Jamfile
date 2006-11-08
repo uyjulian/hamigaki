@@ -1,0 +1,55 @@
+# Hamigaki Filesystem Library Jamfile
+
+#  Copyright Takeshi Mouri 2006.
+#  Use, modification, and distribution are subject to the
+#  Boost Software License, Version 1.0. (See accompanying file
+#  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#  See http://hamigaki.sourceforge.jp/libs/filesystem for library home page.
+
+subproject libs/filesystem/build ;
+
+lib hamigaki_filesystem
+    :
+        ../src/file_status.cpp
+    :
+        [ common-names ]
+        <include>$(HAMIGAKI_ROOT)  <sysinclude>$(HAMIGAKI_ROOT)
+        <include>$(BOOST_INCLUDE)  <sysinclude>$(BOOST_INCLUDE)
+        <vc-8_0><*><cflags>-wd4996
+        <vc-8_0><*><cflags>-wd4819
+    :
+        debug release
+    ;
+
+dll hamigaki_filesystem
+    :
+        ../src/file_status.cpp
+    :
+        <library-path>$(BOOST_LIBPATH)
+        find-boost-filesystem-lib
+        [ common-names ]
+        <define>HAMIGAKI_FILESYSTEM_DYN_LINK=1
+        <runtime-link>dynamic
+        <include>$(HAMIGAKI_ROOT)  <sysinclude>$(HAMIGAKI_ROOT)
+        <include>$(BOOST_INCLUDE)  <sysinclude>$(BOOST_INCLUDE)
+        <vc-8_0><*><cflags>-wd4996
+        <vc-8_0><*><cflags>-wd4819
+    :
+        debug release
+    ;
+
+install filesystem lib
+     : <lib>hamigaki_filesystem <dll>hamigaki_filesystem
+     ;
+
+stage stage/lib
+    : <lib>hamigaki_filesystem <dll>hamigaki_filesystem
+    : # copy to a path rooted at HAMIGAKI_ROOT:
+      <locate>$(HAMIGAKI_ROOT)
+      [ common-names ]
+      <target>stage
+      <target>all
+    : # build variants
+      debug release
+    ;
