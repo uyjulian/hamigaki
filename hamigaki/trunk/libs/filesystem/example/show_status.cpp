@@ -7,11 +7,11 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/filesystem for library home page.
 
-#include <hamigaki/filesystem/file_status.hpp>
-#include <exception>
+#include <hamigaki/filesystem/operations.hpp>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 
 namespace fs_ex = hamigaki::filesystem;
 namespace fs = boost::filesystem;
@@ -46,6 +46,8 @@ int main(int argc, char* argv[])
 
         fs::path ph(argv[1], fs::native);
         const fs_ex::file_status& s = fs_ex::status(ph);
+        if (s.type() == fs_ex::file_not_found)
+            throw std::runtime_error("file not found");
 
         std::cout << "Type:\t\t\t";
         if (s.type() == fs_ex::regular_file)
@@ -65,6 +67,42 @@ int main(int argc, char* argv[])
         else
             std::cout << "unknown";
         std::cout << "\n";
+
+        std::cout << "Attributes:\n";
+        if ((s.attributes() & fs_ex::set_uid) != 0)
+            std::cout << "\t\t\tSet-user-ID\n";
+        if ((s.attributes() & fs_ex::set_gid) != 0)
+            std::cout << "\t\t\tSet-group-ID\n";
+        if ((s.attributes() & fs_ex::sticky) != 0)
+            std::cout << "\t\t\tSticky\n";
+        if ((s.attributes() & fs_ex::hidden) != 0)
+            std::cout << "\t\t\tHidden\n";
+        if ((s.attributes() & fs_ex::for_system) != 0)
+            std::cout << "\t\t\tSystem\n";
+        if ((s.attributes() & fs_ex::for_archive) != 0)
+            std::cout << "\t\t\tArchive\n";
+        if ((s.attributes() & fs_ex::temporary) != 0)
+            std::cout << "\t\t\tTemporary\n";
+        if ((s.attributes() & fs_ex::sparse) != 0)
+            std::cout << "\t\t\tSparse\n";
+        if ((s.attributes() & fs_ex::compressed) != 0)
+            std::cout << "\t\t\tCompressed\n";
+        if ((s.attributes() & fs_ex::offline) != 0)
+            std::cout << "\t\t\tOffline\n";
+        if ((s.attributes() & fs_ex::not_indexed) != 0)
+            std::cout << "\t\t\tNot content indexed\n";
+        if ((s.attributes() & fs_ex::encrypted) != 0)
+            std::cout << "\t\t\tEncrypted\n";
+        std::cout << "\n";
+
+        std::cout
+            << "Permissions:\t\t"
+            << std::oct << std::showbase
+            << s.permissions()
+            << std::dec << std::noshowbase
+            << "\n";
+
+        std::cout << "Size:\t\t\t" << s.file_size() << "\n";
 
         std::cout
             << "Last write time:\t"
@@ -91,6 +129,12 @@ int main(int argc, char* argv[])
                 << ::to_local_time_string(s.creation_time())
                 << "\n";
         }
+
+        if (s.has_uid())
+            std::cout << "User ID:\t\t" << s.uid() << "\n";
+
+        if (s.has_gid())
+            std::cout << "Group ID:\t\t" << s.gid() << "\n";
 
         return 0;
     }

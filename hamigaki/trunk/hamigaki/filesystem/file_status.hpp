@@ -10,17 +10,9 @@
 #ifndef HAMIGAKI_FILESYSTEM_FILE_STATUS_HPP
 #define HAMIGAKI_FILESYSTEM_FILE_STATUS_HPP
 
-#include <hamigaki/filesystem/detail/config.hpp>
-#include <hamigaki/filesystem/detail/auto_link.hpp>
 #include <hamigaki/filesystem/timestamp.hpp>
-#include <boost/filesystem/exception.hpp>
-#include <boost/filesystem/path.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/optional.hpp>
-
-#ifdef BOOST_HAS_ABI_HEADERS
-    #include BOOST_ABI_PREFIX
-#endif
 
 namespace hamigaki { namespace filesystem {
 
@@ -219,25 +211,6 @@ private:
     boost::optional<boost::intmax_t> gid_;
 };
 
-HAMIGAKI_FILESYSTEM_DECL file_status
-status(const boost::filesystem::path& p, int& ec);
-
-inline file_status status(const boost::filesystem::path& p)
-{
-    int ec;
-    const file_status& s = status(p, ec);
-    if (ec != 0)
-    {
-        throw boost::filesystem::filesystem_error(
-            "hamigaki::filesystem::status", p, ec);
-    }
-    return s;
-}
-
 } } // End namespaces filesystem, hamigaki.
-
-#ifdef BOOST_HAS_ABI_HEADERS
-    #include BOOST_ABI_SUFFIX
-#endif
 
 #endif // HAMIGAKI_FILESYSTEM_FILE_STATUS_HPP
