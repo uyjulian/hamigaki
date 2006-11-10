@@ -211,6 +211,40 @@ private:
     boost::optional<boost::intmax_t> gid_;
 };
 
+
+// predicate functions
+
+inline bool status_known(const file_status& s)
+{
+    return s.type() != status_unknown;
+}
+
+inline bool exists(const file_status& s)
+{
+    return status_known(s) && (s.type() != file_not_found);
+}
+
+inline bool is_regular(const file_status& s)
+{
+    return s.type() == regular_file;
+}
+
+inline bool is_directory(const file_status& s)
+{
+    return s.type() == directory_file;
+}
+
+inline bool is_symlink(const file_status& s)
+{
+    return s.type() == symlink_file;
+}
+
+inline bool is_other(const file_status& s)
+{
+    return exists(s) && !is_regular(s) && !is_directory(s) && !is_symlink(s);
+}
+
+
 } } // End namespaces filesystem, hamigaki.
 
 #endif // HAMIGAKI_FILESYSTEM_FILE_STATUS_HPP

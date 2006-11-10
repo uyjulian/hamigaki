@@ -22,6 +22,8 @@
 
 namespace hamigaki { namespace filesystem {
 
+// status functions
+
 HAMIGAKI_FILESYSTEM_DECL file_status
 status(const boost::filesystem::path& p, int& ec);
 
@@ -51,6 +53,34 @@ inline file_status symlink_status(const boost::filesystem::path& p)
             "hamigaki::filesystem::symlink_status", p, ec);
     }
     return s;
+}
+
+
+// predicate functions
+
+inline bool exists(const boost::filesystem::path& p)
+{
+    return exists(filesystem::status(p));
+}
+
+inline bool is_directory(const boost::filesystem::path& p)
+{
+    return is_directory(filesystem::status(p));
+}
+
+inline bool is_regular(const boost::filesystem::path& p)
+{
+    return is_regular(filesystem::status(p));
+}
+
+inline bool is_other(const boost::filesystem::path& p)
+{
+    return is_other(filesystem::status(p));
+}
+
+inline bool is_symlink(const boost::filesystem::path& p)
+{
+    return is_symlink(filesystem::symlink_status(p));
 }
 
 } } // End namespaces filesystem, hamigaki.
