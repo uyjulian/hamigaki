@@ -83,6 +83,12 @@ inline bool is_symlink(const boost::filesystem::path& p)
     return is_symlink(filesystem::symlink_status(p));
 }
 
+
+// attribute functions
+
+HAMIGAKI_FILESYSTEM_DECL
+boost::filesystem::path read_link(const boost::filesystem::path& p);
+
 } } // End namespaces filesystem, hamigaki.
 
 #ifdef BOOST_HAS_ABI_HEADERS

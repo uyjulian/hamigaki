@@ -12,6 +12,7 @@ subproject libs/filesystem/build ;
 lib hamigaki_filesystem
     :
         ../src/file_status.cpp
+        ../src/symlink.cpp
     :
         [ common-names ]
         <include>$(HAMIGAKI_ROOT)  <sysinclude>$(HAMIGAKI_ROOT)
@@ -25,6 +26,7 @@ lib hamigaki_filesystem
 dll hamigaki_filesystem
     :
         ../src/file_status.cpp
+        ../src/symlink.cpp
     :
         <library-path>$(BOOST_LIBPATH)
         find-boost-filesystem-lib
