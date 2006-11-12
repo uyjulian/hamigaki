@@ -217,6 +217,13 @@ boost::filesystem::path symlink_target(const boost::filesystem::path& p)
             "hamigaki::filesystem::symlink_target", p, errno);
     }
 
+    if (!S_ISLNK(st.st_mode))
+    {
+        throw boost::filesystem::filesystem_error(
+            "hamigaki::filesystem::symlink_target", p,
+            "the path is not a symbolic link");
+    }
+
     std::vector<char> buf(st.st_size);
     std::streamsize len = ::readlink(path_name.c_str(), &buf[0], buf.size());
     if (len == -1)
@@ -226,6 +233,7 @@ boost::filesystem::path symlink_target(const boost::filesystem::path& p)
     }
     else if (static_cast<std::size_t>(len) != buf.size())
     {
+        // Note: calling readlink() after lstat() has a race condition
         throw boost::filesystem::filesystem_error(
             "hamigaki::filesystem::symlink_target", p,
             "symbolic link size mismatch");
