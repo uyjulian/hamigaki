@@ -87,7 +87,7 @@ inline bool is_symlink(const boost::filesystem::path& p)
 // attribute functions
 
 HAMIGAKI_FILESYSTEM_DECL
-boost::filesystem::path read_link(const boost::filesystem::path& p);
+boost::filesystem::path symlink_target(const boost::filesystem::path& p);
 
 } } // End namespaces filesystem, hamigaki.
 

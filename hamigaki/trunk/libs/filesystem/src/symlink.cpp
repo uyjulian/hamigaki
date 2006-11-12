@@ -29,6 +29,7 @@
         #define HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT
     #endif
 #else
+    #include <sys/stat.h>
     #include <unistd.h>
     #include <errno.h>
 #endif
@@ -167,14 +168,14 @@ private:
 } // namespace
 
 HAMIGAKI_FILESYSTEM_DECL
-boost::filesystem::path read_link(const boost::filesystem::path& p)
+boost::filesystem::path symlink_target(const boost::filesystem::path& p)
 {
 #if defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
     nt_file f(p);
     if (!f.is_valid())
     {
         throw boost::filesystem::filesystem_error(
-            "hamigaki::filesystem::read_link", p, f.native_error());
+            "hamigaki::filesystem::symlink_target", p, f.native_error());
     }
 
     boost::filesystem::path tp;
@@ -183,19 +184,19 @@ boost::filesystem::path read_link(const boost::filesystem::path& p)
         if (int ec = f.native_error())
         {
             throw boost::filesystem::filesystem_error(
-                "hamigaki::filesystem::read_link", p, ec);
+                "hamigaki::filesystem::symlink_target", p, ec);
         }
         else
         {
             throw boost::filesystem::filesystem_error(
-                "hamigaki::filesystem::read_link",
+                "hamigaki::filesystem::symlink_target", p,
                 "invalid reparse point data");
         }
     }
     return tp;
 #else // else defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
     throw boost::filesystem::filesystem_error(
-        "hamigaki::filesystem::read_link",
+        "hamigaki::filesystem::symlink_target", p,
         "unsupported operation");
 
     BOOST_UNREACHABLE_RETURN(boost::filesystem::path())
@@ -204,16 +205,34 @@ boost::filesystem::path read_link(const boost::filesystem::path& p)
 
 #else // not defined(BOOST_WINDOWS)
 
-namespace
-{
-
-
-} // namespace
-
 HAMIGAKI_FILESYSTEM_DECL
-boost::filesystem::path read_link(const boost::filesystem::path& p)
+boost::filesystem::path symlink_target(const boost::filesystem::path& p)
 {
-    return boost::filesystem::path(); // TODO
+    const std::string& path_name = p.native_file_string();
+
+    struct stat st;
+    if (::lstat(path_name.c_str(), &st) == -1)
+    {
+        throw boost::filesystem::filesystem_error(
+            "hamigaki::filesystem::symlink_target", p, errno);
+    }
+
+    std::vector<char> buf(st.st_size);
+    std::streamsize len = ::readlink(path_name.c_str(), &buf[0], buf.size());
+    if (len == -1)
+    {
+        throw boost::filesystem::filesystem_error(
+            "hamigaki::filesystem::symlink_target", p, errno);
+    }
+    else if (static_cast<std::size_t>(len) != buf.size())
+    {
+        throw boost::filesystem::filesystem_error(
+            "hamigaki::filesystem::symlink_target", p,
+            "symbolic link size mismatch");
+    }
+
+    return boost::filesystem::path(
+        std::string(&buf[0], buf.size()), boost::filesystem::native);
 }
 
 #endif

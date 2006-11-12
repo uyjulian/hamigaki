@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
         }
 
         fs::path ph(argv[1], fs::native);
-        std::cout << fs_ex::read_link(ph).string() << std::endl;
+        std::cout << fs_ex::symlink_target(ph).string() << std::endl;
 
         return 0;
     }
