@@ -42,6 +42,21 @@ namespace
 {
 
 #if defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
+inline std::string to_multi_byte(const wchar_t* s, int n)
+{
+    int size = ::WideCharToMultiByte(CP_ACP, 0, s, n, 0, 0, 0, 0);
+    if (size == 0)
+        return std::string();
+
+    std::vector<char> buf(size);
+    size = ::WideCharToMultiByte(CP_ACP, 0, s, n, &buf[0], size, 0, 0);
+    if (size == 0)
+        return std::string();
+    buf.resize(size);
+
+    return std::string(&buf[0], size);
+}
+
 class nt_file : private boost::noncopyable
 {
 public:
@@ -114,54 +129,98 @@ public:
             data += hedaer_size;
             data_size -= hedaer_size;
 
-            const wchar_t prefix[] = L"\\\?\?\\";
-            std::size_t prefix_size = sizeof(prefix)/sizeof(wchar_t) - 1;
+            p = parse_absolute_path(head, data, data_size);
+        }
+        else if (head.tag == detail::symlink_header::tag)
+        {
+            const std::size_t hedaer_size =
+                binary_size<detail::symlink_header>::type::value;
 
-            if ((head.sub_name_length < prefix_size) ||
-                (head.sub_name_offset > data_size) ||
-                (head.sub_name_offset + head.sub_name_length > data_size) )
-            {
-                return false;
-            }
-
-            std::vector<wchar_t> sub_name(head.sub_name_length/sizeof(wchar_t));
-            std::memcpy(&sub_name[0],
-                data+head.sub_name_offset, head.sub_name_length);
-            if (std::wmemcmp(&sub_name[0], prefix, prefix_size) != 0)
-            {
-                return false;
-            }
-
-            const wchar_t* src = &sub_name[prefix_size];
-            int src_size = static_cast<int>(sub_name.size() - prefix_size);
-
-            int buf_size =
-                ::WideCharToMultiByte(CP_ACP, 0, src, src_size, 0, 0, 0, 0);
-            if (buf_size == 0)
+            if (data_size < hedaer_size)
                 return false;
 
-            std::vector<char> buf(buf_size);
-            buf_size = ::WideCharToMultiByte(
-                CP_ACP, 0, src, src_size, &buf[0], buf_size, 0, 0);
-            if (buf_size == 0)
-                return false;
-            buf.resize(buf_size);
+            detail::symlink_header head;
+            hamigaki::binary_read(data, head);
 
-            p =
-                boost::filesystem::path(
-                    std::string(&buf[0], buf_size),
-                    boost::filesystem::no_check
-                );
+            data += hedaer_size;
+            data_size -= hedaer_size;
+
+            if ((head.flags & detail::symlink_flags::relative) != 0)
+                p = parse_relative_path(head, data, data_size);
+            else
+                p = parse_absolute_path(head, data, data_size);
         }
         else
             return false;
 
-        return true;
+        return !p.empty();
     }
 
 private:
     ::HANDLE handle_;
     ::DWORD ec_;
+
+    template<class Header>
+    boost::filesystem::path parse_absolute_path(
+        const Header& head, const char* data, std::size_t data_size)
+    {
+        const wchar_t prefix[] = L"\\\?\?\\";
+        std::size_t prefix_size = sizeof(prefix)/sizeof(wchar_t) - 1;
+
+        if ((head.sub_name_length < prefix_size) ||
+            (head.sub_name_offset > data_size) ||
+            (head.sub_name_offset + head.sub_name_length > data_size) )
+        {
+            return boost::filesystem::path();
+        }
+
+        std::vector<wchar_t> sub_name(head.sub_name_length/sizeof(wchar_t));
+        std::memcpy(&sub_name[0],
+            data+head.sub_name_offset, head.sub_name_length);
+        if (std::wmemcmp(&sub_name[0], prefix, prefix_size) != 0)
+            return boost::filesystem::path();
+
+        wchar_t* src = &sub_name[prefix_size];
+        int src_size = static_cast<int>(sub_name.size() - prefix_size);
+
+        const wchar_t unc[] = L"UNC\\";
+        std::size_t unc_size = sizeof(unc)/sizeof(wchar_t) - 1;
+
+        if (std::wmemcmp(src, unc, unc_size) == 0)
+        {
+            src += (unc_size-2);
+            *src = '\\';
+            src_size -= (unc_size-2);
+        }
+
+        return boost::filesystem::path(
+            to_multi_byte(src, src_size),
+            boost::filesystem::no_check
+        );
+    }
+
+    boost::filesystem::path parse_relative_path(
+        const detail::symlink_header& head,
+        const char* data, std::size_t data_size)
+    {
+        if ((head.sub_name_offset > data_size) ||
+            (head.sub_name_offset + head.sub_name_length > data_size) )
+        {
+            return boost::filesystem::path();
+        }
+
+        std::vector<wchar_t> sub_name(head.sub_name_length/sizeof(wchar_t));
+        std::memcpy(&sub_name[0],
+            data+head.sub_name_offset, head.sub_name_length);
+
+        const wchar_t* src = &sub_name[0];
+        int src_size = static_cast<int>(sub_name.size());
+
+        return boost::filesystem::path(
+            to_multi_byte(src, src_size),
+            boost::filesystem::no_check
+        );
+    }
 };
 #endif // defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
 
