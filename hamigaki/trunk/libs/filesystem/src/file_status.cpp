@@ -23,7 +23,6 @@
 
     #if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0500)
         #include <hamigaki/detail/windows/dynamic_link_library.hpp>
-        #include <winternl.h>
         #define HAMIGAKI_FILESYSTEM_USE_NTFS_CHANGE_TIME
     #endif
 #else
@@ -38,9 +37,21 @@ namespace hamigaki { namespace filesystem {
 #if defined(HAMIGAKI_FILESYSTEM_USE_NTFS_CHANGE_TIME)
 using namespace ::hamigaki::detail::windows;
 
+// from winternl.h
+struct io_status_block
+{
+    union
+    {
+        long status;
+        void* pointer;
+    };
+
+    ::ULONG_PTR information;
+};
+
 // from ZwQueryInformationFile in ntddk.h
-typedef ::NTSTATUS (NTAPI *NtQueryInformationFileFuncPtr)(
-    ::HANDLE, ::IO_STATUS_BLOCK*, void*, ::ULONG, ::DWORD);
+typedef long (__stdcall *NtQueryInformationFileFuncPtr)(
+    ::HANDLE, io_status_block*, void*, ::ULONG, ::DWORD);
 
 // from ntddk.h
 struct file_basic_information
@@ -142,10 +153,10 @@ public:
                 reinterpret_cast<NtQueryInformationFileFuncPtr>(
                     ntdll.get_proc_address("NtQueryInformationFile"));
 
-            ::IO_STATUS_BLOCK state;
+            io_status_block state;
             file_basic_information info;
 
-            ::NTSTATUS res = (*func_ptr)(handle_, &state,
+            long res = (*func_ptr)(handle_, &state,
                 &info, sizeof(info), file_basic_information::id);
 
             if (res != 0)
