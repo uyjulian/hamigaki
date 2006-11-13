@@ -109,7 +109,8 @@ public:
     explicit nt_file(const boost::filesystem::path& p, ::DWORD flags=0)
     {
         handle_ = ::CreateFileA(
-            p.native_file_string().c_str(), 0, 0, 0,
+            p.native_file_string().c_str(), 0,
+            FILE_SHARE_READ|FILE_SHARE_WRITE, 0,
             OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS|flags, 0);
     }
 
