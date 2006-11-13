@@ -187,7 +187,7 @@ private:
         const wchar_t unc[] = L"UNC\\";
         std::size_t unc_size = sizeof(unc)/sizeof(wchar_t) - 1;
 
-        if (std::wmemcmp(src, unc, unc_size) == 0)
+        if ((src_size > unc_size) && (std::wmemcmp(src, unc, unc_size) == 0))
         {
             src += (unc_size-2);
             *src = '\\';
