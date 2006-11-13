@@ -30,7 +30,7 @@ status(const boost::filesystem::path& p, int& ec);
 inline file_status status(const boost::filesystem::path& p)
 {
     int ec;
-    const file_status& s = status(p, ec);
+    const file_status& s = filesystem::status(p, ec);
     if (ec != 0)
     {
         throw boost::filesystem::filesystem_error(
@@ -46,7 +46,7 @@ symlink_status(const boost::filesystem::path& p, int& ec);
 inline file_status symlink_status(const boost::filesystem::path& p)
 {
     int ec;
-    const file_status& s = symlink_status(p, ec);
+    const file_status& s = filesystem::symlink_status(p, ec);
     if (ec != 0)
     {
         throw boost::filesystem::filesystem_error(
