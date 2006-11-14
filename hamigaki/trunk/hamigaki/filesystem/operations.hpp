@@ -89,6 +89,76 @@ inline bool is_symlink(const boost::filesystem::path& p)
 HAMIGAKI_FILESYSTEM_DECL
 boost::filesystem::path symlink_target(const boost::filesystem::path& p);
 
+// operations functions
+HAMIGAKI_FILESYSTEM_DECL
+int create_hard_link(
+    const boost::filesystem::path& old_fp,
+    const boost::filesystem::path& new_fp, int& ec);
+
+inline void create_hard_link(
+    const boost::filesystem::path& old_fp,
+    const boost::filesystem::path& new_fp)
+{
+    int ec;
+    if (filesystem::create_hard_link(old_fp, new_fp, ec) != 0)
+    {
+        throw boost::filesystem::filesystem_error(
+            "hamigaki::filesystem::create_hard_link", old_fp, new_fp, ec);
+    }
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+int create_file_symlink(
+    const boost::filesystem::path& old_fp,
+    const boost::filesystem::path& new_fp, int& ec);
+
+inline void create_file_symlink(
+    const boost::filesystem::path& old_fp,
+    const boost::filesystem::path& new_fp)
+{
+    int ec;
+    if (filesystem::create_file_symlink(old_fp, new_fp, ec) != 0)
+    {
+        throw boost::filesystem::filesystem_error(
+            "hamigaki::filesystem::create_file_symlink", old_fp, new_fp, ec);
+    }
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+int create_directory_symlink(
+    const boost::filesystem::path& old_dp,
+    const boost::filesystem::path& new_dp, int& ec);
+
+inline void create_directory_symlink(
+    const boost::filesystem::path& old_dp,
+    const boost::filesystem::path& new_dp)
+{
+    int ec;
+    if (filesystem::create_directory_symlink(old_dp, new_dp, ec) != 0)
+    {
+        throw boost::filesystem::filesystem_error(
+            "hamigaki::filesystem::create_directory_symlink",
+            old_dp, new_dp, ec);
+    }
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+int create_symlink(
+    const boost::filesystem::path& old_fp,
+    const boost::filesystem::path& new_fp, int& ec);
+
+inline void create_symlink(
+    const boost::filesystem::path& old_fp,
+    const boost::filesystem::path& new_fp)
+{
+    int ec;
+    if (filesystem::create_symlink(old_fp, new_fp, ec) != 0)
+    {
+        throw boost::filesystem::filesystem_error(
+            "hamigaki::filesystem::create_symlink", old_fp, new_fp, ec);
+    }
+}
+
 } } // End namespaces filesystem, hamigaki.
 
 #ifdef BOOST_HAS_ABI_HEADERS

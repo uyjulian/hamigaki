@@ -11,9 +11,14 @@
 #define BOOST_ALL_NO_LIB
 #define NOMINMAX
 
+#if !defined(_WIN32_WINNT)
+    #define _WIN32_WINNT 0x0500
+#endif
+
 #include <boost/config.hpp>
 
 #include <hamigaki/filesystem/operations.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/assert.hpp>
 #include <cstring>
@@ -22,6 +27,8 @@
 #if defined(BOOST_WINDOWS)
     #include <hamigaki/binary_io.hpp>
     #include <windows.h>
+
+    #include <hamigaki/detail/windows/dynamic_link_library.hpp>
 
     #if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0500)
         #include "detail/reparse_point.hpp"
@@ -42,6 +49,16 @@ namespace
 {
 
 #if defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
+// from winbase.h
+struct symlink_flags
+{
+    static const ::DWORD directory = 0x00000001;
+};
+
+// from winbase.h
+typedef ::BOOL (__stdcall *CreateSymbolicLinkWFuncPtr)(
+    const wchar_t*, const wchar_t*, ::DWORD);
+
 inline std::string to_multi_byte(const wchar_t* s, int n)
 {
     int size = ::WideCharToMultiByte(CP_ACP, 0, s, n, 0, 0, 0, 0);
@@ -57,15 +74,36 @@ inline std::string to_multi_byte(const wchar_t* s, int n)
     return std::string(&buf[0], size);
 }
 
+inline std::wstring to_wide(const char* s, int n)
+{
+    int size = ::MultiByteToWideChar(CP_ACP, 0, s, n, 0, 0);
+    if (size == 0)
+        return std::wstring();
+
+    std::vector<wchar_t> buf(size);
+    size = ::MultiByteToWideChar(CP_ACP, 0, s, n, &buf[0], size);
+    if (size == 0)
+        return std::wstring();
+    buf.resize(size);
+
+    return std::wstring(&buf[0], size);
+}
+
+inline std::wstring to_wide(const std::string& s)
+{
+    return to_wide(s.c_str(), static_cast<int>(s.size()));
+}
+
 class nt_file : private boost::noncopyable
 {
 public:
-    explicit nt_file(const boost::filesystem::path& p) : ec_(0)
+    nt_file(const boost::filesystem::path& p, ::DWORD mode, ::DWORD flags)
+        : ec_(0)
     {
         handle_ = ::CreateFileA(
-            p.native_file_string().c_str(), 0,
+            p.native_file_string().c_str(), mode,
             FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING,
-            FILE_FLAG_BACKUP_SEMANTICS|FILE_FLAG_OPEN_REPARSE_POINT, 0);
+            FILE_FLAG_BACKUP_SEMANTICS|flags, 0);
 
         if (!is_valid())
             ec_ = ::GetLastError();
@@ -157,6 +195,58 @@ public:
         return !p.empty();
     }
 
+    bool set_reparse_point(const boost::filesystem::path& p)
+    {
+        BOOST_ASSERT(is_valid());
+
+        std::wstring sub_name(L"\\\?\?\\");
+        const std::wstring& ws =
+            to_wide(system_complete(p).native_file_string());
+        if ((ws.size() > 2) && (ws[0] == L'\\') && (ws[1] == L'\\'))
+            sub_name += L"UNC\\";
+        sub_name += ws;
+
+        const std::size_t top_hedaer_size =
+            binary_size<detail::reparse_data_header>::type::value;
+        const std::size_t mt_hedaer_size =
+            binary_size<detail::mount_point_header>::type::value;
+
+        std::size_t full_size =
+            top_hedaer_size + mt_hedaer_size +
+            (sub_name.size()+2) * sizeof(wchar_t);
+
+        std::vector<char> buf(full_size);
+
+        detail::reparse_data_header top_head;
+        top_head.tag = detail::mount_point_header::tag;
+        top_head.length = full_size - top_hedaer_size;
+        top_head.reserved = 0;
+        hamigaki::binary_write(&buf[0], top_head);
+
+        detail::mount_point_header mt_head;
+        mt_head.sub_name_offset = 0;
+        mt_head.sub_name_length = sub_name.size() * sizeof(wchar_t);
+        mt_head.print_name_offset = mt_head.sub_name_length + sizeof(wchar_t);
+        mt_head.print_name_length = 0;
+        hamigaki::binary_write(&buf[top_hedaer_size], mt_head);
+
+        std::memcpy(
+            &buf[top_hedaer_size+mt_hedaer_size],
+            sub_name.c_str(),
+            sub_name.size() * sizeof(wchar_t)
+        );
+
+        ::DWORD dummy = 0;
+        if (::DeviceIoControl(handle_, FSCTL_SET_REPARSE_POINT,
+            &buf[0], buf.size(), 0, 0, &dummy, 0) == 0)
+        {
+            ec_ = ::GetLastError();
+            return false;
+        }
+
+        return true;
+    }
+
 private:
     ::HANDLE handle_;
     ::DWORD ec_;
@@ -223,6 +313,58 @@ private:
         );
     }
 };
+
+class remove_directory_monitor : private boost::noncopyable
+{
+public:
+    explicit remove_directory_monitor(const char* ph)
+        : path_(ph), need_(true)
+    {
+    }
+
+    ~remove_directory_monitor()
+    {
+        if (need_)
+            ::RemoveDirectoryA(path_);
+    }
+
+    void release()
+    {
+        need_ = false;
+    }
+
+private:
+    const char* path_;
+    bool need_;
+};
+
+int create_symlink_impl(
+    const boost::filesystem::path& old_fp,
+    const boost::filesystem::path& new_fp, ::DWORD flags)
+{
+    int ec = ERROR_NOT_SUPPORTED;
+    try
+    {
+        hamigaki::detail::windows::dynamic_link_library dll("kernel32.dll");
+
+        CreateSymbolicLinkWFuncPtr func_ptr =
+            reinterpret_cast<CreateSymbolicLinkWFuncPtr>(
+                dll.get_proc_address("CreateSymbolicLinkW"));
+        ec = 0;
+
+        ::BOOL res = (*func_ptr)(
+            to_wide(new_fp.native_file_string()).c_str(),
+            to_wide(old_fp.native_file_string()).c_str(), flags);
+
+        if (res == FALSE)
+            return ::GetLastError();
+    }
+    catch (const std::exception&)
+    {
+    }
+    return ec;
+}
+
 #endif // defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
 
 } // namespace
@@ -231,7 +373,7 @@ HAMIGAKI_FILESYSTEM_DECL
 boost::filesystem::path symlink_target(const boost::filesystem::path& p)
 {
 #if defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
-    nt_file f(p);
+    nt_file f(p, 0, FILE_FLAG_OPEN_REPARSE_POINT);
     if (!f.is_valid())
     {
         throw boost::filesystem::filesystem_error(
@@ -263,7 +405,127 @@ boost::filesystem::path symlink_target(const boost::filesystem::path& p)
 #endif // else defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
 }
 
+HAMIGAKI_FILESYSTEM_DECL
+int create_hard_link(
+    const boost::filesystem::path& old_fp,
+    const boost::filesystem::path& new_fp, int& ec)
+{
+    ec = ERROR_NOT_SUPPORTED;
+    try
+    {
+        hamigaki::detail::windows::dynamic_link_library dll("kernel32.dll");
+
+        typedef ::BOOL (__stdcall *CreateHardLinkAFuncPtr)(
+            const char*, const char*, void*);
+
+        CreateHardLinkAFuncPtr func_ptr =
+            reinterpret_cast<CreateHardLinkAFuncPtr>(
+                dll.get_proc_address("CreateHardLinkA"));
+        ec = 0;
+
+        ::BOOL res = (*func_ptr)(
+            new_fp.native_file_string().c_str(),
+            old_fp.native_file_string().c_str(), 0);
+
+        if (res == FALSE)
+        {
+            ec = ::GetLastError();
+            return ec;
+        }
+    }
+    catch (const std::exception&)
+    {
+    }
+    return ec;
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+int create_file_symlink(
+    const boost::filesystem::path& old_fp,
+    const boost::filesystem::path& new_fp, int& ec)
+{
+#if defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
+    ec = create_symlink_impl(old_fp, new_fp, 0);
+    return ec;
+#else // else defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
+    ec = ERROR_NOT_SUPPORTED;
+    return ec;
+#endif // else defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+int create_directory_symlink(
+    const boost::filesystem::path& old_dp,
+    const boost::filesystem::path& new_dp, int& ec)
+{
+#if defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
+    ec = create_symlink_impl(old_dp, new_dp, symlink_flags::directory);
+    if (ec != ERROR_NOT_SUPPORTED)
+        return ec;
+
+    ec = 0;
+
+    const std::string& new_name = new_dp.native_directory_string();
+    const char* new_str = new_name.c_str();
+
+    if (::CreateDirectoryA(new_str, 0) == FALSE)
+    {
+        ec = ::GetLastError();
+        return ec;
+    }
+    remove_directory_monitor mon(new_str);
+
+    nt_file file(new_dp, GENERIC_WRITE, 0);
+    if (file.is_valid())
+    {
+        if (file.set_reparse_point(old_dp))
+            mon.release();
+        else
+            ec = file.native_error();
+    }
+    else
+        ec = file.native_error();
+
+    return ec;
+#else // else defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
+    ec = ERROR_NOT_SUPPORTED;
+    return ec;
+#endif // else defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+int create_symlink(
+    const boost::filesystem::path& old_fp,
+    const boost::filesystem::path& new_fp, int& ec)
+{
+    ::DWORD attr = ::GetFileAttributes(old_fp.native_file_string().c_str());
+    if (attr == 0xFFFFFFFF)
+    {
+        ec = ERROR_PATH_NOT_FOUND;
+        return ec;
+    }
+
+    if ((attr & FILE_ATTRIBUTE_DIRECTORY) != 0)
+        return create_directory_symlink(old_fp, new_fp, ec);
+    else
+        return create_file_symlink(old_fp, new_fp, ec);
+}
+
 #else // not defined(BOOST_WINDOWS)
+inline int create_symlink_impl(
+    const boost::filesystem::path& old_fp,
+    const boost::filesystem::path& new_fp, int& ec)
+{
+    ec = 0;
+
+    int res = ::symlink(
+        old_fp.native_file_string().c_str(),
+        new_fp.native_file_string().c_str());
+    if (res == -1)
+        ec = errno;
+
+    return ec;
+}
 
 HAMIGAKI_FILESYSTEM_DECL
 boost::filesystem::path symlink_target(const boost::filesystem::path& p)
@@ -303,6 +565,45 @@ boost::filesystem::path symlink_target(const boost::filesystem::path& p)
         std::string(&buf[0], buf.size()), boost::filesystem::native);
 }
 
+HAMIGAKI_FILESYSTEM_DECL
+int create_hard_link(
+    const boost::filesystem::path& old_fp,
+    const boost::filesystem::path& new_fp, int& ec)
+{
+    ec = 0;
+
+    int res = ::link(
+        old_fp.native_file_string().c_str(),
+        new_fp.native_file_string().c_str());
+    if (res == -1)
+        ec = errno;
+
+    return ec;
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+int create_file_symlink(
+    const boost::filesystem::path& old_fp,
+    const boost::filesystem::path& new_fp, int& ec)
+{
+    return create_symlink_impl(old_fp, new_fp, ec);
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+int create_directory_symlink(
+    const boost::filesystem::path& old_fp,
+    const boost::filesystem::path& new_fp, int& ec)
+{
+    return create_symlink_impl(old_fp, new_fp, ec);
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+int create_symlink(
+    const boost::filesystem::path& old_fp,
+    const boost::filesystem::path& new_fp, int& ec)
+{
+    return create_symlink_impl(old_fp, new_fp, ec);
+}
 #endif
 
 } } // End namespaces filesystem, hamigaki.
