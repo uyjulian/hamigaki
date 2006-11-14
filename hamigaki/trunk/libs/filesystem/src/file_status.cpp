@@ -11,6 +11,10 @@
 #define BOOST_ALL_NO_LIB
 #define NOMINMAX
 
+#if !defined(_WIN32_WINNT)
+    #define _WIN32_WINNT 0x0500
+#endif
+
 #include <boost/config.hpp>
 
 #include <hamigaki/filesystem/operations.hpp>
