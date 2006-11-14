@@ -25,6 +25,14 @@ template filesystem
     ;
 
 
+exe link
+    :
+        link.cpp
+        <template>filesystem
+    :
+        find-boost-filesystem-lib
+    ;
+
 exe read_link
     :
         read_link.cpp
