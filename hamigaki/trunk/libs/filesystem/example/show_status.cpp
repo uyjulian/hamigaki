@@ -75,11 +75,13 @@ int main(int argc, char* argv[])
             std::cout << "\t\t\tSet-group-ID\n";
         if ((s.attributes() & fs_ex::sticky) != 0)
             std::cout << "\t\t\tSticky\n";
+        if ((s.attributes() & fs_ex::read_only) != 0)
+            std::cout << "\t\t\tRead only\n";
         if ((s.attributes() & fs_ex::hidden) != 0)
             std::cout << "\t\t\tHidden\n";
-        if ((s.attributes() & fs_ex::for_system) != 0)
+        if ((s.attributes() & fs_ex::system) != 0)
             std::cout << "\t\t\tSystem\n";
-        if ((s.attributes() & fs_ex::for_archive) != 0)
+        if ((s.attributes() & fs_ex::archive) != 0)
             std::cout << "\t\t\tArchive\n";
         if ((s.attributes() & fs_ex::temporary) != 0)
             std::cout << "\t\t\tTemporary\n";

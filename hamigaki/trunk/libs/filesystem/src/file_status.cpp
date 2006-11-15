@@ -85,12 +85,14 @@ template<class Data>
 inline file_attributes make_attr(const Data& data)
 {
     file_attributes attr = 0;
+    if ((data.dwFileAttributes & FILE_ATTRIBUTE_READONLY) != 0)
+        attr |= read_only;
     if ((data.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) != 0)
         attr |= hidden;
     if ((data.dwFileAttributes & FILE_ATTRIBUTE_SYSTEM) != 0)
-        attr |= for_system;
+        attr |= system;
     if ((data.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE) != 0)
-        attr |= for_archive;
+        attr |= archive;
     if ((data.dwFileAttributes & FILE_ATTRIBUTE_SPARSE_FILE) != 0)
         attr |= sparse;
     if ((data.dwFileAttributes & FILE_ATTRIBUTE_TEMPORARY) != 0)
@@ -208,12 +210,12 @@ file_status status(const boost::filesystem::path& p, int& ec)
 
     file_attributes attr = make_attr(data);
 
-    file_permissions perm = 0666;
+    file_permissions perm = 0600;
     if ((data.dwFileAttributes & FILE_ATTRIBUTE_READONLY) != 0)
-        perm &= 0444;
+        perm &= ~0200;
 
     if (is_executable_path(p) || (type == directory_file))
-        perm |= 0111;
+        perm |= 0100;
 
     file_status s(type);
     s.attributes(attr);
@@ -274,12 +276,12 @@ file_status symlink_status(const boost::filesystem::path& p, int& ec)
 
     file_attributes attr = make_attr(data);
 
-    file_permissions perm = 0666;
+    file_permissions perm = 0600;
     if ((data.dwFileAttributes & FILE_ATTRIBUTE_READONLY) != 0)
-        perm &= 0444;
+        perm &= ~0200;
 
     if (is_executable_path(p) || (type == directory_file))
-        perm |= 0111;
+        perm |= 0100;
 
     file_status s(type);
     s.attributes(attr);
@@ -334,6 +336,8 @@ inline file_status make_file_status(
     if ((data.st_mode & S_ISVTX) != 0)
         attr |= sticky;
 
+    if ((data.st_mode & 0222) == 0)
+        attr |= read_only;
     if (p.has_leaf() && (p.leaf()[0] == '.'))
         attr |= hidden;
 
