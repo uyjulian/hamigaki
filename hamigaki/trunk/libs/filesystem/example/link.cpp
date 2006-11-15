@@ -23,20 +23,20 @@ int main(int argc, char* argv[])
             ((argc == 4) && (std::strcmp(argv[1], "-s") == 0))
         ))
         {
-            std::cerr << "Usage: link [-s] (path) (target)" << std::endl;
+            std::cerr << "Usage: link [-s] (target) (path)" << std::endl;
             return 1;
         }
 
         if (argc == 3)
         {
-            fs::path ph(argv[1], fs::native);
-            fs::path target(argv[2], fs::native);
+            fs::path target(argv[1], fs::native);
+            fs::path ph(argv[2], fs::native);
             fs_ex::create_hard_link(target, ph);
         }
         else
         {
-            fs::path ph(argv[2], fs::native);
-            fs::path target(argv[3], fs::native);
+            fs::path target(argv[2], fs::native);
+            fs::path ph(argv[3], fs::native);
             fs_ex::create_symlink(target, ph);
         }
 
