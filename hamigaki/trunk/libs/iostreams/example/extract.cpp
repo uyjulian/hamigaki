@@ -15,6 +15,7 @@
 
 #include <boost/config.hpp>
 
+#include <hamigaki/filesystem/operations.hpp>
 #include <hamigaki/iostreams/device/lzh_file.hpp>
 #include <hamigaki/iostreams/device/tbz2_file.hpp>
 #include <hamigaki/iostreams/device/tgz_file.hpp>
@@ -28,102 +29,24 @@
 #include <memory>
 #include <stdexcept>
 
-#if defined(BOOST_WINDOWS)
-    #include <windows.h>
-#elif defined(BOOST_HAS_UNISTD_H)
-    #include <sys/stat.h>
-    #include <unistd.h>
-#endif
-
+namespace fs_ex = hamigaki::filesystem;
 namespace io_ex = hamigaki::iostreams;
 namespace algo = boost::algorithm;
 namespace fs = boost::filesystem;
 namespace io = boost::iostreams;
 
-struct timestamp
-{
-    boost::int64_t seconds;
-    boost::uint32_t nanoseconds;
-
-    timestamp() : seconds(0), nanoseconds(0)
-    {
-    }
-
-    timestamp(std::time_t sec, boost::uint32_t nsec)
-        : seconds(sec), nanoseconds(nsec)
-    {
-    }
-
-    explicit timestamp(const io_ex::tar::timestamp& ts)
-        : seconds(ts.seconds), nanoseconds(ts.nanoseconds)
-    {
-    }
-
-    std::time_t to_time_t() const
-    {
-        // round up
-        if (nanoseconds != 0)
-            return static_cast<std::time_t>(seconds + 1);
-        else
-            return static_cast<std::time_t>(seconds);
-    }
-
-    boost::uint64_t to_file_time() const
-    {
-        // round up
-        boost::int64_t sec = seconds;
-        boost::uint32_t nsec = nanoseconds + 99;
-        if (nsec >= 1000000000)
-        {
-            nsec -= 1000000000;
-            ++sec;
-        }
-
-        return
-            static_cast<boost::uint64_t>(sec + 11644473600LL) * 10000000ull +
-            (nsec / 100);
-    }
-
-    static timestamp from_time_t(std::time_t t)
-    {
-        return timestamp(t, 0);
-    }
-
-    static timestamp from_file_time(boost::uint64_t ft)
-    {
-        boost::int64_t sec = static_cast<boost::int64_t>(ft / 10000000ull);
-
-        boost::uint32_t nsec =
-            static_cast<boost::uint32_t>(ft % 10000000ull) * 100;
-
-        return timestamp(sec - 11644473600LL, nsec);
-    }
-};
-
-enum file_type
-{
-    regular_file,
-    hard_link_file,
-    symlink_file,
-    block_file,
-    character_file,
-    directory_file,
-    fifo_file,
-    socket_file,
-    type_unknown
-};
-
 struct entry
 {
-    file_type type;
+    fs_ex::file_type type;
     boost::filesystem::path path;
     boost::filesystem::path link_path;
+    boost::filesystem::path hard_link_path;
     boost::optional<boost::uintmax_t> compressed_size;
     boost::optional<boost::uintmax_t> file_size;
-    boost::optional<timestamp> last_write_time;
-    boost::optional<timestamp> last_access_time;
-    boost::optional<timestamp> last_change_time;
-    boost::optional<timestamp> creation_time;
+    boost::optional<fs_ex::timestamp> last_write_time;
+    boost::optional<fs_ex::timestamp> last_access_time;
+    boost::optional<fs_ex::timestamp> last_change_time;
+    boost::optional<fs_ex::timestamp> creation_time;
     boost::optional<boost::uint16_t> attributes;
     boost::optional<boost::uint16_t> permission;
     boost::optional<boost::intmax_t> uid;
@@ -134,7 +57,7 @@ struct entry
 
     std::string path_string() const
     {
-        if (type == directory_file)
+        if (type == fs_ex::directory_file)
             return path.native_directory_string();
         else
             return path.native_file_string();
@@ -152,11 +75,11 @@ struct header_traits<io_ex::lha::header>
         entry e;
 
         if (head.is_symbolic_link())
-            e.type = symlink_file;
+            e.type = fs_ex::symlink_file;
         else if (head.is_directory())
-            e.type = directory_file;
+            e.type = fs_ex::directory_file;
         else
-            e.type = regular_file;
+            e.type = fs_ex::regular_file;
 
         e.path = head.path;
         e.link_path = head.link_path;
@@ -166,12 +89,15 @@ struct header_traits<io_ex::lha::header>
         if (head.timestamp)
         {
             const io_ex::lha::windows_timestamp& ts = head.timestamp.get();
-            e.last_write_time = timestamp::from_file_time(ts.last_write_time);
-            e.last_access_time = timestamp::from_file_time(ts.last_access_time);
-            e.creation_time = timestamp::from_file_time(ts.creation_time);
+            e.last_write_time =
+                fs_ex::timestamp::from_windows_file_time(ts.last_write_time);
+            e.last_access_time =
+                fs_ex::timestamp::from_windows_file_time(ts.last_access_time);
+            e.creation_time =
+                fs_ex::timestamp::from_windows_file_time(ts.creation_time);
         }
         else
-            e.last_write_time = timestamp::from_time_t(head.update_time);
+            e.last_write_time = fs_ex::timestamp::from_time_t(head.update_time);
 
         e.attributes = head.attributes;
 
@@ -199,26 +125,42 @@ struct header_traits<io_ex::tar::header>
     {
         entry e;
 
-        if (head.type == io_ex::tar::type::link)
-            e.type = hard_link_file;
-        else if (head.type == io_ex::tar::type::symbolic_link)
-            e.type = symlink_file;
+        if (head.type == io_ex::tar::type::symbolic_link)
+            e.type = fs_ex::symlink_file;
         else if (head.type == io_ex::tar::type::directory)
-            e.type = directory_file;
+            e.type = fs_ex::directory_file;
         else
-            e.type = regular_file;
+            e.type = fs_ex::regular_file;
 
         e.path = head.path;
-        e.link_path = head.link_name;
+        if (head.type == io_ex::tar::type::link)
+            e.hard_link_path = head.link_name;
+        else
+            e.link_path = head.link_name;
         e.compressed_size = head.size;
         e.file_size = head.size;
 
         if (head.modified_time)
-            e.last_write_time = timestamp(head.modified_time.get());
+        {
+            e.last_write_time =
+                fs_ex::timestamp(
+                    head.modified_time->seconds,
+                    head.modified_time->nanoseconds);
+        }
         if (head.access_time)
-            e.last_access_time = timestamp(head.access_time.get());
+        {
+            e.last_access_time =
+                fs_ex::timestamp(
+                    head.access_time->seconds,
+                    head.access_time->nanoseconds);
+        }
         if (head.change_time)
-            e.last_change_time = timestamp(head.change_time.get());
+        {
+            e.last_change_time =
+                fs_ex::timestamp(
+                    head.change_time->seconds,
+                    head.change_time->nanoseconds);
+        }
 
         e.permission = head.mode;
         e.uid = head.uid;
@@ -240,11 +182,11 @@ struct header_traits<io_ex::zip::header>
         entry e;
 
         if (head.is_symbolic_link())
-            e.type = symlink_file;
+            e.type = fs_ex::symlink_file;
         else if (head.is_directory())
-            e.type = directory_file;
+            e.type = fs_ex::directory_file;
         else
-            e.type = regular_file;
+            e.type = fs_ex::regular_file;
 
         e.path = head.path;
         e.link_path = head.link_path;
@@ -252,14 +194,23 @@ struct header_traits<io_ex::zip::header>
         e.file_size = head.file_size;
 
         if (head.modified_time)
-            e.last_write_time = timestamp::from_time_t(*head.modified_time);
+        {
+            e.last_write_time =
+                fs_ex::timestamp::from_time_t(*head.modified_time);
+        }
         else
-            e.last_write_time = timestamp::from_time_t(head.update_time);
+            e.last_write_time = fs_ex::timestamp::from_time_t(head.update_time);
 
         if (head.access_time)
-            e.last_access_time = timestamp::from_time_t(*head.access_time);
+        {
+            e.last_access_time =
+                fs_ex::timestamp::from_time_t(*head.access_time);
+        }
         if (head.creation_time)
-            e.creation_time = timestamp::from_time_t(*head.creation_time);
+        {
+            e.creation_time =
+                fs_ex::timestamp::from_time_t(*head.creation_time);
+        }
 
         e.attributes = head.attributes;
         e.permission = head.permission;
@@ -335,87 +286,6 @@ private:
     }
 };
 
-#if defined(BOOST_WINDOWS)
-::FILETIME make_file_time(boost::uint64_t n)
-{
-    ::FILETIME ft;
-    ft.dwLowDateTime = static_cast<boost::uint32_t>(n);
-    ft.dwHighDateTime = static_cast<boost::uint32_t>(n >> 32);
-    return ft;
-}
-
-void set_timestamp_impl(::HANDLE handle, const entry& e)
-{
-    ::FILETIME creation_time;
-    if (e.creation_time)
-        creation_time = make_file_time(e.creation_time->to_file_time());
-
-    ::FILETIME last_write_time;
-    if (e.last_write_time)
-        last_write_time = make_file_time(e.last_write_time->to_file_time());
-
-    ::FILETIME last_access_time;
-    if (e.last_access_time)
-        last_access_time = make_file_time(e.last_access_time->to_file_time());
-
-    ::SetFileTime(
-        handle,
-        e.creation_time ? &creation_time : static_cast< ::FILETIME*>(0),
-        e.last_access_time ? &last_access_time : static_cast< ::FILETIME*>(0),
-        e.last_write_time ? &last_write_time : static_cast< ::FILETIME*>(0)
-    );
-}
-
-void set_file_timestamp(const fs::path& ph, const entry& e)
-{
-    ::HANDLE handle = ::CreateFileA(
-        ph.native_file_string().c_str(), GENERIC_WRITE, 0, 0,
-        OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
-    if (handle == INVALID_HANDLE_VALUE)
-        throw std::runtime_error("CreateFile error");
-    set_timestamp_impl(handle, e);
-    ::CloseHandle(handle);
-}
-
-void set_directory_timestamp(const fs::path& ph, const entry& e)
-{
-    ::HANDLE handle = ::CreateFileA(
-        ph.native_directory_string().c_str(), GENERIC_WRITE, 0, 0,
-        OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, 0);
-    // Win9X does not support FILE_FLAG_BACKUP_SEMANTICS flag
-    if (handle == INVALID_HANDLE_VALUE)
-        return;
-    set_timestamp_impl(handle, e);
-    ::CloseHandle(handle);
-}
-
-void create_hard_link(const fs::path& old_fp, const fs::path& new_fp)
-{
-    throw std::runtime_error("hard link is not supported");
-}
-
-void create_symlink(const fs::path& old_fp, const fs::path& new_fp)
-{
-    throw std::runtime_error("symbolic link is not supported");
-}
-#elif defined(BOOST_HAS_UNISTD_H)
-void create_hard_link(const fs::path& old_fp, const fs::path& new_fp)
-{
-    ::link(
-        old_fp.native_file_string().c_str(),
-        new_fp.native_file_string().c_str()
-    );
-}
-
-void create_symlink(const fs::path& old_fp, const fs::path& new_fp)
-{
-    ::symlink(
-        old_fp.native_file_string().c_str(),
-        new_fp.native_file_string().c_str()
-    );
-}
-#endif
-
 int main(int argc, char* argv[])
 {
     try
@@ -476,8 +346,7 @@ int main(int argc, char* argv[])
             io::gzip_decompressor gzip;
             io_ex::file_source src(filename);
             char buf[4096];
-            std::streamsize amt =
-                io::read(boost::ref(gzip), src, buf, sizeof(buf));
+            std::streamsize amt = io::read(gzip, src, buf, sizeof(buf));
 
             const std::string& org_name = gzip.file_name();
             if (!org_name.empty())
@@ -526,11 +395,11 @@ int main(int argc, char* argv[])
 
             std::cout << e.path_string() << '\n';
 
-            if (e.type == hard_link_file)
-                ::create_hard_link(e.link_path, e.path);
-            else if (e.type == symlink_file)
-                ::create_symlink(e.link_path, e.path);
-            else if (e.type == directory_file)
+            if (!e.hard_link_path.empty())
+                fs_ex::create_hard_link(e.hard_link_path, e.path);
+            else if (e.type == fs_ex::symlink_file)
+                fs_ex::create_symlink(e.link_path, e.path);
+            else if (e.type == fs_ex::directory_file)
                 fs::create_directories(e.path);
             else
             {
@@ -544,37 +413,47 @@ int main(int argc, char* argv[])
                 );
             }
 
-#if defined(BOOST_WINDOWS)
+            // Note:
+            // The POSIX chown() clears S_ISUID/S_ISGID bits.
+            // So, we must call owner() before calling file_mode().
+            int ec = 0;
+            fs_ex::change_owner(e.path, e.uid, e.gid, ec);
+
+            fs_ex::file_attributes attr = 0;
+            fs_ex::file_permissions perm =
+                (e.type == fs_ex::directory_file) ? 0755 : 0644;
+
             if (e.attributes)
             {
-                ::DWORD attr = e.attributes.get();
-                ::SetFileAttributes(e.path_string().c_str(), attr);
+                boost::uint16_t flags = e.attributes.get();
+                if ((flags & io_ex::msdos_attributes::read_only) != 0)
+                    attr |= fs_ex::read_only;
+                if ((flags & io_ex::msdos_attributes::hidden) != 0)
+                    attr |= fs_ex::hidden;
+                if ((flags & io_ex::msdos_attributes::archive) != 0)
+                    attr |= fs_ex::archive;
             }
-#elif defined(BOOST_HAS_UNISTD_H)
-            if (e.permission)
-                ::chmod(e.path_string().c_str(), e.permission.get());
-            if (e.uid || e.gid)
-            {
-                ::chown(
-                    e.path_string().c_str(),
-                    e.uid ? e.uid.get() : -1,
-                    e.gid ? e.gid.get() : -1
-                );
-            }
-#endif
 
-#if defined(BOOST_WINDOWS)
-            if (e.last_write_time || e.last_access_time || e.creation_time)
+            if (e.permission)
             {
-                if (e.type == directory_file)
-                    set_directory_timestamp(e.path, e);
-                else
-                    set_file_timestamp(e.path, e);
+                boost::uint16_t flags = e.permission.get();
+                if ((flags & 04000) != 0)
+                    attr |= fs_ex::set_uid;
+                if ((flags & 02000) != 0)
+                    attr |= fs_ex::set_gid;
+                if ((flags & 01000) != 0)
+                    attr |= fs_ex::sticky;
+                perm = flags & 0777;
             }
-#else
-            if (e.type != directory_file)
-                fs::last_write_time(e.path, e.last_write_time->to_time_t());
-#endif
+
+            fs_ex::file_mode(e.path, attr, perm);
+
+            if (e.last_write_time)
+                fs_ex::last_write_time(e.path, e.last_write_time.get());
+            if (e.last_access_time)
+                fs_ex::last_access_time(e.path, e.last_access_time.get());
+            if (e.creation_time)
+                fs_ex::creation_time(e.path, e.creation_time.get());
         }
 
         return 0;

@@ -57,6 +57,7 @@ exe extract
     :
         extract.cpp
         <template>iostreams
+        <lib>../../filesystem/build/hamigaki_filesystem
     :
         [ cond $(ZLIB_LIBPATH) : <library-path>$(ZLIB_LIBPATH) : ]
         [ cond $(BZIP2_LIBPATH) : <library-path>$(BZIP2_LIBPATH) : ]
