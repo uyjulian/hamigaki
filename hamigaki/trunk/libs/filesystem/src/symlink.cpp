@@ -498,8 +498,8 @@ int create_symlink(
     const boost::filesystem::path& old_fp,
     const boost::filesystem::path& new_fp, int& ec)
 {
-    ::DWORD attr = ::GetFileAttributes(old_fp.native_file_string().c_str());
-    if (attr == 0xFFFFFFFF)
+    ::DWORD attr = ::GetFileAttributesA(old_fp.native_file_string().c_str());
+    if (attr == INVALID_FILE_ATTRIBUTES)
     {
         ec = ERROR_PATH_NOT_FOUND;
         return ec;
