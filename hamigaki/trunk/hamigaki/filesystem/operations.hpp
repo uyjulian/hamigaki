@@ -89,6 +89,24 @@ inline bool is_symlink(const boost::filesystem::path& p)
 HAMIGAKI_FILESYSTEM_DECL
 boost::filesystem::path symlink_target(const boost::filesystem::path& p);
 
+HAMIGAKI_FILESYSTEM_DECL
+void file_mode(
+    const boost::filesystem::path& p,
+    file_attributes attr, file_permissions perm);
+
+HAMIGAKI_FILESYSTEM_DECL
+void last_write_time(
+    const boost::filesystem::path& p, const timestamp& new_time);
+
+HAMIGAKI_FILESYSTEM_DECL
+void last_access_time(
+    const boost::filesystem::path& p, const timestamp& new_time);
+
+HAMIGAKI_FILESYSTEM_DECL
+void creation_time(
+    const boost::filesystem::path& p, const timestamp& new_time);
+
+
 // operations functions
 HAMIGAKI_FILESYSTEM_DECL
 int create_hard_link(
@@ -156,6 +174,44 @@ inline void create_symlink(
     {
         throw boost::filesystem::filesystem_error(
             "hamigaki::filesystem::create_symlink", old_fp, new_fp, ec);
+    }
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+int change_owner(
+    const boost::filesystem::path& p,
+    const boost::optional<boost::intmax_t>& new_uid,
+    const boost::optional<boost::intmax_t>& new_gid, int& ec);
+
+inline void change_owner(
+    const boost::filesystem::path& p,
+    const boost::optional<boost::intmax_t>& new_uid,
+    const boost::optional<boost::intmax_t>& new_gid)
+{
+    int ec;
+    if (filesystem::change_owner(p, new_uid, new_gid, ec) != 0)
+    {
+        throw boost::filesystem::filesystem_error(
+            "hamigaki::filesystem::change_owner", p, ec);
+    }
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+int change_symlink_owner(
+    const boost::filesystem::path& p,
+    const boost::optional<boost::intmax_t>& new_uid,
+    const boost::optional<boost::intmax_t>& new_gid, int& ec);
+
+inline void change_symlink_owner(
+    const boost::filesystem::path& p,
+    const boost::optional<boost::intmax_t>& new_uid,
+    const boost::optional<boost::intmax_t>& new_gid)
+{
+    int ec;
+    if (filesystem::change_symlink_owner(p, new_uid, new_gid, ec) != 0)
+    {
+        throw boost::filesystem::filesystem_error(
+            "hamigaki::filesystem::change_symlink_owner", p, ec);
     }
 }
 

@@ -21,6 +21,7 @@
 #include <boost/filesystem/convenience.hpp>
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/none.hpp>
 
 #if defined(BOOST_WINDOWS)
     #include <windows.h>
@@ -32,6 +33,7 @@
 #else
     #include <sys/stat.h>
     #include <errno.h>
+    #include <utime.h>
 #endif
 
 namespace hamigaki { namespace filesystem {
@@ -81,6 +83,17 @@ inline timestamp to_timestamp(const ::FILETIME& ft)
     return timestamp::from_windows_file_time(n);
 }
 
+inline ::FILETIME to_file_time(const timestamp& ts)
+{
+    boost::uint64_t n = ts.to_windows_file_time();
+
+    ::FILETIME tmp;
+    tmp.dwLowDateTime  = static_cast<boost::uint32_t>((n >> 32));
+    tmp.dwHighDateTime = static_cast<boost::uint32_t>((n      ));
+
+    return tmp;
+}
+
 template<class Data>
 inline file_attributes make_attr(const Data& data)
 {
@@ -120,18 +133,18 @@ inline bool is_executable_path(const boost::filesystem::path& p)
 namespace
 {
 
-class nt_file : private boost::noncopyable
+class file : private boost::noncopyable
 {
 public:
-    explicit nt_file(const boost::filesystem::path& p, ::DWORD flags=0)
+    file(
+        const boost::filesystem::path& p, ::DWORD access, ::DWORD flags)
     {
         handle_ = ::CreateFileA(
-            p.native_file_string().c_str(), 0,
-            FILE_SHARE_READ|FILE_SHARE_WRITE, 0,
-            OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS|flags, 0);
+            p.native_file_string().c_str(), access,
+            FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, flags, 0);
     }
 
-    ~nt_file()
+    ~file()
     {
         if (handle_ != INVALID_HANDLE_VALUE)
             ::CloseHandle(handle_);
@@ -143,6 +156,24 @@ public:
             return false;
 
         return ::GetFileInformationByHandle(handle_, &data) != 0;
+    }
+
+    bool set_file_time(
+        const boost::optional<timestamp>& creation_time,
+        const boost::optional<timestamp>& last_access_time,
+        const boost::optional<timestamp>& last_write_time)
+    {
+        if (handle_ == INVALID_HANDLE_VALUE)
+            return false;
+
+        ::FILETIME* nil = static_cast< ::FILETIME*>(0);
+
+        ::BOOL res = ::SetFileTime(
+            handle_,
+            creation_time    ? &to_file_time(*creation_time   ) : nil,
+            last_access_time ? &to_file_time(*last_access_time) : nil,
+            last_write_time  ? &to_file_time(*last_write_time ) : nil);
+        return res != FALSE;
     }
 
 #if defined(HAMIGAKI_FILESYSTEM_USE_NTFS_CHANGE_TIME)
@@ -194,7 +225,7 @@ file_status status(const boost::filesystem::path& p, int& ec)
     // Win9X doesn't support the reparse points.
     // So, it is only NT that reaches here.
 
-    nt_file f(p);
+    file f(p, 0, FILE_FLAG_BACKUP_SEMANTICS);
 
     ::BY_HANDLE_FILE_INFORMATION data;
     if (!f.get_file_information(data))
@@ -214,7 +245,7 @@ file_status status(const boost::filesystem::path& p, int& ec)
     if ((data.dwFileAttributes & FILE_ATTRIBUTE_READONLY) != 0)
         perm &= ~0200;
 
-    if (is_executable_path(p) || (type == directory_file))
+    if ((type == directory_file) || is_executable_path(p))
         perm |= 0100;
 
     file_status s(type);
@@ -280,7 +311,7 @@ file_status symlink_status(const boost::filesystem::path& p, int& ec)
     if ((data.dwFileAttributes & FILE_ATTRIBUTE_READONLY) != 0)
         perm &= ~0200;
 
-    if (is_executable_path(p) || (type == directory_file))
+    if ((type == directory_file) || is_executable_path(p))
         perm |= 0100;
 
     file_status s(type);
@@ -297,7 +328,7 @@ file_status symlink_status(const boost::filesystem::path& p, int& ec)
 
 #if defined(HAMIGAKI_FILESYSTEM_USE_NTFS_CHANGE_TIME)
     {
-        nt_file f(p, FILE_FLAG_OPEN_REPARSE_POINT);
+        file f(p, 0, FILE_FLAG_BACKUP_SEMANTICS|FILE_FLAG_OPEN_REPARSE_POINT);
         timestamp ts;
         if (f.get_last_change_time(ts))
             s.last_change_time(ts);
@@ -305,6 +336,137 @@ file_status symlink_status(const boost::filesystem::path& p, int& ec)
 #endif
 
     return s;
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+void file_mode(
+    const boost::filesystem::path& p, file_attributes attr, file_permissions)
+{
+    ::DWORD value = 0;
+
+    if ((attr & read_only) != 0)
+        value = FILE_ATTRIBUTE_READONLY;
+    if ((attr & hidden) != 0)
+        value = FILE_ATTRIBUTE_HIDDEN;
+    if ((attr & system) != 0)
+        value = FILE_ATTRIBUTE_SYSTEM;
+    if ((attr & archive) != 0)
+        value = FILE_ATTRIBUTE_ARCHIVE;
+    if ((attr & temporary) != 0)
+        value = FILE_ATTRIBUTE_TEMPORARY;
+    if ((attr & not_indexed) != 0)
+        value = FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
+
+    if (::SetFileAttributesA(p.native_file_string().c_str(), value) == FALSE)
+    {
+        ::DWORD code = ::GetLastError();
+        throw boost::filesystem::filesystem_error(
+            "hamigaki::filesystem::file_mode", p, code);
+    }
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+void last_write_time(
+    const boost::filesystem::path& p, const timestamp& new_time)
+{
+    const std::string& name = p.native_file_string();
+
+    ::DWORD attr = ::GetFileAttributesA(name.c_str());
+    if (attr != INVALID_FILE_ATTRIBUTES)
+    {
+        ::DWORD flags = 0;
+        if ((attr & FILE_ATTRIBUTE_DIRECTORY) != 0)
+            flags |= FILE_FLAG_BACKUP_SEMANTICS;
+        if ((attr & FILE_ATTRIBUTE_REPARSE_POINT) != 0)
+            flags |= FILE_FLAG_OPEN_REPARSE_POINT;
+
+        file f(name.c_str(), FILE_WRITE_ATTRIBUTES, flags);
+        if (f.set_file_time(boost::none, boost::none, new_time))
+            return;
+
+        if ((attr & FILE_ATTRIBUTE_DIRECTORY) != 0)
+            return;
+    }
+
+    ::DWORD code = ::GetLastError();
+    throw boost::filesystem::filesystem_error(
+        "hamigaki::filesystem::last_write_time", p, code);
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+void last_access_time(
+    const boost::filesystem::path& p, const timestamp& new_time)
+{
+    const std::string& name = p.native_file_string();
+
+    ::DWORD attr = ::GetFileAttributesA(name.c_str());
+    if (attr != INVALID_FILE_ATTRIBUTES)
+    {
+        ::DWORD flags = 0;
+        if ((attr & FILE_ATTRIBUTE_DIRECTORY) != 0)
+            flags |= FILE_FLAG_BACKUP_SEMANTICS;
+        if ((attr & FILE_ATTRIBUTE_REPARSE_POINT) != 0)
+            flags |= FILE_FLAG_OPEN_REPARSE_POINT;
+
+        file f(name.c_str(), FILE_WRITE_ATTRIBUTES, flags);
+        if (f.set_file_time(boost::none, new_time, boost::none))
+            return;
+
+        if ((attr & FILE_ATTRIBUTE_DIRECTORY) != 0)
+            return;
+    }
+
+    ::DWORD code = ::GetLastError();
+    throw boost::filesystem::filesystem_error(
+        "hamigaki::filesystem::last_access_time", p, code);
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+void creation_time(
+    const boost::filesystem::path& p, const timestamp& new_time)
+{
+    const std::string& name = p.native_file_string();
+
+    ::DWORD attr = ::GetFileAttributesA(name.c_str());
+    if (attr != INVALID_FILE_ATTRIBUTES)
+    {
+        ::DWORD flags = 0;
+        if ((attr & FILE_ATTRIBUTE_DIRECTORY) != 0)
+            flags |= FILE_FLAG_BACKUP_SEMANTICS;
+        if ((attr & FILE_ATTRIBUTE_REPARSE_POINT) != 0)
+            flags |= FILE_FLAG_OPEN_REPARSE_POINT;
+
+        file f(name.c_str(), FILE_WRITE_ATTRIBUTES, flags);
+        if (f.set_file_time(new_time, boost::none, boost::none))
+            return;
+
+        if ((attr & FILE_ATTRIBUTE_DIRECTORY) != 0)
+            return;
+    }
+
+    ::DWORD code = ::GetLastError();
+    throw boost::filesystem::filesystem_error(
+        "hamigaki::filesystem::creation_time", p, code);
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+int change_owner(
+    const boost::filesystem::path&,
+    const boost::optional<boost::intmax_t>&,
+    const boost::optional<boost::intmax_t>&, int& ec)
+{
+    ec = ERROR_NOT_SUPPORTED;
+    return ec;
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+int change_symlink_owner(
+    const boost::filesystem::path&,
+    const boost::optional<boost::intmax_t>&,
+    const boost::optional<boost::intmax_t>&, int& ec)
+{
+    ec = ERROR_NOT_SUPPORTED;
+    return ec;
 }
 
 #else // not defined(BOOST_WINDOWS)
@@ -394,6 +556,116 @@ file_status symlink_status(const boost::filesystem::path& p, int& ec)
     }
 
     return filesystem::make_file_status(p, data);
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+void file_mode(
+    const boost::filesystem::path& p,
+    file_attributes attr, file_permissions perm)
+{
+    ::mode_t mode = perm;
+
+    if ((attr & set_uid) != 0)
+        mode |= S_ISUID;
+    if ((attr & set_gid) != 0)
+        mode |= S_ISGID;
+    if ((attr & sticky) != 0)
+        mode |= S_ISVTX;
+
+    if (::chmod(p.native_file_string().c_str(), mode) == -1)
+    {
+        int code = errno;
+        throw boost::filesystem::filesystem_error(
+            "hamigaki::filesystem::file_mode", p, code);
+    }
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+void last_write_time(
+    const boost::filesystem::path& p, const timestamp& new_time)
+{
+    const std::string& name = p.native_file_string();
+
+    struct stat st;
+    if (::stat(name.c_str(), &st) != -1)
+    {
+        ::utimbuf buf;
+        buf.actime = st.st_atime;
+        buf.modtime = new_time.to_time_t();
+        if (::utime(name.c_str(), &buf) != -1)
+            return;
+    }
+
+    int code = errno;
+    throw boost::filesystem::filesystem_error(
+        "hamigaki::filesystem::last_write_time", p, code);
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+void last_access_time(
+    const boost::filesystem::path& p, const timestamp& new_time)
+{
+    const std::string& name = p.native_file_string();
+
+    struct stat st;
+    if (::stat(name.c_str(), &st) != -1)
+    {
+        ::utimbuf buf;
+        buf.actime = new_time.to_time_t();
+        buf.modtime = st.st_mtime;
+        if (::utime(name.c_str(), &buf) != -1)
+            return;
+    }
+
+    int code = errno;
+    throw boost::filesystem::filesystem_error(
+        "hamigaki::filesystem::last_access_time", p, code);
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+void creation_time(const boost::filesystem::path&, const timestamp&)
+{
+    // do nothing
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+int change_owner(
+    const boost::filesystem::path& p,
+    const boost::optional<boost::intmax_t>& new_uid,
+    const boost::optional<boost::intmax_t>& new_gid, int& ec)
+{
+    ec = 0;
+
+    int res = ::chown(
+        p.native_file_string().c_str(),
+        new_uid ? static_cast< ::uid_t>(*new_uid) : static_cast< ::uid_t>(-1),
+        new_gid ? static_cast< ::gid_t>(*new_gid) : static_cast< ::gid_t>(-1)
+    );
+
+    if (res == -1)
+        ec = errno;
+
+    return ec;
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+int change_symlink_owner(
+    const boost::filesystem::path& p,
+    const boost::optional<boost::intmax_t>& new_uid,
+    const boost::optional<boost::intmax_t>& new_gid, int& ec)
+{
+    ec = 0;
+
+    int res = ::lchown(
+        p.native_file_string().c_str(),
+        new_uid ? static_cast< ::uid_t>(*new_uid) : static_cast< ::uid_t>(-1),
+        new_gid ? static_cast< ::gid_t>(*new_gid) : static_cast< ::gid_t>(-1)
+    );
+
+    if (res == -1)
+        ec = errno;
+
+    return ec;
 }
 
 #endif
