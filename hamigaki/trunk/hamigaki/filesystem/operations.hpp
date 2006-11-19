@@ -14,6 +14,7 @@
 #include <hamigaki/filesystem/detail/auto_link.hpp>
 #include <hamigaki/filesystem/file_status.hpp>
 #include <boost/filesystem/exception.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 
 #ifdef BOOST_HAS_ABI_HEADERS
@@ -213,6 +214,27 @@ inline void change_symlink_owner(
         throw boost::filesystem::filesystem_error(
             "hamigaki::filesystem::change_symlink_owner", p, ec);
     }
+}
+
+inline unsigned long remove_all(const boost::filesystem::path& p)
+{
+    unsigned long n = 0;
+
+    const file_status& s = filesystem::symlink_status(p);
+
+    if (!is_symlink(s) && is_directory(s))
+    {
+        boost::filesystem::directory_iterator it(p);
+        boost::filesystem::directory_iterator end;
+
+        for ( ; it != end; ++it)
+            n += filesystem::remove_all(*it);
+    }
+
+    if (remove(p))
+        ++n;
+
+    return n;
 }
 
 } } // End namespaces filesystem, hamigaki.
