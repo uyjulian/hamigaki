@@ -35,6 +35,11 @@
         #include <winioctl.h>
         #define HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT
     #endif
+
+    // from winbase.h
+    #if !defined(INVALID_FILE_ATTRIBUTES)
+        #define INVALID_FILE_ATTRIBUTES ((DWORD)-1)
+    #endif
 #else
     #include <sys/stat.h>
     #include <unistd.h>
