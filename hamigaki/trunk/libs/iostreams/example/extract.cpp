@@ -301,7 +301,8 @@ int main(int argc, char* argv[])
 
         std::auto_ptr<extractor_base> ext_ptr;
         const std::string filename(argv[1]);
-        if (!fs::exists(filename))
+        const fs::path ph(filename, fs::native);
+        if (!fs::exists(ph))
             throw std::runtime_error("file not found");
 
         if (algo::ends_with(filename, ".lzh"))
@@ -337,7 +338,7 @@ int main(int argc, char* argv[])
         }
         else if (algo::ends_with(filename, ".gz"))
         {
-            const std::string& leaf = fs::path(filename, fs::native).leaf();
+            const std::string& leaf = ph.leaf();
             if (leaf.size() < 4)
                 throw std::runtime_error("bad filename");
 
@@ -370,7 +371,7 @@ int main(int argc, char* argv[])
         }
         else if (algo::ends_with(filename, ".bz2"))
         {
-            const std::string& leaf = fs::path(filename, fs::native).leaf();
+            const std::string& leaf = ph.leaf();
             if (leaf.size() < 5)
                 throw std::runtime_error("bad filename");
 
