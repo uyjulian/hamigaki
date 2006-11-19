@@ -88,8 +88,8 @@ inline ::FILETIME to_file_time(const timestamp& ts)
     boost::uint64_t n = ts.to_windows_file_time();
 
     ::FILETIME tmp;
-    tmp.dwLowDateTime  = static_cast<boost::uint32_t>((n >> 32));
-    tmp.dwHighDateTime = static_cast<boost::uint32_t>((n      ));
+    tmp.dwLowDateTime  = static_cast<boost::uint32_t>((n      ));
+    tmp.dwHighDateTime = static_cast<boost::uint32_t>((n >> 32));
 
     return tmp;
 }
