@@ -79,8 +79,6 @@ void directory_test()
 
     fs_ex::file_status s = fs_ex::status(p);
 
-    BOOST_CHECK_EQUAL(s.file_size(), static_cast<boost::uintmax_t>(0));
-
     BOOST_CHECK(status_known(s));
     BOOST_CHECK(exists(s));
     BOOST_CHECK(!is_regular(s));
@@ -89,8 +87,6 @@ void directory_test()
     BOOST_CHECK(!is_other(s));
 
     s = fs_ex::symlink_status(p);
-
-    BOOST_CHECK_EQUAL(s.file_size(), static_cast<boost::uintmax_t>(0));
 
     BOOST_CHECK(status_known(s));
     BOOST_CHECK(exists(s));
