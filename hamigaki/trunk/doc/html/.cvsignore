@@ -3,6 +3,7 @@ HTML.manifest
 audio
 coroutine
 enum
+filesystem
 hamigaki
 iostreams
 iterator

@@ -16,7 +16,7 @@
 
   <chapter id="installation">
     <title>インストール</title>
-    <para>ほとんどのHamigakiライブラリはライブラリのビルドを必要とする。Boost.Buildでビルドする際は次の変数を設定することにより、ビルドをカスタマイズすることができる。
+    <para>いくつかのHamigakiライブラリはライブラリのビルドを必要とする。Boost.Buildでビルドする際は次の変数を設定することにより、ビルドをカスタマイズすることができる。
       <informaltable frame="all">
         <tgroup cols="3">
           <thead>
@@ -64,6 +64,7 @@
 
   <xi:include href="../../libs/audio/doc/audio.xml"/>
   <xi:include href="../../libs/coroutine/doc/coroutine.xml"/>
+  <xi:include href="../../libs/filesystem/doc/filesystem.xml"/>
   <xi:include href="../../libs/iostreams/doc/iostreams.xml"/>
   <xi:include href="../../libs/iterator/doc/iterator.xml"/>
   <xi:include href="../../libs/thread/doc/thread.xml"/>
