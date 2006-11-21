@@ -416,38 +416,15 @@ int main(int argc, char* argv[])
 
             // Note:
             // The POSIX chown() clears S_ISUID/S_ISGID bits.
-            // So, we must call owner() before calling file_mode().
+            // So, we must call owner() before calling change_permissions().
             int ec = 0;
             fs_ex::change_owner(e.path, e.uid, e.gid, ec);
 
-            fs_ex::file_attributes attr = 0;
-            fs_ex::file_permissions perm =
-                (e.type == fs_ex::directory_file) ? 0755 : 0644;
-
             if (e.attributes)
-            {
-                boost::uint16_t flags = e.attributes.get();
-                if ((flags & io_ex::msdos_attributes::read_only) != 0)
-                    attr |= fs_ex::read_only;
-                if ((flags & io_ex::msdos_attributes::hidden) != 0)
-                    attr |= fs_ex::hidden;
-                if ((flags & io_ex::msdos_attributes::archive) != 0)
-                    attr |= fs_ex::archive;
-            }
+                fs_ex::change_attributes(e.path, e.attributes.get(), ec);
 
             if (e.permission)
-            {
-                boost::uint16_t flags = e.permission.get();
-                if ((flags & 04000) != 0)
-                    attr |= fs_ex::set_uid;
-                if ((flags & 02000) != 0)
-                    attr |= fs_ex::set_gid;
-                if ((flags & 01000) != 0)
-                    attr |= fs_ex::sticky;
-                perm = flags & 0777;
-            }
-
-            fs_ex::file_mode(e.path, attr, perm);
+                fs_ex::change_permissions(e.path, e.permission.get(), ec);
 
             if (e.last_write_time)
                 fs_ex::last_write_time(e.path, e.last_write_time.get());

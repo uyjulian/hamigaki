@@ -66,7 +66,7 @@
                 </row>
                 <row>
                   <entry>fifo_file</entry>
-                  <entry>FIFO</entry>
+                  <entry>名前付きパイプ</entry>
                 </row>
                 <row>
                   <entry>socket_file</entry>
@@ -81,6 +81,14 @@
           </informaltable>
         </para>
       </enum>
+
+      <typedef name="file_attributes">
+        <type>unsigned long</type>
+      </typedef>
+
+      <typedef name="file_permissions">
+        <type>unsigned</type>
+      </typedef>
 
       <class name="file_status">
         <purpose><para>ファイルの状態情報を保持する</para></purpose>
@@ -100,13 +108,147 @@
             <returns><simpara><code>file_status</code>が保持しているファイルの種類</simpara></returns>
           </method>
 
+          <method name="has_attributes" cv="const">
+            <type>bool</type>
+            <returns><simpara><code>file_status</code>がファイル属性を保持していれば<code>true</code>。そうでなければ<code>false</code>。</simpara></returns>
+          </method>
+
           <method name="attributes" cv="const">
             <type>file_attributes</type>
+            <description>
+              <para>
+                <simpara>ファイル属性は次の値のいずれか、あるいはその組み合わせである。</simpara>
+                <informaltable frame="all">
+                  <tgroup cols="2">
+                    <thead>
+                      <row>
+                        <entry>値</entry>
+                        <entry>意味</entry>
+                      </row>
+                    </thead>
+                    <tbody>
+                      <row>
+                        <entry>read_only</entry>
+                        <entry>読み出し専用</entry>
+                      </row>
+                      <row>
+                        <entry>hidden</entry>
+                        <entry>隠しファイル</entry>
+                      </row>
+                      <row>
+                        <entry>system</entry>
+                        <entry>システムファイル</entry>
+                      </row>
+                      <row>
+                        <entry>archive</entry>
+                        <entry>アーカイブフラグ</entry>
+                      </row>
+                      <row>
+                        <entry>temporary</entry>
+                        <entry>一時ファイル</entry>
+                      </row>
+                      <row>
+                        <entry>sparse</entry>
+                        <entry>スパースファイル</entry>
+                      </row>
+                      <row>
+                        <entry>compressed</entry>
+                        <entry>圧縮ファイル</entry>
+                      </row>
+                      <row>
+                        <entry>offline</entry>
+                        <entry>オフラインファイル</entry>
+                      </row>
+                      <row>
+                        <entry>not_indexed</entry>
+                        <entry>インデックスサービスの対象としない</entry>
+                      </row>
+                      <row>
+                        <entry>encrypted</entry>
+                        <entry>暗号化ファイル</entry>
+                      </row>
+                    </tbody>
+                  </tgroup>
+                </informaltable>
+              </para>
+            </description>
+            <requires><code>has_attributes() == true</code></requires>
             <returns><simpara><code>file_status</code>が保持しているファイル属性</simpara></returns>
+          </method>
+
+          <method name="has_permissions" cv="const">
+            <type>bool</type>
+            <returns><simpara><code>file_status</code>がファイル許可属性を保持していれば<code>true</code>。そうでなければ<code>false</code>。</simpara></returns>
           </method>
 
           <method name="permissions" cv="const">
             <type>file_permissions</type>
+            <description>
+              <para>
+                <simpara>ファイル許可属性は次の値のいずれか、あるいはその組み合わせである。</simpara>
+                <informaltable frame="all">
+                  <tgroup cols="2">
+                    <thead>
+                      <row>
+                        <entry>値</entry>
+                        <entry>意味</entry>
+                      </row>
+                    </thead>
+                    <tbody>
+                      <row>
+                        <entry>set_uid</entry>
+                        <entry>プロセスの実効ユーザーIDにファイルのユーザーIDを設定する</entry>
+                      </row>
+                      <row>
+                        <entry>set_gid</entry>
+                        <entry>プロセスの実効グループIDにファイルのグループIDを設定する</entry>
+                      </row>
+                      <row>
+                        <entry>sticky</entry>
+                        <entry>ディレクトリ配下のファイル/ディレクトの改名/削除を制限する</entry>
+                      </row>
+                      <row>
+                        <entry>user_read</entry>
+                        <entry>ファイル所有者による読み込みを許可する</entry>
+                      </row>
+                      <row>
+                        <entry>user_write</entry>
+                        <entry>ファイル所有者による書き込みを許可する</entry>
+                      </row>
+                      <row>
+                        <entry>user_execute</entry>
+                        <entry>ファイル所有者による実行を許可する</entry>
+                      </row>
+                      <row>
+                        <entry>group_read</entry>
+                        <entry>ファイル所有グループによる読み込みを許可する</entry>
+                      </row>
+                      <row>
+                        <entry>group_write</entry>
+                        <entry>ファイル所有グループによる書き込みを許可する</entry>
+                      </row>
+                      <row>
+                        <entry>group_execute</entry>
+                        <entry>ファイル所有グループによる実行を許可する</entry>
+                      </row>
+                      <row>
+                        <entry>other_read</entry>
+                        <entry>他のユーザーによる読み込みを許可する</entry>
+                      </row>
+                      <row>
+                        <entry>other_write</entry>
+                        <entry>他のユーザーによる書き込みを許可する</entry>
+                      </row>
+                      <row>
+                        <entry>other_execute</entry>
+                        <entry>他のユーザーによる実行を許可する</entry>
+                      </row>
+                    </tbody>
+                  </tgroup>
+                </informaltable>
+              </para>
+            </description>
+            <requires><code>has_permissions() == true</code></requires>
             <returns><simpara><code>file_status</code>が保持しているファイル許可属性</simpara></returns>
           </method>
 

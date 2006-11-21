@@ -389,47 +389,24 @@ int main(int argc, char* argv[])
             e.path = fs::path(argv[i], fs::native);
 
             const fs_ex::file_status& s = fs_ex::symlink_status(e.path);
-            boost::uint16_t attr = 0;
-            boost::uint16_t mode = s.permissions();
 
             if (is_symlink(s))
             {
                 e.type = fs_ex::symlink_file;
                 e.link_path = fs_ex::symlink_target(e.path);
-                mode |= 0120000;
-
-                if (is_directory(s))
-                    attr |= io_ex::msdos_attributes::directory;
             }
             else if (is_directory(s))
-            {
                 e.type = fs_ex::directory_file;
-                attr |= io_ex::msdos_attributes::directory;
-                mode |= 040000;
-            }
             else
             {
                 e.type = fs_ex::regular_file;
                 e.file_size = fs::file_size(e.path);
-                mode |= 0100000;
             }
 
-            if ((s.attributes() & fs_ex::set_uid) != 0)
-                mode |= 04000;
-            if ((s.attributes() & fs_ex::set_gid) != 0)
-                mode |= 02000;
-            if ((s.attributes() & fs_ex::sticky) != 0)
-                mode |= 01000;
-
-            if ((s.attributes() & fs_ex::read_only) != 0)
-                attr |= io_ex::msdos_attributes::read_only;
-            if ((s.attributes() & fs_ex::hidden) != 0)
-                attr |= io_ex::msdos_attributes::hidden;
-            if ((s.attributes() & fs_ex::archive) != 0)
-                attr |= io_ex::msdos_attributes::archive;
-
-            e.attributes = attr;
-            e.permission = mode;
+            if (s.has_attributes())
+                e.attributes = s.attributes();
+            if (s.has_permissions())
+                e.permission = s.permissions();
 
             e.last_write_time = s.last_write_time();
             e.last_access_time = s.last_access_time();

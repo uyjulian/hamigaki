@@ -31,41 +31,41 @@ enum file_type
 };
 
 
-typedef unsigned file_attributes;
+typedef unsigned long file_attributes;
 
-const file_attributes set_uid       = (1u <<  0);
-const file_attributes set_gid       = (1u <<  1);
-const file_attributes sticky        = (1u <<  2);
-const file_attributes read_only     = (1u <<  3);
-const file_attributes hidden        = (1u <<  4);
-const file_attributes system        = (1u <<  5);
-const file_attributes archive       = (1u <<  6);
-const file_attributes temporary     = (1u <<  7);
-const file_attributes sparse        = (1u <<  8);
-const file_attributes compressed    = (1u <<  9);
-const file_attributes offline       = (1u << 10);
-const file_attributes not_indexed   = (1u << 11);
-const file_attributes encrypted     = (1u << 12);
+const file_attributes read_only     = 0x00000001ul;
+const file_attributes hidden        = 0x00000002ul;
+const file_attributes system        = 0x00000004ul;
+const file_attributes archive       = 0x00000020ul;
+const file_attributes temporary     = 0x00000100ul;
+const file_attributes sparse        = 0x00000200ul;
+const file_attributes compressed    = 0x00000800ul;
+const file_attributes offline       = 0x00001000ul;
+const file_attributes not_indexed   = 0x00002000ul;
+const file_attributes encrypted     = 0x00004000ul;
 
 
 typedef unsigned file_permissions;
 
-const file_permissions user_read        = 0400;
-const file_permissions user_write       = 0200;
-const file_permissions user_execute     = 0100;
-const file_permissions group_read       = 0040;
-const file_permissions group_write      = 0020;
-const file_permissions group_execute    = 0010;
-const file_permissions other_read       = 0004;
-const file_permissions other_write      = 0002;
-const file_permissions other_execute    = 0001;
+const file_permissions set_uid          = 04000;
+const file_permissions set_gid          = 02000;
+const file_permissions sticky           = 01000;
+const file_permissions user_read        = 00400;
+const file_permissions user_write       = 00200;
+const file_permissions user_execute     = 00100;
+const file_permissions group_read       = 00040;
+const file_permissions group_write      = 00020;
+const file_permissions group_execute    = 00010;
+const file_permissions other_read       = 00004;
+const file_permissions other_write      = 00002;
+const file_permissions other_execute    = 00001;
 
 
 class file_status
 {
 public:
     explicit file_status(file_type v = status_unknown)
-        : type_(v), attributes_(archive), permissions_(0644), file_size_(0)
+        : type_(v), file_size_(0)
     {
     }
 
@@ -81,9 +81,14 @@ public:
     }
 
 
-    file_attributes attributes() const
+    bool has_attributes() const
     {
         return attributes_;
+    }
+
+    file_attributes attributes() const
+    {
+        return *attributes_;
     }
 
     void attributes(file_attributes v)
@@ -92,9 +97,14 @@ public:
     }
 
 
-    file_permissions permissions() const
+    bool has_permissions() const
     {
         return permissions_;
+    }
+
+    file_permissions permissions() const
+    {
+        return *permissions_;
     }
 
     void permissions(file_permissions v)
@@ -201,8 +211,8 @@ public:
 
 private:
     file_type type_;
-    file_attributes attributes_;
-    file_permissions permissions_;
+    boost::optional<file_attributes> attributes_;
+    boost::optional<file_permissions> permissions_;
     boost::uintmax_t file_size_;
     timestamp last_write_time_;
     timestamp last_access_time_;

@@ -47,8 +47,6 @@
   <XI:include href="rationale.xml"/>
 -->
   <!-- xi:include href="../libs/filesystem/doc/acknowledgements.xml" -->
-<!--
   <XI:include href="acknowledgements.xml"/>
--->
 
 </library>

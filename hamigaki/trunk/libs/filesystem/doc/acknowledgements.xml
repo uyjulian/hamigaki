@@ -13,5 +13,5 @@
 -->
 <section id="filesystem.acknowledgements">
   <title>謝辞</title>
-  <para></para>
+  <para>Hamigaki.Filesystem は Beman Dawes 氏の Boost.Filesystem  を基にしている。</para>
 </section>

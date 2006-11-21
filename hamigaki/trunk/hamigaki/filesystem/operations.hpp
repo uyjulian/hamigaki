@@ -91,11 +91,6 @@ HAMIGAKI_FILESYSTEM_DECL
 boost::filesystem::path symlink_target(const boost::filesystem::path& p);
 
 HAMIGAKI_FILESYSTEM_DECL
-void file_mode(
-    const boost::filesystem::path& p,
-    file_attributes attr, file_permissions perm);
-
-HAMIGAKI_FILESYSTEM_DECL
 void last_write_time(
     const boost::filesystem::path& p, const timestamp& new_time);
 
@@ -175,6 +170,36 @@ inline void create_symlink(
     {
         throw boost::filesystem::filesystem_error(
             "hamigaki::filesystem::create_symlink", old_fp, new_fp, ec);
+    }
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+int change_attributes(
+    const boost::filesystem::path& p, file_attributes attr, int& ec);
+
+inline void change_attributes(
+    const boost::filesystem::path& p, file_attributes attr)
+{
+    int ec;
+    if (filesystem::change_attributes(p, attr, ec) != 0)
+    {
+        throw boost::filesystem::filesystem_error(
+            "hamigaki::filesystem::change_attributes", p, ec);
+    }
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+int change_permissions(
+    const boost::filesystem::path& p, file_permissions perm, int& ec);
+
+inline void change_permissions(
+    const boost::filesystem::path& p, file_permissions perm)
+{
+    int ec;
+    if (filesystem::change_permissions(p, perm, ec) != 0)
+    {
+        throw boost::filesystem::filesystem_error(
+            "hamigaki::filesystem::change_permissions", p, ec);
     }
 }
 

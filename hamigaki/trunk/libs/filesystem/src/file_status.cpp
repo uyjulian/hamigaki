@@ -99,42 +99,6 @@ inline ::FILETIME to_file_time(const timestamp& ts)
     return tmp;
 }
 
-template<class Data>
-inline file_attributes make_attr(const Data& data)
-{
-    file_attributes attr = 0;
-    if ((data.dwFileAttributes & FILE_ATTRIBUTE_READONLY) != 0)
-        attr |= read_only;
-    if ((data.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) != 0)
-        attr |= hidden;
-    if ((data.dwFileAttributes & FILE_ATTRIBUTE_SYSTEM) != 0)
-        attr |= system;
-    if ((data.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE) != 0)
-        attr |= archive;
-    if ((data.dwFileAttributes & FILE_ATTRIBUTE_SPARSE_FILE) != 0)
-        attr |= sparse;
-    if ((data.dwFileAttributes & FILE_ATTRIBUTE_TEMPORARY) != 0)
-        attr |= temporary;
-    if ((data.dwFileAttributes & FILE_ATTRIBUTE_COMPRESSED) != 0)
-        attr |= compressed;
-    if ((data.dwFileAttributes & FILE_ATTRIBUTE_OFFLINE) != 0)
-        attr |= offline;
-    if ((data.dwFileAttributes & FILE_ATTRIBUTE_NOT_CONTENT_INDEXED) != 0)
-        attr |= not_indexed;
-    if ((data.dwFileAttributes & FILE_ATTRIBUTE_ENCRYPTED) != 0)
-        attr |= encrypted;
-    return attr;
-}
-
-inline bool is_executable_path(const boost::filesystem::path& p)
-{
-    const std::string& ext = boost::filesystem::extension(p);
-
-    return (
-        (ext == ".exe") || (ext == ".com") ||
-        (ext == ".bat") || (ext == ".cmd") );
-}
-
 namespace
 {
 
@@ -244,18 +208,10 @@ file_status status(const boost::filesystem::path& p, int& ec)
     else if ((data.dwFileAttributes & FILE_ATTRIBUTE_DEVICE) != 0)
         type = type_unknown;
 
-    file_attributes attr = make_attr(data);
-
-    file_permissions perm = 0600;
-    if ((data.dwFileAttributes & FILE_ATTRIBUTE_READONLY) != 0)
-        perm &= ~0200;
-
-    if ((type == directory_file) || is_executable_path(p))
-        perm |= 0100;
+    file_attributes attr = data.dwFileAttributes;
 
     file_status s(type);
     s.attributes(attr);
-    s.permissions(perm);
 
     s.file_size(
         (static_cast<boost::uint64_t>(data.nFileSizeHigh) << 32) |
@@ -310,18 +266,10 @@ file_status symlink_status(const boost::filesystem::path& p, int& ec)
     else if ((data.dwFileAttributes & FILE_ATTRIBUTE_DEVICE) != 0)
         type = type_unknown;
 
-    file_attributes attr = make_attr(data);
-
-    file_permissions perm = 0600;
-    if ((data.dwFileAttributes & FILE_ATTRIBUTE_READONLY) != 0)
-        perm &= ~0200;
-
-    if ((type == directory_file) || is_executable_path(p))
-        perm |= 0100;
+    file_attributes attr = data.dwFileAttributes;
 
     file_status s(type);
     s.attributes(attr);
-    s.permissions(perm);
 
     s.file_size(
         (static_cast<boost::uint64_t>(data.nFileSizeHigh) << 32) |
@@ -341,33 +289,6 @@ file_status symlink_status(const boost::filesystem::path& p, int& ec)
 #endif
 
     return s;
-}
-
-HAMIGAKI_FILESYSTEM_DECL
-void file_mode(
-    const boost::filesystem::path& p, file_attributes attr, file_permissions)
-{
-    ::DWORD value = 0;
-
-    if ((attr & read_only) != 0)
-        value = FILE_ATTRIBUTE_READONLY;
-    if ((attr & hidden) != 0)
-        value = FILE_ATTRIBUTE_HIDDEN;
-    if ((attr & system) != 0)
-        value = FILE_ATTRIBUTE_SYSTEM;
-    if ((attr & archive) != 0)
-        value = FILE_ATTRIBUTE_ARCHIVE;
-    if ((attr & temporary) != 0)
-        value = FILE_ATTRIBUTE_TEMPORARY;
-    if ((attr & not_indexed) != 0)
-        value = FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
-
-    if (::SetFileAttributesA(p.native_file_string().c_str(), value) == FALSE)
-    {
-        ::DWORD code = ::GetLastError();
-        throw boost::filesystem::filesystem_error(
-            "hamigaki::filesystem::file_mode", p, code);
-    }
 }
 
 HAMIGAKI_FILESYSTEM_DECL
@@ -455,6 +376,26 @@ void creation_time(
 }
 
 HAMIGAKI_FILESYSTEM_DECL
+int change_attributes(
+    const boost::filesystem::path& p, file_attributes attr, int& ec)
+{
+    ec = 0;
+    ::DWORD value = attr;
+
+    if (::SetFileAttributesA(p.native_file_string().c_str(), value) == FALSE)
+        ec = ::GetLastError();
+    return ec;
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+int change_permissions(
+    const boost::filesystem::path&, file_permissions, int& ec)
+{
+    ec = ERROR_NOT_SUPPORTED;
+    return ec;
+}
+
+HAMIGAKI_FILESYSTEM_DECL
 int change_owner(
     const boost::filesystem::path&,
     const boost::optional<boost::intmax_t>&,
@@ -495,22 +436,8 @@ inline file_status make_file_status(
     else if (S_ISSOCK(data.st_mode))
         type = socket_file;
 
-    file_attributes attr = 0;
-    if ((data.st_mode & S_ISUID) != 0)
-        attr |= set_uid;
-    if ((data.st_mode & S_ISGID) != 0)
-        attr |= set_gid;
-    if ((data.st_mode & S_ISVTX) != 0)
-        attr |= sticky;
-
-    if ((data.st_mode & 0222) == 0)
-        attr |= read_only;
-    if (p.has_leaf() && (p.leaf()[0] == '.'))
-        attr |= hidden;
-
     file_status s(type);
-    s.attributes(attr);
-    s.permissions(data.st_mode & 0777);
+    s.permissions(data.st_mode);
     s.file_size(data.st_size);
     s.last_write_time(timestamp::from_time_t(data.st_mtime));
     s.last_access_time(timestamp::from_time_t(data.st_atime));
@@ -564,28 +491,6 @@ file_status symlink_status(const boost::filesystem::path& p, int& ec)
 }
 
 HAMIGAKI_FILESYSTEM_DECL
-void file_mode(
-    const boost::filesystem::path& p,
-    file_attributes attr, file_permissions perm)
-{
-    ::mode_t mode = perm;
-
-    if ((attr & set_uid) != 0)
-        mode |= S_ISUID;
-    if ((attr & set_gid) != 0)
-        mode |= S_ISGID;
-    if ((attr & sticky) != 0)
-        mode |= S_ISVTX;
-
-    if (::chmod(p.native_file_string().c_str(), mode) == -1)
-    {
-        int code = errno;
-        throw boost::filesystem::filesystem_error(
-            "hamigaki::filesystem::file_mode", p, code);
-    }
-}
-
-HAMIGAKI_FILESYSTEM_DECL
 void last_write_time(
     const boost::filesystem::path& p, const timestamp& new_time)
 {
@@ -631,6 +536,26 @@ HAMIGAKI_FILESYSTEM_DECL
 void creation_time(const boost::filesystem::path&, const timestamp&)
 {
     // do nothing
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+int change_attributes(
+    const boost::filesystem::path& p, file_attributes attr, int& ec)
+{
+    ec = ENOTSUP;
+    return ec;
+}
+
+HAMIGAKI_FILESYSTEM_DECL
+int change_permissions(
+    const boost::filesystem::path& p, file_permissions perm, int& ec)
+{
+    ec = 0;
+    ::mode_t mode = perm;
+
+    if (::chmod(p.native_file_string().c_str(), mode) == -1)
+        ec = errno;
+    return ec;
 }
 
 HAMIGAKI_FILESYSTEM_DECL
