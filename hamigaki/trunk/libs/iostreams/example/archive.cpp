@@ -115,6 +115,9 @@ struct header_traits<io_ex::tar::header>
 
         if (e.permission)
             head.mode = e.permission.get();
+        else if (e.type == fs_ex::directory_file)
+            head.mode = 0755;
+
         if (e.uid)
             head.uid = e.uid.get();
         if (e.gid)
