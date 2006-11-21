@@ -37,6 +37,7 @@ rule filesystem-test ( sources + : requirements * )
 }
 
 test-suite filesystem :
+    [ filesystem-test file_time_test.cpp : ]
     [ filesystem-test remove_all_test.cpp : ]
     [ filesystem-test status_test.cpp : ]
     ;
