@@ -11,8 +11,13 @@
 #define HAMIGAKI_CHECKSUM_MD5_HPP
 
 #include <boost/array.hpp>
+#include <boost/assert.hpp>
 #include <boost/cstdint.hpp>
 #include <cstddef>
+
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+    #include <stdlib.h>
+#endif
 
 namespace hamigaki { namespace checksum {
 
@@ -24,7 +29,16 @@ typedef boost::array<word,16> block;
 
 inline word rotate_left(word n, word s)
 {
+    BOOST_ASSERT(s != 0);
+    BOOST_ASSERT(s < 32u);
+
+#if defined(_MSC_VER) && (_MSC_VER >= 1400)
+    return ::_rotl(n, static_cast<int>(s));
+#elif defined(__MWERKS__) && (defined(__MC68K__) || defined(__INTEL__))
+    return __rol(n, s);
+#else
     return (n << s) | (n >> (32-s));
+#endif
 }
 
 inline word func_f(word x, word y, word z)
