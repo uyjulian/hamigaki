@@ -632,10 +632,13 @@ public:
 
         if (pos_ != header_.compressed_size)
             throw BOOST_IOSTREAMS_FAILURE("LZH entry size mismatch");
+
+        if (!header_.crc16_checksum)
+            throw BOOST_IOSTREAMS_FAILURE("LZH CRC is not set");
     }
 
     void close(
-        boost::int64_t crc16_checksum, boost::int64_t file_size)
+        boost::uint16_t crc16_checksum, boost::int64_t file_size)
     {
         if (header_.is_directory())
             return;
@@ -885,6 +888,12 @@ public:
     void close()
     {
         pimpl_->close();
+    }
+
+    void close(
+        boost::uint16_t crc16_checksum, boost::int64_t file_size)
+    {
+        pimpl_->close(crc16_checksum, file_size);
     }
 
     std::streamsize write(const char* s, std::streamsize n)
