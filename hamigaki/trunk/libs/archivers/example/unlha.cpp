@@ -88,8 +88,8 @@ int main(int argc, char* argv[])
 
             fs_ex::change_attributes(head.path, head.attributes, ec);
 
-            if (head.permission)
-                fs_ex::change_permissions(head.path, head.permission.get(), ec);
+            if (head.permissions)
+                fs_ex::change_permissions(head.path, *(head.permissions), ec);
 
             if (head.timestamp)
             {

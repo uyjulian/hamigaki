@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
             }
 
             if (s.has_permissions())
-                head.permission = s.permissions();
+                head.permissions = s.permissions();
 
             if (s.has_uid() && s.has_gid())
             {

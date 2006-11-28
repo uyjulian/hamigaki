@@ -326,8 +326,8 @@ private:
         if (header_.attributes != msdos::attributes::archive)
             write_extended_header<0x40>(tmp, header_.attributes);
 
-        if (header_.permission)
-            write_extended_header<0x50>(tmp, header_.permission.get());
+        if (header_.permissions)
+            write_extended_header<0x50>(tmp, header_.permissions.get());
 
         if (header_.owner)
             write_extended_header<0x51>(tmp, header_.owner.get());
@@ -477,8 +477,8 @@ private:
             }
         }
 
-        if (header_.permission)
-            write_extended_header<0x50>(tmp, header_.permission.get());
+        if (header_.permissions)
+            write_extended_header<0x50>(tmp, header_.permissions.get());
 
         if (header_.owner)
             write_extended_header<0x51>(tmp, header_.owner.get());

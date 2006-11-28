@@ -411,10 +411,10 @@ private:
         return hamigaki::decode_uint<little,4>(s);
     }
 
-    static boost::uint16_t parse_unix_permission(char* s, boost::uint32_t n)
+    static boost::uint16_t parse_unix_permissions(char* s, boost::uint32_t n)
     {
         if (n < 2)
-            throw std::runtime_error("bad LZH permission extended header");
+            throw std::runtime_error("bad LZH permissions extended header");
 
         return hamigaki::decode_uint<little,2>(s);
     }
@@ -499,7 +499,7 @@ private:
             else if (buf[0] == '\x46')
                 header_.code_page = parse_code_page(data, size);
             else if (buf[0] == '\x50')
-                header_.permission = parse_unix_permission(data, size);
+                header_.permissions = parse_unix_permissions(data, size);
             else if (buf[0] == '\x51')
                 header_.owner = parse_unix_owner(data, size);
             else if (buf[0] == '\x52')

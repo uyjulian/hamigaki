@@ -36,7 +36,7 @@ struct header
     boost::optional<char> os;
     boost::optional<windows::timestamp> timestamp;
     boost::optional<boost::uint32_t> code_page;
-    boost::optional<boost::uint16_t> permission;
+    boost::optional<boost::uint16_t> permissions;
     boost::optional<unix::gid_uid> owner;
     std::string group_name;
     std::string user_name;
