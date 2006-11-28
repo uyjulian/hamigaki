@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
 
             if (s.has_uid() && s.has_gid())
             {
-                ar::lha::unix::gid_uid owner;
+                ar::lha::posix::gid_uid owner;
                 owner.gid = s.gid();
                 owner.uid = s.uid();
                 head.owner = owner;

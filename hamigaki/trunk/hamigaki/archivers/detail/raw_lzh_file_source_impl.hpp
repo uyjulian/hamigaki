@@ -419,13 +419,13 @@ private:
         return hamigaki::decode_uint<little,2>(s);
     }
 
-    static lha::unix::gid_uid
+    static lha::posix::gid_uid
     parse_unix_owner(char* s, boost::uint32_t n)
     {
-        if (n < hamigaki::struct_size<lha::unix::gid_uid>::type::value)
+        if (n < hamigaki::struct_size<lha::posix::gid_uid>::type::value)
             throw std::runtime_error("bad LZH owner extended header");
 
-        lha::unix::gid_uid owner;
+        lha::posix::gid_uid owner;
         hamigaki::binary_read(s, owner);
         return owner;
     }

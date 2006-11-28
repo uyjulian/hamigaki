@@ -14,7 +14,11 @@
 #include <boost/mpl/list.hpp>
 #include <boost/cstdint.hpp>
 
-namespace hamigaki { namespace archivers { namespace lha { namespace unix {
+// Note:
+// This extended header is used by LHa for UNIX. It's not a POSIX feature.
+// But "unix" is the pre-defined macro on some compilers.
+// So "posix" is selected for the namespaec.
+namespace hamigaki { namespace archivers { namespace lha { namespace posix {
 
 struct gid_uid
 {
@@ -22,15 +26,15 @@ struct gid_uid
     boost::uint16_t uid;
 };
 
-} } } } // End namespaces unix, lha, archivers, hamigaki.
+} } } } // End namespaces posix, lha, archivers, hamigaki.
 
 namespace hamigaki {
 
 template<>
-struct struct_traits<archivers::lha::unix::gid_uid>
+struct struct_traits<archivers::lha::posix::gid_uid>
 {
 private:
-    typedef archivers::lha::unix::gid_uid self;
+    typedef archivers::lha::posix::gid_uid self;
 
 public:
     typedef boost::mpl::list<

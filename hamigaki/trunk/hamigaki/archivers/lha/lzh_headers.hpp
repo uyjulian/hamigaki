@@ -10,7 +10,7 @@
 #ifndef HAMIGAKI_ARCHIVERS_LHA_LZH_HEADERS_HPP
 #define HAMIGAKI_ARCHIVERS_LHA_LZH_HEADERS_HPP
 
-#include <hamigaki/archivers/lha/unix/gid_uid.hpp>
+#include <hamigaki/archivers/lha/posix/gid_uid.hpp>
 #include <hamigaki/archivers/lha/windows/file_size.hpp>
 #include <hamigaki/archivers/lha/windows/timestamp.hpp>
 #include <hamigaki/archivers/lha/lv0_header.hpp>
@@ -37,7 +37,7 @@ struct header
     boost::optional<windows::timestamp> timestamp;
     boost::optional<boost::uint32_t> code_page;
     boost::optional<boost::uint16_t> permissions;
-    boost::optional<unix::gid_uid> owner;
+    boost::optional<posix::gid_uid> owner;
     std::string group_name;
     std::string user_name;
     std::string comment;
