@@ -40,4 +40,13 @@ exe lha
         find-boost-filesystem-lib
     ;
 
+exe unlha
+    :
+        unlha.cpp
+        <template>archivers
+        <lib>../../filesystem/build/hamigaki_filesystem
+    :
+        find-boost-filesystem-lib
+    ;
+
 }
