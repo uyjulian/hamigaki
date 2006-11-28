@@ -31,7 +31,10 @@ int main(int argc, char* argv[])
     try
     {
         if (argc < 3)
+        {
+            std::cerr << "Usage: lha (archive) (filename) ..." << std::endl;
             return 1;
+        }
 
         std::setlocale(LC_ALL, "");
         fs::path::default_name_check(fs::no_check);
