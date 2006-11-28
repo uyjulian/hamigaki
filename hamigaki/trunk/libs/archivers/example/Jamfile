@@ -31,4 +31,13 @@ exe delete_lha
         find-boost-filesystem-lib
     ;
 
+exe lha
+    :
+        lha.cpp
+        <template>archivers
+        <lib>../../filesystem/build/hamigaki_filesystem
+    :
+        find-boost-filesystem-lib
+    ;
+
 }
