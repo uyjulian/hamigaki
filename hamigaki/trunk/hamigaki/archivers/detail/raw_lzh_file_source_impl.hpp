@@ -286,6 +286,8 @@ private:
         cs.process_byte(c);
 
         std::streamsize count = static_cast<unsigned char>(c);
+        if (count == 0)
+            return std::pair<boost::filesystem::path,boost::filesystem::path>();
         boost::scoped_array<char> buffer(new char[count]);
 
         if (boost::iostreams::read(nb, buffer.get(), count) != count)
