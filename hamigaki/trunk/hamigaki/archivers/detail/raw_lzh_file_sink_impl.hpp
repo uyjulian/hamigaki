@@ -177,7 +177,7 @@ private:
         OtherSink& sink, unsigned char type, const std::string& s)
     {
         iostreams::write_uint16<little>(sink, s.size()+3);
-        iostreams::blocking_put(sink, static_cast<char>(type));
+        boost::iostreams::put(sink, static_cast<char>(type));
         if (!s.empty())
             sink.write(s.c_str(), s.size());
     }
@@ -191,6 +191,9 @@ private:
 
         if (header_.compressed_size != -1)
         {
+            if (header_.compressed_size > 0xFFFFFFFF)
+                throw BOOST_IOSTREAMS_FAILURE("too big compressed size");
+
             lv0.compressed_size =
                 static_cast<boost::uint32_t>(
                     header_.compressed_size & 0xFFFFFFFF);
@@ -200,6 +203,9 @@ private:
 
         if (header_.file_size != -1)
         {
+            if (header_.file_size > 0xFFFFFFFF)
+                throw BOOST_IOSTREAMS_FAILURE("too big compressed size");
+
             lv0.file_size =
                 static_cast<boost::uint32_t>(
                     header_.file_size & 0xFFFFFFFF);
@@ -222,7 +228,7 @@ private:
 
         iostreams::write_uint8<little>(
             tmp, static_cast<boost::uint8_t>(name.size()));
-        iostreams::blocking_write(tmp, name.c_str(), name.size());
+        tmp.write(name.c_str(), name.size());
 
         if (header_.crc16_checksum)
             iostreams::write_uint16<little>(tmp, header_.crc16_checksum.get());
@@ -242,8 +248,130 @@ private:
 
     void write_lv1_header()
     {
-        // TODO: implement it
-        BOOST_ASSERT(!"not implemented");
+        lha::lv1_header lv1;
+        lv1.header_size = 0;
+        lv1.header_checksum = 0;
+        lv1.method = header_.method;
+
+        if (header_.compressed_size > 0xFFFFFFFF)
+            throw BOOST_IOSTREAMS_FAILURE("too big compressed size");
+        lv1.skip_size = 0;
+
+        if (header_.file_size != -1)
+        {
+            if (header_.file_size > 0xFFFFFFFF)
+                throw BOOST_IOSTREAMS_FAILURE("too big compressed size");
+
+            lv1.file_size =
+                static_cast<boost::uint32_t>(
+                    header_.file_size & 0xFFFFFFFF);
+        }
+        else
+            lv1.file_size = 0;
+
+        lv1.update_date_time = msdos::date_time(header_.update_time);
+        lv1.reserved = msdos::attributes::archive;
+        lv1.level = 1;
+
+        std::string buffer;
+        boost::iostreams::back_insert_device<std::string> tmp(buffer);
+        iostreams::binary_write(tmp, lv1);
+
+        // TODO: support symbolic link
+        std::string leaf;
+        if (!header_.is_directory())
+            leaf = header_.path.leaf();
+
+        if (!leaf.empty() && (leaf.size() <= 0xFF))
+        {
+            iostreams::write_uint8<little>(
+                tmp, static_cast<boost::uint8_t>(leaf.size()));
+            tmp.write(leaf.c_str(), leaf.size());
+        }
+        else
+            iostreams::write_uint8<little>(tmp, 0);
+
+        if (header_.crc16_checksum)
+            iostreams::write_uint16<little>(tmp, header_.crc16_checksum.get());
+        else
+            tmp.write("\0", 2);
+
+        if (header_.os)
+            boost::iostreams::put(tmp, header_.os.get());
+        else
+            boost::iostreams::put(tmp, HAMIGAKI_ARCHIVERS_LHA_OS_TYPE);
+
+        std::size_t basic_size = buffer.size();
+
+        if (basic_size > 0xFF)
+            throw BOOST_IOSTREAMS_FAILURE("too big LZH header");
+
+        buffer[0] =
+            static_cast<char>(static_cast<unsigned char>(basic_size));
+
+        if (header_.is_directory())
+            write_extended_header(tmp, 0x02, convert_path(header_.path));
+        else
+        {
+            if (leaf.size() > 0xFF)
+                write_extended_header(tmp, 0x01, leaf);
+
+            if (header_.path.has_branch_path())
+            {
+                const boost::filesystem::path& ph = header_.path.branch_path();
+                write_extended_header(tmp, 0x02, convert_path(ph));
+            }
+        }
+
+        if (header_.attributes != msdos::attributes::archive)
+            write_extended_header<0x40>(tmp, header_.attributes);
+
+        if (header_.permission)
+            write_extended_header<0x50>(tmp, header_.permission.get());
+
+        if (header_.owner)
+            write_extended_header<0x51>(tmp, header_.owner.get());
+
+        if (!header_.group_name.empty())
+            write_extended_header(tmp, 0x52, header_.group_name);
+
+        if (!header_.user_name.empty())
+            write_extended_header(tmp, 0x53, header_.user_name);
+
+        tmp.write("\x06\x00\x00", 3);
+        std::size_t crc_off = buffer.size();
+        // TODO: timezone
+        tmp.write("\x00\x00\x40", 3);
+
+        // end of extended headers
+        iostreams::write_uint16<little>(tmp, 0);
+
+        boost::int64_t size =
+            header_.compressed_size + buffer.size()-basic_size-2;
+
+        if (size > 0xFFFFFFFF)
+            throw BOOST_IOSTREAMS_FAILURE("too big compressed size");
+
+        char size_buf[4];
+        hamigaki::encode_uint<little,4>(
+            size_buf, static_cast<boost::uint32_t>(size & 0xFFFF));
+        buffer[ 7] = size_buf[0];
+        buffer[ 8] = size_buf[1];
+        buffer[ 9] = size_buf[2];
+        buffer[10] = size_buf[3];
+
+        checksum::sum8 sum;
+        sum.process_bytes(buffer.c_str()+2, basic_size);
+        buffer[1] = sum.checksum();
+
+        boost::crc_16_type crc;
+        crc.process_bytes(buffer.c_str(), buffer.size());
+        char crc_buf[2];
+        hamigaki::encode_uint<little,2>(crc_buf, crc.checksum());
+        buffer[crc_off] = crc_buf[0];
+        buffer[crc_off+1] = crc_buf[1];
+
+        boost::iostreams::write(sink_, buffer.c_str(), buffer.size());
     }
 
     void write_lv2_header()
@@ -375,7 +503,7 @@ private:
         buffer[1] = size_buf[1];
 
         boost::crc_16_type crc;
-        crc.process_bytes(&buffer[0], buffer.size());
+        crc.process_bytes(buffer.c_str(), buffer.size());
         char crc_buf[2];
         hamigaki::encode_uint<little,2>(crc_buf, crc.checksum());
         buffer[crc_off] = crc_buf[0];
