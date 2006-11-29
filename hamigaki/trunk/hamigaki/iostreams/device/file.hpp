@@ -33,7 +33,11 @@ public:
         , public boost::iostreams::closable_tag
     {};
 
-    file_source(
+    file_source()
+    {
+    }
+
+    explicit file_source(
         const std::string& filename, BOOST_IOS::openmode mode=BOOST_IOS::in)
     {
         this->open(filename, mode|BOOST_IOS::in);
@@ -140,7 +144,11 @@ public:
         , public boost::iostreams::closable_tag
     {};
 
-    file_sink(
+    file_sink()
+    {
+    }
+
+    explicit file_sink(
         const std::string& filename, BOOST_IOS::openmode mode=BOOST_IOS::out)
     {
         this->open(filename, mode|BOOST_IOS::out);

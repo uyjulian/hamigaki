@@ -19,7 +19,9 @@
           <type>char</type>
         </typedef>
 
-        <constructor>
+        <constructor/>
+
+        <constructor specifiers="explicit">
           <parameter name="filename">
             <paramtype>const std::string&amp;</paramtype>
           </parameter>
@@ -83,7 +85,9 @@
           <type>char</type>
         </typedef>
 
-        <constructor>
+        <constructor/>
+
+        <constructor specifiers="explicit">
           <parameter name="filename">
             <paramtype>const std::string&amp;</paramtype>
           </parameter>
