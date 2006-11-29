@@ -80,7 +80,7 @@ public:
         if (pos_ != header_.compressed_size)
             throw BOOST_IOSTREAMS_FAILURE("LZH entry size mismatch");
 
-        if ((header_.level != 0) && !header_.crc16_checksum)
+        if (!header_.crc16_checksum)
             throw BOOST_IOSTREAMS_FAILURE("LZH CRC is not set");
 
         pos_ = 0;
@@ -232,6 +232,8 @@ private:
 
         if (header_.crc16_checksum)
             iostreams::write_uint16<little>(tmp, header_.crc16_checksum.get());
+        else
+            tmp.write("\0", 2);
 
         if (buffer.size()-2 > 0xFF)
             throw BOOST_IOSTREAMS_FAILURE("too big LZH header");
