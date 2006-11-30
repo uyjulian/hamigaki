@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
         {
             const ar::lha::header& head = lzh.header();
 
-            std::cout << head.path_string() << '\n';
+            std::cout << head.path.string() << '\n';
 
             if (!head.link_path.empty())
             {

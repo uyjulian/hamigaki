@@ -57,14 +57,6 @@ struct header
     {
         return !link_path.empty();
     }
-
-    std::string path_string() const
-    {
-        if (is_directory())
-            return path.native_directory_string();
-        else
-            return path.native_file_string();
-    }
 };
 
 } } } // End namespaces lha, archivers, hamigaki.
