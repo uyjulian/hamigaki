@@ -17,6 +17,7 @@
 #include <hamigaki/iostreams/seek.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/iostreams/close.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <boost/crc.hpp>
 #include <algorithm>
 #include <iterator>
