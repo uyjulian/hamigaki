@@ -47,8 +47,13 @@ seek(T& t, Device& dev, std::streampos pos,
 
 
 template<typename T>
-inline std::streampos
-tell(T& t, BOOST_IOS::openmode which = BOOST_IOS::in | BOOST_IOS::out)
+inline std::streampos tell(T& t)
+{
+    return boost::iostreams::seek(t, 0, BOOST_IOS::cur);
+}
+
+template<typename T>
+inline std::streampos tell(T& t, BOOST_IOS::openmode which)
 {
     return boost::iostreams::seek(t, 0, BOOST_IOS::cur, which);
 }
@@ -63,8 +68,13 @@ tell(T& t, Device& dev,
 
 
 template<typename T>
-inline stream_offset
-tell_offset(T& t, BOOST_IOS::openmode which = BOOST_IOS::in | BOOST_IOS::out)
+inline stream_offset tell_offset(T& t)
+{
+    return boost::iostreams::position_to_offset(iostreams::tell(t));
+}
+
+template<typename T>
+inline stream_offset tell_offset(T& t, BOOST_IOS::openmode which)
 {
     return boost::iostreams::position_to_offset(iostreams::tell(t, which));
 }

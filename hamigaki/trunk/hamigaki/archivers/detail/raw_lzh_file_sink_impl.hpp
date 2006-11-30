@@ -45,7 +45,7 @@ public:
     {};
 
     explicit basic_raw_lzh_file_sink_impl(const Sink& sink)
-        : sink_(sink), overflow_(false), pos_(0)
+        : sink_(sink), overflow_(false), header_pos_(0), pos_(0)
     {
     }
 
@@ -175,7 +175,11 @@ private:
                 filename += '|';
                 filename += head.link_path.leaf();
 
+#if BOOST_WORKAROUND(__MWERKS__, BOOST_TESTED_AT(0x3003))
+                boost::filesystem::path ph = head.path.branch_path();
+#else
                 const boost::filesystem::path& ph = head.path.branch_path();
+#endif
                 return std::make_pair(filename, convert_path(ph));
             }
         }
