@@ -112,11 +112,6 @@ void symlink_test()
         symlink_test_aux("link", "dir/target", b);
         symlink_test_aux("dir/link", "target", b);
         symlink_test_aux("dir1/link", "dir2/target", b);
-
-        symlink_test_aux("link", "target", b);
-        symlink_test_aux("link", "dir/target", b);
-        symlink_test_aux("dir/link", "target", b);
-        symlink_test_aux("dir1/link", "dir2/target", b);
     }
 }
 
