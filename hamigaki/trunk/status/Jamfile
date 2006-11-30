@@ -3,6 +3,7 @@ import testing ;
 
 DEPENDS all : test ;
 
+subinclude libs/archivers/test ;
 subinclude libs/audio/test ;
 subinclude libs/checksum/test ;
 subinclude libs/coroutine/test ;
