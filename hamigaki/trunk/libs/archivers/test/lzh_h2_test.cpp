@@ -17,6 +17,7 @@
 
 namespace ar = hamigaki::archivers;
 namespace io_ex = hamigaki::iostreams;
+namespace fs = boost::filesystem;
 namespace io = boost::iostreams;
 namespace ut = boost::unit_test;
 
@@ -63,9 +64,66 @@ void h2_test()
     BOOST_CHECK(!src.next_entry());
 }
 
+void symlink_test_aux(const fs::path& link, const fs::path& target, bool dir)
+{
+    ar::lha::header head;
+    head.level = 2;
+    head.update_time = std::time(0);
+    head.attributes = ar::msdos::attributes::hidden;
+    if (dir)
+        head.attributes |= ar::msdos::attributes::directory;
+    head.path = link;
+    head.link_path = target;
+    head.os = 'M';
+
+    io_ex::tmp_file archive;
+    ar::basic_lzh_file_sink<
+        io_ex::dont_close_device<io_ex::tmp_file>
+    > sink(io_ex::dont_close(archive));
+
+    sink.create_entry(head);
+    sink.close();
+    sink.close_archive();
+
+    io::seek(archive, 0, BOOST_IOS::beg);
+
+    ar::basic_lzh_file_source<io_ex::tmp_file> src(archive);
+
+    BOOST_CHECK(src.next_entry());
+
+    BOOST_CHECK(head.level == src.header().level);
+    BOOST_CHECK(head.update_time == src.header().update_time);
+    BOOST_CHECK_EQUAL(head.attributes, src.header().attributes);
+    BOOST_CHECK_EQUAL(head.path.string(), src.header().path.string());
+    BOOST_CHECK_EQUAL(head.link_path.string(), src.header().link_path.string());
+    BOOST_CHECK_EQUAL(head.os, src.header().os);
+
+    BOOST_CHECK(!src.next_entry());
+}
+
+
+void symlink_test()
+{
+    for (int i = 0; i < 2; ++i)
+    {
+        bool b = (i != 0);
+
+        symlink_test_aux("link", "target", b);
+        symlink_test_aux("link", "dir/target", b);
+        symlink_test_aux("dir/link", "target", b);
+        symlink_test_aux("dir1/link", "dir2/target", b);
+
+        symlink_test_aux("link", "target", b);
+        symlink_test_aux("link", "dir/target", b);
+        symlink_test_aux("dir/link", "target", b);
+        symlink_test_aux("dir1/link", "dir2/target", b);
+    }
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("LZH h2 test");
     test->add(BOOST_TEST_CASE(&h2_test));
+    test->add(BOOST_TEST_CASE(&symlink_test));
     return test;
 }

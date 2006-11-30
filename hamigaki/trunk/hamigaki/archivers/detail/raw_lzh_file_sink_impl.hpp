@@ -146,10 +146,45 @@ private:
 
     static std::string convert_path(const boost::filesystem::path& ph)
     {
+        if (ph.empty())
+            return std::string();
+
         std::ostringstream os;
         std::copy(ph.begin(), ph.end(),
             std::ostream_iterator<std::string>(os, "\xFF"));
         return os.str();
+    }
+
+    static std::pair<std::string,std::string>
+    make_filename_and_directory(const lha::header& head)
+    {
+        if (!head.link_path.empty())
+        {
+            if (head.link_path.has_branch_path())
+            {
+                std::string dirname = convert_path(head.path);
+                *(dirname.rbegin()) = '|';
+                dirname += convert_path(head.link_path.branch_path());
+
+                return std::make_pair(head.link_path.leaf(), dirname);
+            }
+            else
+            {
+                std::string filename = head.path.leaf();
+                filename += '|';
+                filename += head.link_path.leaf();
+
+                const boost::filesystem::path& ph = head.path.branch_path();
+                return std::make_pair(filename, convert_path(ph));
+            }
+        }
+        else if (head.is_directory())
+            return std::make_pair(std::string(), convert_path(head.path));
+        else
+        {
+            const boost::filesystem::path& ph = head.path.branch_path();
+            return std::make_pair(head.path.leaf(), convert_path(ph));
+        }
     }
 
     template<unsigned char Type, class OtherSink>
@@ -220,9 +255,16 @@ private:
         boost::iostreams::back_insert_device<std::string> tmp(buffer);
         iostreams::binary_write(tmp, lv0);
 
-        // TODO: support symbolic link
-        const std::string& name =
-            convert_path_old(header_.path, header_.is_directory());
+        std::string name;
+        if (header_.link_path.empty())
+            name = convert_path_old(header_.path, header_.is_directory());
+        else
+        {
+            name = convert_path_old(header_.path, false);
+            name += '|';
+            name += convert_path_old(header_.link_path, false);
+        }
+
         if (name.size() > 0xFF)
             throw BOOST_IOSTREAMS_FAILURE("too long path");
 
@@ -279,16 +321,15 @@ private:
         boost::iostreams::back_insert_device<std::string> tmp(buffer);
         iostreams::binary_write(tmp, lv1);
 
-        // TODO: support symbolic link
-        std::string leaf;
-        if (!header_.is_directory())
-            leaf = header_.path.leaf();
+        std::string filename;
+        std::string dirname;
+        boost::tie(filename,dirname) = make_filename_and_directory(header_);
 
-        if (!leaf.empty() && (leaf.size() <= 0xFF))
+        if (!filename.empty() && (filename.size() <= 0xFF))
         {
             iostreams::write_uint8<little>(
-                tmp, static_cast<boost::uint8_t>(leaf.size()));
-            tmp.write(leaf.c_str(), leaf.size());
+                tmp, static_cast<boost::uint8_t>(filename.size()));
+            tmp.write(filename.c_str(), filename.size());
         }
         else
             iostreams::write_uint8<little>(tmp, 0);
@@ -311,19 +352,10 @@ private:
         buffer[0] =
             static_cast<char>(static_cast<unsigned char>(basic_size));
 
-        if (header_.is_directory())
-            write_extended_header(tmp, 0x02, convert_path(header_.path));
-        else
-        {
-            if (leaf.size() > 0xFF)
-                write_extended_header(tmp, 0x01, leaf);
-
-            if (header_.path.has_branch_path())
-            {
-                const boost::filesystem::path& ph = header_.path.branch_path();
-                write_extended_header(tmp, 0x02, convert_path(ph));
-            }
-        }
+        if (filename.size() > 0xFF)
+            write_extended_header(tmp, 0x01, filename);
+        if (!dirname.empty())
+            write_extended_header(tmp, 0x02, dirname);
 
         if (header_.attributes != msdos::attributes::archive)
             write_extended_header<0x40>(tmp, header_.attributes);
@@ -420,42 +452,12 @@ private:
         if (header_.code_page)
             write_extended_header<0x46>(tmp, header_.code_page.get());
 
-        if (header_.is_directory())
-        {
-            write_empty_extended_header<0x01>(tmp);
-            write_extended_header(tmp, 0x02, convert_path(header_.path));
-        }
-        else if (!header_.link_path.empty())
-        {
-            if (header_.link_path.has_branch_path())
-            {
-                write_extended_header(tmp, 0x01, header_.link_path.leaf());
-
-                std::string dirname = convert_path(header_.path);
-                *(dirname.rbegin()) = '|';
-                dirname += convert_path(header_.link_path.branch_path());
-                write_extended_header(tmp, 0x02, dirname);
-            }
-            else
-            {
-                std::string filename = header_.path.leaf();
-                filename += '|';
-                filename += header_.link_path.leaf();
-                write_extended_header(tmp, 0x01, filename);
-
-                const boost::filesystem::path& ph = header_.path.branch_path();
-                if (!ph.empty())
-                    write_extended_header(tmp, 0x02, convert_path(ph));
-            }
-        }
-        else
-        {
-            write_extended_header(tmp, 0x01, header_.path.leaf());
-
-            const boost::filesystem::path& ph = header_.path.branch_path();
-            if (!ph.empty())
-                write_extended_header(tmp, 0x02, convert_path(ph));
-        }
+        std::string filename;
+        std::string dirname;
+        boost::tie(filename,dirname) = make_filename_and_directory(header_);
+        write_extended_header(tmp, 0x01, filename);
+        if (!dirname.empty())
+            write_extended_header(tmp, 0x02, dirname);
 
         if (!header_.comment.empty())
             write_extended_header(tmp, 0x3F, header_.comment);

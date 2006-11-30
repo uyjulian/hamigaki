@@ -50,10 +50,7 @@ struct header
 
     bool is_directory() const
     {
-        if (link_path.empty())
-            return (attributes & msdos::attributes::directory) != 0;
-        else
-            return false;
+        return (attributes & msdos::attributes::directory) != 0;
     }
 
     bool is_symbolic_link() const

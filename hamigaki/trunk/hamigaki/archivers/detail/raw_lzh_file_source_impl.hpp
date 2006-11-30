@@ -140,11 +140,6 @@ public:
             header_.file_size = lv1.file_size;
             header_.update_time = lv1.update_date_time.to_time_t();
 
-            if (lv1.method == "-lhd-")
-                header_.attributes = msdos::attributes::directory;
-            else
-                header_.attributes = msdos::attributes::archive;
-
             boost::tie(header_.path, header_.link_path) = read_path(*hsrc, cs);
             header_.crc16_checksum = read_little16(*hsrc, cs);
             header_.os = get(*hsrc, cs);
@@ -175,11 +170,6 @@ public:
             header_.compressed_size = lv2.compressed_size;
             header_.file_size = lv2.file_size;
             header_.update_time = static_cast<std::time_t>(lv2.update_time);
-
-            if (lv2.method == "-lhd-")
-                header_.attributes = msdos::attributes::directory;
-            else
-                header_.attributes = msdos::attributes::archive;
 
             header_.crc16_checksum = read_little16(*hsrc, crc);
             header_.os = get(*hsrc, crc);
