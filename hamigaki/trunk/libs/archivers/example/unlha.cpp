@@ -77,12 +77,12 @@ int main(int argc, char* argv[])
 
             // Note:
             // The POSIX chown() clears S_ISUID/S_ISGID bits.
-            // So, we must call change_owner()
+            // So, we must call change_symlink_owner()
             // before calling change_permissions().
             int ec = 0;
             if (head.owner)
             {
-                fs_ex::change_owner(
+                fs_ex::change_symlink_owner(
                     head.path, head.owner->uid, head.owner->gid, ec);
             }
 
