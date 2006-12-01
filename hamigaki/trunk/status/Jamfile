@@ -8,6 +8,7 @@ subinclude libs/audio/test ;
 subinclude libs/checksum/test ;
 subinclude libs/coroutine/test ;
 subinclude libs/filesystem/test ;
+subinclude libs/integer/test ;
 subinclude libs/iostreams/test ;
 subinclude libs/iterator/test ;
 subinclude libs/math/test ;
