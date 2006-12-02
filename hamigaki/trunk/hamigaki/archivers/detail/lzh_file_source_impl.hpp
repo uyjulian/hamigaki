@@ -11,6 +11,7 @@
 #define HAMIGAKI_ARCHIVERS_DETAIL_LZH_FILE_SOURCE_IMPL_HPP
 
 #include <hamigaki/archivers/detail/raw_lzh_file_source_impl.hpp>
+#include <hamigaki/integer/auto_min.hpp>
 #include <hamigaki/iostreams/filter/lzhuf.hpp>
 #include <boost/ref.hpp>
 #include <memory>
@@ -67,9 +68,7 @@ public:
             return -1;
 
         boost::int64_t rest = file_size - pos_;
-        std::streamsize amt =
-            static_cast<std::streamsize>(
-                (std::min)(static_cast<boost::int64_t>(n), rest));
+        std::streamsize amt = auto_min(n, rest);
 
         std::streamsize result = read_impl(s, amt);
         if (result > 0)

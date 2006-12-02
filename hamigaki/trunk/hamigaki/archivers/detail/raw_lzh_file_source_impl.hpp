@@ -12,6 +12,7 @@
 
 #include <hamigaki/archivers/lha/lzh_headers.hpp>
 #include <hamigaki/checksum/sum8.hpp>
+#include <hamigaki/integer/auto_min.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>
 #include <hamigaki/iostreams/relative_restrict.hpp>
 #include <hamigaki/iostreams/seek.hpp>
@@ -197,9 +198,7 @@ public:
             return -1;
 
         boost::int64_t rest = header_.compressed_size - pos_;
-        std::streamsize amt =
-            static_cast<std::streamsize>(
-                (std::min)(static_cast<boost::int64_t>(n), rest));
+        std::streamsize amt = auto_min(n, rest);
 
         iostreams::blocking_read(src_, s, amt);
         pos_ += amt;
