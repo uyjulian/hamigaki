@@ -506,6 +506,11 @@ private:
         // end of extended headers
         iostreams::write_uint16<little>(tmp, 0);
 
+        // LZH header must not start by '\0'.
+        // So the low byte of the header size must not be 0.
+        if ((buffer.size() & 0xFF) == 0)
+            buffer.push_back('\0');
+
         char size_buf[2];
         hamigaki::encode_uint<little,2>(size_buf, buffer.size());
         buffer[0] = size_buf[0];

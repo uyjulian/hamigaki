@@ -115,10 +115,38 @@ void symlink_test()
     }
 }
 
+void header_size_test()
+{
+    ar::lha::header head;
+    head.level = 2;
+    head.update_time = std::time(0);
+    head.attributes = ar::msdos::attributes::directory;
+    // to adjust the size of the header to 256
+    head.path = std::string(212u, 'a');
+    head.os = 'M';
+
+    io_ex::tmp_file archive;
+    ar::basic_lzh_file_sink<
+        io_ex::dont_close_device<io_ex::tmp_file>
+    > sink(io_ex::dont_close(archive));
+
+    sink.create_entry(head);
+    sink.close();
+    sink.close_archive();
+
+    io::seek(archive, 0, BOOST_IOS::beg);
+
+    ar::basic_lzh_file_source<io_ex::tmp_file> src(archive);
+
+    BOOST_CHECK(src.next_entry());
+    BOOST_CHECK(!src.next_entry());
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("LZH h2 test");
     test->add(BOOST_TEST_CASE(&h2_test));
     test->add(BOOST_TEST_CASE(&symlink_test));
+    test->add(BOOST_TEST_CASE(&header_size_test));
     return test;
 }

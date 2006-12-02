@@ -502,6 +502,9 @@ private:
             next_size = hamigaki::decode_uint<little,2>(data+size);
         }
 
+        if (header_.level == 2)
+            skip_unknown_header(src, crc);
+
         if (header_crc)
         {
             if (crc.checksum() != header_crc.get())
