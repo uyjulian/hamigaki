@@ -385,8 +385,9 @@ private:
         // end of extended headers
         iostreams::write_uint16<little>(tmp, 0);
 
-        boost::int64_t size =
-            header_.compressed_size + buffer.size()-basic_size-2;
+        boost::int64_t size = buffer.size()-basic_size-2;
+        if (header_.compressed_size != -1)
+            size += header_.compressed_size;
 
         if (size > 0xFFFFFFFF)
             throw BOOST_IOSTREAMS_FAILURE("too big compressed size");
