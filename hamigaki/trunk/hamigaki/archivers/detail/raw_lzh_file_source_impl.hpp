@@ -12,6 +12,7 @@
 
 #include <hamigaki/archivers/detail/lzh_header_parser.hpp>
 #include <hamigaki/integer/auto_min.hpp>
+#include <hamigaki/iostreams/skip.hpp>
 
 namespace hamigaki { namespace archivers { namespace detail {
 
@@ -38,7 +39,7 @@ public:
     bool next_entry()
     {
         if (boost::int64_t rest = header_.compressed_size - pos_)
-            boost::iostreams::seek(src_, rest, BOOST_IOS::cur);
+            iostreams::skip(src_, rest);
         pos_ = 0;
 
         lzh_header_parser<Source> parser(src_);
