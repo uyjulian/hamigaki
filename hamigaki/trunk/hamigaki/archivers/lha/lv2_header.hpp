@@ -28,6 +28,13 @@ struct lv2_header
     boost::uint8_t level;
 };
 
+struct lv2_header_rest
+{
+    boost::uint16_t crc16_checksum;
+    char os;
+    boost::uint16_t next_size;
+};
+
 } } } // End namespaces lha, archivers, hamigaki.
 
 namespace hamigaki {
@@ -48,6 +55,20 @@ public:
         member<self, boost::int32_t, &self::update_time, little>,
         member<self, boost::uint8_t, &self::reserved>,
         member<self, boost::uint8_t, &self::level>
+    > members;
+};
+
+template<>
+struct struct_traits<archivers::lha::lv2_header_rest>
+{
+private:
+    typedef archivers::lha::lv2_header_rest self;
+
+public:
+    typedef boost::mpl::list<
+        member<self, boost::uint16_t, &self::crc16_checksum, little>,
+        member<self, char, &self::os>,
+        member<self, boost::uint16_t, &self::next_size, little>
     > members;
 };
 
