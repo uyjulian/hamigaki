@@ -66,7 +66,7 @@ struct header
     boost::uint32_t compressed_size;
     boost::uint32_t file_size;
     boost::uint16_t attributes;
-    boost::uint16_t permission;
+    boost::uint16_t permissions;
     std::string comment;
 
     boost::optional<std::time_t> modified_time;
@@ -80,7 +80,7 @@ struct header
         : version(20), encrypted(false), encryption_checksum(0)
         , method(zip::method::deflate), update_time(0), crc32_checksum(0)
         , compressed_size(0), file_size(0)
-        , attributes(msdos::attributes::archive), permission(0644)
+        , attributes(msdos::attributes::archive), permissions(0644)
     {
     }
 

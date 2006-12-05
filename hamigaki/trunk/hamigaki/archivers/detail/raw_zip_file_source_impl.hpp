@@ -254,7 +254,7 @@ private:
             head.file_size = file_head.file_size;
             head.attributes =
                 static_cast<boost::uint16_t>(file_head.external_attributes);
-            head.permission =
+            head.permissions =
                 static_cast<boost::uint16_t>(file_head.external_attributes>>16);
             head.offset = file_head.offset;
 

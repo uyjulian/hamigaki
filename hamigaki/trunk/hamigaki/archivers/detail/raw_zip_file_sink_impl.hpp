@@ -261,7 +261,7 @@ public:
             file_head.internal_attributes = 0; // TODO
             file_head.external_attributes =
                 head.attributes |
-                (static_cast<boost::uint32_t>(head.permission) << 16);
+                (static_cast<boost::uint32_t>(head.permissions) << 16);
             file_head.offset = head.offset;
 
             iostreams::write_uint32<little>(sink_, zip::file_header::signature);

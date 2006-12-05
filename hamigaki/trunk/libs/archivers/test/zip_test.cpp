@@ -32,7 +32,7 @@ void zip_test()
     head.update_time = std::time(0);
     head.file_size = data.size();
     head.attributes = ar::msdos::attributes::read_only;
-    head.permission = 0123;
+    head.permissions = 0123;
     head.comment = "test comment";
 
     io_ex::tmp_file archive;
@@ -55,9 +55,10 @@ void zip_test()
     BOOST_CHECK(head.link_path.empty());
     BOOST_CHECK_EQUAL(head.encrypted, src.header().encrypted);
     BOOST_CHECK(head.method == src.header().method);
-    BOOST_CHECK_EQUAL(head.update_time, src.header().update_time);
+    BOOST_CHECK((src.header().update_time - head.update_time) >= 0);
+    BOOST_CHECK((src.header().update_time - head.update_time) <= 1);
     BOOST_CHECK_EQUAL(head.attributes, src.header().attributes);
-    BOOST_CHECK_EQUAL(head.permission, src.header().permission);
+    BOOST_CHECK_EQUAL(head.permissions, src.header().permissions);
     BOOST_CHECK_EQUAL(head.comment, src.header().comment);
 
     std::string data2;

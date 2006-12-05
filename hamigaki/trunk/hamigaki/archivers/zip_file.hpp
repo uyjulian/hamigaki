@@ -405,7 +405,7 @@ private:
         boost::iostreams::close(zlib_, boost::ref(raw_), BOOST_IOS::in);
         boost::iostreams::close(bzip2_, boost::ref(raw_), BOOST_IOS::in);
 
-        if ((header_.permission & 0170000) == 0120000)
+        if ((header_.permissions & 0170000) == 0120000)
         {
             using namespace boost::filesystem;
 
