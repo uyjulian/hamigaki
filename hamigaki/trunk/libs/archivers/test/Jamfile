@@ -13,6 +13,15 @@ import testing ;
 
 DEPENDS all : test ;
 
+template zip
+    : # sources
+    : # build requirements
+        find-boost-iostreams-lib
+        find-boost-zlib-lib
+        find-boost-bzip2-lib
+    : # build variants
+    ;
+
 rule archivers-test ( sources + : requirements * )
 {
     return [
@@ -40,11 +49,6 @@ test-suite archivers :
     [ archivers-test lzh_h0_test.cpp : ]
     [ archivers-test lzh_h1_test.cpp : ]
     [ archivers-test lzh_h2_test.cpp : ]
-    [
-        archivers-test zip_test.cpp
-    :
-        find-boost-iostreams-lib
-        find-boost-zlib-lib
-        find-boost-bzip2-lib
-    ]
+    [ archivers-test zip_test.cpp <template>zip : ]
+    [ archivers-test zip_crypt_test.cpp <template>zip : ]
     ;
