@@ -16,6 +16,7 @@
 #include <hamigaki/iostreams/seek.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/iostreams/categories.hpp>
+#include <boost/iostreams/close.hpp>
 #include <boost/noncopyable.hpp>
 #include <stdexcept>
 #include <vector>
