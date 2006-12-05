@@ -11,9 +11,8 @@
 #define HAMIGAKI_ARCHIVERS_LHA_LV2_HEADER_HPP
 
 #include <hamigaki/archivers/lha/compress_method.hpp>
-#include <hamigaki/archivers/msdos/date_time.hpp>
-#include <boost/operators.hpp>
-#include <cstring>
+#include <boost/mpl/list.hpp>
+#include <boost/cstdint.hpp>
 
 namespace hamigaki { namespace archivers { namespace lha {
 

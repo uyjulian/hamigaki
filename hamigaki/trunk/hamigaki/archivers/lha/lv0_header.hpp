@@ -12,8 +12,6 @@
 
 #include <hamigaki/archivers/lha/compress_method.hpp>
 #include <hamigaki/archivers/msdos/date_time.hpp>
-#include <boost/operators.hpp>
-#include <cstring>
 
 namespace hamigaki { namespace archivers { namespace lha {
 
