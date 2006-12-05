@@ -40,6 +40,14 @@ exe delete_lha
         find-boost-filesystem-lib
     ;
 
+exe delete_zip
+    :
+        delete_zip.cpp
+        <template>archivers
+    :
+        find-boost-filesystem-lib
+    ;
+
 exe lha
     :
         lha.cpp
