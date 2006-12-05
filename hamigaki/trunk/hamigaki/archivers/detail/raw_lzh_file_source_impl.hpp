@@ -19,9 +19,6 @@ namespace hamigaki { namespace archivers { namespace detail {
 template<class Source>
 class basic_raw_lzh_file_source_impl
 {
-private:
-    typedef iostreams::relative_restriction<Source> restricted_type;
-
 public:
     typedef char char_type;
 
