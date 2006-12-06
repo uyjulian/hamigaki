@@ -71,6 +71,88 @@ void zip_test()
     BOOST_CHECK(!src.next_entry());
 }
 
+void dir_test()
+{
+    ar::zip::header head;
+    head.path = "dir";
+    head.encrypted = false;
+    head.method = ar::zip::method::store;
+    head.update_time = std::time(0);
+    head.file_size = 0;
+    head.attributes =
+        ar::msdos::attributes::directory | ar::msdos::attributes::hidden;
+    head.permissions = 040123;
+    head.comment = "test comment";
+
+    io_ex::tmp_file archive;
+    ar::basic_zip_file_sink<
+        io_ex::dont_close_device<io_ex::tmp_file>
+    > sink(io_ex::dont_close(archive));
+
+    sink.create_entry(head);
+    sink.close();
+    sink.close_archive();
+
+    io::seek(archive, 0, BOOST_IOS::beg);
+
+    ar::basic_zip_file_source<io_ex::tmp_file> src(archive);
+
+    BOOST_CHECK(src.next_entry());
+
+    BOOST_CHECK_EQUAL(head.path.string(), src.header().path.string());
+    BOOST_CHECK(head.link_path.empty());
+    BOOST_CHECK_EQUAL(head.encrypted, src.header().encrypted);
+    BOOST_CHECK(head.method == src.header().method);
+    BOOST_CHECK((src.header().update_time - head.update_time) >= 0);
+    BOOST_CHECK((src.header().update_time - head.update_time) <= 1);
+    BOOST_CHECK_EQUAL(head.attributes, src.header().attributes);
+    BOOST_CHECK_EQUAL(head.permissions, src.header().permissions);
+    BOOST_CHECK_EQUAL(head.comment, src.header().comment);
+
+    BOOST_CHECK(!src.next_entry());
+}
+
+void symlink_test()
+{
+    ar::zip::header head;
+    head.path = "link";
+    head.link_path = "target";
+    head.encrypted = false;
+    head.method = ar::zip::method::store;
+    head.update_time = std::time(0);
+    head.file_size = 0;
+    head.attributes = ar::msdos::attributes::read_only;
+    head.permissions = 0120123;
+    head.comment = "test comment";
+
+    io_ex::tmp_file archive;
+    ar::basic_zip_file_sink<
+        io_ex::dont_close_device<io_ex::tmp_file>
+    > sink(io_ex::dont_close(archive));
+
+    sink.create_entry(head);
+    sink.close();
+    sink.close_archive();
+
+    io::seek(archive, 0, BOOST_IOS::beg);
+
+    ar::basic_zip_file_source<io_ex::tmp_file> src(archive);
+
+    BOOST_CHECK(src.next_entry());
+
+    BOOST_CHECK_EQUAL(head.path.string(), src.header().path.string());
+    BOOST_CHECK_EQUAL(head.link_path.string(), src.header().link_path.string());
+    BOOST_CHECK_EQUAL(head.encrypted, src.header().encrypted);
+    BOOST_CHECK(head.method == src.header().method);
+    BOOST_CHECK((src.header().update_time - head.update_time) >= 0);
+    BOOST_CHECK((src.header().update_time - head.update_time) <= 1);
+    BOOST_CHECK_EQUAL(head.attributes, src.header().attributes);
+    BOOST_CHECK_EQUAL(head.permissions, src.header().permissions);
+    BOOST_CHECK_EQUAL(head.comment, src.header().comment);
+
+    BOOST_CHECK(!src.next_entry());
+}
+
 void unix_test()
 {
     std::string data("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
@@ -137,6 +219,8 @@ ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("ZIP test");
     test->add(BOOST_TEST_CASE(&zip_test));
+    test->add(BOOST_TEST_CASE(&dir_test));
+    test->add(BOOST_TEST_CASE(&symlink_test));
     test->add(BOOST_TEST_CASE(&unix_test));
     return test;
 }
