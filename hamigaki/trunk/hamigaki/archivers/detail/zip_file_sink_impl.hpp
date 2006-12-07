@@ -14,13 +14,16 @@
 #include <hamigaki/archivers/detail/zip_encryption_keys.hpp>
 #include <hamigaki/archivers/detail/zlib_params.hpp>
 #include <boost/functional/hash/hash.hpp>
-#include <boost/iostreams/filter/bzip2.hpp>
 #include <boost/iostreams/filter/zlib.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/variate_generator.hpp>
 #include <boost/none.hpp>
 #include <boost/ref.hpp>
+
+#if !defined(HAMIGAKI_ARCHIVERS_NO_BZIP2)
+    #include <boost/iostreams/filter/bzip2.hpp>
+#endif
 
 namespace hamigaki { namespace archivers { namespace detail {
 
@@ -194,6 +197,15 @@ public:
         else if (header.file_size < 6)
             header.method = zip::method::store;
 
+        if ((header.method != zip::method::deflate) &&
+#if !defined(HAMIGAKI_ARCHIVERS_NO_BZIP2)
+            (header.method != zip::method::bzip2) &&
+#endif
+            (header.method != zip::method::store))
+        {
+            throw std::runtime_error("unsupported ZIP format");
+        }
+
         method_ = header.method;
         raw_.create_entry(header);
         size_ = 0;
@@ -228,8 +240,10 @@ public:
     {
         if (method_ == zip::method::deflate)
             boost::iostreams::close(zlib_, boost::ref(raw_), BOOST_IOS::out);
+#if !defined(HAMIGAKI_ARCHIVERS_NO_BZIP2)
         else if (method_ == zip::method::bzip2)
             boost::iostreams::close(bzip2_, boost::ref(raw_), BOOST_IOS::out);
+#endif
 
         raw_.close(crc32_.checksum(), size_);
         crc32_.reset();
@@ -246,7 +260,9 @@ private:
     boost::crc_32_type crc32_;
     boost::uint32_t size_;
     boost::iostreams::zlib_compressor zlib_;
+#if !defined(HAMIGAKI_ARCHIVERS_NO_BZIP2)
     boost::iostreams::bzip2_compressor bzip2_;
+#endif
 
     std::streamsize write_impl(const char* s, std::streamsize n)
     {
@@ -254,8 +270,10 @@ private:
             return raw_.write(s, n);
         else if (method_ == zip::method::deflate)
             return boost::iostreams::write(zlib_, boost::ref(raw_), s, n);
+#if !defined(HAMIGAKI_ARCHIVERS_NO_BZIP2)
         else if (method_ == zip::method::bzip2)
             return boost::iostreams::write(bzip2_, boost::ref(raw_), s, n);
+#endif
 
         return n;
     }

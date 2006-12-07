@@ -13,11 +13,20 @@ import testing ;
 
 DEPENDS all : test ;
 
-template zip
+{
+
+template zlib
     : # sources
     : # build requirements
         find-boost-iostreams-lib
         find-boost-zlib-lib
+    : # build variants
+    ;
+
+template bzip2
+    : # sources
+    : # build requirements
+        find-boost-iostreams-lib
         find-boost-bzip2-lib
     : # build variants
     ;
@@ -45,10 +54,49 @@ rule archivers-test ( sources + : requirements * )
     ] ;
 }
 
-test-suite archivers :
-    [ archivers-test lzh_h0_test.cpp : ]
-    [ archivers-test lzh_h1_test.cpp : ]
-    [ archivers-test lzh_h2_test.cpp : ]
-    [ archivers-test zip_test.cpp <template>zip : ]
-    [ archivers-test zip_crypt_test.cpp <template>zip : ]
+rule intialize_suite {
+    TEST_SUITE =
+        [ archivers-test lzh_h0_test.cpp : ]
+        [ archivers-test lzh_h1_test.cpp : ]
+        [ archivers-test lzh_h2_test.cpp : ]
     ;
+
+    if ! $(NO_ZLIB)
+    {
+        TEST_SUITE +=
+            [
+                archivers-test zip_test.cpp
+                <template>zlib
+            :
+                <define>HAMIGAKI_ARCHIVERS_NO_BZIP2
+            ]
+            [
+                archivers-test zip_crypt_test.cpp
+                <template>zlib
+            :
+                <define>HAMIGAKI_ARCHIVERS_NO_BZIP2
+            ]
+        ;
+
+        if ! $(NO_BZIP2)
+        {
+            TEST_SUITE +=
+                [
+                    archivers-test zip_bz2_test.cpp
+                    <template>zlib
+                    <template>bzip2
+                :
+                ]
+            ;
+        }
+    }
+
+}
+
+intialize_suite ;
+
+test-suite "archivers"
+    : $(TEST_SUITE)
+    ;
+
+}

@@ -13,10 +13,13 @@
 #include <hamigaki/archivers/detail/raw_zip_file_source_impl.hpp>
 #include <hamigaki/archivers/detail/zip_encryption_keys.hpp>
 #include <hamigaki/archivers/detail/zlib_params.hpp>
-#include <boost/iostreams/filter/bzip2.hpp>
 #include <boost/iostreams/filter/zlib.hpp>
 #include <boost/none.hpp>
 #include <boost/ref.hpp>
+
+#if !defined(HAMIGAKI_ARCHIVERS_NO_BZIP2)
+    #include <boost/iostreams/filter/bzip2.hpp>
+#endif
 
 namespace hamigaki { namespace archivers { namespace detail {
 
@@ -170,7 +173,9 @@ private:
     zip::header header_;
     boost::crc_32_type crc32_;
     boost::iostreams::zlib_decompressor zlib_;
+#if !defined(HAMIGAKI_ARCHIVERS_NO_BZIP2)
     boost::iostreams::bzip2_decompressor bzip2_;
+#endif
 
     std::streamsize read_impl(char* s, std::streamsize n)
     {
@@ -178,8 +183,10 @@ private:
             return raw_.read(s, n);
         else if (header_.method == zip::method::deflate)
             return boost::iostreams::read(zlib_, boost::ref(raw_), s, n);
+#if !defined(HAMIGAKI_ARCHIVERS_NO_BZIP2)
         else if (header_.method == zip::method::bzip2)
             return boost::iostreams::read(bzip2_, boost::ref(raw_), s, n);
+#endif
 
         return -1;
     }
@@ -188,16 +195,20 @@ private:
     {
         header_ = raw_.header();
 
-        if ((header_.method != zip::method::store) &&
-            (header_.method != zip::method::deflate) &&
-            (header_.method != zip::method::bzip2) )
+        if ((header_.method != zip::method::deflate) &&
+#if !defined(HAMIGAKI_ARCHIVERS_NO_BZIP2)
+            (header_.method != zip::method::bzip2) &&
+#endif
+            (header_.method != zip::method::store))
         {
             throw std::runtime_error("unsupported ZIP format");
         }
 
         crc32_.reset();
         boost::iostreams::close(zlib_, boost::ref(raw_), BOOST_IOS::in);
+#if !defined(HAMIGAKI_ARCHIVERS_NO_BZIP2)
         boost::iostreams::close(bzip2_, boost::ref(raw_), BOOST_IOS::in);
+#endif
 
         if ((header_.permissions & 0170000) == 0120000)
         {
