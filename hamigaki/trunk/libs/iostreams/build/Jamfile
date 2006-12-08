@@ -11,6 +11,7 @@ subproject libs/iostreams/build ;
 
 lib hamigaki_iostreams
     :
+        ../src/file_descriptor.cpp
         ../src/tmp_file.cpp
     :
         [ common-names ]
@@ -24,6 +25,7 @@ lib hamigaki_iostreams
 
 dll hamigaki_iostreams
     :
+        ../src/file_descriptor.cpp
         ../src/tmp_file.cpp
     :
         [ common-names ]
