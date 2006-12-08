@@ -11,7 +11,7 @@
 -->
 <chapter id="license">
   <title>ライセンス</title>
-  <para>Hamigaki C++ ライブラリは、<ulink ulink="http://www.boost.org/LICENSE_1_0.txt">Boost Software License, Version 1.0</ulink>に基づいて提供される。以下は、その日本語参考訳である。</para>
+  <para>Hamigaki C++ ライブラリは、<ulink url="http://www.boost.org/LICENSE_1_0.txt">Boost Software License, Version 1.0</ulink>に基づいて提供される。以下は、その日本語参考訳である。</para>
   <formalpara>
     <title>Boostソフトウェアライセンス - バージョン 1.0 - 2003年8月17日</title>
     <para>
