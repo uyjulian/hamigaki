@@ -12,6 +12,7 @@
 
 #include <hamigaki/archivers/detail/zip_internal_header.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>
+#include <hamigaki/integer/auto_min.hpp>
 #include <boost/iostreams/detail/adapter/direct_adapter.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/categories.hpp>
@@ -87,7 +88,25 @@ inline void read_local_extra_field(Source& src, zip::header& head)
         boost::scoped_array<char> data(new char[ex_head.size]);
         if (ex_head.size)
             iostreams::blocking_read(src, data.get(), ex_head.size);
-        if (ex_head.id == zip::extra_field_id::extended_timestamp)
+        if (ex_head.id == zip::extra_field_id::zip64)
+        {
+            boost::uint16_t pos = 0;
+
+            if ((head.file_size == 0xFFFFFFFFull) ||
+                (head.compressed_size == 0xFFFFFFFFull) )
+            {
+                if (pos + 8 > ex_head.size)
+                    throw std::runtime_error("bad ZIP64 extended header");
+                head.file_size = decode_uint<little,8>(&data[pos]);
+                pos += 8;
+
+                if (pos + 8 > ex_head.size)
+                    throw std::runtime_error("bad ZIP64 extended header");
+                head.compressed_size = decode_uint<little,8>(&data[pos]);
+                pos += 8;
+            }
+        }
+        else if (ex_head.id == zip::extra_field_id::extended_timestamp)
         {
             if (ex_head.size == 0)
                 throw std::runtime_error("bad ZIP extended timestamp");
@@ -127,7 +146,7 @@ inline void read_local_extra_field(Source& src, zip::header& head)
 }
 
 template<class Source>
-inline void read_central_extra_field(Source& src, zip::header& head)
+inline void read_central_extra_field(Source& src, zip_internal_header& head)
 {
     zip::extra_field_header ex_head;
     while (iostreams::binary_read(src, ex_head, std::nothrow))
@@ -135,7 +154,33 @@ inline void read_central_extra_field(Source& src, zip::header& head)
         boost::scoped_array<char> data(new char[ex_head.size]);
         if (ex_head.size)
             iostreams::blocking_read(src, data.get(), ex_head.size);
-        if (ex_head.id == zip::extra_field_id::extended_timestamp)
+        if (ex_head.id == zip::extra_field_id::zip64)
+        {
+            boost::uint16_t pos = 0;
+
+            if (head.file_size == 0xFFFFFFFFull)
+            {
+                if (pos + 8 > ex_head.size)
+                    throw std::runtime_error("bad ZIP64 extended header");
+                head.file_size = decode_uint<little,8>(&data[pos]);
+                pos += 8;
+            }
+            if (head.compressed_size == 0xFFFFFFFFull)
+            {
+                if (pos + 8 > ex_head.size)
+                    throw std::runtime_error("bad ZIP64 extended header");
+                head.compressed_size = decode_uint<little,8>(&data[pos]);
+                pos += 8;
+            }
+            if (head.offset == 0xFFFFFFFFull)
+            {
+                if (pos + 8 > ex_head.size)
+                    throw std::runtime_error("bad ZIP64 extended header");
+                head.offset = decode_uint<little,8>(&data[pos]);
+                pos += 8;
+            }
+        }
+        else if (ex_head.id == zip::extra_field_id::extended_timestamp)
         {
             if (ex_head.size == 0)
                 throw std::runtime_error("bad ZIP extended timestamp");
@@ -203,11 +248,8 @@ public:
         if ((pos_ >= header_.compressed_size) || (n <= 0))
             return -1;
 
-        boost::uint32_t rest = header_.compressed_size - pos_;
-        std::streamsize amt =
-            static_cast<std::streamsize>(
-                (std::min)(static_cast<boost::uint32_t>(n), rest));
-
+        boost::uint64_t rest = header_.compressed_size - pos_;
+        std::streamsize amt = hamigaki::auto_min(n, rest);
         iostreams::blocking_read(src_, s, amt);
         pos_ += amt;
         return amt;
@@ -216,7 +258,7 @@ public:
 private:
     Source src_;
     zip::header header_;
-    boost::uint32_t pos_;
+    boost::uint64_t pos_;
     std::size_t next_index_;
     std::vector<zip_internal_header> headers_;
 
@@ -226,13 +268,42 @@ private:
         std::vector<zip_internal_header> tmp;
 
         detail::seek_end_of_central_dir(src_);
+        iostreams::stream_offset footer_offset = iostreams::tell_offset(src_);
 
         zip::end_of_central_directory footer;
         iostreams::binary_read(src_, footer);
 
+        if (footer.offset == 0xFFFFFFFF)
+        {
+            std::streamsize entry_size = static_cast<std::streamsize>(
+                binary_size<zip::zip64_end_cent_dir_locator>::type::value);
+
+            iostreams::stream_offset off = footer_offset - (entry_size + 8);
+            boost::iostreams::seek(src_, off, BOOST_IOS::beg);
+
+            boost::uint32_t signature = iostreams::read_uint32<little>(src_);
+            if (signature == zip::zip64_end_cent_dir_locator::signature)
+            {
+                zip::zip64_end_cent_dir_locator loc;
+                iostreams::binary_read(src_, loc);
+
+                boost::iostreams::seek(src_, loc.offset, BOOST_IOS::beg);
+                signature = iostreams::read_uint32<little>(src_);
+                if (signature != zip::zip64_end_cent_dir::signature)
+                    throw std::runtime_error("bad ZIP signature");
+
+                zip::zip64_end_cent_dir zip64;
+                iostreams::binary_read(src_, zip64);
+                boost::iostreams::seek(src_, zip64.offset, BOOST_IOS::beg);
+            }
+            else
+                boost::iostreams::seek(src_, footer.offset, BOOST_IOS::beg);
+        }
+        else
+            boost::iostreams::seek(src_, footer.offset, BOOST_IOS::beg);
+
         tmp.reserve(footer.entries);
 
-        boost::iostreams::seek(src_, footer.offset, BOOST_IOS::beg);
         for (boost::uint16_t i = 0; i < footer.entries; ++i)
         {
             boost::uint32_t signature = iostreams::read_uint32<little>(src_);
@@ -263,7 +334,8 @@ private:
                 boost::scoped_array<char>
                     filename(new char[file_head.file_name_length+1]);
 
-                blocking_read(src_, &filename[0], file_head.file_name_length);
+                iostreams::blocking_read(
+                    src_, &filename[0], file_head.file_name_length);
                 filename[file_head.file_name_length] = '\0';
                 head.path = path(&filename[0], no_check);
                 if (filename[file_head.file_name_length-1] == '/')
@@ -274,7 +346,8 @@ private:
             {
                 boost::scoped_array<char> extra(
                     new char[file_head.extra_field_length]);
-                blocking_read(src_, &extra[0], file_head.extra_field_length);
+                iostreams::blocking_read(
+                    src_, &extra[0], file_head.extra_field_length);
 
                 using boost::iostreams::array_source;
                 typedef boost::iostreams::detail::
@@ -291,7 +364,8 @@ private:
             {
                 boost::scoped_array<char> comment(
                     new char[file_head.comment_length]);
-                blocking_read(src_, &comment[0], file_head.comment_length);
+                iostreams::blocking_read(
+                    src_, &comment[0], file_head.comment_length);
                 head.comment = std::string(
                     &comment[0], &comment[0]+file_head.comment_length);
             }
@@ -341,7 +415,8 @@ private:
             boost::scoped_array<char>
                 filename(new char[local.file_name_length+1]);
 
-            blocking_read(src_, &filename[0], local.file_name_length);
+            iostreams::blocking_read(
+                src_, &filename[0], local.file_name_length);
             filename[local.file_name_length] = '\0';
             head.path = path(&filename[0], no_check);
             if (filename[local.file_name_length-1] == '/')
@@ -351,7 +426,7 @@ private:
         if (local.extra_field_length)
         {
             boost::scoped_array<char> extra(new char[local.extra_field_length]);
-            blocking_read(src_, &extra[0], local.extra_field_length);
+            iostreams::blocking_read(src_, &extra[0], local.extra_field_length);
 
             using boost::iostreams::array_source;
             typedef boost::iostreams::detail::

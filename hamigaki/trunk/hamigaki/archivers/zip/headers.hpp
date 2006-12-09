@@ -18,6 +18,8 @@
 #include <hamigaki/archivers/zip/extra_field_header.hpp>
 #include <hamigaki/archivers/zip/file_header.hpp>
 #include <hamigaki/archivers/zip/local_file_header.hpp>
+#include <hamigaki/archivers/zip/zip64_end_cent_dir.hpp>
+#include <hamigaki/archivers/zip/zip64_end_cent_dir_locator.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
 #include <string>
@@ -49,6 +51,7 @@ struct internal_attributes
 
 struct extra_field_id
 {
+    static const boost::uint16_t zip64              = 0x0001;
     static const boost::uint16_t extended_timestamp = 0x5455;
     static const boost::uint16_t info_zip_unix2     = 0x7855;
 };
@@ -63,8 +66,8 @@ struct header
     boost::uint16_t method;
     std::time_t update_time;
     boost::uint32_t crc32_checksum;
-    boost::uint32_t compressed_size;
-    boost::uint32_t file_size;
+    boost::uint64_t compressed_size;
+    boost::uint64_t file_size;
     boost::uint16_t attributes;
     boost::uint16_t permissions;
     std::string comment;
