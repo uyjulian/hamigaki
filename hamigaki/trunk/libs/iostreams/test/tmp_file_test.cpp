@@ -1,4 +1,4 @@
-//  tmp_file_test.cpp: test case for repeat
+//  tmp_file_test.cpp: test case for tmp_file
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
