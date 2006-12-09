@@ -138,13 +138,17 @@ public:
             way == BOOST_IOS::cur ? FILE_CURRENT : FILE_END);
 
         if ((low == INVALID_SET_FILE_POINTER) &&
-            (::GetLastError() == NO_ERROR))
+            (::GetLastError() != NO_ERROR))
         {
             throw BOOST_IOSTREAMS_FAILURE("bad seek");
         }
 
         return boost::iostreams::offset_to_position(
-            low | (static_cast<boost::iostreams::stream_offset>(high)<<32));
+            static_cast<boost::iostreams::stream_offset>(
+                low |
+                (static_cast<boost::uint64_t>(static_cast< ::DWORD>(high))<<32)
+            )
+        );
     }
 
     void close()
