@@ -50,7 +50,7 @@ inline unsigned long make_create_flags(BOOST_IOS::openmode m)
 {
     if ((m & BOOST_IOS::app) != 0)
         return OPEN_ALWAYS;
-    else if (((m & BOOST_IOS::in) != 0) || ((m & BOOST_IOS::trunc) == 0))
+    else if (((m & BOOST_IOS::in) != 0) && ((m & BOOST_IOS::trunc) == 0))
         return OPEN_EXISTING;
     else
         return CREATE_ALWAYS;
@@ -257,7 +257,7 @@ std::streampos file_descriptor_source::seek(
 void file_descriptor_sink::open(
     const std::string& filename, BOOST_IOS::openmode mode)
 {
-    pimpl_.reset(new impl_type(filename, mode|BOOST_IOS::in));
+    pimpl_.reset(new impl_type(filename, mode|BOOST_IOS::out));
 }
 
 std::streamsize file_descriptor_sink::write(const char* s, std::streamsize n)

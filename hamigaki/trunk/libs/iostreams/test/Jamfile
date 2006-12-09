@@ -13,6 +13,15 @@ import testing ;
 
 DEPENDS all : test ;
 
+{
+
+template iostreams
+    : # sources
+        <lib>../build/hamigaki_iostreams
+    : # build requirements
+    : # build variants
+    ;
+
 rule iostreams-test ( sources + : requirements * )
 {
     return [
@@ -35,16 +44,35 @@ rule iostreams-test ( sources + : requirements * )
     ] ;
 }
 
-test-suite iostreams :
-    [ iostreams-test background_copy_test.cpp : find-boost-thread-lib ]
-    [ iostreams-test base64_test.cpp : ]
-    [ iostreams-test concatenate_test.cpp : ]
-    [ iostreams-test huffman_test.cpp : ]
-    [ iostreams-test lazy_restrict_test.cpp : ]
-    [ iostreams-test lzhuf_test.cpp : ]
-    [ iostreams-test lzss_test.cpp : ]
-    [ iostreams-test modified_lzss_test.cpp : ]
-    [ iostreams-test repeat_test.cpp : ]
-    [ iostreams-test tmp_file_test.cpp <lib>../build/hamigaki_iostreams : ]
-    [ iostreams-test urlsafe_base64_test.cpp : ]
+rule intialize_suite {
+    TEST_SUITE =
+        [ iostreams-test background_copy_test.cpp : find-boost-thread-lib ]
+        [ iostreams-test base64_test.cpp : ]
+        [ iostreams-test concatenate_test.cpp : ]
+        [ iostreams-test file_descriptor_test.cpp <template>iostreams : ]
+        [ iostreams-test huffman_test.cpp : ]
+        [ iostreams-test lazy_restrict_test.cpp : ]
+        [ iostreams-test lzhuf_test.cpp : ]
+        [ iostreams-test lzss_test.cpp : ]
+        [ iostreams-test modified_lzss_test.cpp : ]
+        [ iostreams-test repeat_test.cpp : ]
+        [ iostreams-test tmp_file_test.cpp <template>iostreams : ]
+        [ iostreams-test urlsafe_base64_test.cpp : ]
     ;
+
+    if $(TEST_BIG_FILE)
+    {
+        TEST_SUITE +=
+            [ iostreams-test big_fd_test.cpp <template>iostreams : ]
+        ;
+    }
+
+}
+
+intialize_suite ;
+
+test-suite "iostreams"
+    : $(TEST_SUITE)
+    ;
+
+}

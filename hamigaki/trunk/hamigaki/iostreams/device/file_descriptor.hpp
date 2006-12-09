@@ -97,13 +97,13 @@ public:
     }
 
     explicit file_descriptor_sink(
-        const std::string& filename, BOOST_IOS::openmode mode=BOOST_IOS::in)
+        const std::string& filename, BOOST_IOS::openmode mode=BOOST_IOS::out)
     {
-        this->open(filename, mode|BOOST_IOS::in);
+        this->open(filename, mode|BOOST_IOS::out);
     }
 
     void open(
-        const std::string& filename, BOOST_IOS::openmode mode=BOOST_IOS::in);
+        const std::string& filename, BOOST_IOS::openmode mode=BOOST_IOS::out);
 
     bool is_open() const
     {
