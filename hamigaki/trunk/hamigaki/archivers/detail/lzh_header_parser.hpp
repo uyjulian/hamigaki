@@ -14,6 +14,8 @@
 #include <hamigaki/checksum/sum8.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>
 #include <hamigaki/iostreams/relative_restrict.hpp>
+#include <boost/iostreams/detail/adapter/direct_adapter.hpp>
+#include <boost/iostreams/device/array.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/crc.hpp>
 #include <boost/scoped_array.hpp>
