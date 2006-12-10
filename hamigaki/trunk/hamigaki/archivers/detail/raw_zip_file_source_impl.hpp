@@ -287,14 +287,20 @@ private:
                 zip::zip64_end_cent_dir_locator loc;
                 iostreams::binary_read(src_, loc);
 
-                boost::iostreams::seek(src_, loc.offset, BOOST_IOS::beg);
+                boost::iostreams::seek(
+                    src_,
+                    static_cast<boost::iostreams::stream_offset>(loc.offset),
+                    BOOST_IOS::beg);
                 signature = iostreams::read_uint32<little>(src_);
                 if (signature != zip::zip64_end_cent_dir::signature)
                     throw std::runtime_error("bad ZIP signature");
 
                 zip::zip64_end_cent_dir zip64;
                 iostreams::binary_read(src_, zip64);
-                boost::iostreams::seek(src_, zip64.offset, BOOST_IOS::beg);
+                boost::iostreams::seek(
+                    src_,
+                    static_cast<boost::iostreams::stream_offset>(zip64.offset),
+                    BOOST_IOS::beg);
             }
             else
                 boost::iostreams::seek(src_, footer.offset, BOOST_IOS::beg);
@@ -384,7 +390,10 @@ private:
         zip_internal_header head = headers_[index];
         next_index_ = ++index;
 
-        boost::iostreams::seek(src_, head.offset, BOOST_IOS::beg);
+        boost::iostreams::seek(
+            src_,
+            static_cast<boost::iostreams::stream_offset>(head.offset),
+            BOOST_IOS::beg);
         pos_ = 0;
 
         boost::uint32_t signature = iostreams::read_uint32<little>(src_);

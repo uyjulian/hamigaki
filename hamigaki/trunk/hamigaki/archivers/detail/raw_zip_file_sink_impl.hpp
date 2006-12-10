@@ -24,6 +24,48 @@
 namespace hamigaki { namespace archivers { namespace detail {
 
 template<class Sink>
+inline void write_local_zip64(Sink& sink, const zip::header& head)
+{
+    if ((head.file_size >= 0xFFFFFFFFull) ||
+        (head.compressed_size >= 0xFFFFFFFFull) )
+    {
+        zip::extra_field_header ex_head;
+        ex_head.id = zip::extra_field_id::zip64;
+        ex_head.size = 16;
+
+        iostreams::binary_write(sink, ex_head);
+        iostreams::write_uint64<little>(sink, head.file_size);
+        iostreams::write_uint64<little>(sink, head.compressed_size);
+    }
+}
+
+template<class Sink>
+inline void write_central_zip64(Sink& sink, const zip_internal_header& head)
+{
+    zip::extra_field_header ex_head;
+    ex_head.id = zip::extra_field_id::zip64;
+    ex_head.size = 0;
+
+    if (head.file_size >= 0xFFFFFFFFull)
+        ex_head.size += 8;
+    if (head.compressed_size >= 0xFFFFFFFFull)
+        ex_head.size += 8;
+    if (head.offset >= 0xFFFFFFFFull)
+        ex_head.size += 8;
+
+    if (ex_head.size != 0)
+    {
+        iostreams::binary_write(sink, ex_head);
+        if (head.file_size >= 0xFFFFFFFFull)
+            iostreams::write_uint64<little>(sink, head.file_size);
+        if (head.compressed_size >= 0xFFFFFFFFull)
+            iostreams::write_uint64<little>(sink, head.compressed_size);
+        if (head.offset >= 0xFFFFFFFFull)
+            iostreams::write_uint64<little>(sink, head.offset);
+    }
+}
+
+template<class Sink>
 inline void write_local_ex_timestamp(Sink& sink, const zip::header& head)
 {
     zip::extra_field_header ex_head;
@@ -88,6 +130,7 @@ inline void write_central_ex_timestamp(Sink& sink, const zip::header& head)
 template<class Sink>
 inline void write_local_extra_field(Sink& sink, const zip::header& head)
 {
+    write_local_zip64(sink, head);
     write_local_ex_timestamp(sink, head);
 
     if (head.uid && head.gid)
@@ -104,8 +147,10 @@ inline void write_local_extra_field(Sink& sink, const zip::header& head)
 }
 
 template<class Sink>
-inline void write_central_extra_field(Sink& sink, const zip::header& head)
+inline void write_central_extra_field(
+    Sink& sink, const zip_internal_header& head)
 {
+    write_central_zip64(sink, head);
     write_central_ex_timestamp(sink, head);
 
     if (head.uid && head.gid)
@@ -131,7 +176,7 @@ public:
     {};
 
     explicit basic_raw_zip_file_sink_impl(const Sink& sink)
-        : sink_(sink), size_(0), overflow_(false)
+        : sink_(sink), size_(0), overflow_(false), zip64_(false)
     {
     }
 
@@ -153,7 +198,9 @@ public:
         }
 
         header_.offset =
-            static_cast<boost::uint32_t>(iostreams::tell_offset(sink_));
+            static_cast<boost::uint64_t>(iostreams::tell_offset(sink_));
+        if (header_.offset >= 0xFFFFFFFFull)
+            zip64_ = true;
 
         write_local_file_header(header_);
 
@@ -165,7 +212,10 @@ public:
     {
         header_.method = zip::method::store;
 
-        boost::iostreams::seek(sink_, header_.offset, BOOST_IOS::beg);
+        boost::iostreams::seek(
+            sink_,
+            static_cast<boost::iostreams::stream_offset>(header_.offset),
+            BOOST_IOS::beg);
         write_local_file_header(header_);
 
         size_ = 0;
@@ -199,7 +249,7 @@ public:
     }
 
     void close(
-        boost::uint32_t crc32_checksum, boost::uint32_t file_size)
+        boost::uint32_t crc32_checksum, boost::uint64_t file_size)
     {
         header_.crc32_checksum = crc32_checksum;
         header_.compressed_size = size_;
@@ -207,10 +257,14 @@ public:
 
         if (header_.compressed_size != 0)
         {
-            boost::iostreams::seek(sink_, header_.offset, BOOST_IOS::beg);
+            boost::iostreams::seek(
+                sink_,
+                static_cast<boost::iostreams::stream_offset>(header_.offset),
+                BOOST_IOS::beg);
             write_local_file_header(header_);
             boost::iostreams::seek(sink_, 0, BOOST_IOS::end);
         }
+        // TODO: Zip64 support
         if (header_.encrypted)
         {
             iostreams::write_uint32<little>(
@@ -228,8 +282,8 @@ public:
 
     void close_archive()
     {
-        boost::uint32_t start_offset =
-            static_cast<boost::uint32_t>(iostreams::tell_offset(sink_));
+        boost::uint64_t start_offset =
+            static_cast<boost::uint64_t>(iostreams::tell_offset(sink_));
 
         for (std::size_t i = 0; i < headers_.size(); ++i)
         {
@@ -263,7 +317,11 @@ public:
             file_head.external_attributes =
                 head.attributes |
                 (static_cast<boost::uint32_t>(head.permissions) << 16);
-            file_head.offset = head.offset;
+
+            if (head.offset < 0xFFFFFFFFull)
+                file_head.offset = head.offset;
+            else
+                file_head.offset = 0xFFFFFFFFu;
 
             iostreams::write_uint32<little>(sink_, zip::file_header::signature);
             iostreams::binary_write(sink_, file_head);
@@ -278,16 +336,68 @@ public:
                 iostreams::blocking_write(sink_, head.comment);
         }
 
-        boost::uint32_t end_offset =
-            static_cast<boost::uint32_t>(iostreams::tell_offset(sink_));
+        boost::uint64_t end_offset =
+            static_cast<boost::uint64_t>(iostreams::tell_offset(sink_));
+        boost::uint64_t cent_dir_size = end_offset - start_offset;
+
+        if ((cent_dir_size >= 0xFFFFFFFFull) ||
+            (start_offset >= 0xFFFFFFFFull) ||
+            (headers_.size() >= 0xFFFFu))
+        {
+            zip64_ = true;
+        }
+
+        if (zip64_)
+        {
+            boost::uint64_t offset =
+                static_cast<boost::uint64_t>(iostreams::tell_offset(sink_));
+
+            zip::zip64_end_cent_dir zip64;
+            zip64.self_size =
+                struct_size<zip::zip64_end_cent_dir>::type::value - 8;
+            zip64.made_by = 45;
+            zip64.needed_to_extract = 45;
+            zip64.disk_number = 0; // TODO
+            zip64.start_disk_number = 0; // TODO
+            zip64.entries = headers_.size();
+            zip64.total_entries = zip64.entries; // TODO
+            zip64.size = cent_dir_size;
+            zip64.offset = start_offset;
+
+            iostreams::write_uint32<little>(
+                sink_, zip::zip64_end_cent_dir::signature);
+            iostreams::binary_write(sink_, zip64);
+
+
+            zip::zip64_end_cent_dir_locator loc;
+            loc.disk_number = 0; // TODO
+            loc.offset = offset;
+            loc.total_disk_number = 1; // TODO
+
+            iostreams::write_uint32<little>(
+                sink_, zip::zip64_end_cent_dir_locator::signature);
+            iostreams::binary_write(sink_, loc);
+        }
 
         zip::end_of_central_directory footer;
         footer.disk_number = 0; // TODO
         footer.start_disk_number = 0; // TODO
-        footer.entries = headers_.size();
+        if (headers_.size() < 0xFFFFu)
+            footer.entries = headers_.size();
+        else
+            footer.entries = 0xFFFFu;
         footer.total_entries = footer.entries; // TODO
-        footer.size = end_offset - start_offset;
-        footer.offset = start_offset;
+
+        if (cent_dir_size < 0xFFFFFFFFull)
+            footer.size = cent_dir_size;
+        else
+            footer.size = 0xFFFFFFFFu;
+
+        if (start_offset < 0xFFFFFFFFull)
+            footer.offset = start_offset;
+        else
+            footer.offset = 0xFFFFFFFFu;
+
         footer.comment_length = 0; //TODO
 
         iostreams::write_uint32<little>(
@@ -302,6 +412,7 @@ private:
     zip_internal_header header_;
     boost::uint32_t size_;
     bool overflow_;
+    bool zip64_;
     std::vector<zip_internal_header> headers_;
 
     void write_local_file_header(const zip::header& head)
@@ -322,8 +433,28 @@ private:
         local.method = head.method;
         local.update_date_time = msdos::date_time(head.update_time);
         local.crc32_checksum = head.crc32_checksum;
-        local.compressed_size = head.compressed_size;
-        local.file_size = head.file_size;
+
+        bool zip64 = false;
+        if ((head.compressed_size >= 0xFFFFFFFFull) ||
+            (head.file_size >= 0xFFFFFFFFull) )
+        {
+            zip64 = true;
+            zip64_ = true;
+        }
+
+        if (zip64)
+            local.compressed_size = 0xFFFFFFFFu;
+        else
+        {
+            local.compressed_size =
+                static_cast<boost::uint32_t>(head.compressed_size);
+        }
+
+        if (zip64)
+            local.file_size = 0xFFFFFFFFu;
+        else
+            local.file_size = static_cast<boost::uint32_t>(head.file_size);
+
         local.file_name_length = filename.size();
         local.extra_field_length = extra_field.size();
 

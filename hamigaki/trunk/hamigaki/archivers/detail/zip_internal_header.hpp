@@ -11,15 +11,14 @@
 #define HAMIGAKI_ARCHIVERS_DETAIL_ZIP_INTERNAL_HEADER_HPP
 
 #include <hamigaki/archivers/zip/headers.hpp>
-#include <boost/iostreams/positioning.hpp>
 
 namespace hamigaki { namespace archivers { namespace detail {
 
 struct zip_internal_header : public zip::header
 {
-    boost::iostreams::stream_offset offset;
+    boost::uint64_t offset;
 
-    zip_internal_header() : offset(-1)
+    zip_internal_header() : offset(0)
     {
     }
 };

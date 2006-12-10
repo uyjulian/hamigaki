@@ -104,7 +104,7 @@ public:
 
     // void close();
 
-    void close(boost::uint32_t crc32_checksum, boost::uint32_t file_size)
+    void close(boost::uint32_t crc32_checksum, boost::uint64_t file_size)
     {
         raw_.close(crc32_checksum, file_size);
     }
@@ -258,7 +258,7 @@ private:
     raw_zip_type raw_;
     boost::uint16_t method_;
     boost::crc_32_type crc32_;
-    boost::uint32_t size_;
+    boost::uint64_t size_;
     boost::iostreams::zlib_compressor zlib_;
 #if !defined(HAMIGAKI_ARCHIVERS_NO_BZIP2)
     boost::iostreams::bzip2_compressor bzip2_;
