@@ -78,4 +78,17 @@ exe unlha
         find-boost-filesystem-lib
     ;
 
+exe zip
+    :
+        zip.cpp
+        <template>archivers
+        <lib>../../filesystem/build/hamigaki_filesystem
+        <lib>../../iostreams/build/hamigaki_iostreams
+    :
+        find-boost-filesystem-lib
+        find-boost-iostreams-lib
+        find-boost-zlib-lib
+        find-boost-bzip2-lib
+    ;
+
 }
