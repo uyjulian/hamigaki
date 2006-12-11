@@ -264,18 +264,9 @@ public:
             write_local_file_header(header_);
             boost::iostreams::seek(sink_, 0, BOOST_IOS::end);
         }
-        // TODO: Zip64 support
-        if (header_.encrypted)
-        {
-            iostreams::write_uint32<little>(
-                sink_, zip::data_descriptor::signature);
 
-            zip::data_descriptor desc;
-            desc.crc32_checksum = header_.crc32_checksum;
-            desc.compressed_size = header_.compressed_size;
-            desc.file_size = header_.file_size;
-            iostreams::binary_write(sink_, desc);
-        }
+        if (header_.encrypted)
+            write_data_descriptor();
 
         headers_.back() = header_;
     }
@@ -465,6 +456,25 @@ private:
             iostreams::blocking_write(sink_, filename);
         if (!extra_field.empty())
             iostreams::blocking_write(sink_, extra_field);
+    }
+
+    void write_data_descriptor()
+    {
+        // Note: 7-Zip doesn't support Zip64 formatted data descriptor
+        if ((header_.compressed_size >= 0xFFFFFFFFull) ||
+            (header_.file_size >= 0xFFFFFFFFull) )
+        {
+            return;
+        }
+
+        zip::data_descriptor desc;
+        desc.crc32_checksum = header_.crc32_checksum;
+        desc.compressed_size =
+            static_cast<boost::uint32_t>(header_.compressed_size);
+        desc.file_size = static_cast<boost::uint32_t>(header_.file_size);
+
+        iostreams::write_uint32<little>(sink_, zip::data_descriptor::signature);
+        iostreams::binary_write(sink_, desc);
     }
 };
 
