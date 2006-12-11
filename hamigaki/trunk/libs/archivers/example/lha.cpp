@@ -11,6 +11,7 @@
 
 #include <hamigaki/archivers/lzh_file.hpp>
 #include <hamigaki/filesystem/operations.hpp>
+#include <hamigaki/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <clocale>
 #include <exception>
@@ -39,7 +40,10 @@ int main(int argc, char* argv[])
         std::setlocale(LC_ALL, "");
         fs::path::default_name_check(fs::no_check);
 
-        ar::lzh_file_sink lzh(argv[1]);
+        // file_descriptor_sink supports 64bit offset
+        ar::basic_lzh_file_sink<io_ex::file_descriptor_sink>
+            lzh((io_ex::file_descriptor_sink(
+                std::string(argv[1]), BOOST_IOS::binary)));
 
         for (int i = 2; i < argc; ++i)
         {
@@ -92,7 +96,7 @@ int main(int argc, char* argv[])
                 try
                 {
                     io::copy(
-                        io_ex::file_source(
+                        io_ex::file_descriptor_source(
                             head.path.native_file_string(),
                             std::ios_base::binary),
                         lzh
@@ -103,7 +107,7 @@ int main(int argc, char* argv[])
                     lzh.rewind_entry();
 
                     io::copy(
-                        io_ex::file_source(
+                        io_ex::file_descriptor_source(
                             head.path.native_file_string(),
                             std::ios_base::binary),
                         lzh

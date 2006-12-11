@@ -458,6 +458,27 @@ private:
         if (header_.code_page)
             write_extended_header<0x46>(tmp, header_.code_page.get());
 
+        bool need_size_hdr = false;
+        if ((header_.compressed_size != -1) &&
+            ((header_.compressed_size >> 32) != 0))
+        {
+            need_size_hdr = true;
+        }
+        if ((header_.file_size != -1) &&
+            ((header_.file_size >> 32) != 0))
+        {
+            need_size_hdr = true;
+        }
+
+        if (need_size_hdr)
+        {
+            write_extended_header<0x42>(tmp,
+                lha::windows::file_size(
+                    header_.compressed_size, header_.file_size
+                )
+            );
+        }
+
         std::string filename;
         std::string dirname;
         boost::tie(filename,dirname) = make_filename_and_directory(header_);
@@ -473,19 +494,6 @@ private:
 
         if (header_.timestamp)
             write_extended_header<0x41>(tmp, header_.timestamp.get());
-
-        if ((header_.compressed_size != -1) && (header_.file_size != -1))
-        {
-            if (((header_.compressed_size >> 32) != 0) ||
-                ((header_.file_size >> 32) != 0))
-            {
-                write_extended_header<0x42>(tmp,
-                    lha::windows::file_size(
-                        header_.compressed_size, header_.file_size
-                    )
-                );
-            }
-        }
 
         if (header_.permissions)
             write_extended_header<0x50>(tmp, header_.permissions.get());

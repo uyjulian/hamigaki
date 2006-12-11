@@ -53,6 +53,7 @@ exe lha
         lha.cpp
         <template>archivers
         <lib>../../filesystem/build/hamigaki_filesystem
+        <lib>../../iostreams/build/hamigaki_iostreams
     :
         find-boost-filesystem-lib
     ;
