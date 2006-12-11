@@ -99,6 +99,18 @@ inline ::FILETIME to_file_time(const timestamp& ts)
     return tmp;
 }
 
+inline ::FILETIME* to_file_time(
+    ::FILETIME& buf, const boost::optional<timestamp>& ts)
+{
+    if (ts)
+    {
+        buf = to_file_time(*ts);
+        return &buf;
+    }
+    else
+        return static_cast< ::FILETIME*>(0);
+}
+
 namespace
 {
 
@@ -135,13 +147,13 @@ public:
         if (handle_ == INVALID_HANDLE_VALUE)
             return false;
 
-        ::FILETIME* nil = static_cast< ::FILETIME*>(0);
-
+        ::FILETIME buf[3];
         ::BOOL res = ::SetFileTime(
             handle_,
-            creation_time    ? &to_file_time(*creation_time   ) : nil,
-            last_access_time ? &to_file_time(*last_access_time) : nil,
-            last_write_time  ? &to_file_time(*last_write_time ) : nil);
+            to_file_time(buf[0], creation_time),
+            to_file_time(buf[1], last_access_time),
+            to_file_time(buf[2], last_write_time)
+        );
         return res != FALSE;
     }
 

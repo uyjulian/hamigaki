@@ -277,7 +277,7 @@ private:
             return boost::filesystem::path();
 
         wchar_t* src = &sub_name[prefix_size];
-        int src_size = static_cast<int>(sub_name.size() - prefix_size);
+        std::size_t src_size = sub_name.size() - prefix_size;
 
         const wchar_t unc[] = L"UNC\\";
         std::size_t unc_size = sizeof(unc)/sizeof(wchar_t) - 1;
@@ -290,7 +290,7 @@ private:
         }
 
         return boost::filesystem::path(
-            to_multi_byte(src, src_size),
+            to_multi_byte(src, static_cast<int>(src_size)),
             boost::filesystem::no_check
         );
     }
