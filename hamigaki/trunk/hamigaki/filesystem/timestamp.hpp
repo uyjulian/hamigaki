@@ -11,11 +11,12 @@
 #define HAMIGAKI_FILESYSTEM_TIMESTAMP_HPP
 
 #include <boost/cstdint.hpp>
+#include <boost/operators.hpp>
 #include <ctime>
 
 namespace hamigaki { namespace filesystem {
 
-struct timestamp
+struct timestamp : boost::totally_ordered<timestamp>
 {
     boost::int64_t seconds;
     boost::uint32_t nanoseconds;
@@ -67,6 +68,18 @@ struct timestamp
             static_cast<boost::uint32_t>(ft % 10000000ull) * 100;
 
         return timestamp(sec - 11644473600LL, nsec);
+    }
+
+    bool operator<(const timestamp& rhs) const
+    {
+        return
+            (seconds < rhs.seconds) ||
+            ((seconds == rhs.seconds) && (nanoseconds < rhs.nanoseconds));
+    }
+
+    bool operator==(const timestamp& rhs) const
+    {
+        return (seconds == rhs.seconds) && (nanoseconds == rhs.nanoseconds);
     }
 };
 
