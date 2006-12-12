@@ -1,128 +1,36 @@
-//  simple_unzip.cpp: a simple zip decompressing program
+//  simple_unzip.cpp: a simple ZIP decompressing program
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
+//  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#include <boost/config.hpp>
 
-#include <hamigaki/iostreams/device/zip_file.hpp>
+// Security warning:
+// This program never check the validity of paths in the archive.
+// See http://www.forest.impress.co.jp/article/2004/07/30/arcsecurity.html .
+// (The above link is Japanese site)
+
+
+#include <hamigaki/archivers/zip_file.hpp>
+#include <hamigaki/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <clocale>
 #include <exception>
 #include <iostream>
 
-#if defined(BOOST_WINDOWS)
-    #include <windows.h>
-#elif defined(BOOST_HAS_UNISTD_H)
-    #include <signal.h>
-    #include <termios.h>
-#endif
-
+namespace ar = hamigaki::archivers;
+namespace fs_ex = hamigaki::filesystem;
 namespace io_ex = hamigaki::iostreams;
 namespace fs = boost::filesystem;
 namespace io = boost::iostreams;
 
-#if defined(BOOST_WINDOWS)
-bool disable_echo()
+inline fs_ex::timestamp make_timestamp(std::time_t t)
 {
-    ::HANDLE h = ::GetStdHandle(STD_INPUT_HANDLE);
-    ::DWORD mode;
-    if (::GetConsoleMode(h, &mode) && ((mode & ENABLE_ECHO_INPUT) != 0))
-    {
-        ::SetConsoleMode(h, mode & ~ENABLE_ECHO_INPUT);
-        return true;
-    }
-    return false;
-}
-
-void enable_echo()
-{
-    ::HANDLE h = ::GetStdHandle(STD_INPUT_HANDLE);
-    ::DWORD mode;
-    ::GetConsoleMode(h, &mode);
-    ::SetConsoleMode(h, mode | ENABLE_ECHO_INPUT);
-}
-#elif defined(BOOST_HAS_UNISTD_H)
-void enable_echo_impl()
-{
-    ::termios data;
-    ::tcgetattr(0, &data);
-    data.c_lflag |= ECHO;
-    ::tcsetattr(0, TCSAFLUSH, &data);
-}
-
-void on_interrupt(int)
-{
-    enable_echo_impl();
-    ::_exit(0);
-}
-
-bool disable_echo()
-{
-    ::termios data;
-    ::tcgetattr(0, &data);
-    if (data.c_lflag & ECHO)
-    {
-        struct sigaction sa;
-        sa.sa_handler = &on_interrupt;
-        ::sigfillset(&sa.sa_mask);
-        sa.sa_flags = 0;
-        ::sigaction(SIGINT, &sa, 0);
-
-        data.c_lflag &= ~ECHO;
-        ::tcsetattr(0, TCSAFLUSH, &data);
-        return true;
-    }
-    else
-        return false;
-}
-
-void enable_echo()
-{
-    enable_echo_impl();
-
-    struct sigaction sa;
-    sa.sa_handler = SIG_DFL;
-    ::sigfillset(&sa.sa_mask);
-    sa.sa_flags = 0;
-    ::sigaction(SIGINT, &sa, 0);
-}
-#else
-bool disable_echo()
-{
-    return false;
-}
-
-void enable_echo()
-{
-}
-#endif
-
-class scoped_echo_off
-{
-public:
-    scoped_echo_off() : changed_(disable_echo())
-    {
-    }
-
-    ~scoped_echo_off()
-    {
-        if (changed_)
-            enable_echo();
-    }
-
-private:
-    bool changed_;
-};
-
-std::string get_password()
-{
-    std::string pswd;
-    scoped_echo_off echo_off;
-    std::getline(std::cin, pswd);
-    return pswd;
+    return fs_ex::timestamp::from_time_t(t);
 }
 
 int main(int argc, char* argv[])
@@ -130,44 +38,75 @@ int main(int argc, char* argv[])
     try
     {
         if (argc != 2)
+        {
+            std::cerr << "Usage: unzip (archive)" << std::endl;
             return 1;
+        }
 
-        bool need_pswd = true;
-        io_ex::zip_file_source zip(argv[1]);
+        std::setlocale(LC_ALL, "");
+        fs::path::default_name_check(fs::no_check);
+
+        ar::zip_file_source zip(argv[1]);
 
         while (zip.next_entry())
         {
-            const io_ex::zip::header& head = zip.header();
-
-            if (head.encrypted && need_pswd)
-            {
-                std::cout << "password: " << std::flush;
-                std::string pswd = get_password();
-                std::cout << '\n';
-
-                zip.password(pswd);
-                need_pswd = false;
-            }
+            const ar::zip::header& head = zip.header();
 
             std::cout << head.path.string() << '\n';
-            if (head.is_symbolic_link())
-                std::cout << "-> " << head.link_path.string() << '\n';
-            else if (!head.is_directory())
+
+            if (!head.link_path.empty())
             {
-                char buf[256];
-                std::streamsize n;
-                while (n = zip.read(buf, sizeof(buf)), n >= 0)
-                {
-                    if (n)
-                        std::cout.write(buf, n);
-                }
-                std::cout << '\n';
+                if (head.path.has_branch_path())
+                    fs::create_directories(head.path.branch_path());
+
+                fs_ex::create_symlink(head.link_path, head.path);
+            }
+            else if (head.is_directory())
+                fs::create_directories(head.path);
+            else
+            {
+                if (head.path.has_branch_path())
+                    fs::create_directories(head.path.branch_path());
+
+                io::copy(
+                    zip,
+                    io_ex::file_sink(
+                        head.path.native_file_string(), std::ios_base::binary)
+                );
             }
 
-            std::cout << "--------------------------------" << std::endl;
-        }
+            // Note:
+            // The POSIX chown() clears S_ISUID/S_ISGID bits.
+            // So, we must call change_symlink_owner()
+            // before calling change_permissions().
+            int ec = 0;
+            boost::optional<boost::intmax_t> uid;
+            if (head.uid)
+                uid = head.uid.get();
+            boost::optional<boost::intmax_t> gid;
+            if (head.gid)
+                gid = head.gid.get();
+            fs_ex::change_symlink_owner(head.path, uid, gid, ec);
 
-        std::cout.flush();
+            fs_ex::change_attributes(head.path, head.attributes, ec);
+            fs_ex::change_permissions(head.path, head.permissions, ec);
+
+            if (head.modified_time)
+            {
+                fs_ex::last_write_time(
+                    head.path, make_timestamp(*head.modified_time));
+            }
+            if (head.access_time)
+            {
+                fs_ex::last_access_time(
+                    head.path, make_timestamp(*head.access_time));
+            }
+            if (head.creation_time)
+            {
+                fs_ex::creation_time(
+                    head.path, make_timestamp(*head.creation_time));
+            }
+        }
 
         return 0;
     }

@@ -1,16 +1,29 @@
-//  simple_untar.cpp: a simple tar decompressing program
+//  simple_untar.cpp: a simple ZIP decompressing program
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
+//  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#include <hamigaki/iostreams/device/tar_file.hpp>
+
+// Security warning:
+// This program never check the validity of paths in the archive.
+// See http://www.forest.impress.co.jp/article/2004/07/30/arcsecurity.html .
+// (The above link is Japanese site)
+
+
+#include <hamigaki/archivers/tar_file.hpp>
+#include <hamigaki/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <clocale>
 #include <exception>
 #include <iostream>
 
+namespace ar = hamigaki::archivers;
+namespace fs_ex = hamigaki::filesystem;
 namespace io_ex = hamigaki::iostreams;
 namespace fs = boost::filesystem;
 namespace io = boost::iostreams;
@@ -20,59 +33,77 @@ int main(int argc, char* argv[])
     try
     {
         if (argc != 2)
+        {
+            std::cerr << "Usage: untar (archive)" << std::endl;
             return 1;
+        }
 
-        io_ex::tar_file_source tar(argv[1]);
+        std::setlocale(LC_ALL, "");
+        fs::path::default_name_check(fs::no_check);
+
+        ar::tar_file_source tar(argv[1]);
 
         while (tar.next_entry())
         {
-            const io_ex::tar::header& head = tar.header();
+            const ar::tar::header& head = tar.header();
 
             std::cout << head.path.string() << '\n';
 
-            if (head.type == io_ex::tar::type::link)
-                std::cout << "is a link to " << head.link_name.string() << '\n';
-            else if (head.type == io_ex::tar::type::symbolic_link)
+            if (head.type == ar::tar::type::link)
             {
-                std::cout
-                    << "is a symbolic-link to "
-                    << head.link_name.string() << '\n';
-            }
-            else if (head.type == io_ex::tar::type::directory)
-            {
-                std::cout << "is a directroy\n";
-            }
-            else if (head.is_device())
-            {
-                if (head.type == io_ex::tar::type::char_device)
-                    std::cout << "is a character device\n";
-                else
-                    std::cout << "is a block device\n";
+                if (head.path.has_branch_path())
+                    fs::create_directories(head.path.branch_path());
 
-                std::cout << "major=" << head.dev_major << '\n';
-                std::cout << "minor=" << head.dev_minor << '\n';
+                fs_ex::create_hard_link(head.link_path, head.path);
             }
-            else if (head.is_regular())
+            else if (head.type == ar::tar::type::symbolic_link)
             {
-                char buf[256];
-                std::streamsize n;
-                while (n = tar.read(buf, sizeof(buf)), n >= 0)
-                {
-                    if (n)
-                        std::cout.write(buf, n);
-                }
-                std::cout << '\n';
+                if (head.path.has_branch_path())
+                    fs::create_directories(head.path.branch_path());
+
+                fs_ex::create_symlink(head.link_path, head.path);
             }
-            std::cout << "--------------------------------" << std::endl;
+            else if (head.type == ar::tar::type::directory)
+                fs::create_directories(head.path);
+            else if (head.type == ar::tar::type::char_device)
+                std::cerr << "Warning: skip character device\n";
+            else if (head.type == ar::tar::type::block_device)
+                std::cerr << "Warning: skip block device\n";
+            else if (head.type == ar::tar::type::fifo)
+                std::cerr << "Warning: skip FIFO file\n";
+            // Note: All unknown types are treated as a regular file.
+            else
+            {
+                if (head.path.has_branch_path())
+                    fs::create_directories(head.path.branch_path());
+
+                io::copy(
+                    tar,
+                    io_ex::file_sink(
+                        head.path.native_file_string(), std::ios_base::binary)
+                );
+            }
+
+            // Note:
+            // The POSIX chown() clears S_ISUID/S_ISGID bits.
+            // So, we must call change_symlink_owner()
+            // before calling change_permissions().
+            int ec = 0;
+            fs_ex::change_symlink_owner(head.path, head.uid, head.gid, ec);
+
+            fs_ex::change_permissions(head.path, head.permissions, ec);
+
+            if (head.modified_time)
+                fs_ex::last_write_time(head.path, *head.modified_time);
+            if (head.access_time)
+                fs_ex::last_access_time(head.path, *head.access_time);
         }
-
-        std::cout.flush();
 
         return 0;
     }
     catch (const std::exception& e)
     {
-        std::cerr << e.what() << std::endl;
+        std::cerr << "Error: " << e.what() << std::endl;
     }
     return 1;
 }

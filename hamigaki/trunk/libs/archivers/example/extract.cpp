@@ -5,7 +5,7 @@
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
+//  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
 
 // Security warning:
@@ -13,13 +13,11 @@
 // See http://www.forest.impress.co.jp/article/2004/07/30/arcsecurity.html .
 // (The above link is Japanese site)
 
-#include <boost/config.hpp>
-
+#include <hamigaki/archivers/lzh_file.hpp>
+#include <hamigaki/archivers/tbz2_file.hpp>
+#include <hamigaki/archivers/tgz_file.hpp>
+#include <hamigaki/archivers/zip_file.hpp>
 #include <hamigaki/filesystem/operations.hpp>
-#include <hamigaki/iostreams/device/lzh_file.hpp>
-#include <hamigaki/iostreams/device/tbz2_file.hpp>
-#include <hamigaki/iostreams/device/tgz_file.hpp>
-#include <hamigaki/iostreams/device/zip_file.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -29,6 +27,7 @@
 #include <memory>
 #include <stdexcept>
 
+namespace ar = hamigaki::archivers;
 namespace fs_ex = hamigaki::filesystem;
 namespace io_ex = hamigaki::iostreams;
 namespace algo = boost::algorithm;
@@ -48,7 +47,7 @@ struct entry
     boost::optional<fs_ex::timestamp> last_change_time;
     boost::optional<fs_ex::timestamp> creation_time;
     boost::optional<boost::uint16_t> attributes;
-    boost::optional<boost::uint16_t> permission;
+    boost::optional<boost::uint16_t> permissions;
     boost::optional<boost::intmax_t> uid;
     boost::optional<boost::intmax_t> gid;
     std::string user_name;
@@ -68,9 +67,9 @@ template<class Header>
 struct header_traits;
 
 template<>
-struct header_traits<io_ex::lha::header>
+struct header_traits<ar::lha::header>
 {
-    static entry to_entry(const io_ex::lha::header& head)
+    static entry to_entry(const ar::lha::header& head)
     {
         entry e;
 
@@ -88,7 +87,7 @@ struct header_traits<io_ex::lha::header>
 
         if (head.timestamp)
         {
-            const io_ex::lha::windows_timestamp& ts = head.timestamp.get();
+            const ar::lha::windows::timestamp& ts = head.timestamp.get();
             e.last_write_time =
                 fs_ex::timestamp::from_windows_file_time(ts.last_write_time);
             e.last_access_time =
@@ -101,8 +100,8 @@ struct header_traits<io_ex::lha::header>
 
         e.attributes = head.attributes;
 
-        if (head.permission)
-            e.permission = head.permission.get();
+        if (head.permissions)
+            e.permissions = head.permissions.get();
 
         if (head.owner)
         {
@@ -119,50 +118,32 @@ struct header_traits<io_ex::lha::header>
 };
 
 template<>
-struct header_traits<io_ex::tar::header>
+struct header_traits<ar::tar::header>
 {
-    static entry to_entry(const io_ex::tar::header& head)
+    static entry to_entry(const ar::tar::header& head)
     {
         entry e;
 
-        if (head.type == io_ex::tar::type::symbolic_link)
+        if (head.type == ar::tar::type::symbolic_link)
             e.type = fs_ex::symlink_file;
-        else if (head.type == io_ex::tar::type::directory)
+        else if (head.type == ar::tar::type::directory)
             e.type = fs_ex::directory_file;
         else
             e.type = fs_ex::regular_file;
 
         e.path = head.path;
-        if (head.type == io_ex::tar::type::link)
-            e.hard_link_path = head.link_name;
+        if (head.type == ar::tar::type::link)
+            e.hard_link_path = head.link_path;
         else
-            e.link_path = head.link_name;
-        e.compressed_size = head.size;
-        e.file_size = head.size;
+            e.link_path = head.link_path;
+        e.compressed_size = head.file_size;
+        e.file_size = head.file_size;
 
-        if (head.modified_time)
-        {
-            e.last_write_time =
-                fs_ex::timestamp(
-                    head.modified_time->seconds,
-                    head.modified_time->nanoseconds);
-        }
-        if (head.access_time)
-        {
-            e.last_access_time =
-                fs_ex::timestamp(
-                    head.access_time->seconds,
-                    head.access_time->nanoseconds);
-        }
-        if (head.change_time)
-        {
-            e.last_change_time =
-                fs_ex::timestamp(
-                    head.change_time->seconds,
-                    head.change_time->nanoseconds);
-        }
+        e.last_write_time = head.modified_time;
+        e.last_access_time = head.access_time;
+        e.last_change_time = head.change_time;
 
-        e.permission = head.mode;
+        e.permissions = head.permissions;
         e.uid = head.uid;
         e.gid = head.gid;
 
@@ -175,9 +156,9 @@ struct header_traits<io_ex::tar::header>
 };
 
 template<>
-struct header_traits<io_ex::zip::header>
+struct header_traits<ar::zip::header>
 {
-    static entry to_entry(const io_ex::zip::header& head)
+    static entry to_entry(const ar::zip::header& head)
     {
         entry e;
 
@@ -213,7 +194,7 @@ struct header_traits<io_ex::zip::header>
         }
 
         e.attributes = head.attributes;
-        e.permission = head.permission;
+        e.permissions = head.permissions;
 
         if (head.uid)
             e.uid = head.uid.get();
@@ -308,17 +289,17 @@ int main(int argc, char* argv[])
         if (algo::ends_with(filename, ".lzh"))
         {
             ext_ptr.reset(new extractor<
-                io_ex::lzh_file_source>(io_ex::lzh_file_source(filename)));
+                ar::lzh_file_source>(ar::lzh_file_source(filename)));
         }
         else if (algo::ends_with(filename, ".tar"))
         {
             ext_ptr.reset(new extractor<
-                io_ex::tar_file_source>(io_ex::tar_file_source(filename)));
+                ar::tar_file_source>(ar::tar_file_source(filename)));
         }
         else if (algo::ends_with(filename, ".zip"))
         {
             ext_ptr.reset(new extractor<
-                io_ex::zip_file_source>(io_ex::zip_file_source(filename)));
+                ar::zip_file_source>(ar::zip_file_source(filename)));
         }
         else if (
             algo::ends_with(filename, ".tar.bz2") ||
@@ -327,14 +308,14 @@ int main(int argc, char* argv[])
             algo::ends_with(filename, ".tbz") )
         {
             ext_ptr.reset(new extractor<
-                io_ex::tbz2_file_source>(io_ex::tbz2_file_source(filename)));
+                ar::tbz2_file_source>(ar::tbz2_file_source(filename)));
         }
         else if (
             algo::ends_with(filename, ".tar.gz") ||
             algo::ends_with(filename, ".tgz") )
         {
             ext_ptr.reset(new extractor<
-                io_ex::tgz_file_source>(io_ex::tgz_file_source(filename)));
+                ar::tgz_file_source>(ar::tgz_file_source(filename)));
         }
         else if (algo::ends_with(filename, ".gz"))
         {
@@ -423,8 +404,8 @@ int main(int argc, char* argv[])
             if (e.attributes)
                 fs_ex::change_attributes(e.path, e.attributes.get(), ec);
 
-            if (e.permission)
-                fs_ex::change_permissions(e.path, e.permission.get(), ec);
+            if (e.permissions)
+                fs_ex::change_permissions(e.path, e.permissions.get(), ec);
 
             if (e.last_write_time)
                 fs_ex::last_write_time(e.path, e.last_write_time.get());

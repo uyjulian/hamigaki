@@ -27,22 +27,6 @@ public:
     }
 };
 
-class give_up_compression : public BOOST_IOSTREAMS_FAILURE
-{
-public:
-    give_up_compression() : BOOST_IOSTREAMS_FAILURE("give up compression")
-    {
-    }
-};
-
-class password_incorrect : public BOOST_IOSTREAMS_FAILURE
-{
-public:
-    password_incorrect() : BOOST_IOSTREAMS_FAILURE("password incorrect")
-    {
-    }
-};
-
 } } // End namespaces iostreams, hamigaki.
 
 #endif // HAMIGAKI_IOSTREAMS_DETAIL_ERROR_HPP

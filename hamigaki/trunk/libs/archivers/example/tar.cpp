@@ -1,120 +1,107 @@
-//  simple_tar.cpp: a simple tar archiver
+//  tar.cpp: a simple tar archiver
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
+//  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
 #include <boost/config.hpp>
 
-#include <hamigaki/iostreams/device/tar_file.hpp>
-#include <boost/filesystem/convenience.hpp>
-#include <boost/filesystem/operations.hpp>
+#include <hamigaki/archivers/tar_file.hpp>
+#include <hamigaki/filesystem/operations.hpp>
+#include <hamigaki/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/copy.hpp>
-#include <boost/none.hpp>
+#include <clocale>
 #include <exception>
 #include <iostream>
 
-#include <sys/stat.h>
-
 #if defined(BOOST_WINDOWS)
-    #include <windows.h>
 #elif defined(BOOST_HAS_UNISTD_H)
     #include <grp.h>
     #include <pwd.h>
     #include <unistd.h>
 #endif
 
+namespace ar = hamigaki::archivers;
+namespace fs_ex = hamigaki::filesystem;
 namespace io_ex = hamigaki::iostreams;
 namespace fs = boost::filesystem;
 namespace io = boost::iostreams;
-
-#if defined(BOOST_HAS_UNISTD_H)
-fs::path read_link(const fs::path& ph)
-{
-    const std::string& s = ph.native_file_string();
-
-    struct stat st;
-    if (::lstat(s.c_str(), &st) != 0)
-        throw std::runtime_error("lstat error");
-
-    boost::scoped_array<char> buf(new char[st.st_size+1]);
-    ::ssize_t amt = ::readlink(s.c_str(), &buf[0], st.st_size);
-    if (amt != static_cast< ::ssize_t>(st.st_size))
-        throw std::runtime_error("bad symbolic link");
-
-    buf[st.st_size] = '\0';
-    return fs::path(&buf[0], fs::native);
-}
-#else
-fs::path read_link(const fs::path& ph)
-{
-    return fs::path();
-}
-#endif
 
 int main(int argc, char* argv[])
 {
     try
     {
         if (argc < 3)
+        {
+            std::cerr << "Usage: tar (archive) (filename) ..." << std::endl;
             return 1;
+        }
 
-        io_ex::tar_file_sink tar(argv[1]);
+        std::setlocale(LC_ALL, "");
+        fs::path::default_name_check(fs::no_check);
+
+        // file_descriptor_sink supports 64bit offset
+        ar::basic_tar_file_sink<io_ex::file_descriptor_sink>
+            tar((io_ex::file_descriptor_sink(
+                std::string(argv[1]), BOOST_IOS::binary)));
 
         for (int i = 2; i < argc; ++i)
         {
-            io_ex::tar::header head;
-            head.format = io_ex::tar::gnu;
+            ar::tar::header head;
             head.path = fs::path(argv[i], fs::native);
-            if (fs::symbolic_link_exists(head.path))
+
+            const fs_ex::file_status& s = fs_ex::symlink_status(head.path);
+
+            if (is_symlink(s))
             {
-                head.type = io_ex::tar::type::symbolic_link;
-                head.link_name = read_link(head.path);
+                head.type = ar::tar::type::symbolic_link;
+                head.link_path = fs_ex::symlink_target(head.path);
             }
-            else if (fs::is_directory(head.path))
-                head.type = io_ex::tar::type::directory;
+            else if (is_directory(s))
+                head.type = ar::tar::type::directory;
             else
-                head.size = fs::file_size(head.path);
-            head.modified_time =
-                io_ex::tar::timestamp(fs::last_write_time(head.path));
+                head.file_size = s.file_size();
+
+            head.modified_time = s.last_write_time();
+            head.access_time = s.last_access_time();
+
+            if (s.has_last_change_time())
+                head.change_time = s.last_change_time();
+
+            if (s.has_permissions())
+                head.permissions = s.permissions();
+
+            if (s.has_uid() && s.has_gid())
+            {
+                head.uid = s.uid();
+                head.gid = s.gid();
+            }
 
 #if defined(BOOST_WINDOWS)
             head.user_name = "root";
             head.group_name = "root";
-
-            struct stat st;
-            if (::stat(head.path.native_file_string().c_str(), &st) == 0)
-            {
-                head.mode = static_cast<
-                    boost::uint16_t>(st.st_mode & io_ex::tar::mode::mask);
-            }
 #elif defined(BOOST_HAS_UNISTD_H)
-            struct stat st;
-            if (::lstat(head.path_string().c_str(), &st) == 0)
+            if (s.has_uid())
             {
-                head.mode = static_cast<
-                    boost::uint16_t>(st.st_mode & io_ex::tar::mode::mask);
-
-                head.uid = st.st_uid;
-                head.gid = st.st_gid;
-
-                if (passwd* p = ::getpwuid(st.st_uid))
+                if (passwd* p = ::getpwuid(s.uid()))
                     head.user_name = p->pw_name;
-
-                if (group* p = ::getgrgid(st.st_gid))
+            }
+            if (s.has_gid())
+            {
+                if (group* p = ::getgrgid(s.gid()))
                     head.group_name = p->gr_name;
             }
 #endif
 
             tar.create_entry(head);
 
-            if (head.is_regular())
+            if (!fs::is_directory(head.path))
             {
                 io::copy(
-                    io_ex::file_source(
+                    io_ex::file_descriptor_source(
                         head.path.native_file_string(),
                         std::ios_base::binary),
                     tar
@@ -126,7 +113,7 @@ int main(int argc, char* argv[])
     }
     catch (const std::exception& e)
     {
-        std::cerr << e.what() << std::endl;
+        std::cerr << "Error: " << e.what() << std::endl;
     }
     return 1;
 }
