@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE library PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2006.
+  Use, modification, and distribution are subject to the
+  Boost Software License, Version 1.0. (See accompanying file
+  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<section id="archivers.format">
+  <title>フォーマット</title>
+
+  <section id="archivers.format.lzh">
+    <title>LZH</title>
+
+    <itemizedlist>
+      <title>サポートされる機能</title>
+      <listitem>Level 0 (h0) / Level 1 (h1) / Level 2 (h2) ヘッダ</listitem>
+      <listitem>lh0 (無圧縮) / lhd (ディレクトリ) / lh5 / lh6 / lh7 メソッド</listitem>
+      <listitem>ラージファイルサポート(64ビット)</listitem>
+      <listitem>LHa for UNIX 互換シンボリックリンク</listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <title>サポートされる拡張ヘッダ</title>
+      <listitem>共通ヘッダ (0x00)</listitem>
+      <listitem>ファイル名ヘッダ (0x01)</listitem>
+      <listitem>パス名ヘッダ (0x02)</listitem>
+      <listitem>コメントヘッダ (0x03)</listitem>
+      <listitem>属性ヘッダ (0x40)</listitem>
+      <listitem>タイムスタンプヘッダ (0x41)</listitem>
+      <listitem>ファイルサイズヘッダ (0x42)</listitem>
+      <listitem>コードページヘッダ (0x46)</listitem>
+      <listitem>ファイル許可属性ヘッダ (0x50)</listitem>
+      <listitem>GID/UID ヘッダ (0x51)</listitem>
+      <listitem>グループ名ヘッダ (0x52)</listitem>
+      <listitem>ユーザー名ヘッダ (0x53)</listitem>
+    </itemizedlist>
+  </section>
+
+  <section id="archivers.format.tar">
+    <title>tar</title>
+
+    <itemizedlist>
+      <title>サポートされるフォーマット</title>
+      <listitem>POSIX.1-1998 ustar フォーマット</listitem>
+      <listitem>POSIX.1-2001 pax フォーマット</listitem>
+      <listitem>GNU tar 拡張フォーマット</listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <title>サポートされるpax拡張ヘッダ</title>
+      <listitem>最終アクセス時間ヘッダ (atime)</listitem>
+      <listitem>コメントヘッダ (comment)</listitem>
+      <listitem>グループIDヘッダ (gid)</listitem>
+      <listitem>グループ名ヘッダ (gname)</listitem>
+      <listitem>リンク先パス名ヘッダ (linkpath)</listitem>
+      <listitem>最終更新時間ヘッダ (mtime)</listitem>
+      <listitem>パス名ヘッダ (path)</listitem>
+      <listitem>サイズヘッダ (size)</listitem>
+      <listitem>ユーザーIDヘッダ (uid)</listitem>
+      <listitem>ユーザー名ヘッダ (uname)</listitem>
+      <listitem>最終状態変更時間ヘッダ (ctime)</listitem>
+    </itemizedlist>
+  </section>
+
+  <section id="archivers.format.zip">
+    <title>ZIP</title>
+
+    <itemizedlist>
+      <title>サポートされる機能</title>
+      <listitem>store (無圧縮) / deflate / bzip2 メソッド</listitem>
+      <listitem>PKZIP 2.0互換 Traditional ZIP パスワード暗号</listitem>
+      <listitem>ラージファイルサポート (Zip64)</listitem>
+      <listitem>Info-ZIP 互換シンボリックリンク</listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <title>サポートされる拡張フィールド</title>
+      <listitem>Zip64フィールド (0x0001)</listitem>
+      <listitem>拡張タイムスタンプフィールド (0x5455)</listitem>
+      <listitem>Info-ZIP互換 新UNIXフィールド (0x7855)</listitem>
+    </itemizedlist>
+  </section>
+</section>
