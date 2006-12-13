@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE library PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2006.
+  Use, modification, and distribution are subject to the
+  Boost Software License, Version 1.0. (See accompanying file
+  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<header name="hamigaki/archivers/headers.hpp">
+  <namespace name="hamigaki">
+    <namespace name="archivers">
+      <namespace name="lha">
+        <struct name="header">
+          <data-member name="level">
+            <type>boost::uint8_t</type>
+          </data-member>
+
+          <data-member name="method">
+            <type><classname>compress_method</classname></type>
+          </data-member>
+
+          <data-member name="compressed_size">
+            <type>boost::int64_t</type>
+          </data-member>
+
+          <data-member name="file_size">
+            <type>boost::int64_t</type>
+          </data-member>
+
+          <data-member name="update_time">
+            <type>std::time_t</type>
+          </data-member>
+
+          <data-member name="attributes">
+            <type>boost::uint16_t</type>
+          </data-member>
+
+          <data-member name="path">
+            <type>boost::filesystem::path</type>
+          </data-member>
+
+          <data-member name="link_path">
+            <type>boost::filesystem::path</type>
+          </data-member>
+
+          <data-member name="crc16_checksum">
+            <type>boost::optional&lt;boost::uint16_t&gt;</type>
+          </data-member>
+
+          <data-member name="os">
+            <type>boost::optional&lt;char&gt;</type>
+          </data-member>
+
+          <data-member name="timestamp">
+            <type>boost::optional&lt;windows::timestamp&gt;</type>
+          </data-member>
+
+          <data-member name="code_page">
+            <type>boost::optional&lt;boost::uint32_t&gt;</type>
+          </data-member>
+
+          <data-member name="permissions">
+            <type>boost::optional&lt;boost::uint16_t&gt;</type>
+          </data-member>
+
+          <data-member name="owner">
+            <type>boost::optional&lt;posix::gid_uid&gt;</type>
+          </data-member>
+
+          <data-member name="group_name">
+            <type>std::string</type>
+          </data-member>
+
+          <data-member name="user_name">
+            <type>std::string</type>
+          </data-member>
+
+          <data-member name="comment">
+            <type>std::string</type>
+          </data-member>
+        </struct>
+      </namespace>
+    </namespace>
+  </namespace>
+</header>

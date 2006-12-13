@@ -13,4 +13,7 @@
 -->
 <library-reference xmlns:xi="http://www.w3.org/2001/XInclude">
   <title>リファレンス</title>
+  <xi:include href="lha/compress_method.xml"/>
+  <xi:include href="lha/headers.xml"/>
+  <xi:include href="lzh_file.xml"/>
 </library-reference>
