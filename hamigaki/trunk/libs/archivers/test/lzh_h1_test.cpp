@@ -49,8 +49,7 @@ void h1_test()
     BOOST_CHECK(src.next_entry());
 
     BOOST_CHECK(head.level == src.header().level);
-    BOOST_CHECK((src.header().update_time - head.update_time) >= 0);
-    BOOST_CHECK((src.header().update_time - head.update_time) <= 1);
+    BOOST_CHECK(head.update_time == src.header().update_time);
     BOOST_CHECK_EQUAL(head.attributes, src.header().attributes);
     BOOST_CHECK_EQUAL(head.path.string(), src.header().path.string());
     BOOST_CHECK_EQUAL(head.os, src.header().os);
@@ -93,8 +92,7 @@ void symlink_test_aux(const fs::path& link, const fs::path& target, bool dir)
     BOOST_CHECK(src.next_entry());
 
     BOOST_CHECK(head.level == src.header().level);
-    BOOST_CHECK((src.header().update_time - head.update_time) >= 0);
-    BOOST_CHECK((src.header().update_time - head.update_time) <= 1);
+    BOOST_CHECK(head.update_time == src.header().update_time);
     BOOST_CHECK_EQUAL(head.attributes, src.header().attributes);
     BOOST_CHECK_EQUAL(head.path.string(), src.header().path.string());
     BOOST_CHECK_EQUAL(head.link_path.string(), src.header().link_path.string());

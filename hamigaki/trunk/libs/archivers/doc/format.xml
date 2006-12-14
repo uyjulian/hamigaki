@@ -39,6 +39,7 @@
       <listitem>GID/UID ヘッダ (0x51)</listitem>
       <listitem>グループ名ヘッダ (0x52)</listitem>
       <listitem>ユーザー名ヘッダ (0x53)</listitem>
+      <listitem>更新日時ヘッダ (0x54)</listitem>
     </itemizedlist>
   </section>
 

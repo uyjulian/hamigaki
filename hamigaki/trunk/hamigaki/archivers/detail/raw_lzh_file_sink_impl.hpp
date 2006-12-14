@@ -377,6 +377,9 @@ private:
         if (!header_.user_name.empty())
             write_extended_header(tmp, 0x53, header_.user_name);
 
+        write_extended_header<0x54>(
+            tmp, static_cast<boost::int32_t>(header_.update_time));
+
         tmp.write("\x06\x00\x00", 3);
         std::size_t crc_off = buffer.size();
         // TODO: timezone
