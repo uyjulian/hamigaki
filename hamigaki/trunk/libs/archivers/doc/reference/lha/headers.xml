@@ -11,7 +11,7 @@
 
   See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 -->
-<header name="hamigaki/archivers/headers.hpp">
+<header name="hamigaki/archivers/lha/headers.hpp">
   <namespace name="hamigaki">
     <namespace name="archivers">
       <namespace name="lha">
@@ -83,6 +83,109 @@
           <data-member name="comment">
             <type>std::string</type>
           </data-member>
+
+          <description>
+            <para>
+              <informaltable frame="all">
+                <tgroup cols="3">
+                  <thead>
+                    <row>
+                      <entry>メンバ変数</entry>
+                      <entry>意味</entry>
+                      <entry>規定値</entry>
+                    </row>
+                  </thead>
+                  <tbody>
+                    <row>
+                      <entry>level</entry>
+                      <entry>ヘッダのレベル (0～2)</entry>
+                      <entry>2</entry>
+                    </row>
+                    <row>
+                      <entry>method</entry>
+                      <entry>圧縮メソッド</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>compressed_size</entry>
+                      <entry>圧縮後のサイズ</entry>
+                      <entry>-1</entry>
+                    </row>
+                    <row>
+                      <entry>file_size</entry>
+                      <entry>圧縮前のサイズ</entry>
+                      <entry>-1</entry>
+                    </row>
+                    <row>
+                      <entry>update_time</entry>
+                      <entry>最終更新時間</entry>
+                      <entry>-1</entry>
+                    </row>
+                    <row>
+                      <entry>attributes</entry>
+                      <entry>MS-DOS ファイル属性</entry>
+                      <entry><code>msdos::attributes::archive</code></entry>
+                    </row>
+                    <row>
+                      <entry>path</entry>
+                      <entry>ファイルのパス名</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>link_path</entry>
+                      <entry>リンク先のパス名</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>crc16_checksum</entry>
+                      <entry>CRC-16 チェックサム</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>os</entry>
+                      <entry>アーカイブ作成時のOS</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>timestamp</entry>
+                      <entry>Windows タイムスタンプ</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>code_page</entry>
+                      <entry>Windows コードページ</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>permissions</entry>
+                      <entry>ファイル許可属性</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>owner</entry>
+                      <entry>UNIX グループID / ユーザーID</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>group_name</entry>
+                      <entry>UNIX グループ名</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>user_name</entry>
+                      <entry>UNIX ユーザー名</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>comment</entry>
+                      <entry>コメント文字列</entry>
+                      <entry></entry>
+                    </row>
+                  </tbody>
+                </tgroup>
+              </informaltable>
+            </para>
+          </description>
         </struct>
       </namespace>
     </namespace>

@@ -126,6 +126,7 @@
             <parameter name="n">
               <paramtype>std::streamsize</paramtype>
             </parameter>
+            <throws>圧縮後のサイズが、<code>create_entry()</code>に渡したヘッダの<code>file_size</code>を超えた場合、<classname>give_up_compression</classname></throws>
           </method>
 
           <method name="close">

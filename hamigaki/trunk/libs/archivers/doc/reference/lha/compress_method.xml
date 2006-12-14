@@ -11,11 +11,55 @@
 
   See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 -->
-<header name="hamigaki/archivers/compress_method.hpp">
+<header name="hamigaki/archivers/lha/compress_method.hpp">
   <namespace name="hamigaki">
     <namespace name="archivers">
       <namespace name="lha">
         <struct name="compress_method">
+          <purpose><para>LZH圧縮メソッドを格納する</para></purpose>
+
+          <description>
+            <para>サポートされるメソッド以下の通り。</para>
+            <para>
+              <informaltable frame="all">
+                <tgroup cols="2">
+                  <thead>
+                    <row>
+                      <entry>メソッド</entry>
+                      <entry>意味</entry>
+                    </row>
+                  </thead>
+                  <tbody>
+                    <row>
+                      <entry>"-lh0-"</entry>
+                      <entry>無圧縮</entry>
+                    </row>
+                    <row>
+                      <entry>"-lhd-"</entry>
+                      <entry>ディレクトリ</entry>
+                    </row>
+                    <row>
+                      <entry>"-lh4-"</entry>
+                      <entry>LZHUF圧縮、辞書サイズ=4KB</entry>
+                    </row>
+                    <row>
+                      <entry>"-lh5-"</entry>
+                      <entry>LZHUF圧縮、辞書サイズ=8KB</entry>
+                    </row>
+                    <row>
+                      <entry>"-lh6-"</entry>
+                      <entry>LZHUF圧縮、辞書サイズ=32KB</entry>
+                    </row>
+                    <row>
+                      <entry>"-lh7-"</entry>
+                      <entry>LZHUF圧縮、辞書サイズ=64KB</entry>
+                    </row>
+                  </tbody>
+                </tgroup>
+              </informaltable>
+            </para>
+          </description>
+
           <data-member name="id[5]">
             <type>char</type>
           </data-member>
