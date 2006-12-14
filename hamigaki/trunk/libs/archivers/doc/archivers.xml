@@ -40,6 +40,8 @@
 
   <!-- xi:include href="../libs/archivers/doc/introduction.xml" -->
   <XI:include href="introduction.xml"/>
+  <!-- xi:include href="../libs/archivers/doc/installation.xml" -->
+  <XI:include href="installation.xml"/>
   <!-- xi:include href="../libs/archivers/doc/format.xml" -->
   <XI:include href="format.xml"/>
   <!-- xi:include href="../libs/archivers/doc/reference/reference.xml" -->
