@@ -15,5 +15,12 @@
   <title>リファレンス</title>
   <xi:include href="lha/compress_method.xml"/>
   <xi:include href="lha/headers.xml"/>
+  <xi:include href="tar/file_format.xml"/>
+  <xi:include href="tar/headers.xml"/>
+  <xi:include href="tar/type.xml"/>
+  <xi:include href="zip/headers.xml"/>
+  <xi:include href="error.xml"/>
   <xi:include href="lzh_file.xml"/>
+  <xi:include href="tar_file.xml"/>
+  <xi:include href="zip_file.xml"/>
 </library-reference>
