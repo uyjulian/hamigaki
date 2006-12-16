@@ -16,13 +16,13 @@
     <namespace name="archivers">
       <class name="basic_zip_file_source">
         <template>
-          <template-type-parameter name="Source"/>
+          <template-type-parameter name="SeekableSource"/>
         </template>
 
         <purpose><para>ZIPファイルへの読み込み専用アクセスを提供するSourceモデル</para></purpose>
 
         <description>
-          <para>Sourceを受け取り、ZIPファイルとしてフォーマットを解釈した結果を読み出すことができる。</para>
+          <para>SeekableSourceを受け取り、ZIPファイルとしてフォーマットを解釈した結果を読み出すことができる。</para>
           <para>モデルとなるコンセプト:<simplelist type='inline'>
               <member><conceptname>Source</conceptname></member>
           </simplelist></para>
@@ -42,7 +42,7 @@
 
         <constructor specifiers="explicit">
           <parameter name="src">
-            <paramtype>const Source&amp;</paramtype>
+            <paramtype>const SeekableSource&amp;</paramtype>
           </parameter>
         </constructor>
 
@@ -105,13 +105,13 @@
 
       <class name="basic_zip_file_sink">
         <template>
-          <template-type-parameter name="Sink"/>
+          <template-type-parameter name="SeekableSink"/>
         </template>
 
         <purpose><para>ZIPファイルへの書き込み専用アクセスを提供するSinkモデル</para></purpose>
 
         <description>
-          <para>受け取ったSinkへ複数のファイルデータをZIPファイルとして書き出すことができる。</para>
+          <para>受け取ったSeekableSinkへ複数のファイルデータをZIPファイルとして書き出すことができる。</para>
           <para>モデルとなるコンセプト:<simplelist type='inline'>
               <member><conceptname>Sink</conceptname></member>
               <member><conceptname>ClosableDevice</conceptname></member>
@@ -132,7 +132,7 @@
 
         <constructor>
           <parameter name="sink">
-            <paramtype>const Sink&amp;</paramtype>
+            <paramtype>const SeekableSink&amp;</paramtype>
           </parameter>
         </constructor>
 
@@ -169,7 +169,7 @@
 
           <method name="close_archive">
             <type>void</type>
-            <effects><simpara>セントラルディレクトリを出力し、アーカイブを閉じる。出力先の外部Sinkも閉じられる。</simpara></effects>
+            <effects><simpara>セントラルディレクトリを出力し、アーカイブを閉じる。出力先の外部SeekableSinkも閉じられる。</simpara></effects>
           </method>
         </method-group>
 

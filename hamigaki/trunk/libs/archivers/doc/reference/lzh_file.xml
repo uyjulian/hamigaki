@@ -86,13 +86,13 @@
 
       <class name="basic_lzh_file_sink">
         <template>
-          <template-type-parameter name="Sink"/>
+          <template-type-parameter name="SeekableSink"/>
         </template>
 
         <purpose><para>LZHファイルへの書き込み専用アクセスを提供するSinkモデル</para></purpose>
 
         <description>
-          <para>受け取ったSinkへ複数のファイルデータをLZHファイルとして書き出すことができる。</para>
+          <para>受け取ったSeekableSinkへ複数のファイルデータをLZHファイルとして書き出すことができる。</para>
           <para>モデルとなるコンセプト:<simplelist type='inline'>
               <member><conceptname>Sink</conceptname></member>
               <member><conceptname>ClosableDevice</conceptname></member>
@@ -113,7 +113,7 @@
 
         <constructor>
           <parameter name="sink">
-            <paramtype>const Sink&amp;</paramtype>
+            <paramtype>const SeekableSink&amp;</paramtype>
           </parameter>
         </constructor>
 
@@ -150,7 +150,7 @@
 
           <method name="close_archive">
             <type>void</type>
-            <effects><simpara>LZHエンドマークを出力し、アーカイブを閉じる。出力先の外部Sinkも閉じられる。</simpara></effects>
+            <effects><simpara>LZHエンドマークを出力し、アーカイブを閉じる。出力先の外部SeekableSinkも閉じられる。</simpara></effects>
           </method>
         </method-group>
 

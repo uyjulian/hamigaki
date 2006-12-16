@@ -16,18 +16,18 @@
     <namespace name="iostreams">
       <class name="repetition">
         <template>
-          <template-type-parameter name="Source"/>
+          <template-type-parameter name="SeekableSource"/>
         </template>
 
-        <purpose><para>クラステンプレート<code>repetition</code>は、Sourceを受け取り、それを指定回数だけ繰り返し読み出すことのできるSourceを形成する。</para></purpose>
+        <purpose><para>クラステンプレート<code>repetition</code>は、SeekableSourceを受け取り、それを指定回数だけ繰り返し読み出すことのできるSourceを形成する。</para></purpose>
 
         <typedef name="char_type">
-          <type>boost::iostreams::char_type_of&lt;Source&gt;::type</type>
+          <type>boost::iostreams::char_type_of&lt;SeekableSource&gt;::type</type>
         </typedef>
 
         <constructor>
           <parameter name="src">
-            <paramtype>const Source&amp;</paramtype>
+            <paramtype>const SeekableSource&amp;</paramtype>
           </parameter>
           <parameter name="count">
             <paramtype>int</paramtype>
@@ -53,17 +53,17 @@
 
         <free-function-group name="creation">
           <function name="repeat">
-            <type>repetition&lt;Source&gt;</type>
+            <type>repetition&lt;SeekableSource&gt;</type>
             <template>
-              <template-type-parameter name="Source"/>
+              <template-type-parameter name="SeekableSource"/>
             </template>
             <parameter name="src">
-              <paramtype>const Source&amp;</paramtype>
+              <paramtype>const SeekableSource&amp;</paramtype>
             </parameter>
             <parameter name="count">
               <paramtype>int</paramtype>
             </parameter>
-            <returns><simpara><code><classname>repetition</classname>&lt;Source&gt;(src, count)</code></simpara></returns>
+            <returns><simpara><code><classname>repetition</classname>&lt;SeekableSource&gt;(src, count)</code></simpara></returns>
           </function>
         </free-function-group>
       </class>

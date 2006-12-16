@@ -16,7 +16,7 @@
     <namespace name="iostreams">
       <class name="lazy_restriction">
         <template>
-          <template-type-parameter name="Device"/>
+          <template-type-parameter name="SeekableDevice"/>
         </template>
 
         <purpose><para><code>lazy_restriction</code>は<code>boost::iostreams::restriction</code>の変種である。<code>restriction</code>との違いは、
@@ -28,12 +28,12 @@
         である。</para></purpose>
 
         <typedef name="char_type">
-          <type>boost::iostreams::char_type_of&lt;Device&gt;::type</type>
+          <type>boost::iostreams::char_type_of&lt;SeekableDevice&gt;::type</type>
         </typedef>
 
         <constructor>
           <parameter name="dev">
-            <paramtype>Device&amp;</paramtype>
+            <paramtype>SeekableDevice&amp;</paramtype>
           </parameter>
           <parameter name="off">
             <paramtype>boost::iostreams::stream_offset</paramtype>
@@ -78,12 +78,12 @@
 
         <free-function-group name="creation">
           <function name="lazy_restrict">
-            <type>lazy_restriction&lt;Device&gt;</type>
+            <type>lazy_restriction&lt;SeekableDevice&gt;</type>
             <template>
-              <template-type-parameter name="Device"/>
+              <template-type-parameter name="SeekableDevice"/>
             </template>
             <parameter name="dev">
-              <paramtype>Device&amp;</paramtype>
+              <paramtype>SeekableDevice&amp;</paramtype>
             </parameter>
             <parameter name="off">
               <paramtype>boost::iostreams::stream_offset</paramtype>
@@ -92,7 +92,7 @@
               <paramtype>boost::iostreams::stream_offset</paramtype>
               <default>-1</default>
             </parameter>
-            <returns><simpara><code><classname>lazy_restriction</classname>&lt;Device&gt;(dev, off, len)</code></simpara></returns>
+            <returns><simpara><code><classname>lazy_restriction</classname>&lt;SeekableDevice&gt;(dev, off, len)</code></simpara></returns>
           </function>
         </free-function-group>
       </class>
