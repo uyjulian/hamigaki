@@ -23,5 +23,7 @@
   <xi:include href="error.xml"/>
   <xi:include href="lzh_file.xml"/>
   <xi:include href="tar_file.xml"/>
+  <xi:include href="tbz2_file.xml"/>
+  <xi:include href="tgz_file.xml"/>
   <xi:include href="zip_file.xml"/>
 </library-reference>
