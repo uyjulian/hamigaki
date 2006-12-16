@@ -123,7 +123,7 @@
                     </row>
                     <row>
                       <entry>attributes</entry>
-                      <entry>MS-DOS ファイル属性</entry>
+                      <entry>MS-DOS ファイル属性 (<classname>msdos::attributes</classname>構造体内の定数のいずれか、あるいはその組み合わせ)</entry>
                       <entry><code>msdos::attributes::archive</code></entry>
                     </row>
                     <row>

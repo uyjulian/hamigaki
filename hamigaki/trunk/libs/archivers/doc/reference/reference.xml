@@ -15,6 +15,7 @@
   <title>リファレンス</title>
   <xi:include href="lha/compress_method.xml"/>
   <xi:include href="lha/headers.xml"/>
+  <xi:include href="msdos/attributes.xml"/>
   <xi:include href="tar/file_format.xml"/>
   <xi:include href="tar/headers.xml"/>
   <xi:include href="tar/type.xml"/>
