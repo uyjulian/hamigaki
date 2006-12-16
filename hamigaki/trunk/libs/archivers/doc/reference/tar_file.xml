@@ -74,7 +74,7 @@
 
       <class name="tar_file_source">
         <inherit access="public">
-          <classname>basic_tar_file_source&lt;hamigaki::iostreams::file_source&gt;</classname>
+          <classname>basic_tar_file_source</classname>&lt;<classname>hamigaki::iostreams::file_source</classname>&gt;
         </inherit>
 
         <constructor specifiers="explicit">
@@ -156,7 +156,7 @@
 
       <class name="tar_file_sink">
         <inherit access="public">
-          <classname>basic_tar_file_sink&lt;hamigaki::iostreams::file_sink&gt;</classname>
+          <classname>basic_tar_file_sink</classname>&lt;<classname>hamigaki::iostreams::file_sink</classname>&gt;
         </inherit>
 
         <constructor>

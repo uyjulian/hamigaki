@@ -161,7 +161,7 @@
 
       <class name="vorbis_file_sink">
         <inherit access="public">
-          <classname>basic_vorbis_file_sink&lt;hamigaki::iostreams::file_sink&gt;</classname>
+          <classname>basic_vorbis_file_sink</classname>&lt;<classname>hamigaki::iostreams::file_sink</classname>&gt;
         </inherit>
 
         <constructor>
