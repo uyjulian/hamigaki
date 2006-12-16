@@ -60,6 +60,8 @@
   <xi:include href="PcmFormatRetrievable.xml"/>
   <xi:include href="SampleFormatRetrievable.xml"/>
   <xi:include href="SeekableDevice.xml"/>
+  <xi:include href="SeekableSink.xml"/>
+  <xi:include href="SeekableSource.xml"/>
   <xi:include href="Sink.xml"/>
   <xi:include href="Source.xml"/>
 </library-reference>
