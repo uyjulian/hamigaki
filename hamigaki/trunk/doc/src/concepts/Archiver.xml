@@ -50,4 +50,12 @@
     <return-type><require-same-type><type name="void"/></require-same-type></return-type>
     <semantics><code>a</code>の現在の圧縮メソッドを無圧縮に設定し、書き込み位置をエントリの先頭に戻す。</semantics>
   </valid-expression>
+
+  <valid-expression name="Close archive">
+    <apply-method name="close_archive">
+      <sample-value><reference-to><type name="A"/></reference-to></sample-value>
+    </apply-method>
+    <return-type><require-same-type><type name="void"/></require-same-type></return-type>
+    <semantics><code>a</code>にフッタ情報を書き込み、デバイスをクローズする。</semantics>
+  </valid-expression>
 </concept>
