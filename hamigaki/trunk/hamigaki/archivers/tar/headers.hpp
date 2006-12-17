@@ -59,14 +59,6 @@ struct header
     {
         return (type == type::long_link) || (type == type::long_name);
     }
-
-    std::string path_string() const
-    {
-        if (type == type::directory)
-            return path.native_directory_string();
-        else
-            return path.native_file_string();
-    }
 };
 
 } } } // End namespaces tar, archivers, hamigaki.

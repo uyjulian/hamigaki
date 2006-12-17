@@ -53,14 +53,6 @@ struct entry
     std::string user_name;
     std::string group_name;
     std::string comment;
-
-    std::string path_string() const
-    {
-        if (type == fs_ex::directory_file)
-            return path.native_directory_string();
-        else
-            return path.native_file_string();
-    }
 };
 
 template<class Header>
@@ -375,7 +367,7 @@ int main(int argc, char* argv[])
         {
             const entry& e = ext_ptr->current_entry();
 
-            std::cout << e.path_string() << '\n';
+            std::cout << e.path.string() << '\n';
 
             if (!e.hard_link_path.empty())
                 fs_ex::create_hard_link(e.hard_link_path, e.path);
