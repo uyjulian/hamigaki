@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2006.
+  Use, modification, and distribution are subject to the
+  Boost Software License, Version 1.0. (See accompanying file
+  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<section id="archivers.tutorial">
+  <title>チュートリアル</title>
+  <using-namespace name="hamigaki::archivers"/>
+
+  <section>
+    <title>tarファイルの作成</title>
+    <para>次のプログラムは、ファイル<filename>foo.txt</filename>と<filename>bar.txt</filename>を含むtarファイル<filename>test.tar</filename>を作成する。</para>
+
+    <programlisting><![CDATA[#include <hamigaki/archivers/tar_file.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/iostreams/copy.hpp>
+
+namespace ar = hamigaki::archivers;
+namespace fs = boost::filesystem;
+namespace io = boost::iostreams;
+
+void append_file(ar::tar_file_sink& tar, const fs::path& ph)
+{
+    ar::tar_file_sink::header_type head;
+    head.path = ph;
+    head.file_size = fs::file_size(ph);
+    tar.create_entry(head);
+
+    fs::ifstream file(ph, std::ios_base::binary);
+    io::copy(file, tar);
+}
+
+int main()
+{
+    ar::tar_file_sink tar("test.tar");
+
+    append_file(tar, "foo.txt");
+    append_file(tar, "bar.txt");
+
+    tar.close_archive();
+}
+]]></programlisting>
+
+  </section>
+</section>
