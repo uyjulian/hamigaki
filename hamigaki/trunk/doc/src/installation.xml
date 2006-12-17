@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE chapter PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2006.
+  Use, modification, and distribution are subject to the
+  Boost Software License, Version 1.0. (See accompanying file
+  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+-->
+<chapter id="installation">
+  <title>インストール</title>
+  <para>いくつかのHamigakiライブラリはライブラリのビルドを必要とする。Boost.Buildでビルドする際は次の変数を設定することにより、ビルドをカスタマイズすることができる。
+    <informaltable frame="all">
+      <tgroup cols="3">
+        <thead>
+          <row>
+            <entry>変数</entry>
+            <entry>意味</entry>
+            <entry>規定値</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>BOOST_ROOT</entry>
+            <entry>Boost C++ Librariesの配布パッケージの展開されたディレクトリ</entry>
+            <entry>-</entry>
+          </row>
+          <row>
+            <entry>NO_BOOST_STD_LIB_NAME</entry>
+            <entry>参照するBoostのライブラリ名にコンパイラ名とBoostのバージョンを含めない</entry>
+            <entry>-</entry>
+          </row>
+          <row>
+            <entry>BOOST_INCLUDE</entry>
+            <entry>Boostのヘッダファイルのあるディレクトリ</entry>
+            <entry>-</entry>
+          </row>
+          <row>
+            <entry>BOOST_LIBPATH</entry>
+            <entry>Boostのライブラリファイルのあるディレクトリ</entry>
+            <entry>-</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>BOOST_ROOTはBoost.Buildのjamファイルを参照するためだけに用いられる。</para>
+    <para>NO_BOOST_STD_LIB_NAMEは、Boostを--layout=systemオプションでインストールした場合、1に設定する。</para>
+    <para>Boostがコンパイラ既定のディレクトリへインストールされている場合、BOOST_INCLUDEとBOOST_LIBPATHの設定は必要ない。</para>
+    <para>ライブラリ固有の変数に関しては、各ライブラリのドキュメントを参照すること。</para>
+  </para>
+</chapter>
