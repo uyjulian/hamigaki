@@ -47,11 +47,13 @@
   </sectioninfo>
 
   <title>リファレンス</title>
+  <xi:include href="Archiver.xml"/>
   <xi:include href="ClosableDevice.xml"/>
   <xi:include href="ClosableInputFilter.xml"/>
   <xi:include href="ClosableOutputFilter.xml"/>
   <xi:include href="Device.xml"/>
   <xi:include href="ExceptionStorage.xml"/>
+  <xi:include href="Extractor.xml"/>
   <xi:include href="Filter.xml"/>
   <xi:include href="FlushableDevice.xml"/>
   <xi:include href="MutliCharacterInputFilter.xml"/>
