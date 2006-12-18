@@ -10,7 +10,7 @@
 #ifndef HAMIGAKI_ARCHIVERS_DETAIL_RAW_LZH_FILE_SINK_IMPL_HPP
 #define HAMIGAKI_ARCHIVERS_DETAIL_RAW_LZH_FILE_SINK_IMPL_HPP
 
-#include <hamigaki/archivers/lha/lzh_headers.hpp>
+#include <hamigaki/archivers/lha/headers.hpp>
 #include <hamigaki/archivers/error.hpp>
 #include <hamigaki/checksum/sum8.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>

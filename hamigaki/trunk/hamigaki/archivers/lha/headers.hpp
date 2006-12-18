@@ -1,4 +1,4 @@
-//  lzh_headers.hpp: LZH headers
+//  headers.hpp: LZH headers
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
@@ -7,8 +7,8 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#ifndef HAMIGAKI_ARCHIVERS_LHA_LZH_HEADERS_HPP
-#define HAMIGAKI_ARCHIVERS_LHA_LZH_HEADERS_HPP
+#ifndef HAMIGAKI_ARCHIVERS_LHA_HEADERS_HPP
+#define HAMIGAKI_ARCHIVERS_LHA_HEADERS_HPP
 
 #include <hamigaki/archivers/lha/posix/gid_uid.hpp>
 #include <hamigaki/archivers/lha/windows/file_size.hpp>
@@ -61,4 +61,4 @@ struct header
 
 } } } // End namespaces lha, archivers, hamigaki.
 
-#endif // HAMIGAKI_ARCHIVERS_LHA_LZH_HEADERS_HPP
+#endif // HAMIGAKI_ARCHIVERS_LHA_HEADERS_HPP

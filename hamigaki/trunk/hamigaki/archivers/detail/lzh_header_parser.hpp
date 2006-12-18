@@ -10,7 +10,7 @@
 #ifndef HAMIGAKI_ARCHIVERS_DETAIL_LZH_HEADER_PARSER_HPP
 #define HAMIGAKI_ARCHIVERS_DETAIL_LZH_HEADER_PARSER_HPP
 
-#include <hamigaki/archivers/lha/lzh_headers.hpp>
+#include <hamigaki/archivers/lha/headers.hpp>
 #include <hamigaki/checksum/sum8.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>
 #include <hamigaki/iostreams/relative_restrict.hpp>
