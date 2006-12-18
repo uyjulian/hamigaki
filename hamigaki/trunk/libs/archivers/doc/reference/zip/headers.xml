@@ -19,7 +19,7 @@
           <static-constant name="store">
             <type>boost::uint16_t</type>
             <default>0</default>
-            <purpose>無圧縮</purpose>
+            <purpose>非圧縮</purpose>
           </static-constant>
 
           <static-constant name="deflate">

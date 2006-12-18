@@ -20,7 +20,7 @@
     <itemizedlist>
       <title>サポートされる機能</title>
       <listitem>Level 0 (h0) / Level 1 (h1) / Level 2 (h2) ヘッダ</listitem>
-      <listitem>lh0 (無圧縮) / lhd (ディレクトリ) / lh4 / lh5 / lh6 / lh7 メソッド</listitem>
+      <listitem>lh0 (非圧縮) / lhd (ディレクトリ) / lh4 / lh5 / lh6 / lh7 メソッド</listitem>
       <listitem>ラージファイルサポート(64ビット)</listitem>
       <listitem>LHa for UNIX 互換シンボリックリンク</listitem>
     </itemizedlist>
@@ -74,7 +74,7 @@
 
     <itemizedlist>
       <title>サポートされる機能</title>
-      <listitem>store (無圧縮) / deflate / bzip2 メソッド</listitem>
+      <listitem>store (非圧縮) / deflate / bzip2 メソッド</listitem>
       <listitem>PKZIP 2.0互換 Traditional ZIP パスワード暗号</listitem>
       <listitem>ラージファイルサポート (Zip64)</listitem>
       <listitem>Info-ZIP 互換シンボリックリンク</listitem>
