@@ -17,7 +17,9 @@
 
   <section>
     <title>tarファイルの作成</title>
-    <para>次のプログラムは、ファイル<filename>foo.txt</filename>と<filename>bar.txt</filename>を含むtarファイル<filename>test.tar</filename>を作成する。</para>
+    <using-class name="hamigaki::archivers::basic_tar_file_sink"/>
+
+    <para>次のプログラムはファイル<filename>foo.txt</filename>と<filename>bar.txt</filename>を含むtarファイル<filename>test.tar</filename>を作成する。</para>
 
     <programlisting><![CDATA[#include <hamigaki/archivers/tar_file.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -30,7 +32,7 @@ namespace io = boost::iostreams;
 
 void append_file(ar::tar_file_sink& tar, const fs::path& ph)
 {
-    ar::tar_file_sink::header_type head;
+    ar::tar::header head;
     head.path = ph;
     head.file_size = fs::file_size(ph);
     tar.create_entry(head);
@@ -49,6 +51,14 @@ int main()
     tar.close_archive();
 }
 ]]></programlisting>
+
+    <para>tarファイルを作成するには、クラス<classname>tar_file_sink</classname>を用いる。コンストラクタの引数はファイル名である。</para>
+
+    <para>アーカイブに追加する個々のファイルは(アーカイブ)エントリと呼ばれ、それぞれ個別のヘッダ情報を持つ。エントリを追加するには、<classname>tar::header</classname>型の変数に適切な値を設定した後に、メンバ関数<methodname>create_entry</methodname>()を呼び出す。</para>
+
+    <para><methodname>create_entry</methodname>()を呼び出すと、アーカイブは<conceptname>Sink</conceptname>として書き込み可能となる。</para>
+
+    <para>書き込みが完了したら、メンバ関数<methodname>close_archive</methodname>()でアーカイブを閉じる。アーカイブのフォーマットによっては、<methodname>close_archive</methodname>()の呼び出しを忘れると、フッタ情報のない不正なアーカイブができてしまうので注意すること。</para>
 
   </section>
 </section>
