@@ -56,15 +56,38 @@ private:
 };
 
 class lzh_file_source
-    : public basic_lzh_file_source<iostreams::file_source>
 {
-    typedef basic_lzh_file_source<iostreams::file_source> base_type;
-
 public:
+    typedef char char_type;
+
+    struct category :
+        boost::iostreams::input,
+        boost::iostreams::device_tag {};
+
+    typedef lha::header header_type;
+
     explicit lzh_file_source(const std::string& filename)
-        : base_type(iostreams::file_source(filename, BOOST_IOS::binary))
+        : impl_(iostreams::file_source(filename, BOOST_IOS::binary))
     {
     }
+
+    bool next_entry()
+    {
+        return impl_.next_entry();
+    }
+
+    lha::header header() const
+    {
+        return impl_.header();
+    }
+
+    std::streamsize read(char* s, std::streamsize n)
+    {
+        return impl_.read(s, n);
+    }
+
+private:
+    basic_lzh_file_source<iostreams::file_source> impl_;
 };
 
 
@@ -125,15 +148,55 @@ private:
 };
 
 class lzh_file_sink
-    : public basic_lzh_file_sink<iostreams::file_sink>
 {
-    typedef basic_lzh_file_sink<iostreams::file_sink> base_type;
-
 public:
+    typedef char char_type;
+
+    struct category
+        : boost::iostreams::output
+        , boost::iostreams::device_tag
+        , boost::iostreams::closable_tag
+    {};
+
+    typedef lha::header header_type;
+
     explicit lzh_file_sink(const std::string& filename)
-        : base_type(iostreams::file_sink(filename, BOOST_IOS::binary))
+        : impl_(iostreams::file_sink(filename, BOOST_IOS::binary))
     {
     }
+
+    void default_method(const char* method)
+    {
+        impl_.default_method(method);
+    }
+
+    void create_entry(const lha::header& head)
+    {
+        impl_.create_entry(head);
+    }
+
+    void rewind_entry()
+    {
+        impl_.rewind_entry();
+    }
+
+    void close()
+    {
+        impl_.close();
+    }
+
+    std::streamsize write(const char* s, std::streamsize n)
+    {
+        return impl_.write(s, n);
+    }
+
+    void close_archive()
+    {
+        impl_.close_archive();
+    }
+
+private:
+    basic_lzh_file_sink<iostreams::file_sink> impl_;
 };
 
 } } // End namespaces archivers, hamigaki.

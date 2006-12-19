@@ -93,7 +93,8 @@
 
       <class name="zip_file_source">
         <inherit access="public">
-          <classname>basic_zip_file_source</classname>&lt;<classname>hamigaki::iostreams::file_source</classname>&gt;
+          <type><classname>basic_zip_file_source</classname>&lt;<classname>hamigaki::iostreams::file_source</classname>&gt;</type>
+          <purpose>Exposition only</purpose>
         </inherit>
 
         <constructor specifiers="explicit">
@@ -186,7 +187,8 @@
 
       <class name="zip_file_sink">
         <inherit access="public">
-          <classname>basic_zip_file_sink</classname>&lt;<classname>hamigaki::iostreams::file_sink</classname>&gt;
+          <type><classname>basic_zip_file_sink</classname>&lt;<classname>hamigaki::iostreams::file_sink</classname>&gt;</type>
+          <purpose>Exposition only</purpose>
         </inherit>
 
         <constructor>

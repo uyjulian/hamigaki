@@ -20,7 +20,8 @@
         </template>
 
         <inherit access="public">
-          <classname>basic_tar_file_source</classname>&lt;boost::iostreams::composite&lt;boost::iostreams::gzip_decompressor, Source&gt; &gt;
+          <type><classname>basic_tar_file_source</classname>&lt;boost::iostreams::composite&lt;boost::iostreams::gzip_decompressor, Source&gt; &gt;</type>
+          <purpose>Exposition only</purpose>
         </inherit>
 
         <purpose><para>gzip圧縮されたtarファイルへの読み込み専用アクセスを提供するSourceモデル</para></purpose>
@@ -38,7 +39,8 @@
 
       <class name="tgz_file_source">
         <inherit access="public">
-          <classname>basic_tgz_file_source</classname>&lt;<classname>hamigaki::iostreams::file_source</classname>&gt;
+          <type><classname>basic_tgz_file_source</classname>&lt;<classname>hamigaki::iostreams::file_source</classname>&gt;</type>
+          <purpose>Exposition only</purpose>
         </inherit>
 
         <constructor specifiers="explicit">
@@ -54,7 +56,8 @@
         </template>
 
         <inherit access="public">
-          <classname>basic_tar_file_sink</classname>&lt;boost::iostreams::composite&lt;boost::iostreams::gzip_compressor, Sink&gt; &gt;
+          <type><classname>basic_tar_file_sink</classname>&lt;boost::iostreams::composite&lt;boost::iostreams::gzip_compressor, Sink&gt; &gt;</type>
+          <purpose>Exposition only</purpose>
         </inherit>
 
         <purpose><para>gzip圧縮されたtarファイルへの書き込み専用アクセスを提供するSinkモデル</para></purpose>
@@ -72,7 +75,8 @@
 
       <class name="tgz_file_sink">
         <inherit access="public">
-          <classname>basic_tgz_file_sink</classname>&lt;<classname>hamigaki::iostreams::file_sink</classname>&gt;
+          <type><classname>basic_tgz_file_sink</classname>&lt;<classname>hamigaki::iostreams::file_sink</classname>&gt;</type>
+          <purpose>Exposition only</purpose>
         </inherit>
 
         <constructor>

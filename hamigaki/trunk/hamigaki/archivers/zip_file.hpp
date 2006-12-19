@@ -67,15 +67,49 @@ private:
 };
 
 class zip_file_source
-    : public basic_zip_file_source<iostreams::file_source>
 {
-    typedef basic_zip_file_source<iostreams::file_source> base_type;
-
 public:
+    typedef char char_type;
+
+    struct category
+        : boost::iostreams::input
+        , boost::iostreams::device_tag
+    {};
+
+    typedef zip::header header_type;
+
     explicit zip_file_source(const std::string& filename)
-        : base_type(iostreams::file_source(filename, BOOST_IOS::binary))
+        : impl_(iostreams::file_source(filename, BOOST_IOS::binary))
     {
     }
+
+    void password(const std::string& pswd)
+    {
+        impl_.password(pswd);
+    }
+
+    bool next_entry()
+    {
+        return impl_.next_entry();
+    }
+
+    void select_entry(const boost::filesystem::path& ph)
+    {
+        impl_.select_entry(ph);
+    }
+
+    zip::header header() const
+    {
+        return impl_.header();
+    }
+
+    std::streamsize read(char* s, std::streamsize n)
+    {
+        return impl_.read(s, n);
+    }
+
+private:
+    basic_zip_file_source<iostreams::file_source> impl_;
 };
 
 
@@ -136,16 +170,55 @@ private:
 };
 
 class zip_file_sink
-    : public basic_zip_file_sink<iostreams::file_sink>
 {
-private:
-    typedef basic_zip_file_sink<iostreams::file_sink> base_type;
-
 public:
+    typedef char char_type;
+
+    struct category
+        : boost::iostreams::output
+        , boost::iostreams::device_tag
+        , boost::iostreams::closable_tag
+    {};
+
+    typedef zip::header header_type;
+
     explicit zip_file_sink(const std::string& filename)
-        : base_type(iostreams::file_sink(filename, BOOST_IOS::binary))
+        : impl_(iostreams::file_sink(filename, BOOST_IOS::binary))
     {
     }
+
+    void password(const std::string& pswd)
+    {
+        impl_.password(pswd);
+    }
+
+    void create_entry(const zip::header& head)
+    {
+        impl_.create_entry(head);
+    }
+
+    void rewind_entry()
+    {
+        impl_.rewind_entry();
+    }
+
+    std::streamsize write(const char* s, std::streamsize n)
+    {
+        return impl_.write(s, n);
+    }
+
+    void close()
+    {
+        impl_.close();
+    }
+
+    void close_archive()
+    {
+        impl_.close_archive();
+    }
+
+private:
+    basic_zip_file_sink<iostreams::file_sink> impl_;
 };
 
 } } // End namespaces archivers, hamigaki.
