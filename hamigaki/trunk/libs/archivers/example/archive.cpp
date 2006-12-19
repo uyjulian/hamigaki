@@ -140,7 +140,7 @@ struct header_traits<ar::tar::header>
         }
         else if (e.type == fs_ex::symlink_file)
         {
-            head.type = ar::tar::type::symbolic_link;
+            head.type = ar::tar::type::symlink;
             head.link_path = e.link_path;
         }
         else if (e.type == fs_ex::directory_file)

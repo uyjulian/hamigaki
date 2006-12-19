@@ -17,7 +17,7 @@ struct type
     // POSIX.1-1988
     static const char regular       = '0';
     static const char link          = '1';
-    static const char symbolic_link = '2';
+    static const char symlink       = '2';
     static const char char_device   = '3';
     static const char block_device  = '4';
     static const char directory     = '5';

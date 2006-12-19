@@ -65,7 +65,7 @@ struct header_traits<ar::lha::header>
     {
         entry e;
 
-        if (head.is_symbolic_link())
+        if (head.is_symlink())
             e.type = fs_ex::symlink_file;
         else if (head.is_directory())
             e.type = fs_ex::directory_file;
@@ -116,7 +116,7 @@ struct header_traits<ar::tar::header>
     {
         entry e;
 
-        if (head.type == ar::tar::type::symbolic_link)
+        if (head.type == ar::tar::type::symlink)
             e.type = fs_ex::symlink_file;
         else if (head.type == ar::tar::type::directory)
             e.type = fs_ex::directory_file;
@@ -154,7 +154,7 @@ struct header_traits<ar::zip::header>
     {
         entry e;
 
-        if (head.is_symbolic_link())
+        if (head.is_symlink())
             e.type = fs_ex::symlink_file;
         else if (head.is_directory())
             e.type = fs_ex::directory_file;

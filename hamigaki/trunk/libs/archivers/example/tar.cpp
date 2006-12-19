@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
 
             if (is_symlink(s))
             {
-                head.type = ar::tar::type::symbolic_link;
+                head.type = ar::tar::type::symlink;
                 head.link_path = fs_ex::symlink_target(head.path);
             }
             else if (is_directory(s))

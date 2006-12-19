@@ -48,12 +48,17 @@ struct header
     {
     }
 
+    bool is_regular() const
+    {
+        return !is_symlink() && !is_directory();
+    }
+
     bool is_directory() const
     {
         return (attributes & msdos::attributes::directory) != 0;
     }
 
-    bool is_symbolic_link() const
+    bool is_symlink() const
     {
         return !link_path.empty();
     }

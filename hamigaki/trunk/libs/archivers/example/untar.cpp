@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
 
                 fs_ex::create_hard_link(head.link_path, head.path);
             }
-            else if (head.type == ar::tar::type::symbolic_link)
+            else if (head.type == ar::tar::type::symlink)
             {
                 if (head.path.has_branch_path())
                     fs::create_directories(head.path.branch_path());

@@ -50,6 +50,16 @@ struct header
         return (type <= type::regular) || (type >= type::reserved);
     }
 
+    bool is_directory() const
+    {
+        return type == type::directory;
+    }
+
+    bool is_symlink() const
+    {
+        return type == type::symlink;
+    }
+
     bool is_device() const
     {
         return (type == type::char_device) || (type == type::block_device);
