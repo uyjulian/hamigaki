@@ -33,6 +33,16 @@
             </method>
           </method-group>
 
+          <method-group name="modifiers">
+            <method name="type">
+              <type>void</type>
+              <parameter name="v">
+                <paramtype><enumname>filesystem::file_type</enumname></paramtype>
+              </parameter>
+              <effects><simpara>ファイル種別を<code>v</code>に設定する</simpara></effects>
+            </method>
+          </method-group>
+
           <data-member name="level">
             <type>boost::uint8_t</type>
           </data-member>

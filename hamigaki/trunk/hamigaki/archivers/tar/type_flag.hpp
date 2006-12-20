@@ -1,4 +1,4 @@
-//  type.hpp: tar file type
+//  type_flag.hpp: tar file type flags
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
@@ -7,12 +7,12 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#ifndef HAMIGAKI_ARCHIVERS_TAR_TYPE_HPP
-#define HAMIGAKI_ARCHIVERS_TAR_TYPE_HPP
+#ifndef HAMIGAKI_ARCHIVERS_TAR_TYPE_FLAG_HPP
+#define HAMIGAKI_ARCHIVERS_TAR_TYPE_FLAG_HPP
 
 namespace hamigaki { namespace archivers { namespace tar {
 
-struct type
+struct type_flag
 {
     // POSIX.1-1988
     static const char regular       = '0';
@@ -35,4 +35,4 @@ struct type
 
 } } } // End namespaces tar, archivers, hamigaki.
 
-#endif // HAMIGAKI_ARCHIVERS_TAR_TYPE_HPP
+#endif // HAMIGAKI_ARCHIVERS_TAR_TYPE_FLAG_HPP

@@ -28,6 +28,7 @@ void tar_test()
 
     ar::tar::header head;
     head.format = ar::tar::ustar;
+    head.type_flag = ar::tar::type_flag::regular;
     head.path = "tar_test.dat";
     head.modified_time = fs_ex::timestamp::from_time_t(std::time(0));
     head.file_size = data.size();
@@ -50,6 +51,7 @@ void tar_test()
 
     BOOST_CHECK(src.next_entry());
 
+    BOOST_CHECK_EQUAL(head.type_flag, src.header().type_flag);
     BOOST_CHECK_EQUAL(head.path.string(), src.header().path.string());
     BOOST_CHECK(head.link_path.empty());
     BOOST_REQUIRE(src.header().modified_time);
@@ -74,6 +76,7 @@ void dir_test()
 {
     ar::tar::header head;
     head.format = ar::tar::ustar;
+    head.type_flag = ar::tar::type_flag::directory;
     head.path = "dir";
     head.modified_time = fs_ex::timestamp::from_time_t(std::time(0));
     head.file_size = 0;
@@ -95,6 +98,7 @@ void dir_test()
 
     BOOST_CHECK(src.next_entry());
 
+    BOOST_CHECK_EQUAL(head.type_flag, src.header().type_flag);
     BOOST_CHECK_EQUAL(head.path.string(), src.header().path.string());
     BOOST_CHECK(head.link_path.empty());
     BOOST_REQUIRE(src.header().modified_time);
@@ -112,6 +116,7 @@ void symlink_test()
 {
     ar::tar::header head;
     head.format = ar::tar::ustar;
+    head.type_flag = ar::tar::type_flag::symlink;
     head.path = "link";
     head.link_path = "target";
     head.modified_time = fs_ex::timestamp::from_time_t(std::time(0));
@@ -134,6 +139,7 @@ void symlink_test()
 
     BOOST_CHECK(src.next_entry());
 
+    BOOST_CHECK_EQUAL(head.type_flag, src.header().type_flag);
     BOOST_CHECK_EQUAL(head.path.string(), src.header().path.string());
     BOOST_CHECK_EQUAL(head.link_path.string(), src.header().link_path.string());
     BOOST_REQUIRE(src.header().modified_time);
@@ -153,6 +159,7 @@ void path_length_test_aux(const fs::path& ph)
 
     ar::tar::header head;
     head.format = ar::tar::ustar;
+    head.type_flag = ar::tar::type_flag::regular;
     head.path = ph;
     head.modified_time = fs_ex::timestamp::from_time_t(std::time(0));
     head.file_size = data.size();
@@ -175,6 +182,7 @@ void path_length_test_aux(const fs::path& ph)
 
     BOOST_CHECK(src.next_entry());
 
+    BOOST_CHECK_EQUAL(head.type_flag, src.header().type_flag);
     BOOST_CHECK_EQUAL(head.path.string(), src.header().path.string());
     BOOST_CHECK(head.link_path.empty());
     BOOST_REQUIRE(src.header().modified_time);

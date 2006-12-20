@@ -135,18 +135,18 @@ struct header_traits<ar::tar::header>
 
         if (!e.hard_link_path.empty())
         {
-            head.type = ar::tar::type::link;
+            head.type_flag = ar::tar::type_flag::link;
             head.link_path = e.hard_link_path;
         }
         else if (e.type == fs_ex::symlink_file)
         {
-            head.type = ar::tar::type::symlink;
+            head.type_flag = ar::tar::type_flag::symlink;
             head.link_path = e.link_path;
         }
         else if (e.type == fs_ex::directory_file)
-            head.type = ar::tar::type::directory;
+            head.type_flag = ar::tar::type_flag::directory;
         else
-            head.type = ar::tar::type::regular;
+            head.type_flag = ar::tar::type_flag::regular;
 
         head.user_name = e.user_name;
         head.group_name = e.group_name;

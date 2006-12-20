@@ -18,7 +18,7 @@
   <xi:include href="msdos/attributes.xml"/>
   <xi:include href="tar/file_format.xml"/>
   <xi:include href="tar/headers.xml"/>
-  <xi:include href="tar/type.xml"/>
+  <xi:include href="tar/type_flag.xml"/>
   <xi:include href="zip/headers.xml"/>
   <xi:include href="error.xml"/>
   <xi:include href="lzh_file.xml"/>

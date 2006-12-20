@@ -116,15 +116,15 @@ struct header_traits<ar::tar::header>
     {
         entry e;
 
-        if (head.type == ar::tar::type::symlink)
+        if (head.type_flag == ar::tar::type_flag::symlink)
             e.type = fs_ex::symlink_file;
-        else if (head.type == ar::tar::type::directory)
+        else if (head.type_flag == ar::tar::type_flag::directory)
             e.type = fs_ex::directory_file;
         else
             e.type = fs_ex::regular_file;
 
         e.path = head.path;
-        if (head.type == ar::tar::type::link)
+        if (head.type_flag == ar::tar::type_flag::link)
             e.hard_link_path = head.link_path;
         else
             e.link_path = head.link_path;

@@ -79,7 +79,7 @@ public:
 
         header_ = ustar_.header();
 
-        if (header_.type == tar::type::global)
+        if (header_.type_flag == tar::type_flag::global)
         {
             read_extended_header(global_);
 
@@ -91,7 +91,7 @@ public:
 
         tar_ex_header ext = global_;
 
-        if (header_.type == tar::type::extended)
+        if (header_.type_flag == tar::type_flag::extended)
         {
             read_extended_header(ext);
 
@@ -103,7 +103,7 @@ public:
 
         while (header_.is_long())
         {
-            if (header_.type == tar::type::long_link)
+            if (header_.type_flag == tar::type_flag::long_link)
                 ext.link_path = read_long_link();
             else
                 ext.path = read_long_link();

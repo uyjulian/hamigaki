@@ -57,11 +57,11 @@ int main(int argc, char* argv[])
 
             if (is_symlink(s))
             {
-                head.type = ar::tar::type::symlink;
+                head.type_flag = ar::tar::type_flag::symlink;
                 head.link_path = fs_ex::symlink_target(head.path);
             }
             else if (is_directory(s))
-                head.type = ar::tar::type::directory;
+                head.type_flag = ar::tar::type_flag::directory;
             else
                 head.file_size = s.file_size();
 

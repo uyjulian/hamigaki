@@ -12,7 +12,8 @@
 
 #include <hamigaki/archivers/tar/file_format.hpp>
 #include <hamigaki/archivers/tar/raw_header.hpp>
-#include <hamigaki/archivers/tar/type.hpp>
+#include <hamigaki/archivers/tar/type_flag.hpp>
+#include <hamigaki/filesystem/file_status.hpp>
 #include <hamigaki/filesystem/timestamp.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
@@ -30,7 +31,7 @@ struct header
     boost::optional<filesystem::timestamp> modified_time;
     boost::optional<filesystem::timestamp> access_time;
     boost::optional<filesystem::timestamp> change_time;
-    char type;
+    char type_flag;
     boost::filesystem::path link_path;
     file_format format;
     std::string user_name;
@@ -41,33 +42,58 @@ struct header
 
     header()
         : permissions(0644), uid(0), gid(0), file_size(0)
-        , type(tar::type::regular), format(gnu), dev_major(0), dev_minor(0)
+        , type_flag(tar::type_flag::regular), format(gnu)
+        , dev_major(0), dev_minor(0)
     {
     }
 
     bool is_regular() const
     {
-        return (type <= type::regular) || (type >= type::reserved);
+        return
+            (type_flag <= type_flag::regular) ||
+            (type_flag >= type_flag::reserved) ;
     }
 
     bool is_directory() const
     {
-        return type == type::directory;
+        return type_flag == type_flag::directory;
     }
 
     bool is_symlink() const
     {
-        return type == type::symlink;
+        return type_flag == type_flag::symlink;
     }
 
     bool is_device() const
     {
-        return (type == type::char_device) || (type == type::block_device);
+        return
+            (type_flag == type_flag::char_device) ||
+            (type_flag == type_flag::block_device) ;
     }
 
     bool is_long() const
     {
-        return (type == type::long_link) || (type == type::long_name);
+        return
+            (type_flag == type_flag::long_link) ||
+            (type_flag == type_flag::long_name) ;
+    }
+
+    void type(filesystem::file_type v)
+    {
+        if (v == filesystem::regular_file)
+            type_flag = type_flag::regular;
+        else if (v == filesystem::directory_file)
+            type_flag = type_flag::directory;
+        else if (v != filesystem::symlink_file)
+            type_flag = type_flag::symlink;
+        else if (v != filesystem::block_file)
+            type_flag = type_flag::block_device;
+        else if (v != filesystem::character_file)
+            type_flag = type_flag::char_device;
+        else if (v != filesystem::fifo_file)
+            type_flag = type_flag::fifo;
+        else
+            throw std::runtime_error("unsupported file type");
     }
 };
 

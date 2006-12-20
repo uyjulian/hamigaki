@@ -33,6 +33,16 @@
             </method>
           </method-group>
 
+          <method-group name="modifiers">
+            <method name="type">
+              <type>void</type>
+              <parameter name="v">
+                <paramtype><enumname>filesystem::file_type</enumname></paramtype>
+              </parameter>
+              <effects><simpara>ファイル種別を<code>v</code>に設定する</simpara></effects>
+            </method>
+          </method-group>
+
           <data-member name="path">
             <type>boost::filesystem::path</type>
           </data-member>
@@ -65,7 +75,7 @@
             <type>boost::optional&lt;<classname>filesystem::timestamp</classname>&gt;</type>
           </data-member>
 
-          <data-member name="type">
+          <data-member name="type_flag">
             <type>char</type>
           </data-member>
 
@@ -150,9 +160,9 @@
                       <entry></entry>
                     </row>
                     <row>
-                      <entry>type</entry>
-                      <entry>ファイルの種類 (<classname>type</classname>構造体内の定数のいずれか)</entry>
-                      <entry><code>type::regular</code></entry>
+                      <entry>type_flag</entry>
+                      <entry>ファイルの種類 (<classname>type_flag</classname>構造体内の定数のいずれか)</entry>
+                      <entry><code>type_flag::regular</code></entry>
                     </row>
                     <row>
                       <entry>link_path</entry>

@@ -49,27 +49,27 @@ int main(int argc, char* argv[])
 
             std::cout << head.path.string() << '\n';
 
-            if (head.type == ar::tar::type::link)
+            if (head.type_flag == ar::tar::type_flag::link)
             {
                 if (head.path.has_branch_path())
                     fs::create_directories(head.path.branch_path());
 
                 fs_ex::create_hard_link(head.link_path, head.path);
             }
-            else if (head.type == ar::tar::type::symlink)
+            else if (head.type_flag == ar::tar::type_flag::symlink)
             {
                 if (head.path.has_branch_path())
                     fs::create_directories(head.path.branch_path());
 
                 fs_ex::create_symlink(head.link_path, head.path);
             }
-            else if (head.type == ar::tar::type::directory)
+            else if (head.type_flag == ar::tar::type_flag::directory)
                 fs::create_directories(head.path);
-            else if (head.type == ar::tar::type::char_device)
+            else if (head.type_flag == ar::tar::type_flag::char_device)
                 std::cerr << "Warning: skip character device\n";
-            else if (head.type == ar::tar::type::block_device)
+            else if (head.type_flag == ar::tar::type_flag::block_device)
                 std::cerr << "Warning: skip block device\n";
-            else if (head.type == ar::tar::type::fifo)
+            else if (head.type_flag == ar::tar::type_flag::fifo)
                 std::cerr << "Warning: skip FIFO file\n";
             // Note: All unknown types are treated as a regular file.
             else

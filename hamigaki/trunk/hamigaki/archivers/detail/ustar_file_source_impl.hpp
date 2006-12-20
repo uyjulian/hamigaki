@@ -119,7 +119,7 @@ inline tar::header read_tar_header(const char* block)
     if (detail::tar_checksum(block) != chksum)
         throw BOOST_IOSTREAMS_FAILURE("invalid tar checksum");
 
-    head.type = raw.typeflag ? raw.typeflag : '0';
+    head.type_flag = raw.typeflag ? raw.typeflag : '0';
     head.link_path = detail::read_string(raw.linkname);
 
     if (raw.magic[5] == ' ')
@@ -157,7 +157,7 @@ public:
     explicit basic_ustar_file_source_impl(const Source& src)
         : src_(src), pos_(0)
     {
-        header_.type = tar::type::directory;
+        header_.type_flag = tar::type_flag::directory;
         header_.file_size = 0;
     }
 

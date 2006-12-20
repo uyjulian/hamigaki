@@ -195,13 +195,13 @@ public:
                 (prefix.size() > tar::raw_header::prefix_size))
             {
                 std::string long_name = head.path.string();
-                if (head.type == tar::type::directory)
+                if (head.type_flag == tar::type_flag::directory)
                     long_name += '/';
 
                 tar::header tmp;
                 tmp.permissions = 0;
                 tmp.file_size = long_name.size()+1;
-                tmp.type = tar::type::long_name;
+                tmp.type_flag = tar::type_flag::long_name;
                 tmp.format = tar::gnu;
                 tmp.group_name = "root";
 
@@ -218,7 +218,7 @@ public:
                 tar::header tmp;
                 tmp.permissions = 0;
                 tmp.file_size = long_link.size()+1;
-                tmp.type = tar::type::long_link;
+                tmp.type_flag = tar::type_flag::long_link;
                 tmp.format = tar::gnu;
                 tmp.group_name = "root";
 
@@ -259,7 +259,7 @@ private:
         tmp.path = ph;
         tmp.permissions = 0;
         tmp.file_size = ex.size();
-        tmp.type = tar::type::extended;
+        tmp.type_flag = tar::type_flag::extended;
         tmp.format = tar::pax;
 
         ustar_.create_entry(tmp);

@@ -20,6 +20,7 @@
 #include <hamigaki/archivers/zip/local_file_header.hpp>
 #include <hamigaki/archivers/zip/zip64_end_cent_dir.hpp>
 #include <hamigaki/archivers/zip/zip64_end_cent_dir_locator.hpp>
+#include <hamigaki/filesystem/file_status.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
 #include <string>
@@ -108,6 +109,27 @@ struct header
             return value == encryption_checksum;
         else
             return (value >> 8) == (encryption_checksum >> 8);
+    }
+
+    void type(filesystem::file_type v)
+    {
+        if (v == filesystem::regular_file)
+        {
+            attributes &= ~msdos::attributes::directory;
+            permissions = 0100000 | (permissions & 07777);
+        }
+        else if (v == filesystem::directory_file)
+        {
+            attributes |= msdos::attributes::directory;
+            permissions = 0040000 | (permissions & 07777);
+        }
+        else if (v != filesystem::symlink_file)
+        {
+            attributes &= ~msdos::attributes::directory;
+            permissions = 0120000 | (permissions & 07777);
+        }
+        else
+            throw std::runtime_error("unsupported file type");
     }
 };
 

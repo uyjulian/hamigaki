@@ -133,7 +133,7 @@ inline void write_tar_header(char* block, const tar::header& head)
 
     if (head.is_long())
         detail::write_string(raw.name, "././@LongLink");
-    else if (head.type == tar::type::extended)
+    else if (head.type_flag == tar::type_flag::extended)
         detail::write_string(raw.name, detail::make_ex_header_name(head.path));
     else
         detail::write_string(raw.name, leaf);
@@ -147,9 +147,9 @@ inline void write_tar_header(char* block, const tar::header& head)
     else
         detail::write_oct(raw.mtime, static_cast<std::time_t>(0));
     std::memset(raw.chksum, ' ', sizeof(raw.chksum));
-    raw.typeflag = head.type;
+    raw.typeflag = head.type_flag;
 
-    if (head.type != tar::type::extended)
+    if (head.type_flag != tar::type_flag::extended)
         detail::write_string(raw.linkname, linkname);
 
     std::strcpy(raw.magic, "ustar");
