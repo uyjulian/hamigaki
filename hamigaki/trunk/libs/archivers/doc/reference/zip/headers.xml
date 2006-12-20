@@ -36,6 +36,23 @@
         </struct>
 
         <struct name="header">
+          <method-group name="queries">
+            <method name="is_regular" cv="const">
+              <type>bool</type>
+              <returns><simpara>通常のファイルであれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
+            </method>
+
+            <method name="is_directory" cv="const">
+              <type>bool</type>
+              <returns><simpara>ディレクトリであれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
+            </method>
+
+            <method name="is_symlink" cv="const">
+              <type>bool</type>
+              <returns><simpara>シンボリックリンクであれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
+            </method>
+          </method-group>
+
           <data-member name="path">
             <type>boost::filesystem::path</type>
           </data-member>
