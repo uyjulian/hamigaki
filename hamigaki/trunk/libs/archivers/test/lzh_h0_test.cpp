@@ -21,6 +21,17 @@ namespace fs = boost::filesystem;
 namespace io = boost::iostreams;
 namespace ut = boost::unit_test;
 
+void check_header(const ar::lha::header& old, const ar::lha::header& now)
+{
+    BOOST_CHECK(old.level == now.level);
+    BOOST_CHECK((now.update_time - old.update_time) >= 0);
+    BOOST_CHECK((now.update_time - old.update_time) <= 1);
+    BOOST_CHECK_EQUAL(old.attributes, now.attributes);
+    BOOST_CHECK_EQUAL(old.path.string(), now.path.string());
+    BOOST_CHECK_EQUAL(old.link_path.string(), now.link_path.string());
+    BOOST_CHECK(!now.os);
+}
+
 void h0_test()
 {
     std::string data("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
@@ -48,12 +59,7 @@ void h0_test()
 
     BOOST_CHECK(src.next_entry());
 
-    BOOST_CHECK(head.level == src.header().level);
-    BOOST_CHECK((src.header().update_time - head.update_time) >= 0);
-    BOOST_CHECK((src.header().update_time - head.update_time) <= 1);
-    BOOST_CHECK_EQUAL(head.attributes, src.header().attributes);
-    BOOST_CHECK_EQUAL(head.path.string(), src.header().path.string());
-    BOOST_CHECK(!src.header().os);
+    check_header(head, src.header());
 
     std::string data2;
     io::copy(src, io::back_inserter(data2));
@@ -91,13 +97,7 @@ void symlink_test_aux(const fs::path& link, const fs::path& target, bool dir)
 
     BOOST_CHECK(src.next_entry());
 
-    BOOST_CHECK(head.level == src.header().level);
-    BOOST_CHECK((src.header().update_time - head.update_time) >= 0);
-    BOOST_CHECK((src.header().update_time - head.update_time) <= 1);
-    BOOST_CHECK_EQUAL(head.attributes, src.header().attributes);
-    BOOST_CHECK_EQUAL(head.path.string(), src.header().path.string());
-    BOOST_CHECK_EQUAL(head.link_path.string(), src.header().link_path.string());
-    BOOST_CHECK(!src.header().os);
+    check_header(head, src.header());
 
     BOOST_CHECK(!src.next_entry());
 }

@@ -21,6 +21,19 @@ namespace fs = boost::filesystem;
 namespace io = boost::iostreams;
 namespace ut = boost::unit_test;
 
+void check_header(const ar::zip::header& old, const ar::zip::header& now)
+{
+    BOOST_CHECK_EQUAL(old.path.string(), now.path.string());
+    BOOST_CHECK_EQUAL(old.link_path.string(), now.link_path.string());
+    BOOST_CHECK_EQUAL(old.encrypted, now.encrypted);
+    BOOST_CHECK(old.method == now.method);
+    BOOST_CHECK((now.update_time - old.update_time) >= 0);
+    BOOST_CHECK((now.update_time - old.update_time) <= 1);
+    BOOST_CHECK_EQUAL(old.attributes, now.attributes);
+    BOOST_CHECK_EQUAL(old.permissions, now.permissions);
+    BOOST_CHECK_EQUAL(old.comment, now.comment);
+}
+
 void zip_test()
 {
     std::string data("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
@@ -51,15 +64,7 @@ void zip_test()
 
     BOOST_CHECK(src.next_entry());
 
-    BOOST_CHECK_EQUAL(head.path.string(), src.header().path.string());
-    BOOST_CHECK(head.link_path.empty());
-    BOOST_CHECK_EQUAL(head.encrypted, src.header().encrypted);
-    BOOST_CHECK(head.method == src.header().method);
-    BOOST_CHECK((src.header().update_time - head.update_time) >= 0);
-    BOOST_CHECK((src.header().update_time - head.update_time) <= 1);
-    BOOST_CHECK_EQUAL(head.attributes, src.header().attributes);
-    BOOST_CHECK_EQUAL(head.permissions, src.header().permissions);
-    BOOST_CHECK_EQUAL(head.comment, src.header().comment);
+    check_header(head, src.header());
 
     std::string data2;
     io::copy(src, io::back_inserter(data2));
@@ -99,15 +104,7 @@ void dir_test()
 
     BOOST_CHECK(src.next_entry());
 
-    BOOST_CHECK_EQUAL(head.path.string(), src.header().path.string());
-    BOOST_CHECK(head.link_path.empty());
-    BOOST_CHECK_EQUAL(head.encrypted, src.header().encrypted);
-    BOOST_CHECK(head.method == src.header().method);
-    BOOST_CHECK((src.header().update_time - head.update_time) >= 0);
-    BOOST_CHECK((src.header().update_time - head.update_time) <= 1);
-    BOOST_CHECK_EQUAL(head.attributes, src.header().attributes);
-    BOOST_CHECK_EQUAL(head.permissions, src.header().permissions);
-    BOOST_CHECK_EQUAL(head.comment, src.header().comment);
+    check_header(head, src.header());
 
     BOOST_CHECK(!src.next_entry());
 }
@@ -140,15 +137,7 @@ void symlink_test()
 
     BOOST_CHECK(src.next_entry());
 
-    BOOST_CHECK_EQUAL(head.path.string(), src.header().path.string());
-    BOOST_CHECK_EQUAL(head.link_path.string(), src.header().link_path.string());
-    BOOST_CHECK_EQUAL(head.encrypted, src.header().encrypted);
-    BOOST_CHECK(head.method == src.header().method);
-    BOOST_CHECK((src.header().update_time - head.update_time) >= 0);
-    BOOST_CHECK((src.header().update_time - head.update_time) <= 1);
-    BOOST_CHECK_EQUAL(head.attributes, src.header().attributes);
-    BOOST_CHECK_EQUAL(head.permissions, src.header().permissions);
-    BOOST_CHECK_EQUAL(head.comment, src.header().comment);
+    check_header(head, src.header());
 
     BOOST_CHECK(!src.next_entry());
 }
@@ -187,14 +176,7 @@ void unix_test()
 
     BOOST_CHECK(src.next_entry());
 
-    BOOST_CHECK_EQUAL(head.path.string(), src.header().path.string());
-    BOOST_CHECK(head.link_path.empty());
-    BOOST_CHECK_EQUAL(head.encrypted, src.header().encrypted);
-    BOOST_CHECK(head.method == src.header().method);
-    BOOST_CHECK((src.header().update_time - head.update_time) >= 0);
-    BOOST_CHECK((src.header().update_time - head.update_time) <= 1);
-    BOOST_CHECK_EQUAL(head.attributes, src.header().attributes);
-    BOOST_CHECK_EQUAL(head.permissions, src.header().permissions);
+    check_header(head, src.header());
 
     BOOST_REQUIRE(src.header().modified_time);
     BOOST_CHECK_EQUAL(*head.modified_time, *src.header().modified_time);

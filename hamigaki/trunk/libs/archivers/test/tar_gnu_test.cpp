@@ -22,6 +22,20 @@ namespace fs = boost::filesystem;
 namespace io = boost::iostreams;
 namespace ut = boost::unit_test;
 
+void check_header(const ar::tar::header& old, const ar::tar::header& now)
+{
+    BOOST_CHECK_EQUAL(old.format, now.format);
+    BOOST_CHECK_EQUAL(old.type_flag, now.type_flag);
+    BOOST_CHECK_EQUAL(old.path.string(), now.path.string());
+    BOOST_CHECK(old.link_path == now.link_path);
+    BOOST_REQUIRE(now.modified_time);
+    BOOST_CHECK_EQUAL(
+        old.modified_time->to_time_t(), now.modified_time->to_time_t()
+    );
+    BOOST_CHECK_EQUAL(old.permissions, now.permissions);
+    BOOST_CHECK(now.comment.empty());
+}
+
 void tar_test()
 {
     std::string data("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
@@ -51,16 +65,7 @@ void tar_test()
 
     BOOST_CHECK(src.next_entry());
 
-    BOOST_CHECK_EQUAL(head.type_flag, src.header().type_flag);
-    BOOST_CHECK_EQUAL(head.path.string(), src.header().path.string());
-    BOOST_CHECK(head.link_path.empty());
-    BOOST_REQUIRE(src.header().modified_time);
-    BOOST_CHECK_EQUAL(
-        head.modified_time->to_time_t(),
-        src.header().modified_time->to_time_t()
-    );
-    BOOST_CHECK_EQUAL(head.permissions, src.header().permissions);
-    BOOST_CHECK(src.header().comment.empty());
+    check_header(head, src.header());
 
     std::string data2;
     io::copy(src, io::back_inserter(data2));
@@ -98,16 +103,7 @@ void dir_test()
 
     BOOST_CHECK(src.next_entry());
 
-    BOOST_CHECK_EQUAL(head.type_flag, src.header().type_flag);
-    BOOST_CHECK_EQUAL(head.path.string(), src.header().path.string());
-    BOOST_CHECK(head.link_path.empty());
-    BOOST_REQUIRE(src.header().modified_time);
-    BOOST_CHECK_EQUAL(
-        head.modified_time->to_time_t(),
-        src.header().modified_time->to_time_t()
-    );
-    BOOST_CHECK_EQUAL(head.permissions, src.header().permissions);
-    BOOST_CHECK(src.header().comment.empty());
+    check_header(head, src.header());
 
     BOOST_CHECK(!src.next_entry());
 }
@@ -139,16 +135,7 @@ void symlink_test()
 
     BOOST_CHECK(src.next_entry());
 
-    BOOST_CHECK_EQUAL(head.type_flag, src.header().type_flag);
-    BOOST_CHECK_EQUAL(head.path.string(), src.header().path.string());
-    BOOST_CHECK_EQUAL(head.link_path.string(), src.header().link_path.string());
-    BOOST_REQUIRE(src.header().modified_time);
-    BOOST_CHECK_EQUAL(
-        head.modified_time->to_time_t(),
-        src.header().modified_time->to_time_t()
-    );
-    BOOST_CHECK_EQUAL(head.permissions, src.header().permissions);
-    BOOST_CHECK(src.header().comment.empty());
+    check_header(head, src.header());
 
     BOOST_CHECK(!src.next_entry());
 }
@@ -182,16 +169,7 @@ void path_length_test_aux(const fs::path& ph)
 
     BOOST_CHECK(src.next_entry());
 
-    BOOST_CHECK_EQUAL(head.type_flag, src.header().type_flag);
-    BOOST_CHECK_EQUAL(head.path.string(), src.header().path.string());
-    BOOST_CHECK(head.link_path.empty());
-    BOOST_REQUIRE(src.header().modified_time);
-    BOOST_CHECK_EQUAL(
-        head.modified_time->to_time_t(),
-        src.header().modified_time->to_time_t()
-    );
-    BOOST_CHECK_EQUAL(head.permissions, src.header().permissions);
-    BOOST_CHECK(src.header().comment.empty());
+    check_header(head, src.header());
 
     std::string data2;
     io::copy(src, io::back_inserter(data2));
