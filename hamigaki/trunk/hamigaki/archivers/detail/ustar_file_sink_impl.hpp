@@ -74,7 +74,11 @@ inline void write_c_string(char (&buf)[Size], const std::string& s)
 template<std::size_t Size, class T>
 inline void write_oct_impl(char (&buf)[Size], T x, boost::mpl::bool_<false>)
 {
+#if BOOST_WORKAROUND(__MWERKS__, BOOST_TESTED_AT(0x3003))
+    std::string s = to_oct<char,Size-1>(x);
+#else
     const std::string& s = to_oct<char,Size-1>(x);
+#endif
     s.copy(buf, s.size());
 }
 
