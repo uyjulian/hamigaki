@@ -44,6 +44,8 @@
   <XI:include href="installation.xml"/>
   <!-- xi:include href="../libs/archivers/doc/tutorial.xml" -->
   <XI:include href="tutorial.xml"/>
+  <!-- xi:include href="../libs/archivers/doc/advanced_topics.xml" -->
+  <XI:include href="advanced_topics.xml"/>
   <!-- xi:include href="../libs/archivers/doc/format.xml" -->
   <XI:include href="format.xml"/>
   <!-- xi:include href="../libs/archivers/doc/reference/reference.xml" -->
