@@ -68,7 +68,8 @@ private:
     typedef detail::basic_ustar_file_source_impl<Source> ustar_type;
 
 public:
-    explicit basic_tar_file_source_impl(const Source& src) : ustar_(src)
+    explicit basic_tar_file_source_impl(const Source& src)
+        : ustar_(src), is_pax_(false)
     {
     }
 
@@ -87,9 +88,11 @@ public:
                 throw boost::iostreams::detail::bad_read();
 
             header_ = ustar_.header();
+            is_pax_ = true;
         }
 
         tar_ex_header ext = global_;
+        bool is_pax = is_pax_;
 
         if (header_.type_flag == tar::type_flag::extended)
         {
@@ -99,6 +102,7 @@ public:
                 throw boost::iostreams::detail::bad_read();
 
             header_ = ustar_.header();
+            is_pax = true;
         }
 
         while (header_.is_long())
@@ -113,6 +117,9 @@ public:
 
             header_ = ustar_.header();
         }
+
+        if (is_pax)
+            header_.format = tar::pax;
 
         if (!ext.path.empty())
             header_.path = ext.path;
@@ -164,6 +171,7 @@ private:
     ustar_type ustar_;
     tar::header header_;
     tar_ex_header global_;
+    bool is_pax_;
 
     boost::filesystem::path read_long_link()
     {

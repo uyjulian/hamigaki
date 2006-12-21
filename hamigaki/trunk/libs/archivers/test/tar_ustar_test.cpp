@@ -24,6 +24,7 @@ namespace ut = boost::unit_test;
 
 void check_header(const ar::tar::header& old, const ar::tar::header& now)
 {
+    BOOST_CHECK_EQUAL(old.format, now.format);
     BOOST_CHECK_EQUAL(old.type_flag, now.type_flag);
     BOOST_CHECK_EQUAL(old.path.string(), now.path.string());
     BOOST_CHECK_EQUAL(old.link_path.string(), now.link_path.string());
