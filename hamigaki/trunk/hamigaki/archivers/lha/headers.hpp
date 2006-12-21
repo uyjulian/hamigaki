@@ -20,6 +20,7 @@
 #include <hamigaki/filesystem/file_status.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
+#include <stdexcept>
 
 namespace hamigaki { namespace archivers { namespace lha {
 

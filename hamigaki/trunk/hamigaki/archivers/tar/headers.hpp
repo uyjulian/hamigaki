@@ -17,6 +17,7 @@
 #include <hamigaki/filesystem/timestamp.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
+#include <stdexcept>
 #include <string>
 
 namespace hamigaki { namespace archivers { namespace tar {
