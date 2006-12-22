@@ -42,11 +42,12 @@ namespace detail
 HAMIGAKI_AUDIO_DECL int random_serial_no();
 
 class HAMIGAKI_AUDIO_DECL vorbis_encoder_base
-    : public hamigaki::iostreams::
-        arbitrary_positional_facade<vorbis_encoder_base,float,255>
+    : public iostreams::arbitrary_positional_facade<
+        vorbis_encoder_base, float, 255
+    >
     , private boost::noncopyable
 {
-    friend class hamigaki::iostreams::core_access;
+    friend class iostreams::core_access;
 
 public:
     typedef std::streamsize (*write_func)(void*, const char*, std::streamsize);
@@ -142,6 +143,16 @@ public:
         return base_.write(s, n);
     }
 
+    long channels() const
+    {
+        return base_.channels();
+    }
+
+    long rate() const
+    {
+        return base_.rate();
+    }
+
 private:
     vorbis_encoder_base base_;
     Sink sink_;
@@ -163,18 +174,20 @@ private:
 } // namespace detail
 
 template<typename Sink>
-struct basic_vorbis_file_sink
+class basic_vorbis_file_sink
 {
+private:
     typedef detail::vorbis_file_sink_impl<Sink> impl_type;
 
 public:
     typedef float char_type;
 
-    struct category :
-        boost::iostreams::optimally_buffered_tag,
-        boost::iostreams::output,
-        boost::iostreams::device_tag,
-        boost::iostreams::closable_tag {};
+    struct category
+        : boost::iostreams::optimally_buffered_tag
+        , boost::iostreams::output
+        , boost::iostreams::device_tag
+        , boost::iostreams::closable_tag
+    {};
 
     basic_vorbis_file_sink(
             const Sink& sink, long channels, long rate, float quality=0.1f)
@@ -235,22 +248,24 @@ private:
 };
 
 class vorbis_file_sink
-    : public basic_vorbis_file_sink<hamigaki::iostreams::file_sink>
 {
 private:
-    typedef basic_vorbis_file_sink<hamigaki::iostreams::file_sink> base_type;
+    typedef basic_vorbis_file_sink<iostreams::file_sink> impl_type;
 
 public:
+    typedef impl_type::char_type char_type;
+    typedef impl_type::category category;
+
     vorbis_file_sink(const std::string& path,
             long channels, long rate, float quality=0.1f)
-        : base_type(hamigaki::iostreams::file_sink(
+        : impl_(iostreams::file_sink(
             path, BOOST_IOS::out|BOOST_IOS::binary), channels, rate, quality)
     {
     }
 
     vorbis_file_sink(const std::string& path,
             long channels, long rate, float quality, int serialno)
-        : base_type(hamigaki::iostreams::file_sink(
+        : impl_(iostreams::file_sink(
             path, BOOST_IOS::out|BOOST_IOS::binary),
             channels, rate, quality, serialno)
     {
@@ -258,7 +273,7 @@ public:
 
     vorbis_file_sink(const std::string& path,
             long channels, long rate, const vorbis_encode_params& params)
-        : base_type(hamigaki::iostreams::file_sink(
+        : impl_(iostreams::file_sink(
             path, BOOST_IOS::out|BOOST_IOS::binary), channels, rate, params)
     {
     }
@@ -266,11 +281,39 @@ public:
     vorbis_file_sink(const std::string& path,
             long channels, long rate, int serialno,
             const vorbis_encode_params& params)
-        : base_type(hamigaki::iostreams::file_sink(
+        : impl_(iostreams::file_sink(
             path, BOOST_IOS::out|BOOST_IOS::binary),
             channels, rate, serialno, params)
     {
     }
+
+    std::streamsize optimal_buffer_size() const
+    {
+        return impl_.optimal_buffer_size();
+    }
+
+    long channels() const
+    {
+        return impl_.channels();
+    }
+
+    long rate() const
+    {
+        return impl_.rate();
+    }
+
+    std::streamsize write(const char_type* s, std::streamsize n)
+    {
+        return impl_.write(s, n);
+    }
+
+    void close()
+    {
+        impl_.close();
+    }
+
+private:
+    impl_type impl_;
 };
 
 template<typename Sink>

@@ -145,7 +145,7 @@ private:
             throw BOOST_IOSTREAMS_FAILURE("cannot find COMM chunk");
 
         aiff_comm_data comm;
-        hamigaki::iostreams::binary_read(iff_, comm);
+        iostreams::binary_read(iff_, comm);
         boost::int16_t channels = comm.num_channels;
         boost::uint32_t samples = comm.num_sample_frames;
         boost::int16_t bits = comm.sample_size;
@@ -249,7 +249,7 @@ private:
         boost::tie(comm.sample_rate_exp, comm.sample_rate_mant) =
             encode_extended(format_.rate);
 
-        hamigaki::iostreams::binary_write(iff_, comm);
+        iostreams::binary_write(iff_, comm);
     }
 };
 
@@ -258,6 +258,7 @@ private:
 template<typename Source>
 class basic_aiff_file_source
 {
+private:
     typedef detail::aiff_file_source_impl<Source> impl_type;
 
 public:
@@ -306,17 +307,47 @@ private:
 };
 
 class aiff_file_source
-    : public basic_aiff_file_source<hamigaki::iostreams::file_source>
 {
 private:
-    typedef basic_aiff_file_source<hamigaki::iostreams::file_source> base_type;
+    typedef basic_aiff_file_source<iostreams::file_source> impl_type;
 
 public:
+    typedef impl_type::char_type char_type;
+    typedef impl_type::category category;
+
     explicit aiff_file_source(const std::string& path)
-        : base_type(hamigaki::iostreams::file_source(
-            path, BOOST_IOS::in|BOOST_IOS::binary))
+        : impl_(iostreams::file_source(path, BOOST_IOS::in|BOOST_IOS::binary))
     {
     }
+
+    std::streamsize optimal_buffer_size() const
+    {
+        return impl_.optimal_buffer_size();
+    }
+
+    pcm_format format() const
+    {
+        return impl_.format();
+    }
+
+    std::streamsize read(char_type* s, std::streamsize n)
+    {
+        return impl_.read(s, n);
+    }
+
+    void close()
+    {
+        impl_.close();
+    }
+
+    std::streampos seek(
+        boost::iostreams::stream_offset off, BOOST_IOS::seekdir way)
+    {
+        return impl_.seek(off, way);
+    }
+
+private:
+    impl_type impl_;
 };
 
 template<typename Source>
@@ -329,17 +360,19 @@ inline basic_aiff_file_source<Source> make_aiff_file_source(const Source& src)
 template<typename Sink>
 class basic_aiff_file_sink
 {
+private:
     typedef detail::aiff_file_sink_impl<Sink> impl_type;
 
 public:
     typedef char char_type;
 
-    struct category :
-        boost::iostreams::optimally_buffered_tag,
-        boost::iostreams::output,
-        boost::iostreams::device_tag,
-        boost::iostreams::closable_tag,
-        pcm_format_tag {};
+    struct category
+        : boost::iostreams::optimally_buffered_tag
+        , boost::iostreams::output
+        , boost::iostreams::device_tag
+        , boost::iostreams::closable_tag
+        , pcm_format_tag
+    {};
 
     basic_aiff_file_sink(const Sink& sink, const pcm_format& fmt)
         : pimpl_(new impl_type(sink, fmt))
@@ -371,17 +404,42 @@ private:
 };
 
 class aiff_file_sink
-    : public basic_aiff_file_sink<hamigaki::iostreams::file_sink>
 {
 private:
-    typedef basic_aiff_file_sink<hamigaki::iostreams::file_sink> base_type;
+    typedef basic_aiff_file_sink<iostreams::file_sink> impl_type;
 
 public:
-    explicit aiff_file_sink(const std::string& path, const pcm_format& fmt)
-        : base_type(hamigaki::iostreams::file_sink(
+    typedef impl_type::char_type char_type;
+    typedef impl_type::category category;
+
+    aiff_file_sink(const std::string& path, const pcm_format& fmt)
+        : impl_(iostreams::file_sink(
             path, BOOST_IOS::out|BOOST_IOS::binary), fmt)
     {
     }
+
+    std::streamsize optimal_buffer_size() const
+    {
+        return impl_.optimal_buffer_size();
+    }
+
+    pcm_format format() const
+    {
+        return impl_.format();
+    }
+
+    std::streamsize write(const char_type* s, std::streamsize n)
+    {
+        return impl_.write(s, n);
+    }
+
+    void close()
+    {
+        impl_.close();
+    }
+
+private:
+    impl_type impl_;
 };
 
 template<typename Sink>

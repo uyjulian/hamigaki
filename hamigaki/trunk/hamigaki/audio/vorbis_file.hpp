@@ -204,18 +204,19 @@ struct vorbis_seekable_source_traits
 
 template<typename Source>
 class vorbis_file_source_impl
-    : public hamigaki::iostreams::
-        arbitrary_positional_facade<vorbis_file_source_impl<Source>,float,255>
+    : public iostreams::arbitrary_positional_facade<
+        vorbis_file_source_impl<Source>, float, 255
+    >
 {
-    friend class hamigaki::iostreams::core_access;
+    friend class iostreams::core_access;
 
 private:
     typedef vorbis_file_source_impl<Source> self_type;
 #if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582)) || \
     BOOST_WORKAROUND(__MWERKS__, BOOST_TESTED_AT(0x3003))
-    typedef hamigaki::iostreams::
-        arbitrary_positional_facade<vorbis_file_source_impl<Source>,float,255>
-    facade_type;
+    typedef iostreams::arbitrary_positional_facade<
+        vorbis_file_source_impl<Source>, float, 255
+    > facade_type;
 #else
     typedef typename self_type::arbitrary_positional_facade_ facade_type;
 #endif
@@ -230,7 +231,7 @@ private:
 
     typedef typename
         boost::iostreams::select<
-            hamigaki::iostreams::is_input_seekable<value_type>,
+            iostreams::is_input_seekable<value_type>,
                 vorbis_seekable_source_traits<value_type>,
             boost::iostreams::else_,
                 vorbis_nonseekable_source_traits<value_type>
@@ -359,11 +360,12 @@ class basic_vorbis_file_source
 public:
     typedef float char_type;
 
-    struct category :
-        boost::iostreams::optimally_buffered_tag,
-        boost::iostreams::mode_of<Source>::type,
-        boost::iostreams::device_tag,
-        boost::iostreams::closable_tag {};
+    struct category
+        : boost::iostreams::optimally_buffered_tag
+        , boost::iostreams::mode_of<Source>::type
+        , boost::iostreams::device_tag
+        , boost::iostreams::closable_tag
+    {};
 
     explicit basic_vorbis_file_source(const Source& src)
         : pimpl_(new impl_type(src))
@@ -417,18 +419,62 @@ private:
 };
 
 class vorbis_file_source
-    : public basic_vorbis_file_source<hamigaki::iostreams::file_source>
 {
 private:
-    typedef basic_vorbis_file_source<
-        hamigaki::iostreams::file_source> base_type;
+    typedef basic_vorbis_file_source<iostreams::file_source> impl_type;
 
 public:
+    typedef impl_type::char_type char_type;
+    typedef impl_type::category category;
+
     explicit vorbis_file_source(const std::string& path)
-        : base_type(hamigaki::iostreams::file_source(
-            path, BOOST_IOS::in|BOOST_IOS::binary))
+        : impl_(iostreams::file_source(path, BOOST_IOS::in|BOOST_IOS::binary))
     {
     }
+
+    std::streamsize optimal_buffer_size() const
+    {
+        return impl_.optimal_buffer_size();
+    }
+
+    std::streamsize read(char_type* s, std::streamsize n)
+    {
+        return impl_.read(s, n);
+    }
+
+    void close()
+    {
+        impl_.close();
+    }
+
+    std::streampos seek(
+        boost::iostreams::stream_offset off, BOOST_IOS::seekdir way)
+    {
+        return impl_.seek(off, way);
+    }
+
+    std::pair<const char**,const char**> comments() const
+    {
+        return impl_.comments();
+    }
+
+    const char* vendor() const
+    {
+        return impl_.vendor();
+    }
+
+    vorbis_info info() const
+    {
+        return impl_.info();
+    }
+
+    boost::iostreams::stream_offset total()
+    {
+        return impl_.total();
+    }
+
+private:
+    impl_type impl_;
 };
 
 template<typename Source>
