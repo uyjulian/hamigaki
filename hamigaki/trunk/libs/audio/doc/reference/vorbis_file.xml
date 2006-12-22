@@ -137,7 +137,8 @@
 
       <class name="vorbis_file_source">
         <inherit access="public">
-          <classname>basic_vorbis_file_source</classname>&lt;<classname>hamigaki::iostreams::file_source</classname>&gt;
+          <type><classname>basic_vorbis_file_source</classname>&lt;<classname>hamigaki::iostreams::file_source</classname>&gt;</type>
+          <purpose>Exposition only</purpose>
         </inherit>
 
         <constructor specifiers="explicit">
