@@ -49,6 +49,7 @@ rule intialize_suite {
         [ iostreams-test background_copy_test.cpp : find-boost-thread-lib ]
         [ iostreams-test base64_test.cpp : ]
         [ iostreams-test concatenate_test.cpp : ]
+        [ iostreams-test file_test.cpp : ]
         [ iostreams-test file_descriptor_test.cpp <template>iostreams : ]
         [ iostreams-test huffman_test.cpp : ]
         [ iostreams-test lazy_restrict_test.cpp : ]
