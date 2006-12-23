@@ -84,7 +84,7 @@
           </data-member>
 
           <data-member name="timestamp">
-            <type>boost::optional&lt;windows::timestamp&gt;</type>
+            <type>boost::optional&lt;<classname>windows::timestamp</classname>&gt;</type>
           </data-member>
 
           <data-member name="code_page">
@@ -96,7 +96,7 @@
           </data-member>
 
           <data-member name="owner">
-            <type>boost::optional&lt;posix::gid_uid&gt;</type>
+            <type>boost::optional&lt;<classname>posix::gid_uid</classname>&gt;</type>
           </data-member>
 
           <data-member name="group_name">
