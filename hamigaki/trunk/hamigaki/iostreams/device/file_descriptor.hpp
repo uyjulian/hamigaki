@@ -53,7 +53,7 @@ public:
     explicit file_descriptor_source(
         const std::string& filename, BOOST_IOS::openmode mode=BOOST_IOS::in)
     {
-        this->open(filename, mode|BOOST_IOS::in);
+        this->open(filename, mode);
     }
 
     void open(
@@ -99,7 +99,7 @@ public:
     explicit file_descriptor_sink(
         const std::string& filename, BOOST_IOS::openmode mode=BOOST_IOS::out)
     {
-        this->open(filename, mode|BOOST_IOS::out);
+        this->open(filename, mode);
     }
 
     void open(
@@ -110,6 +110,55 @@ public:
         return pimpl_.get() != 0;
     }
 
+    std::streamsize write(const char* s, std::streamsize n);
+
+    std::streampos seek(
+        boost::iostreams::stream_offset off, BOOST_IOS::seekdir way);
+
+    void close()
+    {
+        pimpl_.reset();
+    }
+
+private:
+    boost::shared_ptr<impl_type> pimpl_;
+};
+
+class HAMIGAKI_IOSTREAMS_DECL file_descriptor
+{
+private:
+    typedef detail::file_descriptor_impl impl_type;
+
+public:
+    typedef char char_type;
+
+    struct category
+        : public boost::iostreams::device_tag
+        , public boost::iostreams::seekable
+        , public boost::iostreams::closable_tag
+    {};
+
+    file_descriptor()
+    {
+    }
+
+    explicit file_descriptor(
+        const std::string& filename,
+        BOOST_IOS::openmode mode=BOOST_IOS::in|BOOST_IOS::out)
+    {
+        this->open(filename, mode);
+    }
+
+    void open(
+        const std::string& filename,
+        BOOST_IOS::openmode mode=BOOST_IOS::in|BOOST_IOS::out);
+
+    bool is_open() const
+    {
+        return pimpl_.get() != 0;
+    }
+
+    std::streamsize read(char* s, std::streamsize n);
     std::streamsize write(const char* s, std::streamsize n);
 
     std::streampos seek(

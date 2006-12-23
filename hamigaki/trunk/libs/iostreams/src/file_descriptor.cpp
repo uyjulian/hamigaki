@@ -275,4 +275,27 @@ std::streampos file_descriptor_sink::seek(
     return pimpl_->seek(off, way);
 }
 
+
+void file_descriptor::open(
+    const std::string& filename, BOOST_IOS::openmode mode)
+{
+    pimpl_.reset(new impl_type(filename, mode|BOOST_IOS::in|BOOST_IOS::out));
+}
+
+std::streamsize file_descriptor::read(char* s, std::streamsize n)
+{
+    return pimpl_->read(s, n);
+}
+
+std::streamsize file_descriptor::write(const char* s, std::streamsize n)
+{
+    return pimpl_->write(s, n);
+}
+
+std::streampos file_descriptor::seek(
+    boost::iostreams::stream_offset off, BOOST_IOS::seekdir way)
+{
+    return pimpl_->seek(off, way);
+}
+
 } } // End namespaces iostreams, hamigaki.
