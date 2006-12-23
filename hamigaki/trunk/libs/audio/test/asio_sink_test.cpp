@@ -41,7 +41,7 @@ void asio_sink_test()
                     static_cast<unsigned>(asio.rate()), 440.0f),
                 0.5f
             ),
-            calc_samples_per_note(static_cast<unsigned>(asio.rate()),100)
+            calc_samples_per_note(static_cast<unsigned>(asio.rate()),150)
         ),
         audio::widen<float>(asio.get_sink(0))
     );

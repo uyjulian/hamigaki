@@ -33,7 +33,7 @@ void pcm_source_test_aux(const audio::pcm_format& fmt)
     io::copy(
         io_ex::tiny_restrict(
             audio::pcm_source(fmt),
-            fmt.block_size()*calc_samples_per_note(fmt.rate,100)
+            fmt.block_size()*calc_samples_per_note(fmt.rate,150)
         ),
         io::null_sink()
     );

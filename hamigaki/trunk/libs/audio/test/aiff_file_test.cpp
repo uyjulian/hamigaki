@@ -46,7 +46,7 @@ void aiff_file_test_aux(const audio::pcm_format& fmt, float freq)
                 ),
                 fmt.channels
             ),
-            fmt.channels*calc_samples_per_note(fmt.rate,100)
+            fmt.channels*calc_samples_per_note(fmt.rate,150)
         ),
         audio::widen<float>(
             audio::make_aiff_file_sink(io_ex::dont_close(tmp), fmt)
