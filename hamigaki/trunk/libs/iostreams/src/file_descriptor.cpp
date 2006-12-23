@@ -168,7 +168,7 @@ inline int make_open_flags(BOOST_IOS::openmode m)
         else if ((m & BOOST_IOS::trunc) == 0)
             return O_RDWR;
         else
-            return O_RDWR|O_TRUNC;
+            return O_RDWR|O_CREAT|O_TRUNC;
     }
 }
 
