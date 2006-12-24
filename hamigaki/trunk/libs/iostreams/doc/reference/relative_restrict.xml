@@ -16,23 +16,27 @@
     <namespace name="iostreams">
       <class name="relative_restriction">
         <template>
-          <template-type-parameter name="SeekableDevice"/>
+          <template-type-parameter name="Device"/>
         </template>
 
-        <purpose><para><code>relative_restriction</code>は<code>boost::iostreams::restriction</code>の変種である。<code>restriction</code>との違いは、
-          <itemizedlist>
+        <description>
+          <para><code>relative_restriction</code>は<code>boost::iostreams::restriction</code>の変種である。<code>restriction</code>との違いは、<itemizedlist>
             <listitem><para>オフセットの基準はストリームの先頭である</para></listitem>
             <listitem><para>ストリームのコピーを行わず、ポインタを保持する</para></listitem>
-          </itemizedlist>
-        である。</para></purpose>
+          </itemizedlist>である。</para>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>SeekableSource</conceptname>(<code>Device</code>が<conceptname>SeekableSource</conceptname>である場合)</member>
+              <member><conceptname>SeekableSink</conceptname>(<code>Device</code>が<conceptname>SeekableSink</conceptname>である場合)</member>
+          </simplelist></para>
+        </description>
 
         <typedef name="char_type">
-          <type>boost::iostreams::char_type_of&lt;SeekableDevice&gt;::type</type>
+          <type>boost::iostreams::char_type_of&lt;Device&gt;::type</type>
         </typedef>
 
         <constructor>
           <parameter name="dev">
-            <paramtype>SeekableDevice&amp;</paramtype>
+            <paramtype>Device&amp;</paramtype>
           </parameter>
           <parameter name="off">
             <paramtype>boost::iostreams::stream_offset</paramtype>
@@ -77,12 +81,12 @@
 
         <free-function-group name="creation">
           <function name="relative_restrict">
-            <type>relative_restriction&lt;SeekableDevice&gt;</type>
+            <type>relative_restriction&lt;Device&gt;</type>
             <template>
-              <template-type-parameter name="SeekableDevice"/>
+              <template-type-parameter name="Device"/>
             </template>
             <parameter name="dev">
-              <paramtype>SeekableDevice&amp;</paramtype>
+              <paramtype>Device&amp;</paramtype>
             </parameter>
             <parameter name="off">
               <paramtype>boost::iostreams::stream_offset</paramtype>
@@ -91,7 +95,7 @@
               <paramtype>boost::iostreams::stream_offset</paramtype>
               <default>-1</default>
             </parameter>
-            <returns><simpara><code><classname>relative_restriction</classname>&lt;SeekableDevice&gt;(dev, off, len)</code></simpara></returns>
+            <returns><simpara><code><classname>relative_restriction</classname>&lt;Device&gt;(dev, off, len)</code></simpara></returns>
           </function>
         </free-function-group>
       </class>

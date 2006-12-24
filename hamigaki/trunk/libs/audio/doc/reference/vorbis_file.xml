@@ -47,7 +47,7 @@
           <para>Sourceを受け取り、Vorbisデコードした結果を読み出すことができる。</para>
           <para>モデルとなるコンセプト:<simplelist type='inline'>
               <member><conceptname>Source</conceptname></member>
-              <member><conceptname>SeekableDevice</conceptname>(<code>Source</code>が<conceptname>SeekableDevice</conceptname>である場合)</member>
+              <member><conceptname>SeekableSource</conceptname>(<code>Source</code>が<conceptname>SeekableSource</conceptname>である場合)</member>
               <member><conceptname>ClosableDevice</conceptname></member>
               <member><conceptname>OptimallyBuffered</conceptname></member>
           </simplelist></para>

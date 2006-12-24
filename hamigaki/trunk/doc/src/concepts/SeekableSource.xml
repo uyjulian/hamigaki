@@ -22,11 +22,22 @@
   </associated-type>
 
   <refines const="no" concept="Source"/>
-  <refines const="no" concept="SeekableDevice"/>
 
   <notation variables="src">
     <sample-value>
       <type name="S"/>
+    </sample-value>
+  </notation>
+
+  <notation variables="off">
+    <sample-value>
+      <type name="boost::iostreams::stream_offset"/>
+    </sample-value>
+  </notation>
+
+  <notation variables="way">
+    <sample-value>
+      <type name="std::ios_base::seekdir"/>
     </sample-value>
   </notation>
 
@@ -42,4 +53,14 @@
       </derived-from>
     </return-type>
   </valid-type-expression>
+
+  <valid-expression name="Seek">
+    <apply-method name="seek">
+      <sample-value><reference-to><type name="S"/></reference-to></sample-value>
+      <sample-value><type name="boost::iostreams::stream_offset"/></sample-value>
+      <sample-value><type name="std::ios_base::seekdir"/></sample-value>
+    </apply-method>
+    <return-type><require-same-type><type name="std::streampos"/></require-same-type></return-type>
+    <semantics><code>way</code>が<code>std::ios_base::beg</code>ならばデバイスの先頭から、<code>std::ios_base::cur</code>ならば現在位置から、<code>std::ios_base::end</code>ならば末尾から、<code>off</code>文字目にヘッドを移動する。</semantics>
+  </valid-expression>
 </concept>

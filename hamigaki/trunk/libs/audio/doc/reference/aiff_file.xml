@@ -25,8 +25,7 @@
         <description>
           <para>SeekableSourceを受け取り、AIFFファイルとしてフォーマットを解釈した結果を読み出すことができる。</para>
           <para>モデルとなるコンセプト:<simplelist type='inline'>
-              <member><conceptname>Source</conceptname></member>
-              <member><conceptname>SeekableDevice</conceptname></member>
+              <member><conceptname>SeekableSource</conceptname></member>
               <member><conceptname>ClosableDevice</conceptname></member>
               <member><conceptname>OptimallyBuffered</conceptname></member>
               <member><conceptname>PcmFormatRetrievable</conceptname></member>
