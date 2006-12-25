@@ -17,7 +17,7 @@
 #include <hamigaki/archivers/lha/lv1_header.hpp>
 #include <hamigaki/archivers/lha/lv2_header.hpp>
 #include <hamigaki/archivers/msdos/attributes.hpp>
-#include <hamigaki/filesystem/file_status.hpp>
+#include <hamigaki/filesystem/consts.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
 #include <stdexcept>
@@ -71,8 +71,8 @@ struct header
             attributes &= ~msdos::attributes::directory;
         else if (v == filesystem::directory_file)
             attributes |= msdos::attributes::directory;
-        else if (v != filesystem::symlink_file)
-            attributes &= ~msdos::attributes::directory;
+        else if (v == filesystem::symlink_file)
+            attributes |= msdos::attributes::directory;
         else
             throw std::runtime_error("unsupported file type");
     }

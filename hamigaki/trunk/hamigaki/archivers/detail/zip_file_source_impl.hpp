@@ -210,7 +210,7 @@ private:
         boost::iostreams::close(bzip2_, boost::ref(raw_), BOOST_IOS::in);
 #endif
 
-        if ((header_.permissions & 0170000) == 0120000)
+        if (filesystem::file_permissions::is_symlink(header_.permissions))
         {
             using namespace boost::filesystem;
 

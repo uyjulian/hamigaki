@@ -13,7 +13,7 @@
 #include <hamigaki/archivers/tar/file_format.hpp>
 #include <hamigaki/archivers/tar/raw_header.hpp>
 #include <hamigaki/archivers/tar/type_flag.hpp>
-#include <hamigaki/filesystem/file_status.hpp>
+#include <hamigaki/filesystem/consts.hpp>
 #include <hamigaki/filesystem/timestamp.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
@@ -85,13 +85,13 @@ struct header
             type_flag = type_flag::regular;
         else if (v == filesystem::directory_file)
             type_flag = type_flag::directory;
-        else if (v != filesystem::symlink_file)
+        else if (v == filesystem::symlink_file)
             type_flag = type_flag::symlink;
-        else if (v != filesystem::block_file)
+        else if (v == filesystem::block_file)
             type_flag = type_flag::block_device;
-        else if (v != filesystem::character_file)
+        else if (v == filesystem::character_file)
             type_flag = type_flag::char_device;
-        else if (v != filesystem::fifo_file)
+        else if (v == filesystem::fifo_file)
             type_flag = type_flag::fifo;
         else
             throw std::runtime_error("unsupported file type");

@@ -13,6 +13,7 @@
 -->
 <library-reference xmlns:xi="http://www.w3.org/2001/XInclude">
   <title>リファレンス</title>
+  <xi:include href="consts.xml"/>
   <xi:include href="file_status.xml"/>
   <xi:include href="timestamp.xml"/>
   <xi:include href="operations.xml"/>
