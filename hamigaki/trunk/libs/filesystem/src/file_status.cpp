@@ -220,7 +220,7 @@ file_status status(const boost::filesystem::path& p, int& ec)
     else if ((data.dwFileAttributes & FILE_ATTRIBUTE_DEVICE) != 0)
         type = type_unknown;
 
-    file_attributes attr = data.dwFileAttributes;
+    file_attributes::value_type attr = data.dwFileAttributes;
 
     file_status s(type);
     s.attributes(attr);
@@ -278,7 +278,7 @@ file_status symlink_status(const boost::filesystem::path& p, int& ec)
     else if ((data.dwFileAttributes & FILE_ATTRIBUTE_DEVICE) != 0)
         type = type_unknown;
 
-    file_attributes attr = data.dwFileAttributes;
+    file_attributes::value_type attr = data.dwFileAttributes;
 
     file_status s(type);
     s.attributes(attr);
@@ -389,7 +389,7 @@ void creation_time(
 
 HAMIGAKI_FILESYSTEM_DECL
 int change_attributes(
-    const boost::filesystem::path& p, file_attributes attr, int& ec)
+    const boost::filesystem::path& p, file_attributes::value_type attr, int& ec)
 {
     ec = 0;
     ::DWORD value = attr;
@@ -401,7 +401,7 @@ int change_attributes(
 
 HAMIGAKI_FILESYSTEM_DECL
 int change_permissions(
-    const boost::filesystem::path&, file_permissions, int& ec)
+    const boost::filesystem::path&, file_permissions::value_type, int& ec)
 {
     ec = ERROR_NOT_SUPPORTED;
     return ec;
@@ -552,7 +552,7 @@ void creation_time(const boost::filesystem::path&, const timestamp&)
 
 HAMIGAKI_FILESYSTEM_DECL
 int change_attributes(
-    const boost::filesystem::path& p, file_attributes attr, int& ec)
+    const boost::filesystem::path& p, file_attributes::value_type attr, int& ec)
 {
     ec = ENOTSUP;
     return ec;
@@ -560,7 +560,8 @@ int change_attributes(
 
 HAMIGAKI_FILESYSTEM_DECL
 int change_permissions(
-    const boost::filesystem::path& p, file_permissions perm, int& ec)
+    const boost::filesystem::path& p,
+    file_permissions::value_type perm, int& ec)
 {
     ec = 0;
     ::mode_t mode = perm;

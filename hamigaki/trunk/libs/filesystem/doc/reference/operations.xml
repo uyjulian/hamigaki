@@ -266,11 +266,12 @@ create_symlink(old_fp, new_fp, ec);]]></programlisting></para></effects>
             <paramtype>const boost::filesystem::path&amp;</paramtype>
           </parameter>
           <parameter name="attr">
-            <paramtype>file_attributes</paramtype>
+            <paramtype><classname>file_attributes</classname>::value_type</paramtype>
           </parameter>
           <parameter name="ec">
             <paramtype>int&amp;</paramtype>
           </parameter>
+          <description><simpara>引数<code>attr</code>には、<classname>file_attributes</classname>構造体内の定数のいずれか、あるいはその組み合わせを指定する。但し、ファイル種別を示す<code>type_mask</code>部分は無視される。</simpara></description>
           <effects><simpara>パス<code>p</code>のファイル属性を<code>attr</code>に変更する。成功した場合は、<code>ec</code>には0が設定される。エラーが発生した場合は、<code>ec</code>にシステム依存のエラーコードを設定する。</simpara></effects>
         </function>
 
@@ -280,7 +281,7 @@ create_symlink(old_fp, new_fp, ec);]]></programlisting></para></effects>
             <paramtype>const boost::filesystem::path&amp;</paramtype>
           </parameter>
           <parameter name="attr">
-            <paramtype>file_attributes</paramtype>
+            <paramtype><classname>file_attributes</classname>::value_type</paramtype>
           </parameter>
           <effects><para><programlisting><![CDATA[int ec;
 change_attributes(p, attr, ec);]]></programlisting></para></effects>
@@ -293,11 +294,12 @@ change_attributes(p, attr, ec);]]></programlisting></para></effects>
             <paramtype>const boost::filesystem::path&amp;</paramtype>
           </parameter>
           <parameter name="perm">
-            <paramtype>file_permissions</paramtype>
+            <paramtype><classname>file_permissions</classname>::value_type</paramtype>
           </parameter>
           <parameter name="ec">
             <paramtype>int&amp;</paramtype>
           </parameter>
+          <description><simpara>引数<code>perm</code>には、<classname>file_permissions</classname>構造体内の定数のいずれか、あるいはその組み合わせを指定する。但し、ファイル種別を示す<code>type_mask</code>部分は無視される。</simpara></description>
           <effects><simpara>パス<code>p</code>のファイル許可属性を<code>perm</code>に変更する。成功した場合は、<code>ec</code>には0が設定される。エラーが発生した場合は、<code>ec</code>にシステム依存のエラーコードを設定する。</simpara></effects>
         </function>
 
@@ -307,7 +309,7 @@ change_attributes(p, attr, ec);]]></programlisting></para></effects>
             <paramtype>const boost::filesystem::path&amp;</paramtype>
           </parameter>
           <parameter name="perm">
-            <paramtype>file_permissions</paramtype>
+            <paramtype><classname>file_permissions</classname>::value_type</paramtype>
           </parameter>
           <effects><para><programlisting><![CDATA[int ec;
 change_permissions(p, perm, ec);]]></programlisting></para></effects>

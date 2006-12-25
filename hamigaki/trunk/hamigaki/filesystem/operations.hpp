@@ -175,10 +175,11 @@ inline void create_symlink(
 
 HAMIGAKI_FILESYSTEM_DECL
 int change_attributes(
-    const boost::filesystem::path& p, file_attributes attr, int& ec);
+    const boost::filesystem::path& p,
+    file_attributes::value_type attr, int& ec);
 
 inline void change_attributes(
-    const boost::filesystem::path& p, file_attributes attr)
+    const boost::filesystem::path& p, file_attributes::value_type attr)
 {
     int ec;
     if (filesystem::change_attributes(p, attr, ec) != 0)
@@ -190,10 +191,11 @@ inline void change_attributes(
 
 HAMIGAKI_FILESYSTEM_DECL
 int change_permissions(
-    const boost::filesystem::path& p, file_permissions perm, int& ec);
+    const boost::filesystem::path& p,
+    file_permissions::value_type perm, int& ec);
 
 inline void change_permissions(
-    const boost::filesystem::path& p, file_permissions perm)
+    const boost::filesystem::path& p, file_permissions::value_type perm)
 {
     int ec;
     if (filesystem::change_permissions(p, perm, ec) != 0)

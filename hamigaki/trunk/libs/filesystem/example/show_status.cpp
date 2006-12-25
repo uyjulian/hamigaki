@@ -69,31 +69,25 @@ int main(int argc, char* argv[])
         std::cout << "\n";
 
         std::cout << "Attributes:\n";
-        if ((s.attributes() & fs_ex::set_uid) != 0)
-            std::cout << "\t\t\tSet-user-ID\n";
-        if ((s.attributes() & fs_ex::set_gid) != 0)
-            std::cout << "\t\t\tSet-group-ID\n";
-        if ((s.attributes() & fs_ex::sticky) != 0)
-            std::cout << "\t\t\tSticky\n";
-        if ((s.attributes() & fs_ex::read_only) != 0)
+        if ((s.attributes() & fs_ex::file_attributes::read_only) != 0)
             std::cout << "\t\t\tRead only\n";
-        if ((s.attributes() & fs_ex::hidden) != 0)
+        if ((s.attributes() & fs_ex::file_attributes::hidden) != 0)
             std::cout << "\t\t\tHidden\n";
-        if ((s.attributes() & fs_ex::system) != 0)
+        if ((s.attributes() & fs_ex::file_attributes::system) != 0)
             std::cout << "\t\t\tSystem\n";
-        if ((s.attributes() & fs_ex::archive) != 0)
+        if ((s.attributes() & fs_ex::file_attributes::archive) != 0)
             std::cout << "\t\t\tArchive\n";
-        if ((s.attributes() & fs_ex::temporary) != 0)
+        if ((s.attributes() & fs_ex::file_attributes::temporary) != 0)
             std::cout << "\t\t\tTemporary\n";
-        if ((s.attributes() & fs_ex::sparse) != 0)
+        if ((s.attributes() & fs_ex::file_attributes::sparse) != 0)
             std::cout << "\t\t\tSparse\n";
-        if ((s.attributes() & fs_ex::compressed) != 0)
+        if ((s.attributes() & fs_ex::file_attributes::compressed) != 0)
             std::cout << "\t\t\tCompressed\n";
-        if ((s.attributes() & fs_ex::offline) != 0)
+        if ((s.attributes() & fs_ex::file_attributes::offline) != 0)
             std::cout << "\t\t\tOffline\n";
-        if ((s.attributes() & fs_ex::not_indexed) != 0)
+        if ((s.attributes() & fs_ex::file_attributes::not_indexed) != 0)
             std::cout << "\t\t\tNot content indexed\n";
-        if ((s.attributes() & fs_ex::encrypted) != 0)
+        if ((s.attributes() & fs_ex::file_attributes::encrypted) != 0)
             std::cout << "\t\t\tEncrypted\n";
         std::cout << "\n";
 
