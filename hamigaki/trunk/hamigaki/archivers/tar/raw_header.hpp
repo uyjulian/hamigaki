@@ -83,4 +83,4 @@ public:
 
 } // namespace hamigaki
 
-#endif // HAMIGAKI_ARCHIVERS_USTAR_FILE_HPP
+#endif // HAMIGAKI_ARCHIVERS_TAR_RAW_HEADER_HPP
