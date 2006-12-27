@@ -82,7 +82,7 @@ public:
 
     std::streamsize write(const char* s, std::streamsize n)
     {
-        if (keys_)
+        if (header_.encrypted && (header_.compressed_size == 0))
         {
             char buf[1024];
             std::streamsize total = 0;
@@ -102,7 +102,10 @@ public:
             return raw_.write(s, n);
     }
 
-    // void close();
+    void close()
+    {
+        raw_.close();
+    }
 
     void close(boost::uint32_t crc32_checksum, boost::uint64_t file_size)
     {
@@ -123,7 +126,7 @@ private:
 
     void prepare_writing()
     {
-        if (header_.encrypted)
+        if (header_.encrypted && (header_.compressed_size == 0))
         {
             keys_ = zip_encryption_keys(password_);
 
@@ -173,7 +176,7 @@ private:
 
 public:
     explicit basic_zip_file_sink_impl(const Sink& sink)
-        : raw_(sink), method_(zip::method::store), size_(0)
+        : raw_(sink), method_(zip::method::store), size_(0), compressed_(false)
         , zlib_(make_zlib_params())
     {
     }
@@ -194,6 +197,8 @@ public:
             header.method = zip::method::store;
             header.file_size = link_path.size();
         }
+        else if (header.compressed_size != 0)
+            compressed_ = true;
         else if (header.file_size < 6)
             header.method = zip::method::store;
 
@@ -206,7 +211,10 @@ public:
             throw std::runtime_error("unsupported ZIP format");
         }
 
-        method_ = header.method;
+        if (compressed_)
+            method_ = zip::method::store;
+        else
+            method_ = header.method;
         raw_.create_entry(header);
         size_ = 0;
 
@@ -245,7 +253,11 @@ public:
             boost::iostreams::close(bzip2_, boost::ref(raw_), BOOST_IOS::out);
 #endif
 
-        raw_.close(crc32_.checksum(), size_);
+        if (compressed_)
+            raw_.close();
+        else
+            raw_.close(crc32_.checksum(), size_);
+        compressed_ = false;
         crc32_.reset();
     }
 
@@ -259,6 +271,7 @@ private:
     boost::uint16_t method_;
     boost::crc_32_type crc32_;
     boost::uint64_t size_;
+    bool compressed_;
     boost::iostreams::zlib_compressor zlib_;
 #if !defined(HAMIGAKI_ARCHIVERS_NO_BZIP2)
     boost::iostreams::bzip2_compressor bzip2_;

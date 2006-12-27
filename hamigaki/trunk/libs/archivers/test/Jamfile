@@ -80,6 +80,12 @@ rule intialize_suite {
             :
                 <define>HAMIGAKI_ARCHIVERS_NO_BZIP2
             ]
+            [
+                archivers-test zip_update_test.cpp
+                <template>zlib
+            :
+                <define>HAMIGAKI_ARCHIVERS_NO_BZIP2
+            ]
         ;
 
         if ! $(NO_BZIP2)

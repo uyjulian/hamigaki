@@ -245,6 +245,9 @@ public:
         if (size_ != header_.compressed_size)
             throw BOOST_IOSTREAMS_FAILURE("ZIP entry size mismatch");
 
+        if (header_.encrypted)
+            write_data_descriptor();
+
         headers_.back() = header_;
     }
 
