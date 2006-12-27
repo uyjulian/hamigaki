@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2006.
+  Use, modification, and distribution are subject to the
+  Boost Software License, Version 1.0. (See accompanying file
+  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<header name="hamigaki/archivers/raw_zip_file.hpp">
+  <namespace name="hamigaki">
+    <namespace name="archivers">
+      <class name="basic_raw_zip_file_source">
+        <template>
+          <template-type-parameter name="SeekableSource"/>
+        </template>
+
+        <purpose><para>生のZIPファイルへの読み込み専用アクセスを提供するSourceモデル</para></purpose>
+
+        <description>
+          <para>SeekableSourceを受け取り、ZIPファイルとしてフォーマットを解釈し、圧縮イメージを展開せずにそのまま読み出すことができる。</para>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Source</conceptname></member>
+          </simplelist></para>
+        </description>
+
+        <typedef name="char_type">
+          <type>char</type>
+        </typedef>
+
+        <typedef name="category">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <typedef name="header_type">
+          <type>zip::header</type>
+        </typedef>
+
+        <constructor specifiers="explicit">
+          <parameter name="src">
+            <paramtype>const SeekableSource&amp;</paramtype>
+          </parameter>
+        </constructor>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="read">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>const char*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+            <effects><simpara>現在のエントリの圧縮イメージを展開せずに読み出す。</simpara></effects>
+          </method>
+        </method-group>
+
+        <method-group name="Hamigaki.Archivers implementation">
+          <method name="next_entry">
+            <type>bool</type>
+            <effects><simpara>読み出しの対象を次のエントリに移動する</simpara></effects>
+            <returns><simpara>次のエントリがあれば<code>true</code>、なければ<code>false</code></simpara></returns>
+          </method>
+
+          <method name="select_entry">
+            <type>void</type>
+            <parameter name="ph">
+              <paramtype>const boost::filesystem::path&amp;</paramtype>
+            </parameter>
+            <effects><simpara>読み出しの対象をパス<code>ph</code>のエントリに移動する</simpara></effects>
+          </method>
+
+          <method name="header" cv="const">
+            <type><classname>zip::header</classname></type>
+            <returns><simpara>ヘッダ情報</simpara></returns>
+          </method>
+        </method-group>
+      </class>
+
+      <class name="raw_zip_file_source">
+        <inherit access="public">
+          <type><classname>basic_raw_zip_file_source</classname>&lt;<classname>hamigaki::iostreams::file_source</classname>&gt;</type>
+          <purpose>Exposition only</purpose>
+        </inherit>
+
+        <constructor specifiers="explicit">
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+        </constructor>
+      </class>
+    </namespace>
+  </namespace>
+</header>

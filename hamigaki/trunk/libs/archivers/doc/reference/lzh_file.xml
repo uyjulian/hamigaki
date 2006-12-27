@@ -55,6 +55,7 @@
             <parameter name="n">
               <paramtype>std::streamsize</paramtype>
             </parameter>
+            <effects><simpara><code>header().method</code>に従い、現在のエントリの圧縮イメージを展開して読み出す。</simpara></effects>
           </method>
         </method-group>
 
@@ -127,7 +128,8 @@
             <parameter name="n">
               <paramtype>std::streamsize</paramtype>
             </parameter>
-            <throws>圧縮後のサイズが、<code>create_entry()</code>に渡したヘッダの<code>file_size</code>を超えた場合、<classname>give_up_compression</classname></throws>
+            <effects><simpara><code>create_entry()</code>に渡したヘッダの<code>method</code>に従い、圧縮したデータを書き出す。</simpara><simpara>但し、ヘッダの<code>compressed_size</code>に値が設定されている場合は、予め圧縮されたデータを入力として渡さなければならない。</simpara></effects>
+            <throws>圧縮後のサイズが、ヘッダの<code>file_size</code>を超えた場合、<classname>give_up_compression</classname></throws>
           </method>
 
           <method name="close">
