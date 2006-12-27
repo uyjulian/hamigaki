@@ -25,7 +25,7 @@ private:
 
 public:
     explicit basic_lzh_file_sink_impl(const Sink& sink)
-        : raw_(sink), pos_(0), method_("-lh5-")
+        : raw_(sink), pos_(0), method_("-lh5-"), compressed_(false)
     {
     }
 
@@ -37,7 +37,9 @@ public:
     void create_entry(const lha::header& head)
     {
         lha::header header = head;
-        if (header.is_directory() || header.is_symlink())
+        if (header.compressed_size != -1)
+            compressed_ = true;
+        else if (header.is_directory() || header.is_symlink())
             header.method = "-lhd-";
         else if ((header.file_size != -1) && (header.file_size < 3))
             header.method = "-lh0-";
@@ -46,7 +48,9 @@ public:
 
         raw_.create_entry(header);
 
-        if (header.method == "-lhd-")
+        if (compressed_)
+            lzhuf_ptr_.reset();
+        else if (header.method == "-lhd-")
             lzhuf_ptr_.reset();
         else if (header.method == "-lh0-")
             lzhuf_ptr_.reset();
@@ -80,7 +84,11 @@ public:
                 *lzhuf_ptr_, boost::ref(raw_), BOOST_IOS::out);
         }
 
-        raw_.close(crc_.checksum(), pos_);
+        if (compressed_)
+            raw_.close();
+        else
+            raw_.close(crc_.checksum(), pos_);
+        compressed_ = false;
         crc_.reset();
     }
 
@@ -105,6 +113,7 @@ private:
     boost::int64_t pos_;
     boost::crc_16_type crc_;
     lha::compress_method method_;
+    bool compressed_;
     std::auto_ptr<iostreams::lzhuf_compressor> lzhuf_ptr_;
 
     std::streamsize write_impl(const char* s, std::streamsize n)
