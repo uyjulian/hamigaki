@@ -13,6 +13,8 @@
 -->
 <library-reference xmlns:xi="http://www.w3.org/2001/XInclude">
   <title>リファレンス</title>
+  <xi:include href="cpio/file_format.xml"/>
+  <xi:include href="cpio/headers.xml"/>
   <xi:include href="lha/posix/gid_uid.xml"/>
   <xi:include href="lha/windows/timestamp.xml"/>
   <xi:include href="lha/compress_method.xml"/>
@@ -22,6 +24,7 @@
   <xi:include href="tar/headers.xml"/>
   <xi:include href="tar/type_flag.xml"/>
   <xi:include href="zip/headers.xml"/>
+  <xi:include href="cpio_file.xml"/>
   <xi:include href="error.xml"/>
   <xi:include href="lzh_file.xml"/>
   <xi:include href="raw_lzh_file.xml"/>
