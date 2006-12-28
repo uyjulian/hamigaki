@@ -56,6 +56,7 @@ rule archivers-test ( sources + : requirements * )
 
 rule intialize_suite {
     TEST_SUITE =
+        [ archivers-test cpio_posix_test.cpp : ]
         [ archivers-test lzh_h0_test.cpp : ]
         [ archivers-test lzh_h1_test.cpp : ]
         [ archivers-test lzh_h2_test.cpp : ]
