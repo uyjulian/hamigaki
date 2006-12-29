@@ -258,16 +258,18 @@ struct binary_io_traits<E,unsigned long long>
 template<endianness E, class T, std::size_t N>
 struct binary_io_traits<E, T[N]>
 {
+    static const std::size_t value_size = hamigaki::binary_size<T>::type::value;
+
     static void read(const char* s, T (&x)[N])
     {
         for (std::size_t i = 0; i < N; ++i)
-            binary_io_traits<E,T>::read(s+i, x[i]);
+            binary_io_traits<E,T>::read(s+value_size*i, x[i]);
     }
 
     static void write(char* s, const T (&x)[N])
     {
         for (std::size_t i = 0; i < N; ++i)
-            binary_io_traits<E,T>::write(s+i, x[i]);
+            binary_io_traits<E,T>::write(s+value_size*i, x[i]);
     }
 };
 
