@@ -13,9 +13,31 @@
 -->
 <section id="archivers.format">
   <title>フォーマット</title>
+  <using-namespace name="hamigaki::archivers"/>
+
+  <section id="archivers.format.cpio">
+    <title>cpio</title>
+
+    <itemizedlist>
+      <title>クラス</title>
+      <listitem><classname>basic_cpio_file_sink</classname></listitem>
+      <listitem><classname>basic_cpio_file_source</classname></listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <title>サポートされるフォーマット</title>
+      <listitem>POSIX.1-1998 cpio フォーマット</listitem>
+    </itemizedlist>
+  </section>
 
   <section id="archivers.format.lzh">
     <title>LZH</title>
+
+    <itemizedlist>
+      <title>クラス</title>
+      <listitem><classname>basic_lzh_file_sink</classname></listitem>
+      <listitem><classname>basic_lzh_file_source</classname></listitem>
+    </itemizedlist>
 
     <itemizedlist>
       <title>サポートされる機能</title>
@@ -47,6 +69,12 @@
     <title>tar</title>
 
     <itemizedlist>
+      <title>クラス</title>
+      <listitem><classname>basic_tar_file_sink</classname></listitem>
+      <listitem><classname>basic_tar_file_source</classname></listitem>
+    </itemizedlist>
+
+    <itemizedlist>
       <title>サポートされるフォーマット</title>
       <listitem>POSIX.1-1998 ustar フォーマット</listitem>
       <listitem>POSIX.1-2001 pax フォーマット</listitem>
@@ -71,6 +99,12 @@
 
   <section id="archivers.format.zip">
     <title>ZIP</title>
+
+    <itemizedlist>
+      <title>クラス</title>
+      <listitem><classname>basic_zip_file_sink</classname></listitem>
+      <listitem><classname>basic_zip_file_source</classname></listitem>
+    </itemizedlist>
 
     <itemizedlist>
       <title>サポートされる機能</title>
