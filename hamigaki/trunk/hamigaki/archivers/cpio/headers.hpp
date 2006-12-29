@@ -10,6 +10,7 @@
 #ifndef HAMIGAKI_ARCHIVERS_CPIO_HEADERS_HPP
 #define HAMIGAKI_ARCHIVERS_CPIO_HEADERS_HPP
 
+#include <hamigaki/archivers/cpio/binary_header.hpp>
 #include <hamigaki/archivers/cpio/file_format.hpp>
 #include <hamigaki/archivers/cpio/raw_header.hpp>
 #include <hamigaki/filesystem/consts.hpp>

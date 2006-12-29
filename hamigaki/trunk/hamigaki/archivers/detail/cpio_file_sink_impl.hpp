@@ -68,12 +68,39 @@ inline void write_cpio_header(cpio::raw_header& raw, const cpio::header& head)
     cpio_write_oct(raw.filesize, head.file_size);
 }
 
+inline void write_cpio_header(
+    cpio::binary_header& bin, const cpio::header& head)
+{
+    std::memset(&bin, 0, sizeof(bin));
+
+    bin.magic = 070707;
+    bin.dev = head.parent_device_id;
+    bin.ino = head.file_id;
+    bin.mode = head.permissions;
+    bin.uid = head.uid;
+    bin.gid = head.gid;
+    bin.nlink = head.links;
+    bin.rdev = head.device_id;
+
+    boost::uint32_t t =
+        static_cast<boost::uint32_t>(
+            static_cast<boost::int32_t>(head.modified_time)
+        );
+    bin.mtime[0] = static_cast<boost::uint16_t>(t >> 16);
+    bin.mtime[1] = static_cast<boost::uint16_t>(t & 0xFFFF);
+
+    bin.namesize = head.path.string().size()+1;
+
+    bin.filesize[0] = static_cast<boost::uint16_t>(head.file_size >> 16);
+    bin.filesize[1] = static_cast<boost::uint16_t>(head.file_size & 0xFFFF);
+}
+
 template<class Sink>
 class basic_cpio_file_sink_impl : private boost::noncopyable
 {
 public:
     explicit basic_cpio_file_sink_impl(const Sink& sink)
-        : sink_(sink), pos_(0), size_(0)
+        : sink_(sink), pos_(0), size_(0), format_(cpio::posix)
     {
     }
 
@@ -83,6 +110,8 @@ public:
 
         if (pos_ != size_)
             throw BOOST_IOSTREAMS_FAILURE("cpio entry size mismatch");
+
+        format_ = head.format;
 
         cpio::header local = head;
         std::string link_path = local.link_path.string();
@@ -120,6 +149,7 @@ public:
         using namespace boost::filesystem;
 
         cpio::header head;
+        head.format = format_;
         head.permissions = 0;
         head.path = path("TRAILER!!!", no_check);
         create_entry(head);
@@ -131,17 +161,26 @@ private:
     Sink sink_;
     boost::uint32_t pos_;
     boost::uint32_t size_;
+    cpio::file_format format_;
 
     void write_header(const cpio::header& head)
     {
         using namespace boost::filesystem;
 
-        if (head.format != cpio::posix)
+        if (head.format == cpio::posix)
+        {
+            cpio::raw_header raw;
+            detail::write_cpio_header(raw, head);
+            iostreams::binary_write(sink_, raw);
+        }
+        else if (head.format == cpio::binary)
+        {
+            cpio::binary_header bin;
+            detail::write_cpio_header(bin, head);
+            iostreams::binary_write(sink_, bin);
+        }
+        else
             throw BOOST_IOSTREAMS_FAILURE("unknown cpio header format");
-
-        cpio::raw_header raw;
-        detail::write_cpio_header(raw, head);
-        iostreams::binary_write(sink_, raw);
 
         std::string filename = head.path.string();
         iostreams::blocking_write(sink_, filename.c_str(), filename.size()+1);

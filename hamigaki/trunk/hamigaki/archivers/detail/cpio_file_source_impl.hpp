@@ -27,6 +27,51 @@ inline T cpio_read_oct(const char (&s)[Size])
     return from_oct<T,char>(s, s + Size);
 }
 
+inline boost::uint16_t read_cpio_header(
+    cpio::header& head, const cpio::raw_header& raw)
+{
+    head.format = cpio::posix;
+    head.parent_device_id = cpio_read_oct<boost::uint32_t>(raw.dev);
+    head.file_id = cpio_read_oct<boost::uint32_t>(raw.ino);
+    head.permissions = cpio_read_oct<boost::uint16_t>(raw.mode);
+    head.uid = cpio_read_oct<boost::uint32_t>(raw.uid);
+    head.gid = cpio_read_oct<boost::uint32_t>(raw.gid);
+    head.links = cpio_read_oct<boost::uint32_t>(raw.nlink);
+    head.device_id = cpio_read_oct<boost::uint32_t>(raw.rdev);
+    head.modified_time =
+        static_cast<std::time_t>(cpio_read_oct<boost::int32_t>(raw.mtime));
+
+    head.file_size = cpio_read_oct<boost::uint32_t>(raw.filesize);
+
+    return cpio_read_oct<boost::uint16_t>(raw.namesize);
+}
+
+inline boost::uint16_t read_cpio_header(
+    cpio::header& head, const cpio::binary_header& bin)
+{
+    head.format = cpio::binary;
+    head.parent_device_id = bin.dev;
+    head.file_id = bin.ino;
+    head.permissions = bin.mode;
+    head.uid = bin.uid;
+    head.gid = bin.gid;
+    head.links = bin.nlink;
+    head.device_id = bin.rdev;
+
+    boost::int32_t t =
+        static_cast<boost::int32_t>(
+            (static_cast<boost::uint32_t>(bin.mtime[0]) << 16) |
+            (static_cast<boost::uint32_t>(bin.mtime[1])      )
+        );
+    head.modified_time = static_cast<std::time_t>(t);
+
+    head.file_size =
+        (static_cast<boost::uint32_t>(bin.filesize[0]) << 16) |
+        (static_cast<boost::uint32_t>(bin.filesize[1])      ) ;
+
+    return bin.namesize;
+}
+
 template<class Source>
 class basic_cpio_file_source_impl : private boost::noncopyable
 {
@@ -88,24 +133,36 @@ private:
     {
         using namespace boost::filesystem;
 
-        cpio::raw_header raw;
-        iostreams::binary_read(src_, raw);
-
-        if (std::memcmp(raw.magic, "070707", 6) != 0)
-            throw BOOST_IOSTREAMS_FAILURE("unknown cpio header format");
-
         cpio::header head;
-        head.parent_device_id = cpio_read_oct<boost::uint32_t>(raw.dev);
-        head.file_id = cpio_read_oct<boost::uint32_t>(raw.ino);
-        head.permissions = cpio_read_oct<boost::uint16_t>(raw.mode);
-        head.uid = cpio_read_oct<boost::uint32_t>(raw.uid);
-        head.gid = cpio_read_oct<boost::uint32_t>(raw.gid);
-        head.links = cpio_read_oct<boost::uint32_t>(raw.nlink);
-        head.device_id = cpio_read_oct<boost::uint32_t>(raw.rdev);
-        head.modified_time =
-            static_cast<std::time_t>(cpio_read_oct<boost::int32_t>(raw.mtime));
-        std::size_t name_size = cpio_read_oct<boost::uint32_t>(raw.namesize);
-        head.file_size = cpio_read_oct<boost::uint32_t>(raw.filesize);
+        std::size_t name_size = 0;
+
+        char magic[6];
+        iostreams::blocking_read(src_, magic);
+
+        if (std::memcmp(magic, "070707", sizeof(magic)) == 0)
+        {
+            char buf[hamigaki::struct_size<cpio::raw_header>::type::value];
+            std::memcpy(buf, magic, sizeof(magic));
+            iostreams::blocking_read(
+                src_, buf+sizeof(magic), sizeof(buf)-sizeof(magic));
+
+            cpio::raw_header raw;
+            hamigaki::binary_read(buf, raw);
+            name_size = read_cpio_header(head, raw);
+        }
+        else if (hamigaki::decode_int<native,2>(magic) == 070707)
+        {
+            char buf[hamigaki::struct_size<cpio::binary_header>::type::value];
+            std::memcpy(buf, magic, sizeof(magic));
+            iostreams::blocking_read(
+                src_, buf+sizeof(magic), sizeof(buf)-sizeof(magic));
+
+            cpio::binary_header bin;
+            hamigaki::binary_read(buf, bin);
+            name_size = read_cpio_header(head, bin);
+        }
+        else
+            throw BOOST_IOSTREAMS_FAILURE("unknown cpio header format");
 
         boost::scoped_array<char> buf(new char[name_size]);
         iostreams::blocking_read(src_, buf.get(), name_size);

@@ -27,6 +27,7 @@
     <itemizedlist>
       <title>サポートされるフォーマット</title>
       <listitem>POSIX.1-1998 cpio フォーマット</listitem>
+      <listitem>GNU cpio互換 バイナリーフォーマット</listitem>
     </itemizedlist>
   </section>
 
