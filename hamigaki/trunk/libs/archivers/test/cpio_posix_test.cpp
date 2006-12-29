@@ -1,4 +1,4 @@
-//  cpio_gnu_test.cpp: test case for posix formatted cpio
+//  cpio_posix_test.cpp: test case for posix formatted cpio
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
