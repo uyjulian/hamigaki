@@ -12,17 +12,11 @@
 
 #include <hamigaki/struct_traits.hpp>
 #include <boost/mpl/list.hpp>
-#include <boost/cstdint.hpp>
 
 namespace hamigaki { namespace archivers { namespace cpio {
 
 struct raw_header
 {
-    static const boost::uint32_t max_uid = 077777777ul;
-    static const boost::uint32_t max_gid = 077777777ul;
-    static const std::size_t filename_size = 0777777ul - 1ul;
-    static const boost::uintmax_t max_size = 077777777777ull;
-
     char magic[6];
     char dev[6];
     char ino[6];
@@ -49,7 +43,6 @@ private:
 
 public:
     typedef boost::mpl::list<
-
         member<self, char[6], &self::magic>,
         member<self, char[6], &self::dev>,
         member<self, char[6], &self::ino>,
