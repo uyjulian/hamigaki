@@ -13,6 +13,7 @@
 #include <hamigaki/archivers/cpio/binary_header.hpp>
 #include <hamigaki/archivers/cpio/file_format.hpp>
 #include <hamigaki/archivers/cpio/raw_header.hpp>
+#include <hamigaki/archivers/cpio/svr4_header.hpp>
 #include <hamigaki/filesystem/consts.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>

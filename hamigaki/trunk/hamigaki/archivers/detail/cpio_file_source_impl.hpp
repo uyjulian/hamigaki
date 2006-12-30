@@ -14,6 +14,7 @@
 #include <hamigaki/integer/auto_min.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>
 #include <hamigaki/iostreams/skip.hpp>
+#include <hamigaki/hex_format.hpp>
 #include <hamigaki/oct_format.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/scoped_array.hpp>
@@ -25,6 +26,12 @@ template<class T, std::size_t Size>
 inline T cpio_read_oct(const char (&s)[Size])
 {
     return from_oct<T,char>(s, s + Size);
+}
+
+template<class T, std::size_t Size>
+inline T cpio_read_hex(const char (&s)[Size])
+{
+    return from_hex<char>(s);
 }
 
 inline boost::uint16_t read_cpio_header(
@@ -70,6 +77,37 @@ inline boost::uint16_t read_cpio_header(
         (static_cast<boost::uint32_t>(bin.filesize[1])      ) ;
 
     return bin.namesize;
+}
+
+inline boost::uint16_t read_cpio_header(
+    cpio::header& head, const cpio::svr4_header& raw)
+{
+    if (std::memcmp(raw.magic, "070701", 6) == 0)
+        head.format = cpio::svr4;
+    else
+        head.format = cpio::svr4_chksum;
+
+    head.file_id = cpio_read_hex<boost::uint32_t>(raw.ino);
+    head.permissions = cpio_read_hex<boost::uint16_t>(raw.mode);
+    head.uid = cpio_read_hex<boost::uint32_t>(raw.uid);
+    head.gid = cpio_read_hex<boost::uint32_t>(raw.gid);
+    head.links = cpio_read_hex<boost::uint32_t>(raw.nlink);
+    head.modified_time =
+        static_cast<std::time_t>(cpio_read_hex<boost::int32_t>(raw.mtime));
+    head.file_size = cpio_read_hex<boost::uint32_t>(raw.filesize);
+
+    head.parent_device_id =
+        (cpio_read_hex<boost::uint32_t>(raw.dev_major) << 16) |
+        (cpio_read_hex<boost::uint32_t>(raw.dev_minor)      ) ;
+
+    head.device_id =
+        (cpio_read_hex<boost::uint32_t>(raw.rdev_major) << 16) |
+        (cpio_read_hex<boost::uint32_t>(raw.rdev_minor)      ) ;
+
+    if (head.format == cpio::svr4_chksum)
+        head.checksum = cpio_read_hex<boost::uint16_t>(raw.checksum);
+
+    return cpio_read_hex<boost::uint16_t>(raw.namesize);
 }
 
 template<class Source>
@@ -147,6 +185,17 @@ private:
                 src_, buf+sizeof(magic), sizeof(buf)-sizeof(magic));
 
             cpio::raw_header raw;
+            hamigaki::binary_read(buf, raw);
+            name_size = read_cpio_header(head, raw);
+        }
+        else if (std::memcmp(magic, "070701", sizeof(magic)) == 0)
+        {
+            char buf[hamigaki::struct_size<cpio::svr4_header>::type::value];
+            std::memcpy(buf, magic, sizeof(magic));
+            iostreams::blocking_read(
+                src_, buf+sizeof(magic), sizeof(buf)-sizeof(magic));
+
+            cpio::svr4_header raw;
             hamigaki::binary_read(buf, raw);
             name_size = read_cpio_header(head, raw);
         }
