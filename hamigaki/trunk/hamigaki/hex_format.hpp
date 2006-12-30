@@ -142,6 +142,19 @@ inline std::basic_string<CharT> to_hex(
     return s;
 }
 
+template<typename CharT, class T>
+inline std::basic_string<CharT> to_hex(T n, bool is_upper)
+{
+    std::basic_string<CharT> s;
+    for (std::size_t i = 0; i < sizeof(n); ++i)
+    {
+        boost::uint8_t tmp = n >> ((sizeof(n)-1-i)*8);
+        s += hex_traits<CharT>::to_hex(tmp / 16, is_upper);
+        s += hex_traits<CharT>::to_hex(tmp % 16, is_upper);
+    }
+    return s;
+}
+
 template<typename CharT, std::size_t N>
 inline std::basic_string<CharT> to_hex(
     const boost::array<boost::uint8_t,N>& a, bool is_upper)
@@ -163,6 +176,43 @@ inline boost::uint8_t from_hex(CharT c1, CharT c2)
         hex_traits<CharT>::from_hex(c1) * 16 +
         hex_traits<CharT>::from_hex(c2)
     );
+}
+
+template<typename CharT>
+inline boost::uint8_t from_hex(const CharT (&s)[2])
+{
+    return static_cast<boost::uint8_t>(
+        hex_traits<CharT>::from_hex(s[0]) * 16 +
+        hex_traits<CharT>::from_hex(s[1])
+    );
+}
+
+template<typename CharT>
+inline boost::uint16_t from_hex(const CharT (&s)[4])
+{
+    using boost::uint16_t;
+
+    return
+        (static_cast<uint16_t>(hex_traits<CharT>::from_hex(s[0])) << 12) |
+        (static_cast<uint16_t>(hex_traits<CharT>::from_hex(s[1])) <<  8) |
+        (static_cast<uint16_t>(hex_traits<CharT>::from_hex(s[2])) <<  4) |
+        (static_cast<uint16_t>(hex_traits<CharT>::from_hex(s[3]))      ) ;
+}
+
+template<typename CharT>
+inline boost::uint32_t from_hex(const CharT (&s)[8])
+{
+    using boost::uint32_t;
+
+    return
+        (static_cast<uint32_t>(hex_traits<CharT>::from_hex(s[0])) << 28) |
+        (static_cast<uint32_t>(hex_traits<CharT>::from_hex(s[1])) << 24) |
+        (static_cast<uint32_t>(hex_traits<CharT>::from_hex(s[2])) << 20) |
+        (static_cast<uint32_t>(hex_traits<CharT>::from_hex(s[3])) << 16) |
+        (static_cast<uint32_t>(hex_traits<CharT>::from_hex(s[4])) << 12) |
+        (static_cast<uint32_t>(hex_traits<CharT>::from_hex(s[5])) <<  8) |
+        (static_cast<uint32_t>(hex_traits<CharT>::from_hex(s[6])) <<  4) |
+        (static_cast<uint32_t>(hex_traits<CharT>::from_hex(s[7]))      ) ;
 }
 
 } // End namespace hamigaki.
