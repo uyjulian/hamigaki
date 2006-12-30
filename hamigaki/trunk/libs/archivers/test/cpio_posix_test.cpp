@@ -104,7 +104,7 @@ void symlink_test()
     ar::cpio::header head;
     head.format = ar::cpio::posix;
     head.path = "link";
-    head.link_path = "cpioget";
+    head.link_path = "target";
     head.modified_time = std::time(0);
     head.file_size = 0;
     head.permissions = 0120123;
