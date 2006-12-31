@@ -1,4 +1,4 @@
-//  cpio_file_source_impl.hpp: POSIX cpio file source implementation
+//  raw_cpio_file_source_impl.hpp: raw cpio file source implementation
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
@@ -7,8 +7,8 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#ifndef HAMIGAKI_ARCHIVERS_DETAIL_CPIO_FILE_SOURCE_IMPL_HPP
-#define HAMIGAKI_ARCHIVERS_DETAIL_CPIO_FILE_SOURCE_IMPL_HPP
+#ifndef HAMIGAKI_ARCHIVERS_DETAIL_RAW_CPIO_FILE_SOURCE_IMPL_HPP
+#define HAMIGAKI_ARCHIVERS_DETAIL_RAW_CPIO_FILE_SOURCE_IMPL_HPP
 
 #include <hamigaki/archivers/cpio/headers.hpp>
 #include <hamigaki/integer/auto_min.hpp>
@@ -111,10 +111,10 @@ inline boost::uint16_t read_cpio_header(
 }
 
 template<class Source>
-class basic_cpio_file_source_impl : private boost::noncopyable
+class basic_raw_cpio_file_source_impl : private boost::noncopyable
 {
 public:
-    explicit basic_cpio_file_source_impl(const Source& src)
+    explicit basic_raw_cpio_file_source_impl(const Source& src)
         : src_(src), pos_(0)
     {
         header_.file_size = 0;
@@ -188,7 +188,9 @@ private:
             hamigaki::binary_read(buf, raw);
             name_size = read_cpio_header(head, raw);
         }
-        else if (std::memcmp(magic, "070701", sizeof(magic)) == 0)
+        else if (
+            (std::memcmp(magic, "070701", sizeof(magic)) == 0) ||
+            (std::memcmp(magic, "070702", sizeof(magic)) == 0) )
         {
             char buf[hamigaki::struct_size<cpio::svr4_header>::type::value];
             std::memcpy(buf, magic, sizeof(magic));

@@ -59,6 +59,7 @@ rule intialize_suite {
         [ archivers-test cpio_binary_test.cpp : ]
         [ archivers-test cpio_posix_test.cpp : ]
         [ archivers-test cpio_svr4_test.cpp : ]
+        [ archivers-test cpio_svr4_chksum_test.cpp : ]
         [ archivers-test lzh_h0_test.cpp : ]
         [ archivers-test lzh_h1_test.cpp : ]
         [ archivers-test lzh_h2_test.cpp : ]

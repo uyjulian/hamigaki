@@ -1,4 +1,4 @@
-//  cpio_file_sink_impl.hpp: POSIX cpio file sink implementation
+//  raw_cpio_file_sink_impl.hpp: raw cpio file sink implementation
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
@@ -7,21 +7,51 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#ifndef HAMIGAKI_ARCHIVERS_DETAIL_CPIO_FILE_SINK_IMPL_HPP
-#define HAMIGAKI_ARCHIVERS_DETAIL_CPIO_FILE_SINK_IMPL_HPP
+#ifndef HAMIGAKI_ARCHIVERS_DETAIL_RAW_CPIO_FILE_SINK_IMPL_HPP
+#define HAMIGAKI_ARCHIVERS_DETAIL_RAW_CPIO_FILE_SINK_IMPL_HPP
 
 #include <boost/config.hpp>
 
 #include <hamigaki/archivers/cpio/headers.hpp>
 #include <hamigaki/integer/auto_min.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>
+#include <hamigaki/iostreams/seek.hpp>
 #include <hamigaki/hex_format.hpp>
 #include <hamigaki/oct_format.hpp>
 #include <boost/iostreams/close.hpp>
+#include <boost/type_traits/is_convertible.hpp>
 #include <boost/noncopyable.hpp>
 #include <cstring>
 
 namespace hamigaki { namespace archivers { namespace detail {
+
+template<class Sink>
+inline iostreams::stream_offset try_seek_sink_impl(
+    Sink& sink, iostreams::stream_offset off, BOOST_IOS::seekdir way,
+    boost::mpl::bool_<true>)
+{
+    return iostreams::to_offset(boost::iostreams::seek(sink, off, way));
+}
+
+template<class Sink>
+inline iostreams::stream_offset try_seek_sink_impl(
+    Sink& sink, iostreams::stream_offset off, BOOST_IOS::seekdir way,
+    boost::mpl::bool_<false>)
+{
+    return -1;
+}
+
+template<class Sink>
+inline iostreams::stream_offset try_seek_sink(
+    Sink& sink, iostreams::stream_offset off, BOOST_IOS::seekdir way)
+{
+    typedef boost::is_convertible<
+        typename boost::iostreams::mode_of<Sink>::type,
+        boost::iostreams::output_seekable
+    > can_seek;
+
+    return detail::try_seek_sink_impl(sink, off, way, can_seek());
+}
 
 template<std::size_t Size, class T>
 inline void cpio_write_oct_impl(
@@ -163,11 +193,12 @@ inline void write_cpio_header(cpio::svr4_header& raw, const cpio::header& head)
 }
 
 template<class Sink>
-class basic_cpio_file_sink_impl : private boost::noncopyable
+class basic_raw_cpio_file_sink_impl : private boost::noncopyable
 {
 public:
-    explicit basic_cpio_file_sink_impl(const Sink& sink)
+    explicit basic_raw_cpio_file_sink_impl(const Sink& sink)
         : sink_(sink), pos_(0), size_(0), format_(cpio::posix)
+        , chksum_offset_(-1)
     {
     }
 
@@ -211,6 +242,24 @@ public:
             throw BOOST_IOSTREAMS_FAILURE("cpio entry size mismatch");
     }
 
+    void close(boost::uint16_t checksum)
+    {
+        if (pos_ != size_)
+            throw BOOST_IOSTREAMS_FAILURE("cpio entry size mismatch");
+
+        if (format_ == cpio::svr4_chksum)
+        {
+            iostreams::stream_offset next =
+                detail::try_seek_sink(sink_, 0, BOOST_IOS::cur);
+
+            char buf[8];
+            cpio_write_hex(buf, checksum);
+            iostreams::blocking_write(sink_, buf);
+
+            detail::try_seek_sink(sink_, next, BOOST_IOS::beg);
+        }
+    }
+
     void close_archive()
     {
         using namespace boost::filesystem;
@@ -229,6 +278,7 @@ private:
     boost::uint32_t pos_;
     boost::uint32_t size_;
     cpio::file_format format_;
+    iostreams::stream_offset chksum_offset_;
 
     void write_header(const cpio::header& head)
     {
@@ -242,6 +292,25 @@ private:
         }
         else if (head.format == cpio::svr4)
         {
+            cpio::svr4_header raw;
+            detail::write_cpio_header(raw, head);
+            iostreams::binary_write(sink_, raw);
+        }
+        else if (head.format == cpio::svr4_chksum)
+        {
+            chksum_offset_ = detail::try_seek_sink(sink_, 0, BOOST_IOS::cur);
+            if (chksum_offset_ != -1)
+            {
+                std::size_t offset =
+                    binary_offset<
+                        cpio::svr4_header,
+                        char[8],&cpio::svr4_header::checksum
+                    >::type::value;
+                chksum_offset_ += offset;
+            }
+            else if (!head.checksum)
+                throw BOOST_IOSTREAMS_FAILURE("cpio checksum needed");
+
             cpio::svr4_header raw;
             detail::write_cpio_header(raw, head);
             iostreams::binary_write(sink_, raw);
