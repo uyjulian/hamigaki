@@ -331,4 +331,4 @@ private:
 
 } } } // End namespaces detail, archivers, hamigaki.
 
-#endif // HAMIGAKI_ARCHIVERS_DETAIL_CPIO_FILE_SINK_IMPL_HPP
+#endif // HAMIGAKI_ARCHIVERS_DETAIL_RAW_CPIO_FILE_SINK_IMPL_HPP
