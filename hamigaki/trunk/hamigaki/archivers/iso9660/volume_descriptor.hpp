@@ -1,6 +1,6 @@
 //  volume_descriptor.hpp: ISO 9660 volume descriptor
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -11,6 +11,7 @@
 #define HAMIGAKI_ARCHIVERS_ISO9660_VOLUME_DESCRIPTOR_HPP
 
 #include <hamigaki/archivers/iso9660/directory_record.hpp>
+#include <boost/mpl/joint_view.hpp>
 
 namespace hamigaki { namespace archivers { namespace iso9660 {
 
@@ -60,8 +61,8 @@ struct struct_traits<archivers::iso9660::volume_descriptor>
 private:
     typedef archivers::iso9660::volume_descriptor self;
     typedef archivers::iso9660::directory_record directory_record;
+    typedef archivers::iso9660::date_time date_time;
 
-public:
     typedef boost::mpl::list<
         member<self, boost::uint8_t, &self::type>,
         member<self, char[5], &self::std_id>,
@@ -78,7 +79,10 @@ public:
         member<self, boost::uint16_t, &self::volume_seq_number, little>,
         member<self, boost::uint16_t, &self::volume_seq_number, big>,
         member<self, boost::uint16_t, &self::logical_block_size, little>,
-        member<self, boost::uint16_t, &self::logical_block_size, big>,
+        member<self, boost::uint16_t, &self::logical_block_size, big>
+    > members0;
+
+    typedef boost::mpl::list<
         member<self, boost::uint32_t, &self::path_table_size, little>,
         member<self, boost::uint32_t, &self::path_table_size, big>,
         member<self, boost::uint32_t, &self::l_path_table_pos, little>,
@@ -93,7 +97,10 @@ public:
         member<self, char[128], &self::application_id>,
         member<self, char[37], &self::copyright_file_id>,
         member<self, char[37], &self::abstract_file_id>,
-        member<self, char[37], &self::bibliographic_file_id>,
+        member<self, char[37], &self::bibliographic_file_id>
+    > members1;
+
+    typedef boost::mpl::list<
         member<self, date_time, &self::creation_time>,
         member<self, date_time, &self::modification_time>,
         member<self, date_time, &self::expiration_time>,
@@ -102,6 +109,15 @@ public:
         padding<1>,
         member<self, char[511], &self::application_use>,
         padding<653>
+    > members2;
+
+public:
+    typedef boost::mpl::joint_view<
+        members0,
+        boost::mpl::joint_view<
+            members1,
+            members2
+        >
     > members;
 };
 

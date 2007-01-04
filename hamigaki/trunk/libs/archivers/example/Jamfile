@@ -1,6 +1,6 @@
 # Hamigaki Archivers Library Example Jamfile
 
-#  Copyright Takeshi Mouri 2006.
+#  Copyright Takeshi Mouri 2006, 2007.
 #  Use, modification, and distribution are subject to the
 #  Boost Software License, Version 1.0. (See accompanying file
 #  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -100,6 +100,14 @@ exe tar
         <template>archivers
         <lib>../../filesystem/build/hamigaki_filesystem
         <lib>../../iostreams/build/hamigaki_iostreams
+    :
+        find-boost-filesystem-lib
+    ;
+
+exe uniso9660
+    :
+        uniso9660.cpp
+        <template>archivers
     :
         find-boost-filesystem-lib
     ;

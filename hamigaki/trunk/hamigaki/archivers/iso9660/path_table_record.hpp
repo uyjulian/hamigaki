@@ -1,6 +1,6 @@
 //  path_table_record.hpp: ISO 9660 path table record
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -41,7 +41,7 @@ public:
         member<self, boost::uint8_t, &self::dir_id_size>,
         member<self, boost::uint8_t, &self::ext_record_size>,
         member<self, boost::uint32_t, &self::data_pos>,
-        member<self, boost::uint32_t, &self::parent_dir_number>
+        member<self, boost::uint16_t, &self::parent_dir_number>
     > members;
 };
 

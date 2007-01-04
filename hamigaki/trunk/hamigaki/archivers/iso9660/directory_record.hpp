@@ -1,6 +1,6 @@
 //  directory_record.hpp: ISO 9660 directory record
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -54,7 +54,7 @@ public:
         member<self, boost::uint8_t, &self::interleave_gap_size>,
         member<self, boost::uint16_t, &self::volume_seq_number, little>,
         member<self, boost::uint16_t, &self::volume_seq_number, big>,
-        member<self, boost::uint8_t, &self::file_id_size>,
+        member<self, boost::uint8_t, &self::file_id_size>
     > members;
 };
 
