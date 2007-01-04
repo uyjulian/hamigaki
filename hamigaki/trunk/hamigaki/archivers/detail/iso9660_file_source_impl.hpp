@@ -377,8 +377,10 @@ private:
             return boost::filesystem::path();
         else
         {
+            using namespace boost::filesystem;
             const path_table_record& rec = path_table_.at(num);
-            return get_full_path(rec.parent_index) / rec.dir_id;
+            path leaf(rec.dir_id, no_check);
+            return get_full_path(rec.parent_index) / leaf;
         }
     }
 
