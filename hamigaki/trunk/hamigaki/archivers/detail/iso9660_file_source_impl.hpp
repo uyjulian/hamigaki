@@ -183,7 +183,8 @@ public:
             if (offset == 0)
                 fill_buffer();
 
-            rest = hamigaki::auto_min(rest, 512-offset);
+            rest = hamigaki::auto_min(
+                rest, volume_desc_.logical_block_size-offset);
             std::streamsize amt = hamigaki::auto_min(n-total, rest);
 
             std::memcpy(s+total, &block_[offset], amt);
