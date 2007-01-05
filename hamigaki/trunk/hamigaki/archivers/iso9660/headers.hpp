@@ -48,6 +48,11 @@ struct header
         return false;
     }
 
+    bool is_associated() const
+    {
+        return (flags & file_flags::associated) != 0;
+    }
+
     void type(filesystem::file_type v)
     {
         if (v == filesystem::regular_file)

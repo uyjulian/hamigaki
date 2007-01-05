@@ -104,9 +104,9 @@ exe tar
         find-boost-filesystem-lib
     ;
 
-exe uniso9660
+exe uniso
     :
-        uniso9660.cpp
+        uniso.cpp
         <template>archivers
     :
         find-boost-filesystem-lib

@@ -1,4 +1,4 @@
-//  uniso9660.cpp: a simple ISO 9660 extractor program
+//  uniso.cpp: a simple ISO image extractor program
 
 //  Copyright Takeshi Mouri 2007.
 //  Use, modification, and distribution are subject to the
@@ -14,7 +14,7 @@
 // (The above link is Japanese site)
 
 
-#include <hamigaki/archivers/iso9660_file.hpp>
+#include <hamigaki/archivers/iso_image_file.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <clocale>
@@ -32,18 +32,18 @@ int main(int argc, char* argv[])
     {
         if (argc != 2)
         {
-            std::cerr << "Usage: uniso9660 (archive)" << std::endl;
+            std::cerr << "Usage: uniso (archive)" << std::endl;
             return 1;
         }
 
         std::setlocale(LC_ALL, "");
         fs::path::default_name_check(fs::no_check);
 
-        ar::iso9660_file_source iso9660(argv[1]);
+        ar::iso_image_file_source iso(argv[1]);
 
-        while (iso9660.next_entry())
+        while (iso.next_entry())
         {
-            const ar::iso9660::header& head = iso9660.header();
+            const ar::iso9660::header& head = iso.header();
 
             std::cout << head.path.string() << '\n';
 
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
                     fs::create_directories(head.path.branch_path());
 
                 io::copy(
-                    iso9660,
+                    iso,
                     io_ex::file_sink(
                         head.path.native_file_string(), std::ios_base::binary)
                 );
