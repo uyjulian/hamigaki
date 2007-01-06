@@ -333,8 +333,18 @@ private:
             rec.dir_id.assign(&records[i+bin_size], raw.dir_id_size);
             rec.data_pos = raw.data_pos;
             rec.parent_index = raw.parent_dir_number;
-            table.push_back(rec);
 
+            if (table.size() != 1)
+            {
+                const path_table_record& prev = table.back();
+                if (detail::iso9660_id_compare(prev.dir_id, rec.dir_id) >= 0)
+                {
+                    throw BOOST_IOSTREAMS_FAILURE(
+                        "invalid ISO 9660 order of path table records");
+                }
+            }
+
+            table.push_back(rec);
             i = next;
         }
 
@@ -403,6 +413,14 @@ private:
                 rec.data_size = raw.data_size;
                 rec.recorded_time = raw.recorded_time;
                 rec.flags = raw.flags;
+
+                const directory_record& prev = records.back();
+                if (detail::iso9660_id_compare(prev.file_id, rec.file_id) >= 0)
+                {
+                    throw BOOST_IOSTREAMS_FAILURE(
+                        "invalid ISO 9660 order of directory records");
+                }
+
                 records.push_back(rec);
 
                 pos = next;
