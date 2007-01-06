@@ -47,7 +47,7 @@ struct volume_descriptor
     date_time expiration_time;
     date_time effective_time;
     boost::uint8_t file_structure_version;
-    char application_use[511];
+    char application_use[512];
 };
 
 } } } // End namespaces iso9660, archivers, hamigaki.
@@ -107,7 +107,7 @@ private:
         member<self, date_time, &self::effective_time>,
         member<self, boost::uint8_t, &self::file_structure_version>,
         padding<1>,
-        member<self, char[511], &self::application_use>,
+        member<self, char[512], &self::application_use>,
         padding<653>
     > members2;
 
