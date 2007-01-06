@@ -415,7 +415,7 @@ private:
                 rec.flags = raw.flags;
 
                 const directory_record& prev = records.back();
-                if (detail::iso9660_id_compare(prev.file_id, rec.file_id) >= 0)
+                if (!(prev < rec))
                 {
                     throw BOOST_IOSTREAMS_FAILURE(
                         "invalid ISO 9660 order of directory records");
