@@ -118,7 +118,7 @@ void update_test()
         data_b.begin(), data_b.end(), buf.begin(), buf.end()
     );
 
-    BOOST_CHECK(!src.next_entry());
+    BOOST_CHECK(!src2.next_entry());
 }
 
 ut::test_suite* init_unit_test_suite(int, char* [])
