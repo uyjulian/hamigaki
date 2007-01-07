@@ -104,14 +104,52 @@ template<>
 struct hex_traits<const wchar_t> : hex_traits<wchar_t> {};
 #endif
 
-template<typename CharT>
-inline std::basic_string<CharT> to_hex(boost::uint8_t n, bool is_upper)
+template<typename CharT, class T>
+struct to_hex_helper
 {
-    std::basic_string<CharT> s;
-    s += hex_traits<CharT>::to_hex(n / 16, is_upper);
-    s += hex_traits<CharT>::to_hex(n % 16, is_upper);
-    return s;
-}
+    static std::basic_string<CharT> convert(T n, bool is_upper)
+    {
+        std::basic_string<CharT> s;
+        for (std::size_t i = 0; i < sizeof(n); ++i)
+        {
+            boost::uint8_t tmp = n >> ((sizeof(n)-1-i)*8);
+            s += hex_traits<CharT>::to_hex(tmp / 16, is_upper);
+            s += hex_traits<CharT>::to_hex(tmp % 16, is_upper);
+        }
+        return s;
+    }
+};
+
+template<typename CharT>
+struct to_hex_helper<CharT, boost::uint8_t>
+{
+    static std::basic_string<CharT> convert(boost::uint8_t n, bool is_upper)
+    {
+        std::basic_string<CharT> s;
+        s += hex_traits<CharT>::to_hex(n / 16, is_upper);
+        s += hex_traits<CharT>::to_hex(n % 16, is_upper);
+        return s;
+    }
+};
+
+template<typename CharT, std::size_t N>
+struct to_hex_helper<
+    CharT, boost::array<boost::uint8_t,N>
+>
+{
+    static std::basic_string<CharT> convert(
+        const boost::array<boost::uint8_t,N>& a, bool is_upper)
+    {
+        std::basic_string<CharT> s;
+        for (std::size_t i = 0; i < N; ++i)
+        {
+            boost::uint8_t n = a[i];
+            s += hex_traits<CharT>::to_hex(n / 16, is_upper);
+            s += hex_traits<CharT>::to_hex(n % 16, is_upper);
+        }
+        return s;
+    }
+};
 
 template<typename CharT>
 inline std::basic_string<CharT> to_hex(
@@ -143,30 +181,9 @@ inline std::basic_string<CharT> to_hex(
 }
 
 template<typename CharT, class T>
-inline std::basic_string<CharT> to_hex(T n, bool is_upper)
+inline std::basic_string<CharT> to_hex(const T& x, bool is_upper)
 {
-    std::basic_string<CharT> s;
-    for (std::size_t i = 0; i < sizeof(n); ++i)
-    {
-        boost::uint8_t tmp = n >> ((sizeof(n)-1-i)*8);
-        s += hex_traits<CharT>::to_hex(tmp / 16, is_upper);
-        s += hex_traits<CharT>::to_hex(tmp % 16, is_upper);
-    }
-    return s;
-}
-
-template<typename CharT, std::size_t N>
-inline std::basic_string<CharT> to_hex(
-    const boost::array<boost::uint8_t,N>& a, bool is_upper)
-{
-    std::basic_string<CharT> s;
-    for (std::size_t i = 0; i < N; ++i)
-    {
-        boost::uint8_t n = a[i];
-        s += hex_traits<CharT>::to_hex(n / 16, is_upper);
-        s += hex_traits<CharT>::to_hex(n % 16, is_upper);
-    }
-    return s;
+    return to_hex_helper<CharT,T>::convert(x, is_upper);
 }
 
 template<typename CharT>
