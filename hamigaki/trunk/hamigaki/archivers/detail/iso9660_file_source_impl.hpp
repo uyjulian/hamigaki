@@ -10,7 +10,10 @@
 #ifndef HAMIGAKI_ARCHIVERS_DETAIL_ISO9660_FILE_SOURCE_IMPL_HPP
 #define HAMIGAKI_ARCHIVERS_DETAIL_ISO9660_FILE_SOURCE_IMPL_HPP
 
+#include <boost/config.hpp>
+
 #include <hamigaki/archivers/detail/iso9660_id.hpp>
+#include <hamigaki/archivers/detail/joliet_id.hpp>
 #include <hamigaki/archivers/iso9660/headers.hpp>
 #include <hamigaki/integer/auto_min.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>
@@ -19,6 +22,14 @@
 #include <boost/scoped_array.hpp>
 #include <cstring>
 #include <vector>
+
+#if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
+    #define HAMIGAKI_ARCHIVERS_WINDOWS
+
+    extern "C" __declspec(dllimport) int __stdcall WideCharToMultiByte(
+        unsigned, unsigned long, const wchar_t*, int,
+        char*, int, const char*, int*);
+#endif
 
 namespace hamigaki { namespace archivers { namespace detail {
 
@@ -35,13 +46,24 @@ private:
         boost::uint16_t parent_index;
     };
 
-    struct path_table_record_id_less
+    class path_table_record_id_less
     {
+    public:
+        explicit path_table_record_id_less(bool joliet) : is_joliet_(joliet)
+        {
+        }
+
         bool operator()(
             const path_table_record& lhs, const path_table_record& rhs) const
         {
-            return detail::iso9660_id_compare(lhs.dir_id, rhs.dir_id) < 0;
+            if (is_joliet_)
+                return detail::joliet_id_compare(lhs.dir_id, rhs.dir_id) < 0;
+            else
+                return detail::iso9660_id_compare(lhs.dir_id, rhs.dir_id) < 0;
         }
+
+    private:
+        bool is_joliet_;
     };
 
     struct path_table_record_parent_less
@@ -71,25 +93,71 @@ private:
         {
         }
 
-        bool operator<(const directory_record& rhs) const
+        int iso9660_compare(const directory_record& rhs) const
         {
             int cmp = detail::iso9660_id_compare(file_id, rhs.file_id);
 
-            if (cmp < 0)
-                return true;
-            else if (cmp > 0)
-                return false;
+            if (cmp != 0)
+                return cmp;
 
             bool lhs_assoc = (flags & iso9660::file_flags::associated) != 0;
             bool rhs_assoc = (rhs.flags & iso9660::file_flags::associated) != 0;
 
             if (lhs_assoc && !rhs_assoc)
-                return true;
+                return -1;
             else if (!lhs_assoc && rhs_assoc)
-                return false;
+                return 1;
 
-            return data_pos < rhs.data_pos;
+            if (data_pos < rhs.data_pos)
+                return -1;
+            else if (data_pos > rhs.data_pos)
+                return 1;
+            else
+                return 0;
         }
+
+        int joliet_compare(const directory_record& rhs) const
+        {
+            int cmp = detail::joliet_id_compare(file_id, rhs.file_id);
+
+            if (cmp != 0)
+                return cmp;
+
+            bool lhs_assoc = (flags & iso9660::file_flags::associated) != 0;
+            bool rhs_assoc = (rhs.flags & iso9660::file_flags::associated) != 0;
+
+            if (lhs_assoc && !rhs_assoc)
+                return -1;
+            else if (!lhs_assoc && rhs_assoc)
+                return 1;
+
+            if (data_pos < rhs.data_pos)
+                return -1;
+            else if (data_pos > rhs.data_pos)
+                return 1;
+            else
+                return 0;
+        }
+    };
+
+    class directory_record_less
+    {
+    public:
+        explicit directory_record_less(bool joliet) : is_joliet_(joliet)
+        {
+        }
+
+        bool operator()(
+            const directory_record& lhs, const directory_record& rhs) const
+        {
+            if (is_joliet_)
+                return lhs.joliet_compare(rhs) < 0;
+            else
+                return lhs.iso9660_compare(rhs) < 0;
+        }
+
+    private:
+        bool is_joliet_;
     };
 
 public:
@@ -101,7 +169,7 @@ public:
     {};
 
     explicit basic_iso9660_file_source_impl(const Source& src)
-        : src_(src), pos_(0)
+        : src_(src), pos_(0), is_joliet_(false)
     {
         header_.file_size = 0;
 
@@ -120,6 +188,27 @@ public:
                 "invalid ISO 9660 logical block size");
         }
         lbn_mask_ = volume_desc_.logical_block_size - 1;
+
+        while (true)
+        {
+            iostreams::blocking_read(src_, block_, sizeof(block_));
+            if (block_[0] == '\xFF')
+                break;
+
+            if (block_[0] == '\x02')
+            {
+                iso9660::volume_descriptor desc;
+                hamigaki::binary_read(block_, desc);
+
+                if ((std::memcmp(desc.escape_sequences, "%/@", 4) == 0) ||
+                    (std::memcmp(desc.escape_sequences, "%/C", 4) == 0) ||
+                    (std::memcmp(desc.escape_sequences, "%/E", 4) == 0) )
+                {
+                    is_joliet_ = true;
+                    volume_desc_ = desc;
+                }
+            }
+        }
 
         read_path_table();
         select_directory(1);
@@ -149,7 +238,7 @@ public:
         const directory_record& rec = dir_records_[dir_pos_];
 
         iso9660::header head;
-        head.path = dir_path_ / rec.file_id;
+        head.path = dir_path_ / id_to_path(rec.file_id);
         head.file_size = rec.data_size;
         head.recorded_time = rec.recorded_time;
         head.flags = rec.flags;
@@ -228,7 +317,25 @@ private:
     boost::filesystem::path dir_path_;
     boost::uint16_t dir_index_;
     std::size_t dir_pos_;
+    bool is_joliet_;
     char block_[logical_sector_size];
+
+    int id_compare(const std::string& lhs, const std::string& rhs) const
+    {
+        if (is_joliet_)
+            return detail::joliet_id_compare(lhs, rhs);
+        else
+            return detail::iso9660_id_compare(lhs, rhs);
+    }
+
+    int dir_compare(
+        const directory_record& lhs, const directory_record& rhs) const
+    {
+        if (is_joliet_)
+            return lhs.joliet_compare(rhs);
+        else
+            return lhs.iso9660_compare(rhs);
+    }
 
     void seek_logical_block(boost::uint32_t num)
     {
@@ -245,6 +352,44 @@ private:
         iostreams::blocking_read(src_, block_, volume_desc_.logical_block_size);
     }
 
+    boost::filesystem::path id_to_path(const std::string& s) const
+    {
+        using namespace boost::filesystem;
+
+        if (is_joliet_)
+        {
+            std::size_t src_size = s.size()/2;
+            boost::scoped_array<wchar_t> src(new wchar_t[src_size + 1]);
+            for (std::size_t i = 0; i < s.size(); i += 2)
+            {
+                unsigned char uc1 = static_cast<unsigned char>(s[i]);
+                unsigned char uc2 = static_cast<unsigned char>(s[i+1]);
+                boost::uint16_t n =
+                    (static_cast<boost::uint16_t>(uc1) << 8) |
+                    (static_cast<boost::uint16_t>(uc2)     ) ;
+
+                src[i/2] = static_cast<wchar_t>(n);
+            }
+            src[src_size] = 0;
+
+#if defined(HAMIGAKI_ARCHIVERS_WINDOWS)
+            std::size_t size = ::WideCharToMultiByte(
+                0, 0, src.get(), src_size, 0, 0, 0, 0);
+            boost::scoped_array<char> buf(new char[size+1]);
+            ::WideCharToMultiByte(
+                0, 0, src.get(), src_size, buf.get(), size+1, 0, 0);
+            return path(std::string(buf.get(), size), no_check);
+#else
+            std::size_t size = std::wcstombs(0, src.get(), 0);
+            boost::scoped_array<char> buf(new char[size+1]);
+            std::wcstombs(buf.get(), src.get(), size+1);
+            return path(std::string(buf.get(), size), no_check);
+#endif
+        }
+        else
+            return path(s, no_check);
+    }
+
     boost::filesystem::path get_full_path(boost::uint16_t num) const
     {
         if (num == 1)
@@ -253,14 +398,14 @@ private:
         {
             using namespace boost::filesystem;
             const path_table_record& rec = path_table_.at(num);
-            path leaf(rec.dir_id, no_check);
-            return get_full_path(rec.parent_index) / leaf;
+            return get_full_path(rec.parent_index) / id_to_path(rec.dir_id);
         }
     }
 
     boost::uint16_t get_directory_index() const
     {
-        typedef std::vector<path_table_record>::const_iterator iter_type;
+        typedef std::vector<path_table_record> table_type;
+        typedef typename table_type::const_iterator iter_type;
 
         path_table_record x;
         x.dir_id = dir_records_[dir_pos_].file_id;
@@ -284,10 +429,10 @@ private:
                 rng.first,
                 rng.second,
                 x,
-                path_table_record_id_less());
+                path_table_record_id_less(is_joliet_));
 
         if ((iter == rng.second) ||
-            (detail::iso9660_id_compare(iter->dir_id, x.dir_id) != 0) )
+            (this->id_compare(iter->dir_id, x.dir_id) != 0) )
         {
             throw BOOST_IOSTREAMS_FAILURE(
                 "ISO 9660 path table record not found");
@@ -337,7 +482,7 @@ private:
             if (table.size() != 1)
             {
                 const path_table_record& prev = table.back();
-                if (detail::iso9660_id_compare(prev.dir_id, rec.dir_id) >= 0)
+                if (this->id_compare(prev.dir_id, rec.dir_id) >= 0)
                 {
                     throw BOOST_IOSTREAMS_FAILURE(
                         "invalid ISO 9660 order of path table records");
@@ -415,7 +560,7 @@ private:
                 rec.flags = raw.flags;
 
                 const directory_record& prev = records.back();
-                if (!(prev < rec))
+                if (this->dir_compare(prev, rec) >= 0)
                 {
                     throw BOOST_IOSTREAMS_FAILURE(
                         "invalid ISO 9660 order of directory records");
@@ -440,14 +585,19 @@ private:
 
     void select_file(const std::string& file_id)
     {
-        typedef std::vector<directory_record>::const_iterator iter_type;
+        typedef std::vector<directory_record> records_type;
+        typedef typename records_type::const_iterator iter_type;
         const std::vector<directory_record>& records = dir_records_;
 
         const directory_record x(file_id);
-        iter_type iter = std::lower_bound(records.begin(), records.end(), x);
+        iter_type iter =
+            std::lower_bound(
+                records.begin(), records.end(),
+                x, directory_record_less(is_joliet_)
+            );
 
         if ((iter == records.end()) ||
-            (detail::iso9660_id_compare(iter->file_id, file_id) != 0) )
+            (this->id_compare(iter->file_id, file_id) != 0) )
         {
             throw BOOST_IOSTREAMS_FAILURE("ISO 9660 file ID not found");
         }
