@@ -74,7 +74,7 @@ inline int blocking_get(Source& src, const std::nothrow_t&)
 {
     char c;
     if (!blocking_reader<Source>::read(src, &c, 1))
-        std::char_traits<char>::eof();
+        return std::char_traits<char>::eof();
     return std::char_traits<char>::to_int_type(c);
 }
 
