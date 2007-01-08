@@ -287,23 +287,7 @@ public:
     bool is_latest() const
     {
         if (is_joliet_)
-        {
-            joliet_id_accessor cur(dir_records_[dir_pos_].file_id);
-
-            for (std::size_t i = dir_pos_ + 1; i < dir_records_.size(); ++i)
-            {
-                joliet_id_accessor next(dir_records_[i].file_id);
-
-                if (detail::joliet_name_compare(cur, next) != 0)
-                    return true;
-
-                if (detail::joliet_extension_compare(cur, next) != 0)
-                    return true;
-
-                if (detail::joliet_version_compare(cur, next) != 0)
-                    return false;
-            }
-        }
+            return true;
         else
         {
             iso9660_id_accessor cur(dir_records_[dir_pos_].file_id);
