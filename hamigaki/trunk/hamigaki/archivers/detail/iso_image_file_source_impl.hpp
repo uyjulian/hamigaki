@@ -46,15 +46,10 @@ public:
                 header_ = head;
 
                 std::string leaf = head.path.leaf();
-                iso9660_id_accessor id(leaf);
+                std::string filename(leaf, 0, leaf.find(';'));
+                if (!filename.empty() && (filename[filename.size()-1] == '.'))
+                    filename.resize(filename.size()-1);
 
-                std::string filename(leaf, 0, id.name_size());
-                if (id.extension_offset() != leaf.size())
-                {
-                    filename += '.';
-                    filename.append(
-                        leaf, id.extension_offset(), id.extension_size());
-                }
                 header_.path = head.path.branch_path()/path(filename,no_check);
 
                 return true;

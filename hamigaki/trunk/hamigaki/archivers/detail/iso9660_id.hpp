@@ -10,188 +10,181 @@
 #ifndef HAMIGAKI_ARCHIVERS_DETAIL_ISO9660_ID_HPP
 #define HAMIGAKI_ARCHIVERS_DETAIL_ISO9660_ID_HPP
 
+#include <boost/filesystem/path.hpp>
 #include <algorithm>
 #include <string>
 
 namespace hamigaki { namespace archivers { namespace detail {
 
-class iso9660_id_accessor
+class iso9660_id
 {
 public:
-    typedef std::string::size_type size_type;
-
-    explicit iso9660_id_accessor(const std::string& s)
-        : str_(s), name_size_(0)
-        , ext_offset_(str_.size()), ext_size_(0)
-        , ver_offset_(str_.size()), ver_size_(0)
-
+    iso9660_id()
+        : base_size_(0)
+        , ext_offset_(1), ext_size_(0)
+        , ver_offset_(1), ver_size_(0)
     {
-        size_type dot = str_.find_first_of(".;");
+    }
+
+    explicit iso9660_id(char c)
+        : data_(1, c), base_size_(1)
+        , ext_offset_(1), ext_size_(0)
+        , ver_offset_(1), ver_size_(0)
+    {
+    }
+
+    explicit iso9660_id(const std::string& s)
+        : data_(s), base_size_(0)
+        , ext_offset_(data_.size()), ext_size_(0)
+        , ver_offset_(data_.size()), ver_size_(0)
+    {
+        std::size_t dot = data_.find_first_of(".;");
         if (dot != std::string::npos)
         {
-            name_size_ = dot;
+            base_size_ = dot;
 
-            if (str_[dot] == '.')
+            if (data_[dot] == '.')
                 ext_offset_ = dot + 1;
             else
                 ext_offset_ = dot;
 
-            if (ext_offset_ < str_.size())
+            if (ext_offset_ < data_.size())
             {
-                size_type sco = str_.find(';', ext_offset_);
+                std::size_t sco = data_.find(';', ext_offset_);
                 if (sco != std::string::npos)
                 {
                     ext_size_ = sco - ext_offset_;
                     ver_offset_ = sco + 1;
-                    ver_size_ = str_.size() - ver_offset_;
+                    ver_size_ = data_.size() - ver_offset_;
                 }
                 else
-                    ext_size_ = str_.size() - ext_offset_;
+                    ext_size_ = data_.size() - ext_offset_;
             }
         }
         else
-            name_size_ = str_.size();
+            base_size_ = data_.size();
     }
 
-    size_type name_size() const
+    int filename_compare(const iso9660_id& rhs) const
     {
-        return name_size_;
-    }
-
-    char name(size_type i) const
-    {
-        if (i < name_size_)
-            return str_[i];
+        if (int cmp = basename_compare(rhs))
+            return cmp;
         else
-            return ' ';
+            return extension_compare(rhs);
     }
 
-    size_type extension_offset() const
+    int version_compare(const iso9660_id& rhs) const
     {
-        return ext_offset_;
-    }
+        std::size_t size = (std::max)(ver_size_, rhs.ver_size_);
+        for (std::size_t i = 0; i < size; ++i)
+        {
+            unsigned char lc = static_cast<unsigned char>(version(i, size));
+            unsigned char rc = static_cast<unsigned char>(rhs.version(i, size));
 
-    size_type extension_size() const
-    {
-        return ext_size_;
-    }
+            if (lc < rc)
+                return -1;
+            else if (lc > rc)
+                return 1;
+        }
 
-    char extension(size_type i) const
-    {
-        if (i < ext_size_)
-            return str_[ext_offset_+i];
+        if (ver_size_ < rhs.ver_size_)
+            return -1;
+        else if (ver_size_ > rhs.ver_size_)
+            return 1;
         else
-            return ' ';
+            return 0;
     }
 
-    size_type version_offset() const
+    int compare(const iso9660_id& rhs) const
     {
-        return ver_offset_;
-    }
-
-    size_type version_size() const
-    {
-        return ver_size_;
-    }
-
-    char version(size_type i, size_type max_size) const
-    {
-        size_type off = max_size - ver_size_;
-        if (i < off)
-            return '0';
+        if (int cmp = filename_compare(rhs))
+            return cmp;
         else
-            return str_[ver_offset_+(i-off)];
+            return version_compare(rhs);
+    }
+
+    boost::filesystem::path to_path() const
+    {
+        return boost::filesystem::path(data_, boost::filesystem::no_check);
     }
 
 private:
-    const std::string& str_;
-    size_type name_size_;
-    size_type ext_offset_;
-    size_type ext_size_;
-    size_type ver_offset_;
-    size_type ver_size_;
+    std::string data_;
+    std::size_t base_size_;
+    std::size_t ext_offset_;
+    std::size_t ext_size_;
+    std::size_t ver_offset_;
+    std::size_t ver_size_;
+
+    char basename(std::size_t i) const
+    {
+        if (i < base_size_)
+            return data_[i];
+        else
+            return ' ';
+    }
+
+    char extension(std::size_t i) const
+    {
+        if (i < ext_size_)
+            return data_[ext_offset_+i];
+        else
+            return ' ';
+    }
+
+    char version(std::size_t i, std::size_t max_size) const
+    {
+        std::size_t off = max_size - ver_size_;
+        if (i < off)
+            return '0';
+        else
+            return data_[ver_offset_+(i-off)];
+    }
+
+    int basename_compare(const iso9660_id& rhs) const
+    {
+        std::size_t size = (std::max)(base_size_, rhs.base_size_);
+        for (std::size_t i = 0; i < size; ++i)
+        {
+            unsigned char lc = static_cast<unsigned char>(basename(i));
+            unsigned char rc = static_cast<unsigned char>(rhs.basename(i));
+
+            if (lc < rc)
+                return -1;
+            else if (lc > rc)
+                return 1;
+        }
+
+        if (base_size_ < rhs.base_size_)
+            return -1;
+        else if (base_size_ > rhs.base_size_)
+            return 1;
+        else
+            return 0;
+    }
+
+    int extension_compare(const iso9660_id& rhs) const
+    {
+        std::size_t size = (std::max)(ext_size_, rhs.ext_size_);
+        for (std::size_t i = 0; i < size; ++i)
+        {
+            unsigned char lc = static_cast<unsigned char>(extension(i));
+            unsigned char rc = static_cast<unsigned char>(rhs.extension(i));
+
+            if (lc < rc)
+                return -1;
+            else if (lc > rc)
+                return 1;
+        }
+
+        if (ext_size_ < rhs.ext_size_)
+            return -1;
+        else if (ext_size_ > rhs.ext_size_)
+            return 1;
+        else
+            return 0;
+    }
 };
-
-inline int iso9660_name_compare(
-    const iso9660_id_accessor& la, const iso9660_id_accessor& ra)
-{
-    typedef std::string::size_type size_type;
-
-    size_type name_size = (std::max)(la.name_size(), ra.name_size());
-    for (size_type i = 0; i < name_size; ++i)
-    {
-        unsigned char lc = static_cast<unsigned char>(la.name(i));
-        unsigned char rc = static_cast<unsigned char>(ra.name(i));
-
-        if (lc < rc)
-            return -1;
-        else if (lc > rc)
-            return 1;
-    }
-
-    return 0;
-}
-
-inline int iso9660_extension_compare(
-    const iso9660_id_accessor& la, const iso9660_id_accessor& ra)
-{
-    typedef std::string::size_type size_type;
-
-    size_type extension_size =
-        (std::max)(la.extension_size(), ra.extension_size());
-    for (size_type i = 0; i < extension_size; ++i)
-    {
-        unsigned char lc = static_cast<unsigned char>(la.extension(i));
-        unsigned char rc = static_cast<unsigned char>(ra.extension(i));
-
-        if (lc < rc)
-            return -1;
-        else if (lc > rc)
-            return 1;
-    }
-
-    return 0;
-}
-
-inline int iso9660_version_compare(
-    const iso9660_id_accessor& la, const iso9660_id_accessor& ra)
-{
-    typedef std::string::size_type size_type;
-
-    size_type version_size =
-        (std::max)(la.version_size(), ra.version_size());
-    for (size_type i = 0; i < version_size; ++i)
-    {
-        unsigned char lc =
-            static_cast<unsigned char>(la.version(i, version_size));
-        unsigned char rc =
-            static_cast<unsigned char>(ra.version(i, version_size));
-
-        if (lc < rc)
-            return -1;
-        else if (lc > rc)
-            return 1;
-    }
-
-    return 0;
-}
-
-inline int iso9660_id_compare(
-    const std::string& lhs, const std::string& rhs)
-{
-    typedef std::string::size_type size_type;
-
-    iso9660_id_accessor la(lhs);
-    iso9660_id_accessor ra(rhs);
-
-    if (int cmp = detail::iso9660_name_compare(la, ra))
-        return cmp;
-
-    if (int cmp = detail::iso9660_extension_compare(la, ra))
-        return cmp;
-
-    return detail::iso9660_version_compare(la, ra);
-}
 
 } } } // End namespaces detail, archivers, hamigaki.
 
