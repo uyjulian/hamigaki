@@ -14,6 +14,7 @@
 
 #include <hamigaki/endian.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/operators.hpp>
 #include <boost/scoped_array.hpp>
 #include <cstdlib>
 #include <stdexcept>
@@ -29,7 +30,7 @@
 
 namespace hamigaki { namespace archivers { namespace detail {
 
-class joliet_id
+class joliet_id : boost::totally_ordered<joliet_id>
 {
 public:
     joliet_id()
@@ -65,6 +66,16 @@ public:
     int compare(const joliet_id& rhs) const
     {
         return filename_compare(rhs);
+    }
+
+    bool operator==(const joliet_id& rhs) const
+    {
+        return compare(rhs) == 0;
+    }
+
+    bool operator<(const joliet_id& rhs) const
+    {
+        return compare(rhs) < 0;
     }
 
     boost::filesystem::path to_path() const

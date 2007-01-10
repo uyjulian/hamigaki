@@ -11,12 +11,13 @@
 #define HAMIGAKI_ARCHIVERS_DETAIL_ISO9660_ID_HPP
 
 #include <boost/filesystem/path.hpp>
+#include <boost/operators.hpp>
 #include <algorithm>
 #include <string>
 
 namespace hamigaki { namespace archivers { namespace detail {
 
-class iso9660_id
+class iso9660_id : boost::totally_ordered<iso9660_id>
 {
 public:
     iso9660_id()
@@ -101,6 +102,16 @@ public:
             return cmp;
         else
             return version_compare(rhs);
+    }
+
+    bool operator==(const iso9660_id& rhs) const
+    {
+        return compare(rhs) == 0;
+    }
+
+    bool operator<(const iso9660_id& rhs) const
+    {
+        return compare(rhs) < 0;
     }
 
     boost::filesystem::path to_path() const

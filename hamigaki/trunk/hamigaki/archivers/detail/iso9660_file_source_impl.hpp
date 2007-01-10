@@ -15,6 +15,7 @@
 #include <hamigaki/archivers/iso9660/headers.hpp>
 #include <hamigaki/integer/auto_min.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>
+#include <hamigaki/functional.hpp>
 #include <boost/iostreams/categories.hpp>
 #include <boost/noncopyable.hpp>
 #include <cstring>
@@ -54,24 +55,6 @@ private:
         FileId dir_id;
         boost::uint32_t data_pos;
         boost::uint16_t parent_index;
-    };
-
-    struct path_table_record_id_less
-    {
-        bool operator()(
-            const path_table_record& lhs, const path_table_record& rhs) const
-        {
-            return lhs.dir_id.compare(rhs.dir_id) < 0;
-        }
-    };
-
-    struct path_table_record_parent_less
-    {
-        bool operator()(
-            const path_table_record& lhs, const path_table_record& rhs) const
-        {
-            return lhs.parent_index < rhs.parent_index;
-        }
     };
 
     struct directory_record
@@ -241,7 +224,7 @@ private:
                 path_table_.begin(),
                 path_table_.end(),
                 x,
-                path_table_record_parent_less());
+                hamigaki::mem_var_less(&path_table_record::parent_index));
 
         if (rng.first == rng.second)
         {
@@ -254,7 +237,7 @@ private:
                 rng.first,
                 rng.second,
                 x,
-                path_table_record_id_less());
+                hamigaki::mem_var_less(&path_table_record::dir_id));
 
         if ((iter == rng.second) ||
             (iter->dir_id.compare(x.dir_id) != 0) )
