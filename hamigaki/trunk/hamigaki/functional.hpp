@@ -15,7 +15,7 @@
 namespace hamigaki {
 
 template<class S, class T>
-class mem_var_equal_to_t : public std::binary_function<T,T,bool>
+class mem_var_equal_to_t : public std::binary_function<S,S,bool>
 {
 public:
     explicit mem_var_equal_to_t(T S::* p) : ptr_(p)
@@ -38,7 +38,7 @@ inline mem_var_equal_to_t<S,T> mem_var_equal_to(T S::* p)
 }
 
 template<class S, class T>
-class mem_var_not_equal_to_t : public std::binary_function<T,T,bool>
+class mem_var_not_equal_to_t : public std::binary_function<S,S,bool>
 {
 public:
     explicit mem_var_not_equal_to_t(T S::* p) : ptr_(p)
@@ -61,7 +61,7 @@ inline mem_var_not_equal_to_t<S,T> mem_var_not_equal_to(T S::* p)
 }
 
 template<class S, class T>
-class mem_var_greator_t : public std::binary_function<T,T,bool>
+class mem_var_greator_t : public std::binary_function<S,S,bool>
 {
 public:
     explicit mem_var_greator_t(T S::* p) : ptr_(p)
@@ -84,7 +84,7 @@ inline mem_var_greator_t<S,T> mem_var_greator(T S::* p)
 }
 
 template<class S, class T>
-class mem_var_less_t : public std::binary_function<T,T,bool>
+class mem_var_less_t : public std::binary_function<S,S,bool>
 {
 public:
     explicit mem_var_less_t(T S::* p) : ptr_(p)
@@ -107,7 +107,7 @@ inline mem_var_less_t<S,T> mem_var_less(T S::* p)
 }
 
 template<class S, class T>
-class mem_var_greator_equal_t : public std::binary_function<T,T,bool>
+class mem_var_greator_equal_t : public std::binary_function<S,S,bool>
 {
 public:
     explicit mem_var_greator_equal_t(T S::* p) : ptr_(p)
@@ -130,7 +130,7 @@ inline mem_var_greator_equal_t<S,T> mem_var_greator_equal(T S::* p)
 }
 
 template<class S, class T>
-class mem_var_less_equal_t : public std::binary_function<T,T,bool>
+class mem_var_less_equal_t : public std::binary_function<S,S,bool>
 {
 public:
     explicit mem_var_less_equal_t(T S::* p) : ptr_(p)
