@@ -1,6 +1,6 @@
 //  binary_io.hpp: binary I/O using struct_traits
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -24,7 +24,13 @@ struct binary_io_traits;
 namespace detail
 {
 
-template<class Struct>
+template<endianness Parent, endianness Self>
+struct endian_select
+{
+    static const endianness endian = (Self == default_) ? Parent : Self;
+};
+
+template<endianness E, class Struct>
 class read_member
 {
 public:
@@ -35,7 +41,9 @@ public:
     template<class T>
     void operator()(const T&)
     {
-        binary_io_traits<T::endian, typename T::member_type>::read(
+        typedef endian_select<E,T::endian> sel;
+
+        binary_io_traits<sel::endian, typename T::member_type>::read(
             data_ + member_offset<T>::type::value,
             T()(*ptr_)
         );
@@ -52,7 +60,7 @@ private:
 };
 
 
-template<class Struct>
+template<endianness E, class Struct>
 class write_member
 {
 public:
@@ -63,7 +71,9 @@ public:
     template<class T>
     void operator()(const T&)
     {
-        binary_io_traits<T::endian, typename T::member_type>::write(
+        typedef endian_select<E,T::endian> sel;
+
+        binary_io_traits<sel::endian, typename T::member_type>::write(
             data_ + member_offset<T>::type::value,
             T()(*ptr_)
         );
@@ -88,14 +98,14 @@ struct binary_io_traits
     {
         typedef typename struct_traits<T>::members members;
 
-        boost::mpl::for_each<members>(detail::read_member<T>(s, x));
+        boost::mpl::for_each<members>(detail::read_member<E,T>(s, x));
     }
 
     static void write(char* s, const T& x)
     {
         typedef typename struct_traits<T>::members members;
 
-        boost::mpl::for_each<members>(detail::write_member<T>(s, x));
+        boost::mpl::for_each<members>(detail::write_member<E,T>(s, x));
     }
 };
 

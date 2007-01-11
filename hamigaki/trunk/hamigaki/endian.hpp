@@ -1,6 +1,6 @@
 //  endian.hpp: little/big endian codec
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -18,7 +18,7 @@ namespace hamigaki {
 
 enum endianness
 {
-    big, little,
+    big, little, default_,
 #if defined(BOOST_BIG_ENDIAN)
     native = big
 #else
@@ -124,6 +124,7 @@ struct encode_uint_impl<boost::uint8_t,little,1>
     }
 };
 
+#if defined(_M_IX86) || defined(__i386__)
 template<>
 struct encode_uint_impl<boost::uint16_t,native,2>
 {
@@ -150,6 +151,7 @@ struct encode_uint_impl<boost::uint64_t,native,8>
         *reinterpret_cast<boost::uint64_t*>(s) = n;
     }
 };
+#endif
 
 
 template<typename T, endianness E, std::size_t Size>
@@ -195,6 +197,7 @@ struct decode_uint_impl<T,little,Size>
     }
 };
 
+#if defined(_M_IX86) || defined(__i386__)
 template<>
 struct decode_uint_impl<boost::uint16_t,native,2>
 {
@@ -221,6 +224,7 @@ struct decode_uint_impl<boost::uint64_t,native,8>
         return *reinterpret_cast<const boost::uint64_t*>(s);
     }
 };
+#endif
 
 } // namespace detail
 

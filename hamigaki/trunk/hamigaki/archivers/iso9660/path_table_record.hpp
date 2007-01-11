@@ -29,7 +29,6 @@ struct path_table_record
 namespace hamigaki
 {
 
-// TODO: to get it working for non-native endian
 template<>
 struct struct_traits<archivers::iso9660::path_table_record>
 {
@@ -40,8 +39,8 @@ public:
     typedef boost::mpl::list<
         member<self, boost::uint8_t, &self::dir_id_size>,
         member<self, boost::uint8_t, &self::ext_record_size>,
-        member<self, boost::uint32_t, &self::data_pos>,
-        member<self, boost::uint16_t, &self::parent_dir_number>
+        member<self, boost::uint32_t, &self::data_pos, default_>,
+        member<self, boost::uint16_t, &self::parent_dir_number, default_>
     > members;
 };
 
