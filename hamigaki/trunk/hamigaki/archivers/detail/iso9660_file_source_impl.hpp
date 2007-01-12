@@ -428,9 +428,9 @@ public:
         iso9660::volume_descriptor volume_desc;
 
         boost::iostreams::seek(src_, logical_sector_size*16, BOOST_IOS::beg);
-        iostreams::binary_read(src_, volume_desc);
 
         bool is_joliet = false;
+        bool found = false;
         char block[logical_sector_size];
         while (true)
         {
@@ -438,7 +438,13 @@ public:
             if (block[0] == '\xFF')
                 break;
 
-            if (block[0] == '\x02')
+            if (block[0] == '\x01')
+            {
+                if (!is_joliet)
+                    hamigaki::binary_read(block, volume_desc);
+                found = true;
+            }
+            else if (block[0] == '\x02')
             {
                 iso9660::volume_descriptor desc;
                 hamigaki::binary_read(block, desc);
@@ -452,6 +458,12 @@ public:
                     break;
                 }
             }
+        }
+
+        if (!found)
+        {
+            throw BOOST_IOSTREAMS_FAILURE(
+                "ISO 9660 volume descriptor not found");
         }
 
         if (is_joliet)
