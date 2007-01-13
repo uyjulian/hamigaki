@@ -15,6 +15,7 @@
 #include <hamigaki/archivers/iso9660/file_flags.hpp>
 #include <hamigaki/archivers/iso9660/headers.hpp>
 #include <hamigaki/archivers/iso9660/path_table_record.hpp>
+#include <hamigaki/archivers/iso9660/volume_desc_set_terminator.hpp>
 #include <hamigaki/archivers/iso9660/volume_descriptor.hpp>
 #include <hamigaki/filesystem/consts.hpp>
 #include <boost/filesystem/path.hpp>

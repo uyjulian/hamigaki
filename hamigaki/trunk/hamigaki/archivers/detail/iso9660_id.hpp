@@ -116,7 +116,20 @@ public:
 
     boost::filesystem::path to_path() const
     {
+        if (!data_.empty())
+        {
+            if (data_[0] == '\x00')
+                return boost::filesystem::path(".");
+            else if (data_[0] == '\x01')
+                return boost::filesystem::path("..");
+        }
+
         return boost::filesystem::path(data_, boost::filesystem::no_check);
+    }
+
+    std::string to_string() const
+    {
+        return data_;
     }
 
 private:
