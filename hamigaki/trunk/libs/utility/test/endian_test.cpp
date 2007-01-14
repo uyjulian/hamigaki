@@ -9,6 +9,7 @@
 
 #include <hamigaki/endian.hpp>
 #include <boost/test/unit_test.hpp>
+#include <cstring>
 
 namespace ut = boost::unit_test;
 
