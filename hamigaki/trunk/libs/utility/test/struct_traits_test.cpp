@@ -7,62 +7,12 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/utility for library home page.
 
-#include <hamigaki/struct_traits.hpp>
 #include <boost/mpl/assert.hpp>
-#include <boost/mpl/list.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/type_traits/is_same.hpp>
-#include <boost/cstdint.hpp>
+#include "./test_struct.hpp"
 
 namespace ut = boost::unit_test;
-
-struct child_struct
-{
-    boost::uint32_t a;
-    boost::uint32_t b;
-};
-
-struct test_struct
-{
-    boost::uint16_t u16;
-    char ca5[5];
-    boost::uint16_t u16a3[3];
-    child_struct child;
-};
-
-namespace hamigaki
-{
-
-template<>
-struct struct_traits< ::child_struct>
-{
-private:
-    typedef ::child_struct self;
-
-public:
-    typedef boost::mpl::list<
-        member<self, boost::uint32_t, &self::a, little>,
-        member<self, boost::uint32_t, &self::b, big>
-    > members;
-};
-
-template<>
-struct struct_traits< ::test_struct>
-{
-private:
-    typedef ::test_struct self;
-
-public:
-    typedef boost::mpl::list<
-        member<self, boost::uint16_t, &self::u16, little>,
-        padding<7>,
-        member<self, char[5], &self::ca5>,
-        member<self, boost::uint16_t[3], &self::u16a3, big>,
-        member<self, ::child_struct, &self::child>
-    > members;
-};
-
-} // namespace hamigaki
 
 void member_size_test()
 {
