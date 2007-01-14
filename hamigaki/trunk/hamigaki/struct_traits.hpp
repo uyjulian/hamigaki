@@ -1,6 +1,6 @@
 //  struct_traits.hpp: type trsits for struct
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -109,14 +109,16 @@ struct member_size<padding<Size> >
 template<class T>
 struct struct_size
 {
-    typedef typename boost::mpl::accumulate<
-        typename struct_traits<T>::members,
-        boost::mpl::size_t<0>,
-        boost::mpl::plus<
-            boost::mpl::_1,
-            member_size<boost::mpl::_2>
-        >
-    >::type type;
+    typedef boost::mpl::size_t<
+        boost::mpl::accumulate<
+            typename struct_traits<T>::members,
+            boost::mpl::size_t<0>,
+            boost::mpl::plus<
+                boost::mpl::_1,
+                member_size<boost::mpl::_2>
+            >
+        >::type::value
+    > type;
 };
 
 
@@ -133,22 +135,24 @@ struct binary_size
 template<class T>
 struct member_offset
 {
-    typedef typename boost::mpl::accumulate<
-        boost::mpl::iterator_range<
-            typename boost::mpl::begin<
-                typename struct_traits<typename T::struct_type>::members
-            >::type,
-            typename boost::mpl::find_if<
-                typename struct_traits<typename T::struct_type>::members,
-                boost::is_convertible<boost::mpl::_1,T>
-            >::type
-        >,
-        boost::mpl::size_t<0>,
-        boost::mpl::plus<
-            boost::mpl::_1,
-            member_size<boost::mpl::_2>
-        >
-    >::type type;
+    typedef boost::mpl::size_t<
+        boost::mpl::accumulate<
+            boost::mpl::iterator_range<
+                typename boost::mpl::begin<
+                    typename struct_traits<typename T::struct_type>::members
+                >::type,
+                typename boost::mpl::find_if<
+                    typename struct_traits<typename T::struct_type>::members,
+                    boost::is_convertible<boost::mpl::_1,T>
+                >::type
+            >,
+            boost::mpl::size_t<0>,
+            boost::mpl::plus<
+                boost::mpl::_1,
+                member_size<boost::mpl::_2>
+            >
+        >::type::value
+    > type;
 };
 
 template<class Struct, class Type, Type Struct::* PtrToMember>
