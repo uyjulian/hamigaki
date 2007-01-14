@@ -36,6 +36,7 @@ rule utility-test ( sources + : requirements * )
 }
 
 test-suite utility :
+    [ utility-test binary_io_test.cpp : ]
     [ utility-test endian_test.cpp : ]
     [ utility-test struct_traits_test.cpp : ]
     ;
