@@ -5,12 +5,13 @@
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/
+//  See http://hamigaki.sourceforge.jp/libs/utility
 
 #ifndef HAMIGAKI_ENDIAN_HPP
 #define HAMIGAKI_ENDIAN_HPP
 
 #include <boost/detail/endian.hpp>
+#include <boost/mpl/bool.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/integer.hpp>
 
@@ -226,6 +227,32 @@ struct decode_uint_impl<boost::uint64_t,native,8>
 };
 #endif
 
+template<typename T, std::size_t Size, class SameSize>
+struct sign_extension_impl
+{
+    T operator()(T n) const
+    {
+        return n;
+    }
+};
+
+template<typename T, std::size_t Size>
+struct sign_extension_impl<T,Size,boost::mpl::false_>
+{
+    T operator()(T n) const
+    {
+        return static_cast<T>(n | (~static_cast<T>(0) << (Size*8)));
+    }
+};
+
+template<std::size_t Size, typename T>
+inline T sign_extension(T n)
+{
+    return sign_extension_impl<
+        T,Size,boost::mpl::bool_<sizeof(T)==Size>
+    >()(n);
+}
+
 } // namespace detail
 
 template<endianness E, std::size_t Size>
@@ -264,7 +291,7 @@ decode_int(const char* s)
 
     uint_type tmp = detail::decode_uint_impl<uint_type,E,Size>::decode(s);
     if ((tmp & (static_cast<uint_type>(1) << (8*Size - 1))) != 0)
-        return -static_cast<int_type>(~tmp) - 1;
+        return -static_cast<int_type>(~detail::sign_extension<Size>(tmp)) - 1;
     else
         return static_cast<int_type>(tmp);
 }
