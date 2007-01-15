@@ -12,7 +12,7 @@
 
 #include <boost/config.hpp>
 
-#include <hamigaki/struct_traits.hpp>
+#include <hamigaki/binary/struct_traits.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/cstdint.hpp>
 #include <ctime>

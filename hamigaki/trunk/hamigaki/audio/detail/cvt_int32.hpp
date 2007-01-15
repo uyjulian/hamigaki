@@ -11,7 +11,7 @@
 #define HAMIGAKI_AUDIO_DETAIL_CVT_INT32_HPP
 
 #include <hamigaki/audio/sample_format.hpp>
-#include <hamigaki/endian.hpp>
+#include <hamigaki/binary/endian.hpp>
 #include <boost/cstdint.hpp>
 
 namespace hamigaki { namespace audio { namespace detail {

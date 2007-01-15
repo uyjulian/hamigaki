@@ -10,7 +10,7 @@
 #ifndef HAMIGAKI_ARCHIVERS_ZIP_ARCHIVE_EXTRA_DATA_HPP
 #define HAMIGAKI_ARCHIVERS_ZIP_ARCHIVE_EXTRA_DATA_HPP
 
-#include <hamigaki/struct_traits.hpp>
+#include <hamigaki/binary/struct_traits.hpp>
 #include <boost/mpl/single_view.hpp>
 #include <boost/cstdint.hpp>
 

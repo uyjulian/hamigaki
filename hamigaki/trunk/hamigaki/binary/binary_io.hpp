@@ -5,14 +5,14 @@
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/
+//  See http://hamigaki.sourceforge.jp/libs/binary
 
-#ifndef HAMIGAKI_BINARY_IO_HPP
-#define HAMIGAKI_BINARY_IO_HPP
+#ifndef HAMIGAKI_BINARY_BINARY_IO_HPP
+#define HAMIGAKI_BINARY_BINARY_IO_HPP
 
 #include <boost/config.hpp>
 
-#include <hamigaki/struct_traits.hpp>
+#include <hamigaki/binary/struct_traits.hpp>
 #include <boost/mpl/for_each.hpp>
 #include <cstring>
 
@@ -342,4 +342,4 @@ inline void binary_write(char* s, const T& x)
 
 } // End namespace hamigaki.
 
-#endif // HAMIGAKI_BINARY_IO_HPP
+#endif // HAMIGAKI_BINARY_BINARY_IO_HPP

@@ -5,12 +5,12 @@
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/
+//  See http://hamigaki.sourceforge.jp/libs/binary
 
-#ifndef HAMIGAKI_STRUCT_TRAITS_HPP
-#define HAMIGAKI_STRUCT_TRAITS_HPP
+#ifndef HAMIGAKI_BINARY_STRUCT_TRAITS_HPP
+#define HAMIGAKI_BINARY_STRUCT_TRAITS_HPP
 
-#include <hamigaki/endian.hpp>
+#include <hamigaki/binary/endian.hpp>
 #include <boost/mpl/accumulate.hpp>
 #include <boost/mpl/begin.hpp>
 #include <boost/mpl/find_if.hpp>
@@ -165,4 +165,4 @@ struct binary_offset
 
 } // End namespace hamigaki.
 
-#endif // HAMIGAKI_STRUCT_TRAITS_HPP
+#endif // HAMIGAKI_BINARY_STRUCT_TRAITS_HPP

@@ -13,7 +13,7 @@
 #include <hamigaki/iostreams/filter/buffered.hpp>
 #include <hamigaki/iostreams/filter/sliding_window.hpp>
 #include <hamigaki/iostreams/bit_filter.hpp>
-#include <hamigaki/endian.hpp>
+#include <hamigaki/binary/endian.hpp>
 #include <boost/iostreams/detail/error.hpp>
 #include <boost/iostreams/detail/ios.hpp>
 

@@ -7,7 +7,7 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/binary for library home page.
 
-#include <hamigaki/endian.hpp>
+#include <hamigaki/binary/endian.hpp>
 #include <boost/test/unit_test.hpp>
 #include <cstring>
 

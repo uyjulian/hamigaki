@@ -25,7 +25,7 @@
 #include <vector>
 
 #if defined(BOOST_WINDOWS)
-    #include <hamigaki/binary_io.hpp>
+    #include <hamigaki/binary/binary_io.hpp>
     #include <windows.h>
 
     #include <hamigaki/detail/windows/dynamic_link_library.hpp>

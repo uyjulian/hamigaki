@@ -5,10 +5,10 @@
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/libs/utility
+//  See http://hamigaki.sourceforge.jp/libs/binary
 
-#ifndef HAMIGAKI_ENDIAN_HPP
-#define HAMIGAKI_ENDIAN_HPP
+#ifndef HAMIGAKI_BINARY_ENDIAN_HPP
+#define HAMIGAKI_BINARY_ENDIAN_HPP
 
 #include <boost/detail/endian.hpp>
 #include <boost/mpl/bool.hpp>
@@ -298,4 +298,4 @@ decode_int(const char* s)
 
 } // End namespace hamigaki.
 
-#endif // HAMIGAKI_ENDIAN_HPP
+#endif // HAMIGAKI_BINARY_ENDIAN_HPP

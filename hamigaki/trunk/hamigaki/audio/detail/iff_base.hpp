@@ -10,7 +10,7 @@
 #ifndef HAMIGAKI_AUDIO_DETAIL_IFF_BASE_HPP
 #define HAMIGAKI_AUDIO_DETAIL_IFF_BASE_HPP
 
-#include <hamigaki/endian.hpp>
+#include <hamigaki/binary/endian.hpp>
 #include <boost/iostreams/detail/closer.hpp>
 #include <boost/iostreams/detail/ios.hpp>
 #include <boost/iostreams/categories.hpp>

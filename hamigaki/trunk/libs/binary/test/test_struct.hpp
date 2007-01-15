@@ -10,7 +10,7 @@
 #ifndef HAMIGAKI_BINARY_TEST_STRUCT_HPP
 #define HAMIGAKI_BINARY_TEST_STRUCT_HPP
 
-#include <hamigaki/struct_traits.hpp>
+#include <hamigaki/binary/struct_traits.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/cstdint.hpp>
 

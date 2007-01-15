@@ -1,4 +1,4 @@
-//  binary_io.hpp: a wrapper for <hamigaki/binary_io.hpp>
+//  binary_io.hpp: a wrapper for <hamigaki/binary/binary_io.hpp>
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
@@ -11,7 +11,7 @@
 #define HAMIGAKI_IOSTREAMS_BINARY_IO_HPP
 
 #include <hamigaki/iostreams/blocking.hpp>
-#include <hamigaki/binary_io.hpp>
+#include <hamigaki/binary/binary_io.hpp>
 #include <cstring>
 #include <new>
 

@@ -10,7 +10,7 @@
 #ifndef HAMIGAKI_ARCHIVERS_CPIO_SVR4_HEADER_HPP
 #define HAMIGAKI_ARCHIVERS_CPIO_SVR4_HEADER_HPP
 
-#include <hamigaki/struct_traits.hpp>
+#include <hamigaki/binary/struct_traits.hpp>
 #include <boost/mpl/list.hpp>
 
 namespace hamigaki { namespace archivers { namespace cpio {

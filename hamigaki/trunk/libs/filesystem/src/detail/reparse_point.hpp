@@ -10,7 +10,7 @@
 #ifndef HAMIGAKI_FILESYSTEM_DETAIL_REPARSE_POINT_HPP
 #define HAMIGAKI_FILESYSTEM_DETAIL_REPARSE_POINT_HPP
 
-#include <hamigaki/binary_io.hpp>
+#include <hamigaki/binary/binary_io.hpp>
 #include <boost/mpl/list.hpp>
 
 namespace hamigaki { namespace filesystem { namespace detail {

@@ -16,7 +16,7 @@
 #include <hamigaki/archivers/tar/headers.hpp>
 #include <hamigaki/integer/auto_min.hpp>
 #include <hamigaki/iostreams/blocking.hpp>
-#include <hamigaki/binary_io.hpp>
+#include <hamigaki/binary/binary_io.hpp>
 #include <hamigaki/dec_format.hpp>
 #include <hamigaki/oct_format.hpp>
 #include <boost/iostreams/categories.hpp>

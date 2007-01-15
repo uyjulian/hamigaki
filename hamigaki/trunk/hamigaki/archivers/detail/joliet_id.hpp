@@ -12,7 +12,7 @@
 
 #include <boost/config.hpp>
 
-#include <hamigaki/endian.hpp>
+#include <hamigaki/binary/endian.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/operators.hpp>
 #include <boost/scoped_array.hpp>

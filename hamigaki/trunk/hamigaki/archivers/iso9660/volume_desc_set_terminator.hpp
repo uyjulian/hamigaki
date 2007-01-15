@@ -10,7 +10,7 @@
 #ifndef HAMIGAKI_ARCHIVERS_ISO9660_VOLUME_DESC_SET_TERMINATOR_HPP
 #define HAMIGAKI_ARCHIVERS_ISO9660_VOLUME_DESC_SET_TERMINATOR_HPP
 
-#include <hamigaki/struct_traits.hpp>
+#include <hamigaki/binary/struct_traits.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/cstdint.hpp>
 

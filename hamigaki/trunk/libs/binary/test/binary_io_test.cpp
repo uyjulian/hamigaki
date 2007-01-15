@@ -7,7 +7,7 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/binary for library home page.
 
-#include <hamigaki/binary_io.hpp>
+#include <hamigaki/binary/binary_io.hpp>
 #include <boost/test/unit_test.hpp>
 #include <cstring>
 #include "./test_struct.hpp"
