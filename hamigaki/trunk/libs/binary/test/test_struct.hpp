@@ -5,10 +5,10 @@
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/libs/utility for library home page.
+//  See http://hamigaki.sourceforge.jp/libs/binary for library home page.
 
-#ifndef HAMIGAKI_UTILITY_TEST_STRUCT_HPP
-#define HAMIGAKI_UTILITY_TEST_STRUCT_HPP
+#ifndef HAMIGAKI_BINARY_TEST_STRUCT_HPP
+#define HAMIGAKI_BINARY_TEST_STRUCT_HPP
 
 #include <hamigaki/struct_traits.hpp>
 #include <boost/mpl/list.hpp>
@@ -62,4 +62,4 @@ public:
 
 } // namespace hamigaki
 
-#endif // HAMIGAKI_UTILITY_TEST_STRUCT_HPP
+#endif // HAMIGAKI_BINARY_TEST_STRUCT_HPP

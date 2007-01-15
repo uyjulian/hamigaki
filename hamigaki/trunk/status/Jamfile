@@ -14,6 +14,7 @@ DEPENDS all : test ;
 
 subinclude libs/archivers/test ;
 subinclude libs/audio/test ;
+subinclude libs/binary/test ;
 subinclude libs/checksum/test ;
 subinclude libs/coroutine/test ;
 subinclude libs/filesystem/test ;
@@ -22,7 +23,6 @@ subinclude libs/iostreams/test ;
 subinclude libs/iterator/test ;
 subinclude libs/math/test ;
 subinclude libs/type_traits/test ;
-subinclude libs/utility/test ;
 subinclude libs/uuid/test ;
 
 {
