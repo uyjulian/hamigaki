@@ -4,7 +4,7 @@
 <!--
   Hamigaki Library Document Source
 
-  Copyright Takeshi Mouri 2006.
+  Copyright Takeshi Mouri 2006, 2007.
   Use, modification, and distribution are subject to the
   Boost Software License, Version 1.0. (See accompanying file
   LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -22,6 +22,7 @@
 
   <xi:include href="../../libs/archivers/doc/archivers.xml"/>
   <xi:include href="../../libs/audio/doc/audio.xml"/>
+  <xi:include href="../../libs/binary/doc/binary.xml"/>
   <xi:include href="../../libs/coroutine/doc/coroutine.xml"/>
   <xi:include href="../../libs/filesystem/doc/filesystem.xml"/>
   <xi:include href="../../libs/iostreams/doc/iostreams.xml"/>
