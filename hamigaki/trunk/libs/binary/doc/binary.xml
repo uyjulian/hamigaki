@@ -39,5 +39,7 @@
 
   <!-- xi:include href="../libs/binary/doc/introduction.xml" -->
   <XI:include href="introduction.xml"/>
+  <!-- xi:include href="../libs/binary/doc/reference/reference.xml" -->
+  <XI:include href="reference/reference.xml"/>
 
 </library>

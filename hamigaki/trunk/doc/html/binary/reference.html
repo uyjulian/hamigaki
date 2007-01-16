@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title xmlns="http://www.w3.org/1999/xhtml">リファレンス</title>
+    <link rel="stylesheet" href="../boostbook.css" type="text/css" />
+    <meta xmlns="http://www.w3.org/1999/xhtml" name="generator" content="DocBook XSL Stylesheets V1.69.1" />
+    <link rel="start" href="../index.html" title="Hamigaki C++ ライブラリ" />
+    <link rel="up" href="../binary.html" title="第6章 Hamigaki.Binary" />
+    <link rel="prev" href="../binary.html" title="第6章 Hamigaki.Binary" />
+    <link rel="next" href="../binary_io_traits.html" title="Struct template binary_io_traits" />
+<!--
+Copyright Takeshi Mouri 2006, 2007.
+Use, modification, and distribution are subject to the Boost Software License, Version 1.0.
+(See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+-->
+  </head>
+  <body>
+    <table cellpadding="2" width="100%">
+      <td valign="top">
+        <img alt="hamigaki.png" width="96" height="72" src="../../../hamigaki.png" />
+      </td>
+    </table>
+    <hr />
+    <div class="spirit-nav">
+      <a accesskey="p" href="../binary.html">
+        <img src="../images/prev.png" alt="前のページ" />
+      </a>
+      <a accesskey="u" href="../binary.html">
+        <img src="../images/up.png" alt="上に戻る" />
+      </a>
+      <a accesskey="h" href="../index.html">
+        <img src="../images/home.png" alt="ホーム" />
+      </a>
+      <a accesskey="n" href="../binary_io_traits.html">
+        <img src="../images/next.png" alt="次のページ" />
+      </a>
+    </div>
+    <div xmlns="http://www.w3.org/1999/xhtml" class="section" lang="ja" xml:lang="ja">
+      <div class="titlepage">
+        <div>
+          <div>
+            <h2 class="title" style="clear: both"><a id="binary.reference"></a>リファレンス</h2>
+          </div>
+        </div>
+      </div>
+      <div class="toc">
+        <dl>
+          <dt>
+            <span class="section">
+              <a href="reference.html#header.hamigaki.binary.binary_io.hpp">Header &lt;hamigaki/binary/binary_io.hpp&gt;</a>
+            </span>
+          </dt>
+          <dt>
+            <span class="section">
+              <a href="reference.html#header.hamigaki.binary.endian.hpp">Header &lt;hamigaki/binary/endian.hpp&gt;</a>
+            </span>
+          </dt>
+          <dt>
+            <span class="section">
+              <a href="reference.html#header.hamigaki.binary.struct_traits.hpp">Header &lt;hamigaki/binary/struct_traits.hpp&gt;</a>
+            </span>
+          </dt>
+        </dl>
+      </div>
+      <div class="section" lang="ja" xml:lang="ja">
+        <div class="titlepage">
+          <div>
+            <div>
+              <h3 class="title"><a id="header.hamigaki.binary.binary_io.hpp"></a>Header &lt;<a xmlns="" href="../../../hamigaki/binary/binary_io.hpp" target="_top">hamigaki/binary/binary_io.hpp</a>&gt;</h3>
+            </div>
+          </div>
+        </div>
+        <pre class="synopsis"><span class="bold"><strong>namespace</strong></span> hamigaki {
+  <span class="bold"><strong>template</strong></span>&lt;endianness E, <span class="bold"><strong>typename</strong></span> T&gt; <span class="bold"><strong>struct</strong></span> <a xmlns="" href="../binary_io_traits.html" title="Struct template binary_io_traits">binary_io_traits</a>;
+
+  <span class="emphasis"><em>// <a xmlns="" href="reference.html#id354465-bb">binary input functions</a></em></span>
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a xmlns="" href="reference.html#id246531">binary_read</a>(<span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span>*, T&amp;);
+  <span class="bold"><strong>template</strong></span>&lt;endianness E, <span class="bold"><strong>typename</strong></span> T&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a xmlns="" href="reference.html#id396092">binary_read</a>(<span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span>*, T&amp;);
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; <span class="type">T</span> <a xmlns="" href="reference.html#id229601">binary_read</a>(<span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span>*);
+  <span class="bold"><strong>template</strong></span>&lt;endianness E, <span class="bold"><strong>typename</strong></span> T&gt; <span class="type">T</span> <a xmlns="" href="reference.html#id265377">binary_read</a>(<span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span>*);
+
+  <span class="emphasis"><em>// <a xmlns="" href="reference.html#id237737-bb">binary output functions</a></em></span>
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a xmlns="" href="reference.html#id274718">binary_write</a>(<span class="bold"><strong>char</strong></span>*, <span class="bold"><strong>const</strong></span> T&amp;);
+  <span class="bold"><strong>template</strong></span>&lt;endianness E, <span class="bold"><strong>typename</strong></span> T&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a xmlns="" href="reference.html#id433699">binary_write</a>(<span class="bold"><strong>char</strong></span>*, <span class="bold"><strong>const</strong></span> T&amp;);
+}</pre>
+        <div class="refsect2" lang="ja" xml:lang="ja">
+          <a id="id509077"></a>
+          <h3><a id="id354465-bb"></a><code class="computeroutput"></code> binary input functions</h3>
+          <div class="orderedlist">
+            <ol type="1">
+              <li>
+                <pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a id="id246531"></a>binary_read(<span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span>* s, T&amp; x);</pre>
+                <p>実行環境のエンディアンに従い、バイナリ入力を行う。</p>
+                <p xmlns=""><b xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision"><span xmlns="http://www.w3.org/1999/xhtml" class="term">Effects</span></b>:
+
+    <code xmlns="http://www.w3.org/1999/xhtml" class="computeroutput"><a xmlns="" href="../binary_io_traits.html" title="Struct template binary_io_traits">binary_io_traits</a>&lt;native,T&gt;::read(s, x);</code></p>
+              </li>
+              <li>
+                <pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;endianness E, <span class="bold"><strong>typename</strong></span> T&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a id="id396092"></a>binary_read(<span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span>* s, T&amp; x);</pre>
+                <p>指定したエンディアンでバイナリ入力を行う。</p>
+                <p xmlns=""><b xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision"><span xmlns="http://www.w3.org/1999/xhtml" class="term">Effects</span></b>:
+
+    <code xmlns="http://www.w3.org/1999/xhtml" class="computeroutput"><a xmlns="" href="../binary_io_traits.html" title="Struct template binary_io_traits">binary_io_traits</a>&lt;E,T&gt;::read(s, x);</code></p>
+              </li>
+              <li>
+                <pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; <span class="type">T</span> <a id="id229601"></a>binary_read(<span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span>* s);</pre>
+                <p>実行環境のエンディアンに従い、バイナリ入力を行う。</p>
+                <p xmlns=""><b xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision"><span xmlns="http://www.w3.org/1999/xhtml" class="term">Effects</span></b>:
+
+    <pre class="programlisting">T x;
+hamigaki::binary_read(s, x);
+return x;</pre></p>
+              </li>
+              <li>
+                <pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;endianness E, <span class="bold"><strong>typename</strong></span> T&gt; <span class="type">T</span> <a id="id265377"></a>binary_read(<span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span>* s);</pre>
+                <p>指定したエンディアンでバイナリ入力を行う。</p>
+                <p xmlns=""><b xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision"><span xmlns="http://www.w3.org/1999/xhtml" class="term">Effects</span></b>:
+
+    <pre class="programlisting">T x;
+hamigaki::binary_read&lt;E&gt;(s, x);
+return x;</pre></p>
+              </li>
+            </ol>
+          </div>
+        </div>
+        <div class="refsect2" lang="ja" xml:lang="ja">
+          <a id="id509380"></a>
+          <h3><a id="id237737-bb"></a><code class="computeroutput"></code> binary output functions</h3>
+          <div class="orderedlist">
+            <ol type="1">
+              <li>
+                <pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a id="id274718"></a>binary_write(<span class="bold"><strong>char</strong></span>* s, <span class="bold"><strong>const</strong></span> T&amp; x);</pre>
+                <p>実行環境のエンディアンに従い、バイナリ出力を行う。</p>
+                <p xmlns=""><b xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision"><span xmlns="http://www.w3.org/1999/xhtml" class="term">Effects</span></b>:
+
+    <code xmlns="http://www.w3.org/1999/xhtml" class="computeroutput"><a xmlns="" href="../binary_io_traits.html" title="Struct template binary_io_traits">binary_io_traits</a>&lt;native,T&gt;::write(s, x);</code></p>
+              </li>
+              <li>
+                <pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;endianness E, <span class="bold"><strong>typename</strong></span> T&gt; <span class="type"><span class="bold"><strong>void</strong></span></span> <a id="id433699"></a>binary_write(<span class="bold"><strong>char</strong></span>* s, <span class="bold"><strong>const</strong></span> T&amp; x);</pre>
+                <p>指定したエンディアンでバイナリ出力を行う。</p>
+                <p xmlns=""><b xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision"><span xmlns="http://www.w3.org/1999/xhtml" class="term">Effects</span></b>:
+
+    <code xmlns="http://www.w3.org/1999/xhtml" class="computeroutput"><a xmlns="" href="../binary_io_traits.html" title="Struct template binary_io_traits">binary_io_traits</a>&lt;E,T&gt;::write(s, x);</code></p>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      <div class="section" lang="ja" xml:lang="ja">
+        <div class="titlepage">
+          <div>
+            <div>
+              <h3 class="title"><a id="header.hamigaki.binary.endian.hpp"></a>Header &lt;<a xmlns="" href="../../../hamigaki/binary/endian.hpp" target="_top">hamigaki/binary/endian.hpp</a>&gt;</h3>
+            </div>
+          </div>
+        </div>
+        <pre class="synopsis"><span class="bold"><strong>namespace</strong></span> hamigaki {
+  <span class="bold"><strong>enum</strong></span> <a xmlns="" href="../enum/hamigaki/endianness.html" title="Type endianness">endianness</a>;
+
+  <span class="bold"><strong>template</strong></span>&lt;std::size_t Size&gt; <span class="bold"><strong>struct</strong></span> <a xmlns="" href="../integer_encoding_traits.html" title="Struct template integer_encoding_traits">integer_encoding_traits</a>;
+
+  <span class="emphasis"><em>// <a xmlns="" href="reference.html#id253997-bb">encoding/decoding functions</a></em></span>
+  <span class="bold"><strong>template</strong></span>&lt;endianness E, std::size_t Size&gt; 
+    <span class="type"><span class="bold"><strong>void</strong></span></span> <a xmlns="" href="reference.html#encode_uint">encode_uint</a>(<span class="bold"><strong>char</strong></span>*, <span class="bold"><strong>typename</strong></span> <a xmlns="" href="../integer_encoding_traits.html" title="Struct template integer_encoding_traits">integer_encoding_traits</a>&lt;Size&gt;::uint_type);
+  <span class="bold"><strong>template</strong></span>&lt;endianness E, std::size_t Size&gt; 
+    <span class="type"><span class="bold"><strong>void</strong></span></span> <a xmlns="" href="reference.html#encode_int">encode_int</a>(<span class="bold"><strong>char</strong></span>*, <span class="bold"><strong>typename</strong></span> <a xmlns="" href="../integer_encoding_traits.html" title="Struct template integer_encoding_traits">integer_encoding_traits</a>&lt;Size&gt;::int_type);
+  <span class="bold"><strong>template</strong></span>&lt;endianness E, std::size_t Size&gt; 
+    <span class="type"><span class="bold"><strong>typename</strong></span> <a xmlns="" href="../integer_encoding_traits.html" title="Struct template integer_encoding_traits">integer_encoding_traits</a>&lt;Size&gt;::uint_type</span> <a xmlns="" href="reference.html#decode_uint">decode_uint</a>(<span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span>*);
+  <span class="bold"><strong>template</strong></span>&lt;endianness E, std::size_t Size&gt; 
+    <span class="type"><span class="bold"><strong>typename</strong></span> <a xmlns="" href="../integer_encoding_traits.html" title="Struct template integer_encoding_traits">integer_encoding_traits</a>&lt;Size&gt;::int_type</span> <a xmlns="" href="reference.html#decode_int">decode_int</a>(<span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span>*);
+}</pre>
+        <div class="refsect2" lang="ja" xml:lang="ja">
+          <a id="id510405"></a>
+          <h3><a id="id253997-bb"></a><code class="computeroutput"></code> encoding/decoding functions</h3>
+          <div class="orderedlist">
+            <ol type="1">
+              <li>
+                <pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;endianness E, std::size_t Size&gt; 
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a id="encode_uint"></a>encode_uint(<span class="bold"><strong>char</strong></span>* s, 
+                   <span class="bold"><strong>typename</strong></span> <a xmlns="" href="../integer_encoding_traits.html" title="Struct template integer_encoding_traits">integer_encoding_traits</a>&lt;Size&gt;::uint_type n);</pre>
+                <p xmlns=""><b xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision"><span xmlns="http://www.w3.org/1999/xhtml" class="term">Effects</span></b>:
+
+    符号なし整数<code xmlns="http://www.w3.org/1999/xhtml" class="computeroutput">n</code>をエンディアン<code xmlns="http://www.w3.org/1999/xhtml" class="computeroutput">E</code>でエンコードして範囲<code xmlns="http://www.w3.org/1999/xhtml" class="computeroutput">[s, s+Size)</code>に書き出す。</p>
+              </li>
+              <li>
+                <pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;endianness E, std::size_t Size&gt; 
+  <span class="type"><span class="bold"><strong>void</strong></span></span> <a id="encode_int"></a>encode_int(<span class="bold"><strong>char</strong></span>* s, <span class="bold"><strong>typename</strong></span> <a xmlns="" href="../integer_encoding_traits.html" title="Struct template integer_encoding_traits">integer_encoding_traits</a>&lt;Size&gt;::int_type n);</pre>
+                <p xmlns=""><b xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision"><span xmlns="http://www.w3.org/1999/xhtml" class="term">Effects</span></b>:
+
+    符号付き整数<code xmlns="http://www.w3.org/1999/xhtml" class="computeroutput">n</code>をエンディアン<code xmlns="http://www.w3.org/1999/xhtml" class="computeroutput">E</code>でエンコードして範囲<code xmlns="http://www.w3.org/1999/xhtml" class="computeroutput">[s, s+Size)</code>に書き出す。</p>
+              </li>
+              <li>
+                <pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;endianness E, std::size_t Size&gt; 
+  <span class="type"><span class="bold"><strong>typename</strong></span> <a xmlns="" href="../integer_encoding_traits.html" title="Struct template integer_encoding_traits">integer_encoding_traits</a>&lt;Size&gt;::uint_type</span> <a id="decode_uint"></a>decode_uint(<span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span>* s);</pre>
+                <p xmlns=""><b xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision"><span xmlns="http://www.w3.org/1999/xhtml" class="term">Effects</span></b>:
+
+    範囲<code xmlns="http://www.w3.org/1999/xhtml" class="computeroutput">[s, s+Size)</code>をエンディアン<code xmlns="http://www.w3.org/1999/xhtml" class="computeroutput">E</code>で符号なし整数としてデコードする。<br /><b xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision"><span xmlns="http://www.w3.org/1999/xhtml" class="term">Returns</span></b>:
+
+    デコードされた整数値</p>
+              </li>
+              <li>
+                <pre class="literallayout"><span class="bold"><strong>template</strong></span>&lt;endianness E, std::size_t Size&gt; 
+  <span class="type"><span class="bold"><strong>typename</strong></span> <a xmlns="" href="../integer_encoding_traits.html" title="Struct template integer_encoding_traits">integer_encoding_traits</a>&lt;Size&gt;::int_type</span> <a id="decode_int"></a>decode_int(<span class="bold"><strong>const</strong></span> <span class="bold"><strong>char</strong></span>* s);</pre>
+                <p xmlns=""><b xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision"><span xmlns="http://www.w3.org/1999/xhtml" class="term">Effects</span></b>:
+
+    範囲<code xmlns="http://www.w3.org/1999/xhtml" class="computeroutput">[s, s+Size)</code>をエンディアン<code xmlns="http://www.w3.org/1999/xhtml" class="computeroutput">E</code>で符号付き整数としてデコードする。<br /><b xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision"><span xmlns="http://www.w3.org/1999/xhtml" class="term">Returns</span></b>:
+
+    デコードされた整数値</p>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      <div class="section" lang="ja" xml:lang="ja">
+        <div class="titlepage">
+          <div>
+            <div>
+              <h3 class="title"><a id="header.hamigaki.binary.struct_traits.hpp"></a>Header &lt;<a xmlns="" href="../../../hamigaki/binary/struct_traits.hpp" target="_top">hamigaki/binary/struct_traits.hpp</a>&gt;</h3>
+            </div>
+          </div>
+        </div>
+        <pre class="synopsis"><span class="bold"><strong>namespace</strong></span> hamigaki {
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Struct, <span class="bold"><strong>typename</strong></span> Type, Type Struct::* PtrToMember&gt; 
+    <span class="bold"><strong>struct</strong></span> <a xmlns="" href="../member_base.html" title="Struct template member_base">member_base</a>;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> Struct, <span class="bold"><strong>typename</strong></span> Type, Type Struct::* PtrToMember, 
+           endianness E = <code class="code">native</code>&gt; 
+    <span class="bold"><strong>struct</strong></span> <a xmlns="" href="../member.html" title="Struct template member">member</a>;
+  <span class="bold"><strong>template</strong></span>&lt;std::size_t Size&gt; <span class="bold"><strong>struct</strong></span> <a xmlns="" href="../padding.html" title="Struct template padding">padding</a>;
+  <span class="bold"><strong>template</strong></span>&lt;<span class="bold"><strong>typename</strong></span> T&gt; <span class="bold"><strong>struct</strong></span> <a xmlns="" href="../struct_traits.html" title="Struct template struct_traits">struct_traits</a>;
+}</pre>
+      </div>
+    </div>
+    <table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%">
+      <tr>
+        <td align="left"></td>
+        <td align="right">
+          <small>製作著作 © 2006, 2007 Takeshi Mouri</small>
+        </td>
+      </tr>
+    </table>
+    <hr />
+    <div class="spirit-nav">
+      <a accesskey="p" href="../binary.html">
+        <img src="../images/prev.png" alt="前のページ" />
+      </a>
+      <a accesskey="u" href="../binary.html">
+        <img src="../images/up.png" alt="上に戻る" />
+      </a>
+      <a accesskey="h" href="../index.html">
+        <img src="../images/home.png" alt="ホーム" />
+      </a>
+      <a accesskey="n" href="../binary_io_traits.html">
+        <img src="../images/next.png" alt="次のページ" />
+      </a>
+    </div>
+  </body>
+</html>
