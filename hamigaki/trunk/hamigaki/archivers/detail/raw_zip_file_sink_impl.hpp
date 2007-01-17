@@ -347,8 +347,7 @@ public:
                 static_cast<boost::uint64_t>(iostreams::tell_offset(sink_));
 
             zip::zip64_end_cent_dir zip64;
-            zip64.self_size =
-                struct_size<zip::zip64_end_cent_dir>::type::value - 8;
+            zip64.self_size = struct_size<zip::zip64_end_cent_dir>::value - 8;
             zip64.made_by = 45;
             zip64.needed_to_extract = 45;
             zip64.disk_number = 0; // TODO

@@ -107,7 +107,7 @@ void binary_write_test()
     data.child.a = 0xEFCDAB89;
     data.child.b = 0x01234567;
 
-    char buf[hamigaki::struct_size< ::test_struct>::type::value+1];
+    char buf[hamigaki::struct_size< ::test_struct>::value+1];
     std::memset(buf, 0xCC, sizeof(buf));
     hamigaki::binary_write(buf, data);
 
@@ -184,7 +184,7 @@ void default_write_test()
     data.def_child.lit_val = 0x89AB;
     data.def_child.def_val = 0xCDEF;
 
-    char buf[hamigaki::struct_size< ::outer>::type::value+1];
+    char buf[hamigaki::struct_size< ::outer>::value+1];
     std::memset(buf, 0xCC, sizeof(buf));
     hamigaki::binary_write<hamigaki::big>(buf, data);
 

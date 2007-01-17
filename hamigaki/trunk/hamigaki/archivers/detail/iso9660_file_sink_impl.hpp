@@ -237,7 +237,7 @@ public:
         desc.volume_seq_number = 1;
         desc.logical_block_size = logical_block_size_;
         desc.root_record.record_size =
-            struct_size<iso9660::directory_record>::type::value + 1;
+            struct_size<iso9660::directory_record>::value + 1;
         desc.root_record.ext_record_size = 0;
         desc.root_record.data_pos = root.data_pos;
         desc.root_record.data_size = root.data_size;
@@ -372,7 +372,7 @@ private:
     boost::uint32_t calc_directory_size(const directory_records& records)
     {
         const std::size_t bin_size =
-            struct_size<iso9660::directory_record>::type::value;
+            struct_size<iso9660::directory_record>::value;
 
         std::size_t pos = 0;
         for (std::size_t i = 0; i < records.size(); ++i)
@@ -407,7 +407,7 @@ private:
     void write_directory_records(const directory_records& records)
     {
         const std::size_t bin_size =
-            struct_size<iso9660::directory_record>::type::value;
+            struct_size<iso9660::directory_record>::value;
 
         std::memset(block_, 0, sizeof(block_));
 

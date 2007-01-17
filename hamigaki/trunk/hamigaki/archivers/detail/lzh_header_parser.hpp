@@ -48,7 +48,7 @@ inline boost::uint16_t parse_attributes(char* s, boost::uint32_t n)
 inline lha::windows::timestamp
 parse_windows_timestamp(char* s, boost::uint32_t n)
 {
-    if (n < hamigaki::struct_size<lha::windows::timestamp>::type::value)
+    if (n < hamigaki::struct_size<lha::windows::timestamp>::value)
         throw std::runtime_error("bad LZH timestamp extended header");
 
     lha::windows::timestamp ts;
@@ -86,7 +86,7 @@ inline boost::uint16_t parse_unix_permissions(char* s, boost::uint32_t n)
 inline lha::posix::gid_uid
 parse_unix_owner(char* s, boost::uint32_t n)
 {
-    if (n < hamigaki::struct_size<lha::posix::gid_uid>::type::value)
+    if (n < hamigaki::struct_size<lha::posix::gid_uid>::value)
         throw std::runtime_error("bad LZH owner extended header");
 
     lha::posix::gid_uid owner;
@@ -243,7 +243,7 @@ public:
 private:
     Source& src_;
     lha::header header_;
-    char buffer_[hamigaki::struct_size<lha::lv0_header>::type::value];
+    char buffer_[hamigaki::struct_size<lha::lv0_header>::value];
     boost::crc_16_type crc_;
 
     void parse_lv0_header()
@@ -330,7 +330,7 @@ private:
         crc_.process_bytes(buffer_, sizeof(buffer_));
 
         lha::lv2_header_rest lv2rest;
-        char buf[hamigaki::struct_size<lha::lv2_header_rest>::type::value];
+        char buf[hamigaki::struct_size<lha::lv2_header_rest>::value];
 
         if (lv2.header_size < sizeof(buffer_)+sizeof(buf))
             throw std::runtime_error("bad LZH header size");

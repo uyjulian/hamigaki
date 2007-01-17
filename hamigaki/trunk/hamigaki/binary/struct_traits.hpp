@@ -22,10 +22,7 @@
 namespace hamigaki {
 
 template<class T>
-struct struct_traits
-{
-    typedef void members;
-};
+struct struct_traits;
 
 template<class Struct, class Type, Type Struct::* PtrToMember>
 struct member_base
@@ -73,17 +70,59 @@ struct struct_size;
 namespace detail
 {
 
-template<class T, class Members>
-struct sizeof_impl
+template<class T>
+struct sizeof_impl : struct_size<T>::type {};
+
+template<class T, std::size_t Size>
+struct sizeof_impl<T[Size]> : boost::mpl::size_t<sizeof_impl<T>::value*Size> {};
+
+template<> struct sizeof_impl<char> : boost::mpl::size_t<1> {};
+template<> struct sizeof_impl<signed char> : boost::mpl::size_t<1> {};
+template<> struct sizeof_impl<unsigned char> : boost::mpl::size_t<1> {};
+
+template<>
+struct sizeof_impl<short> : boost::mpl::size_t<sizeof(short)>
 {
-    typedef typename struct_size<T>::type type;
 };
 
-template<class T>
-struct sizeof_impl<T,void>
+template<>
+struct sizeof_impl<unsigned short> : boost::mpl::size_t<sizeof(unsigned short)>
 {
-    typedef boost::mpl::size_t<sizeof(T)> type;
 };
+
+template<>
+struct sizeof_impl<int> : boost::mpl::size_t<sizeof(int)>
+{
+};
+
+template<>
+struct sizeof_impl<unsigned int> : boost::mpl::size_t<sizeof(unsigned int)>
+{
+};
+
+template<>
+struct sizeof_impl<long> : boost::mpl::size_t<sizeof(long)>
+{
+};
+
+template<>
+struct sizeof_impl<unsigned long> : boost::mpl::size_t<sizeof(unsigned long)>
+{
+};
+
+#if defined(BOOST_HAS_LONG_LONG)
+template<>
+struct sizeof_impl<long long>
+    : boost::mpl::size_t<sizeof(long long)>
+{
+};
+
+template<>
+struct sizeof_impl<unsigned long long>
+    : boost::mpl::size_t<sizeof(unsigned long long)>
+{
+};
+#endif // defined(BOOST_HAS_LONG_LONG)
 
 } // namespace detail
 
@@ -92,24 +131,17 @@ struct member_size;
 
 template<class Struct, class Type, Type Struct::* PtrToMember, endianness E>
 struct member_size<member<Struct, Type, PtrToMember, E> >
+    : detail::sizeof_impl<Type>
 {
-    typedef typename detail::sizeof_impl<
-        Type,
-        typename struct_traits<Type>::members
-    >::type type;
 };
 
 template<std::size_t Size>
-struct member_size<padding<Size> >
-{
-    typedef boost::mpl::size_t<Size> type;
-};
+struct member_size<padding<Size> > : boost::mpl::size_t<Size> {};
 
 
 template<class T>
 struct struct_size
-{
-    typedef boost::mpl::size_t<
+    : boost::mpl::size_t<
         boost::mpl::accumulate<
             typename struct_traits<T>::members,
             boost::mpl::size_t<0>,
@@ -118,24 +150,18 @@ struct struct_size
                 member_size<boost::mpl::_2>
             >
         >::type::value
-    > type;
+    >
+{
 };
 
 
 template<class T>
-struct binary_size
-{
-    typedef typename detail::sizeof_impl<
-        T,
-        typename struct_traits<T>::members
-    >::type type;
-};
+struct binary_size : detail::sizeof_impl<T> {};
 
 
 template<class T>
 struct member_offset
-{
-    typedef boost::mpl::size_t<
+    : boost::mpl::size_t<
         boost::mpl::accumulate<
             boost::mpl::iterator_range<
                 typename boost::mpl::begin<
@@ -152,15 +178,13 @@ struct member_offset
                 member_size<boost::mpl::_2>
             >
         >::type::value
-    > type;
+    >
+{
 };
 
 template<class Struct, class Type, Type Struct::* PtrToMember>
-struct binary_offset
+struct binary_offset : member_offset<member_base<Struct, Type, PtrToMember> >
 {
-    typedef typename member_offset<
-        member_base<Struct, Type, PtrToMember>
-    >::type type;
 };
 
 } // End namespace hamigaki.

@@ -305,7 +305,7 @@ private:
                     binary_offset<
                         cpio::svr4_header,
                         char[8],&cpio::svr4_header::checksum
-                    >::type::value;
+                    >::value;
                 chksum_offset_ += offset;
             }
             else if (!head.checksum)

@@ -28,10 +28,10 @@ inline uint17_t tar_checksum(const void* block)
     const unsigned char* s = static_cast<const unsigned char*>(block);
 
     static const std::size_t chksum_offset =
-        binary_offset<raw_header,char[8],&raw_header::chksum>::type::value;
+        binary_offset<raw_header,char[8],&raw_header::chksum>::value;
 
     static const std::size_t typeflag_offset =
-        binary_offset<raw_header,char,&raw_header::typeflag>::type::value;
+        binary_offset<raw_header,char,&raw_header::typeflag>::value;
 
     uint17_t chksum = 0;
     chksum = std::accumulate(s, s+chksum_offset, chksum);

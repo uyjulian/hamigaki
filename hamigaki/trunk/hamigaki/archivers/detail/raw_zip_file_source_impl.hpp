@@ -46,7 +46,7 @@ inline void seek_end_of_central_dir(Source& src)
         iostreams::to_offset(boost::iostreams::seek(src, 0, BOOST_IOS::end));
 
     std::streamsize entry_size = static_cast<std::streamsize>(
-        binary_size<zip::end_of_central_directory>::type::value);
+        struct_size<zip::end_of_central_directory>::value);
     iostreams::stream_offset pos = file_size - entry_size - 4;
 
     boost::iostreams::seek(src, pos, BOOST_IOS::beg);
@@ -276,7 +276,7 @@ private:
         if (footer.offset == 0xFFFFFFFF)
         {
             std::streamsize entry_size = static_cast<std::streamsize>(
-                binary_size<zip::zip64_end_cent_dir_locator>::type::value);
+                struct_size<zip::zip64_end_cent_dir_locator>::value);
 
             iostreams::stream_offset off = footer_offset - (entry_size + 8);
             boost::iostreams::seek(src_, off, BOOST_IOS::beg);

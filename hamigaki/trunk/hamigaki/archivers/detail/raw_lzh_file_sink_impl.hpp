@@ -204,8 +204,8 @@ private:
     {
         static const char buf[3] =
         {
-            static_cast<unsigned char>((binary_size<T>::type::value+3)),
-            static_cast<unsigned char>((binary_size<T>::type::value+3) >> 8),
+            static_cast<unsigned char>((binary_size<T>::value+3)),
+            static_cast<unsigned char>((binary_size<T>::value+3) >> 8),
             static_cast<char>(Type)
         };
         sink.write(buf, 3);

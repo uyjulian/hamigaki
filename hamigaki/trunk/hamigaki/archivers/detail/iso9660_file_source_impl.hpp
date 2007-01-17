@@ -267,7 +267,7 @@ private:
         while (i < volume_desc_.path_table_size)
         {
             const std::size_t bin_size =
-                struct_size<iso9660::path_table_record>::type::value;
+                struct_size<iso9660::path_table_record>::value;
 
             std::size_t next = i + bin_size;
             if (next > volume_desc_.path_table_size)
@@ -313,7 +313,7 @@ private:
         std::vector<directory_record> records;
 
         const std::size_t bin_size =
-            struct_size<iso9660::directory_record>::type::value;
+            struct_size<iso9660::directory_record>::value;
 
         seek_logical_block(path_table_.at(num).data_pos);
         fill_buffer();

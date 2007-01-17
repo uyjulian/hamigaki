@@ -145,7 +145,7 @@ public:
         }
 
         const std::size_t hedaer_size =
-            binary_size<detail::reparse_data_header>::type::value;
+            struct_size<detail::reparse_data_header>::value;
 
         if (static_cast<std::size_t>(size) < hedaer_size)
             return false;
@@ -162,7 +162,7 @@ public:
         if (head.tag == detail::mount_point_header::tag)
         {
             const std::size_t hedaer_size =
-                binary_size<detail::mount_point_header>::type::value;
+                struct_size<detail::mount_point_header>::value;
 
             if (data_size < hedaer_size)
                 return false;
@@ -178,7 +178,7 @@ public:
         else if (head.tag == detail::symlink_header::tag)
         {
             const std::size_t hedaer_size =
-                binary_size<detail::symlink_header>::type::value;
+                struct_size<detail::symlink_header>::value;
 
             if (data_size < hedaer_size)
                 return false;
@@ -212,9 +212,9 @@ public:
         sub_name += ws;
 
         const std::size_t top_hedaer_size =
-            binary_size<detail::reparse_data_header>::type::value;
+            struct_size<detail::reparse_data_header>::value;
         const std::size_t mt_hedaer_size =
-            binary_size<detail::mount_point_header>::type::value;
+            struct_size<detail::mount_point_header>::value;
 
         std::size_t full_size =
             top_hedaer_size + mt_hedaer_size +

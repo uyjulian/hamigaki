@@ -20,7 +20,7 @@ namespace hamigaki { namespace iostreams {
 template<endianness E, class T, class Source>
 inline bool binary_read(Source& src, T& x, const std::nothrow_t&)
 {
-    char data[binary_size<T>::type::value];
+    char data[binary_size<T>::value];
     std::memset(data, 0, sizeof(data));
 
     if (!iostreams::blocking_read(src, data, std::nothrow))
@@ -52,7 +52,7 @@ inline void binary_read(Source& src, T& x)
 template<endianness E, class T, class Sink>
 inline bool binary_write(Sink& sink, const T& x, const std::nothrow_t&)
 {
-    char data[binary_size<T>::type::value];
+    char data[binary_size<T>::value];
     std::memset(data, 0, sizeof(data));
     hamigaki::binary_write(data, x);
 

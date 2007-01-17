@@ -44,7 +44,7 @@ public:
         typedef endian_select<E,T::endian> sel;
 
         binary_io_traits<sel::endian, typename T::member_type>::read(
-            data_ + member_offset<T>::type::value,
+            data_ + member_offset<T>::value,
             T()(*ptr_)
         );
     }
@@ -74,7 +74,7 @@ public:
         typedef endian_select<E,T::endian> sel;
 
         binary_io_traits<sel::endian, typename T::member_type>::write(
-            data_ + member_offset<T>::type::value,
+            data_ + member_offset<T>::value,
             T()(*ptr_)
         );
     }
@@ -268,7 +268,7 @@ struct binary_io_traits<E,unsigned long long>
 template<endianness E, class T, std::size_t N>
 struct binary_io_traits<E, T[N]>
 {
-    static const std::size_t value_size = hamigaki::binary_size<T>::type::value;
+    static const std::size_t value_size = hamigaki::binary_size<T>::value;
 
     static void read(const char* s, T (&x)[N])
     {

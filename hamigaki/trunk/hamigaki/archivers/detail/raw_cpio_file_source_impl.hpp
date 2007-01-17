@@ -179,7 +179,7 @@ private:
 
         if (std::memcmp(magic, "070707", sizeof(magic)) == 0)
         {
-            char buf[hamigaki::struct_size<cpio::raw_header>::type::value];
+            char buf[hamigaki::struct_size<cpio::raw_header>::value];
             std::memcpy(buf, magic, sizeof(magic));
             iostreams::blocking_read(
                 src_, buf+sizeof(magic), sizeof(buf)-sizeof(magic));
@@ -192,7 +192,7 @@ private:
             (std::memcmp(magic, "070701", sizeof(magic)) == 0) ||
             (std::memcmp(magic, "070702", sizeof(magic)) == 0) )
         {
-            char buf[hamigaki::struct_size<cpio::svr4_header>::type::value];
+            char buf[hamigaki::struct_size<cpio::svr4_header>::value];
             std::memcpy(buf, magic, sizeof(magic));
             iostreams::blocking_read(
                 src_, buf+sizeof(magic), sizeof(buf)-sizeof(magic));
@@ -203,7 +203,7 @@ private:
         }
         else if (hamigaki::decode_int<native,2>(magic) == 070707)
         {
-            char buf[hamigaki::struct_size<cpio::binary_header>::type::value];
+            char buf[hamigaki::struct_size<cpio::binary_header>::value];
             std::memcpy(buf, magic, sizeof(magic));
             iostreams::blocking_read(
                 src_, buf+sizeof(magic), sizeof(buf)-sizeof(magic));
