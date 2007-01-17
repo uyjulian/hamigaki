@@ -117,6 +117,7 @@
       <template>
         <template-type-parameter name="T" />
       </template>
+
       <typedef name="members">
          <type><emphasis>implementation defined</emphasis></type>
       </typedef>
@@ -124,9 +125,22 @@
       <purpose><simpara>構造体のバイナリ入出力の方法を指定する。</simpara></purpose>
 
       <description>
-        <para><code>members</code>は、型<code>T</code>のメンバ変数に対する<classname>member</classname>か<classname>padding</classname>の<code>Sequence</code>である。</para>
+        <para><code>members</code>は、型<code>T</code>のメンバ変数に対する<classname>member</classname>か<classname>padding</classname>の<code>Sequence</code>で、<code>Sequence</code>の順序に従って入出力を行うよう指定する。</para>
         <para>ここでいう<code>Sequence</code>とは、Boost.MPLの<code>Sequence</code>のことであり、通常は<code>boost::mpl::single_view</code>や<code>boost::mpl::list</code>を使う。</para>
       </description>
+    </struct>
+
+    <struct name="struct_size">
+      <template>
+        <template-type-parameter name="T" />
+      </template>
+
+      <inherit access="public">
+        <type>boost::mpl::size_t&lt;STRUCTSIZE(T)&gt;</type>
+      </inherit>
+
+      <purpose><simpara><code>T</code>型のオブジェクトをバイナリ出力するのに必要なバッファサイズを返すメタ関数</simpara></purpose>
+      <description><para><code>struct_size</code>は、<code>T</code>型のオブジェクトをバイナリ出力するのに必要なバッファサイズを返すメタ関数である。ここで、<code>STRUCTSIZE(T)</code>は、<code>T</code>型のオブジェクトをバイナリ出力した場合のバイト数を表すものとする。</para></description>
     </struct>
   </namespace>
 </header>

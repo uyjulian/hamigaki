@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Binary Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Use, modification, and distribution are subject to the
+  Boost Software License, Version 1.0. (See accompanying file
+  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/binary for library home page.
+-->
+<section id="binary.tutorial">
+  <title>チュートリアル</title>
+  <using-namespace name="hamigaki"/>
+
+  <section id="binary.tutorial.simple">
+    <title>簡単な例</title>
+
+    <para>簡単な例として、Microsoft Windowsで用いられるビットマップファイルのヘッダ、<code>BITMAPFILEHEADER</code>構造体のバイナリ出力を考える。</para>
+
+    <programlisting><![CDATA[typedef struct tagBITMAPFILEHEADER
+{
+  WORD bfType;
+  DWORD bfSize;
+  WORD bfReserved1;
+  WORD bfReserved2;
+  DWORD bfOffBits;
+} BITMAPFILEHEADER;
+]]></programlisting>
+
+    <para>この構造体の意図している利用法は次のようなものである。</para>
+
+    <programlisting><![CDATA[void write_header(std::FILE* fp, ::DWORD size, ::DWORD offset)
+{
+  ::BITMAPFILEHEADER header;
+  std::memset(&header, 0, sizeof(header));
+  header.bfType = static_cast< ::WORD>('B') | (static_cast< ::WORD>('M') << 8);
+  header.bfSize = size;
+  header.bfOffBits = offset;
+  std::fwrite(&header, sizeof(header), 1, fp);
+}
+]]></programlisting>
+
+    <para>この方法には次のような問題がある。</para>
+
+    <itemizedlist>
+      <listitem>
+        <simpara>エンディアン</simpara>
+        <para>この構造体の各フィールドは2バイトまたは4バイトであり、出力の際にはバイト順を考慮する必要がある。</para>
+        <para>ビットマップファイルの想定するエンディアンはリトルエンディアンであり、ビッグエンディアンの環境では正しいバイト順で出力されない。</para>
+      </listitem>
+      <listitem>
+        <simpara>構造体のパディング</simpara>
+        <para>C/C++標準は、ハードウェア上の制約や処理効率の向上のため、構造体の各フィールドの間にパディングを挿入することを許している。</para>
+        <para>ビットマップファイルでは、フィールド間にパディングがあってはならないため、パディングを挿入する環境では意図した出力は得られない。実際、Microsoftの提供するヘッダファイルでは、独自のpragma指令を用いてパディングの挿入を防ぐようになっている。</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>これらは<code>BITMAPFILEHEADER</code>のメモリイメージをファイルに書き出していることに原因がある。ここで重要なのはファイルに書き出されるバイト列であって、メモリ上のレイアウトではない。正しい出力を得るためには、出力時のエンディアンやフィールドの配置を指示する必要がある。Hamigaki.Binaryでは、構造体に対し、テンプレート<classname>struct_traits</classname>の特殊化を用意することでこれを行う。</para>
+
+    <programlisting><![CDATA[#include <hamigaki/binary/struct_traits.hpp>
+#include <boost/mpl/list.hpp>
+
+namespace hamigaki
+{
+
+template<>
+struct struct_traits< ::BITMAPFILEHEADER>
+{
+private:
+    typedef ::BITMAPFILEHEADER self;
+
+public:
+    typedef boost::mpl::list<
+        member<self, ::WORD,  &self::bfType, little>,
+        member<self, ::DWORD, &self::bfSize, little>,
+        member<self, ::WORD,  &self::bfReserved1, little>,
+        member<self, ::WORD,  &self::bfReserved2, little>,
+        member<self, ::DWORD, &self::bfOffBits, little>
+    > members;
+};
+
+} // namespace hamigaki
+]]></programlisting>
+
+    <para>特殊化された<classname>struct_traits</classname>では、<code>members</code>という名前の型を用意しなければならない。<code>members</code>はBoost.MPLの<code>Sequence</code>の形を取る。通常は、<code>boost::mpl::list</code>を使う。</para>
+
+    <para><code>members</code>の要素は、<classname>member</classname>である。これが構造体のフィールドの出力方法を決定する。<classname>member</classname>のテンプレート引数は、順に「構造体の型」、「フィールドの型」、「フィールドのメンバポインタ」、「エンディアン」である。</para>
+
+    <para>また、<code>members</code>中の要素順は、出力の際の順序として用いられる。</para>
+
+    <para>これを使ってバイナリ出力を行うには、次のようにする。</para>
+
+    <programlisting><![CDATA[#include <hamigaki/binary/binary_io.hpp>
+
+void write_header(std::FILE* fp, ::DWORD size, ::DWORD offset)
+{
+  ::BITMAPFILEHEADER header;
+  std::memset(&header, 0, sizeof(header));
+  header.bfType = static_cast< ::WORD>('B') | (static_cast< ::WORD>('M') << 8);
+  header.bfSize = size;
+  header.bfOffBits = offset;
+
+  char buffer[hamigaki::struct_size< ::BITMAPFILEHEADER>::value];
+  hamigaki::binary_write(buffer, header);
+
+  std::fwrite(buffer, 1, sizeof(buffer), fp);
+}
+]]></programlisting>
+
+    <para>関数<code><functionname>binary_write</functionname>()</code>は、<classname>struct_traits</classname>の指示に従い、第一引数のバッファに第二引数の構造体オブジェクトをバイナリ出力する。バッファに必要なサイズは、メタ関数<classname>struct_size</classname>で調べることができる。</para>
+
+    <para>今度のコードは、実行環境のエンディアンや構造体のパディングに影響されないため、常に正しい出力を得ることができる。</para>
+
+  </section>
+</section>

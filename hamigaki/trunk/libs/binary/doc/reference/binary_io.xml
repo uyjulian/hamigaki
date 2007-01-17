@@ -31,7 +31,7 @@
         </parameter>
         <description>
           <para>特殊化された<classname>struct_traits</classname>&lt;T&gt;が存在すれば、<code>typename <classname>struct_traits</classname>&lt;T&gt;::members</code>の内容に従い、構造体の各メンバを読み出す。</para>
-          <para><code>T</code>が符号付き整数または符号なし整数の場合、<code>x = hamigaki::decode_int&lt;E,sizeof(x)&gt;(s)</code>を行う。</para>
+          <para><code>T</code>が符号付き整数または符号なし整数の場合、<code>x = <functionname>hamigaki::decode_int</functionname>&lt;E,sizeof(x)&gt;(s)</code>を行う。</para>
           <para><code>T</code>が上記の型の配列である場合は、配列の要素数だけ上記の操作を繰り返す。</para>
         </description>
       </method>
@@ -46,111 +46,114 @@
         </parameter>
         <description>
           <para>特殊化された<classname>struct_traits</classname>&lt;T&gt;が存在すれば、<code>typename <classname>struct_traits</classname>&lt;T&gt;::members</code>の内容に従い、構造体の各メンバを書き出す。</para>
-          <para><code>T</code>が符号付き整数または符号なし整数の場合、<code>hamigaki::encode_int&lt;E,sizeof(x)&gt;(s, x)</code>を呼び出す。</para>
+          <para><code>T</code>が符号付き整数または符号なし整数の場合、<code><functionname>hamigaki::encode_int</functionname>&lt;E,sizeof(x)&gt;(s, x)</code>を呼び出す。</para>
           <para><code>T</code>が上記の型の配列である場合は、配列の要素数だけ上記の操作を繰り返す。</para>
         </description>
       </method>
     </struct>
 
     <free-function-group name="binary input functions">
-      <function name="binary_read">
-        <template>
-          <template-type-parameter name="T" />
-        </template>
-        <type>void</type>
-        <parameter name="s">
-          <paramtype>const char*</paramtype>
-        </parameter>
-        <parameter name="x">
-          <paramtype>T&amp;</paramtype>
-        </parameter>
-        <purpose><simpara>実行環境のエンディアンに従い、バイナリ入力を行う。</simpara></purpose>
-        <effects><simpara><code><classname>binary_io_traits</classname>&lt;native,T&gt;::read(s, x);</code></simpara></effects>
-      </function>
+      <overloaded-function name="binary_read">
+        <signature>
+          <template>
+            <template-type-parameter name="T" />
+          </template>
+          <type>void</type>
+          <parameter name="s">
+            <paramtype>const char*</paramtype>
+          </parameter>
+          <parameter name="x">
+            <paramtype>T&amp;</paramtype>
+          </parameter>
+        </signature>
 
-      <function name="binary_read">
-        <template>
-          <template-nontype-parameter name="E">
-            <type>endianness</type>
-          </template-nontype-parameter>
-          <template-type-parameter name="T" />
-        </template>
-        <type>void</type>
-        <parameter name="s">
-          <paramtype>const char*</paramtype>
-        </parameter>
-        <parameter name="x">
-          <paramtype>T&amp;</paramtype>
-        </parameter>
+        <signature>
+          <template>
+            <template-nontype-parameter name="E">
+              <type>endianness</type>
+            </template-nontype-parameter>
+            <template-type-parameter name="T" />
+          </template>
+          <type>void</type>
+          <parameter name="s">
+            <paramtype>const char*</paramtype>
+          </parameter>
+          <parameter name="x">
+            <paramtype>T&amp;</paramtype>
+          </parameter>
+        </signature>
+
+        <signature>
+          <template>
+            <template-type-parameter name="T" />
+          </template>
+          <type>T</type>
+          <parameter name="s">
+            <paramtype>const char*</paramtype>
+          </parameter>
+        </signature>
+
+        <signature>
+          <template>
+            <template-nontype-parameter name="E">
+              <type>endianness</type>
+            </template-nontype-parameter>
+            <template-type-parameter name="T" />
+          </template>
+          <type>T</type>
+          <parameter name="s">
+            <paramtype>const char*</paramtype>
+          </parameter>
+        </signature>
+
         <purpose><simpara>指定したエンディアンでバイナリ入力を行う。</simpara></purpose>
-        <effects><simpara><code><classname>binary_io_traits</classname>&lt;E,T&gt;::read(s, x);</code></simpara></effects>
-      </function>
 
-      <function name="binary_read">
-        <template>
-          <template-type-parameter name="T" />
-        </template>
-        <type>T</type>
-        <parameter name="s">
-          <paramtype>const char*</paramtype>
-        </parameter>
-        <purpose><simpara>実行環境のエンディアンに従い、バイナリ入力を行う。</simpara></purpose>
-        <effects><para><programlisting><![CDATA[T x;
-hamigaki::binary_read(s, x);
-return x;]]></programlisting></para></effects>
-      </function>
+        <description><para>エンディアン<code>E</code>でバイナリ入力を行う。エンディアンの指定がないバージョンは<code>E = native</code>の場合と同じである。</para></description>
 
-      <function name="binary_read">
-        <template>
-          <template-nontype-parameter name="E">
-            <type>endianness</type>
-          </template-nontype-parameter>
-          <template-type-parameter name="T" />
-        </template>
-        <type>T</type>
-        <parameter name="s">
-          <paramtype>const char*</paramtype>
-        </parameter>
-        <purpose><simpara>指定したエンディアンでバイナリ入力を行う。</simpara></purpose>
-        <effects><para><programlisting><![CDATA[T x;
-hamigaki::binary_read<E>(s, x);
-return x;]]></programlisting></para></effects>
-      </function>
+        <effects><para><simpara><code><classname>binary_io_traits</classname>&lt;E,T&gt;::read(s, x);</code></simpara>または<programlisting><![CDATA[T x;
+binary_io_traits<E,T>::read(s, x);
+return x;
+]]></programlisting></para></effects>
+      </overloaded-function>
     </free-function-group>
 
     <free-function-group name="binary output functions">
-      <function name="binary_write">
-        <template>
-          <template-type-parameter name="T" />
-        </template>
-        <type>void</type>
-        <parameter name="s">
-          <paramtype>char*</paramtype>
-        </parameter>
-        <parameter name="x">
-          <paramtype>const T&amp;</paramtype>
-        </parameter>
-        <purpose><simpara>実行環境のエンディアンに従い、バイナリ出力を行う。</simpara></purpose>
-        <effects><simpara><code><classname>binary_io_traits</classname>&lt;native,T&gt;::write(s, x);</code></simpara></effects>
-      </function>
+      <overloaded-function name="binary_write">
+        <signature>
+          <template>
+            <template-type-parameter name="T" />
+          </template>
+          <type>void</type>
+          <parameter name="s">
+            <paramtype>char*</paramtype>
+          </parameter>
+          <parameter name="x">
+            <paramtype>const T&amp;</paramtype>
+          </parameter>
+        </signature>
 
-      <function name="binary_write">
-        <template>
-          <template-nontype-parameter name="E">
-            <type>endianness</type>
-          </template-nontype-parameter>
-          <template-type-parameter name="T" />
-        </template>
-        <type>void</type>
-        <parameter name="s">
-          <paramtype>char*</paramtype>
-        </parameter>
-        <parameter name="x">
-          <paramtype>const T&amp;</paramtype>
-        </parameter>
+        <signature>
+          <template>
+            <template-nontype-parameter name="E">
+              <type>endianness</type>
+            </template-nontype-parameter>
+            <template-type-parameter name="T" />
+          </template>
+          <type>void</type>
+          <parameter name="s">
+            <paramtype>char*</paramtype>
+          </parameter>
+          <parameter name="x">
+            <paramtype>const T&amp;</paramtype>
+          </parameter>
+        </signature>
+
         <purpose><simpara>指定したエンディアンでバイナリ出力を行う。</simpara></purpose>
+
+        <description><para>エンディアン<code>E</code>でバイナリ出力を行う。エンディアンの指定がないバージョンは<code>E = native</code>の場合と同じである。</para></description>
+
         <effects><simpara><code><classname>binary_io_traits</classname>&lt;E,T&gt;::write(s, x);</code></simpara></effects>
-      </function>
+      </overloaded-function>
     </free-function-group>
   </namespace>
 </header>
