@@ -30,6 +30,8 @@
 } BITMAPFILEHEADER;
 ]]></programlisting>
 
+    <para>ここで、<code>WORD</code>は16ビット符号なし整数を、<code>DWORD</code>は32ビット符号なし整数を意味している。</para>
+
     <para>この構造体の意図している利用法は次のようなものである。</para>
 
     <programlisting><![CDATA[void write_header(std::FILE* fp, ::DWORD size, ::DWORD offset)
@@ -114,5 +116,50 @@ void write_header(std::FILE* fp, ::DWORD size, ::DWORD offset)
 
     <para>今度のコードは、実行環境のエンディアンや構造体のパディングに影響されないため、常に正しい出力を得ることができる。</para>
 
+  </section>
+
+  <section id="binary.tutorial.padding">
+    <title>パディング</title>
+
+    <para>前の例では、<code>BITMAPFILEHEADER</code>構造体を取り上げた。この構造体のメンバのうち、<code>bfReserved1</code>と<code>bfReserved2</code>は常に0を設定することになっている。これらのプログラム中で必要ないメンバを削った新しい構造体<code>bitmap_file_header</code>を考える。</para>
+
+    <programlisting><![CDATA[struct bitmap_file_header
+{
+  boost::uint16_t type;
+  boost::uint32_t size;
+  boost::uint32_t offset;
+};
+]]></programlisting>
+
+    <para><classname>struct_traits</classname>は次のように変更する。</para>
+
+    <programlisting><![CDATA[#include <hamigaki/binary/struct_traits.hpp>
+#include <boost/mpl/list.hpp>
+
+namespace hamigaki
+{
+
+template<>
+struct struct_traits< ::bitmap_file_header>
+{
+private:
+    typedef ::bitmap_file_header self;
+
+public:
+    typedef boost::mpl::list<
+        member<self, boost::uint16_t, &self::type, little>,
+        member<self, boost::uint32_t, &self::size, little>,
+        padding<2>,
+        padding<2>,
+        member<self, boost::uint32_t, &self::offset, little>
+    > members;
+};
+
+} // namespace hamigaki
+]]></programlisting>
+
+    <para>ここで注目すべきは<classname>padding</classname>である。<classname>padding</classname>は、対応するメンバ変数が存在しない場合に、<classname>member</classname>の代わりとして使用できる。テンプレート引数はパディングのバイト数である。<code><functionname>binary_write</functionname>()</code>で書き出した際は、そのバイト数だけ0が出力される。</para>
+
+    <para>ここでは、2バイトのパディングを２個使用しているが、当然4バイトのパディングを１個使用しても結果は同じである。</para>
   </section>
 </section>
