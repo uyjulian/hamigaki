@@ -22,11 +22,11 @@
 
     <programlisting><![CDATA[typedef struct tagBITMAPFILEHEADER
 {
-  WORD bfType;
-  DWORD bfSize;
-  WORD bfReserved1;
-  WORD bfReserved2;
-  DWORD bfOffBits;
+    WORD bfType;
+    DWORD bfSize;
+    WORD bfReserved1;
+    WORD bfReserved2;
+    DWORD bfOffBits;
 } BITMAPFILEHEADER;
 ]]></programlisting>
 
@@ -36,12 +36,12 @@
 
     <programlisting><![CDATA[void write_header(std::FILE* fp, ::DWORD size, ::DWORD offset)
 {
-  ::BITMAPFILEHEADER header;
-  std::memset(&header, 0, sizeof(header));
-  header.bfType = static_cast< ::WORD>('B') | (static_cast< ::WORD>('M') << 8);
-  header.bfSize = size;
-  header.bfOffBits = offset;
-  std::fwrite(&header, sizeof(header), 1, fp);
+    ::BITMAPFILEHEADER header;
+    std::memset(&header, 0, sizeof(header));
+    header.bfType = static_cast< ::WORD>('B') | (static_cast< ::WORD>('M') << 8);
+    header.bfSize = size;
+    header.bfOffBits = offset;
+    std::fwrite(&header, sizeof(header), 1, fp);
 }
 ]]></programlisting>
 
@@ -56,11 +56,11 @@
       <listitem>
         <simpara>構造体のパディング</simpara>
         <para>C/C++標準は、ハードウェア上の制約や処理効率の向上のため、構造体の各フィールドの間にパディングを挿入することを許している。</para>
-        <para>ビットマップファイルでは、フィールド間にパディングがあってはならないため、パディングを挿入する環境では意図した出力は得られない。実際、Microsoftの提供するヘッダファイルでは、独自のpragma指令を用いてパディングの挿入を防ぐようになっている。</para>
+        <para>ビットマップファイルでは、フィールド間にパディングがあってはならないため、パディングが挿入される環境では意図した出力は得られない。実際、Microsoftの提供するヘッダファイルでは、独自のpragma指令を用いてパディングの挿入を防ぐようになっている。</para>
       </listitem>
     </itemizedlist>
 
-    <para>これらは<code>BITMAPFILEHEADER</code>のメモリイメージをファイルに書き出していることに原因がある。ここで重要なのはファイルに書き出されるバイト列であって、メモリ上のレイアウトではない。正しい出力を得るためには、出力時のエンディアンやフィールドの配置を指示する必要がある。Hamigaki.Binaryでは、構造体に対し、テンプレート<classname>struct_traits</classname>の特殊化を用意することでこれを行う。</para>
+    <para>これらの問題は、<code>BITMAPFILEHEADER</code>のメモリイメージをファイルに書き出していることに原因がある。ここで重要なのはファイルに書き出されるバイト列であって、メモリ上のレイアウトではない。正しい出力を得るためには、出力時のエンディアンやフィールドの配置を指示する必要がある。Hamigaki.Binaryでは、構造体に対し、テンプレート<classname>struct_traits</classname>の特殊化を用意することでこれを行う。</para>
 
     <programlisting><![CDATA[#include <hamigaki/binary/struct_traits.hpp>
 #include <boost/mpl/list.hpp>
@@ -99,16 +99,16 @@ public:
 
 void write_header(std::FILE* fp, ::DWORD size, ::DWORD offset)
 {
-  ::BITMAPFILEHEADER header;
-  std::memset(&header, 0, sizeof(header));
-  header.bfType = static_cast< ::WORD>('B') | (static_cast< ::WORD>('M') << 8);
-  header.bfSize = size;
-  header.bfOffBits = offset;
+    ::BITMAPFILEHEADER header;
+    std::memset(&header, 0, sizeof(header));
+    header.bfType = static_cast< ::WORD>('B') | (static_cast< ::WORD>('M') << 8);
+    header.bfSize = size;
+    header.bfOffBits = offset;
 
-  char buffer[hamigaki::struct_size< ::BITMAPFILEHEADER>::value];
-  hamigaki::binary_write(buffer, header);
+    char buffer[hamigaki::struct_size< ::BITMAPFILEHEADER>::value];
+    hamigaki::binary_write(buffer, header);
 
-  std::fwrite(buffer, 1, sizeof(buffer), fp);
+    std::fwrite(buffer, 1, sizeof(buffer), fp);
 }
 ]]></programlisting>
 
@@ -125,9 +125,9 @@ void write_header(std::FILE* fp, ::DWORD size, ::DWORD offset)
 
     <programlisting><![CDATA[struct bitmap_file_header
 {
-  boost::uint16_t type;
-  boost::uint32_t size;
-  boost::uint32_t offset;
+    boost::uint16_t type;
+    boost::uint32_t size;
+    boost::uint32_t offset;
 };
 ]]></programlisting>
 
@@ -161,5 +161,112 @@ public:
     <para>ここで注目すべきは<classname>padding</classname>である。<classname>padding</classname>は、対応するメンバ変数が存在しない場合に、<classname>member</classname>の代わりとして使用できる。テンプレート引数はパディングのバイト数である。<code><functionname>binary_write</functionname>()</code>で書き出した際は、そのバイト数だけ0が出力される。</para>
 
     <para>ここでは、2バイトのパディングを２個使用しているが、当然4バイトのパディングを１個使用しても結果は同じである。</para>
+  </section>
+
+  <section id="binary.tutorial.complex">
+    <title>複雑な例</title>
+
+    <para>今度は少し複雑な例を取り上げる。</para>
+
+    <programlisting><![CDATA[typedef struct tagRGBQUAD
+{
+    BYTE rgbBlue;
+    BYTE rgbGreen;
+    BYTE rgbRed;
+    BYTE rgbReserved;
+} RGBQUAD;
+
+typedef struct tagBITMAPINFOHEADER
+{
+    DWORD biSize;
+    LONG biWidth;
+    LONG biHeight;
+    WORD biPlanes;
+    WORD biBitCount;
+    DWORD biCompression;
+    DWORD biSizeImage;
+    LONG biXPelsPerMeter;
+    LONG biYPelsPerMeter;
+    DWORD biClrUsed;
+    DWORD biClrImportant;
+} BITMAPINFOHEADER;
+
+namespace hamigaki
+{
+
+template<>
+struct struct_traits< ::RGBQUAD>
+{
+private:
+    typedef ::RGBQUAD self;
+
+public:
+    typedef boost::mpl::list<
+        member<self, BYTE, &self::rgbBlue>,
+        member<self, BYTE, &self::rgbGreen>,
+        member<self, BYTE, &self::rgbRed>,
+        member<self, BYTE, &self::rgbReserved>
+    > members;
+};
+
+template<>
+struct struct_traits< ::BITMAPINFOHEADER>
+{
+private:
+    typedef ::BITMAPINFOHEADER self;
+
+public:
+    typedef boost::mpl::list<
+        member<self, DWORD, &self::biSize, little>,
+        member<self, LONG, &self::biWidth, little>,
+        member<self, LONG, &self::biHeight, little>,
+        member<self, WORD, &self::biPlanes, little>,
+        member<self, WORD, &self::biBitCount, little>,
+        member<self, DWORD, &self::biCompression, little>,
+        member<self, DWORD, &self::biSizeImage, little>,
+        member<self, LONG, &self::biXPelsPerMeter, little>,
+        member<self, LONG, &self::biYPelsPerMeter, little>,
+        member<self, DWORD, &self::biClrUsed, little>,
+        member<self, DWORD, &self::biClrImportant, little>
+    > members;
+};
+
+} // namespace hamigaki
+]]></programlisting>
+
+    <para>ここで、<code>BYTE</code>は8ビット符号なし整数を、<code>LONG</code>は32ビット符号付き整数を意味している。</para>
+
+    <para>上記のような構造体を組み合わせて構造体<code>bitmap_info_256</code>を定義する。</para>
+
+    <programlisting><![CDATA[struct bitmap_info_256
+{
+    BITMAPINFOHEADER header;
+    RGBQUAD colors[256];
+};
+]]></programlisting>
+
+    <para>これに対する<classname>struct_traits</classname>は、次のように書くことができる。</para>
+
+    <programlisting><![CDATA[namespace hamigaki
+{
+
+template<>
+struct struct_traits< ::bitmap_info_256>
+{
+private:
+    typedef ::bitmap_info_256 self;
+
+public:
+    typedef boost::mpl::list<
+        member<self, BITMAPINFOHEADER, &self::header>,
+        member<self, RGBQUAD[256], &self::colors>
+    > members;
+};
+
+} // namespace hamigaki
+]]></programlisting>
+
+    <para><classname>member</classname>に指定するフィールドの型には、整数値以外にも構造体や配列も指定できる。<code><functionname>binary_write</functionname>()</code>で出力する際には、入れ子となった構造体や配列の各要素に対して再帰的に<code><functionname>binary_write</functionname>()</code>が呼び出される。</para>
+
   </section>
 </section>
