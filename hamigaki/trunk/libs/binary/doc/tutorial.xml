@@ -116,6 +116,21 @@ void write_header(std::FILE* fp, ::DWORD size, ::DWORD offset)
 
     <para>今度のコードは、実行環境のエンディアンや構造体のパディングに影響されないため、常に正しい出力を得ることができる。</para>
 
+    <para>同様に、関数<code><functionname>binary_read</functionname>()</code>を用いることでバイナリ入力を行うこともできる。</para>
+
+    <programlisting><![CDATA[#include <hamigaki/binary/binary_io.hpp>
+
+::BITMAPFILEHEADER read_header(std::FILE* fp)
+{
+    char buffer[hamigaki::struct_size< ::BITMAPFILEHEADER>::value];
+    std::fread(buffer, 1, sizeof(buffer), fp);
+
+    ::BITMAPFILEHEADER header;
+    hamigaki::binary_read(buffer, header);
+
+    return header;
+}
+]]></programlisting>
   </section>
 
   <section id="binary.tutorial.padding">
