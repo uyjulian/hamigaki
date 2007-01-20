@@ -41,6 +41,8 @@
   <XI:include href="introduction.xml"/>
   <!-- xi:include href="../libs/binary/doc/tutorial.xml" -->
   <XI:include href="tutorial.xml"/>
+  <!-- xi:include href="../libs/binary/doc/advanced_topics.xml.xml" -->
+  <XI:include href="advanced_topics.xml.xml"/>
   <!-- xi:include href="../libs/binary/doc/reference/reference.xml" -->
   <XI:include href="reference/reference.xml"/>
 

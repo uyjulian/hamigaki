@@ -140,7 +140,22 @@
       </inherit>
 
       <purpose><simpara><code>T</code>型のオブジェクトをバイナリ出力するのに必要なバッファサイズを返すメタ関数</simpara></purpose>
+
       <description><para><code>struct_size</code>は、<code>T</code>型のオブジェクトをバイナリ出力するのに必要なバッファサイズを返すメタ関数である。ここで、<code>STRUCTSIZE(T)</code>は、<code>T</code>型のオブジェクトをバイナリ出力した場合のバイト数を表すものとする。</para></description>
+    </struct>
+
+    <struct name="member_size">
+      <template>
+        <template-type-parameter name="T" />
+      </template>
+
+      <inherit access="public">
+        <type>boost::mpl::size_t&lt;MEMBERSIZE(T)&gt;</type>
+      </inherit>
+
+      <purpose><simpara>メンバのバイナリサイズを返すメタ関数。</simpara></purpose>
+
+      <description><para><code>member_size</code>は、型<code>T</code>の示すメンバをバイナリ出力するのに必要なバッファサイズを返すメタ関数である。ここで、<code>MEMBERSIZE(T)</code>は、、型<code>T</code>の示すメンバをバイナリ出力した場合のバイト数を表すものとする。</para></description>
     </struct>
   </namespace>
 </header>
