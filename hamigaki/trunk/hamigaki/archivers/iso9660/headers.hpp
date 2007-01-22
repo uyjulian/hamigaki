@@ -15,6 +15,7 @@
 #include <hamigaki/archivers/iso9660/file_flags.hpp>
 #include <hamigaki/archivers/iso9660/headers.hpp>
 #include <hamigaki/archivers/iso9660/path_table_record.hpp>
+#include <hamigaki/archivers/iso9660/system_use_entries.hpp>
 #include <hamigaki/archivers/iso9660/volume_desc_set_terminator.hpp>
 #include <hamigaki/archivers/iso9660/volume_descriptor.hpp>
 #include <hamigaki/filesystem/consts.hpp>
@@ -29,6 +30,7 @@ struct header
     boost::uint32_t file_size;
     binary_date_time recorded_time;
     boost::uint8_t flags;
+    std::string system_use;
 
     header() : file_size(0), flags(0)
     {

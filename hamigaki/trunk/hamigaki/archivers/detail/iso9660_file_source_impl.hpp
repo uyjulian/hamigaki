@@ -74,6 +74,7 @@ private:
         boost::uint32_t data_size;
         iso9660::binary_date_time recorded_time;
         boost::uint8_t flags;
+        std::string system_use;
 
         directory_record()
             : data_pos(0), data_size(0), flags(0)
@@ -318,6 +319,55 @@ private:
         path_table_.swap(table);
     }
 
+    void read_continuation_area(directory_record& rec)
+    {
+        std::string& su = rec.system_use;
+        if (su.empty())
+            return;
+
+        const std::size_t head_size =
+            hamigaki::struct_size<iso9660::system_use_entry_header>::value;
+
+        const std::size_t ce_size =
+            head_size +
+            hamigaki::struct_size<iso9660::ce_system_use_entry_data>::value;
+
+        std::size_t pos = 0;
+        iso9660::ce_system_use_entry_data ce;
+        ce.next_size = 0;
+        while (pos + head_size < su.size())
+        {
+            iso9660::system_use_entry_header head;
+            hamigaki::binary_read(su.c_str()+pos, head);
+            if (std::memcmp(head.signature, "CE", 2) == 0)
+            {
+                if ((head.entry_size == ce_size) &&
+                    (pos + head.entry_size <= su.size()) )
+                {
+                    hamigaki::binary_read(su.c_str()+pos+head_size, ce);
+                }
+            }
+            pos += head.entry_size;
+        }
+
+        // TODO: support multiple "CE" System Use Entries
+        if (ce.next_size != 0)
+        {
+            boost::uint64_t off =
+                static_cast<boost::uint64_t>(ce.next_pos) << lbn_shift_;
+            off += ce.next_offset;
+
+            boost::iostreams::seek(
+                src_,
+                static_cast<boost::iostreams::stream_offset>(off),
+                BOOST_IOS::beg);
+
+            boost::scoped_array<char> buffer(new char[ce.next_size]);
+            iostreams::blocking_read(src_, buffer.get(), ce.next_size);
+            su.append(buffer.get(), ce.next_size);
+        }
+    }
+
     void select_directory(boost::uint16_t num)
     {
         std::vector<directory_record> records;
@@ -330,12 +380,16 @@ private:
 
         iso9660::directory_record raw;
         hamigaki::binary_read(block_, raw);
+        if (raw.record_size < bin_size + 1)
+            throw BOOST_IOSTREAMS_FAILURE("invalid ISO 9660 directory records");
 
         directory_record self(FileId('\x00'));
         self.data_pos = raw.data_pos;
         self.data_size = raw.data_size;
         self.recorded_time = raw.recorded_time;
         self.flags = raw.flags;
+        if (std::size_t su_len = raw.record_size - (bin_size + 1))
+            self.system_use.assign(&block_[bin_size + 1], su_len);
         records.push_back(self);
 
         boost::uint32_t pos = raw.record_size;
@@ -370,6 +424,11 @@ private:
                 rec.data_size = raw.data_size;
                 rec.recorded_time = raw.recorded_time;
                 rec.flags = raw.flags;
+                if (std::size_t su_len = raw.record_size - (bin_size + id_size))
+                {
+                    rec.system_use.assign(
+                        &block_[offset+bin_size + id_size], su_len);
+                }
 
                 const directory_record& prev = records.back();
                 if (!(prev < rec))
@@ -388,6 +447,9 @@ private:
 
         if (pos != self.data_size)
             throw BOOST_IOSTREAMS_FAILURE("invalid ISO 9660 directory records");
+
+        for (std::size_t i = 0; i < records.size(); ++i)
+            read_continuation_area(records[i]);
 
         dir_path_ = get_full_path(num);
         dir_records_.swap(records);
