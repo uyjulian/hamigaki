@@ -55,6 +55,16 @@ private:
         FileId dir_id;
         boost::uint32_t data_pos;
         boost::uint16_t parent_index;
+
+        bool operator<(const path_table_record& rhs) const
+        {
+            if (parent_index < rhs.parent_index)
+                return true;
+            else if (parent_index > rhs.parent_index)
+                return false;
+
+            return dir_id < rhs.dir_id;
+        }
     };
 
     struct directory_record
@@ -291,7 +301,7 @@ private:
             if (table.size() != 1)
             {
                 const path_table_record& prev = table.back();
-                if (prev.dir_id.compare(rec.dir_id) >= 0)
+                if (!(prev < rec))
                 {
                     throw BOOST_IOSTREAMS_FAILURE(
                         "invalid ISO 9660 order of path table records");
@@ -328,16 +338,7 @@ private:
         self.flags = raw.flags;
         records.push_back(self);
 
-        hamigaki::binary_read(&block_[bin_size+1], raw);
-
-        directory_record parent(FileId('\x01'));
-        parent.data_pos = raw.data_pos;
-        parent.data_size = raw.data_size;
-        parent.recorded_time = raw.recorded_time;
-        parent.flags = raw.flags;
-        records.push_back(parent);
-
-        boost::uint32_t pos = (bin_size+1)*2;
+        boost::uint32_t pos = raw.record_size;
         while (pos < self.data_size)
         {
             boost::uint32_t offset = pos & lbn_mask_;
@@ -352,10 +353,14 @@ private:
 
                 hamigaki::binary_read(&block_[offset], raw);
 
-                next += raw.file_id_size;
-                if ((raw.file_id_size & 1) == 0)
-                    ++next;
+                boost::uint32_t id_size = raw.file_id_size;
+                if ((id_size & 1) == 0)
+                    ++id_size;
 
+                if (bin_size + id_size > raw.record_size)
+                    break;
+
+                next += id_size;
                 if (next > volume_desc_.logical_block_size)
                     break;
 
@@ -375,7 +380,7 @@ private:
 
                 records.push_back(rec);
 
-                pos = next;
+                pos += raw.record_size;
             }
             else
                 pos += (volume_desc_.logical_block_size - offset);
