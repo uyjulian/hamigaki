@@ -7,8 +7,8 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#ifndef HAMIGAKI_ARCHIVERS_ISO9660_SP_SYSTEM_USE_ENTRY_HPP
-#define HAMIGAKI_ARCHIVERS_ISO9660_SP_SYSTEM_USE_ENTRY_HPP
+#ifndef HAMIGAKI_ARCHIVERS_ISO9660_SP_SYSTEM_USE_ENTRY_DATA_HPP
+#define HAMIGAKI_ARCHIVERS_ISO9660_SP_SYSTEM_USE_ENTRY_DATA_HPP
 
 namespace hamigaki { namespace archivers { namespace iso9660 {
 
@@ -38,4 +38,4 @@ public:
 
 } // namespace hamigaki
 
-#endif // HAMIGAKI_ARCHIVERS_ISO9660_SP_SYSTEM_USE_ENTRY_HPP
+#endif // HAMIGAKI_ARCHIVERS_ISO9660_SP_SYSTEM_USE_ENTRY_DATA_HPP

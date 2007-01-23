@@ -1,4 +1,4 @@
-//  ce_system_use_entry_data.hpp: IEEE P1281 "SP" System Use Entry
+//  ce_system_use_entry_data.hpp: IEEE P1281 "CE" System Use Entry
 
 //  Copyright Takeshi Mouri 2007.
 //  Use, modification, and distribution are subject to the
@@ -7,8 +7,8 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#ifndef HAMIGAKI_ARCHIVERS_ISO9660_CE_SYSTEM_USE_ENTRY_HPP
-#define HAMIGAKI_ARCHIVERS_ISO9660_CE_SYSTEM_USE_ENTRY_HPP
+#ifndef HAMIGAKI_ARCHIVERS_ISO9660_CE_SYSTEM_USE_ENTRY_DATA_HPP
+#define HAMIGAKI_ARCHIVERS_ISO9660_CE_SYSTEM_USE_ENTRY_DATA_HPP
 
 namespace hamigaki { namespace archivers { namespace iso9660 {
 
@@ -43,4 +43,4 @@ public:
 
 } // namespace hamigaki
 
-#endif // HAMIGAKI_ARCHIVERS_ISO9660_CE_SYSTEM_USE_ENTRY_HPP
+#endif // HAMIGAKI_ARCHIVERS_ISO9660_CE_SYSTEM_USE_ENTRY_DATA_HPP
