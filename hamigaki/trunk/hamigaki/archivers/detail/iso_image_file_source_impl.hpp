@@ -38,16 +38,10 @@ public:
 
             if (impl_.is_latest())
             {
-                using namespace boost::filesystem;
-
-                header_ = head;
-
-                std::string leaf = head.path.leaf();
-                std::string filename(leaf, 0, leaf.find(';'));
-                if (!filename.empty() && (filename[filename.size()-1] == '.'))
-                    filename.resize(filename.size()-1);
-
-                header_.path = head.path.branch_path()/path(filename,no_check);
+                if (is_rock_ridge_)
+                    this->parse_rock_ridge(head);
+                else
+                    this->fix_header(head);
 
                 return true;
             }
@@ -71,11 +65,8 @@ public:
         rock_ridge_check();
     }
 
-    bool is_rock_ridge()
+    bool is_rock_ridge() const
     {
-        if (indeterminate(is_rock_ridge_))
-            select_volume_descriptor(0);
-
         return is_rock_ridge_;
     }
 
@@ -132,6 +123,60 @@ private:
             }
             pos += head.entry_size;
         }
+    }
+
+    void fix_header(const iso9660::header& head)
+    {
+        using namespace boost::filesystem;
+
+        header_ = head;
+
+        std::string leaf = head.path.leaf();
+        std::string filename(leaf, 0, leaf.find(';'));
+        if (!filename.empty() && (filename[filename.size()-1] == '.'))
+            filename.resize(filename.size()-1);
+
+        header_.path = head.path.branch_path()/path(filename,no_check);
+    }
+
+    void parse_rock_ridge(const iso9660::header& head)
+    {
+        using namespace boost::filesystem;
+
+        header_ = head;
+
+        const std::string& su = head.system_use;
+
+        const std::size_t head_size =
+            hamigaki::struct_size<iso9660::system_use_entry_header>::value;
+
+        std::size_t pos = 0;
+        std::string filename;
+        bool filename_ends = false;
+        while (pos + head_size < su.size())
+        {
+            iso9660::system_use_entry_header head;
+            hamigaki::binary_read(su.c_str()+pos, head);
+
+            if (!filename_ends && (std::memcmp(head.signature, "NM", 2) == 0))
+            {
+                if ((head.entry_size >= head_size+1) &&
+                    (pos + head.entry_size <= su.size()) )
+                {
+                    boost::uint8_t flags =
+                        static_cast<boost::uint8_t>(su[pos+head_size]);
+
+                    filename_ends = (flags & 0x01) == 0;
+
+                    filename.append(
+                        su, pos+head_size+1, head.entry_size-(head_size+1));
+                }
+            }
+            pos += head.entry_size;
+        }
+
+        if (filename_ends)
+            header_.path = head.path.branch_path()/path(filename,no_check);
     }
 };
 

@@ -59,6 +59,11 @@ public:
         pimpl_->select_volume_descriptor(index);
     }
 
+    bool is_rock_ridge() const
+    {
+        return pimpl_->is_rock_ridge();
+    }
+
     std::streamsize read(char* s, std::streamsize n)
     {
         return pimpl_->read(s, n);
@@ -103,6 +108,11 @@ public:
     void select_volume_descriptor(std::size_t index)
     {
         impl_.select_volume_descriptor(index);
+    }
+
+    bool is_rock_ridge() const
+    {
+        return impl_.is_rock_ridge();
     }
 
     std::streamsize read(char* s, std::streamsize n)
