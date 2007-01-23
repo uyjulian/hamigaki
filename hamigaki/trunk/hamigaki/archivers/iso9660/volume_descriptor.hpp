@@ -12,6 +12,7 @@
 
 #include <hamigaki/archivers/iso9660/directory_record.hpp>
 #include <boost/mpl/joint_view.hpp>
+#include <cstring>
 
 namespace hamigaki { namespace archivers { namespace iso9660 {
 
@@ -48,6 +49,17 @@ struct volume_descriptor
     date_time effective_time;
     boost::uint8_t file_structure_version;
     char application_use[512];
+
+    bool is_joliet() const
+    {
+        if (type != '\x02')
+            return false;
+
+        return
+            (std::memcmp(escape_sequences, "%/@", 4) == 0) ||
+            (std::memcmp(escape_sequences, "%/C", 4) == 0) ||
+            (std::memcmp(escape_sequences, "%/E", 4) == 0) ;
+    }
 };
 
 } } } // End namespaces iso9660, archivers, hamigaki.

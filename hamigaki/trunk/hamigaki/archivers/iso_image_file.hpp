@@ -49,6 +49,16 @@ public:
         return pimpl_->header();
     }
 
+    const std::vector<iso9660::volume_descriptor>& volume_descriptors() const
+    {
+        return pimpl_->volume_descriptors();
+    }
+
+    void select_volume_descriptor(std::size_t index)
+    {
+        pimpl_->select_volume_descriptor(index);
+    }
+
     std::streamsize read(char* s, std::streamsize n)
     {
         return pimpl_->read(s, n);
@@ -83,6 +93,16 @@ public:
     iso9660::header header() const
     {
         return impl_.header();
+    }
+
+    const std::vector<iso9660::volume_descriptor>& volume_descriptors() const
+    {
+        return impl_.volume_descriptors();
+    }
+
+    void select_volume_descriptor(std::size_t index)
+    {
+        impl_.select_volume_descriptor(index);
     }
 
     std::streamsize read(char* s, std::streamsize n)

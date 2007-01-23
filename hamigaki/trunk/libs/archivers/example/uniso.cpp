@@ -41,6 +41,17 @@ int main(int argc, char* argv[])
 
         ar::iso_image_file_source iso(argv[1]);
 
+        const std::vector<
+            ar::iso9660::volume_descriptor>& descs = iso.volume_descriptors();
+        for (std::size_t i = 0; i < descs.size(); ++i)
+        {
+            if (descs[i].is_joliet())
+            {
+                iso.select_volume_descriptor(i);
+                break;
+            }
+        }
+
         while (iso.next_entry())
         {
             const ar::iso9660::header& head = iso.header();

@@ -39,9 +39,15 @@ public:
         return do_is_latest();
     }
 
+    iso9660::header directory_header() const
+    {
+        return do_directory_header();
+    }
+
 private:
     virtual bool do_next_entry(iso9660::header& head) = 0;
     virtual bool do_is_latest() const = 0;
+    virtual iso9660::header do_directory_header() const = 0;
 };
 
 template<class Source, class FileId>
@@ -172,6 +178,7 @@ private:
         h.file_size = rec.data_size;
         h.recorded_time = rec.recorded_time;
         h.flags = rec.flags;
+        h.system_use = rec.system_use;
 
         seek_logical_block(rec.data_pos);
         head = h;
@@ -193,6 +200,19 @@ private:
         }
 
         return true;
+    }
+
+    iso9660::header do_directory_header() const // virtual
+    {
+        const directory_record& rec = dir_records_[0];
+
+        iso9660::header h;
+        h.path = dir_path_;
+        h.file_size = 0;
+        h.recorded_time = rec.recorded_time;
+        h.flags = rec.flags;
+        h.system_use = rec.system_use;
+        return h;
     }
 
     void seek_logical_block(boost::uint32_t num)
@@ -482,13 +502,6 @@ private:
     static const std::size_t logical_sector_size = 2048;
 
 public:
-    typedef char char_type;
-
-    struct category
-        : boost::iostreams::input
-        , boost::iostreams::device_tag
-    {};
-
     explicit basic_iso9660_file_source_impl(const Source& src)
         : src_(src), pos_(0)
     {
@@ -496,61 +509,37 @@ public:
 
         boost::iostreams::seek(src_, logical_sector_size*16, BOOST_IOS::beg);
 
-        bool is_joliet = false;
-        bool found = false;
         char block[logical_sector_size];
+        iso9660::volume_descriptor desc;
         while (true)
         {
             iostreams::blocking_read(src_, block, sizeof(block));
             if (block[0] == '\xFF')
                 break;
 
-            if (block[0] == '\x01')
+            if ((block[0] == '\x01') || (block[0] == '\x02'))
             {
-                if (!is_joliet)
-                    hamigaki::binary_read(block, volume_desc);
-                found = true;
-            }
-            else if (block[0] == '\x02')
-            {
-                iso9660::volume_descriptor desc;
                 hamigaki::binary_read(block, desc);
-
-                if ((std::memcmp(desc.escape_sequences, "%/@", 4) == 0) ||
-                    (std::memcmp(desc.escape_sequences, "%/C", 4) == 0) ||
-                    (std::memcmp(desc.escape_sequences, "%/E", 4) == 0) )
-                {
-                    is_joliet = true;
-                    volume_desc = desc;
-                    break;
-                }
+                volume_descs_.push_back(desc);
             }
         }
 
-        if (!found)
+        if (volume_descs_.empty())
         {
             throw BOOST_IOSTREAMS_FAILURE(
                 "ISO 9660 volume descriptor not found");
-        }
-
-        if (is_joliet)
-        {
-            typedef iso9660_file_reader<Source,joliet_id> parser_type;
-            parser_.reset(new parser_type(src_, volume_desc));
-        }
-        else
-        {
-            typedef iso9660_file_reader<Source,iso9660_id> parser_type;
-            parser_.reset(new parser_type(src_, volume_desc));
         }
     }
 
     bool next_entry()
     {
+        if (!reader_.get())
+            select_volume_descriptor(0);
+
         pos_ = 0;
 
         iso9660::header head;
-        if (!parser_->next_entry(head))
+        if (!reader_->next_entry(head))
             return false;
 
         header_ = head;
@@ -560,6 +549,11 @@ public:
     iso9660::header header() const
     {
         return header_;
+    }
+
+    iso9660::header directory_header() const
+    {
+        return reader_->directory_header();
     }
 
     std::streamsize read(char* s, std::streamsize n)
@@ -579,14 +573,36 @@ public:
 
     bool is_latest() const
     {
-        return parser_->is_latest();
+        return reader_->is_latest();
+    }
+
+    const std::vector<iso9660::volume_descriptor>& volume_descriptors() const
+    {
+        return volume_descs_;
+    }
+
+    void select_volume_descriptor(std::size_t index)
+    {
+        const iso9660::volume_descriptor& desc = volume_descs_.at(index);
+        if (desc.is_joliet())
+        {
+            typedef iso9660_file_reader<Source,joliet_id> parser_type;
+            reader_.reset(new parser_type(src_, desc));
+        }
+        else
+        {
+            typedef iso9660_file_reader<Source,iso9660_id> parser_type;
+            reader_.reset(new parser_type(src_, desc));
+        }
+        pos_ = 0;
     }
 
 private:
     Source src_;
     iso9660::header header_;
     boost::uint64_t pos_;
-    std::auto_ptr<iso9660_file_reader_base> parser_;
+    std::vector<iso9660::volume_descriptor> volume_descs_;
+    std::auto_ptr<iso9660_file_reader_base> reader_;
 };
 
 } } } // End namespaces detail, archivers, hamigaki.

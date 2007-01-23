@@ -10,16 +10,17 @@
 #ifndef HAMIGAKI_ARCHIVERS_ISO9660_HEADERS_HPP
 #define HAMIGAKI_ARCHIVERS_ISO9660_HEADERS_HPP
 
+#include <hamigaki/archivers/iso9660/posix/file_attributes.hpp>
 #include <hamigaki/archivers/iso9660/date_time.hpp>
 #include <hamigaki/archivers/iso9660/directory_record.hpp>
 #include <hamigaki/archivers/iso9660/file_flags.hpp>
-#include <hamigaki/archivers/iso9660/headers.hpp>
 #include <hamigaki/archivers/iso9660/path_table_record.hpp>
 #include <hamigaki/archivers/iso9660/system_use_entries.hpp>
 #include <hamigaki/archivers/iso9660/volume_desc_set_terminator.hpp>
 #include <hamigaki/archivers/iso9660/volume_descriptor.hpp>
 #include <hamigaki/filesystem/consts.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/optional.hpp>
 #include <stdexcept>
 
 namespace hamigaki { namespace archivers { namespace iso9660 {
@@ -31,6 +32,7 @@ struct header
     binary_date_time recorded_time;
     boost::uint8_t flags;
     std::string system_use;
+    boost::optional<posix::file_attributes> attributes;
 
     header() : file_size(0), flags(0)
     {
