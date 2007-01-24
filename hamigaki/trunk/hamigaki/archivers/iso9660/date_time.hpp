@@ -11,6 +11,7 @@
 #define HAMIGAKI_ARCHIVERS_ISO9660_DATE_TIME_HPP
 
 #include <hamigaki/binary/struct_traits.hpp>
+#include <hamigaki/dec_format.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/cstdint.hpp>
 
@@ -79,6 +80,30 @@ struct binary_date_time
             (minute      == 0) &&
             (second      == 0) &&
             (timezone    == 0) ;
+    }
+
+    date_time to_date_time() const
+    {
+        date_time tmp;
+        to_dec<char>(1900+year).copy(tmp.year, 4);
+        fill_dec2(tmp.month, month);
+        fill_dec2(tmp.day, day);
+        fill_dec2(tmp.hour, hour);
+        fill_dec2(tmp.minute, minute);
+        fill_dec2(tmp.second, second);
+        tmp.timezone = timezone;
+        return tmp;
+    }
+
+private:
+    static void fill_dec2(char (&buf)[2], boost::uint8_t n)
+    {
+        const std::string& s = to_dec<char>(n);
+
+        if (s.size() == 1)
+            s.copy(buf+1, 1);
+        else
+            s.copy(buf, 2);
     }
 };
 

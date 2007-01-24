@@ -11,22 +11,27 @@
 #define HAMIGAKI_ARCHIVERS_DETAIL_ISO_IMAGE_FILE_SOURCE_IMPL_HPP
 
 #include <hamigaki/archivers/detail/iso9660_file_source_impl.hpp>
-#include <boost/logic/tribool.hpp>
 
 namespace hamigaki { namespace archivers { namespace detail {
 
 template<class Source>
 class basic_iso_image_file_source_impl : private boost::noncopyable
 {
+private:
+    enum rrip_type
+    {
+        rrip_ind, rrip_none, rrip_1991a, ieee_p1282
+    };
+
 public:
     explicit basic_iso_image_file_source_impl(const Source& src)
-        : impl_(src), is_rock_ridge_(boost::logic::indeterminate)
+        : impl_(src), rrip_(rrip_ind)
     {
     }
 
     bool next_entry()
     {
-        if (indeterminate(is_rock_ridge_))
+        if (rrip_ == rrip_ind)
             select_volume_descriptor(0);
 
         while (impl_.next_entry())
@@ -38,7 +43,7 @@ public:
 
             if (impl_.is_latest())
             {
-                if (is_rock_ridge_)
+                if (rrip_ != rrip_none)
                     this->parse_rock_ridge(head);
                 else
                     this->fix_header(head);
@@ -67,7 +72,9 @@ public:
 
     bool is_rock_ridge() const
     {
-        return is_rock_ridge_;
+        BOOST_ASSERT(rrip_ != rrip_ind);
+
+        return rrip_ != rrip_none;
     }
 
     std::streamsize read(char* s, std::streamsize n)
@@ -78,11 +85,11 @@ public:
 private:
     basic_iso9660_file_source_impl<Source> impl_;
     iso9660::header header_;
-    boost::logic::tribool is_rock_ridge_;
+    rrip_type rrip_;
 
     void rock_ridge_check()
     {
-        is_rock_ridge_ = false;
+        rrip_ = rrip_none;
 
         const iso9660::header& head = impl_.directory_header();
         const std::string& su = head.system_use;
@@ -112,10 +119,14 @@ private:
                     if (er.id_size == 10)
                     {
                         const char* s = su.c_str()+pos+er_size;
-                        if ((std::memcmp(s, "RRIP_1991A", 10) == 0) ||
-                            (std::memcmp(s, "IEEE_P1282", 10) == 0) )
+                        if (std::memcmp(s, "RRIP_1991A", 10) == 0)
                         {
-                            is_rock_ridge_ = true;
+                            rrip_ = rrip_1991a;
+                            return;
+                        }
+                        else if (std::memcmp(s, "IEEE_P1282", 10) == 0)
+                        {
+                            rrip_ = ieee_p1282;
                             return;
                         }
                     }
@@ -139,6 +150,139 @@ private:
         header_.path = head.path.branch_path()/path(filename,no_check);
     }
 
+    void parse_tf_system_use_entry(const char* s, std::size_t size)
+    {
+        using iso9660::tf_flags;
+
+        boost::uint8_t flags =
+            static_cast<boost::uint8_t>(*(s++));
+
+        std::size_t count = 0;
+        if ((flags & tf_flags::creation) != 0)
+            ++count;
+        if ((flags & tf_flags::modify) != 0)
+            ++count;
+        if ((flags & tf_flags::access) != 0)
+            ++count;
+        if ((flags & tf_flags::attributes) != 0)
+            ++count;
+        if ((flags & tf_flags::backup) != 0)
+            ++count;
+        if ((flags & tf_flags::expiration) != 0)
+            ++count;
+        if ((flags & tf_flags::effective) != 0)
+            ++count;
+
+        if ((flags & tf_flags::long_form) != 0)
+        {
+            typedef iso9660::date_time time_type;
+
+            const std::size_t dt_size = hamigaki::struct_size<time_type>::value;
+
+            if (1+count*dt_size > size)
+                return;
+
+            if ((flags & tf_flags::creation) != 0)
+            {
+                header_.creation_time = hamigaki::binary_read<time_type>(s);
+                s += dt_size;
+            }
+
+            if ((flags & tf_flags::modify) != 0)
+            {
+                header_.last_write_time = hamigaki::binary_read<time_type>(s);
+                s += dt_size;
+            }
+
+            if ((flags & tf_flags::access) != 0)
+            {
+                header_.last_access_time = hamigaki::binary_read<time_type>(s);
+                s += dt_size;
+            }
+
+            if ((flags & tf_flags::attributes) != 0)
+            {
+                header_.last_change_time = hamigaki::binary_read<time_type>(s);
+                s += dt_size;
+            }
+
+            if ((flags & tf_flags::backup) != 0)
+            {
+                header_.last_backup_time = hamigaki::binary_read<time_type>(s);
+                s += dt_size;
+            }
+
+            if ((flags & tf_flags::expiration) != 0)
+            {
+                header_.expiration_time = hamigaki::binary_read<time_type>(s);
+                s += dt_size;
+            }
+
+            if ((flags & tf_flags::effective) != 0)
+            {
+                header_.effective_time = hamigaki::binary_read<time_type>(s);
+                s += dt_size;
+            }
+        }
+        else
+        {
+            typedef iso9660::binary_date_time time_type;
+            const std::size_t dt_size = hamigaki::struct_size<time_type>::value;
+
+            if (1+count*dt_size > size)
+                return;
+
+            if ((flags & tf_flags::creation) != 0)
+            {
+                header_.creation_time =
+                    hamigaki::binary_read<time_type>(s).to_date_time();
+                s += dt_size;
+            }
+
+            if ((flags & tf_flags::modify) != 0)
+            {
+                header_.last_write_time =
+                    hamigaki::binary_read<time_type>(s).to_date_time();
+                s += dt_size;
+            }
+
+            if ((flags & tf_flags::access) != 0)
+            {
+                header_.last_access_time =
+                    hamigaki::binary_read<time_type>(s).to_date_time();
+                s += dt_size;
+            }
+
+            if ((flags & tf_flags::attributes) != 0)
+            {
+                header_.last_change_time =
+                    hamigaki::binary_read<time_type>(s).to_date_time();
+                s += dt_size;
+            }
+
+            if ((flags & tf_flags::backup) != 0)
+            {
+                header_.last_backup_time =
+                    hamigaki::binary_read<time_type>(s).to_date_time();
+                s += dt_size;
+            }
+
+            if ((flags & tf_flags::expiration) != 0)
+            {
+                header_.expiration_time =
+                    hamigaki::binary_read<time_type>(s).to_date_time();
+                s += dt_size;
+            }
+
+            if ((flags & tf_flags::effective) != 0)
+            {
+                header_.effective_time =
+                    hamigaki::binary_read<time_type>(s).to_date_time();
+                s += dt_size;
+            }
+        }
+    }
+
     void parse_rock_ridge(const iso9660::header& head)
     {
         using namespace boost::filesystem;
@@ -155,21 +299,77 @@ private:
         bool filename_ends = false;
         while (pos + head_size < su.size())
         {
-            iso9660::system_use_entry_header head;
-            hamigaki::binary_read(su.c_str()+pos, head);
+            const char* s = su.c_str()+pos;
 
-            if (!filename_ends && (std::memcmp(head.signature, "NM", 2) == 0))
+            iso9660::system_use_entry_header head;
+            hamigaki::binary_read(s, head);
+            s += head_size;
+
+            if (std::memcmp(head.signature, "PX", 2) == 0)
+            {
+                if (rrip_ == rrip_1991a)
+                {
+                    typedef iso9660::old_px_system_use_entry_data data_type;
+                    const std::size_t data_size =
+                        hamigaki::struct_size<data_type>::value;
+
+                    if ((head.entry_size >= head_size+data_size) &&
+                        (pos + head.entry_size <= su.size()) )
+                    {
+                        data_type data;
+                        hamigaki::binary_read(s, data);
+
+                        iso9660::posix::file_attributes attr;
+                        attr.permissions = data.file_mode;
+                        attr.links = data.links;
+                        attr.uid = data.uid;
+                        attr.gid = data.gid;
+                        attr.serial_no = 0;
+                        header_.attributes = attr;
+                    }
+                }
+                else
+                {
+                    typedef iso9660::px_system_use_entry_data data_type;
+                    const std::size_t data_size =
+                        hamigaki::struct_size<data_type>::value;
+
+                    if ((head.entry_size >= head_size+data_size) &&
+                        (pos + head.entry_size <= su.size()) )
+                    {
+                        data_type data;
+                        hamigaki::binary_read(s, data);
+
+                        iso9660::posix::file_attributes attr;
+                        attr.permissions = data.file_mode;
+                        attr.links = data.links;
+                        attr.uid = data.uid;
+                        attr.gid = data.gid;
+                        attr.serial_no = data.serial_no;
+                        header_.attributes = attr;
+                    }
+                }
+            }
+            else if (std::memcmp(head.signature, "NM", 2) == 0)
+            {
+                if (!filename_ends &&
+                    (head.entry_size >= head_size+1) &&
+                    (pos + head.entry_size <= su.size()) )
+                {
+                    boost::uint8_t flags =
+                        static_cast<boost::uint8_t>(*(s++));
+
+                    filename_ends = (flags & 0x01) == 0;
+
+                    filename.append(s, head.entry_size-(head_size+1));
+                }
+            }
+            else if (std::memcmp(head.signature, "TF", 2) == 0)
             {
                 if ((head.entry_size >= head_size+1) &&
                     (pos + head.entry_size <= su.size()) )
                 {
-                    boost::uint8_t flags =
-                        static_cast<boost::uint8_t>(su[pos+head_size]);
-
-                    filename_ends = (flags & 0x01) == 0;
-
-                    filename.append(
-                        su, pos+head_size+1, head.entry_size-(head_size+1));
+                    parse_tf_system_use_entry(s, head.entry_size - head_size);
                 }
             }
             pos += head.entry_size;
