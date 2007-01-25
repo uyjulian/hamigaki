@@ -21,7 +21,6 @@
 #include <hamigaki/archivers/iso9660/volume_descriptor.hpp>
 #include <hamigaki/filesystem/consts.hpp>
 #include <boost/filesystem/path.hpp>
-#include <boost/optional.hpp>
 #include <stdexcept>
 
 namespace hamigaki { namespace archivers { namespace iso9660 {
@@ -30,17 +29,17 @@ struct header
 {
     boost::filesystem::path path;
     boost::uint32_t file_size;
-    binary_date_time recorded_time;
+    boost::optional<filesystem::timestamp> recorded_time;
     boost::uint8_t flags;
     std::string system_use;
     boost::optional<posix::file_attributes> attributes;
-    boost::optional<date_time> creation_time;
-    boost::optional<date_time> last_write_time;
-    boost::optional<date_time> last_access_time;
-    boost::optional<date_time> last_change_time;
-    boost::optional<date_time> last_backup_time;
-    boost::optional<date_time> expiration_time;
-    boost::optional<date_time> effective_time;
+    boost::optional<filesystem::timestamp> creation_time;
+    boost::optional<filesystem::timestamp> last_write_time;
+    boost::optional<filesystem::timestamp> last_access_time;
+    boost::optional<filesystem::timestamp> last_change_time;
+    boost::optional<filesystem::timestamp> last_backup_time;
+    boost::optional<filesystem::timestamp> expiration_time;
+    boost::optional<filesystem::timestamp> effective_time;
 
     header() : file_size(0), flags(0)
     {

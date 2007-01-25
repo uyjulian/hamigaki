@@ -11,11 +11,29 @@
 #define HAMIGAKI_ARCHIVERS_ISO9660_DATE_TIME_HPP
 
 #include <hamigaki/binary/struct_traits.hpp>
+#include <hamigaki/filesystem/timestamp.hpp>
 #include <hamigaki/dec_format.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/cstdint.hpp>
+#include <boost/optional.hpp>
 
 namespace hamigaki { namespace archivers { namespace iso9660 {
+
+namespace iso_detail
+{
+
+inline void fill_dec2(char (&buf)[2], boost::uint8_t n)
+{
+    const std::string& s = to_dec<char>(n);
+
+    if (s.size() == 1)
+        s.copy(buf+1, 1);
+    else
+        s.copy(buf, 2);
+}
+
+} // namespace iso_detail
 
 struct date_time
 {
@@ -52,6 +70,57 @@ struct date_time
             (std::memcmp(centisecond, "00",   2) == 0) &&
             (timezone                            == 0) ;
     }
+
+    boost::optional<filesystem::timestamp> to_timestamp() const
+    {
+        using namespace boost::posix_time;
+        using namespace boost::gregorian;
+
+        if (empty())
+            return boost::optional<filesystem::timestamp>();
+
+        unsigned short y = from_dec<unsigned short>(year, year+4);
+        unsigned short m = from_dec<unsigned short>(month, month+2);
+        unsigned short d = from_dec<unsigned short>(day, day+2);
+        unsigned short hh = from_dec<unsigned short>(hour, hour+2);
+        unsigned short mm = from_dec<unsigned short>(minute, minute+2);
+        unsigned short ss = from_dec<unsigned short>(second, second+2);
+        unsigned short cs =
+            from_dec<unsigned short>(centisecond, centisecond+2);
+
+        ptime pt(date(y,m,d), time_duration(hh,mm,ss));
+        pt -= boost::posix_time::minutes(timezone*15);
+
+        const ptime origin(date(1970, 1, 1), time_duration());
+        const time_duration& du = pt - origin;
+
+        return filesystem::timestamp(du.total_seconds(), cs*10000000ul);
+    }
+
+    static date_time from_timestamp(const filesystem::timestamp& ts)
+    {
+        using namespace boost::posix_time;
+        using namespace boost::gregorian;
+
+        date_time tmp;
+
+        ptime pt(date(1970, 1, 1), time_duration());
+        pt += seconds(ts.seconds);
+
+        const date& d = pt.date();
+        to_dec<char>(static_cast<unsigned>(d.year())).copy(tmp.year, 4);
+        iso_detail::fill_dec2(tmp.month, d.month());
+        iso_detail::fill_dec2(tmp.day, d.day());
+
+        const time_duration& td = pt.time_of_day();
+        iso_detail::fill_dec2(tmp.hour, td.hours());
+        iso_detail::fill_dec2(tmp.minute, td.minutes());
+        iso_detail::fill_dec2(tmp.second, td.seconds());
+
+        iso_detail::fill_dec2(tmp.centisecond, ts.nanoseconds/10000000ul);
+
+        return tmp;
+    }
 };
 
 struct binary_date_time
@@ -86,24 +155,51 @@ struct binary_date_time
     {
         date_time tmp;
         to_dec<char>(1900+year).copy(tmp.year, 4);
-        fill_dec2(tmp.month, month);
-        fill_dec2(tmp.day, day);
-        fill_dec2(tmp.hour, hour);
-        fill_dec2(tmp.minute, minute);
-        fill_dec2(tmp.second, second);
+        iso_detail::fill_dec2(tmp.month, month);
+        iso_detail::fill_dec2(tmp.day, day);
+        iso_detail::fill_dec2(tmp.hour, hour);
+        iso_detail::fill_dec2(tmp.minute, minute);
+        iso_detail::fill_dec2(tmp.second, second);
         tmp.timezone = timezone;
         return tmp;
     }
 
-private:
-    static void fill_dec2(char (&buf)[2], boost::uint8_t n)
+    boost::optional<filesystem::timestamp> to_timestamp() const
     {
-        const std::string& s = to_dec<char>(n);
+        using namespace boost::posix_time;
+        using namespace boost::gregorian;
 
-        if (s.size() == 1)
-            s.copy(buf+1, 1);
-        else
-            s.copy(buf, 2);
+        if (empty())
+            return boost::optional<filesystem::timestamp>();
+
+        ptime pt(date(1900+year,month,day), time_duration(hour,minute,second));
+        pt -= minutes(timezone*15);
+
+        const ptime origin(date(1970, 1, 1), time_duration());
+        return filesystem::timestamp((pt - origin).total_seconds(), 0);
+    }
+
+    static binary_date_time from_timestamp(const filesystem::timestamp& ts)
+    {
+        using namespace boost::posix_time;
+        using namespace boost::gregorian;
+
+        binary_date_time tmp;
+
+        ptime pt(date(1970, 1, 1), time_duration());
+        pt += seconds(ts.seconds);
+
+        const date& d = pt.date();
+        tmp.year = d.year() - 1900;
+        tmp.month = d.month();
+        tmp.day = d.day();
+
+        const time_duration& td = pt.time_of_day();
+        tmp.hour = td.hours();
+        tmp.minute = td.minutes();
+        tmp.second = td.seconds();
+
+        return tmp;
     }
 };
 
