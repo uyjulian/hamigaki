@@ -137,11 +137,7 @@ public:
         directory_record rec((iso9660_id(*cur)));
         rec.data_pos = tell();
         rec.data_size = head.file_size;
-        if (head.recorded_time)
-        {
-            rec.recorded_time =
-                iso9660::binary_date_time::from_timestamp(*head.recorded_time);
-        }
+        rec.recorded_time = head.recorded_time;
         rec.flags = head.flags;
 
         add_record(level, parent, rec);

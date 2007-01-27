@@ -184,50 +184,43 @@ private:
 
             if ((flags & tf_flags::creation) != 0)
             {
-                header_.creation_time =
-                    hamigaki::binary_read<time_type>(s).to_timestamp();
+                header_.creation_time = hamigaki::binary_read<time_type>(s);
                 s += dt_size;
             }
 
             if ((flags & tf_flags::modify) != 0)
             {
-                header_.last_write_time =
-                    hamigaki::binary_read<time_type>(s).to_timestamp();
+                header_.last_write_time = hamigaki::binary_read<time_type>(s);
                 s += dt_size;
             }
 
             if ((flags & tf_flags::access) != 0)
             {
-                header_.last_access_time =
-                    hamigaki::binary_read<time_type>(s).to_timestamp();
+                header_.last_access_time = hamigaki::binary_read<time_type>(s);
                 s += dt_size;
             }
 
             if ((flags & tf_flags::attributes) != 0)
             {
-                header_.last_change_time =
-                    hamigaki::binary_read<time_type>(s).to_timestamp();
+                header_.last_change_time = hamigaki::binary_read<time_type>(s);
                 s += dt_size;
             }
 
             if ((flags & tf_flags::backup) != 0)
             {
-                header_.last_backup_time =
-                    hamigaki::binary_read<time_type>(s).to_timestamp();
+                header_.last_backup_time = hamigaki::binary_read<time_type>(s);
                 s += dt_size;
             }
 
             if ((flags & tf_flags::expiration) != 0)
             {
-                header_.expiration_time =
-                    hamigaki::binary_read<time_type>(s).to_timestamp();
+                header_.expiration_time = hamigaki::binary_read<time_type>(s);
                 s += dt_size;
             }
 
             if ((flags & tf_flags::effective) != 0)
             {
-                header_.effective_time =
-                    hamigaki::binary_read<time_type>(s).to_timestamp();
+                header_.effective_time = hamigaki::binary_read<time_type>(s);
                 s += dt_size;
             }
         }
@@ -242,49 +235,49 @@ private:
             if ((flags & tf_flags::creation) != 0)
             {
                 header_.creation_time =
-                    hamigaki::binary_read<time_type>(s).to_timestamp();
+                    hamigaki::binary_read<time_type>(s).to_date_time();
                 s += dt_size;
             }
 
             if ((flags & tf_flags::modify) != 0)
             {
                 header_.last_write_time =
-                    hamigaki::binary_read<time_type>(s).to_timestamp();
+                    hamigaki::binary_read<time_type>(s).to_date_time();
                 s += dt_size;
             }
 
             if ((flags & tf_flags::access) != 0)
             {
                 header_.last_access_time =
-                    hamigaki::binary_read<time_type>(s).to_timestamp();
+                    hamigaki::binary_read<time_type>(s).to_date_time();
                 s += dt_size;
             }
 
             if ((flags & tf_flags::attributes) != 0)
             {
                 header_.last_change_time =
-                    hamigaki::binary_read<time_type>(s).to_timestamp();
+                    hamigaki::binary_read<time_type>(s).to_date_time();
                 s += dt_size;
             }
 
             if ((flags & tf_flags::backup) != 0)
             {
                 header_.last_backup_time =
-                    hamigaki::binary_read<time_type>(s).to_timestamp();
+                    hamigaki::binary_read<time_type>(s).to_date_time();
                 s += dt_size;
             }
 
             if ((flags & tf_flags::expiration) != 0)
             {
                 header_.expiration_time =
-                    hamigaki::binary_read<time_type>(s).to_timestamp();
+                    hamigaki::binary_read<time_type>(s).to_date_time();
                 s += dt_size;
             }
 
             if ((flags & tf_flags::effective) != 0)
             {
                 header_.effective_time =
-                    hamigaki::binary_read<time_type>(s).to_timestamp();
+                    hamigaki::binary_read<time_type>(s).to_date_time();
                 s += dt_size;
             }
         }

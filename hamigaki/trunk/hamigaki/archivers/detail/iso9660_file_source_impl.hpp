@@ -176,7 +176,7 @@ private:
         iso9660::header h;
         h.path = dir_path_ / rec.file_id.to_path();
         h.file_size = rec.data_size;
-        h.recorded_time = rec.recorded_time.to_timestamp();
+        h.recorded_time = rec.recorded_time;
         h.flags = rec.flags;
         h.system_use = rec.system_use;
 
@@ -209,7 +209,7 @@ private:
         iso9660::header h;
         h.path = dir_path_;
         h.file_size = 0;
-        h.recorded_time = rec.recorded_time.to_timestamp();
+        h.recorded_time = rec.recorded_time;
         h.flags = rec.flags;
         h.system_use = rec.system_use;
         return h;
