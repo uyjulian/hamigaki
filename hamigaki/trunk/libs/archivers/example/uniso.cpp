@@ -58,7 +58,9 @@ int main(int argc, char* argv[])
 
             std::cout << head.path.string() << '\n';
 
-            if (head.is_directory())
+            if (head.is_symlink())
+                std::cout << "-> " << head.link_path.string() << '\n';
+            else if (head.is_directory())
                 fs::create_directories(head.path);
             else
             {

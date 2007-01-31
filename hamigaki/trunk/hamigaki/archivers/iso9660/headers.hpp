@@ -16,7 +16,6 @@
 #include <hamigaki/archivers/iso9660/file_flags.hpp>
 #include <hamigaki/archivers/iso9660/path_table_record.hpp>
 #include <hamigaki/archivers/iso9660/system_use_entries.hpp>
-#include <hamigaki/archivers/iso9660/tf_flags.hpp>
 #include <hamigaki/archivers/iso9660/volume_desc_set_terminator.hpp>
 #include <hamigaki/archivers/iso9660/volume_descriptor.hpp>
 #include <hamigaki/filesystem/consts.hpp>
@@ -28,6 +27,7 @@ namespace hamigaki { namespace archivers { namespace iso9660 {
 struct header
 {
     boost::filesystem::path path;
+    boost::filesystem::path link_path;
     boost::uint32_t file_size;
     binary_date_time recorded_time;
     boost::uint8_t flags;
@@ -47,6 +47,9 @@ struct header
 
     bool is_regular() const
     {
+        if (is_symlink())
+            return false;
+
         return (flags & (file_flags::directory|file_flags::associated)) == 0;
     }
 
@@ -57,7 +60,7 @@ struct header
 
     bool is_symlink() const
     {
-        return false;
+        return !link_path.empty();
     }
 
     bool is_associated() const
@@ -67,12 +70,37 @@ struct header
 
     void type(filesystem::file_type v)
     {
+        using hamigaki::filesystem::file_permissions;
+
         if (v == filesystem::regular_file)
             flags &= ~file_flags::directory;
         else if (v == filesystem::directory_file)
+        {
             flags |= file_flags::directory;
+            set_file_mode(file_permissions::directory);
+        }
+        else if (v == filesystem::symlink_file)
+            set_file_mode(file_permissions::symlink);
         else
             throw std::runtime_error("unsupported file type");
+    }
+
+private:
+    void set_file_mode(boost::uint16_t type)
+    {
+        if (!attributes)
+        {
+            posix::file_attributes attr;
+            attr.permissions = 0444;
+            attr.links = 1;
+            attr.uid = 0;
+            attr.gid = 0;
+            attr.serial_no = 0;
+            attributes = attr;
+        }
+
+        boost::uint16_t mask = ~filesystem::file_permissions::type_mask;
+        attributes->permissions = type | (attributes->permissions & mask);
     }
 };
 
