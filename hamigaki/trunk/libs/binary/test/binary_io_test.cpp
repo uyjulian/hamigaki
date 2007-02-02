@@ -31,6 +31,11 @@ struct outer
     inner def_child;
 };
 
+struct both
+{
+    boost::uint16_t val;
+};
+
 namespace hamigaki
 {
 
@@ -62,6 +67,19 @@ public:
         member<self, ::inner, &self::big_child, big>,
         member<self, ::inner, &self::lit_child, little>,
         member<self, ::inner, &self::def_child, default_>
+    > members;
+};
+
+template<>
+struct struct_traits< ::both>
+{
+private:
+    typedef ::both self;
+
+public:
+    typedef boost::mpl::list<
+        member<self, boost::uint16_t, &self::val, little>,
+        member<self, boost::uint16_t, &self::val, big>
     > members;
 };
 
@@ -208,6 +226,20 @@ void default_write_test()
     BOOST_WARN_EQUAL_COLLECTIONS(buf, buf+sizeof(buf), ls, ls+sizeof(ls)-1);
 }
 
+void both_test()
+{
+    ::both data;
+    data.val = 0x0123;
+
+    char buf[hamigaki::struct_size< ::both>::value+1];
+    std::memset(buf, 0xCC, sizeof(buf));
+    hamigaki::binary_write(buf, data);
+
+    const char s[] = "\x23\x01\01\x23\xCC";
+
+    BOOST_WARN_EQUAL_COLLECTIONS(buf, buf+sizeof(buf), s, s+sizeof(s)-1);
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("binary I/O test");
@@ -215,5 +247,6 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&binary_write_test));
     test->add(BOOST_TEST_CASE(&default_read_test));
     test->add(BOOST_TEST_CASE(&default_write_test));
+    test->add(BOOST_TEST_CASE(&both_test));
     return test;
 }
