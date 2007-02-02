@@ -44,14 +44,17 @@ public:
         typedef endian_select<E,T::endian> sel;
 
         binary_io_traits<sel::endian, typename T::member_type>::read(
-            data_ + member_offset<T>::value,
+            data_,
             T()(*ptr_)
         );
+
+        data_ += member_size<T>::value;
     }
 
     template<std::size_t Size>
     void operator()(const padding<Size>&)
     {
+        data_ += Size;
     }
 
 private:
@@ -74,14 +77,17 @@ public:
         typedef endian_select<E,T::endian> sel;
 
         binary_io_traits<sel::endian, typename T::member_type>::write(
-            data_ + member_offset<T>::value,
+            data_,
             T()(*ptr_)
         );
+
+        data_ += member_size<T>::value;
     }
 
     template<std::size_t Size>
     void operator()(const padding<Size>&)
     {
+        data_ += Size;
     }
 
 private:
