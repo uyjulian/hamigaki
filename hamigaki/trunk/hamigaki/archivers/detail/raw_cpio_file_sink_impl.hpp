@@ -113,18 +113,25 @@ inline void cpio_write_hex(char (&buf)[Size], T x)
         boost::mpl::bool_<std::numeric_limits<T>::is_signed>());
 }
 
+inline boost::uint16_t to_cpio_dev_num(const filesystem::device_number& dev)
+{
+    return
+        (static_cast<boost::uint16_t>(dev.major) << 8) |
+        (static_cast<boost::uint16_t>(dev.minor)     ) ;
+}
+
 inline void write_cpio_header(cpio::raw_header& raw, const cpio::header& head)
 {
     std::memset(&raw, 0, sizeof(raw));
 
     std::memcpy(raw.magic, "070707", 6);
-    cpio_write_oct(raw.dev, head.parent_device_id);
+    cpio_write_oct(raw.dev, detail::to_cpio_dev_num(head.parent_device));
     cpio_write_oct(raw.ino, head.file_id);
     cpio_write_oct(raw.mode, head.permissions);
     cpio_write_oct(raw.uid, head.uid);
     cpio_write_oct(raw.gid, head.gid);
     cpio_write_oct(raw.nlink, head.links);
-    cpio_write_oct(raw.rdev, head.device_id);
+    cpio_write_oct(raw.rdev, detail::to_cpio_dev_num(head.device));
     cpio_write_oct(raw.mtime, static_cast<boost::int32_t>(head.modified_time));
     cpio_write_oct(raw.namesize, head.path.string().size()+1);
     cpio_write_oct(raw.filesize, head.file_size);
@@ -136,13 +143,13 @@ inline void write_cpio_header(
     std::memset(&bin, 0, sizeof(bin));
 
     bin.magic = 070707;
-    bin.dev = head.parent_device_id;
+    bin.dev = detail::to_cpio_dev_num(head.parent_device);
     bin.ino = head.file_id;
     bin.mode = head.permissions;
     bin.uid = head.uid;
     bin.gid = head.gid;
     bin.nlink = head.links;
-    bin.rdev = head.device_id;
+    bin.rdev = detail::to_cpio_dev_num(head.device);
 
     boost::uint32_t t =
         static_cast<boost::uint32_t>(
@@ -175,14 +182,14 @@ inline void write_cpio_header(cpio::svr4_header& raw, const cpio::header& head)
     cpio_write_hex(raw.filesize, head.file_size);
 
     cpio_write_hex(raw.dev_major,
-        static_cast<boost::uint16_t>(head.parent_device_id >> 16));
+        static_cast<boost::uint16_t>(head.parent_device.major));
     cpio_write_hex(raw.dev_minor,
-        static_cast<boost::uint16_t>(head.parent_device_id & 0xFFFF));
+        static_cast<boost::uint16_t>(head.parent_device.minor));
 
     cpio_write_hex(raw.rdev_major,
-        static_cast<boost::uint16_t>(head.device_id >> 16));
+        static_cast<boost::uint16_t>(head.device.major));
     cpio_write_hex(raw.rdev_minor,
-        static_cast<boost::uint16_t>(head.device_id & 0xFFFF));
+        static_cast<boost::uint16_t>(head.device.minor));
 
     cpio_write_hex(raw.namesize, head.path.string().size()+1);
 

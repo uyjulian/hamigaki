@@ -15,6 +15,7 @@
 #include <hamigaki/archivers/cpio/raw_header.hpp>
 #include <hamigaki/archivers/cpio/svr4_header.hpp>
 #include <hamigaki/filesystem/consts.hpp>
+#include <hamigaki/filesystem/device_number.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
 #include <ctime>
@@ -26,13 +27,13 @@ namespace hamigaki { namespace archivers { namespace cpio {
 struct header
 {
     file_format format;
-    boost::uint32_t parent_device_id;
+    filesystem::device_number parent_device;
     boost::uint32_t file_id;
     boost::uint16_t permissions;
     boost::uint32_t uid;
     boost::uint32_t gid;
     boost::uint32_t links;
-    boost::uint32_t device_id;
+    filesystem::device_number device;
     std::time_t modified_time;
     boost::filesystem::path path;
     boost::filesystem::path link_path;
@@ -40,8 +41,8 @@ struct header
     boost::optional<boost::uint16_t> checksum;
 
     header()
-        : format(posix), parent_device_id(0), file_id(0), permissions(0100644)
-        , uid(0), gid(0), links(1), device_id(0), modified_time(0), file_size(0)
+        : format(posix), file_id(0), permissions(0100644)
+        , uid(0), gid(0), links(1), modified_time(0), file_size(0)
     {
     }
 

@@ -34,17 +34,23 @@ inline T cpio_read_hex(const char (&s)[Size])
     return from_hex<char>(s);
 }
 
+inline filesystem::device_number cpio_make_device(boost::uint16_t n)
+{
+    return filesystem::device_number((n >> 8) & 0xFFu, n & 0xFFu);
+}
+
 inline boost::uint16_t read_cpio_header(
     cpio::header& head, const cpio::raw_header& raw)
 {
     head.format = cpio::posix;
-    head.parent_device_id = cpio_read_oct<boost::uint32_t>(raw.dev);
+    head.parent_device =
+        cpio_make_device(cpio_read_oct<boost::uint32_t>(raw.dev));
     head.file_id = cpio_read_oct<boost::uint32_t>(raw.ino);
     head.permissions = cpio_read_oct<boost::uint16_t>(raw.mode);
     head.uid = cpio_read_oct<boost::uint32_t>(raw.uid);
     head.gid = cpio_read_oct<boost::uint32_t>(raw.gid);
     head.links = cpio_read_oct<boost::uint32_t>(raw.nlink);
-    head.device_id = cpio_read_oct<boost::uint32_t>(raw.rdev);
+    head.device = cpio_make_device(cpio_read_oct<boost::uint32_t>(raw.rdev));
     head.modified_time =
         static_cast<std::time_t>(cpio_read_oct<boost::int32_t>(raw.mtime));
 
@@ -57,13 +63,13 @@ inline boost::uint16_t read_cpio_header(
     cpio::header& head, const cpio::binary_header& bin)
 {
     head.format = cpio::binary;
-    head.parent_device_id = bin.dev;
+    head.parent_device = cpio_make_device(bin.dev);
     head.file_id = bin.ino;
     head.permissions = bin.mode;
     head.uid = bin.uid;
     head.gid = bin.gid;
     head.links = bin.nlink;
-    head.device_id = bin.rdev;
+    head.device = cpio_make_device(bin.rdev);
 
     boost::int32_t t =
         static_cast<boost::int32_t>(
@@ -96,13 +102,17 @@ inline boost::uint16_t read_cpio_header(
         static_cast<std::time_t>(cpio_read_hex<boost::int32_t>(raw.mtime));
     head.file_size = cpio_read_hex<boost::uint32_t>(raw.filesize);
 
-    head.parent_device_id =
-        (cpio_read_hex<boost::uint32_t>(raw.dev_major) << 16) |
-        (cpio_read_hex<boost::uint32_t>(raw.dev_minor)      ) ;
+    head.parent_device =
+        filesystem::device_number(
+            cpio_read_hex<boost::uint32_t>(raw.dev_major),
+            cpio_read_hex<boost::uint32_t>(raw.dev_minor)
+        );
 
-    head.device_id =
-        (cpio_read_hex<boost::uint32_t>(raw.rdev_major) << 16) |
-        (cpio_read_hex<boost::uint32_t>(raw.rdev_minor)      ) ;
+    head.device =
+        filesystem::device_number(
+            cpio_read_hex<boost::uint32_t>(raw.rdev_major),
+            cpio_read_hex<boost::uint32_t>(raw.rdev_minor)
+        );
 
     if (head.format == cpio::svr4_chksum)
         head.checksum = cpio_read_hex<boost::uint16_t>(raw.checksum);
