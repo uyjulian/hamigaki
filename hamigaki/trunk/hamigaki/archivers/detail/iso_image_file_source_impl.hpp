@@ -468,6 +468,25 @@ private:
                     }
                 }
             }
+            if (std::memcmp(head.signature, "PN", 2) == 0)
+            {
+                typedef iso9660::pn_system_use_entry_data data_type;
+                const std::size_t data_size =
+                    hamigaki::struct_size<data_type>::value;
+
+                if ((head.entry_size >= head_size+data_size) &&
+                    (pos + head.entry_size <= su.size()) )
+                {
+                    data_type data;
+                    hamigaki::binary_read(s, data);
+
+                    header_.device_number =
+                        filesystem::device_number(
+                            data.device_number_high,
+                            data.device_number_low
+                        );
+                }
+            }
             else if (std::memcmp(head.signature, "SL", 2) == 0)
                 sl_parser.parse(s, head.entry_size - head_size);
             else if (std::memcmp(head.signature, "NM", 2) == 0)

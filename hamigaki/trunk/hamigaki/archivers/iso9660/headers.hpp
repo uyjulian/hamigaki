@@ -19,6 +19,7 @@
 #include <hamigaki/archivers/iso9660/volume_desc_set_terminator.hpp>
 #include <hamigaki/archivers/iso9660/volume_descriptor.hpp>
 #include <hamigaki/filesystem/consts.hpp>
+#include <hamigaki/filesystem/device_number.hpp>
 #include <boost/filesystem/path.hpp>
 #include <stdexcept>
 
@@ -33,6 +34,7 @@ struct header
     boost::uint8_t flags;
     std::string system_use;
     boost::optional<posix::file_attributes> attributes;
+    boost::optional<filesystem::device_number> device_number;
     date_time creation_time;
     date_time last_write_time;
     date_time last_access_time;

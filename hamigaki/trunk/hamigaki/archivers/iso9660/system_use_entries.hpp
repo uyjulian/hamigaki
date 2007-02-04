@@ -12,6 +12,7 @@
 
 #include <hamigaki/archivers/iso9660/ce_system_use_entry_data.hpp>
 #include <hamigaki/archivers/iso9660/er_system_use_entry_data.hpp>
+#include <hamigaki/archivers/iso9660/pn_system_use_entry_data.hpp>
 #include <hamigaki/archivers/iso9660/px_system_use_entry_data.hpp>
 #include <hamigaki/archivers/iso9660/sp_system_use_entry_data.hpp>
 #include <hamigaki/archivers/iso9660/system_use_entry_header.hpp>
