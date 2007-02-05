@@ -4,7 +4,7 @@
 <!--
   Hamigaki.Archivers Library Document Source
 
-  Copyright Takeshi Mouri 2006.
+  Copyright Takeshi Mouri 2006, 2007.
   Use, modification, and distribution are subject to the
   Boost Software License, Version 1.0. (See accompanying file
   LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -47,8 +47,8 @@
             <type>file_format</type>
           </data-member>
 
-          <data-member name="parent_device_id">
-            <type>boost::uint32_t</type>
+          <data-member name="parent_device">
+            <type><classname>filesystem::device_number</classname></type>
           </data-member>
 
           <data-member name="file_id">
@@ -71,8 +71,8 @@
             <type>boost::uint32_t</type>
           </data-member>
 
-          <data-member name="device_id">
-            <type>boost::uint32_t</type>
+          <data-member name="device">
+            <type><classname>filesystem::device_number</classname></type>
           </data-member>
 
           <data-member name="modified_time">
@@ -113,8 +113,8 @@
                       <entry>posix</entry>
                     </row>
                     <row>
-                      <entry>parent_device_id</entry>
-                      <entry>ファイルのコンテナとなるデバイスのID</entry>
+                      <entry>parent_device</entry>
+                      <entry>ファイルのコンテナとなるデバイス番号</entry>
                       <entry></entry>
                     </row>
                     <row>
@@ -143,8 +143,8 @@
                       <entry>1</entry>
                     </row>
                     <row>
-                      <entry>device_id</entry>
-                      <entry>ファイル自身のデバイスのID</entry>
+                      <entry>device</entry>
+                      <entry>ファイル自身のデバイス番号</entry>
                       <entry></entry>
                     </row>
                     <row>
