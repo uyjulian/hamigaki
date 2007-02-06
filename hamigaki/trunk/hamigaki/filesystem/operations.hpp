@@ -1,6 +1,6 @@
 //  operations.hpp: the file operations
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -172,6 +172,25 @@ inline void create_symlink(
             "hamigaki::filesystem::create_symlink", old_fp, new_fp, ec);
     }
 }
+
+#if defined(BOOST_WINDOWS)
+HAMIGAKI_FILESYSTEM_DECL
+int create_shell_link(
+    const boost::filesystem::path& old_fp,
+    const boost::filesystem::path& new_fp, int& ec);
+
+inline void create_shell_link(
+    const boost::filesystem::path& old_fp,
+    const boost::filesystem::path& new_fp)
+{
+    int ec;
+    if (filesystem::create_shell_link(old_fp, new_fp, ec) != 0)
+    {
+        throw boost::filesystem::filesystem_error(
+            "hamigaki::filesystem::create_shell_link", old_fp, new_fp, ec);
+    }
+}
+#endif
 
 HAMIGAKI_FILESYSTEM_DECL
 int change_attributes(
