@@ -4,7 +4,7 @@
 <!--
   Hamigaki.Filesystem Library Document Source
 
-  Copyright Takeshi Mouri 2006.
+  Copyright Takeshi Mouri 2006, 2007.
   Use, modification, and distribution are subject to the
   Boost Software License, Version 1.0. (See accompanying file
   LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -392,6 +392,36 @@ change_symlink_owner(p, new_uid, new_gid, ec);]]></programlisting></para></effec
           <effects><simpara>パス<code>p</code>以下のファイルを再帰的に削除する。</simpara></effects>
           <notes><simpara>シンボリックリンクの削除にターゲットファイルは影響されない。</simpara></notes>
           <returns><simpara>削除したファイル/ディレクトリの数</simpara></returns>
+        </function>
+      </free-function-group>
+
+      <free-function-group name="MS Windows specific functions">
+        <function name="create_shell_link">
+          <type>int</type>
+          <parameter name="old_fp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="new_fp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="ec">
+            <paramtype>int&amp;</paramtype>
+          </parameter>
+          <effects><simpara>パス<code>new_fp</code>で、パス<code>old_fp</code>へのシェルリンク(ショートカットファイル)を作成する。成功した場合は、<code>ec</code>には0が設定される。エラーが発生した場合は、<code>ec</code>にシステム依存のエラーコードを設定する。</simpara></effects>
+          <returns><simpara><code>ec</code></simpara></returns>
+        </function>
+
+        <function name="create_shell_link">
+          <type>void</type>
+          <parameter name="old_fp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="new_fp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <effects><para><programlisting><![CDATA[int ec;
+create_shell_link(old_fp, new_fp, ec);]]></programlisting></para></effects>
+          <throws><simpara><code>ec</code>が0でない場合、<code>boost::filesystem::filesystem_error</code></simpara></throws>
         </function>
       </free-function-group>
     </namespace>
