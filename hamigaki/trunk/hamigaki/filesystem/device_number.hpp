@@ -13,7 +13,7 @@
 #include <boost/config.hpp>
 #include <boost/cstdint.hpp>
 
-#if defined(BOOST_HAS_UNISTD_H)
+#if defined(__unix__)
     #include <sys/types.h>
 
     #if defined(__hpux) || defined(__sgi) || defined(sun) || defined(__sun)
@@ -27,7 +27,7 @@ namespace hamigaki { namespace filesystem {
 
 struct device_number
 {
-#if defined(BOOST_HAS_UNISTD_H)
+#if defined(__unix__)
     typedef ::dev_t native_type;
 #else
     typedef boost::uint16_t native_type;
@@ -50,7 +50,7 @@ struct device_number
 
     static device_number from_native(native_type n)
     {
-#if defined(BOOST_HAS_UNISTD_H)
+#if defined(__unix__)
         return device_number(major(n), minor(n));
 #else
         return device_number((n >> 8) & 0xFFu, n & 0xFFu);
@@ -59,7 +59,7 @@ struct device_number
 
     native_type to_native() const
     {
-#if defined(BOOST_HAS_UNISTD_H)
+#if defined(__unix__)
         return makedev(major, minor);
 #else
         return static_cast<native_type>(
