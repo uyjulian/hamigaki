@@ -11,7 +11,7 @@
 #define HAMIGAKI_ARCHIVERS_DETAIL_ISO_IMAGE_FILE_SOURCE_IMPL_HPP
 
 #include <hamigaki/archivers/detail/iso9660_file_source_impl.hpp>
-#include <hamigaki/archivers/iso9660/tf_flags.hpp>
+#include <hamigaki/archivers/iso/tf_flags.hpp>
 
 namespace hamigaki { namespace archivers { namespace detail {
 
@@ -153,7 +153,7 @@ public:
 
         while (impl_.next_entry())
         {
-            const iso9660::header& head = impl_.header();
+            const iso::header& head = impl_.header();
 
             if (head.is_associated())
                 continue;
@@ -171,12 +171,12 @@ public:
         return false;
     }
 
-    iso9660::header header() const
+    iso::header header() const
     {
         return header_;
     }
 
-    const std::vector<iso9660::volume_descriptor>& volume_descriptors() const
+    const std::vector<iso::volume_descriptor>& volume_descriptors() const
     {
         return impl_.volume_descriptors();
     }
@@ -201,36 +201,36 @@ public:
 
 private:
     basic_iso9660_file_source_impl<Source> impl_;
-    iso9660::header header_;
+    iso::header header_;
     rrip_type rrip_;
 
     void rock_ridge_check()
     {
         rrip_ = rrip_none;
 
-        const iso9660::header& head = impl_.directory_header();
+        const iso::header& head = impl_.directory_header();
         const std::string& su = head.system_use;
         if (su.empty())
             return;
 
         const std::size_t head_size =
-            hamigaki::struct_size<iso9660::system_use_entry_header>::value;
+            hamigaki::struct_size<iso::system_use_entry_header>::value;
 
         const std::size_t er_size =
             head_size +
-            hamigaki::struct_size<iso9660::er_system_use_entry_data>::value;
+            hamigaki::struct_size<iso::er_system_use_entry_data>::value;
 
         std::size_t pos = 0;
         while (pos + head_size < su.size())
         {
-            iso9660::system_use_entry_header head;
+            iso::system_use_entry_header head;
             hamigaki::binary_read(su.c_str()+pos, head);
             if (std::memcmp(head.signature, "ER", 2) == 0)
             {
                 if ((head.entry_size >= er_size) &&
                     (pos + head.entry_size <= su.size()) )
                 {
-                    iso9660::er_system_use_entry_data er;
+                    iso::er_system_use_entry_data er;
                     hamigaki::binary_read(su.c_str()+pos+head_size, er);
 
                     if (er.id_size == 10)
@@ -253,7 +253,7 @@ private:
         }
     }
 
-    void fix_header(const iso9660::header& head)
+    void fix_header(const iso::header& head)
     {
         using namespace boost::filesystem;
 
@@ -269,7 +269,7 @@ private:
 
     void parse_tf_system_use_entry(const char* s, std::size_t size)
     {
-        using iso9660::tf_flags;
+        using iso::tf_flags;
 
         boost::uint8_t flags =
             static_cast<boost::uint8_t>(*(s++));
@@ -292,7 +292,7 @@ private:
 
         if ((flags & tf_flags::long_form) != 0)
         {
-            typedef iso9660::date_time time_type;
+            typedef iso::date_time time_type;
 
             const std::size_t dt_size = hamigaki::struct_size<time_type>::value;
 
@@ -343,7 +343,7 @@ private:
         }
         else
         {
-            typedef iso9660::binary_date_time time_type;
+            typedef iso::binary_date_time time_type;
             const std::size_t dt_size = hamigaki::struct_size<time_type>::value;
 
             if (1+count*dt_size > size)
@@ -400,7 +400,7 @@ private:
         }
     }
 
-    void parse_rock_ridge(const iso9660::header& head)
+    void parse_rock_ridge(const iso::header& head)
     {
         using namespace boost::filesystem;
 
@@ -409,7 +409,7 @@ private:
         const std::string& su = head.system_use;
 
         const std::size_t head_size =
-            hamigaki::struct_size<iso9660::system_use_entry_header>::value;
+            hamigaki::struct_size<iso::system_use_entry_header>::value;
 
         std::size_t pos = 0;
         std::string filename;
@@ -419,7 +419,7 @@ private:
         {
             const char* s = su.c_str()+pos;
 
-            iso9660::system_use_entry_header head;
+            iso::system_use_entry_header head;
             hamigaki::binary_read(s, head);
             s += head_size;
 
@@ -427,7 +427,7 @@ private:
             {
                 if (rrip_ == rrip_1991a)
                 {
-                    typedef iso9660::old_px_system_use_entry_data data_type;
+                    typedef iso::old_px_system_use_entry_data data_type;
                     const std::size_t data_size =
                         hamigaki::struct_size<data_type>::value;
 
@@ -437,7 +437,7 @@ private:
                         data_type data;
                         hamigaki::binary_read(s, data);
 
-                        iso9660::posix::file_attributes attr;
+                        iso::posix::file_attributes attr;
                         attr.permissions = data.file_mode;
                         attr.links = data.links;
                         attr.uid = data.uid;
@@ -448,7 +448,7 @@ private:
                 }
                 else
                 {
-                    typedef iso9660::px_system_use_entry_data data_type;
+                    typedef iso::px_system_use_entry_data data_type;
                     const std::size_t data_size =
                         hamigaki::struct_size<data_type>::value;
 
@@ -458,7 +458,7 @@ private:
                         data_type data;
                         hamigaki::binary_read(s, data);
 
-                        iso9660::posix::file_attributes attr;
+                        iso::posix::file_attributes attr;
                         attr.permissions = data.file_mode;
                         attr.links = data.links;
                         attr.uid = data.uid;
@@ -470,7 +470,7 @@ private:
             }
             if (std::memcmp(head.signature, "PN", 2) == 0)
             {
-                typedef iso9660::pn_system_use_entry_data data_type;
+                typedef iso::pn_system_use_entry_data data_type;
                 const std::size_t data_size =
                     hamigaki::struct_size<data_type>::value;
 

@@ -7,14 +7,14 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#ifndef HAMIGAKI_ARCHIVERS_ISO9660_PATH_TABLE_RECORD_HPP
-#define HAMIGAKI_ARCHIVERS_ISO9660_PATH_TABLE_RECORD_HPP
+#ifndef HAMIGAKI_ARCHIVERS_ISO_PATH_TABLE_RECORD_HPP
+#define HAMIGAKI_ARCHIVERS_ISO_PATH_TABLE_RECORD_HPP
 
 #include <hamigaki/binary/struct_traits.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/cstdint.hpp>
 
-namespace hamigaki { namespace archivers { namespace iso9660 {
+namespace hamigaki { namespace archivers { namespace iso {
 
 struct path_table_record
 {
@@ -24,16 +24,16 @@ struct path_table_record
     boost::uint16_t parent_dir_number;
 };
 
-} } } // End namespaces iso9660, archivers, hamigaki.
+} } } // End namespaces iso, archivers, hamigaki.
 
 namespace hamigaki
 {
 
 template<>
-struct struct_traits<archivers::iso9660::path_table_record>
+struct struct_traits<archivers::iso::path_table_record>
 {
 private:
-    typedef archivers::iso9660::path_table_record self;
+    typedef archivers::iso::path_table_record self;
 
 public:
     typedef boost::mpl::list<
@@ -46,4 +46,4 @@ public:
 
 } // namespace hamigaki
 
-#endif // HAMIGAKI_ARCHIVERS_ISO9660_PATH_TABLE_RECORD_HPP
+#endif // HAMIGAKI_ARCHIVERS_ISO_PATH_TABLE_RECORD_HPP

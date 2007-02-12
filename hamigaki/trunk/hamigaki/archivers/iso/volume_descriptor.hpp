@@ -7,14 +7,14 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#ifndef HAMIGAKI_ARCHIVERS_ISO9660_VOLUME_DESCRIPTOR_HPP
-#define HAMIGAKI_ARCHIVERS_ISO9660_VOLUME_DESCRIPTOR_HPP
+#ifndef HAMIGAKI_ARCHIVERS_ISO_VOLUME_DESCRIPTOR_HPP
+#define HAMIGAKI_ARCHIVERS_ISO_VOLUME_DESCRIPTOR_HPP
 
-#include <hamigaki/archivers/iso9660/directory_record.hpp>
+#include <hamigaki/archivers/iso/directory_record.hpp>
 #include <boost/mpl/joint_view.hpp>
 #include <cstring>
 
-namespace hamigaki { namespace archivers { namespace iso9660 {
+namespace hamigaki { namespace archivers { namespace iso {
 
 struct volume_descriptor
 {
@@ -62,18 +62,18 @@ struct volume_descriptor
     }
 };
 
-} } } // End namespaces iso9660, archivers, hamigaki.
+} } } // End namespaces iso, archivers, hamigaki.
 
 namespace hamigaki
 {
 
 template<>
-struct struct_traits<archivers::iso9660::volume_descriptor>
+struct struct_traits<archivers::iso::volume_descriptor>
 {
 private:
-    typedef archivers::iso9660::volume_descriptor self;
-    typedef archivers::iso9660::directory_record directory_record;
-    typedef archivers::iso9660::date_time date_time;
+    typedef archivers::iso::volume_descriptor self;
+    typedef archivers::iso::directory_record directory_record;
+    typedef archivers::iso::date_time date_time;
 
     typedef boost::mpl::list<
         member<self, boost::uint8_t, &self::type>,
@@ -135,4 +135,4 @@ public:
 
 } // namespace hamigaki
 
-#endif // HAMIGAKI_ARCHIVERS_ISO9660_VOLUME_DESCRIPTOR_HPP
+#endif // HAMIGAKI_ARCHIVERS_ISO_VOLUME_DESCRIPTOR_HPP

@@ -23,11 +23,11 @@ public:
     {
     }
 
-    void create_entry(const iso9660::header& head)
+    void create_entry(const iso::header& head)
     {
         using namespace boost::filesystem;
 
-        iso9660::header h = head;
+        iso::header h = head;
         if (h.is_regular())
             h.path = h.path.branch_path() / (h.path.leaf() + ";1");
 

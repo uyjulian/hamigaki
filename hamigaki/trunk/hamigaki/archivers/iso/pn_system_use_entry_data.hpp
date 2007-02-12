@@ -7,10 +7,10 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#ifndef HAMIGAKI_ARCHIVERS_ISO9660_PN_SYSTEM_USE_ENTRY_DATA_HPP
-#define HAMIGAKI_ARCHIVERS_ISO9660_PN_SYSTEM_USE_ENTRY_DATA_HPP
+#ifndef HAMIGAKI_ARCHIVERS_ISO_PN_SYSTEM_USE_ENTRY_DATA_HPP
+#define HAMIGAKI_ARCHIVERS_ISO_PN_SYSTEM_USE_ENTRY_DATA_HPP
 
-namespace hamigaki { namespace archivers { namespace iso9660 {
+namespace hamigaki { namespace archivers { namespace iso {
 
 struct pn_system_use_entry_data
 {
@@ -18,16 +18,16 @@ struct pn_system_use_entry_data
     boost::uint32_t device_number_low;
 };
 
-} } } // End namespaces iso9660, archivers, hamigaki.
+} } } // End namespaces iso, archivers, hamigaki.
 
 namespace hamigaki
 {
 
 template<>
-struct struct_traits<archivers::iso9660::pn_system_use_entry_data>
+struct struct_traits<archivers::iso::pn_system_use_entry_data>
 {
 private:
-    typedef archivers::iso9660::pn_system_use_entry_data self;
+    typedef archivers::iso::pn_system_use_entry_data self;
 
 public:
     typedef boost::mpl::list<
@@ -40,4 +40,4 @@ public:
 
 } // namespace hamigaki
 
-#endif // HAMIGAKI_ARCHIVERS_ISO9660_PN_SYSTEM_USE_ENTRY_DATA_HPP
+#endif // HAMIGAKI_ARCHIVERS_ISO_PN_SYSTEM_USE_ENTRY_DATA_HPP

@@ -12,7 +12,7 @@
 
 #include <hamigaki/archivers/detail/iso9660_id.hpp>
 #include <hamigaki/archivers/detail/joliet_id.hpp>
-#include <hamigaki/archivers/iso9660/headers.hpp>
+#include <hamigaki/archivers/iso/headers.hpp>
 #include <hamigaki/integer/auto_min.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>
 #include <hamigaki/functional.hpp>
@@ -29,7 +29,7 @@ class iso9660_file_reader_base
 public:
     virtual ~iso9660_file_reader_base(){};
 
-    bool next_entry(iso9660::header& head)
+    bool next_entry(iso::header& head)
     {
         return do_next_entry(head);
     }
@@ -39,15 +39,15 @@ public:
         return do_is_latest();
     }
 
-    iso9660::header directory_header() const
+    iso::header directory_header() const
     {
         return do_directory_header();
     }
 
 private:
-    virtual bool do_next_entry(iso9660::header& head) = 0;
+    virtual bool do_next_entry(iso::header& head) = 0;
     virtual bool do_is_latest() const = 0;
-    virtual iso9660::header do_directory_header() const = 0;
+    virtual iso::header do_directory_header() const = 0;
 };
 
 template<class Source, class FileId>
@@ -78,7 +78,7 @@ private:
         FileId file_id;
         boost::uint32_t data_pos;
         boost::uint32_t data_size;
-        iso9660::binary_date_time recorded_time;
+        iso::binary_date_time recorded_time;
         boost::uint8_t flags;
         std::string system_use;
 
@@ -97,8 +97,8 @@ private:
             if (int cmp = file_id.compare(rhs.file_id))
                 return cmp < 0;
 
-            bool lhs_assoc = (flags & iso9660::file_flags::associated) != 0;
-            bool rhs_assoc = (rhs.flags & iso9660::file_flags::associated) != 0;
+            bool lhs_assoc = (flags & iso::file_flags::associated) != 0;
+            bool rhs_assoc = (rhs.flags & iso::file_flags::associated) != 0;
 
             if (lhs_assoc && !rhs_assoc)
                 return true;
@@ -113,12 +113,12 @@ private:
 
         bool is_directory() const
         {
-            return (flags & iso9660::file_flags::directory) != 0;
+            return (flags & iso::file_flags::directory) != 0;
         }
     };
 
 public:
-    iso9660_file_reader(Source& src, const iso9660::volume_descriptor& desc)
+    iso9660_file_reader(Source& src, const iso::volume_descriptor& desc)
         : src_(src), volume_desc_(desc)
     {
         if (volume_desc_.logical_block_size == 2048)
@@ -141,7 +141,7 @@ public:
 
 private:
     Source& src_;
-    iso9660::volume_descriptor volume_desc_;
+    iso::volume_descriptor volume_desc_;
     std::vector<path_table_record> path_table_;
     std::vector<directory_record> dir_records_;
     boost::uint32_t lbn_shift_;
@@ -151,7 +151,7 @@ private:
     std::size_t dir_pos_;
     char block_[logical_sector_size];
 
-    bool do_next_entry(iso9660::header& head) // virtual
+    bool do_next_entry(iso::header& head) // virtual
     {
         if ((dir_pos_ != 1) && dir_records_[dir_pos_].is_directory())
         {
@@ -173,7 +173,7 @@ private:
 
         const directory_record& rec = dir_records_[dir_pos_];
 
-        iso9660::header h;
+        iso::header h;
         h.path = dir_path_ / rec.file_id.to_path();
         h.file_size = rec.data_size;
         h.recorded_time = rec.recorded_time;
@@ -202,11 +202,11 @@ private:
         return true;
     }
 
-    iso9660::header do_directory_header() const // virtual
+    iso::header do_directory_header() const // virtual
     {
         const directory_record& rec = dir_records_[0];
 
-        iso9660::header h;
+        iso::header h;
         h.path = dir_path_;
         h.file_size = 0;
         h.recorded_time = rec.recorded_time;
@@ -298,13 +298,13 @@ private:
         while (i < volume_desc_.path_table_size)
         {
             const std::size_t bin_size =
-                struct_size<iso9660::path_table_record>::value;
+                struct_size<iso::path_table_record>::value;
 
             std::size_t next = i + bin_size;
             if (next > volume_desc_.path_table_size)
                 break;
 
-            iso9660::path_table_record raw;
+            iso::path_table_record raw;
             hamigaki::binary_read(&records[i], raw);
 
             next += raw.dir_id_size;
@@ -346,18 +346,18 @@ private:
             return;
 
         const std::size_t head_size =
-            hamigaki::struct_size<iso9660::system_use_entry_header>::value;
+            hamigaki::struct_size<iso::system_use_entry_header>::value;
 
         const std::size_t ce_size =
             head_size +
-            hamigaki::struct_size<iso9660::ce_system_use_entry_data>::value;
+            hamigaki::struct_size<iso::ce_system_use_entry_data>::value;
 
         std::size_t pos = 0;
-        iso9660::ce_system_use_entry_data ce;
+        iso::ce_system_use_entry_data ce;
         ce.next_size = 0;
         while (pos + head_size < su.size())
         {
-            iso9660::system_use_entry_header head;
+            iso::system_use_entry_header head;
             hamigaki::binary_read(su.c_str()+pos, head);
             if (std::memcmp(head.signature, "CE", 2) == 0)
             {
@@ -393,12 +393,12 @@ private:
         std::vector<directory_record> records;
 
         const std::size_t bin_size =
-            struct_size<iso9660::directory_record>::value;
+            struct_size<iso::directory_record>::value;
 
         seek_logical_block(path_table_.at(num).data_pos);
         fill_buffer();
 
-        iso9660::directory_record raw;
+        iso::directory_record raw;
         hamigaki::binary_read(block_, raw);
         if (raw.record_size < bin_size + 1)
             throw BOOST_IOSTREAMS_FAILURE("invalid ISO 9660 directory records");
@@ -505,12 +505,12 @@ public:
     explicit basic_iso9660_file_source_impl(const Source& src)
         : src_(src), pos_(0)
     {
-        iso9660::volume_descriptor volume_desc;
+        iso::volume_descriptor volume_desc;
 
         boost::iostreams::seek(src_, logical_sector_size*16, BOOST_IOS::beg);
 
         char block[logical_sector_size];
-        iso9660::volume_descriptor desc;
+        iso::volume_descriptor desc;
         while (true)
         {
             iostreams::blocking_read(src_, block, sizeof(block));
@@ -538,7 +538,7 @@ public:
 
         pos_ = 0;
 
-        iso9660::header head;
+        iso::header head;
         if (!reader_->next_entry(head))
             return false;
 
@@ -546,12 +546,12 @@ public:
         return true;
     }
 
-    iso9660::header header() const
+    iso::header header() const
     {
         return header_;
     }
 
-    iso9660::header directory_header() const
+    iso::header directory_header() const
     {
         return reader_->directory_header();
     }
@@ -576,14 +576,14 @@ public:
         return reader_->is_latest();
     }
 
-    const std::vector<iso9660::volume_descriptor>& volume_descriptors() const
+    const std::vector<iso::volume_descriptor>& volume_descriptors() const
     {
         return volume_descs_;
     }
 
     void select_volume_descriptor(std::size_t index)
     {
-        const iso9660::volume_descriptor& desc = volume_descs_.at(index);
+        const iso::volume_descriptor& desc = volume_descs_.at(index);
         if (desc.is_joliet())
         {
             typedef iso9660_file_reader<Source,joliet_id> parser_type;
@@ -599,9 +599,9 @@ public:
 
 private:
     Source src_;
-    iso9660::header header_;
+    iso::header header_;
     boost::uint64_t pos_;
-    std::vector<iso9660::volume_descriptor> volume_descs_;
+    std::vector<iso::volume_descriptor> volume_descs_;
     std::auto_ptr<iso9660_file_reader_base> reader_;
 };
 

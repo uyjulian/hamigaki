@@ -7,12 +7,12 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#ifndef HAMIGAKI_ARCHIVERS_ISO9660_POSIX_FILE_ATTRIBUTES_HPP
-#define HAMIGAKI_ARCHIVERS_ISO9660_POSIX_FILE_ATTRIBUTES_HPP
+#ifndef HAMIGAKI_ARCHIVERS_ISO_POSIX_FILE_ATTRIBUTES_HPP
+#define HAMIGAKI_ARCHIVERS_ISO_POSIX_FILE_ATTRIBUTES_HPP
 
 #include <boost/cstdint.hpp>
 
-namespace hamigaki { namespace archivers { namespace iso9660 { namespace posix {
+namespace hamigaki { namespace archivers { namespace iso { namespace posix {
 
 struct file_attributes
 {
@@ -23,6 +23,6 @@ struct file_attributes
     boost::uint32_t serial_no;
 };
 
-} } } } // End namespaces posix, iso9660, archivers, hamigaki.
+} } } } // End namespaces posix, iso, archivers, hamigaki.
 
-#endif // HAMIGAKI_ARCHIVERS_ISO9660_POSIX_FILE_ATTRIBUTES_HPP
+#endif // HAMIGAKI_ARCHIVERS_ISO_POSIX_FILE_ATTRIBUTES_HPP

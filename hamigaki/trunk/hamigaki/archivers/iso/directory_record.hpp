@@ -7,12 +7,12 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#ifndef HAMIGAKI_ARCHIVERS_ISO9660_DIRECTORY_RECORD_HPP
-#define HAMIGAKI_ARCHIVERS_ISO9660_DIRECTORY_RECORD_HPP
+#ifndef HAMIGAKI_ARCHIVERS_ISO_DIRECTORY_RECORD_HPP
+#define HAMIGAKI_ARCHIVERS_ISO_DIRECTORY_RECORD_HPP
 
-#include <hamigaki/archivers/iso9660/date_time.hpp>
+#include <hamigaki/archivers/iso/date_time.hpp>
 
-namespace hamigaki { namespace archivers { namespace iso9660 {
+namespace hamigaki { namespace archivers { namespace iso {
 
 struct directory_record
 {
@@ -28,17 +28,17 @@ struct directory_record
     boost::uint8_t file_id_size;
 };
 
-} } } // End namespaces iso9660, archivers, hamigaki.
+} } } // End namespaces iso, archivers, hamigaki.
 
 namespace hamigaki
 {
 
 template<>
-struct struct_traits<archivers::iso9660::directory_record>
+struct struct_traits<archivers::iso::directory_record>
 {
 private:
-    typedef archivers::iso9660::directory_record self;
-    typedef archivers::iso9660::binary_date_time date_time;
+    typedef archivers::iso::directory_record self;
+    typedef archivers::iso::binary_date_time date_time;
 
 public:
     typedef boost::mpl::list<
@@ -60,4 +60,4 @@ public:
 
 } // namespace hamigaki
 
-#endif // HAMIGAKI_ARCHIVERS_ISO9660_DIRECTORY_RECORD_HPP
+#endif // HAMIGAKI_ARCHIVERS_ISO_DIRECTORY_RECORD_HPP

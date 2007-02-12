@@ -7,14 +7,14 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#ifndef HAMIGAKI_ARCHIVERS_ISO9660_VOLUME_DESC_SET_TERMINATOR_HPP
-#define HAMIGAKI_ARCHIVERS_ISO9660_VOLUME_DESC_SET_TERMINATOR_HPP
+#ifndef HAMIGAKI_ARCHIVERS_ISO_VOLUME_DESC_SET_TERMINATOR_HPP
+#define HAMIGAKI_ARCHIVERS_ISO_VOLUME_DESC_SET_TERMINATOR_HPP
 
 #include <hamigaki/binary/struct_traits.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/cstdint.hpp>
 
-namespace hamigaki { namespace archivers { namespace iso9660 {
+namespace hamigaki { namespace archivers { namespace iso {
 
 struct volume_desc_set_terminator
 {
@@ -23,16 +23,16 @@ struct volume_desc_set_terminator
     boost::uint8_t version;
 };
 
-} } } // End namespaces iso9660, archivers, hamigaki.
+} } } // End namespaces iso, archivers, hamigaki.
 
 namespace hamigaki
 {
 
 template<>
-struct struct_traits<archivers::iso9660::volume_desc_set_terminator>
+struct struct_traits<archivers::iso::volume_desc_set_terminator>
 {
 private:
-    typedef archivers::iso9660::volume_desc_set_terminator self;
+    typedef archivers::iso::volume_desc_set_terminator self;
 
 public:
     typedef boost::mpl::list<
@@ -45,4 +45,4 @@ public:
 
 } // namespace hamigaki
 
-#endif // HAMIGAKI_ARCHIVERS_ISO9660_VOLUME_DESC_SET_TERMINATOR_HPP
+#endif // HAMIGAKI_ARCHIVERS_ISO_VOLUME_DESC_SET_TERMINATOR_HPP

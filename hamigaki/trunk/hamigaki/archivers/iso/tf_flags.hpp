@@ -7,12 +7,12 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#ifndef HAMIGAKI_ARCHIVERS_ISO9660_TF_FLAGS_HPP
-#define HAMIGAKI_ARCHIVERS_ISO9660_TF_FLAGS_HPP
+#ifndef HAMIGAKI_ARCHIVERS_ISO_TF_FLAGS_HPP
+#define HAMIGAKI_ARCHIVERS_ISO_TF_FLAGS_HPP
 
 #include <boost/cstdint.hpp>
 
-namespace hamigaki { namespace archivers { namespace iso9660 {
+namespace hamigaki { namespace archivers { namespace iso {
 
 struct tf_flags
 {
@@ -26,6 +26,6 @@ struct tf_flags
     static const boost::uint8_t long_form       = 0x80;
 };
 
-} } } // End namespaces iso9660, archivers, hamigaki.
+} } } // End namespaces iso, archivers, hamigaki.
 
-#endif // HAMIGAKI_ARCHIVERS_ISO9660_TF_FLAGS_HPP
+#endif // HAMIGAKI_ARCHIVERS_ISO_TF_FLAGS_HPP

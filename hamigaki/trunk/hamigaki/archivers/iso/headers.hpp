@@ -7,23 +7,23 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#ifndef HAMIGAKI_ARCHIVERS_ISO9660_HEADERS_HPP
-#define HAMIGAKI_ARCHIVERS_ISO9660_HEADERS_HPP
+#ifndef HAMIGAKI_ARCHIVERS_ISO_HEADERS_HPP
+#define HAMIGAKI_ARCHIVERS_ISO_HEADERS_HPP
 
-#include <hamigaki/archivers/iso9660/posix/file_attributes.hpp>
-#include <hamigaki/archivers/iso9660/date_time.hpp>
-#include <hamigaki/archivers/iso9660/directory_record.hpp>
-#include <hamigaki/archivers/iso9660/file_flags.hpp>
-#include <hamigaki/archivers/iso9660/path_table_record.hpp>
-#include <hamigaki/archivers/iso9660/system_use_entries.hpp>
-#include <hamigaki/archivers/iso9660/volume_desc_set_terminator.hpp>
-#include <hamigaki/archivers/iso9660/volume_descriptor.hpp>
+#include <hamigaki/archivers/iso/posix/file_attributes.hpp>
+#include <hamigaki/archivers/iso/date_time.hpp>
+#include <hamigaki/archivers/iso/directory_record.hpp>
+#include <hamigaki/archivers/iso/file_flags.hpp>
+#include <hamigaki/archivers/iso/path_table_record.hpp>
+#include <hamigaki/archivers/iso/system_use_entries.hpp>
+#include <hamigaki/archivers/iso/volume_desc_set_terminator.hpp>
+#include <hamigaki/archivers/iso/volume_descriptor.hpp>
 #include <hamigaki/filesystem/consts.hpp>
 #include <hamigaki/filesystem/device_number.hpp>
 #include <boost/filesystem/path.hpp>
 #include <stdexcept>
 
-namespace hamigaki { namespace archivers { namespace iso9660 {
+namespace hamigaki { namespace archivers { namespace iso {
 
 struct header
 {
@@ -106,6 +106,6 @@ private:
     }
 };
 
-} } } // End namespaces iso9660, archivers, hamigaki.
+} } } // End namespaces iso, archivers, hamigaki.
 
-#endif // HAMIGAKI_ARCHIVERS_ISO9660_HEADERS_HPP
+#endif // HAMIGAKI_ARCHIVERS_ISO_HEADERS_HPP

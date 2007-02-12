@@ -32,7 +32,7 @@ public:
         , boost::iostreams::device_tag
     {};
 
-    typedef iso9660::header header_type;
+    typedef iso::header header_type;
 
     explicit basic_iso9660_file_source(const Source& src)
         : pimpl_(new impl_type(src))
@@ -44,12 +44,12 @@ public:
         return pimpl_->next_entry();
     }
 
-    iso9660::header header() const
+    iso::header header() const
     {
         return pimpl_->header();
     }
 
-    const std::vector<iso9660::volume_descriptor>& volume_descriptors() const
+    const std::vector<iso::volume_descriptor>& volume_descriptors() const
     {
         return pimpl_->volume_descriptors();
     }
@@ -78,7 +78,7 @@ public:
         , boost::iostreams::device_tag
     {};
 
-    typedef iso9660::header header_type;
+    typedef iso::header header_type;
 
     explicit iso9660_file_source(const std::string& filename)
         : impl_(iostreams::file_source(filename, BOOST_IOS::binary))
@@ -90,12 +90,12 @@ public:
         return impl_.next_entry();
     }
 
-    iso9660::header header() const
+    iso::header header() const
     {
         return impl_.header();
     }
 
-    const std::vector<iso9660::volume_descriptor>& volume_descriptors() const
+    const std::vector<iso::volume_descriptor>& volume_descriptors() const
     {
         return impl_.volume_descriptors();
     }
@@ -130,14 +130,14 @@ public:
         , boost::iostreams::closable_tag
     {};
 
-    typedef iso9660::header header_type;
+    typedef iso::header header_type;
 
     explicit basic_iso9660_file_sink(const Sink& sink)
         : pimpl_(new impl_type(sink))
     {
     }
 
-    void create_entry(const iso9660::header& head)
+    void create_entry(const iso::header& head)
     {
         pimpl_->create_entry(head);
     }
@@ -177,14 +177,14 @@ public:
         , boost::iostreams::closable_tag
     {};
 
-    typedef iso9660::header header_type;
+    typedef iso::header header_type;
 
     explicit iso9660_file_sink(const std::string& filename)
         : impl_(iostreams::file_sink(filename, BOOST_IOS::binary))
     {
     }
 
-    void create_entry(const iso9660::header& head)
+    void create_entry(const iso::header& head)
     {
         impl_.create_entry(head);
     }

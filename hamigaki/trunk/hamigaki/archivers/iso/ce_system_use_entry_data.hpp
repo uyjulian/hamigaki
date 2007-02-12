@@ -7,10 +7,10 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#ifndef HAMIGAKI_ARCHIVERS_ISO9660_CE_SYSTEM_USE_ENTRY_DATA_HPP
-#define HAMIGAKI_ARCHIVERS_ISO9660_CE_SYSTEM_USE_ENTRY_DATA_HPP
+#ifndef HAMIGAKI_ARCHIVERS_ISO_CE_SYSTEM_USE_ENTRY_DATA_HPP
+#define HAMIGAKI_ARCHIVERS_ISO_CE_SYSTEM_USE_ENTRY_DATA_HPP
 
-namespace hamigaki { namespace archivers { namespace iso9660 {
+namespace hamigaki { namespace archivers { namespace iso {
 
 struct ce_system_use_entry_data
 {
@@ -19,16 +19,16 @@ struct ce_system_use_entry_data
     boost::uint32_t next_size;
 };
 
-} } } // End namespaces iso9660, archivers, hamigaki.
+} } } // End namespaces iso, archivers, hamigaki.
 
 namespace hamigaki
 {
 
 template<>
-struct struct_traits<archivers::iso9660::ce_system_use_entry_data>
+struct struct_traits<archivers::iso::ce_system_use_entry_data>
 {
 private:
-    typedef archivers::iso9660::ce_system_use_entry_data self;
+    typedef archivers::iso::ce_system_use_entry_data self;
 
 public:
     typedef boost::mpl::list<
@@ -43,4 +43,4 @@ public:
 
 } // namespace hamigaki
 
-#endif // HAMIGAKI_ARCHIVERS_ISO9660_CE_SYSTEM_USE_ENTRY_DATA_HPP
+#endif // HAMIGAKI_ARCHIVERS_ISO_CE_SYSTEM_USE_ENTRY_DATA_HPP

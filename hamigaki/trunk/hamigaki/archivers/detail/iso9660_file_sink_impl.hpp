@@ -11,7 +11,7 @@
 #define HAMIGAKI_ARCHIVERS_DETAIL_ISO9660_FILE_SINK_IMPL_HPP
 
 #include <hamigaki/archivers/detail/iso9660_id.hpp>
-#include <hamigaki/archivers/iso9660/headers.hpp>
+#include <hamigaki/archivers/iso/headers.hpp>
 #include <hamigaki/integer/auto_min.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>
 #include <hamigaki/iostreams/seek.hpp>
@@ -37,7 +37,7 @@ private:
         iso9660_id file_id;
         boost::uint32_t data_pos;
         boost::uint32_t data_size;
-        iso9660::binary_date_time recorded_time;
+        iso::binary_date_time recorded_time;
         boost::uint8_t flags;
 
         directory_record()
@@ -55,8 +55,8 @@ private:
             if (int cmp = file_id.compare(rhs.file_id))
                 return cmp < 0;
 
-            bool lhs_assoc = (flags & iso9660::file_flags::associated) != 0;
-            bool rhs_assoc = (rhs.flags & iso9660::file_flags::associated) != 0;
+            bool lhs_assoc = (flags & iso::file_flags::associated) != 0;
+            bool rhs_assoc = (rhs.flags & iso::file_flags::associated) != 0;
 
             if (lhs_assoc && !rhs_assoc)
                 return true;
@@ -71,7 +71,7 @@ private:
 
         bool is_directory() const
         {
-            return (flags & iso9660::file_flags::directory) != 0;
+            return (flags & iso::file_flags::directory) != 0;
         }
     };
 
@@ -102,7 +102,7 @@ public:
     {
         directory_record x;
         x.file_id = iso9660_id('\x00');
-        x.flags = iso9660::file_flags::directory;
+        x.flags = iso::file_flags::directory;
         add_directory(0, 0, x);
 
         std::memset(block_, 0, sizeof(block_));
@@ -112,14 +112,14 @@ public:
         // for Primary Volume Descriptor
         iostreams::blocking_write(sink_, block_);
 
-        iso9660::volume_desc_set_terminator term;
+        iso::volume_desc_set_terminator term;
         term.type = 255u;
         std::memcpy(term.std_id, "CD001", 5);
         term.version = 1u;
         iostreams::binary_write(sink_, term);
     }
 
-    void create_entry(const iso9660::header& head)
+    void create_entry(const iso::header& head)
     {
         pos_ = 0;
         size_ = head.file_size;
@@ -225,7 +225,7 @@ public:
 
         const directory_record& root = (*(path_table_[0][0].records))[0];
 
-        iso9660::volume_descriptor desc;
+        iso::volume_descriptor desc;
         desc.type = 1u;
         std::memcpy(desc.std_id, "CD001", 5);
         desc.version = 1u;
@@ -237,7 +237,7 @@ public:
         desc.volume_seq_number = 1;
         desc.logical_block_size = logical_block_size_;
         desc.root_record.record_size =
-            struct_size<iso9660::directory_record>::value + 1;
+            struct_size<iso::directory_record>::value + 1;
         desc.root_record.ext_record_size = 0;
         desc.root_record.data_pos = root.data_pos;
         desc.root_record.data_size = root.data_size;
@@ -372,7 +372,7 @@ private:
     boost::uint32_t calc_directory_size(const directory_records& records)
     {
         const std::size_t bin_size =
-            struct_size<iso9660::directory_record>::value;
+            struct_size<iso::directory_record>::value;
 
         std::size_t pos = 0;
         for (std::size_t i = 0; i < records.size(); ++i)
@@ -407,7 +407,7 @@ private:
     void write_directory_records(const directory_records& records)
     {
         const std::size_t bin_size =
-            struct_size<iso9660::directory_record>::value;
+            struct_size<iso::directory_record>::value;
 
         std::memset(block_, 0, sizeof(block_));
 
@@ -431,7 +431,7 @@ private:
                 offset = 0;
             }
 
-            iso9660::directory_record raw;
+            iso::directory_record raw;
             raw.record_size = size;
             raw.ext_record_size = 0;
             raw.data_pos = rec.data_pos;
@@ -468,7 +468,7 @@ private:
             {
                 const path_table_record& rec = table[i];
                 const std::string& id = rec.dir_id.to_string();
-                iso9660::path_table_record raw;
+                iso::path_table_record raw;
                 raw.dir_id_size = id.size();
                 raw.ext_record_size = 0;
                 raw.data_pos = rec.data_pos;

@@ -1,4 +1,4 @@
-//  iso9660.cpp: a simple ISO image archiver program
+//  iso.cpp: a simple ISO image archiver program
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 
         for (int i = 2; i < argc; ++i)
         {
-            ar::iso9660::header head;
+            ar::iso::header head;
             head.path = fs::path(argv[i], fs::native);
 
             const fs_ex::file_status& s = fs_ex::status(head.path);

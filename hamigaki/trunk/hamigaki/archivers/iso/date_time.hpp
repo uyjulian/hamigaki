@@ -7,8 +7,8 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#ifndef HAMIGAKI_ARCHIVERS_ISO9660_DATE_TIME_HPP
-#define HAMIGAKI_ARCHIVERS_ISO9660_DATE_TIME_HPP
+#ifndef HAMIGAKI_ARCHIVERS_ISO_DATE_TIME_HPP
+#define HAMIGAKI_ARCHIVERS_ISO_DATE_TIME_HPP
 
 #include <hamigaki/binary/struct_traits.hpp>
 #include <hamigaki/filesystem/timestamp.hpp>
@@ -18,7 +18,7 @@
 #include <boost/cstdint.hpp>
 #include <boost/optional.hpp>
 
-namespace hamigaki { namespace archivers { namespace iso9660 {
+namespace hamigaki { namespace archivers { namespace iso {
 
 namespace iso_detail
 {
@@ -203,16 +203,16 @@ struct binary_date_time
     }
 };
 
-} } } // End namespaces iso9660, archivers, hamigaki.
+} } } // End namespaces iso, archivers, hamigaki.
 
 namespace hamigaki
 {
 
 template<>
-struct struct_traits<archivers::iso9660::date_time>
+struct struct_traits<archivers::iso::date_time>
 {
 private:
-    typedef archivers::iso9660::date_time self;
+    typedef archivers::iso::date_time self;
 
 public:
     typedef boost::mpl::list<
@@ -228,10 +228,10 @@ public:
 };
 
 template<>
-struct struct_traits<archivers::iso9660::binary_date_time>
+struct struct_traits<archivers::iso::binary_date_time>
 {
 private:
-    typedef archivers::iso9660::binary_date_time self;
+    typedef archivers::iso::binary_date_time self;
 
 public:
     typedef boost::mpl::list<
@@ -247,4 +247,4 @@ public:
 
 } // namespace hamigaki
 
-#endif // HAMIGAKI_ARCHIVERS_ISO9660_DATE_TIME_HPP
+#endif // HAMIGAKI_ARCHIVERS_ISO_DATE_TIME_HPP

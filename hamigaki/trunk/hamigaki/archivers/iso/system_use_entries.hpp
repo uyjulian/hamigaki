@@ -7,14 +7,14 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#ifndef HAMIGAKI_ARCHIVERS_ISO9660_SYSTEM_USE_ENTRIES_HPP
-#define HAMIGAKI_ARCHIVERS_ISO9660_SYSTEM_USE_ENTRIES_HPP
+#ifndef HAMIGAKI_ARCHIVERS_ISO_SYSTEM_USE_ENTRIES_HPP
+#define HAMIGAKI_ARCHIVERS_ISO_SYSTEM_USE_ENTRIES_HPP
 
-#include <hamigaki/archivers/iso9660/ce_system_use_entry_data.hpp>
-#include <hamigaki/archivers/iso9660/er_system_use_entry_data.hpp>
-#include <hamigaki/archivers/iso9660/pn_system_use_entry_data.hpp>
-#include <hamigaki/archivers/iso9660/px_system_use_entry_data.hpp>
-#include <hamigaki/archivers/iso9660/sp_system_use_entry_data.hpp>
-#include <hamigaki/archivers/iso9660/system_use_entry_header.hpp>
+#include <hamigaki/archivers/iso/ce_system_use_entry_data.hpp>
+#include <hamigaki/archivers/iso/er_system_use_entry_data.hpp>
+#include <hamigaki/archivers/iso/pn_system_use_entry_data.hpp>
+#include <hamigaki/archivers/iso/px_system_use_entry_data.hpp>
+#include <hamigaki/archivers/iso/sp_system_use_entry_data.hpp>
+#include <hamigaki/archivers/iso/system_use_entry_header.hpp>
 
-#endif // HAMIGAKI_ARCHIVERS_ISO9660_SYSTEM_USE_ENTRIES_HPP
+#endif // HAMIGAKI_ARCHIVERS_ISO_SYSTEM_USE_ENTRIES_HPP
