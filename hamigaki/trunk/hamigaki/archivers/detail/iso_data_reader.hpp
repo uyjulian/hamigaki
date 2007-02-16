@@ -34,6 +34,7 @@ public:
     {
         seek_logical_block(data_pos);
         dir_reader_.read(src_);
+        index_ = 0;
     }
 
     const std::vector<directory_record>& entries() const
@@ -46,9 +47,14 @@ public:
         return record_;
     }
 
+    std::size_t entry_index() const
+    {
+        return index_;
+    }
+
     void select_entry(std::size_t n)
     {
-        record_ = dir_reader_.entries().at(index_);
+        record_ = dir_reader_.entries().at(n);
         index_ = n;
         pos_ = 0;
     }

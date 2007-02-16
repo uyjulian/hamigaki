@@ -50,20 +50,21 @@ public:
             struct_size<iso::directory_record>::value;
 
         std::size_t block_size = static_cast<std::size_t>(1) << lbn_shift_;
-        boost::scoped_array<char> buffer(new char[block_size]);
+        boost::scoped_array<char> block(new char[block_size]);
 
-        iostreams::blocking_read(src, block, block_size);
+        iostreams::blocking_read(src, &block[0], block_size);
 
         iso::directory_record raw;
-        hamigaki::binary_read(block, raw);
+        hamigaki::binary_read(&block[0], raw);
         if (raw.record_size < bin_size + 1)
             throw BOOST_IOSTREAMS_FAILURE("invalid ISO 9660 directory records");
 
-        directory_record self(iso9660_id('\x00'));
+        directory_record self;
         self.data_pos = raw.data_pos;
         self.data_size = raw.data_size;
         self.recorded_time = raw.recorded_time;
         self.flags = raw.flags;
+        self.file_id.assign(1, '\x00');
         if (std::size_t su_len = raw.record_size - (bin_size + 1))
             self.system_use.assign(&block[bin_size + 1], su_len);
         records.push_back(self);
@@ -74,12 +75,12 @@ public:
         {
             boost::uint32_t offset = pos & lbn_mask;
             if (offset == 0)
-                iostreams::blocking_read(src, block, block_size);
+                iostreams::blocking_read(src, &block[0], block_size);
 
             if (block[offset] != 0)
             {
                 boost::uint32_t next = offset + bin_size;
-                if (next > volume_desc_.logical_block_size)
+                if (next > block_size)
                     break;
 
                 hamigaki::binary_read(&block[offset], raw);
@@ -92,7 +93,7 @@ public:
                     break;
 
                 next += id_size;
-                if (next > volume_desc_.logical_block_size)
+                if (next > block_size)
                     break;
 
                 directory_record rec;
@@ -111,7 +112,7 @@ public:
                 pos += raw.record_size;
             }
             else
-                pos += (volume_desc_.logical_block_size - offset);
+                pos += (block_size - offset);
         }
 
         if (pos != self.data_size)
