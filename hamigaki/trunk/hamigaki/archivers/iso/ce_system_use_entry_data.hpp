@@ -10,6 +10,10 @@
 #ifndef HAMIGAKI_ARCHIVERS_ISO_CE_SYSTEM_USE_ENTRY_DATA_HPP
 #define HAMIGAKI_ARCHIVERS_ISO_CE_SYSTEM_USE_ENTRY_DATA_HPP
 
+#include <hamigaki/binary/struct_traits.hpp>
+#include <boost/mpl/list.hpp>
+#include <boost/cstdint.hpp>
+
 namespace hamigaki { namespace archivers { namespace iso {
 
 struct ce_system_use_entry_data
