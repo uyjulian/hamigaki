@@ -14,7 +14,7 @@
 // (The above link is Japanese site)
 
 
-#include <hamigaki/archivers/iso_image_file.hpp>
+#include <hamigaki/archivers/iso_file.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <clocale>
@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
         std::setlocale(LC_ALL, "");
         fs::path::default_name_check(fs::no_check);
 
-        ar::iso_image_file_source iso(argv[1]);
+        ar::iso_file_source iso(argv[1]);
 
         const std::vector<
             ar::iso::volume_descriptor>& descs = iso.volume_descriptors();

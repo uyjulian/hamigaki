@@ -12,7 +12,6 @@
 
 #include <boost/config.hpp>
 #include <hamigaki/archivers/detail/iso_data_reader.hpp>
-#include <hamigaki/archivers/detail/iso_directory_reader.hpp>
 #include <hamigaki/archivers/detail/iso_logical_block_number.hpp>
 #include <hamigaki/archivers/detail/sl_components_parser.hpp>
 #include <hamigaki/archivers/iso/headers.hpp>
@@ -46,6 +45,8 @@ private:
     };
 
 public:
+    typedef Source source_type;
+
     rock_ridge_reader(const Source& src, const iso::volume_descriptor& desc)
         : data_reader_(src, calc_lbn_shift(desc.logical_block_size))
     {
