@@ -42,12 +42,12 @@ int main(int argc, char* argv[])
         ar::iso_file_source iso(argv[1]);
 
         const std::vector<
-            ar::iso::volume_descriptor>& descs = iso.volume_descriptors();
+            ar::iso::volume_desc>& descs = iso.volume_descs();
         for (std::size_t i = 0; i < descs.size(); ++i)
         {
             if (descs[i].is_joliet())
             {
-                iso.select_volume_descriptor(i);
+                iso.select_volume_desc(i);
                 break;
             }
         }

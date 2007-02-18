@@ -48,14 +48,14 @@ public:
         return pimpl_->header();
     }
 
-    const std::vector<iso::volume_descriptor>& volume_descriptors() const
+    const std::vector<iso::volume_desc>& volume_descs() const
     {
-        return pimpl_->volume_descriptors();
+        return pimpl_->volume_descs();
     }
 
-    void select_volume_descriptor(std::size_t index)
+    void select_volume_desc(std::size_t index, bool use_rrip=true)
     {
-        pimpl_->select_volume_descriptor(index);
+        pimpl_->select_volume_desc(index, use_rrip);
     }
 
     std::streamsize read(char* s, std::streamsize n)
@@ -94,14 +94,14 @@ public:
         return impl_.header();
     }
 
-    const std::vector<iso::volume_descriptor>& volume_descriptors() const
+    const std::vector<iso::volume_desc>& volume_descs() const
     {
-        return impl_.volume_descriptors();
+        return impl_.volume_descs();
     }
 
-    void select_volume_descriptor(std::size_t index)
+    void select_volume_desc(std::size_t index, bool use_rrip=true)
     {
-        impl_.select_volume_descriptor(index);
+        impl_.select_volume_desc(index, use_rrip);
     }
 
     std::streamsize read(char* s, std::streamsize n)

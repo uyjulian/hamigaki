@@ -1,4 +1,4 @@
-//  joliet_reader.hpp: Joliet reader
+//  iso9660_reader.hpp: ISO 9660 reader
 
 //  Copyright Takeshi Mouri 2007.
 //  Use, modification, and distribution are subject to the
@@ -7,19 +7,19 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#ifndef HAMIGAKI_ARCHIVERS_DETAIL_JOLIET_READER_HPP
-#define HAMIGAKI_ARCHIVERS_DETAIL_JOLIET_READER_HPP
+#ifndef HAMIGAKI_ARCHIVERS_DETAIL_ISO9660_READER_HPP
+#define HAMIGAKI_ARCHIVERS_DETAIL_ISO9660_READER_HPP
 
+#include <boost/config.hpp>
 #include <hamigaki/archivers/detail/iso_data_reader.hpp>
 #include <hamigaki/archivers/detail/iso_logical_block_number.hpp>
-#include <hamigaki/archivers/detail/ucs2.hpp>
 #include <hamigaki/archivers/iso/headers.hpp>
 #include <stack>
 
 namespace hamigaki { namespace archivers { namespace detail {
 
 template<class Source>
-class joliet_reader : private boost::noncopyable
+class iso9660_reader : private boost::noncopyable
 {
 private:
     typedef typename iso_data_reader<Source>::directory_record directory_record;
@@ -29,7 +29,7 @@ private:
 public:
     typedef Source source_type;
 
-    joliet_reader(Source& src,
+    iso9660_reader(Source& src,
             const iso::volume_info& info, const iso::volume_desc& desc)
         : data_reader_(src, calc_lbn_shift(info.logical_block_size))
     {
@@ -79,7 +79,7 @@ public:
                 h.path = dir_path_ / "..";
         }
         else
-            h.path = dir_path_ / joliet_reader::make_path(rec.file_id);
+            h.path = dir_path_ / path(rec.file_id, no_check);
         h.file_size = rec.data_size;
         h.recorded_time = rec.recorded_time;
         h.flags = rec.flags;
@@ -104,14 +104,8 @@ private:
     iso::header header_;
     boost::filesystem::path dir_path_;
     std::stack<boost::uint32_t> stack_;
-
-    static boost::filesystem::path make_path(const std::string& data)
-    {
-        using namespace boost::filesystem;
-        return path(detail::ucs2be_to_narrow(data), no_check);
-    }
 };
 
 } } } // End namespaces detail, archivers, hamigaki.
 
-#endif // HAMIGAKI_ARCHIVERS_DETAIL_JOLIET_READER_HPP
+#endif // HAMIGAKI_ARCHIVERS_DETAIL_ISO9660_READER_HPP

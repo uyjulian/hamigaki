@@ -22,7 +22,7 @@ class iso_data_reader : private boost::noncopyable
 public:
     typedef iso_directory_reader::directory_record directory_record;
 
-    iso_data_reader(const Source& src, boost::uint32_t lbn_shift)
+    iso_data_reader(Source& src, boost::uint32_t lbn_shift)
         : src_(src), lbn_shift_(lbn_shift), dir_reader_(lbn_shift)
         , index_(0), pos_(0)
     {
@@ -78,7 +78,7 @@ public:
     }
 
 private:
-    Source src_;
+    Source& src_;
     const boost::uint32_t lbn_shift_;
     iso_directory_reader dir_reader_;
     std::size_t index_;

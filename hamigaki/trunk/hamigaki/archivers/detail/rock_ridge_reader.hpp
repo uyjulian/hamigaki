@@ -15,6 +15,7 @@
 #include <hamigaki/archivers/detail/iso_logical_block_number.hpp>
 #include <hamigaki/archivers/detail/sl_components_parser.hpp>
 #include <hamigaki/archivers/iso/headers.hpp>
+#include <hamigaki/archivers/iso/rrip_type.hpp>
 #include <hamigaki/archivers/iso/tf_flags.hpp>
 #include <stack>
 
@@ -27,11 +28,6 @@ private:
     typedef typename iso_data_reader<Source>::directory_record directory_record;
 
     static const std::size_t logical_sector_size = 2048;
-
-    enum rrip_type
-    {
-        rrip_ind, rrip_none, rrip_1991a, ieee_p1282
-    };
 
     struct internal_data
     {
@@ -47,11 +43,12 @@ private:
 public:
     typedef Source source_type;
 
-    rock_ridge_reader(const Source& src, const iso::volume_descriptor& desc)
-        : data_reader_(src, calc_lbn_shift(desc.logical_block_size))
+    rock_ridge_reader(Source& src,
+            const iso::volume_info& info, const iso::volume_desc& desc)
+        : data_reader_(src, calc_lbn_shift(info.logical_block_size))
+        , rrip_(desc.rrip)
     {
         data_reader_.select_directory(desc.root_record.data_pos);
-        rock_ridge_check();
     }
 
     bool next_entry()
@@ -80,55 +77,7 @@ private:
     internal_data internal_;
     boost::filesystem::path dir_path_;
     std::stack<boost::uint32_t> stack_;
-    rrip_type rrip_;
-
-    void rock_ridge_check()
-    {
-        rrip_ = rrip_none;
-
-        const std::string& su = data_reader_.entries().at(0).system_use;
-        if (su.empty())
-            return;
-
-        const std::size_t head_size =
-            hamigaki::struct_size<iso::system_use_entry_header>::value;
-
-        const std::size_t er_size =
-            head_size +
-            hamigaki::struct_size<iso::er_system_use_entry_data>::value;
-
-        std::size_t pos = 0;
-        while (pos + head_size < su.size())
-        {
-            iso::system_use_entry_header head;
-            hamigaki::binary_read(su.c_str()+pos, head);
-            if (std::memcmp(head.signature, "ER", 2) == 0)
-            {
-                if ((head.entry_size >= er_size) &&
-                    (pos + head.entry_size <= su.size()) )
-                {
-                    iso::er_system_use_entry_data er;
-                    hamigaki::binary_read(su.c_str()+pos+head_size, er);
-
-                    if (er.id_size == 10)
-                    {
-                        const char* s = su.c_str()+pos+er_size;
-                        if (std::memcmp(s, "RRIP_1991A", 10) == 0)
-                        {
-                            rrip_ = rrip_1991a;
-                            return;
-                        }
-                        else if (std::memcmp(s, "IEEE_P1282", 10) == 0)
-                        {
-                            rrip_ = ieee_p1282;
-                            return;
-                        }
-                    }
-                }
-            }
-            pos += head.entry_size;
-        }
-    }
+    iso::rrip_type rrip_;
 
     void parse_tf_system_use_entry(
         iso::header& header, const char* s, std::size_t size)
@@ -287,7 +236,7 @@ private:
 
             if (std::memcmp(head.signature, "PX", 2) == 0)
             {
-                if (rrip_ == rrip_1991a)
+                if (rrip_ == iso::rrip_1991a)
                 {
                     typedef iso::old_px_system_use_entry_data data_type;
                     const std::size_t data_size =
@@ -437,19 +386,13 @@ private:
 
             const directory_record& parent = data_reader_.entries().at(1);
 
-            if (rrip_ != rrip_none)
-            {
+            iso::header h;
+            internal_data internal;
+            h.system_use = parent.system_use;
+            parse_rock_ridge(h, internal);
 
-                iso::header h;
-                internal_data internal;
-                h.system_use = parent.system_use;
-                parse_rock_ridge(h, internal);
-
-                if (internal.parent_pos != 0)
-                    data_reader_.select_directory(internal.parent_pos);
-                else
-                    data_reader_.select_directory(parent.data_pos);
-            }
+            if (internal.parent_pos != 0)
+                data_reader_.select_directory(internal.parent_pos);
             else
                 data_reader_.select_directory(parent.data_pos);
 
@@ -478,12 +421,9 @@ private:
         h.system_use = rec.system_use;
 
         internal_data inter;
-        if (rrip_ != rrip_none)
-        {
-            parse_rock_ridge(h, inter);
-            if (inter.child_pos != 0)
-                h.flags |= iso::file_flags::directory;
-        }
+        parse_rock_ridge(h, inter);
+        if (inter.child_pos != 0)
+            h.flags |= iso::file_flags::directory;
 
         header_ = h;
         internal_ = inter;
