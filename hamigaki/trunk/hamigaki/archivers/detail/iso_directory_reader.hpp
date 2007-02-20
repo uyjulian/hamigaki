@@ -10,15 +10,14 @@
 #ifndef HAMIGAKI_ARCHIVERS_DETAIL_ISO_DIRECTORY_READER_HPP
 #define HAMIGAKI_ARCHIVERS_DETAIL_ISO_DIRECTORY_READER_HPP
 
+#include <hamigaki/archivers/detail/iso_directory_record.hpp>
 #include <hamigaki/archivers/iso/ce_system_use_entry_data.hpp>
 #include <hamigaki/archivers/iso/directory_record.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>
 #include <boost/iostreams/detail/ios.hpp>
 #include <boost/iostreams/seek.hpp>
-#include <boost/cstdint.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/scoped_array.hpp>
-#include <string>
 #include <vector>
 
 namespace hamigaki { namespace archivers { namespace detail {
@@ -26,15 +25,7 @@ namespace hamigaki { namespace archivers { namespace detail {
 class iso_directory_reader : private boost::noncopyable
 {
 public:
-    struct directory_record
-    {
-        boost::uint32_t data_pos;
-        boost::uint32_t data_size;
-        iso::binary_date_time recorded_time;
-        boost::uint8_t flags;
-        std::string file_id;
-        std::string system_use;
-    };
+    typedef iso_directory_record directory_record;
 
     explicit iso_directory_reader(boost::uint32_t lbn_shift)
         : lbn_shift_(lbn_shift)

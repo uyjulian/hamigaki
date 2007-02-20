@@ -22,7 +22,7 @@ template<class Source>
 class iso9660_reader : private boost::noncopyable
 {
 private:
-    typedef typename iso_data_reader<Source>::directory_record directory_record;
+    typedef typename iso_directory_record directory_record;
 
     static const std::size_t logical_sector_size = 2048;
 

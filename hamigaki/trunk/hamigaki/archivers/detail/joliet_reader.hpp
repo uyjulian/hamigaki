@@ -22,7 +22,7 @@ template<class Source>
 class joliet_reader : private boost::noncopyable
 {
 private:
-    typedef typename iso_data_reader<Source>::directory_record directory_record;
+    typedef iso_directory_record directory_record;
 
     static const std::size_t logical_sector_size = 2048;
 

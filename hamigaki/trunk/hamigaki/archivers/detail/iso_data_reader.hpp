@@ -20,7 +20,7 @@ template<class Source>
 class iso_data_reader : private boost::noncopyable
 {
 public:
-    typedef iso_directory_reader::directory_record directory_record;
+    typedef iso_directory_record directory_record;
 
     iso_data_reader(Source& src, boost::uint32_t lbn_shift)
         : src_(src), lbn_shift_(lbn_shift), dir_reader_(lbn_shift)

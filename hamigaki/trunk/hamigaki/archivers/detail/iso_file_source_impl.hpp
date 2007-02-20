@@ -285,7 +285,6 @@ private:
     void rock_ridge_check()
     {
         typedef iso_data_reader<Source> reader_type;
-        typedef typename reader_type::directory_record directory_record;
 
         const boost::uint32_t lbn_shift =
             calc_lbn_shift(volume_info_.logical_block_size);
@@ -296,7 +295,7 @@ private:
 
             reader_type reader(src_, lbn_shift);
             reader.select_directory(desc.root_record.data_pos);
-            const directory_record& root = reader.entries().at(0);
+            const iso_directory_record& root = reader.entries().at(0);
             desc.rrip = detail::rock_ridge_check(root.system_use);
         }
     }
