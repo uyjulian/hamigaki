@@ -10,71 +10,14 @@
 #ifndef HAMIGAKI_ARCHIVERS_DETAIL_ISO_FILE_SOURCE_IMPL_HPP
 #define HAMIGAKI_ARCHIVERS_DETAIL_ISO_FILE_SOURCE_IMPL_HPP
 
-#include <hamigaki/archivers/detail/iso9660_reader.hpp>
-#include <hamigaki/archivers/detail/joliet_reader.hpp>
+#include <hamigaki/archivers/detail/iso_file_reader.hpp>
+#include <hamigaki/archivers/detail/iso9660_directory_parser.hpp>
+#include <hamigaki/archivers/detail/joliet_directory_parser.hpp>
 #include <hamigaki/archivers/detail/rock_ridge_check.hpp>
-#include <hamigaki/archivers/detail/rock_ridge_reader.hpp>
-#include <hamigaki/archivers/detail/ucs2.hpp>
+#include <hamigaki/archivers/detail/rock_ridge_directory_parser.hpp>
 #include <memory>
 
 namespace hamigaki { namespace archivers { namespace detail {
-
-class iso_file_reader_base
-{
-public:
-    virtual ~iso_file_reader_base(){};
-
-    bool next_entry()
-    {
-        return do_next_entry();
-    }
-
-    iso::header header() const
-    {
-        return do_header();
-    }
-
-    std::streamsize read(char* s, std::streamsize n)
-    {
-        return do_read(s, n);
-    }
-
-private:
-    virtual bool do_next_entry() = 0;
-    virtual iso::header do_header() const = 0;
-    virtual std::streamsize do_read(char* s, std::streamsize n) = 0;
-};
-
-template<class Impl>
-class iso_file_reader : public iso_file_reader_base
-{
-public:
-    typedef typename Impl::source_type source_type;
-
-    iso_file_reader(source_type& src,
-            const iso::volume_info& info, const iso::volume_desc& desc)
-        : impl_(src, info, desc)
-    {
-    }
-
-private:
-    Impl impl_;
-
-    bool do_next_entry() // virtual
-    {
-        return impl_.next_entry();
-    }
-
-    iso::header do_header() const // virtual
-    {
-        return impl_.header();
-    }
-
-    std::streamsize do_read(char* s, std::streamsize n) // virtual
-    {
-        return impl_.read(s, n);
-    }
-};
 
 template<class Source>
 class basic_iso_file_source_impl : private boost::noncopyable
@@ -117,28 +60,30 @@ public:
     void select_volume_desc(std::size_t index, bool use_rrip=true)
     {
         const iso::volume_desc& desc = volume_descs_.at(index);
+        std::auto_ptr<iso_directory_parser> parser;
+        if (desc.is_joliet())
+            parser.reset(new joliet_directory_parser);
+        else
+            parser.reset(new iso9660_directory_parser);
+
         if (use_rrip && desc.is_rock_ridge())
         {
-            typedef iso_file_reader<rock_ridge_reader<Source> > reader_type;
-            reader_.reset(new reader_type(src_, volume_info_, desc));
+            std::auto_ptr<iso_directory_parser> tmp(
+                new rock_ridge_directory_parser(parser, desc.rrip)
+            );
+            parser = tmp;
         }
-        else if (desc.is_joliet())
-        {
-            typedef iso_file_reader<joliet_reader<Source> > reader_type;
-            reader_.reset(new reader_type(src_, volume_info_, desc));
-        }
-        else
-        {
-            typedef iso_file_reader<iso9660_reader<Source> > reader_type;
-            reader_.reset(new reader_type(src_, volume_info_, desc));
-        }
+
+        reader_.reset(
+            new iso_file_reader<Source>(src_, parser, volume_info_, desc)
+        );
     }
 
 private:
     Source src_;
     iso::volume_info volume_info_;
     std::vector<iso::volume_desc> volume_descs_;
-    std::auto_ptr<iso_file_reader_base> reader_;
+    std::auto_ptr<iso_file_reader<Source> > reader_;
 
     template<std::size_t Size>
     static std::string make_string(const char (&data)[Size], char fill)
