@@ -33,9 +33,9 @@ public:
     }
 
     template<class Source>
-    void read(Source& src)
+    void read(Source& src, std::vector<directory_record>& records)
     {
-        std::vector<directory_record> records;
+        std::vector<directory_record> tmp;
 
         const std::size_t bin_size =
             struct_size<iso::directory_record>::value;
@@ -58,7 +58,7 @@ public:
         self.file_id.assign(1, '\x00');
         if (std::size_t su_len = raw.record_size - (bin_size + 1))
             self.system_use.assign(&block[bin_size + 1], su_len);
-        records.push_back(self);
+        tmp.push_back(self);
 
         const boost::uint32_t lbn_mask = block_size - 1;
         boost::uint32_t pos = raw.record_size;
@@ -98,7 +98,7 @@ public:
                     rec.system_use.assign(
                         &block[offset+bin_size + id_size], su_len);
                 }
-                records.push_back(rec);
+                tmp.push_back(rec);
 
                 pos += raw.record_size;
             }
@@ -109,20 +109,14 @@ public:
         if (pos != self.data_size)
             throw BOOST_IOSTREAMS_FAILURE("invalid ISO 9660 directory records");
 
-        for (std::size_t i = 0; i < records.size(); ++i)
-            this->read_continuation_area(src, records[i]);
+        for (std::size_t i = 0; i < tmp.size(); ++i)
+            this->read_continuation_area(src, tmp[i]);
 
-        entries_.swap(records);
-    }
-
-    const std::vector<directory_record>& entries() const
-    {
-        return entries_;
+        records.swap(tmp);
     }
 
 private:
     const boost::uint32_t lbn_shift_;
-    std::vector<directory_record> entries_;
 
     template<class Source>
     void read_continuation_area(Source& src, directory_record& rec)

@@ -10,6 +10,7 @@
 #ifndef HAMIGAKI_ARCHIVERS_DETAIL_ISO_FILE_SOURCE_IMPL_HPP
 #define HAMIGAKI_ARCHIVERS_DETAIL_ISO_FILE_SOURCE_IMPL_HPP
 
+#include <hamigaki/archivers/detail/iso_data_reader.hpp>
 #include <hamigaki/archivers/detail/iso_file_reader.hpp>
 #include <hamigaki/archivers/detail/iso9660_directory_parser.hpp>
 #include <hamigaki/archivers/detail/joliet_directory_parser.hpp>

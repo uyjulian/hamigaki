@@ -10,7 +10,6 @@
 #ifndef HAMIGAKI_ARCHIVERS_DETAIL_ISO_FILE_READER_HPP
 #define HAMIGAKI_ARCHIVERS_DETAIL_ISO_FILE_READER_HPP
 
-#include <hamigaki/archivers/detail/iso_data_reader.hpp>
 #include <hamigaki/archivers/detail/iso_directory_parser.hpp>
 #include <hamigaki/archivers/detail/iso_directory_reader.hpp>
 #include <hamigaki/archivers/detail/iso_logical_block_number.hpp>
@@ -115,8 +114,7 @@ private:
         seek_logical_block(data_pos);
 
         iso_directory_reader dir_reader(lbn_shift_);
-        dir_reader.read(src_);
-        records_ = dir_reader.entries();
+        dir_reader.read(src_, records_);
         parser_->fix_records(records_);
 
         index_ = 2;

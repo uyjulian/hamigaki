@@ -33,13 +33,13 @@ public:
     void select_directory(boost::uint32_t data_pos)
     {
         seek_logical_block(data_pos);
-        dir_reader_.read(src_);
+        dir_reader_.read(src_, entries_);
         index_ = 0;
     }
 
     const std::vector<directory_record>& entries() const
     {
-        return dir_reader_.entries();
+        return entries_;
     }
 
     directory_record record() const
@@ -54,7 +54,7 @@ public:
 
     void select_entry(std::size_t n)
     {
-        record_ = dir_reader_.entries().at(n);
+        record_ = entries_.at(n);
         index_ = n;
         pos_ = 0;
     }
@@ -81,6 +81,7 @@ private:
     Source& src_;
     const boost::uint32_t lbn_shift_;
     iso_directory_reader dir_reader_;
+    std::vector<directory_record> entries_;
     std::size_t index_;
     boost::uint64_t pos_;
     directory_record record_;
