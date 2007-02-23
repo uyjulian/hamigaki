@@ -1,4 +1,4 @@
-//  sl_components_parser.hpp: IEEE P1281 "SL" components parser
+//  sl_components_parser.hpp: IEEE P1282 "SL" components parser
 
 //  Copyright Takeshi Mouri 2007.
 //  Use, modification, and distribution are subject to the

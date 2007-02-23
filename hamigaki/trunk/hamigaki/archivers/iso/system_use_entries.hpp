@@ -1,4 +1,4 @@
-//  system_use_entries.hpp: IEEE P1281 System Use Entries
+//  system_use_entries.hpp: IEEE P1281/P1282 System Use Entries
 
 //  Copyright Takeshi Mouri 2007.
 //  Use, modification, and distribution are subject to the

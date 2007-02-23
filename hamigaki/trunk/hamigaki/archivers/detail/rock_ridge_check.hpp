@@ -1,4 +1,4 @@
-//  rock_ridge_check.hpp: IEEE P1281 Rock Ridge checker
+//  rock_ridge_check.hpp: IEEE P1282 Rock Ridge checker
 
 //  Copyright Takeshi Mouri 2007.
 //  Use, modification, and distribution are subject to the
