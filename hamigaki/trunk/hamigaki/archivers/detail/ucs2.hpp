@@ -52,10 +52,10 @@ inline std::string wide_to_narrow(const wchar_t* pwcs)
 
 inline std::size_t ucs2be_to_wide(wchar_t* pwcs, const char* s, std::size_t n)
 {
-    std::size_t src_size = n/2;
-    for (std::size_t i = 0; i < src_size; ++i)
+    std::size_t size = n/2;
+    for (std::size_t i = 0; i < size; ++i)
         pwcs[i] = hamigaki::decode_int<big,2>(s + i*2);
-    return src_size*2;
+    return size;
 }
 
 inline std::string ucs2be_to_narrow(const char* s, std::size_t n)
@@ -71,6 +71,63 @@ inline std::string ucs2be_to_narrow(const char* s, std::size_t n)
 inline std::string ucs2be_to_narrow(const std::string& data)
 {
     return detail::ucs2be_to_narrow(data.c_str(), data.size());
+}
+
+
+inline std::size_t narrow_to_wide(wchar_t* pwcs, const char* s, std::size_t n)
+{
+#if defined(HAMIGAKI_ARCHIVERS_WINDOWS)
+    int res = ::MultiByteToWideChar(
+        0, 0, s, -1, pwcs, static_cast<int>(n));
+    if (res == 0)
+        throw std::runtime_error("failed MultiByteToWideChar()");
+    return static_cast<std::size_t>(res - 1);
+#else
+    std::size_t res = std::mbstowcs(pwcs, s, n);
+    if (res == static_cast<std::size_t>(-1))
+        throw std::runtime_error("failed mbstowcs()");
+    return res;
+#endif
+}
+
+inline std::size_t narrow_to_wide(
+    boost::scoped_array<wchar_t>& buf, const char* s)
+{
+    std::size_t size = detail::narrow_to_wide(0, s, 0);
+    buf.reset(new wchar_t[size+1]);
+    detail::narrow_to_wide(buf.get(), s, size+1);
+    return size;
+}
+
+inline std::size_t wide_to_ucs2be(char* s, const wchar_t* pwcs, std::size_t n)
+{
+    for (std::size_t i = 0; i < n; ++i)
+    {
+        hamigaki::encode_int<big,2>(
+            s + i*2, static_cast<boost::int16_t>(pwcs[i]));
+    }
+    return n*2;
+}
+
+inline std::string wide_to_ucs2be(const wchar_t* pwcs, std::size_t n)
+{
+    std::size_t size = n*2;
+    boost::scoped_array<char> buf(new char[size]);
+    detail::wide_to_ucs2be(buf.get(), pwcs, n);
+    return std::string(buf.get(), size);
+}
+
+inline std::string narrow_to_ucs2be(const char* s)
+{
+    boost::scoped_array<wchar_t> buf;
+    std::size_t size = detail::narrow_to_wide(buf, s);
+
+    return wide_to_ucs2be(buf.get(), size);
+}
+
+inline std::string narrow_to_ucs2be(const std::string& data)
+{
+    return detail::narrow_to_ucs2be(data.c_str());
 }
 
 } } } // End namespaces detail, archivers, hamigaki.
