@@ -10,6 +10,7 @@
 #ifndef HAMIGAKI_ARCHIVERS_ISO_FILE_HPP
 #define HAMIGAKI_ARCHIVERS_ISO_FILE_HPP
 
+#include <hamigaki/archivers/detail/iso_file_sink_impl.hpp>
 #include <hamigaki/archivers/detail/iso_file_source_impl.hpp>
 #include <hamigaki/iostreams/device/file.hpp>
 #include <boost/shared_ptr.hpp>
@@ -111,6 +112,118 @@ public:
 
 private:
     basic_iso_file_source<iostreams::file_source> impl_;
+};
+
+
+template<class Sink>
+class basic_iso_file_sink
+{
+private:
+    typedef detail::basic_iso_file_sink_impl<Sink> impl_type;
+
+public:
+    typedef char char_type;
+
+    struct category
+        : boost::iostreams::output
+        , boost::iostreams::device_tag
+        , boost::iostreams::closable_tag
+    {};
+
+    typedef iso::header header_type;
+
+    explicit basic_iso_file_sink(
+            const Sink& sink, const iso::volume_info& info=iso::volume_info() )
+        : pimpl_(new impl_type(sink, info))
+    {
+    }
+
+    void add_volume_desc(const iso::volume_desc& desc)
+    {
+        pimpl_->add_volume_desc(desc);
+    }
+
+    void create_entry(const iso::header& head)
+    {
+        pimpl_->create_entry(head);
+    }
+
+    void rewind_entry()
+    {
+        throw std::runtime_error("unsupported operation");
+    }
+
+    std::streamsize write(const char* s, std::streamsize n)
+    {
+        return pimpl_->write(s, n);
+    }
+
+    void close()
+    {
+        pimpl_->close();
+    }
+
+    void close_archive()
+    {
+        pimpl_->close_archive();
+    }
+
+private:
+    boost::shared_ptr<impl_type> pimpl_;
+};
+
+class iso_file_sink
+{
+public:
+    typedef char char_type;
+
+    struct category
+        : boost::iostreams::output
+        , boost::iostreams::device_tag
+        , boost::iostreams::closable_tag
+    {};
+
+    typedef iso::header header_type;
+
+    explicit iso_file_sink(
+        const std::string& filename,
+        const iso::volume_info& info=iso::volume_info() )
+        : impl_(iostreams::file_sink(filename, BOOST_IOS::binary), info)
+    {
+    }
+
+    void add_volume_desc(const iso::volume_desc& desc)
+    {
+        impl_.add_volume_desc(desc);
+    }
+
+    void create_entry(const iso::header& head)
+    {
+        impl_.create_entry(head);
+    }
+
+    void rewind_entry()
+    {
+        throw std::runtime_error("unsupported operation");
+    }
+
+    std::streamsize write(const char* s, std::streamsize n)
+    {
+        return impl_.write(s, n);
+    }
+
+    void close()
+    {
+        impl_.close();
+    }
+
+    void close_archive()
+    {
+        impl_.close_archive();
+    }
+
+private:
+    basic_iso_file_sink<iostreams::file_sink> impl_;
 };
 
 } } // End namespaces archivers, hamigaki.

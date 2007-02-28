@@ -7,7 +7,7 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#include <hamigaki/archivers/iso_image_file.hpp>
+#include <hamigaki/archivers/iso_file.hpp>
 #include <hamigaki/filesystem/operations.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <clocale>
@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
         std::setlocale(LC_ALL, "");
         fs::path::default_name_check(fs::no_check);
 
-        ar::iso_image_file_sink iso(argv[1]);
+        ar::iso_file_sink iso(argv[1]);
 
         for (int i = 2; i < argc; ++i)
         {

@@ -123,7 +123,6 @@ private:
         tmp.copyright_file_id = make_file_id(desc.copyright_file_id);
         tmp.abstract_file_id = make_file_id(desc.abstract_file_id);
         tmp.bibliographic_file_id = make_file_id(desc.bibliographic_file_id);
-        tmp.file_structure_version = desc.file_structure_version;
         std::memcpy(tmp.application_use, desc.application_use, 512);
         return tmp;
     }
@@ -171,7 +170,6 @@ private:
         tmp.abstract_file_id = make_joliet_file_id(desc.abstract_file_id);
         tmp.bibliographic_file_id =
             make_joliet_file_id(desc.bibliographic_file_id);
-        tmp.file_structure_version = desc.file_structure_version;
         std::memcpy(tmp.application_use, desc.application_use, 512);
         return tmp;
     }

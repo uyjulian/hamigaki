@@ -119,6 +119,14 @@ struct volume_info
     date_time expiration_time;
     date_time effective_time;
     boost::uint8_t file_structure_version;
+
+    volume_info()
+        : volume_space_size(0u), volume_set_size(1u)
+        , volume_seq_number(1u), logical_block_size(2048)
+        , file_structure_version(1u)
+    {
+        std::memcpy(std_id, "CD001", 5);
+    }
 };
 
 struct volume_desc
@@ -143,8 +151,15 @@ struct volume_desc
     boost::filesystem::path copyright_file_id;
     boost::filesystem::path abstract_file_id;
     boost::filesystem::path bibliographic_file_id;
-    boost::uint8_t file_structure_version;
     char application_use[512];
+
+    volume_desc()
+        : rrip(rrip_none), type(1u), version(1u), flags(0u), path_table_size(0)
+        , l_path_table_pos(0), l_path_table_pos2(0)
+        , m_path_table_pos(0), m_path_table_pos2(0)
+    {
+        std::memset(application_use, 0, sizeof(application_use));
+    }
 
     bool is_joliet() const
     {
