@@ -18,6 +18,31 @@
 
 namespace hamigaki { namespace archivers { namespace detail {
 
+inline int iso9660_id_compare(const std::string& lhs, const std::string& rhs)
+{
+    bool lhs_current = (lhs.size() == 1) && (lhs[0] == '\x00');
+    bool rhs_current = (rhs.size() == 1) && (rhs[0] == '\x00');
+
+    if (lhs_current && !rhs_current)
+        return -1;
+    else if (lhs_current && rhs_current)
+        return 0;
+    else if (!lhs_current && rhs_current)
+        return 1;
+
+    bool lhs_parent = (lhs.size() == 1) && (lhs[0] == '\x01');
+    bool rhs_parent = (rhs.size() == 1) && (rhs[0] == '\x01');
+
+    if (lhs_parent && !rhs_parent)
+        return -1;
+    else if (lhs_parent && rhs_parent)
+        return 0;
+    else if (!lhs_parent && rhs_parent)
+        return 1;
+
+    return lhs.compare(rhs);
+}
+
 struct iso_directory_record : boost::totally_ordered<iso_directory_record>
 {
     boost::uint32_t data_pos;
@@ -34,7 +59,7 @@ struct iso_directory_record : boost::totally_ordered<iso_directory_record>
 
     int compare(const iso_directory_record& rhs) const
     {
-        if (int cmp = file_id.compare(rhs.file_id))
+        if (int cmp = detail::iso9660_id_compare(file_id, rhs.file_id))
             return cmp;
 
         bool lhs_assoc = (flags & iso::file_flags::associated) != 0;

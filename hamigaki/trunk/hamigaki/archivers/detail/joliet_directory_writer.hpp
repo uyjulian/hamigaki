@@ -1,4 +1,4 @@
-//  iso_directory_writer.hpp: ISO 9660 directory extent writer
+//  joliet_directory_writer.hpp: Joliet directory extent writer
 
 //  Copyright Takeshi Mouri 2007.
 //  Use, modification, and distribution are subject to the
@@ -7,10 +7,11 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#ifndef HAMIGAKI_ARCHIVERS_DETAIL_ISO_DIRECTORY_WRITER_HPP
-#define HAMIGAKI_ARCHIVERS_DETAIL_ISO_DIRECTORY_WRITER_HPP
+#ifndef HAMIGAKI_ARCHIVERS_DETAIL_JOLIET_DIRECTORY_WRITER_HPP
+#define HAMIGAKI_ARCHIVERS_DETAIL_JOLIET_DIRECTORY_WRITER_HPP
 
 #include <hamigaki/archivers/detail/iso_path_table.hpp>
+#include <hamigaki/archivers/detail/ucs2.hpp>
 #include <hamigaki/dec_format.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
@@ -18,170 +19,36 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/noncopyable.hpp>
 #include <functional>
-#include <map>
 #include <vector>
 
 namespace hamigaki { namespace archivers { namespace detail {
 
-struct is_iso_d_char : std::unary_function<char,bool>
-{
-    bool operator()(char c) const
-    {
-        return
-            (c == '_') ||
-            ((c >= 'A') && (c <= 'Z')) ||
-            ((c >= '0') && (c <= '9')) ;
-    }
-};
-
-template<class ForwardIterator>
-inline bool is_valid_iso_name(ForwardIterator first, ForwardIterator last)
-{
-    return std::find_if(first, last, std::not1(is_iso_d_char())) == last;
-}
-
-inline bool is_valid_iso_file_id(const std::string& s)
-{
-    const std::size_t size = s.size();
-
-    if ((size < 2) || (size > (8+1+3)))
-        return false;
-
-    std::size_t dot = s.find('.');
-    if (dot == std::string::npos)
-        return false;
-
-    typedef std::string::const_iterator iter_type;
-
-    iter_type di = s.begin() + dot;
-    if (!detail::is_valid_iso_name(s.begin(), di))
-        return false;
-
-    if (di != s.end())
-    {
-        iter_type ei = di + 1;
-        if (!detail::is_valid_iso_name(ei, s.end()))
-            return false;
-    }
-
-    return true;
-}
-
-inline bool is_valid_iso_dir_id(const std::string& s)
-{
-    if (s.size() > 8)
-        return false;
-
-    return detail::is_valid_iso_name(s.begin(), s.end());
-}
-
-inline bool has_valid_iso_id(const iso_directory_record& rec)
-{
-    if (rec.is_directory())
-        return is_valid_iso_dir_id(rec.file_id);
-    else
-        return is_valid_iso_file_id(rec.file_id);
-}
-
-inline void convert_iso_alt_name(std::string& s)
-{
-    std::string tmp;
-    for (std::size_t i = 0, size = s.size(); i != size; ++i)
-    {
-        char c = s[i];
-        if (!is_iso_d_char()(c))
-        {
-            if ((c >= 'a') && (c <= 'z'))
-                c -= ('a' - 'A');
-            else
-                c = '_';
-
-            s[i] = c;
-        }
-    }
-}
-
-inline std::string make_iso_alt_id(
-    const std::set<iso_directory_record>& ren, const iso_directory_record& rec)
-{
-    const std::string& s = rec.file_id;
-    const std::size_t size = s.size();
-
-    std::size_t dot = rec.is_directory() ? size : s.rfind('.');
-    if (dot == std::string::npos)
-        dot = size;
-
-    std::string base(s, 0, std::min<std::size_t>(dot, 8u));
-
-    std::string ext;
-    if (base.empty())
-        base = s.substr(0, 8);
-    else if (dot != size)
-        ext = s.substr(dot+1, 3);
-
-    detail::convert_iso_alt_name(base);
-    detail::convert_iso_alt_name(ext);
-
-    iso_directory_record new_rec(rec);
-    new_rec.file_id.reserve(8+1+3);
-    new_rec.file_id = base;
-    if (!rec.is_directory())
-    {
-        new_rec.file_id += '.';
-        new_rec.file_id += ext;
-    }
-
-    unsigned n = 0;
-
-    while (ren.find(new_rec) != ren.end())
-    {
-        const std::string& num = hamigaki::to_dec<char>(n++);
-        if (num.size() > 8u)
-            throw std::runtime_error("cannot generate alternative file ID");
-
-        std::size_t len = std::min<std::size_t>(8u-num.size(), base.size());
-        new_rec.file_id.assign(base, 0, len);
-        new_rec.file_id += num;
-        if (rec.is_directory())
-        {
-            new_rec.file_id += '.';
-            new_rec.file_id += ext;
-        }
-    }
-
-    return new_rec.file_id;
-}
-
-inline std::string make_iso_dir_id(const std::string& s)
+inline std::string make_joliet_dir_id(const std::string& s)
 {
     if (s.empty())
         return std::string(1, '\0');
     else
-        return s;
+        return detail::narrow_to_ucs2be(s);
 }
 
-class iso_directory_writer : private boost::noncopyable
+class joliet_directory_writer : private boost::noncopyable
 {
 private:
     static const std::size_t logical_sector_size = 2048;
 
     typedef boost::filesystem::path path;
-    typedef std::map<path,path> path_cvt_table;
     typedef boost::ptr_vector<iso_path_table_record> path_table_records;
     typedef std::set<iso_directory_record> directory_entries;
 
 public:
-    explicit iso_directory_writer(boost::uint32_t lbn_shift)
+    explicit joliet_directory_writer(boost::uint32_t lbn_shift)
         : lbn_shift_(lbn_shift), lbn_mask_((1ul << lbn_shift) - 1)
     {
     }
 
     void add(const path& ph, const std::vector<iso_directory_record>& recs)
     {
-        std::vector<bool> flags(recs.size());
         directory_entries entries;
-
-        path cur_path = cvt_table_[ph];
 
         std::size_t level = 0;
         boost::uint16_t parent_index = 0;
@@ -204,7 +71,7 @@ public:
         {
             std::size_t parent_level;
             boost::tie(parent_level, parent_index)
-                = find_directory(cur_path.branch_path());
+                = find_directory(ph.branch_path());
             level = parent_level + 1;
 
             const iso_path_table_record& rec =
@@ -213,7 +80,7 @@ public:
             cur_dir.data_pos = 0;
             cur_dir.data_size = 0;
             cur_dir.flags = iso::file_flags::directory;
-            cur_dir.file_id = cur_path.leaf();
+            cur_dir.file_id = detail::narrow_to_ucs2be(ph.leaf());
 
             cur_dir = *rec.entries.find(cur_dir);
             cur_dir.file_id.assign(1u, '\x00');
@@ -227,32 +94,9 @@ public:
         const std::size_t size = recs.size();
         for (std::size_t i = 0; i < size; ++i)
         {
-            const iso_directory_record& rec = recs[i];
-            if (has_valid_iso_id(rec))
-            {
-                if (rec.is_directory())
-                    cvt_table_[ph/rec.file_id] = cur_path/rec.file_id;
-
-                entries.insert(rec);
-                flags[i] = true;
-            }
-        }
-
-        for (std::size_t i = 0; i < size; ++i)
-        {
-            const iso_directory_record& rec = recs[i];
-            if (!flags[i])
-            {
-                const std::string& new_id =
-                    detail::make_iso_alt_id(entries, rec);
-
-                if (rec.is_directory())
-                    cvt_table_[ph/rec.file_id] = cur_path/new_id;
-
-                iso_directory_record new_rec(rec);
-                new_rec.file_id = new_id;
-                entries.insert(new_rec);
-            }
+            iso_directory_record rec(recs[i]);
+            rec.file_id = detail::narrow_to_ucs2be(rec.file_id);
+            entries.insert(rec);
         }
 
         if (level >= path_table_.size())
@@ -260,7 +104,7 @@ public:
         path_table_records& table = path_table_.at(level);
 
         std::auto_ptr<iso_path_table_record> ptr(new iso_path_table_record);
-        ptr->dir_id = detail::make_iso_dir_id(cur_path.leaf());
+        ptr->dir_id = detail::make_joliet_dir_id(ph.leaf());
         ptr->data_pos = 0;
         ptr->parent_index = parent_index;
         ptr->entries.swap(entries);
@@ -327,7 +171,6 @@ public:
 private:
     boost::uint32_t lbn_shift_;
     boost::uint32_t lbn_mask_;
-    path_cvt_table cvt_table_;
     boost::ptr_vector<path_table_records> path_table_;
     char block_[logical_sector_size];
 
@@ -345,7 +188,7 @@ private:
         const path_table_records& table = path_table_.at(level);
 
         iso_path_table_record x;
-        x.dir_id = detail::make_iso_dir_id(s);
+        x.dir_id = detail::make_joliet_dir_id(s);
         x.parent_index = parent;
 
         path_table_records::const_iterator i =
@@ -378,7 +221,7 @@ private:
             const iso_directory_record& rec = *i;
             std::string id = rec.file_id;
             if (!rec.is_directory())
-                id += ";1";
+                id.append("\0;\0""1", 4);
             std::size_t id_size = id.size();
             std::size_t size = bin_size + id_size;
             if ((id_size & 1) == 0)
@@ -481,7 +324,7 @@ private:
             const iso_directory_record& rec = *i;
             std::string id = rec.file_id;
             if (!rec.is_directory())
-                id += ";1";
+                id.append("\0;\0""1", 4);
             std::size_t id_size = id.size();
             std::size_t size = bin_size + id_size;
             if ((id_size & 1) == 0)
@@ -579,4 +422,4 @@ private:
 
 } } } // End namespaces detail, archivers, hamigaki.
 
-#endif // HAMIGAKI_ARCHIVERS_DETAIL_ISO_DIRECTORY_WRITER_HPP
+#endif // HAMIGAKI_ARCHIVERS_DETAIL_JOLIET_DIRECTORY_WRITER_HPP

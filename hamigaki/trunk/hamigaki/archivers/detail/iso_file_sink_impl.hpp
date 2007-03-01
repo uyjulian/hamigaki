@@ -13,7 +13,7 @@
 #include <hamigaki/archivers/detail/iso_directory_record.hpp>
 #include <hamigaki/archivers/detail/iso_directory_writer.hpp>
 #include <hamigaki/archivers/detail/iso_logical_block_number.hpp>
-#include <hamigaki/archivers/detail/ucs2.hpp>
+#include <hamigaki/archivers/detail/joliet_directory_writer.hpp>
 #include <hamigaki/archivers/iso/headers.hpp>
 #include <hamigaki/integer/auto_min.hpp>
 #include <hamigaki/iostreams/seek.hpp>
@@ -38,6 +38,21 @@ inline void copy_iso9660_path(
     char (&buf)[Size], const boost::filesystem::path& ph)
 {
     detail::copy_iso9660_str(buf, ph.string());
+}
+
+template<std::size_t Size>
+inline void copy_joliet_str(
+    char (&buf)[Size], const std::string& s)
+{
+    std::memset(buf, 0, sizeof(buf));
+    detail::narrow_to_ucs2be(s).copy(buf, sizeof(buf));
+}
+
+template<std::size_t Size>
+inline void copy_joliet_path(
+    char (&buf)[Size], const boost::filesystem::path& ph)
+{
+    detail::copy_joliet_str(buf, ph.string());
 }
 
 template<class Sink>
@@ -133,14 +148,26 @@ public:
         const std::size_t size = volume_descs_.size();
 
         for (std::size_t i = 0; i < size; ++i)
-            this->write_directory_descs(volume_descs_[i]);
+        {
+            iso::volume_desc& desc = volume_descs_[i];
+            if (desc.is_joliet())
+                this->write_joliet_directory_descs(desc);
+            else
+                this->write_directory_descs(desc);
+        }
 
         volume_info_.volume_space_size = tell();
 
         boost::iostreams::seek(sink_, logical_sector_size*16, BOOST_IOS::beg);
 
         for (std::size_t i = 0; i < size; ++i)
-            this->write_volume_desc(volume_descs_[i]);
+        {
+            iso::volume_desc& desc = volume_descs_[i];
+            if (desc.is_joliet())
+                this->write_joliet_volume_desc(desc);
+            else
+                this->write_volume_desc(desc);
+        }
 
         boost::iostreams::seek(sink_, 0, BOOST_IOS::end);
         boost::iostreams::close(sink_, BOOST_IOS::out);
@@ -180,6 +207,21 @@ private:
         typedef std::map<path,directory_entries>::const_iterator dirs_iter;
 
         iso_directory_writer writer(lbn_shift_);
+        for (dirs_iter i = dirs_.begin(), end = dirs_.end(); i != end; ++i)
+            writer.add(i->first, i->second);
+
+        const iso_path_table_info& info = writer.write(sink_);
+        desc.root_record = info.root_record;
+        desc.path_table_size = info.path_table_size;
+        desc.l_path_table_pos = info.l_path_table_pos;
+        desc.m_path_table_pos = info.m_path_table_pos;
+    }
+
+    void write_joliet_directory_descs(iso::volume_desc& desc)
+    {
+        typedef std::map<path,directory_entries>::const_iterator dirs_iter;
+
+        joliet_directory_writer writer(lbn_shift_);
         for (dirs_iter i = dirs_.begin(), end = dirs_.end(); i != end; ++i)
             writer.add(i->first, i->second);
 
@@ -231,6 +273,39 @@ private:
             raw.copyright_file_id, desc.copyright_file_id);
         detail::copy_iso9660_path(raw.abstract_file_id, desc.abstract_file_id);
         detail::copy_iso9660_path(
+            raw.bibliographic_file_id, desc.bibliographic_file_id);
+        std::memcpy(raw.application_use, desc.application_use, 512);
+
+        iostreams::binary_write(sink_, raw);
+    }
+
+    void write_joliet_volume_desc(const iso::volume_desc& desc)
+    {
+        iso::volume_descriptor raw;
+        this->set_volume_info(raw);
+
+        raw.type = desc.type;
+        raw.version = desc.version;
+        raw.flags = desc.flags;
+        detail::copy_joliet_str(raw.system_id, desc.system_id);
+        detail::copy_joliet_str(raw.volume_id, desc.volume_id);
+        detail::copy_iso9660_str(
+            raw.escape_sequences, desc.escape_sequences, '\0');
+        raw.path_table_size = desc.path_table_size;
+        raw.l_path_table_pos = desc.l_path_table_pos;
+        raw.l_path_table_pos2 = desc.l_path_table_pos2;
+        raw.m_path_table_pos = desc.m_path_table_pos;
+        raw.m_path_table_pos2 = desc.m_path_table_pos2;
+        raw.root_record = desc.root_record;
+        raw.root_file_id  = '\0';
+        detail::copy_joliet_str(raw.volume_set_id, desc.volume_set_id);
+        detail::copy_joliet_str(raw.publisher_id, desc.publisher_id);
+        detail::copy_joliet_str(raw.data_preparer_id, desc.data_preparer_id);
+        detail::copy_joliet_str(raw.application_id, desc.application_id);
+        detail::copy_joliet_path(
+            raw.copyright_file_id, desc.copyright_file_id);
+        detail::copy_joliet_path(raw.abstract_file_id, desc.abstract_file_id);
+        detail::copy_joliet_path(
             raw.bibliographic_file_id, desc.bibliographic_file_id);
         std::memcpy(raw.application_use, desc.application_use, 512);
 

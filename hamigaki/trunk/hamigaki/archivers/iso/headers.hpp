@@ -163,13 +163,19 @@ struct volume_desc
 
     bool is_joliet() const
     {
-        if (type != '\x02')
+        if (type != 2u)
             return false;
 
         return
             (escape_sequences == "%/@") ||
             (escape_sequences == "%/C") ||
             (escape_sequences == "%/E") ;
+    }
+
+    void set_joliet()
+    {
+        type = 2u;
+        escape_sequences = "%/@";
     }
 
     bool is_rock_ridge() const
