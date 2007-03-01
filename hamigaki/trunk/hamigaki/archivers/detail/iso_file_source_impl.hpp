@@ -16,6 +16,7 @@
 #include <hamigaki/archivers/detail/joliet_directory_parser.hpp>
 #include <hamigaki/archivers/detail/rock_ridge_check.hpp>
 #include <hamigaki/archivers/detail/rock_ridge_directory_parser.hpp>
+#include <boost/lambda/lambda.hpp>
 #include <memory>
 
 namespace hamigaki { namespace archivers { namespace detail {
@@ -89,8 +90,17 @@ private:
     template<std::size_t Size>
     static std::string make_string(const char (&data)[Size], char fill)
     {
-        const char* end = std::find(data, data+Size, fill);
-        return std::string(data, end);
+        typedef std::reverse_iterator<const char*> iter_type;
+
+        iter_type rbeg(data+Size);
+        iter_type rend(data);
+
+        using boost::lambda::_1;
+        iter_type i = std::find_if(rbeg, rend, _1 != fill);
+        if (i != rend)
+            return std::string(data, i.base());
+        else
+            return std::string(data, Size);
     }
 
     template<std::size_t Size>
