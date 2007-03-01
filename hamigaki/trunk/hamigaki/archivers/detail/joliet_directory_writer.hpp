@@ -221,7 +221,11 @@ private:
             const iso_directory_record& rec = *i;
             std::string id = rec.file_id;
             if (!rec.is_directory())
-                id.append("\0;\0""1", 4);
+            {
+                id.append("\0;", 2);
+                id += detail::narrow_to_ucs2be(
+                    hamigaki::to_dec<char>(rec.version));
+            }
             std::size_t id_size = id.size();
             std::size_t size = bin_size + id_size;
             if ((id_size & 1) == 0)
@@ -324,7 +328,11 @@ private:
             const iso_directory_record& rec = *i;
             std::string id = rec.file_id;
             if (!rec.is_directory())
-                id.append("\0;\0""1", 4);
+            {
+                id.append("\0;", 2);
+                id += detail::narrow_to_ucs2be(
+                    hamigaki::to_dec<char>(rec.version));
+            }
             std::size_t id_size = id.size();
             std::size_t size = bin_size + id_size;
             if ((id_size & 1) == 0)

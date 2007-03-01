@@ -29,6 +29,7 @@ namespace hamigaki { namespace archivers { namespace iso {
 struct header
 {
     boost::filesystem::path path;
+    boost::uint16_t version;
     boost::filesystem::path link_path;
     boost::uint32_t file_size;
     binary_date_time recorded_time;
@@ -44,7 +45,7 @@ struct header
     date_time expiration_time;
     date_time effective_time;
 
-    header() : file_size(0), flags(0)
+    header() : version(0), file_size(0), flags(0)
     {
     }
 

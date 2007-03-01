@@ -114,6 +114,13 @@ public:
         rec.recorded_time = head.recorded_time;
         rec.flags = head.flags;
         rec.file_id = head.path.leaf();
+        if (!rec.is_directory())
+        {
+            if (head.version)
+                rec.version = head.version;
+            else
+                rec.version = 1u;
+        }
         rec.system_use = head.system_use;
 
         path parent(head.path.branch_path());

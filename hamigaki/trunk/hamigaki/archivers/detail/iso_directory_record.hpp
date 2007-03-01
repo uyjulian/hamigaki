@@ -50,7 +50,12 @@ struct iso_directory_record : boost::totally_ordered<iso_directory_record>
     iso::binary_date_time recorded_time;
     boost::uint8_t flags;
     std::string file_id;
+    boost::uint16_t version;
     std::string system_use;
+
+    iso_directory_record() : data_pos(0), data_size(0), flags(0), version(0)
+    {
+    }
 
     bool is_directory() const
     {
@@ -61,6 +66,12 @@ struct iso_directory_record : boost::totally_ordered<iso_directory_record>
     {
         if (int cmp = detail::iso9660_id_compare(file_id, rhs.file_id))
             return cmp;
+
+        // descending order
+        if (version > rhs.version)
+            return -1;
+        else if (version < rhs.version)
+            return 1;
 
         bool lhs_assoc = (flags & iso::file_flags::associated) != 0;
         bool rhs_assoc = (rhs.flags & iso::file_flags::associated) != 0;

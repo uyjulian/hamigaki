@@ -15,10 +15,43 @@
 #include <hamigaki/archivers/detail/iso_logical_block_number.hpp>
 #include <hamigaki/archivers/iso/file_flags.hpp>
 #include <hamigaki/integer/auto_min.hpp>
+#include <hamigaki/dec_format.hpp>
 #include <memory>
 #include <stack>
 
 namespace hamigaki { namespace archivers { namespace detail {
+
+inline void parse_iso_file_version(iso::header& h)
+{
+    using namespace boost::filesystem;
+
+    const std::string id = h.path.string();
+    std::size_t delim = id.rfind(';');
+    if (delim == std::string::npos)
+        return;
+
+    std::size_t size = id.size();
+    if (size - (delim+1) > (sizeof("65535")-1))
+        return;
+
+    for (std::size_t i = delim+1; i < size; ++i)
+    {
+        char c = id[i];
+        if ((c < '0') || (c > '9'))
+            return;
+    }
+
+    const char* s = id.c_str();
+    const char* beg = s + delim + 1;
+    const char* end = s + size;
+
+    boost::uint32_t ver = hamigaki::from_dec<boost::uint32_t>(beg, end);
+    if (ver > 65535u)
+        return;
+
+    h.path = path(id.substr(0, delim), no_check);
+    h.version = static_cast<boost::uint16_t>(ver);
+}
 
 template<class Source>
 class iso_file_reader : private boost::noncopyable
@@ -43,8 +76,6 @@ public:
 
     bool next_entry()
     {
-        using namespace boost::filesystem;
-
         if ((record_.flags & iso::file_flags::directory) != 0)
         {
             dir_path_ = header_.path;
@@ -69,6 +100,7 @@ public:
 
         record_ = records_[index_];
         header_ = parser_->make_header(record_);
+        detail::parse_iso_file_version(header_);
         header_.path = dir_path_ / header_.path;
         pos_ = 0;
         return true;
