@@ -31,7 +31,7 @@ inline void parse_iso_file_version(iso::header& h)
         return;
 
     std::size_t size = id.size();
-    if (size - (delim+1) > (sizeof("65535")-1))
+    if (size - (delim+1) > (sizeof("32767")-1))
         return;
 
     for (std::size_t i = delim+1; i < size; ++i)
@@ -46,7 +46,7 @@ inline void parse_iso_file_version(iso::header& h)
     const char* end = s + size;
 
     boost::uint32_t ver = hamigaki::from_dec<boost::uint32_t>(beg, end);
-    if (ver > 65535u)
+    if (ver > 32767u)
         return;
 
     h.path = path(id.substr(0, delim), no_check);
