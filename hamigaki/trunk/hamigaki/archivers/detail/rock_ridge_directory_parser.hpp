@@ -31,7 +31,7 @@ inline bool rock_ridge_fix_record(iso_directory_record& rec)
     std::size_t pos = 0;
     std::string filename;
     bool filename_ends = false;
-    while (pos + head_size < su.size())
+    while (pos + head_size <= su.size())
     {
         const char* s = su.c_str()+pos;
 
@@ -233,7 +233,7 @@ inline void parse_rock_ridge(iso::header& header, iso::rrip_type rrip)
 
     std::size_t pos = 0;
     sl_components_parser sl_parser;
-    while (pos + head_size < su.size())
+    while (pos + head_size <= su.size())
     {
         const char* s = su.c_str()+pos;
 

@@ -135,7 +135,7 @@ private:
         std::size_t pos = 0;
         iso::ce_system_use_entry_data ce;
         ce.next_size = 0;
-        while (pos + head_size < su.size())
+        while (pos + head_size <= su.size())
         {
             iso::system_use_entry_header head;
             hamigaki::binary_read(su.c_str()+pos, head);
@@ -149,6 +149,9 @@ private:
             }
             pos += head.entry_size;
         }
+
+        // cut off padding
+        su.resize(pos);
 
         // TODO: support multiple "CE" System Use Entries
         if (ce.next_size != 0)

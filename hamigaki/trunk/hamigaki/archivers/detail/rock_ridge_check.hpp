@@ -29,7 +29,7 @@ inline iso::rrip_type rock_ridge_check(const std::string& su)
         hamigaki::struct_size<iso::er_system_use_entry_data>::value;
 
     std::size_t pos = 0;
-    while (pos + head_size < su.size())
+    while (pos + head_size <= su.size())
     {
         iso::system_use_entry_header head;
         hamigaki::binary_read(su.c_str()+pos, head);
