@@ -12,18 +12,17 @@
 
 #include <hamigaki/archivers/detail/iso_directory_writer.hpp>
 #include <hamigaki/archivers/iso/ce_system_use_entry_data.hpp>
+#include <hamigaki/archivers/iso/rrip_type.hpp>
+#include <hamigaki/archivers/iso/system_use_entry_header.hpp>
 #include <hamigaki/integer/rounding.hpp>
 
 namespace hamigaki { namespace archivers { namespace detail {
 
-inline unsigned iso_directory_depth(const boost::filesystem::path& ph)
-{
-    return static_cast<unsigned>(std::distance(ph.begin(), ph.end()));
-}
-
 class rock_ridge_directory_writer : private boost::noncopyable
 {
 private:
+    typedef rock_ridge_directory_writer self;
+
     static const std::size_t logical_sector_size = 2048;
     static const std::size_t cl_size = 12u;
     static const std::size_t pl_size = 12u;
@@ -40,6 +39,7 @@ private:
     typedef std::map<path,path> path_cvt_table;
     typedef boost::ptr_vector<iso_path_table_record> path_table_records;
     typedef std::set<iso_directory_record> directory_entries;
+    typedef std::map<path,iso_directory_record*> link_table;
 
 public:
     rock_ridge_directory_writer(boost::uint32_t lbn_shift, iso::rrip_type rrip)
@@ -49,7 +49,7 @@ public:
 
     void add(const path& ph, const std::vector<iso_directory_record>& recs)
     {
-        unsigned depth = detail::iso_directory_depth(ph);
+        unsigned depth = self::iso_directory_depth(ph);
         bool need_move = (depth == 7) || ((depth > 7) && ((depth-7) % 6 == 0));
         bool is_moved = (depth == 8) || ((depth > 8) && ((depth-8) % 6 == 0));
 
@@ -92,11 +92,13 @@ public:
 
             cur_dir = *rec.entries.find(cur_dir);
             cur_dir.file_id.assign(1u, '\x00');
+            if (is_moved)
+                cur_dir.system_use.resize(cur_dir.system_use.size()-4);
 
             par_dir = *rec.entries.begin();
             par_dir.file_id.assign(1u, '\x01');
             if (is_moved)
-                par_dir.system_use.assign(pl_size, '\0');
+                par_dir.system_use.append("PL\x0C\x01\0\0\0\0\0\0\0\0", 12);
         }
         entries.insert(cur_dir);
         entries.insert(par_dir);
@@ -114,7 +116,7 @@ public:
                     if (need_move)
                     {
                         iso_directory_record new_rec(rec);
-                        new_rec.system_use.append(cl_size, '\0');
+                        self::fix_moved_directory_record(new_rec);
                         entries.insert(new_rec);
                     }
                     else
@@ -142,7 +144,7 @@ public:
                 {
                     found_dir = true;
                     if (need_move)
-                        new_rec.system_use.append(cl_size, '\0');
+                        self::fix_moved_directory_record(new_rec);
                     cvt_table_[ph/rec.file_id] = cur_path/new_id;
                 }
 
@@ -159,6 +161,9 @@ public:
         ptr->data_pos = 0;
         ptr->parent_index = parent_index;
         ptr->entries.swap(entries);
+        ptr->full_path = cur_path;
+
+        iso_directory_record* cur = &*ptr->entries.begin();
 
         if (table.empty())
             table.push_back(ptr.release());
@@ -182,7 +187,7 @@ public:
         }
 
         if (need_move && found_dir)
-            this->add_moved(ph, recs);
+            this->add_moved(ph, cur, recs);
     }
 
     template<class Sink>
@@ -190,7 +195,7 @@ public:
     {
         std::string& su = path_table_.at(0).at(0).entries.begin()->system_use;
         su.insert(0, "SP\x07\x01\xBE\xEF\x00", 7);
-        if (rrip_ == rrip_1991a)
+        if (rrip_ == iso::rrip_1991a)
         {
             su.append(
                 "ER\xED\x01\x0A\x54\x87\x01"
@@ -219,7 +224,10 @@ public:
         {
             path_table_records& table = path_table_[level];
             for (std::size_t i = 0; i < table.size(); ++i)
-                this->write_directory_records(sink, table[i].entries);
+            {
+                this->write_directory_records(
+                    sink, table[i].full_path, table[i].entries);
+            }
         }
 
         const iso_directory_record& root = *path_table_[0][0].entries.begin();
@@ -252,10 +260,23 @@ private:
     path_cvt_table cvt_table_;
     boost::ptr_vector<path_table_records> path_table_;
     char block_[logical_sector_size];
-    path_cvt_table re_table_;
+    link_table cl_table_;
+    link_table pl_table_;
     path rr_moved_;
     boost::uint16_t rr_moved_index_;
     iso::rrip_type rrip_;
+
+    static unsigned iso_directory_depth(const boost::filesystem::path& ph)
+    {
+        return static_cast<unsigned>(std::distance(ph.begin(), ph.end()));
+    }
+
+    static void fix_moved_directory_record(iso_directory_record& rec)
+    {
+        rec.data_size = 0;
+        rec.flags &= ~iso::file_flags::directory;
+        rec.system_use.append("CL\x0C\x01\0\0\0\0\0\0\0\0", 12);
+    }
 
     template<class Sink>
     boost::uint32_t tell(Sink& sink)
@@ -316,15 +337,13 @@ private:
         BOOST_ASSERT(limit >= ce_size);
         limit -= ce_size;
 
-        boost::uint32_t total = 0;
-        boost::uint32_t = pos;
+        boost::uint32_t pos = 0;
         while (pos+3 < su_size)
         {
-            boost::uint32_t n = static_cast<unsigned char>(su[pos]);
-            if (total + n > limit)
-                return result_type(round_to_even(total+ce_size), su_size - pos);
+            boost::uint32_t n = static_cast<unsigned char>(su[pos+2]);
+            if (pos + n > limit)
+                return result_type(round_to_even(pos+ce_size), su_size - pos);
 
-            total += n;
             pos += n;
         }
         throw std::runtime_error("bad system use entry");
@@ -433,10 +452,12 @@ private:
     }
 
     template<class Sink>
-    void write_directory_records(Sink& sink, const directory_entries& entries)
+    void write_directory_records(
+        Sink& sink, const path& ph, const directory_entries& entries)
     {
         const boost::uint32_t block_size = 1ul << lbn_shift_;
         const std::size_t bin_size = struct_size<iso::directory_record>::value;
+        unsigned depth = self::iso_directory_depth(ph);
 
         std::memset(block_, 0, sizeof(block_));
 
@@ -458,10 +479,39 @@ private:
             std::size_t id_size = id.size();
             std::size_t size = round_to_even(bin_size + id_size);
 
+            std::string su = rec.system_use;
+            if (rec.is_directory() && (id.size() == 1) && (id[0] == '\x01'))
+            {
+                const path& full_path = ph;
+                link_table::iterator pl = pl_table_.find(full_path);
+                if (pl != pl_table_.end())
+                {
+                    boost::uint32_t link_pos = pl->second->data_pos;
+                    su.resize(su.size()-8u);
+                    char buf[8];
+                    hamigaki::encode_uint<little,4>(buf, link_pos);
+                    hamigaki::encode_uint<big,4>(buf+4, link_pos);
+                    su.append(buf, sizeof(buf));
+                }
+            }
+            else if (!rec.is_directory() && (depth == 7))
+            {
+                const path& full_path = ph/rec.file_id;
+                link_table::iterator cl = cl_table_.find(full_path);
+                if (cl != cl_table_.end())
+                {
+                    boost::uint32_t link_pos = cl->second->data_pos;
+                    su.resize(su.size()-8u);
+                    char buf[8];
+                    hamigaki::encode_uint<little,4>(buf, link_pos);
+                    hamigaki::encode_uint<big,4>(buf+4, link_pos);
+                    su.append(buf, sizeof(buf));
+                }
+            }
             boost::uint32_t sys_size;
             boost::uint32_t rest_size;
             boost::tie(sys_size, rest_size) =
-                calc_system_use_size(rec.system_use, 0xFFu-size);
+                calc_system_use_size(su, 0xFFu-size);
             size += sys_size;
 
             std::size_t offset = pos & lbn_mask_;
@@ -495,9 +545,9 @@ private:
 
             if (rest_size != 0)
             {
-                std::size_t su_size = rec.system_use.size();
-                std::size_t copy_size = su_size - rest_size - ce_size;
-                std::memcpy(out, rec.system_use.c_str(), copy_size);
+                std::size_t su_size = su.size();
+                std::size_t copy_size = su_size - rest_size;
+                std::memcpy(out, su.c_str(), copy_size);
                 out += copy_size;
 
                 iso::system_use_entry_header head;
@@ -512,7 +562,7 @@ private:
                 iso::ce_system_use_entry_data data;
                 data.next_pos = cont_base + (cont_off & lbn_mask_);
                 data.next_offset = cont_off;
-                data.next_size = cont_size;
+                data.next_size = rest_size;
 
                 hamigaki::binary_write(out, data);
                 out += ce_data_size;
@@ -520,10 +570,10 @@ private:
                 if (((copy_size + ce_size) & 1u) != 0u)
                     *(out++) = '\0';
 
-                cont_area.append(rec.system_use, copy_size, rest_size);
+                cont_area.append(su, copy_size, rest_size);
             }
             else
-                std::memcpy(out, rec.system_use.c_str(), sys_size);
+                std::memcpy(out, su.c_str(), sys_size);
 
             pos += size;
             cont_off += rest_size;
@@ -605,6 +655,7 @@ private:
         ptr->dir_id = rec.file_id;
         ptr->data_pos = 0;
         ptr->parent_index = 0;
+        ptr->full_path = rr_moved_;
 
         iso_directory_record cur_dir = rec;
         cur_dir.file_id.assign(1u, '\x00');
@@ -625,15 +676,16 @@ private:
         path_table_records& child_table = path_table_.at(2);
         for (std::size_t i = 0; i < child_table.size(); ++i)
         {
-            if (child_table[i].parent_index >= index)
+            if (child_table[i].parent_index >= 2)
                 ++(child_table[i].parent_index);
         }
     }
 
     void add_moved(
-        const path& ph, const std::vector<iso_directory_record>& recs)
+        const path& ph, iso_directory_record* parent,
+        const std::vector<iso_directory_record>& recs)
     {
-        if (re_table_.empty())
+        if (cl_table_.empty())
             create_rr_moved();
 
         directory_entries& entries =
@@ -645,9 +697,9 @@ private:
         const std::size_t size = recs.size();
         for (std::size_t i = 0; i < size; ++i)
         {
+            const iso_directory_record& rec = recs[i];
             if (rec.is_directory())
             {
-                const iso_directory_record& rec = recs[i];
                 const std::string& new_id =
                     detail::make_iso_alt_id(entries, rec);
 
@@ -657,9 +709,12 @@ private:
 
                 const path& old_path = ph/rec.file_id;
                 const path& moved_path = rr_moved_/new_id;
-                re_table_[moved_path] = cvt_table_[old_path];
+                const path cvt_path = cvt_table_[old_path];
+                pl_table_[moved_path] = parent;
                 cvt_table_[old_path] = moved_path;
-                entries.insert(new_rec);
+
+                directory_entries::iterator it = entries.insert(new_rec).first;
+                cl_table_[cvt_path] = &*it;
             }
         }
     }

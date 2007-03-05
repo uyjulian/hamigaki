@@ -12,6 +12,7 @@
 
 #include <hamigaki/archivers/detail/iso_directory_record.hpp>
 #include <hamigaki/archivers/iso/directory_record.hpp>
+#include <boost/filesystem/path.hpp>
 #include <set>
 
 namespace hamigaki { namespace archivers { namespace detail {
@@ -22,6 +23,7 @@ struct iso_path_table_record
     boost::uint32_t data_pos;
     boost::uint16_t parent_index;
     std::set<iso_directory_record> entries;
+    boost::filesystem::path full_path;
 
     bool operator<(const iso_path_table_record& rhs) const
     {
