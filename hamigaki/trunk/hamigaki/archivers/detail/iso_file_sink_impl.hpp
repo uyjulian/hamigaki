@@ -14,6 +14,7 @@
 #include <hamigaki/archivers/detail/iso_directory_writer.hpp>
 #include <hamigaki/archivers/detail/iso_logical_block_number.hpp>
 #include <hamigaki/archivers/detail/joliet_directory_writer.hpp>
+#include <hamigaki/archivers/detail/rock_ridge_directory_writer.hpp>
 #include <hamigaki/archivers/iso/headers.hpp>
 #include <hamigaki/integer/auto_min.hpp>
 #include <hamigaki/iostreams/seek.hpp>
@@ -159,6 +160,8 @@ public:
             iso::volume_desc& desc = volume_descs_[i];
             if (desc.is_joliet())
                 this->write_joliet_directory_descs(desc);
+            else if (desc.is_rock_ridge())
+                this->write_rock_ridge_directory_descs(desc);
             else
                 this->write_directory_descs(desc);
         }
@@ -214,6 +217,21 @@ private:
         typedef std::map<path,directory_entries>::const_iterator dirs_iter;
 
         iso_directory_writer writer(lbn_shift_);
+        for (dirs_iter i = dirs_.begin(), end = dirs_.end(); i != end; ++i)
+            writer.add(i->first, i->second);
+
+        const iso_path_table_info& info = writer.write(sink_);
+        desc.root_record = info.root_record;
+        desc.path_table_size = info.path_table_size;
+        desc.l_path_table_pos = info.l_path_table_pos;
+        desc.m_path_table_pos = info.m_path_table_pos;
+    }
+
+    void write_rock_ridge_directory_descs(iso::volume_desc& desc)
+    {
+        typedef std::map<path,directory_entries>::const_iterator dirs_iter;
+
+        rock_ridge_directory_writer writer(lbn_shift_, desc.rrip);
         for (dirs_iter i = dirs_.begin(), end = dirs_.end(); i != end; ++i)
             writer.add(i->first, i->second);
 

@@ -36,8 +36,11 @@ int main(int argc, char* argv[])
         ar::iso_file_sink iso(argv[1]);
 
         {
-            iso.add_volume_desc(ar::iso::volume_desc());
-
+            ar::iso::volume_desc desc;
+            desc.rrip = ar::iso::rrip_1991a;
+            iso.add_volume_desc(desc);
+        }
+        {
             ar::iso::volume_desc jol_desc;
             jol_desc.set_joliet();
             iso.add_volume_desc(jol_desc);

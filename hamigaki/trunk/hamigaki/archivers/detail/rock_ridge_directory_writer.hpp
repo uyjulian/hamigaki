@@ -92,11 +92,13 @@ public:
 
             cur_dir = *rec.entries.find(cur_dir);
             cur_dir.file_id.assign(1u, '\x00');
+            self::remove_nm_system_use_entry(cur_dir.system_use);
             if (is_moved)
                 cur_dir.system_use.resize(cur_dir.system_use.size()-4);
 
             par_dir = *rec.entries.begin();
             par_dir.file_id.assign(1u, '\x01');
+            self::remove_nm_system_use_entry(par_dir.system_use);
             if (is_moved)
                 par_dir.system_use.append("PL\x0C\x01\0\0\0\0\0\0\0\0", 12);
         }
@@ -110,21 +112,16 @@ public:
             const iso_directory_record& rec = recs[i];
             if (has_valid_iso_id(rec))
             {
+                iso_directory_record new_rec(rec);
+                self::set_nm_system_use_entry(new_rec);
                 if (rec.is_directory())
                 {
                     found_dir = true;
                     if (need_move)
-                    {
-                        iso_directory_record new_rec(rec);
                         self::fix_moved_directory_record(new_rec);
-                        entries.insert(new_rec);
-                    }
-                    else
-                        entries.insert(rec);
                     cvt_table_[ph/rec.file_id] = cur_path/rec.file_id;
                 }
-                else
-                    entries.insert(rec);
+                entries.insert(new_rec);
                 flags[i] = true;
             }
         }
@@ -138,6 +135,7 @@ public:
                     detail::make_iso_alt_id(entries, rec);
 
                 iso_directory_record new_rec(rec);
+                self::set_nm_system_use_entry(new_rec);
                 new_rec.file_id = new_id;
 
                 if (rec.is_directory())
@@ -271,6 +269,52 @@ private:
         return static_cast<unsigned>(std::distance(ph.begin(), ph.end()));
     }
 
+    static void set_nm_system_use_entry(iso_directory_record& rec)
+    {
+        const std::size_t size = rec.file_id.size();
+        std::size_t pos = 0;
+        while (pos < size)
+        {
+            std::size_t amt =
+                std::min<std::size_t>(size-pos, 0xFFu-sys_entry_head_size);
+
+            iso::system_use_entry_header head;
+            head.signature[0] = 'N';
+            head.signature[1] = 'M';
+            head.entry_size = sys_entry_head_size+1u+amt;
+            head.version = 1u;
+
+            char buf[sys_entry_head_size];
+            hamigaki::binary_write(buf, head);
+            rec.system_use.append(buf, sizeof(buf));
+
+            if (pos + amt < size)
+                rec.system_use.append(1, '\x01');
+            else
+                rec.system_use.append(1, '\x00');
+
+            rec.system_use.append(rec.file_id, pos, amt);
+
+            pos += amt;
+        }
+    }
+
+    static void remove_nm_system_use_entry(std::string& su)
+    {
+        std::string result;
+        const std::size_t size = su.size();
+        std::size_t pos = 0;
+        while (pos+sys_entry_head_size <= size)
+        {
+            iso::system_use_entry_header head;
+            hamigaki::binary_read(su.c_str()+pos, head);
+            if (std::memcmp(head.signature, "NM", 2) != 0)
+                result.append(su, pos, head.entry_size);
+            pos += head.entry_size;
+        }
+        su.swap(result);
+    }
+
     static void fix_moved_directory_record(iso_directory_record& rec)
     {
         rec.data_size = 0;
@@ -363,7 +407,7 @@ private:
         {
             const iso_directory_record& rec = *i;
             std::string id = rec.file_id;
-            if (!rec.is_directory())
+            if (!rec.is_directory() && (rec.version != 0))
             {
                 id += ';';
                 id += hamigaki::to_dec<char>(rec.version);
@@ -471,7 +515,7 @@ private:
         {
             const iso_directory_record& rec = *i;
             std::string id = rec.file_id;
-            if (!rec.is_directory())
+            if (!rec.is_directory() && (rec.version != 0))
             {
                 id += ';';
                 id += hamigaki::to_dec<char>(rec.version);
@@ -646,6 +690,7 @@ private:
         iso_directory_record rec;
         rec.flags = iso::file_flags::directory;
         rec.file_id = "rr_moved";
+        self::set_nm_system_use_entry(rec);
         rec.file_id = detail::make_iso_alt_id(entries, rec);
         entries.insert(rec);
 
@@ -659,10 +704,12 @@ private:
 
         iso_directory_record cur_dir = rec;
         cur_dir.file_id.assign(1u, '\x00');
+        self::remove_nm_system_use_entry(cur_dir.system_use);
         ptr->entries.insert(cur_dir);
 
         iso_directory_record par_dir = *entries.begin();
         par_dir.file_id.assign(1u, '\x01');
+            self::remove_nm_system_use_entry(par_dir.system_use);
         ptr->entries.insert(par_dir);
 
         path_table_records& table = path_table_.at(1);

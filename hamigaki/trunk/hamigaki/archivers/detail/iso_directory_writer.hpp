@@ -11,6 +11,7 @@
 #define HAMIGAKI_ARCHIVERS_DETAIL_ISO_DIRECTORY_WRITER_HPP
 
 #include <hamigaki/archivers/detail/iso_path_table.hpp>
+#include <hamigaki/binary/binary_io.hpp>
 #include <hamigaki/dec_format.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
