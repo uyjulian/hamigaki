@@ -31,7 +31,8 @@ struct header
     boost::filesystem::path path;
     boost::uint16_t version;
     boost::filesystem::path link_path;
-    boost::uint32_t file_size;
+    boost::uint32_t data_pos;
+    boost::uint64_t file_size;
     binary_date_time recorded_time;
     boost::uint8_t flags;
     std::string system_use;
@@ -45,7 +46,7 @@ struct header
     date_time expiration_time;
     date_time effective_time;
 
-    header() : version(0), file_size(0), flags(0)
+    header() : version(0), data_pos(0), file_size(0), flags(0)
     {
     }
 

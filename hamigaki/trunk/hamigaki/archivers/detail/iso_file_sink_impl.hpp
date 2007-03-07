@@ -60,10 +60,12 @@ template<class Sink>
 class basic_iso_file_sink_impl : private boost::noncopyable
 {
 private:
+    typedef basic_iso_file_sink_impl<Sink> self;
+
     static const std::size_t logical_sector_size = 2048;
 
     typedef boost::filesystem::path path;
-    typedef std::vector<iso_directory_record> directory_entries;
+    typedef std::vector<iso::header> directory_entries;
 
 public:
     explicit basic_iso_file_sink_impl(
@@ -106,29 +108,21 @@ public:
         if (head.file_size > 0xFFFFFFFFull)
             throw BOOST_IOSTREAMS_FAILURE("ISO 9660 file size too large");
 
-        iso_directory_record rec;
-        if (head.is_directory())
-            rec.data_pos = 0u;
-        else
-            rec.data_pos = tell();
-        rec.data_size = head.file_size;
-        rec.recorded_time = head.recorded_time;
-        rec.flags = head.flags;
-        rec.file_id = head.path.leaf();
-        if (!rec.is_directory())
-        {
-            if (head.version)
-                rec.version = head.version;
-            else
-                rec.version = 1u;
-        }
-        rec.system_use = head.system_use;
+        iso::header h = head;
 
-        path parent(head.path.branch_path());
-        dirs_[parent].push_back(rec);
+        if (h.is_directory())
+            h.data_pos = 0u;
+        else
+            h.data_pos = tell();
+
+        if (!h.is_directory() && (h.version == 0))
+            h.version = 1u;
+
+        path parent(h.path.branch_path());
+        dirs_[parent].push_back(h);
 
         pos_ = 0;
-        size_ = head.file_size;
+        size_ = h.file_size;
     }
 
     std::streamsize write(const char* s, std::streamsize n)
@@ -195,6 +189,91 @@ private:
     boost::uint32_t pos_;
     boost::uint32_t size_;
 
+    static iso_directory_record make_dir_record(const iso::header& head)
+    {
+        iso_directory_record rec;
+        rec.data_pos = head.data_pos;
+        rec.data_size = head.file_size;
+        rec.recorded_time = head.recorded_time;
+        rec.flags = head.flags;
+        rec.file_id = head.path.leaf();
+        rec.version = head.version;
+        rec.system_use = head.system_use;
+        return rec;
+    }
+
+    template<class Data>
+    static void append_system_use_entry(
+        std::string& s, char c1, char c2, const Data& data)
+    {
+        static const std::size_t head_size =
+            hamigaki::struct_size<iso::system_use_entry_header>::value;
+
+        static const std::size_t data_size = hamigaki::struct_size<Data>::value;
+
+        char buf[head_size+data_size];
+
+        iso::system_use_entry_header head;
+        head.signature[0] = c1;
+        head.signature[1] = c2;
+        head.entry_size = sizeof(buf);
+        head.version = 1u;
+
+        hamigaki::binary_write(buf, head);
+        hamigaki::binary_write(buf+head_size, data);
+
+        s.append(buf, sizeof(buf));
+    }
+
+    static iso_directory_record
+        make_rrip_dir_record(const iso::header& head, iso::rrip_type rrip)
+    {
+        iso_directory_record rec = self::make_dir_record(head);
+        if (rrip == iso::rrip_none)
+            return rec;
+
+        if (head.attributes)
+        {
+            const iso::posix::file_attributes& attr = *head.attributes;
+            if (rrip == iso::rrip_1991a)
+            {
+                iso::old_px_system_use_entry_data data;
+                data.file_mode = attr.permissions;
+                data.links = attr.links;
+                data.uid = attr.uid;
+                data.gid = attr.gid;
+
+                self::append_system_use_entry(rec.system_use, 'P', 'X', data);
+            }
+            else
+            {
+                iso::px_system_use_entry_data data;
+                data.file_mode = attr.permissions;
+                data.links = attr.links;
+                data.uid = attr.uid;
+                data.gid = attr.gid;
+                data.serial_no = attr.serial_no;
+
+                self::append_system_use_entry(rec.system_use, 'P', 'X', data);
+            }
+        }
+        return rec;
+    }
+
+    void make_dir_records(
+        std::vector<iso_directory_record>& dst,
+        const std::vector<iso::header>& src, iso::rrip_type rrip)
+    {
+        std::vector<iso_directory_record> result;
+        std::size_t size = src.size();
+        result.reserve(size);
+
+        for (std::size_t i = 0; i < size; ++i)
+            result.push_back(self::make_rrip_dir_record(src[i], rrip));
+
+        dst.swap(result);
+    }
+
     boost::uint32_t tell()
     {
         iostreams::stream_offset offset = iostreams::tell_offset(sink_);
@@ -218,7 +297,11 @@ private:
 
         iso_directory_writer writer(lbn_shift_);
         for (dirs_iter i = dirs_.begin(), end = dirs_.end(); i != end; ++i)
-            writer.add(i->first, i->second);
+        {
+            std::vector<iso_directory_record> tmp;
+            self::make_dir_records(tmp,i->second, iso::rrip_none);
+            writer.add(i->first, tmp);
+        }
 
         const iso_path_table_info& info = writer.write(sink_);
         desc.root_record = info.root_record;
@@ -233,7 +316,11 @@ private:
 
         rock_ridge_directory_writer writer(lbn_shift_, desc.rrip);
         for (dirs_iter i = dirs_.begin(), end = dirs_.end(); i != end; ++i)
-            writer.add(i->first, i->second);
+        {
+            std::vector<iso_directory_record> tmp;
+            self::make_dir_records(tmp,i->second, desc.rrip);
+            writer.add(i->first, tmp);
+        }
 
         const iso_path_table_info& info = writer.write(sink_);
         desc.root_record = info.root_record;
@@ -248,7 +335,11 @@ private:
 
         joliet_directory_writer writer(lbn_shift_);
         for (dirs_iter i = dirs_.begin(), end = dirs_.end(); i != end; ++i)
-            writer.add(i->first, i->second);
+        {
+            std::vector<iso_directory_record> tmp;
+            self::make_dir_records(tmp,i->second, desc.rrip);
+            writer.add(i->first, tmp);
+        }
 
         const iso_path_table_info& info = writer.write(sink_);
         desc.root_record = info.root_record;

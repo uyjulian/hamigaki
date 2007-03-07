@@ -57,6 +57,21 @@ int main(int argc, char* argv[])
             if (is_regular(s))
                 head.file_size = s.file_size();
 
+            ar::iso::posix::file_attributes attr;
+            if (s.has_permissions())
+                attr.permissions = s.permissions();
+            else if (is_directory(s))
+                attr.permissions = fs_ex::file_permissions::directory | 0755u;
+            else
+                attr.permissions = fs_ex::file_permissions::regular | 0644u;
+            attr.links = 1u; // TODO
+            if (s.has_uid())
+                attr.uid = s.uid();
+            if (s.has_gid())
+                attr.gid = s.gid();
+            attr.serial_no = static_cast<unsigned>(i);
+            head.attributes = attr;
+
             iso.create_entry(head);
 
             if (is_regular(s))
