@@ -149,15 +149,26 @@ public:
     {
         const std::size_t size = volume_descs_.size();
 
+        iso::header root;
+        iso::posix::file_attributes attr;
+        attr.permissions = 040755;
+        attr.links = 2u + this->count_directory(path());
+        attr.uid = 0u;
+        attr.gid = 0u;
+        attr.serial_no = 0;
+        root.attributes = attr;
+
+        count_directories();
+
         for (std::size_t i = 0; i < size; ++i)
         {
             iso::volume_desc& desc = volume_descs_[i];
             if (desc.is_joliet())
-                this->write_joliet_directory_descs(desc);
+                this->write_joliet_directory_descs(desc, root);
             else if (desc.is_rock_ridge())
-                this->write_rock_ridge_directory_descs(desc);
+                this->write_rock_ridge_directory_descs(desc, root);
             else
-                this->write_directory_descs(desc);
+                this->write_directory_descs(desc, root);
         }
 
         volume_info_.volume_space_size = tell();
@@ -260,6 +271,54 @@ private:
         return rec;
     }
 
+    static std::size_t count_directory(const directory_entries& entries)
+    {
+        std::size_t n = 0;
+        for (std::size_t i = 0, size = entries.size(); i < size; ++i)
+        {
+            if (entries[i].is_directory())
+                ++n;
+        }
+        return n;
+    }
+
+    std::size_t count_directory(const path& ph) const
+    {
+        typedef std::map<path,directory_entries>::const_iterator dirs_iter;
+
+        dirs_iter it = dirs_.find(ph);
+        if (it != dirs_.end())
+            return self::count_directory(it->second);
+        else
+            return 0u;
+    }
+
+    void count_directories(const path& ph, directory_entries& entries)
+    {
+        for (std::size_t i = 0, size = entries.size(); i < size; ++i)
+        {
+            iso::header& head = entries[i];
+            if (head.attributes)
+            {
+                if (head.is_directory())
+                {
+                    head.attributes->links
+                        = 2u + this->count_directory(ph/head.path);
+                }
+                else
+                    head.attributes->links = 1u;
+            }
+        }
+    }
+
+    void count_directories()
+    {
+        typedef std::map<path,directory_entries>::iterator dirs_iter;
+
+        for (dirs_iter i = dirs_.begin(), end = dirs_.end(); i != end; ++i)
+            count_directories(i->first, i->second);
+    }
+
     void make_dir_records(
         std::vector<iso_directory_record>& dst,
         const std::vector<iso::header>& src, iso::rrip_type rrip)
@@ -291,11 +350,11 @@ private:
         return false;
     }
 
-    void write_directory_descs(iso::volume_desc& desc)
+    void write_directory_descs(iso::volume_desc& desc, const iso::header& root)
     {
         typedef std::map<path,directory_entries>::const_iterator dirs_iter;
 
-        iso_directory_writer writer(lbn_shift_);
+        iso_directory_writer writer(lbn_shift_, self::make_dir_record(root));
         for (dirs_iter i = dirs_.begin(), end = dirs_.end(); i != end; ++i)
         {
             std::vector<iso_directory_record> tmp;
@@ -310,11 +369,13 @@ private:
         desc.m_path_table_pos = info.m_path_table_pos;
     }
 
-    void write_rock_ridge_directory_descs(iso::volume_desc& desc)
+    void write_rock_ridge_directory_descs(
+        iso::volume_desc& desc, const iso::header& root)
     {
         typedef std::map<path,directory_entries>::const_iterator dirs_iter;
 
-        rock_ridge_directory_writer writer(lbn_shift_, desc.rrip);
+        rock_ridge_directory_writer writer(
+            lbn_shift_, self::make_rrip_dir_record(root, desc.rrip), desc.rrip);
         for (dirs_iter i = dirs_.begin(), end = dirs_.end(); i != end; ++i)
         {
             std::vector<iso_directory_record> tmp;
@@ -329,11 +390,13 @@ private:
         desc.m_path_table_pos = info.m_path_table_pos;
     }
 
-    void write_joliet_directory_descs(iso::volume_desc& desc)
+    void write_joliet_directory_descs(
+        iso::volume_desc& desc, const iso::header& root)
     {
         typedef std::map<path,directory_entries>::const_iterator dirs_iter;
 
-        joliet_directory_writer writer(lbn_shift_);
+        joliet_directory_writer writer(
+            lbn_shift_, self::make_rrip_dir_record(root, desc.rrip));
         for (dirs_iter i = dirs_.begin(), end = dirs_.end(); i != end; ++i)
         {
             std::vector<iso_directory_record> tmp;

@@ -172,8 +172,10 @@ private:
     typedef std::set<iso_directory_record> directory_entries;
 
 public:
-    explicit iso_directory_writer(boost::uint32_t lbn_shift)
-        : lbn_shift_(lbn_shift), lbn_mask_((1ul << lbn_shift) - 1)
+    iso_directory_writer(
+        boost::uint32_t lbn_shift, const iso_directory_record& root
+    )
+        : lbn_shift_(lbn_shift), lbn_mask_((1ul << lbn_shift) - 1), root_(root)
     {
     }
 
@@ -191,14 +193,10 @@ public:
         iso_directory_record par_dir;
         if (ph.empty())
         {
-            cur_dir.data_pos = 0;
-            cur_dir.data_size = 0;
-            cur_dir.flags = iso::file_flags::directory;
+            cur_dir = root_;
             cur_dir.file_id.assign(1u, '\x00');
 
-            par_dir.data_pos = 0;
-            par_dir.data_size = 0;
-            par_dir.flags = iso::file_flags::directory;
+            par_dir = root_;
             par_dir.file_id.assign(1u, '\x01');
         }
         else
@@ -328,6 +326,7 @@ public:
 private:
     boost::uint32_t lbn_shift_;
     boost::uint32_t lbn_mask_;
+    iso_directory_record root_;
     path_cvt_table cvt_table_;
     boost::ptr_vector<path_table_records> path_table_;
     char block_[logical_sector_size];

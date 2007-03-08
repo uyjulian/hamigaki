@@ -12,6 +12,7 @@
 
 #include <hamigaki/archivers/detail/iso_directory_writer.hpp>
 #include <hamigaki/archivers/iso/ce_system_use_entry_data.hpp>
+#include <hamigaki/archivers/iso/px_system_use_entry_data.hpp>
 #include <hamigaki/archivers/iso/rrip_type.hpp>
 #include <hamigaki/archivers/iso/system_use_entry_header.hpp>
 #include <hamigaki/integer/rounding.hpp>
@@ -42,8 +43,12 @@ private:
     typedef std::map<path,iso_directory_record*> link_table;
 
 public:
-    rock_ridge_directory_writer(boost::uint32_t lbn_shift, iso::rrip_type rrip)
-        : lbn_shift_(lbn_shift), lbn_mask_((1ul << lbn_shift) - 1), rrip_(rrip)
+    rock_ridge_directory_writer(
+        boost::uint32_t lbn_shift, const iso_directory_record& root,
+        iso::rrip_type rrip
+    )
+        : lbn_shift_(lbn_shift), lbn_mask_((1ul << lbn_shift) - 1), root_(root)
+        , rrip_(rrip)
     {
     }
 
@@ -65,14 +70,10 @@ public:
         iso_directory_record par_dir;
         if (ph.empty())
         {
-            cur_dir.data_pos = 0;
-            cur_dir.data_size = 0;
-            cur_dir.flags = iso::file_flags::directory;
+            cur_dir = root_;
             cur_dir.file_id.assign(1u, '\x00');
 
-            par_dir.data_pos = 0;
-            par_dir.data_size = 0;
-            par_dir.flags = iso::file_flags::directory;
+            par_dir = root_;
             par_dir.file_id.assign(1u, '\x01');
         }
         else
@@ -255,6 +256,7 @@ public:
 private:
     boost::uint32_t lbn_shift_;
     boost::uint32_t lbn_mask_;
+    iso_directory_record root_;
     path_cvt_table cvt_table_;
     boost::ptr_vector<path_table_records> path_table_;
     char block_[logical_sector_size];
@@ -320,6 +322,29 @@ private:
         rec.data_size = 0;
         rec.flags &= ~iso::file_flags::directory;
         rec.system_use.append("CL\x0C\x01\0\0\0\0\0\0\0\0", 12);
+    }
+
+    template<class Data>
+    static void append_system_use_entry(
+        std::string& s, char c1, char c2, const Data& data)
+    {
+        static const std::size_t head_size =
+            hamigaki::struct_size<iso::system_use_entry_header>::value;
+
+        static const std::size_t data_size = hamigaki::struct_size<Data>::value;
+
+        char buf[head_size+data_size];
+
+        iso::system_use_entry_header head;
+        head.signature[0] = c1;
+        head.signature[1] = c2;
+        head.entry_size = sizeof(buf);
+        head.version = 1u;
+
+        hamigaki::binary_write(buf, head);
+        hamigaki::binary_write(buf+head_size, data);
+
+        s.append(buf, sizeof(buf));
     }
 
     template<class Sink>
@@ -690,6 +715,27 @@ private:
         iso_directory_record rec;
         rec.flags = iso::file_flags::directory;
         rec.file_id = "rr_moved";
+        if (rrip_ == iso::rrip_1991a)
+        {
+            iso::old_px_system_use_entry_data px;
+            px.file_mode = 040755;
+            px.links = 1u;
+            px.uid = 0;
+            px.gid = 0;
+
+            self::append_system_use_entry(rec.system_use, 'P','X', px);
+        }
+        else
+        {
+            iso::px_system_use_entry_data px;
+            px.file_mode = 040755;
+            px.links = 1u;
+            px.uid = 0;
+            px.gid = 0;
+            px.serial_no = 0xFFFFFFFFul;
+
+            self::append_system_use_entry(rec.system_use, 'P','X', px);
+        }
         self::set_nm_system_use_entry(rec);
         rec.file_id = detail::make_iso_alt_id(entries, rec);
         entries.insert(rec);
