@@ -150,6 +150,7 @@ public:
         const std::size_t size = volume_descs_.size();
 
         iso::header root;
+        root.flags = iso::file_flags::directory;
         iso::posix::file_attributes attr;
         attr.permissions = 040755;
         attr.links = 2u + this->count_directory(path());
