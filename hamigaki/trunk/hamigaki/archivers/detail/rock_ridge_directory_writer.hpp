@@ -263,7 +263,6 @@ private:
     link_table cl_table_;
     link_table pl_table_;
     path rr_moved_;
-    boost::uint16_t rr_moved_index_;
     iso::rrip_type rrip_;
 
     static unsigned iso_directory_depth(const boost::filesystem::path& ph)
@@ -708,7 +707,7 @@ private:
         return buffer.size();
     }
 
-    void create_rr_moved()
+    boost::uint16_t create_rr_moved()
     {
         directory_entries& entries = path_table_.at(0).at(0).entries;
 
@@ -762,7 +761,7 @@ private:
         path_table_records::iterator it =
             std::lower_bound(table.begin(), table.end(), *ptr);
 
-        rr_moved_index_ =
+        boost::uint16_t rr_moved_index =
             static_cast<boost::uint16_t>(it - table.begin());
         table.insert(it, ptr.release());
 
@@ -772,17 +771,33 @@ private:
             if (child_table[i].parent_index >= 2)
                 ++(child_table[i].parent_index);
         }
+        return rr_moved_index;
     }
 
     void add_moved(
         const path& ph, iso_directory_record* parent,
         const std::vector<iso_directory_record>& recs)
     {
-        if (cl_table_.empty())
-            create_rr_moved();
+        path_table_records& table = path_table_.at(1);
 
-        directory_entries& entries =
-            path_table_.at(1).at(rr_moved_index_).entries;
+        boost::uint16_t rr_moved_index;
+        if (cl_table_.empty())
+            rr_moved_index = create_rr_moved();
+        else
+        {
+            iso_path_table_record x;
+            x.dir_id = rr_moved_.string();
+            x.data_pos = 0;
+            x.parent_index = 0;
+            x.full_path = rr_moved_;
+
+            path_table_records::iterator it =
+                std::lower_bound(table.begin(), table.end(), x);
+
+            rr_moved_index = static_cast<boost::uint16_t>(it - table.begin());
+        }
+
+        directory_entries& entries = table.at(rr_moved_index).entries;
 
         std::size_t level = 0;
         boost::uint16_t parent_index = 0;
