@@ -216,6 +216,64 @@ public:
                 "PISCATAWAY, NJ, USA FOR THE P1282 SPECIFICATION.", 185u);
         }
 
+        if (!rr_moved_.empty())
+        {
+            typedef directory_entries::iterator iter_type;
+
+            directory_entries& roots = path_table_.at(0).at(0).entries;
+            self::increment_link_count(roots.begin()->system_use);
+            self::increment_link_count(boost::next(roots.begin())->system_use);
+
+            path_table_records& table1 = path_table_.at(1);
+            for (std::size_t i = 0; i < table1.size(); ++i)
+            {
+                iso_directory_record& parent =
+                    *boost::next(table1[i].entries.begin());
+
+                self::increment_link_count(parent.system_use);
+            }
+
+            boost::uint16_t rr_moved_index = find_rr_moved();
+            directory_entries& moves = table1.at(rr_moved_index).entries;
+
+            boost::uint32_t moved_links = 0u;
+            for (iter_type i = moves.begin(), end = moves.end(); i != end; ++i)
+            {
+                if (i->is_directory())
+                    ++moved_links;
+            }
+
+            self::set_link_count(moves.begin()->system_use, moved_links);
+
+            path_table_records& table2 = path_table_.at(2);
+            for (iter_type i = moves.begin(), end = moves.end(); i != end; ++i)
+            {
+                if (i->is_directory())
+                {
+                    const std::string& id = i->file_id;
+                    if ((id.size() == 1u) && ((id[0]=='\0') || (id[0]=='\x01')))
+                        continue;
+
+                    boost::uint16_t index =
+                        this->find_path(2u, rr_moved_index, i->file_id);
+
+                    iso_directory_record& parent =
+                        *boost::next(table2.at(index).entries.begin());
+
+                    self::set_link_count(parent.system_use, moved_links);
+                }
+            }
+
+            iso_directory_record x;
+            x.data_pos = 0;
+            x.data_size = 0;
+            x.flags = iso::file_flags::directory;
+            x.file_id = rr_moved_.leaf();
+
+            iso_directory_record& rr_moved = *roots.find(x);
+            self::set_link_count(rr_moved.system_use, moved_links);
+        }
+
         boost::uint32_t pos = this->tell(sink);
         this->set_directory_sizes(pos);
 
@@ -344,6 +402,63 @@ private:
         hamigaki::binary_write(buf+head_size, data);
 
         s.append(buf, sizeof(buf));
+    }
+
+    static void increment_link_count(std::string& su)
+    {
+        const std::size_t size = su.size();
+        std::size_t pos = 0;
+        while (pos+sys_entry_head_size <= size)
+        {
+            iso::system_use_entry_header head;
+            hamigaki::binary_read(su.c_str()+pos, head);
+            if (std::memcmp(head.signature, "PX", 2) == 0)
+            {
+                std::size_t off =
+                    pos + sys_entry_head_size +
+                    hamigaki::binary_offset<
+                        iso::px_system_use_entry_data,
+                        boost::uint32_t,
+                        &iso::px_system_use_entry_data::links
+                    >::value;
+
+                const char* p = su.c_str() + off;
+                boost::uint32_t links = hamigaki::decode_uint<little,4>(p) + 1u;
+
+                char buf[8];
+                hamigaki::encode_uint<little,4>(buf, links);
+                hamigaki::encode_uint<big,4>(buf+4, links);
+                su.replace(off, 8u, buf, 8u);
+            }
+            pos += head.entry_size;
+        }
+    }
+
+    static void set_link_count(std::string& su, boost::uint32_t links)
+    {
+        const std::size_t size = su.size();
+        std::size_t pos = 0;
+        while (pos+sys_entry_head_size <= size)
+        {
+            iso::system_use_entry_header head;
+            hamigaki::binary_read(su.c_str()+pos, head);
+            if (std::memcmp(head.signature, "PX", 2) == 0)
+            {
+                std::size_t off =
+                    pos + sys_entry_head_size +
+                    hamigaki::binary_offset<
+                        iso::px_system_use_entry_data,
+                        boost::uint32_t,
+                        &iso::px_system_use_entry_data::links
+                    >::value;
+
+                char buf[8];
+                hamigaki::encode_uint<little,4>(buf, links);
+                hamigaki::encode_uint<big,4>(buf+4, links);
+                su.replace(off, 8u, buf, 8u);
+            }
+            pos += head.entry_size;
+        }
     }
 
     template<class Sink>
@@ -774,6 +889,21 @@ private:
         return rr_moved_index;
     }
 
+    boost::uint16_t find_rr_moved() const
+    {
+        iso_path_table_record x;
+        x.dir_id = rr_moved_.string();
+        x.data_pos = 0;
+        x.parent_index = 0;
+        x.full_path = rr_moved_;
+
+        const path_table_records& table = path_table_.at(1);
+        path_table_records::const_iterator it =
+            std::lower_bound(table.begin(), table.end(), x);
+
+        return static_cast<boost::uint16_t>(it - table.begin());
+    }
+
     void add_moved(
         const path& ph, iso_directory_record* parent,
         const std::vector<iso_directory_record>& recs)
@@ -781,21 +911,10 @@ private:
         path_table_records& table = path_table_.at(1);
 
         boost::uint16_t rr_moved_index;
-        if (cl_table_.empty())
+        if (rr_moved_.empty())
             rr_moved_index = create_rr_moved();
         else
-        {
-            iso_path_table_record x;
-            x.dir_id = rr_moved_.string();
-            x.data_pos = 0;
-            x.parent_index = 0;
-            x.full_path = rr_moved_;
-
-            path_table_records::iterator it =
-                std::lower_bound(table.begin(), table.end(), x);
-
-            rr_moved_index = static_cast<boost::uint16_t>(it - table.begin());
-        }
+            rr_moved_index = find_rr_moved();
 
         directory_entries& entries = table.at(rr_moved_index).entries;
 
