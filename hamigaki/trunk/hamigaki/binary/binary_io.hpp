@@ -346,6 +346,25 @@ inline void binary_write(char* s, const T& x)
     binary_io_traits<E,T>::write(s, x);
 }
 
+
+template<class T>
+inline void binary_write(std::string& s, const T& x)
+{
+    char data[binary_size<T>::value];
+    std::memset(data, 0, sizeof(data));
+    binary_io_traits<native,T>::write(data, x);
+    s.append(data, sizeof(data));
+}
+
+template<endianness E, class T>
+inline void binary_write(std::string& s, const T& x)
+{
+    char data[binary_size<T>::value];
+    std::memset(data, 0, sizeof(data));
+    binary_io_traits<E,T>::write(data, x);
+    s.append(data, sizeof(data));
+}
+
 } // End namespace hamigaki.
 
 #endif // HAMIGAKI_BINARY_BINARY_IO_HPP
