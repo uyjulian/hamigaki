@@ -15,6 +15,7 @@
 #include <hamigaki/archivers/detail/iso_logical_block_number.hpp>
 #include <hamigaki/archivers/detail/joliet_directory_writer.hpp>
 #include <hamigaki/archivers/detail/rock_ridge_directory_writer.hpp>
+#include <hamigaki/archivers/detail/sl_components_composer.hpp>
 #include <hamigaki/archivers/iso/headers.hpp>
 #include <hamigaki/archivers/iso/tf_flags.hpp>
 #include <hamigaki/integer/auto_min.hpp>
@@ -354,6 +355,15 @@ private:
             data.device_number_low = dev.minor;
 
             self::append_system_use_entry(rec.system_use, 'P', 'N', data);
+        }
+
+        if (!head.link_path.empty())
+        {
+            sl_components_composer composer;
+            path::iterator end = head.link_path.end();
+            for (path::iterator i = head.link_path.begin(); i != end; ++i)
+                composer.compose(*i);
+            rec.system_use.append(composer.entry_string());
         }
 
         return rec;
