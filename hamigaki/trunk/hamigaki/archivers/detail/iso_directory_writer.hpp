@@ -11,7 +11,9 @@
 #define HAMIGAKI_ARCHIVERS_DETAIL_ISO_DIRECTORY_WRITER_HPP
 
 #include <hamigaki/archivers/detail/iso_path_table.hpp>
-#include <hamigaki/binary/binary_io.hpp>
+#include <hamigaki/archivers/iso/headers.hpp>
+#include <hamigaki/iostreams/binary_io.hpp>
+#include <hamigaki/iostreams/seek.hpp>
 #include <hamigaki/dec_format.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
@@ -426,8 +428,10 @@ private:
 
                 typedef directory_entries::iterator iter_type;
                 iter_type cur = entries.begin();
-                cur->data_pos = pos;
-                cur->data_size = dir_size;
+                iso_directory_record& cur_ref =
+                    const_cast<iso_directory_record&>(*cur);
+                cur_ref.data_pos = pos;
+                cur_ref.data_size = dir_size;
 
                 if (level != 0)
                 {
@@ -437,8 +441,10 @@ private:
 
                     iter_type dst = boost::next(entries.begin());
                     iter_type src = parent_entries.begin();
-                    dst->data_pos = src->data_pos;
-                    dst->data_size = src->data_size;
+                    iso_directory_record& dst_ref =
+                        const_cast<iso_directory_record&>(*dst);
+                    dst_ref.data_pos = src->data_pos;
+                    dst_ref.data_size = src->data_size;
 
                     iso_directory_record x;
                     x.data_pos = 0;
@@ -449,14 +455,18 @@ private:
 
                     BOOST_ASSERT(it != parent_entries.end());
 
-                    it->data_pos = pos;
-                    it->data_size = dir_size;
+                    iso_directory_record& it_ref =
+                        const_cast<iso_directory_record&>(*it);
+                    it_ref.data_pos = pos;
+                    it_ref.data_size = dir_size;
                 }
                 else
                 {
                     iter_type dst = boost::next(entries.begin());
-                    dst->data_pos = pos;
-                    dst->data_size = dir_size;
+                    iso_directory_record& dst_ref =
+                        const_cast<iso_directory_record&>(*dst);
+                    dst_ref.data_pos = pos;
+                    dst_ref.data_size = dir_size;
                 }
 
                 table[i].parent_index += (base - prev_count);

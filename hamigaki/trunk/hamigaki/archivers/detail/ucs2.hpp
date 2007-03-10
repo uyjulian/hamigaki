@@ -22,6 +22,9 @@
     extern "C" __declspec(dllimport) int __stdcall WideCharToMultiByte(
         unsigned, unsigned long, const wchar_t*, int,
         char*, int, const char*, int*);
+
+    extern "C" __declspec(dllimport) int __stdcall MultiByteToWideChar(
+        unsigned, unsigned long, const char*, int, wchar_t*, int);
 #endif
 
 namespace hamigaki { namespace archivers { namespace detail {

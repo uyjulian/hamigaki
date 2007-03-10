@@ -57,7 +57,7 @@ template<class Source>
 class iso_file_reader : private boost::noncopyable
 {
 private:
-    typedef typename iso_directory_record directory_record;
+    typedef iso_directory_record directory_record;
 
 public:
     typedef Source source_type;

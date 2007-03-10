@@ -162,7 +162,8 @@ public:
         ptr->entries.swap(entries);
         ptr->full_path = cur_path;
 
-        iso_directory_record* cur = &*ptr->entries.begin();
+        iso_directory_record* cur =
+            const_cast<iso_directory_record*>(&*ptr->entries.begin());
 
         if (table.empty())
             table.push_back(ptr.release());
@@ -192,7 +193,8 @@ public:
     template<class Sink>
     iso_path_table_info write(Sink& sink)
     {
-        std::string& su = path_table_.at(0).at(0).entries.begin()->system_use;
+        std::string& su = const_cast<iso_directory_record&>(
+            *path_table_.at(0).at(0).entries.begin()).system_use;
         su.insert(0, "SP\x07\x01\xBE\xEF\x00", 7);
         if (rrip_ == iso::rrip_1991a)
         {
@@ -221,14 +223,18 @@ public:
             typedef directory_entries::iterator iter_type;
 
             directory_entries& roots = path_table_.at(0).at(0).entries;
-            self::increment_link_count(roots.begin()->system_use);
-            self::increment_link_count(boost::next(roots.begin())->system_use);
+            self::increment_link_count(
+                const_cast<iso_directory_record&>(*roots.begin()).system_use);
+            self::increment_link_count(
+                const_cast<iso_directory_record&>(
+                    *boost::next(roots.begin())).system_use);
 
             path_table_records& table1 = path_table_.at(1);
             for (std::size_t i = 0; i < table1.size(); ++i)
             {
                 iso_directory_record& parent =
-                    *boost::next(table1[i].entries.begin());
+                    const_cast<iso_directory_record&>(
+                        *boost::next(table1[i].entries.begin()));
 
                 self::increment_link_count(parent.system_use);
             }
@@ -243,7 +249,10 @@ public:
                     ++moved_links;
             }
 
-            self::set_link_count(moves.begin()->system_use, moved_links);
+            self::set_link_count(
+                const_cast<iso_directory_record&>(*moves.begin()).system_use,
+                moved_links
+            );
 
             path_table_records& table2 = path_table_.at(2);
             for (iter_type i = moves.begin(), end = moves.end(); i != end; ++i)
@@ -258,7 +267,8 @@ public:
                         this->find_path(2u, rr_moved_index, i->file_id);
 
                     iso_directory_record& parent =
-                        *boost::next(table2.at(index).entries.begin());
+                        const_cast<iso_directory_record&>(
+                            *boost::next(table2.at(index).entries.begin()));
 
                     self::set_link_count(parent.system_use, moved_links);
                 }
@@ -270,7 +280,8 @@ public:
             x.flags = iso::file_flags::directory;
             x.file_id = rr_moved_.leaf();
 
-            iso_directory_record& rr_moved = *roots.find(x);
+            iso_directory_record& rr_moved =
+                const_cast<iso_directory_record&>(*roots.find(x));
             self::set_link_count(rr_moved.system_use, moved_links);
         }
 
@@ -591,8 +602,10 @@ private:
 
                 typedef directory_entries::iterator iter_type;
                 iter_type cur = entries.begin();
-                cur->data_pos = pos;
-                cur->data_size = dir_size;
+                iso_directory_record& cur_ref =
+                    const_cast<iso_directory_record&>(*cur);
+                cur_ref.data_pos = pos;
+                cur_ref.data_size = dir_size;
 
                 if (level != 0)
                 {
@@ -602,8 +615,10 @@ private:
 
                     iter_type dst = boost::next(entries.begin());
                     iter_type src = parent_entries.begin();
-                    dst->data_pos = src->data_pos;
-                    dst->data_size = src->data_size;
+                    iso_directory_record& dst_ref =
+                        const_cast<iso_directory_record&>(*dst);
+                    dst_ref.data_pos = src->data_pos;
+                    dst_ref.data_size = src->data_size;
 
                     iso_directory_record x;
                     x.data_pos = 0;
@@ -614,14 +629,18 @@ private:
 
                     BOOST_ASSERT(it != parent_entries.end());
 
-                    it->data_pos = pos;
-                    it->data_size = dir_size;
+                    iso_directory_record& it_ref =
+                        const_cast<iso_directory_record&>(*it);
+                    it_ref.data_pos = pos;
+                    it_ref.data_size = dir_size;
                 }
                 else
                 {
                     iter_type dst = boost::next(entries.begin());
-                    dst->data_pos = pos;
-                    dst->data_size = dir_size;
+                    iso_directory_record& dst_ref =
+                        const_cast<iso_directory_record&>(*dst);
+                    dst_ref.data_pos = pos;
+                    dst_ref.data_size = dir_size;
                 }
 
                 table[i].parent_index += (base - prev_count);
@@ -918,9 +937,6 @@ private:
 
         directory_entries& entries = table.at(rr_moved_index).entries;
 
-        std::size_t level = 0;
-        boost::uint16_t parent_index = 0;
-
         const std::size_t size = recs.size();
         for (std::size_t i = 0; i < size; ++i)
         {
@@ -941,7 +957,7 @@ private:
                 cvt_table_[old_path] = moved_path;
 
                 directory_entries::iterator it = entries.insert(new_rec).first;
-                cl_table_[cvt_path] = &*it;
+                cl_table_[cvt_path] = const_cast<iso_directory_record*>(&*it);
             }
         }
     }

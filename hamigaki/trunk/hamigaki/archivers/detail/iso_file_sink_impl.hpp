@@ -16,8 +16,10 @@
 #include <hamigaki/archivers/detail/joliet_directory_writer.hpp>
 #include <hamigaki/archivers/detail/rock_ridge_directory_writer.hpp>
 #include <hamigaki/archivers/iso/headers.hpp>
+#include <hamigaki/archivers/iso/tf_flags.hpp>
 #include <hamigaki/integer/auto_min.hpp>
 #include <hamigaki/iostreams/seek.hpp>
+#include <boost/iostreams/close.hpp>
 #include <boost/assert.hpp>
 #include <boost/next_prior.hpp>
 #include <boost/noncopyable.hpp>
