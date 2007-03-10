@@ -269,6 +269,81 @@ private:
                 self::append_system_use_entry(rec.system_use, 'P', 'X', data);
             }
         }
+
+        using iso::tf_flags;
+        typedef iso::binary_date_time time_type;
+        std::string tf_buf;
+        boost::uint8_t flags = 0;
+
+        if (!head.creation_time.empty())
+        {
+            flags |= tf_flags::creation;
+            hamigaki::binary_write(
+                tf_buf, time_type::from_date_time(head.creation_time));
+        }
+
+        if (!head.last_write_time.empty())
+        {
+            flags |= tf_flags::modify;
+            hamigaki::binary_write(
+                tf_buf, time_type::from_date_time(head.last_write_time));
+        }
+
+        if (!head.last_access_time.empty())
+        {
+            flags |= tf_flags::access;
+            hamigaki::binary_write(
+                tf_buf, time_type::from_date_time(head.last_access_time));
+        }
+
+        if (!head.last_change_time.empty())
+        {
+            flags |= tf_flags::attributes;
+            hamigaki::binary_write(
+                tf_buf, time_type::from_date_time(head.last_change_time));
+        }
+
+        if (!head.last_backup_time.empty())
+        {
+            flags |= tf_flags::backup;
+            hamigaki::binary_write(
+                tf_buf, time_type::from_date_time(head.last_backup_time));
+        }
+
+        if (!head.expiration_time.empty())
+        {
+            flags |= tf_flags::expiration;
+            hamigaki::binary_write(
+                tf_buf, time_type::from_date_time(head.expiration_time));
+        }
+
+        if (!head.effective_time.empty())
+        {
+            flags |= tf_flags::effective;
+            hamigaki::binary_write(
+                tf_buf, time_type::from_date_time(head.effective_time));
+        }
+
+        if (flags != 0)
+        {
+            static const std::size_t head_size =
+                hamigaki::struct_size<iso::system_use_entry_header>::value;
+
+            char buf[head_size+1];
+
+            iso::system_use_entry_header head;
+            head.signature[0] = 'T';
+            head.signature[1] = 'F';
+            head.entry_size = sizeof(buf) + tf_buf.size();
+            head.version = 1u;
+
+            hamigaki::binary_write(buf, head);
+            buf[head_size] = static_cast<char>(flags);
+
+            rec.system_use.append(buf, sizeof(buf));
+            rec.system_use.append(tf_buf);
+        }
+
         return rec;
     }
 

@@ -154,13 +154,32 @@ struct binary_date_time
     date_time to_date_time() const
     {
         date_time tmp;
-        to_dec<char>(1900+year).copy(tmp.year, 4);
-        iso_detail::fill_dec2(tmp.month, month);
-        iso_detail::fill_dec2(tmp.day, day);
-        iso_detail::fill_dec2(tmp.hour, hour);
-        iso_detail::fill_dec2(tmp.minute, minute);
-        iso_detail::fill_dec2(tmp.second, second);
-        tmp.timezone = timezone;
+        if (!empty())
+        {
+            to_dec<char>(1900+year).copy(tmp.year, 4);
+            iso_detail::fill_dec2(tmp.month, month);
+            iso_detail::fill_dec2(tmp.day, day);
+            iso_detail::fill_dec2(tmp.hour, hour);
+            iso_detail::fill_dec2(tmp.minute, minute);
+            iso_detail::fill_dec2(tmp.second, second);
+            tmp.timezone = timezone;
+        }
+        return tmp;
+    }
+
+    static binary_date_time from_date_time(const date_time& dt)
+    {
+        binary_date_time tmp;
+        if (!dt.empty())
+        {
+            tmp.year = from_dec<boost::uint16_t>(dt.year, dt.year+4) - 1900;
+            tmp.month = from_dec<boost::uint8_t>(dt.month, dt.month+2);
+            tmp.day = from_dec<boost::uint8_t>(dt.day, dt.day+2);
+            tmp.hour = from_dec<boost::uint8_t>(dt.hour, dt.hour+2);
+            tmp.minute = from_dec<boost::uint8_t>(dt.minute, dt.minute+2);
+            tmp.second = from_dec<boost::uint8_t>(dt.second, dt.second+2);
+            tmp.timezone = dt.timezone;
+        }
         return tmp;
     }
 

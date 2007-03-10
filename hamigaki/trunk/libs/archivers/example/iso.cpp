@@ -64,13 +64,24 @@ int main(int argc, char* argv[])
                 attr.permissions = fs_ex::file_permissions::directory | 0755u;
             else
                 attr.permissions = fs_ex::file_permissions::regular | 0644u;
-            attr.links = 1u; // TODO
+            attr.links = 1u;
             if (s.has_uid())
                 attr.uid = s.uid();
             if (s.has_gid())
                 attr.gid = s.gid();
             attr.serial_no = static_cast<unsigned>(i);
             head.attributes = attr;
+
+            typedef ar::iso::date_time time_time;
+            head.last_write_time =
+                time_time::from_timestamp(s.last_write_time());
+            head.last_access_time =
+                time_time::from_timestamp(s.last_access_time());
+            if (s.has_last_change_time())
+            {
+                head.last_change_time =
+                    time_time::from_timestamp(s.last_change_time());
+            }
 
             iso.create_entry(head);
 
