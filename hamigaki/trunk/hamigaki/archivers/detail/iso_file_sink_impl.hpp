@@ -346,6 +346,16 @@ private:
             rec.system_use.append(tf_buf);
         }
 
+        if (head.device_number)
+        {
+            const filesystem::device_number& dev = *head.device_number;
+            iso::pn_system_use_entry_data data;
+            data.device_number_high = dev.major;
+            data.device_number_low = dev.minor;
+
+            self::append_system_use_entry(rec.system_use, 'P', 'N', data);
+        }
+
         return rec;
     }
 
