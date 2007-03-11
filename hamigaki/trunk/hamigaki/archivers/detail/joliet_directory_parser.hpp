@@ -37,6 +37,7 @@ private:
         else
             h.path = path(detail::ucs2be_to_narrow(rec.file_id), no_check);
 
+        h.data_pos = rec.data_pos;
         h.file_size = rec.data_size;
         h.recorded_time = rec.recorded_time;
         h.flags = rec.flags;
