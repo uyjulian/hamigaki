@@ -19,6 +19,7 @@
 #include <boost/iostreams/copy.hpp>
 #include <clocale>
 #include <exception>
+#include <functional>
 #include <iostream>
 
 namespace ar = hamigaki::archivers;
@@ -41,16 +42,25 @@ int main(int argc, char* argv[])
 
         ar::iso_file_source iso(argv[1]);
 
-        const std::vector<
-            ar::iso::volume_desc>& descs = iso.volume_descs();
-        for (std::size_t i = 0; i < descs.size(); ++i)
-        {
-            if (descs[i].is_joliet())
-            {
-                iso.select_volume_desc(i);
-                break;
-            }
-        }
+        typedef std::vector<ar::iso::volume_desc> descs_type;
+        const descs_type& descs = iso.volume_descs();
+
+        descs_type::const_iterator rr = std::find_if(
+            descs.begin(), descs.end(),
+            std::mem_fun_ref(&ar::iso::volume_desc::is_rock_ridge)
+        );
+
+        descs_type::const_iterator jol = std::find_if(
+            descs.begin(), descs.end(),
+            std::mem_fun_ref(&ar::iso::volume_desc::is_joliet)
+        );
+
+        if (rr != descs.end())
+            iso.select_volume_desc(rr - descs.begin());
+        else if (jol != descs.end())
+            iso.select_volume_desc(jol - descs.begin());
+        else
+            iso.select_volume_desc(0);
 
         while (iso.next_entry())
         {
@@ -62,7 +72,7 @@ int main(int argc, char* argv[])
                 std::cout << "-> " << head.link_path.string() << '\n';
             else if (head.is_directory())
                 fs::create_directories(head.path);
-            else
+            else if (head.is_regular())
             {
                 if (head.path.has_branch_path())
                     fs::create_directories(head.path.branch_path());
