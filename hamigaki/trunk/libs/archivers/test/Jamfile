@@ -66,6 +66,7 @@ rule intialize_suite {
         [ archivers-test lzh_h1_test.cpp : ]
         [ archivers-test lzh_h2_test.cpp : ]
         [ archivers-test lzh_update_test.cpp : ]
+        [ archivers-test rock_ridge_test.cpp : ]
         [ archivers-test tar_gnu_test.cpp : ]
         [ archivers-test tar_pax_test.cpp : ]
         [ archivers-test tar_ustar_test.cpp : ]
