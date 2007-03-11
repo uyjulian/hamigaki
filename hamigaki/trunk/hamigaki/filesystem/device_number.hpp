@@ -12,6 +12,7 @@
 
 #include <boost/config.hpp>
 #include <boost/cstdint.hpp>
+#include <boost/operators.hpp>
 
 #if defined(__unix__)
     #include <sys/types.h>
@@ -25,7 +26,7 @@
 
 namespace hamigaki { namespace filesystem {
 
-struct device_number
+struct device_number : boost::totally_ordered<device_number>
 {
 #if defined(__unix__)
     typedef ::dev_t native_type;
@@ -67,6 +68,18 @@ struct device_number
             ((static_cast<boost::uintmax_t>(minor) & 0xFFu)     )
         );
 #endif
+    }
+
+    bool operator<(const device_number& rhs) const
+    {
+        return
+            (major < rhs.major) ||
+            ((major == rhs.major) && (minor < rhs.minor));
+    }
+
+    bool operator==(const device_number& rhs) const
+    {
+        return (major == rhs.major) && (minor == rhs.minor);
     }
 };
 

@@ -11,16 +11,32 @@
 #define HAMIGAKI_ARCHIVERS_ISO_POSIX_FILE_ATTRIBUTES_HPP
 
 #include <boost/cstdint.hpp>
+#include <boost/operators.hpp>
 
 namespace hamigaki { namespace archivers { namespace iso { namespace posix {
 
-struct file_attributes
+struct file_attributes : boost::equality_comparable<file_attributes>
 {
     boost::uint32_t permissions;
     boost::uint32_t links;
     boost::uint32_t uid;
     boost::uint32_t gid;
     boost::uint32_t serial_no;
+
+    file_attributes()
+        : permissions(0100644u), links(1u), uid(0u), gid(0u), serial_no(0u)
+    {
+    }
+
+    bool operator==(const file_attributes& rhs) const
+    {
+        return
+            (permissions    == rhs.permissions  ) &&
+            (links          == rhs.links        ) &&
+            (uid            == rhs.uid          ) &&
+            (gid            == rhs.gid          ) &&
+            (serial_no      == rhs.serial_no    ) ;
+    }
 };
 
 } } } } // End namespaces posix, iso, archivers, hamigaki.
