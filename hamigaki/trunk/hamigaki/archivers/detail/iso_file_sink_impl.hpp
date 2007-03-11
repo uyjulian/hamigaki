@@ -123,6 +123,8 @@ public:
 
         path parent(h.path.branch_path());
         dirs_[parent].push_back(h);
+        if (h.is_directory())
+            dirs_[h.path];
 
         pos_ = 0;
         size_ = h.file_size;
