@@ -112,6 +112,7 @@ public:
             throw BOOST_IOSTREAMS_FAILURE("ISO 9660 file size too large");
 
         iso::header h = head;
+        h.path = head.path.leaf();
 
         if (h.is_directory())
             h.data_pos = 0u;
@@ -121,10 +122,10 @@ public:
         if (!h.is_directory() && (h.version == 0))
             h.version = 1u;
 
-        path parent(h.path.branch_path());
+        path parent(head.path.branch_path());
         dirs_[parent].push_back(h);
         if (h.is_directory())
-            dirs_[h.path];
+            dirs_[head.path];
 
         pos_ = 0;
         size_ = h.file_size;
