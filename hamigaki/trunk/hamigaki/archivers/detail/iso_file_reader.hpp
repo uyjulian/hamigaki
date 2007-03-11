@@ -102,6 +102,8 @@ public:
         header_ = parser_->make_header(record_);
         detail::parse_iso_file_version(header_);
         header_.path = dir_path_ / header_.path;
+        if (header_.is_directory())
+            header_.file_size = 0;
         pos_ = 0;
         return true;
     }
