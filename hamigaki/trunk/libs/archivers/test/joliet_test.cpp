@@ -72,6 +72,27 @@ void check_file(
     );
 }
 
+void empty_test()
+{
+    io_ex::tmp_file archive;
+    ar::basic_iso_file_sink<
+        io_ex::dont_close_device<io_ex::tmp_file>
+    > sink(io_ex::dont_close(archive));
+
+    ar::iso::volume_desc desc;
+    sink.add_volume_desc(desc);
+    desc.set_joliet();
+    sink.add_volume_desc(desc);
+
+    sink.close_archive();
+
+    io::seek(archive, 0, BOOST_IOS::beg);
+
+    ar::basic_iso_file_source<io_ex::tmp_file> src(archive);
+
+    BOOST_CHECK(!src.next_entry());
+}
+
 void joliet_test()
 {
     std::string data(2049u, 'a');
@@ -156,6 +177,7 @@ void joliet_dir_test()
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("Joliet test");
+    test->add(BOOST_TEST_CASE(&empty_test));
     test->add(BOOST_TEST_CASE(&joliet_test));
     test->add(BOOST_TEST_CASE(&joliet_dir_test));
     return test;
