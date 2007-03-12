@@ -4,7 +4,7 @@
 <!--
   Hamigaki.Archivers Library Document Source
 
-  Copyright Takeshi Mouri 2006.
+  Copyright Takeshi Mouri 2006, 2007.
   Use, modification, and distribution are subject to the
   Boost Software License, Version 1.0. (See accompanying file
   LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -15,6 +15,11 @@
   <title>リファレンス</title>
   <xi:include href="cpio/file_format.xml"/>
   <xi:include href="cpio/headers.xml"/>
+  <xi:include href="iso/posix/file_attributes.xml"/>
+  <xi:include href="iso/date_time.xml"/>
+  <xi:include href="iso/file_flags.xml"/>
+  <xi:include href="iso/headers.xml"/>
+  <xi:include href="iso/rrip_type.xml"/>
   <xi:include href="lha/posix/gid_uid.xml"/>
   <xi:include href="lha/windows/timestamp.xml"/>
   <xi:include href="lha/compress_method.xml"/>
@@ -26,6 +31,7 @@
   <xi:include href="zip/headers.xml"/>
   <xi:include href="cpio_file.xml"/>
   <xi:include href="error.xml"/>
+  <xi:include href="iso_file.xml"/>
   <xi:include href="lzh_file.xml"/>
   <xi:include href="raw_lzh_file.xml"/>
   <xi:include href="raw_zip_file.xml"/>

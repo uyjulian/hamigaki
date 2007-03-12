@@ -4,7 +4,7 @@
 <!--
   Hamigaki.Archivers Library Document Source
 
-  Copyright Takeshi Mouri 2006.
+  Copyright Takeshi Mouri 2006, 2007.
   Use, modification, and distribution are subject to the
   Boost Software License, Version 1.0. (See accompanying file
   LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -31,6 +31,53 @@
       <listitem>SVR4 フォーマット</listitem>
       <listitem>チェックサム付きSVR4 フォーマット</listitem>
       <listitem>GNU cpio互換 バイナリーフォーマット</listitem>
+    </itemizedlist>
+  </section>
+
+  <section id="archivers.format.iso">
+    <title>ISO イメージファイル</title>
+
+    <itemizedlist>
+      <title>クラス</title>
+      <listitem><classname>basic_iso_file_sink</classname></listitem>
+      <listitem><classname>basic_iso_file_source</classname></listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <title>サポートされる機能</title>
+      <listitem>ISO 9660:1988 Level 1 / Level 2 (出力はLevel 1のみ)</listitem>
+      <listitem>Joliet 拡張</listitem>
+      <listitem>System Use Sharing Protocol (IEEE P1281)</listitem>
+      <listitem>Rock Ridge Interchange Protocol (RRIP 1991A / IEEE P1282)</listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <title>サポートされるSystem Use Entry</title>
+      <listitem>継続エリア (CE)</listitem>
+      <listitem>System Use Sharing Protocol 標識 (SP)</listitem>
+      <listitem>拡張の出典 (ER)</listitem>
+      <listitem>POSIX ファイル属性 (PX)</listitem>
+      <listitem>POSIX デバイス番号 (PN)</listitem>
+      <listitem>シンボリックリンク (SL)</listitem>
+      <listitem>代替名 (NM)</listitem>
+      <listitem>子リンク (CL)</listitem>
+      <listitem>親リンク (PL)</listitem>
+      <listitem>再配置ディレクトリ (RE)</listitem>
+      <listitem>タイムスタンプ (TF)</listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <title>未実装の機能</title>
+      <listitem>ISO 9660:1988 Level 3</listitem>
+      <listitem>ISO 9660:1999</listitem>
+      <listitem>CD-ROM XA</listitem>
+      <listitem>拡張属性レコード</listitem>
+      <listitem>インタリーブモード</listitem>
+      <listitem>スパース・ファイル ("SF" System Use Entry)</listitem>
+      <listitem>パディング・フィールド ("PD" System Use Entry)</listitem>
+      <listitem>System Use Sharing Protocol 終端 ("ST" System Use Entry)</listitem>
+      <listitem>拡張の選択 ("ES" System Use Entry)</listitem>
+      <listitem>スパース・ファイル ("SF" System Use Entry)</listitem>
     </itemizedlist>
   </section>
 

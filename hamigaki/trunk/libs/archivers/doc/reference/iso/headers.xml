@@ -1,0 +1,564 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Use, modification, and distribution are subject to the
+  Boost Software License, Version 1.0. (See accompanying file
+  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<header name="hamigaki/archivers/iso/headers.hpp">
+  <namespace name="hamigaki">
+    <namespace name="archivers">
+      <namespace name="iso">
+        <struct name="header">
+          <purpose><para>ISO 9660 エントリのヘッダ情報を表す構造体</para></purpose>
+
+          <method-group name="queries">
+            <method name="is_regular" cv="const">
+              <type>bool</type>
+              <returns><simpara>通常のファイルであれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
+            </method>
+
+            <method name="is_directory" cv="const">
+              <type>bool</type>
+              <returns><simpara>ディレクトリであれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
+            </method>
+
+            <method name="is_symlink" cv="const">
+              <type>bool</type>
+              <returns><simpara>シンボリックリンクであれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
+            </method>
+
+            <method name="is_associated" cv="const">
+              <type>bool</type>
+              <returns><simpara>関連ファイルであれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
+            </method>
+          </method-group>
+
+          <method-group name="modifiers">
+            <method name="type">
+              <type>void</type>
+              <parameter name="v">
+                <paramtype><enumname>filesystem::file_type</enumname></paramtype>
+              </parameter>
+              <effects><simpara>ファイル種別を<code>v</code>に設定する</simpara></effects>
+            </method>
+          </method-group>
+
+          <data-member name="path">
+            <type>boost::filesystem::path</type>
+          </data-member>
+
+          <data-member name="version">
+            <type>boost::uint16_t</type>
+          </data-member>
+
+          <data-member name="link_path">
+            <type>boost::filesystem::path</type>
+          </data-member>
+
+          <data-member name="data_pos">
+            <type>boost::uint32_t</type>
+          </data-member>
+
+          <data-member name="file_size">
+            <type>boost::uint64_t</type>
+          </data-member>
+
+          <data-member name="recorded_time">
+            <type>binary_date_time</type>
+          </data-member>
+
+          <data-member name="flags">
+            <type>boost::uint8_t</type>
+          </data-member>
+
+          <data-member name="system_use">
+            <type>std::string</type>
+          </data-member>
+
+          <data-member name="attributes">
+            <type>boost::optional&lt;posix::file_attributes&gt;</type>
+          </data-member>
+
+          <data-member name="device_number">
+            <type>boost::optional&lt;filesystem::device_number&gt;</type>
+          </data-member>
+
+          <data-member name="creation_time">
+            <type>date_time</type>
+          </data-member>
+
+          <data-member name="last_write_time">
+            <type>date_time</type>
+          </data-member>
+
+          <data-member name="last_access_time">
+            <type>date_time</type>
+          </data-member>
+
+          <data-member name="last_change_time">
+            <type>date_time</type>
+          </data-member>
+
+          <data-member name="last_backup_time">
+            <type>date_time</type>
+          </data-member>
+
+          <data-member name="expiration_time">
+            <type>date_time</type>
+          </data-member>
+
+          <data-member name="effective_time">
+            <type>date_time</type>
+          </data-member>
+
+          <description>
+            <para>
+              <informaltable frame="all">
+                <tgroup cols="3">
+                  <thead>
+                    <row>
+                      <entry>メンバ変数</entry>
+                      <entry>意味</entry>
+                      <entry>規定値</entry>
+                    </row>
+                  </thead>
+                  <tbody>
+                    <row>
+                      <entry>path</entry>
+                      <entry>ファイルのパス名</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>link_path</entry>
+                      <entry>リンク先のパス名</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>data_pos</entry>
+                      <entry>ファイルのエクステントが存在する論理ブロック番号</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>file_size</entry>
+                      <entry>ファイルサイズ</entry>
+                      <entry>0</entry>
+                    </row>
+                    <row>
+                      <entry>recorded_time</entry>
+                      <entry>ファイル記録日時</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>flags</entry>
+                      <entry>ファイルフラグ (<classname>file_flags</classname>構造体内の定数のいずれか、あるいはその組み合わせ)</entry>
+                      <entry>0</entry>
+                    </row>
+                    <row>
+                      <entry>system_use</entry>
+                      <entry>システム用</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>attributes</entry>
+                      <entry>POSIX ファイル属性</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>device_number</entry>
+                      <entry>デバイス番号</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>creation_time</entry>
+                      <entry>ファイル作成日時</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>last_write_time</entry>
+                      <entry>ファイル最終更新日時</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>last_access_time</entry>
+                      <entry>ファイル最終アクセス日時</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>last_change_time</entry>
+                      <entry>ファイル最終状態変更日時</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>last_change_time</entry>
+                      <entry>ファイル最終バックアップ日時</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>expiration_time</entry>
+                      <entry>ファイル失効日時</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>effective_time</entry>
+                      <entry>ファイル発効日時</entry>
+                      <entry></entry>
+                    </row>
+                  </tbody>
+                </tgroup>
+              </informaltable>
+            </para>
+          </description>
+        </struct>
+
+        <struct name="volume_info">
+          <purpose><para>ボリューム記述子の共通部分を表す構造体</para></purpose>
+
+          <data-member name="std_id[5]">
+            <type>char</type>
+          </data-member>
+
+          <data-member name="volume_space_size">
+            <type>boost::uint32_t</type>
+          </data-member>
+
+          <data-member name="volume_set_size">
+            <type>boost::uint16_t</type>
+          </data-member>
+
+          <data-member name="volume_seq_number">
+            <type>boost::uint16_t</type>
+          </data-member>
+
+          <data-member name="logical_block_size">
+            <type>boost::uint16_t</type>
+          </data-member>
+
+          <data-member name="creation_time">
+            <type>date_time</type>
+          </data-member>
+
+          <data-member name="modification_time">
+            <type>date_time</type>
+          </data-member>
+
+          <data-member name="expiration_time">
+            <type>date_time</type>
+          </data-member>
+
+          <data-member name="effective_time">
+            <type>date_time</type>
+          </data-member>
+
+          <data-member name="file_structure_version">
+            <type>boost::uint8_t</type>
+          </data-member>
+
+          <description>
+            <para>
+              <informaltable frame="all">
+                <tgroup cols="3">
+                  <thead>
+                    <row>
+                      <entry>メンバ変数</entry>
+                      <entry>意味</entry>
+                      <entry>規定値</entry>
+                    </row>
+                  </thead>
+                  <tbody>
+                    <row>
+                      <entry>std_id</entry>
+                      <entry>規格識別子</entry>
+                      <entry>CD001</entry>
+                    </row>
+                    <row>
+                      <entry>volume_space_size</entry>
+                      <entry>ボリューム空間のサイズ (読み込みのみ)</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>volume_set_size</entry>
+                      <entry>ボリューム集合のサイズ</entry>
+                      <entry>1u</entry>
+                    </row>
+                    <row>
+                      <entry>volume_seq_number</entry>
+                      <entry>ボリューム順序番号</entry>
+                      <entry>1u</entry>
+                    </row>
+                    <row>
+                      <entry>logical_block_size</entry>
+                      <entry>論理ブロックサイズ</entry>
+                      <entry>2048u</entry>
+                    </row>
+                    <row>
+                      <entry>creation_time</entry>
+                      <entry>ボリューム作成日時</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>modification_time</entry>
+                      <entry>ボリューム更新日時</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>expiration_time</entry>
+                      <entry>ボリューム失効日時</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>effective_time</entry>
+                      <entry>ボリューム発効日時</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>file_structure_version</entry>
+                      <entry>ファイル構造のバージョン</entry>
+                      <entry>1u</entry>
+                    </row>
+                  </tbody>
+                </tgroup>
+              </informaltable>
+            </para>
+          </description>
+        </struct>
+
+        <struct name="volume_desc">
+          <purpose><para>ボリューム記述子を表す構造体</para></purpose>
+
+          <method-group name="queries">
+            <method name="is_joliet" cv="const">
+              <type>bool</type>
+              <returns><simpara>ボリュームがJoliet拡張に対応していれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
+            </method>
+
+            <method name="is_rock_ridge" cv="const">
+              <type>bool</type>
+              <returns><simpara>ボリュームがRock Ridgeに対応していれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
+            </method>
+          </method-group>
+
+          <method-group name="modifiers">
+            <method name="set_joliet">
+              <type>void</type>
+              <effects><simpara>Joliet拡張用の設定を行う</simpara></effects>
+            </method>
+          </method-group>
+
+          <data-member name="rrip">
+            <type><enumname>rrip_type</enumname></type>
+          </data-member>
+
+          <data-member name="type">
+            <type>boost::uint8_t</type>
+          </data-member>
+
+          <data-member name="version">
+            <type>boost::uint8_t</type>
+          </data-member>
+
+          <data-member name="flags">
+            <type>boost::uint8_t</type>
+          </data-member>
+
+          <data-member name="system_id">
+            <type>std::string</type>
+          </data-member>
+
+          <data-member name="volume_id">
+            <type>std::string</type>
+          </data-member>
+
+          <data-member name="escape_sequences">
+            <type>std::string</type>
+          </data-member>
+
+          <data-member name="path_table_size">
+            <type>boost::uint32_t</type>
+          </data-member>
+
+          <data-member name="l_path_table_pos">
+            <type>boost::uint32_t</type>
+          </data-member>
+
+          <data-member name="l_path_table_pos2">
+            <type>boost::uint32_t</type>
+          </data-member>
+
+          <data-member name="m_path_table_pos">
+            <type>boost::uint32_t</type>
+          </data-member>
+
+          <data-member name="m_path_table_pos2">
+            <type>boost::uint32_t</type>
+          </data-member>
+
+          <data-member name="root_record">
+            <type>directory_record</type>
+          </data-member>
+
+          <data-member name="volume_set_id">
+            <type>std::string</type>
+          </data-member>
+
+          <data-member name="publisher_id">
+            <type>std::string</type>
+          </data-member>
+
+          <data-member name="data_preparer_id">
+            <type>std::string</type>
+          </data-member>
+
+          <data-member name="application_id">
+            <type>std::string</type>
+          </data-member>
+
+          <data-member name="copyright_file_id">
+            <type>boost::filesystem::path</type>
+          </data-member>
+
+          <data-member name="abstract_file_id">
+            <type>boost::filesystem::path</type>
+          </data-member>
+
+          <data-member name="bibliographic_file_id">
+            <type>boost::filesystem::path</type>
+          </data-member>
+
+          <data-member name="application_use[512]">
+            <type>char</type>
+          </data-member>
+
+          <description>
+            <para>
+              <informaltable frame="all">
+                <tgroup cols="3">
+                  <thead>
+                    <row>
+                      <entry>メンバ変数</entry>
+                      <entry>意味</entry>
+                      <entry>規定値</entry>
+                    </row>
+                  </thead>
+                  <tbody>
+                    <row>
+                      <entry>rrip</entry>
+                      <entry>Rock Ridge 拡張の種類</entry>
+                      <entry>rrip_none</entry>
+                    </row>
+                    <row>
+                      <entry>type</entry>
+                      <entry>ボリューム記述子の種類</entry>
+                      <entry>1u</entry>
+                    </row>
+                    <row>
+                      <entry>version</entry>
+                      <entry>ボリューム記述子のバージョン</entry>
+                      <entry>1u</entry>
+                    </row>
+                    <row>
+                      <entry>flags</entry>
+                      <entry>ボリュームフラグ</entry>
+                      <entry>0u</entry>
+                    </row>
+                    <row>
+                      <entry>system_id</entry>
+                      <entry>システム識別子</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>volume_id</entry>
+                      <entry>ボリューム識別子</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>escape_sequences</entry>
+                      <entry>エスケープシーケンス</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>path_table_size</entry>
+                      <entry>パステーブルのサイズ (読み込みのみ)</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>l_path_table_pos</entry>
+                      <entry>L型パステーブルの位置 (読み込みのみ)</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>l_path_table_pos2</entry>
+                      <entry>任意L型パステーブルの位置 (読み込みのみ)</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>m_path_table_pos</entry>
+                      <entry>M型パステーブルの位置 (読み込みのみ)</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>m_path_table_pos2</entry>
+                      <entry>任意M型パステーブルの位置 (読み込みのみ)</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>root_record</entry>
+                      <entry>ルートディレクトリ用ディレクトリレコード (読み込みのみ)</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>volume_set_id</entry>
+                      <entry>ボリューム集合識別子</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>publisher_id</entry>
+                      <entry>出版社識別子</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>data_preparer_id</entry>
+                      <entry>データ編集者識別子</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>application_id</entry>
+                      <entry>応用システム識別子</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>copyright_file_id</entry>
+                      <entry>著作権ファイル識別子</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>abstract_file_id</entry>
+                      <entry>抄録ファイル識別子</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>bibliographic_file_id</entry>
+                      <entry>書誌ファイル識別子</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>application_use</entry>
+                      <entry>応用システム用</entry>
+                      <entry></entry>
+                    </row>
+                  </tbody>
+                </tgroup>
+              </informaltable>
+            </para>
+          </description>
+        </struct>
+      </namespace>
+    </namespace>
+  </namespace>
+</header>
