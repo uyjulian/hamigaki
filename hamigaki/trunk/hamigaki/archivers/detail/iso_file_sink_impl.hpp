@@ -80,6 +80,8 @@ public:
         std::memset(block_, 0, sizeof(block_));
         for (int i = 0; i < 16; ++i)
             iostreams::blocking_write(sink_, block_);
+
+        dirs_[path()];
     }
 
     void add_volume_desc(const iso::volume_desc& desc)
@@ -92,21 +94,7 @@ public:
     void create_entry(const iso::header& head)
     {
         if (!freeze_volume_descs_)
-        {
-            if (!has_primary_volume_desc())
-                volume_descs_.push_back(iso::volume_desc());
-
-            for (std::size_t i = 0; i < volume_descs_.size(); ++i)
-                iostreams::blocking_write(sink_, block_);
-
-            iso::volume_desc_set_terminator term;
-            term.type = 255u;
-            std::memcpy(term.std_id, volume_info_.std_id, 5);
-            term.version = 1u;
-            iostreams::binary_write(sink_, term);
-
-            freeze_volume_descs_ = true;
-        }
+            write_volume_descs_set_terminator();
 
         if (head.file_size > 0xFFFFFFFFull)
             throw BOOST_IOSTREAMS_FAILURE("ISO 9660 file size too large");
@@ -153,6 +141,9 @@ public:
 
     void close_archive()
     {
+        if (!freeze_volume_descs_)
+            write_volume_descs_set_terminator();
+
         const std::size_t size = volume_descs_.size();
 
         iso::header root;
@@ -590,6 +581,23 @@ private:
         std::memcpy(raw.application_use, desc.application_use, 512);
 
         iostreams::binary_write(sink_, raw);
+    }
+
+    void write_volume_descs_set_terminator()
+    {
+        if (!has_primary_volume_desc())
+            volume_descs_.push_back(iso::volume_desc());
+
+        for (std::size_t i = 0; i < volume_descs_.size(); ++i)
+            iostreams::blocking_write(sink_, block_);
+
+        iso::volume_desc_set_terminator term;
+        term.type = 255u;
+        std::memcpy(term.std_id, volume_info_.std_id, 5);
+        term.version = 1u;
+        iostreams::binary_write(sink_, term);
+
+        freeze_volume_descs_ = true;
     }
 };
 
