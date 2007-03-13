@@ -96,7 +96,7 @@ void check_file(
     );
 }
 
-void empty_test()
+void empty_test_aux(ar::iso::rrip_type rrip)
 {
     io_ex::tmp_file archive;
     ar::basic_iso_file_sink<
@@ -104,7 +104,7 @@ void empty_test()
     > sink(io_ex::dont_close(archive));
 
     ar::iso::volume_desc desc;
-    desc.rrip = ar::iso::rrip_1991a;
+    desc.rrip = rrip;
     sink.add_volume_desc(desc);
 
     sink.close_archive();
@@ -116,7 +116,13 @@ void empty_test()
     BOOST_CHECK(!src.next_entry());
 }
 
-void rock_ridge_test()
+void empty_test()
+{
+    ::empty_test_aux(ar::iso::rrip_1991a);
+    ::empty_test_aux(ar::iso::ieee_p1282);
+}
+
+void rock_ridge_test_aux(ar::iso::rrip_type rrip)
 {
     std::string data(2049u, 'a');
 
@@ -147,7 +153,7 @@ void rock_ridge_test()
     > sink(io_ex::dont_close(archive));
 
     ar::iso::volume_desc desc;
-    desc.rrip = ar::iso::rrip_1991a;
+    desc.rrip = rrip;
     sink.add_volume_desc(desc);
 
     sink.create_entry(head);
@@ -158,7 +164,8 @@ void rock_ridge_test()
     io::seek(archive, 0, BOOST_IOS::beg);
 
     head.attributes->links = 1u;
-    head.attributes->serial_no = 0u;
+    if (rrip == ar::iso::rrip_1991a)
+        head.attributes->serial_no = 0u;
 
     ar::basic_iso_file_source<io_ex::tmp_file> src(archive);
 
@@ -167,7 +174,13 @@ void rock_ridge_test()
     BOOST_CHECK(!src.next_entry());
 }
 
-void rock_ridge_dir_test()
+void rock_ridge_test()
+{
+    ::rock_ridge_test_aux(ar::iso::rrip_1991a);
+    ::rock_ridge_test_aux(ar::iso::ieee_p1282);
+}
+
+void rock_ridge_dir_test_aux(ar::iso::rrip_type rrip)
 {
     ar::iso::header head;
     head.path = "rock_ridge_test";
@@ -195,7 +208,7 @@ void rock_ridge_dir_test()
     > sink(io_ex::dont_close(archive));
 
     ar::iso::volume_desc desc;
-    desc.rrip = ar::iso::rrip_1991a;
+    desc.rrip = rrip;
     sink.add_volume_desc(desc);
 
     sink.create_entry(head);
@@ -205,7 +218,8 @@ void rock_ridge_dir_test()
     io::seek(archive, 0, BOOST_IOS::beg);
 
     head.attributes->links = 2u;
-    head.attributes->serial_no = 0u;
+    if (rrip == ar::iso::rrip_1991a)
+        head.attributes->serial_no = 0u;
 
     ar::basic_iso_file_source<io_ex::tmp_file> src(archive);
 
@@ -215,7 +229,13 @@ void rock_ridge_dir_test()
     BOOST_CHECK(!src.next_entry());
 }
 
-void deep_dir_test()
+void rock_ridge_dir_test()
+{
+    ::rock_ridge_dir_test_aux(ar::iso::rrip_1991a);
+    ::rock_ridge_dir_test_aux(ar::iso::ieee_p1282);
+}
+
+void deep_dir_test_aux(ar::iso::rrip_type rrip)
 {
     static const std::size_t dir_count = 16u;
 
@@ -242,7 +262,7 @@ void deep_dir_test()
     > sink(io_ex::dont_close(archive));
 
     ar::iso::volume_desc desc;
-    desc.rrip = ar::iso::rrip_1991a;
+    desc.rrip = rrip;
     sink.add_volume_desc(desc);
 
     for (std::size_t i = 0; i < dir_count; ++i)
@@ -258,8 +278,11 @@ void deep_dir_test()
         heads[i].attributes->links = 3u;
     heads[dir_count-1].attributes->links = 2u;
 
-    for (std::size_t i = 0; i < dir_count; ++i)
-        heads[i].attributes->serial_no = 0u;
+    if (rrip == ar::iso::rrip_1991a)
+    {
+        for (std::size_t i = 0; i < dir_count; ++i)
+            heads[i].attributes->serial_no = 0u;
+    }
 
     ar::basic_iso_file_source<io_ex::tmp_file> src(archive);
 
@@ -273,6 +296,12 @@ void deep_dir_test()
     BOOST_CHECK_EQUAL(src.header().path.string(), std::string("rr_moved"));
 
     BOOST_CHECK(!src.next_entry());
+}
+
+void deep_dir_test()
+{
+    ::deep_dir_test_aux(ar::iso::rrip_1991a);
+    ::deep_dir_test_aux(ar::iso::ieee_p1282);
 }
 
 ut::test_suite* init_unit_test_suite(int, char* [])
