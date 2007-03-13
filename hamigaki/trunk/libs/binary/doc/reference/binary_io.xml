@@ -148,11 +148,44 @@ return x;
           </parameter>
         </signature>
 
+        <signature>
+          <template>
+            <template-type-parameter name="T" />
+          </template>
+          <type>void</type>
+          <parameter name="s">
+            <paramtype>std::string&amp;</paramtype>
+          </parameter>
+          <parameter name="x">
+            <paramtype>const T&amp;</paramtype>
+          </parameter>
+        </signature>
+
+        <signature>
+          <template>
+            <template-nontype-parameter name="E">
+              <type>endianness</type>
+            </template-nontype-parameter>
+            <template-type-parameter name="T" />
+          </template>
+          <type>void</type>
+          <parameter name="s">
+            <paramtype>std::string&amp;</paramtype>
+          </parameter>
+          <parameter name="x">
+            <paramtype>const T&amp;</paramtype>
+          </parameter>
+        </signature>
+
         <purpose><simpara>指定したエンディアンでバイナリ出力を行う。</simpara></purpose>
 
         <description><para>エンディアン<code>E</code>でバイナリ出力を行う。エンディアンの指定がないバージョンは<code>E = native</code>の場合と同じである。</para></description>
 
-        <effects><simpara><code><classname>binary_io_traits</classname>&lt;E,T&gt;::write(s, x);</code></simpara></effects>
+        <effects><para><simpara><code><classname>binary_io_traits</classname>&lt;E,T&gt;::write(s, x);</code></simpara>または<programlisting><![CDATA[char data[binary_size<T>::value];
+std::memset(data, 0, sizeof(data));
+binary_io_traits<E,T>::write(data, x);
+s.append(data, sizeof(data));
+]]></programlisting></para></effects>
       </overloaded-function>
     </free-function-group>
   </namespace>
