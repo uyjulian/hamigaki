@@ -235,6 +235,70 @@ void rock_ridge_dir_test()
     ::rock_ridge_dir_test_aux(ar::iso::ieee_p1282);
 }
 
+void symlink_test_aux(
+    ar::iso::rrip_type rrip, const boost::filesystem::path& ph)
+{
+    ar::iso::header head;
+    head.path = "rock_ridge_test";
+    head.link_path = ph;
+
+    head.recorded_time.year     = 1970u-1900u;
+    head.recorded_time.month    = 1u;
+    head.recorded_time.day      = 1u;
+    head.recorded_time.hour     = 0u;
+    head.recorded_time.minute   = 0u;
+    head.recorded_time.second   = 0u;
+    head.recorded_time.timezone = 0;
+
+    ar::iso::posix::file_attributes attr;
+    attr.permissions = 0120777u;
+    attr.links = 0u;
+    attr.uid = 1234u;
+    attr.gid = 5678u;
+    attr.serial_no = 838861u;
+    head.attributes = attr;
+
+    io_ex::tmp_file archive;
+    ar::basic_iso_file_sink<
+        io_ex::dont_close_device<io_ex::tmp_file>
+    > sink(io_ex::dont_close(archive));
+
+    ar::iso::volume_desc desc;
+    desc.rrip = rrip;
+    sink.add_volume_desc(desc);
+
+    sink.create_entry(head);
+    sink.close();
+    sink.close_archive();
+
+    io::seek(archive, 0, BOOST_IOS::beg);
+
+    head.attributes->links = 1u;
+    if (rrip == ar::iso::rrip_1991a)
+        head.attributes->serial_no = 0u;
+
+    ar::basic_iso_file_source<io_ex::tmp_file> src(archive);
+
+    BOOST_REQUIRE(src.next_entry());
+    ::check_header(head, src.header());
+
+    BOOST_CHECK(!src.next_entry());
+}
+
+void symlink_test()
+{
+    ::symlink_test_aux(ar::iso::rrip_1991a, "dir");
+    ::symlink_test_aux(ar::iso::ieee_p1282, "dir");
+    ::symlink_test_aux(ar::iso::rrip_1991a, ".");
+    ::symlink_test_aux(ar::iso::ieee_p1282, ".");
+    ::symlink_test_aux(ar::iso::rrip_1991a, "..");
+    ::symlink_test_aux(ar::iso::ieee_p1282, "..");
+    ::symlink_test_aux(ar::iso::rrip_1991a, "/");
+    ::symlink_test_aux(ar::iso::ieee_p1282, "/");
+    ::symlink_test_aux(ar::iso::rrip_1991a, "/dir/.././link_target");
+    ::symlink_test_aux(ar::iso::ieee_p1282, "/dir/.././link_target");
+}
+
 void deep_dir_test_aux(ar::iso::rrip_type rrip)
 {
     static const std::size_t dir_count = 16u;
@@ -310,6 +374,7 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&empty_test));
     test->add(BOOST_TEST_CASE(&rock_ridge_test));
     test->add(BOOST_TEST_CASE(&rock_ridge_dir_test));
+    test->add(BOOST_TEST_CASE(&symlink_test));
     test->add(BOOST_TEST_CASE(&deep_dir_test));
     return test;
 }
