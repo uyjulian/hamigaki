@@ -30,14 +30,14 @@
 
           <method-group name="conversions">
             <method name="to_timestamp" cv="const">
-              <type>boost::optional&lt;filesystem::timestamp&gt;</type>
+              <type>boost::optional&lt;<classname>filesystem::timestamp</classname>&gt;</type>
               <returns><simpara><code>date_time</code>の保持する時間を<code>timestamp</code>で表現した値</simpara></returns>
             </method>
 
             <method name="from_timestamp" specifiers="static">
               <type>date_time</type>
               <parameter name="ts">
-                <paramtype>const filesystem::timestamp&amp;</paramtype>
+                <paramtype>const <classname>filesystem::timestamp</classname>&amp;</paramtype>
               </parameter>
               <returns><simpara><code>ts</code>の保持する時間を表現する<code>date_time</code></simpara></returns>
             </method>
@@ -140,16 +140,29 @@
 
           <method-group name="conversions">
             <method name="to_timestamp" cv="const">
-              <type>boost::optional&lt;filesystem::timestamp&gt;</type>
+              <type>boost::optional&lt;<classname>filesystem::timestamp</classname>&gt;</type>
               <returns><simpara><code>binary_date_time</code>の保持する時間を<code>timestamp</code>で表現した値</simpara></returns>
             </method>
 
             <method name="from_timestamp" specifiers="static">
               <type>binary_date_time</type>
               <parameter name="ts">
-                <paramtype>const filesystem::timestamp&amp;</paramtype>
+                <paramtype>const <classname>filesystem::timestamp</classname>&amp;</paramtype>
               </parameter>
               <returns><simpara><code>ts</code>の保持する時間を表現する<code>binary_date_time</code></simpara></returns>
+            </method>
+
+            <method name="to_date_time" cv="const">
+              <type><classname>date_time</classname></type>
+              <returns><simpara><code>binary_date_time</code>の保持する時間を<classname>date_time</classname>で表現した値</simpara></returns>
+            </method>
+
+            <method name="from_date_time" specifiers="static">
+              <type>binary_date_time</type>
+              <parameter name="ds">
+                <paramtype>const <classname>date_time</classname>&amp;</paramtype>
+              </parameter>
+              <returns><simpara><code>ds</code>の保持する時間を表現する<code>binary_date_time</code></simpara></returns>
             </method>
           </method-group>
 
