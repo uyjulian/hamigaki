@@ -15,6 +15,7 @@
 #include <hamigaki/binary/struct_traits.hpp>
 #include <boost/mpl/for_each.hpp>
 #include <cstring>
+#include <string>
 
 namespace hamigaki {
 
