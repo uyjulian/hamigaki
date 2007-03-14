@@ -13,7 +13,7 @@
 #include <hamigaki/binary/struct_traits.hpp>
 #include <hamigaki/filesystem/timestamp.hpp>
 #include <hamigaki/dec_format.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/mpl/list.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/optional.hpp>
