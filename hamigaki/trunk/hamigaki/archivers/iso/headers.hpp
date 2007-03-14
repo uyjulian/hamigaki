@@ -104,7 +104,9 @@ private:
             attributes = attr;
         }
 
-        boost::uint16_t mask = ~filesystem::file_permissions::type_mask;
+        boost::uint16_t mask =
+            static_cast<boost::uint16_t>(
+                ~filesystem::file_permissions::type_mask);
         attributes->permissions = type | (attributes->permissions & mask);
     }
 };
