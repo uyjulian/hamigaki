@@ -21,6 +21,47 @@
 
 namespace hamigaki { namespace archivers { namespace detail {
 
+template<std::size_t Size>
+inline std::string make_iso_string(const char (&data)[Size], char fill)
+{
+    typedef std::reverse_iterator<const char*> iter_type;
+
+    iter_type rbeg(data+Size);
+    iter_type rend(data);
+
+    using boost::lambda::_1;
+    iter_type i = std::find_if(rbeg, rend, _1 != fill);
+    if (i != rend)
+        return std::string(data, i.base());
+    else
+        return std::string(data, Size);
+}
+
+template<std::size_t Size>
+inline boost::filesystem::path make_iso_file_id(const char (&data)[Size])
+{
+    using namespace boost::filesystem;
+    return path(detail::make_iso_string(data, ' '), no_check);
+}
+
+template<std::size_t Size>
+inline std::string make_joliet_string(const char (&data)[Size])
+{
+    std::size_t src_size = Size/2;
+    boost::scoped_array<wchar_t> src(new wchar_t[src_size + 1]);
+    detail::ucs2be_to_wide(src.get(), data, Size);
+    src[src_size] = 0;
+
+    return detail::wide_to_narrow(src.get());
+}
+
+template<std::size_t Size>
+inline boost::filesystem::path make_joliet_file_id(const char (&data)[Size])
+{
+    using namespace boost::filesystem;
+    return path(detail::make_joliet_string(data), no_check);
+}
+
 template<class Source>
 class basic_iso_file_source_impl : private boost::noncopyable
 {
@@ -87,29 +128,6 @@ private:
     std::vector<iso::volume_desc> volume_descs_;
     std::auto_ptr<iso_file_reader<Source> > reader_;
 
-    template<std::size_t Size>
-    static std::string make_string(const char (&data)[Size], char fill)
-    {
-        typedef std::reverse_iterator<const char*> iter_type;
-
-        iter_type rbeg(data+Size);
-        iter_type rend(data);
-
-        using boost::lambda::_1;
-        iter_type i = std::find_if(rbeg, rend, _1 != fill);
-        if (i != rend)
-            return std::string(data, i.base());
-        else
-            return std::string(data, Size);
-    }
-
-    template<std::size_t Size>
-    static boost::filesystem::path make_file_id(const char (&data)[Size])
-    {
-        using namespace boost::filesystem;
-        return path(make_string(data, ' '), no_check);
-    }
-
     static iso::volume_desc make_volume_desc(const iso::volume_descriptor& desc)
     {
         iso::volume_desc tmp;
@@ -117,42 +135,28 @@ private:
         tmp.type = desc.type;
         tmp.version = desc.version;
         tmp.flags = desc.flags;
-        tmp.system_id = make_string(desc.system_id, ' ');
-        tmp.volume_id = make_string(desc.volume_id, ' ');
-        tmp.escape_sequences = make_string(desc.escape_sequences, '\0');
+        tmp.system_id = detail::make_iso_string(desc.system_id, ' ');
+        tmp.volume_id = detail::make_iso_string(desc.volume_id, ' ');
+        tmp.escape_sequences =
+            detail::make_iso_string(desc.escape_sequences, '\0');
         tmp.path_table_size = desc.path_table_size;
         tmp.l_path_table_pos = desc.l_path_table_pos;
         tmp.l_path_table_pos2 = desc.l_path_table_pos2;
         tmp.m_path_table_pos = desc.m_path_table_pos;
         tmp.m_path_table_pos2 = desc.m_path_table_pos2;
         tmp.root_record = desc.root_record;
-        tmp.volume_set_id = make_string(desc.volume_set_id, ' ');
-        tmp.publisher_id = make_string(desc.publisher_id, ' ');
-        tmp.data_preparer_id = make_string(desc.data_preparer_id, ' ');
-        tmp.application_id = make_string(desc.application_id, ' ');
-        tmp.copyright_file_id = make_file_id(desc.copyright_file_id);
-        tmp.abstract_file_id = make_file_id(desc.abstract_file_id);
-        tmp.bibliographic_file_id = make_file_id(desc.bibliographic_file_id);
+        tmp.volume_set_id = detail::make_iso_string(desc.volume_set_id, ' ');
+        tmp.publisher_id = detail::make_iso_string(desc.publisher_id, ' ');
+        tmp.data_preparer_id =
+            detail::make_iso_string(desc.data_preparer_id, ' ');
+        tmp.application_id = detail::make_iso_string(desc.application_id, ' ');
+        tmp.copyright_file_id =
+            detail::make_iso_file_id(desc.copyright_file_id);
+        tmp.abstract_file_id = detail::make_iso_file_id(desc.abstract_file_id);
+        tmp.bibliographic_file_id =
+            detail::make_iso_file_id(desc.bibliographic_file_id);
         std::memcpy(tmp.application_use, desc.application_use, 512);
         return tmp;
-    }
-
-    template<std::size_t Size>
-    static std::string make_joliet_string(const char (&data)[Size])
-    {
-        std::size_t src_size = Size/2;
-        boost::scoped_array<wchar_t> src(new wchar_t[src_size + 1]);
-        detail::ucs2be_to_wide(src.get(), data, Size);
-        src[src_size] = 0;
-
-        return detail::wide_to_narrow(src.get());
-    }
-
-    template<std::size_t Size>
-    static boost::filesystem::path make_joliet_file_id(const char (&data)[Size])
-    {
-        using namespace boost::filesystem;
-        return path(make_joliet_string(data), no_check);
     }
 
     static iso::volume_desc
@@ -163,23 +167,27 @@ private:
         tmp.type = desc.type;
         tmp.version = desc.version;
         tmp.flags = desc.flags;
-        tmp.system_id = make_joliet_string(desc.system_id);
-        tmp.volume_id = make_joliet_string(desc.volume_id);
-        tmp.escape_sequences = make_string(desc.escape_sequences, '\0');
+        tmp.system_id = detail::make_joliet_string(desc.system_id);
+        tmp.volume_id = detail::make_joliet_string(desc.volume_id);
+        tmp.escape_sequences =
+            detail::make_iso_string(desc.escape_sequences, '\0');
         tmp.path_table_size = desc.path_table_size;
         tmp.l_path_table_pos = desc.l_path_table_pos;
         tmp.l_path_table_pos2 = desc.l_path_table_pos2;
         tmp.m_path_table_pos = desc.m_path_table_pos;
         tmp.m_path_table_pos2 = desc.m_path_table_pos2;
         tmp.root_record = desc.root_record;
-        tmp.volume_set_id = make_joliet_string(desc.volume_set_id);
-        tmp.publisher_id = make_joliet_string(desc.publisher_id);
-        tmp.data_preparer_id = make_joliet_string(desc.data_preparer_id);
-        tmp.application_id = make_joliet_string(desc.application_id);
-        tmp.copyright_file_id = make_joliet_file_id(desc.copyright_file_id);
-        tmp.abstract_file_id = make_joliet_file_id(desc.abstract_file_id);
+        tmp.volume_set_id = detail::make_joliet_string(desc.volume_set_id);
+        tmp.publisher_id = detail::make_joliet_string(desc.publisher_id);
+        tmp.data_preparer_id =
+            detail::make_joliet_string(desc.data_preparer_id);
+        tmp.application_id = detail::make_joliet_string(desc.application_id);
+        tmp.copyright_file_id =
+            detail::make_joliet_file_id(desc.copyright_file_id);
+        tmp.abstract_file_id =
+            detail::make_joliet_file_id(desc.abstract_file_id);
         tmp.bibliographic_file_id =
-            make_joliet_file_id(desc.bibliographic_file_id);
+            detail::make_joliet_file_id(desc.bibliographic_file_id);
         std::memcpy(tmp.application_use, desc.application_use, 512);
         return tmp;
     }
