@@ -1,4 +1,4 @@
-//  iso9660_test.cpp: test case for ISO 9660
+//  iso9660_lv1_test.cpp: test case for ISO 9660 Level 1
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
@@ -159,7 +159,7 @@ void iso9660_dir_test()
 
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
-    ut::test_suite* test = BOOST_TEST_SUITE("ISO 9660 test");
+    ut::test_suite* test = BOOST_TEST_SUITE("ISO 9660 Level 1 test");
     test->add(BOOST_TEST_CASE(&empty_test));
     test->add(BOOST_TEST_CASE(&iso9660_test));
     test->add(BOOST_TEST_CASE(&iso9660_dir_test));

@@ -446,7 +446,8 @@ private:
     {
         typedef std::map<path,directory_entries>::const_iterator dirs_iter;
 
-        iso_directory_writer writer(lbn_shift_, self::make_dir_record(root));
+        iso_directory_writer writer(
+            lbn_shift_, self::make_dir_record(root), desc.level);
         for (dirs_iter i = dirs_.begin(), end = dirs_.end(); i != end; ++i)
         {
             std::vector<iso_directory_record> tmp;
@@ -467,7 +468,8 @@ private:
         typedef std::map<path,directory_entries>::const_iterator dirs_iter;
 
         rock_ridge_directory_writer writer(
-            lbn_shift_, self::make_rrip_dir_record(root, desc.rrip), desc.rrip);
+            lbn_shift_, self::make_rrip_dir_record(root, desc.rrip),
+            desc.level, desc.rrip);
         for (dirs_iter i = dirs_.begin(), end = dirs_.end(); i != end; ++i)
         {
             std::vector<iso_directory_record> tmp;

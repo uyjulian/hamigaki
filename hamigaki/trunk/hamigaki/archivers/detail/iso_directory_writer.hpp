@@ -43,7 +43,7 @@ inline bool is_valid_iso_name(ForwardIterator first, ForwardIterator last)
     return std::find_if(first, last, std::not1(is_iso_d_char())) == last;
 }
 
-inline bool is_valid_iso_file_id(const std::string& s)
+inline bool is_valid_iso_lv1_file_id(const std::string& s)
 {
     const std::size_t size = s.size();
 
@@ -51,7 +51,7 @@ inline bool is_valid_iso_file_id(const std::string& s)
         return false;
 
     std::size_t dot = s.find('.');
-    if (dot == std::string::npos)
+    if ((dot == std::string::npos) || (dot >= 8u))
         return false;
 
     typedef std::string::const_iterator iter_type;
@@ -70,7 +70,7 @@ inline bool is_valid_iso_file_id(const std::string& s)
     return true;
 }
 
-inline bool is_valid_iso_dir_id(const std::string& s)
+inline bool is_valid_iso_lv1_dir_id(const std::string& s)
 {
     if (s.size() > 8)
         return false;
@@ -78,12 +78,12 @@ inline bool is_valid_iso_dir_id(const std::string& s)
     return detail::is_valid_iso_name(s.begin(), s.end());
 }
 
-inline bool has_valid_iso_id(const iso_directory_record& rec)
+inline bool has_valid_iso_lv1_id(const iso_directory_record& rec)
 {
     if (rec.is_directory())
-        return is_valid_iso_dir_id(rec.file_id);
+        return is_valid_iso_lv1_dir_id(rec.file_id);
     else
-        return is_valid_iso_file_id(rec.file_id);
+        return is_valid_iso_lv1_file_id(rec.file_id);
 }
 
 inline void convert_iso_alt_name(std::string& s)
@@ -104,7 +104,7 @@ inline void convert_iso_alt_name(std::string& s)
     }
 }
 
-inline std::string make_iso_alt_id(
+inline std::string make_iso_lv1_alt_id(
     const std::set<iso_directory_record>& ren, const iso_directory_record& rec)
 {
     const std::string& s = rec.file_id;
@@ -155,6 +155,129 @@ inline std::string make_iso_alt_id(
     return new_rec.file_id;
 }
 
+inline bool is_valid_iso_lv2_file_id(const std::string& s)
+{
+    const std::size_t size = s.size();
+
+    if ((size < 2) || (size > 31))
+        return false;
+
+    std::size_t dot = s.find('.');
+    if (dot == std::string::npos)
+        return false;
+
+    typedef std::string::const_iterator iter_type;
+
+    iter_type di = s.begin() + dot;
+    if (!detail::is_valid_iso_name(s.begin(), di))
+        return false;
+
+    if (di != s.end())
+    {
+        iter_type ei = di + 1;
+        if (!detail::is_valid_iso_name(ei, s.end()))
+            return false;
+    }
+
+    return true;
+}
+
+inline bool is_valid_iso_lv2_dir_id(const std::string& s)
+{
+    if (s.size() > 32u)
+        return false;
+
+    return detail::is_valid_iso_name(s.begin(), s.end());
+}
+
+inline bool has_valid_iso_lv2_id(const iso_directory_record& rec)
+{
+    if (rec.is_directory())
+        return is_valid_iso_lv2_dir_id(rec.file_id);
+    else
+        return is_valid_iso_lv2_file_id(rec.file_id);
+}
+
+inline std::string make_iso_lv2_alt_id(
+    const std::set<iso_directory_record>& ren, const iso_directory_record& rec)
+{
+    const std::string& s = rec.file_id;
+    const std::size_t size = s.size();
+
+    std::size_t dot = rec.is_directory() ? size : s.rfind('.');
+    if ((dot == std::string::npos) || (dot == 0u))
+        dot = size;
+
+    std::size_t dot_size = rec.is_directory() ? 0u : 1u;
+    std::size_t base_size = dot;
+    std::size_t ext_size = size - (base_size + dot_size);
+    if ((base_size >= 15u) && (ext_size >= 15u))
+    {
+        base_size = 15u;
+        ext_size = 15u;
+    }
+    else if (base_size >= 15u)
+        base_size = 31u - dot_size - ext_size;
+    else if (ext_size >= 15u)
+        ext_size = 31u - base_size - dot_size;
+
+    std::size_t base_size_max = 31u - dot_size - ext_size;
+
+    std::string base(s, 0, base_size);
+    std::string ext;
+    if (dot != size)
+        ext.assign(s, dot+1u, ext_size);
+
+    detail::convert_iso_alt_name(base);
+    detail::convert_iso_alt_name(ext);
+
+    iso_directory_record new_rec(rec);
+    new_rec.file_id = base;
+    if (!rec.is_directory())
+    {
+        new_rec.file_id += '.';
+        new_rec.file_id += ext;
+    }
+
+    unsigned n = 0;
+
+    while (ren.find(new_rec) != ren.end())
+    {
+        const std::string& num = hamigaki::to_dec<char>(n++);
+        if (num.size() > base_size_max)
+            throw std::runtime_error("cannot generate alternative file ID");
+
+        std::size_t len =
+            std::min<std::size_t>(base_size_max-num.size(), base.size());
+        new_rec.file_id.assign(base, 0, len);
+        new_rec.file_id += num;
+        if (rec.is_directory())
+        {
+            new_rec.file_id += '.';
+            new_rec.file_id += ext;
+        }
+    }
+
+    return new_rec.file_id;
+}
+
+inline bool has_valid_iso_id(unsigned level, const iso_directory_record& rec)
+{
+    if (level == 1u)
+        return has_valid_iso_lv1_id(rec);
+    else
+        return has_valid_iso_lv2_id(rec);
+}
+
+inline std::string make_iso_alt_id(unsigned level,
+    const std::set<iso_directory_record>& ren, const iso_directory_record& rec)
+{
+    if (level == 1u)
+        return make_iso_lv1_alt_id(ren, rec);
+    else
+        return make_iso_lv2_alt_id(ren, rec);
+}
+
 inline std::string make_iso_dir_id(const std::string& s)
 {
     if (s.empty())
@@ -175,9 +298,11 @@ private:
 
 public:
     iso_directory_writer(
-        boost::uint32_t lbn_shift, const iso_directory_record& root
+        boost::uint32_t lbn_shift, const iso_directory_record& root,
+        unsigned iso_level
     )
         : lbn_shift_(lbn_shift), lbn_mask_((1ul << lbn_shift) - 1), root_(root)
+        , iso_level_(iso_level)
     {
     }
 
@@ -229,7 +354,7 @@ public:
         for (std::size_t i = 0; i < size; ++i)
         {
             const iso_directory_record& rec = recs[i];
-            if (has_valid_iso_id(rec))
+            if (has_valid_iso_id(iso_level_, rec))
             {
                 if (rec.is_directory())
                     cvt_table_[ph/rec.file_id] = cur_path/rec.file_id;
@@ -245,7 +370,7 @@ public:
             if (!flags[i])
             {
                 const std::string& new_id =
-                    detail::make_iso_alt_id(entries, rec);
+                    detail::make_iso_alt_id(iso_level_, entries, rec);
 
                 if (rec.is_directory())
                     cvt_table_[ph/rec.file_id] = cur_path/new_id;
@@ -329,6 +454,7 @@ private:
     boost::uint32_t lbn_shift_;
     boost::uint32_t lbn_mask_;
     iso_directory_record root_;
+    unsigned iso_level_;
     path_cvt_table cvt_table_;
     boost::ptr_vector<path_table_records> path_table_;
     char block_[logical_sector_size];

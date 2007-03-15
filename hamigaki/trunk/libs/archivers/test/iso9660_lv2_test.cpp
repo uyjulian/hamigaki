@@ -1,4 +1,4 @@
-//  iso9660_test.cpp: test case for ISO 9660
+//  iso9660_lv2_test.cpp: test case for ISO 9660 Level 2
 
 //  Copyright Takeshi Mouri 2006.
 //  Use, modification, and distribution are subject to the
@@ -79,6 +79,10 @@ void empty_test()
         io_ex::dont_close_device<io_ex::tmp_file>
     > sink(io_ex::dont_close(archive));
 
+    ar::iso::volume_desc desc;
+    desc.level = 2u;
+    sink.add_volume_desc(desc);
+
     sink.close_archive();
 
     io::seek(archive, 0, BOOST_IOS::beg);
@@ -93,7 +97,7 @@ void iso9660_test()
     std::string data(2049u, 'a');
 
     ar::iso::header head;
-    head.path = "ISO_TEST.TXT";
+    head.path = "ISO_LEVEL_2_TEST_FILE.EXTENSION";
     head.version = 1u;
     head.file_size = data.size();
 
@@ -109,6 +113,10 @@ void iso9660_test()
     ar::basic_iso_file_sink<
         io_ex::dont_close_device<io_ex::tmp_file>
     > sink(io_ex::dont_close(archive));
+
+    ar::iso::volume_desc desc;
+    desc.level = 2u;
+    sink.add_volume_desc(desc);
 
     sink.create_entry(head);
     io_ex::blocking_write(sink, &data[0], data.size());
@@ -127,7 +135,7 @@ void iso9660_test()
 void iso9660_dir_test()
 {
     ar::iso::header head;
-    head.path = "TEST_DIR";
+    head.path = "ISO_LEVEL_2_TEST_DIRECTORY_NAME";
     head.flags = ar::iso::file_flags::directory;
 
     head.recorded_time.year     = 1970u-1900u;
@@ -142,6 +150,10 @@ void iso9660_dir_test()
     ar::basic_iso_file_sink<
         io_ex::dont_close_device<io_ex::tmp_file>
     > sink(io_ex::dont_close(archive));
+
+    ar::iso::volume_desc desc;
+    desc.level = 2u;
+    sink.add_volume_desc(desc);
 
     sink.create_entry(head);
     sink.close();
@@ -159,7 +171,7 @@ void iso9660_dir_test()
 
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
-    ut::test_suite* test = BOOST_TEST_SUITE("ISO 9660 test");
+    ut::test_suite* test = BOOST_TEST_SUITE("ISO 9660 Level 2 test");
     test->add(BOOST_TEST_CASE(&empty_test));
     test->add(BOOST_TEST_CASE(&iso9660_test));
     test->add(BOOST_TEST_CASE(&iso9660_dir_test));

@@ -135,6 +135,7 @@ struct volume_info
 
 struct volume_desc
 {
+    unsigned level;
     rrip_type rrip;
     boost::uint8_t type;
     boost::uint8_t version;
@@ -158,7 +159,8 @@ struct volume_desc
     char application_use[512];
 
     volume_desc()
-        : rrip(rrip_none), type(1u), version(1u), flags(0u), path_table_size(0)
+        : level(1u), rrip(rrip_none), type(1u)
+        , version(1u), flags(0u), path_table_size(0)
         , l_path_table_pos(0), l_path_table_pos2(0)
         , m_path_table_pos(0), m_path_table_pos2(0)
     {

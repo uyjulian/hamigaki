@@ -351,6 +351,10 @@
             </method>
           </method-group>
 
+          <data-member name="level">
+            <type>unsigned</type>
+          </data-member>
+
           <data-member name="rrip">
             <type><enumname>rrip_type</enumname></type>
           </data-member>
@@ -447,6 +451,11 @@
                     </row>
                   </thead>
                   <tbody>
+                    <row>
+                      <entry>level</entry>
+                      <entry>ISO 9660 情報交換水準</entry>
+                      <entry>1u</entry>
+                    </row>
                     <row>
                       <entry>rrip</entry>
                       <entry>Rock Ridge 拡張の種類</entry>

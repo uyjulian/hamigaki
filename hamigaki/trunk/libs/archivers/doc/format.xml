@@ -45,7 +45,7 @@
 
     <itemizedlist>
       <title>サポートされる機能</title>
-      <listitem>ISO 9660:1988 Level 1 / Level 2 (出力はLevel 1のみ)</listitem>
+      <listitem>ISO 9660:1988 Level 1 / Level 2</listitem>
       <listitem>Joliet 拡張</listitem>
       <listitem>System Use Sharing Protocol (IEEE P1281)</listitem>
       <listitem>Rock Ridge Interchange Protocol (RRIP 1991A / IEEE P1282)</listitem>

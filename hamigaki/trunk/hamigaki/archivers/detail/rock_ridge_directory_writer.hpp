@@ -45,10 +45,10 @@ private:
 public:
     rock_ridge_directory_writer(
         boost::uint32_t lbn_shift, const iso_directory_record& root,
-        iso::rrip_type rrip
+        unsigned iso_level, iso::rrip_type rrip
     )
         : lbn_shift_(lbn_shift), lbn_mask_((1ul << lbn_shift) - 1), root_(root)
-        , rrip_(rrip)
+        , iso_level_(iso_level), rrip_(rrip)
     {
     }
 
@@ -111,7 +111,7 @@ public:
         for (std::size_t i = 0; i < size; ++i)
         {
             const iso_directory_record& rec = recs[i];
-            if (has_valid_iso_id(rec))
+            if (has_valid_iso_id(iso_level_, rec))
             {
                 iso_directory_record new_rec(rec);
                 self::set_nm_system_use_entry(new_rec);
@@ -133,7 +133,7 @@ public:
             if (!flags[i])
             {
                 const std::string& new_id =
-                    detail::make_iso_alt_id(entries, rec);
+                    detail::make_iso_alt_id(iso_level_, entries, rec);
 
                 iso_directory_record new_rec(rec);
                 self::set_nm_system_use_entry(new_rec);
@@ -326,6 +326,7 @@ private:
     boost::uint32_t lbn_shift_;
     boost::uint32_t lbn_mask_;
     iso_directory_record root_;
+    unsigned iso_level_;
     path_cvt_table cvt_table_;
     boost::ptr_vector<path_table_records> path_table_;
     char block_[logical_sector_size];
@@ -870,7 +871,7 @@ private:
             self::append_system_use_entry(rec.system_use, 'P','X', px);
         }
         self::set_nm_system_use_entry(rec);
-        rec.file_id = detail::make_iso_alt_id(entries, rec);
+        rec.file_id = detail::make_iso_alt_id(iso_level_, entries, rec);
         entries.insert(rec);
 
         rr_moved_ = path(rec.file_id);
@@ -944,7 +945,7 @@ private:
             if (rec.is_directory())
             {
                 const std::string& new_id =
-                    detail::make_iso_alt_id(entries, rec);
+                    detail::make_iso_alt_id(iso_level_, entries, rec);
 
                 iso_directory_record new_rec(rec);
                 new_rec.file_id = new_id;
