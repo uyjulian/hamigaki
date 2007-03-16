@@ -141,6 +141,10 @@
             <paramtype>const <classname>iso::volume_info</classname>&amp;</paramtype>
             <default>iso::volume_info()</default>
           </parameter>
+          <parameter name="max_extent_size">
+            <paramtype>boost::uint32_t</paramtype>
+            <default>0</default>
+          </parameter>
         </constructor>
 
         <method-group name="Boost.Iostreams implementation">
@@ -203,6 +207,10 @@
           <parameter name="info">
             <paramtype>const <classname>iso::volume_info</classname>&amp;</paramtype>
             <default>iso::volume_info()</default>
+          </parameter>
+          <parameter name="max_extent_size">
+            <paramtype>boost::uint32_t</paramtype>
+            <default>0</default>
           </parameter>
         </constructor>
       </class>

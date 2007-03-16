@@ -1,4 +1,4 @@
-//  iso_file_sink_impl.hpp: ISO file sink implementation
+//  raw_iso_file_sink_impl.hpp: raw ISO file sink implementation
 
 //  Copyright Takeshi Mouri 2007.
 //  Use, modification, and distribution are subject to the
@@ -7,8 +7,8 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#ifndef HAMIGAKI_ARCHIVERS_DETAIL_ISO_FILE_SINK_IMPL_HPP
-#define HAMIGAKI_ARCHIVERS_DETAIL_ISO_FILE_SINK_IMPL_HPP
+#ifndef HAMIGAKI_ARCHIVERS_DETAIL_RAW_ISO_FILE_SINK_IMPL_HPP
+#define HAMIGAKI_ARCHIVERS_DETAIL_RAW_ISO_FILE_SINK_IMPL_HPP
 
 #include <hamigaki/archivers/detail/iso_directory_record.hpp>
 #include <hamigaki/archivers/detail/iso_directory_writer.hpp>
@@ -60,10 +60,10 @@ inline void copy_joliet_path(
 }
 
 template<class Sink>
-class basic_iso_file_sink_impl : private boost::noncopyable
+class basic_raw_iso_file_sink_impl : private boost::noncopyable
 {
 private:
-    typedef basic_iso_file_sink_impl<Sink> self;
+    typedef basic_raw_iso_file_sink_impl<Sink> self;
 
     static const std::size_t logical_sector_size = 2048;
 
@@ -71,7 +71,7 @@ private:
     typedef std::vector<iso::header> directory_entries;
 
 public:
-    explicit basic_iso_file_sink_impl(
+    explicit basic_raw_iso_file_sink_impl(
             const Sink& sink, const iso::volume_info& info=iso::volume_info() )
         : sink_(sink), volume_info_(info)
         , lbn_shift_(calc_lbn_shift(info.logical_block_size))
@@ -135,8 +135,11 @@ public:
 
         boost::uint32_t block_size = volume_info_.logical_block_size;
         boost::uint32_t offset = size_ & (block_size-1);
-        boost::uint32_t pad_size = block_size - offset;
-        boost::iostreams::write(sink_, block_, pad_size);
+        if (offset != 0)
+        {
+            boost::uint32_t pad_size = block_size - offset;
+            boost::iostreams::write(sink_, block_, pad_size);
+        }
     }
 
     void close_archive()
@@ -605,4 +608,4 @@ private:
 
 } } } // End namespaces detail, archivers, hamigaki.
 
-#endif // HAMIGAKI_ARCHIVERS_DETAIL_ISO_FILE_SINK_IMPL_HPP
+#endif // HAMIGAKI_ARCHIVERS_DETAIL_RAW_ISO_FILE_SINK_IMPL_HPP

@@ -1,4 +1,4 @@
-//  iso_file_source_impl.hpp: ISO file source implementation
+//  raw_iso_file_source_impl.hpp: raw ISO file source implementation
 
 //  Copyright Takeshi Mouri 2007.
 //  Use, modification, and distribution are subject to the
@@ -7,8 +7,8 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#ifndef HAMIGAKI_ARCHIVERS_DETAIL_ISO_FILE_SOURCE_IMPL_HPP
-#define HAMIGAKI_ARCHIVERS_DETAIL_ISO_FILE_SOURCE_IMPL_HPP
+#ifndef HAMIGAKI_ARCHIVERS_DETAIL_RAW_ISO_FILE_SOURCE_IMPL_HPP
+#define HAMIGAKI_ARCHIVERS_DETAIL_RAW_ISO_FILE_SOURCE_IMPL_HPP
 
 #include <hamigaki/archivers/detail/iso_data_reader.hpp>
 #include <hamigaki/archivers/detail/iso_file_reader.hpp>
@@ -63,15 +63,15 @@ inline boost::filesystem::path make_joliet_file_id(const char (&data)[Size])
 }
 
 template<class Source>
-class basic_iso_file_source_impl : private boost::noncopyable
+class basic_raw_iso_file_source_impl : private boost::noncopyable
 {
 private:
-    typedef basic_iso_file_source_impl<Source> self_type;
+    typedef basic_raw_iso_file_source_impl<Source> self;
 
     static const std::size_t logical_sector_size = 2048;
 
 public:
-    explicit basic_iso_file_source_impl(const Source& src) : src_(src)
+    explicit basic_raw_iso_file_source_impl(const Source& src) : src_(src)
     {
         read_volume_descriptor();
         rock_ridge_check();
@@ -120,6 +120,11 @@ public:
         reader_.reset(
             new iso_file_reader<Source>(src_, parser, volume_info_, desc)
         );
+    }
+
+    boost::uint64_t total_size() const
+    {
+        return reader_->total_size();
     }
 
 private:
@@ -225,15 +230,15 @@ private:
                 hamigaki::binary_read(block, desc);
 
                 if (volume_descs_.empty())
-                    volume_info_ = self_type::make_volume_info(desc);
+                    volume_info_ = self::make_volume_info(desc);
 
                 if (desc.is_joliet())
                 {
                     volume_descs_.push_back(
-                        self_type::make_joliet_volume_desc(desc));
+                        self::make_joliet_volume_desc(desc));
                 }
                 else
-                    volume_descs_.push_back(self_type::make_volume_desc(desc));
+                    volume_descs_.push_back(self::make_volume_desc(desc));
             }
         }
 
@@ -265,4 +270,4 @@ private:
 
 } } } // End namespaces detail, archivers, hamigaki.
 
-#endif // HAMIGAKI_ARCHIVERS_DETAIL_ISO_FILE_SOURCE_IMPL_HPP
+#endif // HAMIGAKI_ARCHIVERS_DETAIL_RAW_ISO_FILE_SOURCE_IMPL_HPP

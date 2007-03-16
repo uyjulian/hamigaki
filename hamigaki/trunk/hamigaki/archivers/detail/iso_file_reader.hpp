@@ -69,14 +69,12 @@ public:
     {
         select_directory(desc.root_record.data_pos);
 
-        record_.flags = 0;
-        record_.data_size = 0;
         index_ = 1;
     }
 
     bool next_entry()
     {
-        if ((record_.flags & iso::file_flags::directory) != 0)
+        if (header_.is_directory())
         {
             dir_path_ = header_.path;
             stack_.push(index_);
@@ -98,8 +96,7 @@ public:
             stack_.pop();
         }
 
-        record_ = records_[index_];
-        header_ = parser_->make_header(record_);
+        header_ = parser_->make_header(records_[index_]);
         detail::parse_iso_file_version(header_);
         header_.path = dir_path_ / header_.path;
         if (header_.is_directory())
@@ -115,13 +112,13 @@ public:
 
     std::streamsize read(char* s, std::streamsize n)
     {
-        if ((record_.flags & iso::file_flags::directory) != 0)
+        if (!header_.is_regular() && !header_.is_associated())
             return -1;
 
         if (pos_ == 0)
-            seek_logical_block(record_.data_pos);
+            seek_logical_block(header_.data_pos);
 
-        boost::uint64_t rest = record_.data_size - pos_;
+        boost::uint64_t rest = header_.file_size - pos_;
         if (rest == 0)
             return -1;
 
@@ -129,6 +126,15 @@ public:
         iostreams::blocking_read(src_, s, amt);
         pos_ += amt;
         return amt;
+    }
+
+    boost::uint64_t total_size() const
+    {
+        boost::uint64_t total = header_.file_size;
+        std::size_t i = index_;
+        while ((records_[i].flags & iso::file_flags::multi_extent) != 0)
+            total += records_.at(++i).data_size;
+        return total;
     }
 
 private:
@@ -141,7 +147,6 @@ private:
     std::stack<boost::uint32_t> stack_;
     std::size_t index_;
     boost::uint64_t pos_;
-    directory_record record_;
 
     void select_directory(boost::uint32_t data_pos)
     {

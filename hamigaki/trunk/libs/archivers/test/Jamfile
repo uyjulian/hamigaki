@@ -62,6 +62,7 @@ rule intialize_suite {
         [ archivers-test cpio_svr4_chksum_test.cpp : ]
         [ archivers-test iso9660_lv1_test.cpp : ]
         [ archivers-test iso9660_lv2_test.cpp : ]
+        [ archivers-test iso9660_lv3_test.cpp : ]
         [ archivers-test iso_date_time_test.cpp : ]
         [ archivers-test joliet_test.cpp : ]
         [ archivers-test lzh_h0_test.cpp : ]

@@ -1,4 +1,4 @@
-//  iso_file.hpp: ISO file
+//  iso_file.hpp: ISO image file device
 
 //  Copyright Takeshi Mouri 2007.
 //  Use, modification, and distribution are subject to the
@@ -133,8 +133,9 @@ public:
     typedef iso::header header_type;
 
     explicit basic_iso_file_sink(
-            const Sink& sink, const iso::volume_info& info=iso::volume_info() )
-        : pimpl_(new impl_type(sink, info))
+            const Sink& sink, const iso::volume_info& info=iso::volume_info(),
+            boost::uint32_t max_extent_size = 0)
+        : pimpl_(new impl_type(sink, info, max_extent_size))
     {
     }
 
@@ -187,8 +188,12 @@ public:
 
     explicit iso_file_sink(
         const std::string& filename,
-        const iso::volume_info& info=iso::volume_info() )
-        : impl_(iostreams::file_sink(filename, BOOST_IOS::binary), info)
+        const iso::volume_info& info=iso::volume_info(),
+        boost::uint32_t max_extent_size = 0)
+        : impl_(
+            iostreams::file_sink(filename, BOOST_IOS::binary),
+            info, max_extent_size
+        )
     {
     }
 

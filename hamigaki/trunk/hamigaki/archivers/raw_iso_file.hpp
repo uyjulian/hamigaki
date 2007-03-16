@@ -1,4 +1,4 @@
-//  iso_file.hpp: ISO file
+//  raw_iso_file.hpp: raw ISO image file device
 
 //  Copyright Takeshi Mouri 2007.
 //  Use, modification, and distribution are subject to the
@@ -7,11 +7,11 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
-#ifndef HAMIGAKI_ARCHIVERS_ISO_FILE_HPP
-#define HAMIGAKI_ARCHIVERS_ISO_FILE_HPP
+#ifndef HAMIGAKI_ARCHIVERS_RAW_ISO_FILE_HPP
+#define HAMIGAKI_ARCHIVERS_RAW_ISO_FILE_HPP
 
-#include <hamigaki/archivers/detail/iso_file_sink_impl.hpp>
-#include <hamigaki/archivers/detail/iso_file_source_impl.hpp>
+#include <hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp>
+#include <hamigaki/archivers/detail/raw_iso_file_source_impl.hpp>
 #include <hamigaki/iostreams/device/file.hpp>
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
@@ -19,10 +19,10 @@
 namespace hamigaki { namespace archivers {
 
 template<class Source>
-class basic_iso_file_source
+class basic_raw_iso_file_source
 {
 private:
-    typedef detail::basic_iso_file_source_impl<Source> impl_type;
+    typedef detail::basic_raw_iso_file_source_impl<Source> impl_type;
 
 public:
     typedef char char_type;
@@ -34,7 +34,7 @@ public:
 
     typedef iso::header header_type;
 
-    explicit basic_iso_file_source(const Source& src)
+    explicit basic_raw_iso_file_source(const Source& src)
         : pimpl_(new impl_type(src))
     {
     }
@@ -68,7 +68,7 @@ private:
     boost::shared_ptr<impl_type> pimpl_;
 };
 
-class iso_file_source
+class raw_iso_file_source
 {
 public:
     typedef char char_type;
@@ -80,7 +80,7 @@ public:
 
     typedef iso::header header_type;
 
-    explicit iso_file_source(const std::string& filename)
+    explicit raw_iso_file_source(const std::string& filename)
         : impl_(iostreams::file_source(filename, BOOST_IOS::binary))
     {
     }
@@ -111,15 +111,15 @@ public:
     }
 
 private:
-    basic_iso_file_source<iostreams::file_source> impl_;
+    basic_raw_iso_file_source<iostreams::file_source> impl_;
 };
 
 
 template<class Sink>
-class basic_iso_file_sink
+class basic_raw_iso_file_sink
 {
 private:
-    typedef detail::basic_iso_file_sink_impl<Sink> impl_type;
+    typedef detail::basic_raw_iso_file_sink_impl<Sink> impl_type;
 
 public:
     typedef char char_type;
@@ -132,7 +132,7 @@ public:
 
     typedef iso::header header_type;
 
-    explicit basic_iso_file_sink(
+    explicit basic_raw_iso_file_sink(
             const Sink& sink, const iso::volume_info& info=iso::volume_info() )
         : pimpl_(new impl_type(sink, info))
     {
@@ -172,7 +172,7 @@ private:
     boost::shared_ptr<impl_type> pimpl_;
 };
 
-class iso_file_sink
+class raw_iso_file_sink
 {
 public:
     typedef char char_type;
@@ -185,7 +185,7 @@ public:
 
     typedef iso::header header_type;
 
-    explicit iso_file_sink(
+    explicit raw_iso_file_sink(
         const std::string& filename,
         const iso::volume_info& info=iso::volume_info() )
         : impl_(iostreams::file_sink(filename, BOOST_IOS::binary), info)
@@ -223,9 +223,9 @@ public:
     }
 
 private:
-    basic_iso_file_sink<iostreams::file_sink> impl_;
+    basic_raw_iso_file_sink<iostreams::file_sink> impl_;
 };
 
 } } // End namespaces archivers, hamigaki.
 
-#endif // HAMIGAKI_ARCHIVERS_ISO_FILE_HPP
+#endif // HAMIGAKI_ARCHIVERS_RAW_ISO_FILE_HPP
