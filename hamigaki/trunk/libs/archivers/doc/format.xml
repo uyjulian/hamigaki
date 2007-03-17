@@ -46,6 +46,7 @@
     <itemizedlist>
       <title>サポートされる機能</title>
       <listitem>ISO 9660:1988 Level 1 / Level 2 / Level 3</listitem>
+      <listitem>ISO 9660:1999</listitem>
       <listitem>Joliet 拡張</listitem>
       <listitem>System Use Sharing Protocol (IEEE P1281)</listitem>
       <listitem>Rock Ridge Interchange Protocol (RRIP 1991A / IEEE P1282)</listitem>
@@ -68,8 +69,9 @@
 
     <itemizedlist>
       <title>未実装の機能</title>
-      <listitem>ISO 9660:1999</listitem>
       <listitem>CD-ROM XA</listitem>
+      <listitem>ボリューム区画記述子</listitem>
+      <listitem>起動レコード</listitem>
       <listitem>拡張属性レコード</listitem>
       <listitem>インタリーブモード</listitem>
       <listitem>スパース・ファイル ("SF" System Use Entry)</listitem>

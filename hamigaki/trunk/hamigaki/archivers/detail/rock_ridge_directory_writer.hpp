@@ -58,6 +58,12 @@ public:
         bool need_move = (depth == 7) || ((depth > 7) && ((depth-7) % 6 == 0));
         bool is_moved = (depth == 8) || ((depth > 8) && ((depth-8) % 6 == 0));
 
+        if (iso_level_ == 4u)
+        {
+            need_move = false;
+            is_moved = false;
+        }
+
         std::vector<bool> flags(recs.size());
         directory_entries entries;
 
@@ -558,7 +564,7 @@ private:
         {
             const iso_directory_record& rec = *i;
             std::string id = rec.file_id;
-            if (!rec.is_directory() && (rec.version != 0))
+            if (!rec.is_directory() && (rec.version != 0) && (iso_level_ != 4u))
             {
                 id += ';';
                 id += hamigaki::to_dec<char>(rec.version);
@@ -674,7 +680,7 @@ private:
         {
             const iso_directory_record& rec = *i;
             std::string id = rec.file_id;
-            if (!rec.is_directory() && (rec.version != 0))
+            if (!rec.is_directory() && (rec.version != 0) && (iso_level_ != 4u))
             {
                 id += ';';
                 id += hamigaki::to_dec<char>(rec.version);

@@ -160,6 +160,7 @@ private:
         tmp.abstract_file_id = detail::make_iso_file_id(desc.abstract_file_id);
         tmp.bibliographic_file_id =
             detail::make_iso_file_id(desc.bibliographic_file_id);
+        tmp.file_structure_version = desc.file_structure_version;
         std::memcpy(tmp.application_use, desc.application_use, 512);
         return tmp;
     }
@@ -193,6 +194,7 @@ private:
             detail::make_joliet_file_id(desc.abstract_file_id);
         tmp.bibliographic_file_id =
             detail::make_joliet_file_id(desc.bibliographic_file_id);
+        tmp.file_structure_version = desc.file_structure_version;
         std::memcpy(tmp.application_use, desc.application_use, 512);
         return tmp;
     }
@@ -209,7 +211,6 @@ private:
         info.modification_time = desc.modification_time;
         info.expiration_time = desc.expiration_time;
         info.effective_time = desc.effective_time;
-        info.file_structure_version = desc.file_structure_version;
         return info;
     }
 

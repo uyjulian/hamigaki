@@ -299,7 +299,7 @@ void symlink_test()
     ::symlink_test_aux(ar::iso::ieee_p1282, "/dir/.././link_target");
 }
 
-void deep_dir_test_aux(ar::iso::rrip_type rrip)
+void deep_dir_test_aux(ar::iso::rrip_type rrip, bool is_enhanced)
 {
     static const std::size_t dir_count = 16u;
 
@@ -325,9 +325,20 @@ void deep_dir_test_aux(ar::iso::rrip_type rrip)
         io_ex::dont_close_device<io_ex::tmp_file>
     > sink(io_ex::dont_close(archive));
 
-    ar::iso::volume_desc desc;
-    desc.rrip = rrip;
-    sink.add_volume_desc(desc);
+    if (is_enhanced)
+    {
+        ar::iso::volume_desc desc;
+        sink.add_volume_desc(desc);
+        desc.set_enhanced();
+        desc.rrip = rrip;
+        sink.add_volume_desc(desc);
+    }
+    else
+    {
+        ar::iso::volume_desc desc;
+        desc.rrip = rrip;
+        sink.add_volume_desc(desc);
+    }
 
     for (std::size_t i = 0; i < dir_count; ++i)
     {
@@ -350,22 +361,30 @@ void deep_dir_test_aux(ar::iso::rrip_type rrip)
 
     ar::basic_iso_file_source<io_ex::tmp_file> src(archive);
 
+    if (is_enhanced)
+        src.select_volume_desc(1u);
+
     for (std::size_t i = 0; i < dir_count; ++i)
     {
         BOOST_REQUIRE(src.next_entry());
         ::check_header(heads[i], src.header());
     }
 
-    BOOST_REQUIRE(src.next_entry());
-    BOOST_CHECK_EQUAL(src.header().path.string(), std::string("rr_moved"));
+    if (!is_enhanced)
+    {
+        BOOST_REQUIRE(src.next_entry());
+        BOOST_CHECK_EQUAL(src.header().path.string(), std::string("rr_moved"));
+    }
 
     BOOST_CHECK(!src.next_entry());
 }
 
 void deep_dir_test()
 {
-    ::deep_dir_test_aux(ar::iso::rrip_1991a);
-    ::deep_dir_test_aux(ar::iso::ieee_p1282);
+    ::deep_dir_test_aux(ar::iso::rrip_1991a, false);
+    ::deep_dir_test_aux(ar::iso::ieee_p1282, false);
+    ::deep_dir_test_aux(ar::iso::rrip_1991a, true);
+    ::deep_dir_test_aux(ar::iso::ieee_p1282, true);
 }
 
 ut::test_suite* init_unit_test_suite(int, char* [])

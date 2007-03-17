@@ -87,7 +87,6 @@ public:
     void add_volume_desc(const iso::volume_desc& desc)
     {
         BOOST_ASSERT(!freeze_volume_descs_);
-
         volume_descs_.push_back(desc);
     }
 
@@ -519,7 +518,6 @@ private:
         raw.modification_time = volume_info_.modification_time;
         raw.expiration_time = volume_info_.expiration_time;
         raw.effective_time = volume_info_.effective_time;
-        raw.file_structure_version = volume_info_.file_structure_version;
     }
 
     void write_volume_desc(const iso::volume_desc& desc)
@@ -550,6 +548,7 @@ private:
         detail::copy_iso9660_path(raw.abstract_file_id, desc.abstract_file_id);
         detail::copy_iso9660_path(
             raw.bibliographic_file_id, desc.bibliographic_file_id);
+        raw.file_structure_version = desc.file_structure_version;
         std::memcpy(raw.application_use, desc.application_use, 512);
 
         iostreams::binary_write(sink_, raw);
@@ -583,6 +582,7 @@ private:
         detail::copy_joliet_path(raw.abstract_file_id, desc.abstract_file_id);
         detail::copy_joliet_path(
             raw.bibliographic_file_id, desc.bibliographic_file_id);
+        raw.file_structure_version = desc.file_structure_version;
         std::memcpy(raw.application_use, desc.application_use, 512);
 
         iostreams::binary_write(sink_, raw);

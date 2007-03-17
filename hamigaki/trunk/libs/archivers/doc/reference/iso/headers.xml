@@ -256,10 +256,6 @@
             <type>date_time</type>
           </data-member>
 
-          <data-member name="file_structure_version">
-            <type>boost::uint8_t</type>
-          </data-member>
-
           <description>
             <para>
               <informaltable frame="all">
@@ -317,11 +313,6 @@
                       <entry>ボリューム発効日時</entry>
                       <entry></entry>
                     </row>
-                    <row>
-                      <entry>file_structure_version</entry>
-                      <entry>ファイル構造のバージョン</entry>
-                      <entry>1u</entry>
-                    </row>
                   </tbody>
                 </tgroup>
               </informaltable>
@@ -342,12 +333,22 @@
               <type>bool</type>
               <returns><simpara>ボリュームがRock Ridgeに対応していれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
             </method>
+
+            <method name="is_enhanced" cv="const">
+              <type>bool</type>
+              <returns><simpara>ボリュームがISO 9660:1999の拡張ボリューム記述子に対応していれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
+            </method>
           </method-group>
 
           <method-group name="modifiers">
             <method name="set_joliet">
               <type>void</type>
               <effects><simpara>Joliet拡張用の設定を行う</simpara></effects>
+            </method>
+
+            <method name="set_enhanced">
+              <type>void</type>
+              <effects><simpara>拡張ボリューム記述子用の設定を行う</simpara></effects>
             </method>
           </method-group>
 
@@ -433,6 +434,10 @@
 
           <data-member name="bibliographic_file_id">
             <type>boost::filesystem::path</type>
+          </data-member>
+
+          <data-member name="file_structure_version">
+            <type>boost::uint8_t</type>
           </data-member>
 
           <data-member name="application_use[512]">
@@ -555,6 +560,11 @@
                       <entry>bibliographic_file_id</entry>
                       <entry>書誌ファイル識別子</entry>
                       <entry></entry>
+                    </row>
+                    <row>
+                      <entry>file_structure_version</entry>
+                      <entry>ファイル構造のバージョン</entry>
+                      <entry>1u</entry>
                     </row>
                     <row>
                       <entry>application_use</entry>

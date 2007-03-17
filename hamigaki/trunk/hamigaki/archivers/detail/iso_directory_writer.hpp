@@ -261,10 +261,40 @@ inline std::string make_iso_lv2_alt_id(
     return new_rec.file_id;
 }
 
+inline bool has_valid_iso_lv4_id(const iso_directory_record& rec)
+{
+    return rec.file_id.size() <= 207u;
+}
+
+inline std::string make_iso_lv4_alt_id(
+    const std::set<iso_directory_record>& ren, const iso_directory_record& rec)
+{
+    BOOST_ASSERT(rec.file_id.size() > 207u);
+
+    iso_directory_record new_rec(rec);
+    new_rec.file_id.assign(rec.file_id, 0, 207u);
+
+    unsigned n = 0;
+
+    while (ren.find(new_rec) != ren.end())
+    {
+        const std::string& num = hamigaki::to_dec<char>(n++);
+        if (num.size() > 8u)
+            throw std::runtime_error("cannot generate alternative file ID");
+
+        new_rec.file_id.resize(207u-num.size());
+        new_rec.file_id += num;
+    }
+
+    return new_rec.file_id;
+}
+
 inline bool has_valid_iso_id(unsigned level, const iso_directory_record& rec)
 {
     if (level == 1u)
         return has_valid_iso_lv1_id(rec);
+    else if (level == 4u)
+        return has_valid_iso_lv4_id(rec);
     else
         return has_valid_iso_lv2_id(rec);
 }
@@ -274,6 +304,8 @@ inline std::string make_iso_alt_id(unsigned level,
 {
     if (level == 1u)
         return make_iso_lv1_alt_id(ren, rec);
+    else if (level == 4u)
+        return make_iso_lv4_alt_id(ren, rec);
     else
         return make_iso_lv2_alt_id(ren, rec);
 }
@@ -505,7 +537,7 @@ private:
         {
             const iso_directory_record& rec = *i;
             std::string id = rec.file_id;
-            if (!rec.is_directory())
+            if (!rec.is_directory() && (iso_level_ != 4u))
             {
                 id += ';';
                 id += hamigaki::to_dec<char>(rec.version);
@@ -619,7 +651,7 @@ private:
         {
             const iso_directory_record& rec = *i;
             std::string id = rec.file_id;
-            if (!rec.is_directory())
+            if (!rec.is_directory() && (iso_level_ != 4u))
             {
                 id += ';';
                 id += hamigaki::to_dec<char>(rec.version);
