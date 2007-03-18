@@ -13,15 +13,25 @@
 #include <hamigaki/filesystem/detail/config.hpp>
 #include <hamigaki/filesystem/detail/auto_link.hpp>
 #include <hamigaki/filesystem/file_status.hpp>
-#include <boost/filesystem/exception.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/version.hpp>
+
+#if BOOST_VERSION < 103400
+    #include <boost/filesystem/exception.hpp>
+#endif
 
 #ifdef BOOST_HAS_ABI_HEADERS
     #include BOOST_ABI_PREFIX
 #endif
 
 namespace hamigaki { namespace filesystem {
+
+#if BOOST_VERSION < 103400
+    typedef ::boost::filesystem::filesystem_error filesystem_path_error;
+#else
+    typedef ::boost::filesystem::filesystem_path_error filesystem_path_error;
+#endif
 
 // status functions
 
@@ -34,7 +44,7 @@ inline file_status status(const boost::filesystem::path& p)
     const file_status& s = filesystem::status(p, ec);
     if (ec != 0)
     {
-        throw boost::filesystem::filesystem_error(
+        throw hamigaki::filesystem::filesystem_path_error(
             "hamigaki::filesystem::status", p, ec);
     }
     return s;
@@ -50,7 +60,7 @@ inline file_status symlink_status(const boost::filesystem::path& p)
     const file_status& s = filesystem::symlink_status(p, ec);
     if (ec != 0)
     {
-        throw boost::filesystem::filesystem_error(
+        throw hamigaki::filesystem::filesystem_path_error(
             "hamigaki::filesystem::symlink_status", p, ec);
     }
     return s;
@@ -116,7 +126,7 @@ inline void create_hard_link(
     int ec;
     if (filesystem::create_hard_link(old_fp, new_fp, ec) != 0)
     {
-        throw boost::filesystem::filesystem_error(
+        throw hamigaki::filesystem::filesystem_path_error(
             "hamigaki::filesystem::create_hard_link", old_fp, new_fp, ec);
     }
 }
@@ -133,7 +143,7 @@ inline void create_file_symlink(
     int ec;
     if (filesystem::create_file_symlink(old_fp, new_fp, ec) != 0)
     {
-        throw boost::filesystem::filesystem_error(
+        throw hamigaki::filesystem::filesystem_path_error(
             "hamigaki::filesystem::create_file_symlink", old_fp, new_fp, ec);
     }
 }
@@ -150,7 +160,7 @@ inline void create_directory_symlink(
     int ec;
     if (filesystem::create_directory_symlink(old_dp, new_dp, ec) != 0)
     {
-        throw boost::filesystem::filesystem_error(
+        throw hamigaki::filesystem::filesystem_path_error(
             "hamigaki::filesystem::create_directory_symlink",
             old_dp, new_dp, ec);
     }
@@ -168,7 +178,7 @@ inline void create_symlink(
     int ec;
     if (filesystem::create_symlink(old_fp, new_fp, ec) != 0)
     {
-        throw boost::filesystem::filesystem_error(
+        throw hamigaki::filesystem::filesystem_path_error(
             "hamigaki::filesystem::create_symlink", old_fp, new_fp, ec);
     }
 }
@@ -186,7 +196,7 @@ inline void create_shell_link(
     int ec;
     if (filesystem::create_shell_link(old_fp, new_fp, ec) != 0)
     {
-        throw boost::filesystem::filesystem_error(
+        throw hamigaki::filesystem::filesystem_path_error(
             "hamigaki::filesystem::create_shell_link", old_fp, new_fp, ec);
     }
 }
@@ -203,7 +213,7 @@ inline void change_attributes(
     int ec;
     if (filesystem::change_attributes(p, attr, ec) != 0)
     {
-        throw boost::filesystem::filesystem_error(
+        throw hamigaki::filesystem::filesystem_path_error(
             "hamigaki::filesystem::change_attributes", p, ec);
     }
 }
@@ -219,7 +229,7 @@ inline void change_permissions(
     int ec;
     if (filesystem::change_permissions(p, perm, ec) != 0)
     {
-        throw boost::filesystem::filesystem_error(
+        throw hamigaki::filesystem::filesystem_path_error(
             "hamigaki::filesystem::change_permissions", p, ec);
     }
 }
@@ -238,7 +248,7 @@ inline void change_owner(
     int ec;
     if (filesystem::change_owner(p, new_uid, new_gid, ec) != 0)
     {
-        throw boost::filesystem::filesystem_error(
+        throw hamigaki::filesystem::filesystem_path_error(
             "hamigaki::filesystem::change_owner", p, ec);
     }
 }
@@ -257,7 +267,7 @@ inline void change_symlink_owner(
     int ec;
     if (filesystem::change_symlink_owner(p, new_uid, new_gid, ec) != 0)
     {
-        throw boost::filesystem::filesystem_error(
+        throw hamigaki::filesystem::filesystem_path_error(
             "hamigaki::filesystem::change_symlink_owner", p, ec);
     }
 }

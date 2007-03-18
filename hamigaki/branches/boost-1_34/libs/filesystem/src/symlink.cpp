@@ -381,28 +381,33 @@ boost::filesystem::path symlink_target(const boost::filesystem::path& p)
     nt_file f(p, 0, FILE_FLAG_OPEN_REPARSE_POINT);
     if (!f.is_valid())
     {
-        throw boost::filesystem::filesystem_error(
+        throw hamigaki::filesystem::filesystem_path_error(
             "hamigaki::filesystem::symlink_target", p, f.native_error());
     }
 
     boost::filesystem::path tp;
     if (!f.get_reparse_point(tp))
     {
+#if BOOST_VERSION < 103400
         if (int ec = f.native_error())
         {
-            throw boost::filesystem::filesystem_error(
+            throw hamigaki::filesystem::filesystem_path_error(
                 "hamigaki::filesystem::symlink_target", p, ec);
         }
         else
         {
-            throw boost::filesystem::filesystem_error(
+            throw hamigaki::filesystem::filesystem_path_error(
                 "hamigaki::filesystem::symlink_target", p,
                 "invalid reparse point data");
         }
+#else
+        throw hamigaki::filesystem::filesystem_path_error(
+            "hamigaki::filesystem::symlink_target", p, f.native_error());
+#endif
     }
     return tp;
 #else // else defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
-    throw boost::filesystem::filesystem_error(
+    throw hamigaki::filesystem::filesystem_path_error(
         "hamigaki::filesystem::symlink_target", p,
         "unsupported operation");
 
@@ -540,13 +545,13 @@ boost::filesystem::path symlink_target(const boost::filesystem::path& p)
     struct stat st;
     if (::lstat(path_name.c_str(), &st) == -1)
     {
-        throw boost::filesystem::filesystem_error(
+        throw hamigaki::filesystem::filesystem_path_error(
             "hamigaki::filesystem::symlink_target", p, errno);
     }
 
     if (!S_ISLNK(st.st_mode))
     {
-        throw boost::filesystem::filesystem_error(
+        throw hamigaki::filesystem::filesystem_path_error(
             "hamigaki::filesystem::symlink_target", p,
             "the path is not a symbolic link");
     }
@@ -555,13 +560,13 @@ boost::filesystem::path symlink_target(const boost::filesystem::path& p)
     std::streamsize len = ::readlink(path_name.c_str(), &buf[0], buf.size());
     if (len == -1)
     {
-        throw boost::filesystem::filesystem_error(
+        throw hamigaki::filesystem::filesystem_path_error(
             "hamigaki::filesystem::symlink_target", p, errno);
     }
     else if (static_cast<std::size_t>(len) != buf.size())
     {
         // Note: calling readlink() after lstat() has a race condition
-        throw boost::filesystem::filesystem_error(
+        throw hamigaki::filesystem::filesystem_path_error(
             "hamigaki::filesystem::symlink_target", p,
             "symbolic link size mismatch");
     }

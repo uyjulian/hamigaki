@@ -327,7 +327,7 @@ void last_write_time(
     }
 
     ::DWORD code = ::GetLastError();
-    throw boost::filesystem::filesystem_error(
+    throw hamigaki::filesystem::filesystem_path_error(
         "hamigaki::filesystem::last_write_time", p, code);
 }
 
@@ -355,7 +355,7 @@ void last_access_time(
     }
 
     ::DWORD code = ::GetLastError();
-    throw boost::filesystem::filesystem_error(
+    throw hamigaki::filesystem::filesystem_path_error(
         "hamigaki::filesystem::last_access_time", p, code);
 }
 
@@ -383,7 +383,7 @@ void creation_time(
     }
 
     ::DWORD code = ::GetLastError();
-    throw boost::filesystem::filesystem_error(
+    throw hamigaki::filesystem::filesystem_path_error(
         "hamigaki::filesystem::creation_time", p, code);
 }
 
@@ -519,7 +519,7 @@ void last_write_time(
     }
 
     int code = errno;
-    throw boost::filesystem::filesystem_error(
+    throw hamigaki::filesystem::filesystem_path_error(
         "hamigaki::filesystem::last_write_time", p, code);
 }
 
@@ -540,7 +540,7 @@ void last_access_time(
     }
 
     int code = errno;
-    throw boost::filesystem::filesystem_error(
+    throw hamigaki::filesystem::filesystem_path_error(
         "hamigaki::filesystem::last_access_time", p, code);
 }
 
