@@ -1,0 +1,42 @@
+# Hamigaki Binary Library Test Jamfile
+
+#  Copyright Takeshi Mouri 2007.
+#  Use, modification, and distribution are subject to the
+#  Boost Software License, Version 1.0. (See accompanying file
+#  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#  See http://hamigaki.sourceforge.jp/libs/binary for library home page.
+
+subproject libs/binary/test ;
+
+import testing ;
+
+DEPENDS all : test ;
+
+rule binary-test ( sources + : requirements * )
+{
+    return [
+        run $(sources)
+        :
+        :
+        :
+        <define>BOOST_ALL_NO_LIB=1
+        <cw-8_3><*><define>BOOST_THREAD_USE_LIB=1
+        <include>$(HAMIGAKI_ROOT)  <sysinclude>$(HAMIGAKI_ROOT)
+        <include>$(BOOST_INCLUDE)  <sysinclude>$(BOOST_INCLUDE)
+        <library-path>$(BOOST_LIBPATH)
+        <threading>multi
+        <vc-8_0><*><cflags>-wd4996
+        <vc-8_0><*><cflags>-wd4819
+        <vc-8_0><*><linkflags>-INCREMENTAL:NO
+        <vc-7_1><*><linkflags>-INCREMENTAL:NO
+        find-boost-unit_test_framework-lib
+        $(requirements)
+    ] ;
+}
+
+test-suite binary :
+    [ binary-test binary_io_test.cpp : ]
+    [ binary-test endian_test.cpp : ]
+    [ binary-test struct_traits_test.cpp : ]
+    ;

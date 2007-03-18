@@ -1,0 +1,61 @@
+# Hamigaki Filesystem Library Example Jamfile
+
+#  Copyright Takeshi Mouri 2006, 2007.
+#  Use, modification, and distribution are subject to the
+#  Boost Software License, Version 1.0. (See accompanying file
+#  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#  See http://hamigaki.sourceforge.jp/libs/filesystem for library home page.
+
+subproject libs/filesystem/example ;
+
+{
+
+template filesystem
+    : # sources
+      <lib>../build/hamigaki_filesystem
+    : # build requirements
+      <define>BOOST_ALL_NO_LIB=1
+      <include>$(HAMIGAKI_ROOT)  <sysinclude>$(HAMIGAKI_ROOT)
+      <include>$(BOOST_INCLUDE)  <sysinclude>$(BOOST_INCLUDE)
+      <library-path>$(BOOST_LIBPATH)
+      <vc-8_0><*><cflags>-wd4996
+      <vc-8_0><*><cflags>-wd4819
+    : # build variants
+    ;
+
+
+exe link
+    :
+        link.cpp
+        <template>filesystem
+    :
+        find-boost-filesystem-lib
+    ;
+
+exe read_link
+    :
+        read_link.cpp
+        <template>filesystem
+    :
+        find-boost-filesystem-lib
+    ;
+
+exe shortcut
+    :
+        shortcut.cpp
+        <template>filesystem
+    :
+        <find-library>ole32
+        find-boost-filesystem-lib
+    ;
+
+exe show_status
+    :
+        show_status.cpp
+        <template>filesystem
+    :
+        find-boost-filesystem-lib
+    ;
+
+}

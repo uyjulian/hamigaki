@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Use, modification, and distribution are subject to the
+  Boost Software License, Version 1.0. (See accompanying file
+  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<header name="hamigaki/archivers/iso_file.hpp">
+  <namespace name="hamigaki">
+    <namespace name="archivers">
+      <class name="basic_iso_file_source">
+        <template>
+          <template-type-parameter name="Source"/>
+        </template>
+
+        <purpose><para>ISOイメージファイルへの読み込み専用アクセスを提供するSourceモデル</para></purpose>
+
+        <description>
+          <para>Sourceを受け取り、ISOイメージファイルとしてフォーマットを解釈した結果を読み出すことができる。</para>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Source</conceptname></member>
+          </simplelist></para>
+        </description>
+
+        <typedef name="char_type">
+          <type>char</type>
+        </typedef>
+
+        <typedef name="category">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <typedef name="header_type">
+          <type>iso::header</type>
+        </typedef>
+
+        <constructor specifiers="explicit">
+          <parameter name="src">
+            <paramtype>const Source&amp;</paramtype>
+          </parameter>
+        </constructor>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="read">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>const char*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+        </method-group>
+
+        <method-group name="Hamigaki.Archivers implementation">
+          <method name="next_entry">
+            <type>bool</type>
+            <effects><simpara>読み出しの対象を次のエントリに移動する。ボリューム記述子が<code><methodname>select_volume_desc</methodname>()</code>によって選択されていない場合は、最初のボリューム記述子が選択される。</simpara></effects>
+            <returns><simpara>次のエントリがあれば<code>true</code>、なければ<code>false</code></simpara></returns>
+          </method>
+
+          <method name="header" cv="const">
+            <type><classname>iso::header</classname></type>
+            <returns><simpara>ヘッダ情報</simpara></returns>
+          </method>
+        </method-group>
+
+        <method-group name="queries">
+          <method name="volume_descs" cv="const">
+            <type>std::vector&lt;<classname>iso::volume_desc</classname>&gt;</type>
+            <returns><simpara>ボリューム記述子のベクタ</simpara></returns>
+          </method>
+        </method-group>
+
+        <method-group name="modifiers">
+          <method name="select_volume_desc">
+            <type>void</type>
+            <parameter name="index">
+              <paramtype>std::size_t</paramtype>
+            </parameter>
+            <parameter name="use_rrip">
+              <paramtype>bool</paramtype>
+              <default>true</default>
+            </parameter>
+            <effects><simpara><code>index</code>番目のボリューム記述子を読み出しように選択する。<code>use_rrip</code>が<code>true</code>ならば、Rock Ridge拡張が有効になる。</simpara></effects>
+          </method>
+        </method-group>
+      </class>
+
+      <class name="iso_file_source">
+        <inherit access="public">
+          <type><classname>basic_iso_file_source</classname>&lt;<classname>hamigaki::iostreams::file_source</classname>&gt;</type>
+          <purpose>Exposition only</purpose>
+        </inherit>
+
+        <constructor specifiers="explicit">
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+        </constructor>
+      </class>
+
+      <class name="basic_iso_file_sink">
+        <template>
+          <template-type-parameter name="Sink"/>
+        </template>
+
+        <purpose><para>ISOイメージファイルへの書き込み専用アクセスを提供するSinkモデル</para></purpose>
+
+        <description>
+          <para>受け取ったSinkへ複数のファイルデータをISOイメージファイルとして書き出すことができる。</para>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Sink</conceptname></member>
+              <member><conceptname>ClosableDevice</conceptname></member>
+          </simplelist></para>
+        </description>
+
+        <typedef name="char_type">
+          <type>char</type>
+        </typedef>
+
+        <typedef name="category">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <typedef name="header_type">
+          <type>iso::header</type>
+        </typedef>
+
+        <constructor>
+          <parameter name="sink">
+            <paramtype>const Sink&amp;</paramtype>
+          </parameter>
+          <parameter name="info">
+            <paramtype>const <classname>iso::volume_info</classname>&amp;</paramtype>
+            <default>iso::volume_info()</default>
+          </parameter>
+          <parameter name="max_extent_size">
+            <paramtype>boost::uint32_t</paramtype>
+            <default>0</default>
+          </parameter>
+        </constructor>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="write">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>const char_type*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+
+          <method name="close">
+            <type>void</type>
+          </method>
+        </method-group>
+
+        <method-group name="Hamigaki.Archivers implementation">
+          <method name="create_entry">
+            <type>void</type>
+            <parameter name="head">
+              <paramtype>const <classname>iso::header</classname>&amp;</paramtype>
+            </parameter>
+            <effects><simpara>新しいエントリを作成し、書き込みの対象とする。基本ボリューム記述子が<code><methodname>add_volume_desc</methodname>()</code>によって追加されていない場合は、空の基本ボリューム記述子が追加される。</simpara></effects>
+          </method>
+
+          <method name="rewind_entry">
+            <type>void</type>
+            <throws>std::runtime_error</throws>
+          </method>
+
+          <method name="close_archive">
+            <type>void</type>
+            <effects><simpara>終端ブロックを出力し、アーカイブを閉じる。出力先の外部Sinkも閉じられる。</simpara></effects>
+          </method>
+        </method-group>
+
+        <method-group name="modifiers">
+          <method name="add_volume_desc">
+            <type>void</type>
+            <parameter name="desc">
+              <paramtype>const <classname>iso::volume_desc</classname>&amp;</paramtype>
+            </parameter>
+            <effects><simpara>ボリューム記述子<code>desc</code>を追加する。</simpara></effects>
+          </method>
+        </method-group>
+      </class>
+
+      <class name="iso_file_sink">
+        <inherit access="public">
+          <type><classname>basic_iso_file_sink</classname>&lt;<classname>hamigaki::iostreams::file_sink</classname>&gt;</type>
+          <purpose>Exposition only</purpose>
+        </inherit>
+
+        <constructor>
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+          <parameter name="info">
+            <paramtype>const <classname>iso::volume_info</classname>&amp;</paramtype>
+            <default>iso::volume_info()</default>
+          </parameter>
+          <parameter name="max_extent_size">
+            <paramtype>boost::uint32_t</paramtype>
+            <default>0</default>
+          </parameter>
+        </constructor>
+      </class>
+    </namespace>
+  </namespace>
+</header>

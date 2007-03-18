@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2006.
+  Use, modification, and distribution are subject to the
+  Boost Software License, Version 1.0. (See accompanying file
+  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<header name="hamigaki/archivers/zip/headers.hpp">
+  <namespace name="hamigaki">
+    <namespace name="archivers">
+      <namespace name="zip">
+        <struct name="method">
+          <static-constant name="store">
+            <type>boost::uint16_t</type>
+            <default>0</default>
+            <purpose>非圧縮</purpose>
+          </static-constant>
+
+          <static-constant name="deflate">
+            <type>boost::uint16_t</type>
+            <default>8</default>
+            <purpose>RFC 1951 deflate 圧縮</purpose>
+          </static-constant>
+
+          <static-constant name="bzip2">
+            <type>boost::uint16_t</type>
+            <default>12</default>
+            <purpose>bzip2 圧縮</purpose>
+          </static-constant>
+        </struct>
+
+        <struct name="header">
+          <method-group name="queries">
+            <method name="is_regular" cv="const">
+              <type>bool</type>
+              <returns><simpara>通常のファイルであれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
+            </method>
+
+            <method name="is_directory" cv="const">
+              <type>bool</type>
+              <returns><simpara>ディレクトリであれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
+            </method>
+
+            <method name="is_symlink" cv="const">
+              <type>bool</type>
+              <returns><simpara>シンボリックリンクであれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
+            </method>
+          </method-group>
+
+          <method-group name="modifiers">
+            <method name="type">
+              <type>void</type>
+              <parameter name="v">
+                <paramtype><enumname>filesystem::file_type</enumname></paramtype>
+              </parameter>
+              <effects><simpara>ファイル種別を<code>v</code>に設定する</simpara></effects>
+            </method>
+          </method-group>
+
+          <data-member name="path">
+            <type>boost::filesystem::path</type>
+          </data-member>
+
+          <data-member name="link_path">
+            <type>boost::filesystem::path</type>
+          </data-member>
+
+          <data-member name="version">
+            <type>boost::uint8_t</type>
+          </data-member>
+
+          <data-member name="encrypted">
+            <type>bool</type>
+          </data-member>
+
+          <data-member name="encryption_checksum">
+            <type>boost::uint16_t</type>
+          </data-member>
+
+          <data-member name="method">
+            <type>boost::uint16_t</type>
+          </data-member>
+
+          <data-member name="update_time">
+            <type>std::time_t</type>
+          </data-member>
+
+          <data-member name="crc32_checksum">
+            <type>boost::uint32_t</type>
+          </data-member>
+
+          <data-member name="compressed_size">
+            <type>boost::uint64_t</type>
+          </data-member>
+
+          <data-member name="file_size">
+            <type>boost::uint64_t</type>
+          </data-member>
+
+          <data-member name="attributes">
+            <type>boost::uint16_t</type>
+          </data-member>
+
+          <data-member name="permissions">
+            <type>boost::uint16_t</type>
+          </data-member>
+
+          <data-member name="comment">
+            <type>std::string</type>
+          </data-member>
+
+          <data-member name="modified_time">
+            <type>boost::optional&lt;std::time_t&gt;</type>
+          </data-member>
+
+          <data-member name="access_time">
+            <type>boost::optional&lt;std::time_t&gt;</type>
+          </data-member>
+
+          <data-member name="creation_time">
+            <type>boost::optional&lt;std::time_t&gt;</type>
+          </data-member>
+
+          <data-member name="uid">
+            <type>boost::optional&lt;boost::uint16_t&gt;</type>
+          </data-member>
+
+          <data-member name="gid">
+            <type>boost::optional&lt;boost::uint16_t&gt;</type>
+          </data-member>
+
+          <description>
+            <para>
+              <informaltable frame="all">
+                <tgroup cols="3">
+                  <thead>
+                    <row>
+                      <entry>メンバ変数</entry>
+                      <entry>意味</entry>
+                      <entry>規定値</entry>
+                    </row>
+                  </thead>
+                  <tbody>
+                    <row>
+                      <entry>path</entry>
+                      <entry>ファイルのパス名</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>link_path</entry>
+                      <entry>リンク先のパス名</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>version</entry>
+                      <entry>ZIPバージョン×10</entry>
+                      <entry>20</entry>
+                    </row>
+                    <row>
+                      <entry>encrypted</entry>
+                      <entry>暗号化されているかどうか</entry>
+                      <entry>false</entry>
+                    </row>
+                    <row>
+                      <entry>encryption_checksum</entry>
+                      <entry>復号確認用チェックサム</entry>
+                      <entry>0</entry>
+                    </row>
+                    <row>
+                      <entry>method</entry>
+                      <entry>圧縮メソッド (<classname>method</classname>構造体内の定数のいずれか)</entry>
+                      <entry><code>method::deflate</code></entry>
+                    </row>
+                    <row>
+                      <entry>update_time</entry>
+                      <entry>最終更新時間</entry>
+                      <entry>0</entry>
+                    </row>
+                    <row>
+                      <entry>crc32_checksum</entry>
+                      <entry>CRC-32 チェックサム</entry>
+                      <entry>0</entry>
+                    </row>
+                    <row>
+                      <entry>compressed_size</entry>
+                      <entry>圧縮後のサイズ</entry>
+                      <entry>0</entry>
+                    </row>
+                    <row>
+                      <entry>file_size</entry>
+                      <entry>圧縮前のサイズ</entry>
+                      <entry>0</entry>
+                    </row>
+                    <row>
+                      <entry>attributes</entry>
+                      <entry>MS-DOS ファイル属性 (<classname>msdos::attributes</classname>構造体内の定数のいずれか、あるいはその組み合わせ)</entry>
+                      <entry><code>msdos::attributes::archive</code></entry>
+                    </row>
+                    <row>
+                      <entry>permissions</entry>
+                      <entry>ファイル許可属性</entry>
+                      <entry>0644</entry>
+                    </row>
+                    <row>
+                      <entry>comment</entry>
+                      <entry>コメント文字列</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>modified_time</entry>
+                      <entry>最終更新時間</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>access_time</entry>
+                      <entry>最終アクセス時間</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>creation_time</entry>
+                      <entry>ファイル作成時間</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>uid</entry>
+                      <entry>ユーザーID</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>gid</entry>
+                      <entry>グループID</entry>
+                      <entry></entry>
+                    </row>
+                  </tbody>
+                </tgroup>
+              </informaltable>
+            </para>
+          </description>
+        </struct>
+      </namespace>
+    </namespace>
+  </namespace>
+</header>

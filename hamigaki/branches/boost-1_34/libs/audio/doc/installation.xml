@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Audio Library Document Source
+
+  Copyright Takeshi Mouri 2006.
+  Use, modification, and distribution are subject to the
+  Boost Software License, Version 1.0. (See accompanying file
+  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+-->
+<section id="audio.installation">
+  <title>インストール</title>
+  <para>Hamigaki.Audioを利用する場合、ライブラリのビルドが必要になる。Boost.Buildでビルドする際は次の変数を設定することにより、ビルドをカスタマイズすることができる。
+    <informaltable frame="all">
+      <tgroup cols="3">
+        <thead>
+          <row>
+            <entry>変数</entry>
+            <entry>意味</entry>
+            <entry>規定値</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>NO_ASIO</entry>
+            <entry>ASIOサポートを無効にする</entry>
+            <entry>-</entry>
+          </row>
+          <row>
+            <entry>HAVE_ASIO</entry>
+            <entry>ASIOサポートを有効にする</entry>
+            <entry>-</entry>
+          </row>
+          <row>
+            <entry>ASIO_INCLUDE</entry>
+            <entry>ASIO SDKのヘッダファイルのあるディレクトリ</entry>
+            <entry>-</entry>
+          </row>
+          <row>
+            <entry>NO_DXSDK</entry>
+            <entry>DirectXサポートを無効にする</entry>
+            <entry>-</entry>
+          </row>
+          <row>
+            <entry>HAVE_DXSDK</entry>
+            <entry>DirectXサポートを有効にする</entry>
+            <entry>-</entry>
+          </row>
+          <row>
+            <entry>DXSDK_INCLUDE</entry>
+            <entry>DirectXのヘッダファイルのあるディレクトリ</entry>
+            <entry>-</entry>
+          </row>
+          <row>
+            <entry>DXSDK_LIBPATH</entry>
+            <entry>DirectXのライブラリファイルのあるディレクトリ</entry>
+            <entry>-</entry>
+          </row>
+          <row>
+            <entry>NO_OGG</entry>
+            <entry>Oggサポートを無効にする</entry>
+            <entry>-</entry>
+          </row>
+          <row>
+            <entry>OGG_BINARY</entry>
+            <entry>liboggバイナリの拡張子を除いた名前。UNIXでは接頭辞libを省略する。</entry>
+            <entry>ogg</entry>
+          </row>
+          <row>
+            <entry>OGG_INCLUDE</entry>
+            <entry>liboggのヘッダファイルのあるディレクトリ</entry>
+            <entry><emphasis>OGG_SOURCE</emphasis>/include</entry>
+          </row>
+          <row>
+            <entry>OGG_LIBPATH</entry>
+            <entry>liboggのライブラリファイルのあるディレクトリ</entry>
+            <entry>-</entry>
+          </row>
+          <row>
+            <entry>OGG_SOURCE</entry>
+            <entry>liboggのソースコードのあるディレクトリ(ソースからビルドする場合)</entry>
+            <entry>-</entry>
+          </row>
+          <row>
+            <entry>NO_VORBIS</entry>
+            <entry>Vorbisサポートを無効にする</entry>
+            <entry>-</entry>
+          </row>
+          <row>
+            <entry>VORBIS_BINARY</entry>
+            <entry>libvorbisバイナリの拡張子を除いた名前。UNIXでは接頭辞libを省略する。</entry>
+            <entry>vorbis</entry>
+          </row>
+          <row>
+            <entry>VORBISFILE_BINARY</entry>
+            <entry>libvorbisfileバイナリの拡張子を除いた名前。UNIXでは接頭辞libを省略する。</entry>
+            <entry>vorbisfile</entry>
+          </row>
+          <row>
+            <entry>VORBISENC_BINARY</entry>
+            <entry>libvorbisencバイナリの拡張子を除いた名前。UNIXでは接頭辞libを省略する。</entry>
+            <entry>vorbisenc</entry>
+          </row>
+          <row>
+            <entry>VORBIS_INCLUDE</entry>
+            <entry>libvorbisのヘッダファイルのあるディレクトリ</entry>
+            <entry><emphasis>VORBIS_SOURCE</emphasis>/include</entry>
+          </row>
+          <row>
+            <entry>VORBIS_LIBPATH</entry>
+            <entry>libvorbisのライブラリファイルのあるディレクトリ</entry>
+            <entry>-</entry>
+          </row>
+          <row>
+            <entry>VORBIS_SOURCE</entry>
+            <entry>libvorbisのソースコードのあるディレクトリ(ソースからビルドする場合)</entry>
+            <entry>-</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    なお、MinGWおよびcygwin用のDirectXヘッダーファイルとインポートライブラリは<ulink url="http://www.libsdl.org/extras/win32/">SDLのサイト</ulink>から入手できる。
+  </para>
+</section>

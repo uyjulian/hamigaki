@@ -1,0 +1,102 @@
+# Hamigaki Audio Library vorbisfile Jamfile
+
+#  Copyright Takeshi Mouri 2006.
+#  Use, modification, and distribution are subject to the
+#  Boost Software License, Version 1.0. (See accompanying file
+#  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+
+# Original Copyright
+# ============================================================================>
+# Boost.Iostreams Library zlib Jamfile
+
+# (C) Copyright Jonathan Turkanis 2004
+# Distributed under the Boost Software License, Version 1.0. (See accompanying 
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt.)
+
+# See http://www.boost.org/libs/iostreams for documentation.
+# <============================================================================
+
+rule vorbisfile_config
+{
+    if $(NT) && ! $(VORBIS_SOURCE) && ! $(VORBIS_INCLUDE)
+    {
+         ECHO ****************************************************** ;
+         ECHO Building Hamigaki.Audio with vorbisfile support disabled. ;
+         ECHO To enable vorbisfile, consult the Hamigaki.Audio documentation ;
+         ECHO ****************************************************** ;
+         NO_VORBIS = 1 ;
+    }
+
+    if ! $(NO_VORBIS)
+    {
+        local SOURCES = vorbisfile ;
+        VORBIS_INCLUDE ?= $(VORBIS_SOURCE)/include ;
+
+        if ! $(VORBIS_SOURCE) && ! $(VORBISFILE_BINARY)
+        {
+            VORBISFILE_BINARY = "vorbisfile" ;
+        }
+
+        if $(VORBIS_SOURCE)
+        {
+            template vorbisfile_common
+                : # sources
+                  $(VORBIS_SOURCE)/lib/$(SOURCES).c
+                : # build requirements
+                  [ common-names ]
+                  <include>$(VORBIS_INCLUDE) <sysinclude>$(VORBIS_INCLUDE)
+                  <include>$(OGG_INCLUDE) <sysinclude>$(OGG_INCLUDE)
+                  <vc-8_0><*><cflags>-wd4996
+                  <vc-8_0><*><cflags>-wd4819
+                  <cw-8_3><*><cflags>-relax_pointers
+                  <borland-5_8_2><*><cflags>-w-8071
+                : # build variants
+                  debug release
+            ;
+
+            lib hamigaki_vorbisfile
+                : # sources
+                  <template>vorbisfile_common
+                : # build requirements
+                : # build variants
+                ;
+
+            dll hamigaki_vorbisfile
+                : # sources
+                  <template>vorbisfile_common
+                  <lib>hamigaki_ogg
+                  <lib>hamigaki_vorbis
+                : # build requirements
+                  <runtime-link>dynamic
+                  <vc-7_1><*><linkflags>"-DEF:$(VORBIS_SOURCE)/win32/vorbisfile.def"
+                  <vc-8_0><*><linkflags>"-DEF:$(VORBIS_SOURCE)/win32/vorbisfile.def"
+                : # build variants
+                ;
+
+            install vorbisfile lib
+                : <lib>hamigaki_vorbisfile
+                ;
+        }
+    }
+}
+
+vorbisfile_config ;
+
+template vorbisfile
+    : # sources
+      [ unless $(NO_VORBIS) : ../src/vorbis_file.cpp ]
+      [ cond $(VORBIS_SOURCE) : <lib>hamigaki_vorbisfile : ]
+    : # build requirements
+      [
+        unless $(NO_VORBIS)
+        :
+        <include>$(VORBIS_INCLUDE) <sysinclude>$(VORBIS_INCLUDE)
+      ]
+      [ unless $(NO_VORBIS) OR $(VORBIS_SOURCE)
+        : <define>HAMIGAKI_VORBISFILE_BINARY=$(VORBISFILE_BINARY) ]
+      [ cond $(VORBIS_LIBPATH) : <library-path>$(VORBIS_LIBPATH) : ]
+      [ unless $(VORBIS_SOURCE) : <find-library>$(VORBISFILE_BINARY) : ]
+    : # build variants
+   ;

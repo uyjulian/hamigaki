@@ -1,0 +1,123 @@
+# Hamigaki Archivers Library Test Jamfile
+
+#  Copyright Takeshi Mouri 2006.
+#  Use, modification, and distribution are subject to the
+#  Boost Software License, Version 1.0. (See accompanying file
+#  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+
+subproject libs/archivers/test ;
+
+import testing ;
+
+DEPENDS all : test ;
+
+{
+
+template zlib
+    : # sources
+    : # build requirements
+        find-boost-iostreams-lib
+        find-boost-zlib-lib
+    : # build variants
+    ;
+
+template bzip2
+    : # sources
+    : # build requirements
+        find-boost-iostreams-lib
+        find-boost-bzip2-lib
+    : # build variants
+    ;
+
+rule archivers-test ( sources + : requirements * )
+{
+    return [
+        run $(sources) <lib>../../iostreams/build/hamigaki_iostreams
+        :
+        :
+        :
+        <define>BOOST_ALL_NO_LIB=1
+        <cw-8_3><*><define>BOOST_THREAD_USE_LIB=1
+        <include>$(HAMIGAKI_ROOT)  <sysinclude>$(HAMIGAKI_ROOT)
+        <include>$(BOOST_INCLUDE)  <sysinclude>$(BOOST_INCLUDE)
+        <library-path>$(BOOST_LIBPATH)
+        <threading>multi
+        <vc-8_0><*><cflags>-wd4996
+        <vc-8_0><*><cflags>-wd4819
+        <vc-8_0><*><linkflags>-INCREMENTAL:NO
+        <vc-7_1><*><linkflags>-INCREMENTAL:NO
+        find-boost-unit_test_framework-lib
+        find-boost-filesystem-lib
+        $(requirements)
+    ] ;
+}
+
+rule intialize_suite {
+    TEST_SUITE =
+        [ archivers-test cpio_binary_test.cpp : ]
+        [ archivers-test cpio_posix_test.cpp : ]
+        [ archivers-test cpio_svr4_test.cpp : ]
+        [ archivers-test cpio_svr4_chksum_test.cpp : ]
+        [ archivers-test iso9660_1999_test.cpp : ]
+        [ archivers-test iso9660_lv1_test.cpp : ]
+        [ archivers-test iso9660_lv2_test.cpp : ]
+        [ archivers-test iso9660_lv3_test.cpp : ]
+        [ archivers-test iso_date_time_test.cpp : ]
+        [ archivers-test joliet_test.cpp : ]
+        [ archivers-test lzh_h0_test.cpp : ]
+        [ archivers-test lzh_h1_test.cpp : ]
+        [ archivers-test lzh_h2_test.cpp : ]
+        [ archivers-test lzh_update_test.cpp : ]
+        [ archivers-test rock_ridge_test.cpp : ]
+        [ archivers-test tar_gnu_test.cpp : ]
+        [ archivers-test tar_pax_test.cpp : ]
+        [ archivers-test tar_ustar_test.cpp : ]
+    ;
+
+    if ! $(NO_ZLIB)
+    {
+        TEST_SUITE +=
+            [
+                archivers-test zip_test.cpp
+                <template>zlib
+            :
+                <define>HAMIGAKI_ARCHIVERS_NO_BZIP2
+            ]
+            [
+                archivers-test zip_crypt_test.cpp
+                <template>zlib
+            :
+                <define>HAMIGAKI_ARCHIVERS_NO_BZIP2
+            ]
+            [
+                archivers-test zip_update_test.cpp
+                <template>zlib
+            :
+                <define>HAMIGAKI_ARCHIVERS_NO_BZIP2
+            ]
+        ;
+
+        if ! $(NO_BZIP2)
+        {
+            TEST_SUITE +=
+                [
+                    archivers-test zip_bz2_test.cpp
+                    <template>zlib
+                    <template>bzip2
+                :
+                ]
+            ;
+        }
+    }
+
+}
+
+intialize_suite ;
+
+test-suite "archivers"
+    : $(TEST_SUITE)
+    ;
+
+}

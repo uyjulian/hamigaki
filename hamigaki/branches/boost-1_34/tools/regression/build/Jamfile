@@ -1,0 +1,46 @@
+# Regression test status reporting tools build Jamfile
+
+#  Copyright Takeshi Mouri 2006.
+#  Use, modification, and distribution are subject to the
+#  Boost Software License, Version 1.0. (See accompanying file
+#  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+# Original: http://www.boost.org/tools/regression/build/Jamfile
+
+subproject tools/regression/build ;
+
+exe process_jam_log
+        :
+        ../process_jam_log.cpp ../detail/tiny_xml.cpp
+        :
+        <sysinclude>$(BOOST_INCLUDE)
+        <define>BOOST_ALL_NO_LIB=1
+        <library-path>$(BOOST_LIBPATH)
+        <vc-8_0><*><runtime-link>static
+        find-boost-filesystem-lib
+        :
+        release
+        ;
+
+exe compiler_status
+        :
+        ../compiler_status.cpp ../detail/tiny_xml.cpp
+        :
+        <sysinclude>$(BOOST_INCLUDE)
+        <define>BOOST_ALL_NO_LIB=1
+        <library-path>$(BOOST_LIBPATH)
+        <vc-8_0><*><runtime-link>static
+        find-boost-filesystem-lib
+        :
+        release
+        ;
+
+stage run
+    :
+        <exe>process_jam_log
+        <exe>compiler_status
+    :
+    :
+        release
+        <suppress>true
+    ;

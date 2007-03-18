@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2006.
+  Use, modification, and distribution are subject to the
+  Boost Software License, Version 1.0. (See accompanying file
+  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<header name="hamigaki/archivers/tbz2_file.hpp">
+  <namespace name="hamigaki">
+    <namespace name="archivers">
+      <class name="basic_tbz2_file_source">
+        <template>
+          <template-type-parameter name="Source"/>
+        </template>
+
+        <inherit access="public">
+          <type><classname>basic_tar_file_source</classname>&lt;boost::iostreams::composite&lt;boost::iostreams::bzip2_decompressor, Source&gt; &gt;</type>
+          <purpose>Exposition only</purpose>
+        </inherit>
+
+        <purpose><para>bzip2圧縮されたtarファイルへの読み込み専用アクセスを提供するSourceモデル</para></purpose>
+
+        <description>
+          <para>クラステンプレートbasic_tbz2_file_sourceは、<classname>basic_tar_file_source</classname>と<code>bzip2_decompressor</code>を組み合わせたものである。</para>
+        </description>
+
+        <constructor specifiers="explicit">
+          <parameter name="src">
+            <paramtype>const Source&amp;</paramtype>
+          </parameter>
+        </constructor>
+      </class>
+
+      <class name="tbz2_file_source">
+        <inherit access="public">
+          <type><classname>basic_tbz2_file_source</classname>&lt;<classname>hamigaki::iostreams::file_source</classname>&gt;</type>
+          <purpose>Exposition only</purpose>
+        </inherit>
+
+        <constructor specifiers="explicit">
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+        </constructor>
+      </class>
+
+      <class name="basic_tbz2_file_sink">
+        <template>
+          <template-type-parameter name="Sink"/>
+        </template>
+
+        <inherit access="public">
+          <type><classname>basic_tar_file_sink</classname>&lt;boost::iostreams::composite&lt;boost::iostreams::bzip2_compressor, Sink&gt; &gt;</type>
+          <purpose>Exposition only</purpose>
+        </inherit>
+
+        <purpose><para>bzip2圧縮されたtarファイルへの書き込み専用アクセスを提供するSinkモデル</para></purpose>
+
+        <description>
+          <para>クラステンプレートbasic_tbz2_file_sinkは、<classname>basic_tar_file_sink</classname>と<code>bzip2_compressor</code>を組み合わせたものである。</para>
+        </description>
+
+        <constructor>
+          <parameter name="sink">
+            <paramtype>const Sink&amp;</paramtype>
+          </parameter>
+        </constructor>
+      </class>
+
+      <class name="tbz2_file_sink">
+        <inherit access="public">
+          <type><classname>basic_tbz2_file_sink</classname>&lt;<classname>hamigaki::iostreams::file_sink</classname>&gt;</type>
+          <purpose>Exposition only</purpose>
+        </inherit>
+
+        <constructor>
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+        </constructor>
+      </class>
+    </namespace>
+  </namespace>
+</header>
