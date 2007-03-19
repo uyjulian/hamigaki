@@ -1,0 +1,27 @@
+# Hamigaki Uuid Library Test Jamfile
+
+#  Copyright Takeshi Mouri 2007.
+#  Use, modification, and distribution are subject to the
+#  Boost Software License, Version 1.0. (See accompanying file
+#  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#  See http://hamigaki.sourceforge.jp/libs/uuid for library home page.
+
+import os ;
+using testing ;
+
+project
+    : requirements
+      <library>/boost/test//boost_unit_test_framework/<link>static
+    ;
+
+local tests =
+    [ run uuid_test.cpp : ]
+    ;
+
+if [ os.name ] = NT
+{
+    tests += [ run guid_cvt_test.cpp : ] ;
+}
+
+test-suite "uuid" : $(tests) ;
