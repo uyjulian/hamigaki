@@ -1,6 +1,6 @@
 //  sha1.hpp: SHA1 checksum
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -178,8 +178,8 @@ public:
 
     void process_bit(bool bit)
     {
-        std::size_t index = (bit_ % 512) / 32;
-        std::size_t offset = (bit_ % 32);
+        std::size_t index = static_cast<std::size_t>((bit_ % 512) / 32);
+        std::size_t offset = static_cast<std::size_t>(bit_ % 32);
         buffer_[index] |= static_cast<word>(bit) << (31 - offset);
         if ((++bit_ % 512) == 0)
         {
@@ -219,7 +219,7 @@ public:
     {
         boost::uint64_t total = bit_;
 
-        std::size_t pad_size = 512 - (bit_ + 64) % 512;
+        std::size_t pad_size = static_cast<std::size_t>(512 - (bit_ + 64)%512);
 
         process_bit(true);
         while (--pad_size)

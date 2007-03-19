@@ -1,6 +1,6 @@
 //  huffman.hpp: Huffman encoding/decoding
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -170,7 +170,7 @@ public:
         std::size_t bits1 = bits-1;
         for (std::size_t i = 0; i < bits; ++i)
         {
-            bool b = code & (1 << (bits1-i));
+            bool b = (code & (1 << (bits1-i))) != 0;
             value_type next = tree_[pos].next[b];
             if (!next)
             {
