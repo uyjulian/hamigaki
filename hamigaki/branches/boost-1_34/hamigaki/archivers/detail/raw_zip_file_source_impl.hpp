@@ -343,9 +343,12 @@ private:
                 iostreams::blocking_read(
                     src_, &filename[0], file_head.file_name_length);
                 filename[file_head.file_name_length] = '\0';
-                head.path = path(&filename[0], no_check);
                 if (filename[file_head.file_name_length-1] == '/')
+                {
+                    filename[file_head.file_name_length-1] = '\0';
                     head.attributes |= msdos::attributes::directory;
+                }
+                head.path = path(&filename[0], no_check);
             }
 
             if (file_head.extra_field_length)
@@ -427,9 +430,12 @@ private:
             iostreams::blocking_read(
                 src_, &filename[0], local.file_name_length);
             filename[local.file_name_length] = '\0';
-            head.path = path(&filename[0], no_check);
             if (filename[local.file_name_length-1] == '/')
+            {
+                filename[local.file_name_length-1] = '\0';
                 head.attributes |= msdos::attributes::directory;
+            }
+            head.path = path(&filename[0], no_check);
         }
 
         if (local.extra_field_length)
