@@ -25,6 +25,10 @@
     #include BOOST_ABI_PREFIX
 #endif
 
+#if defined(BOOST_WINDOWS) && !defined(__GNUC__)
+    #pragma comment(lib, "ole32.lib")
+#endif
+
 namespace hamigaki { namespace filesystem {
 
 #if BOOST_VERSION < 103400

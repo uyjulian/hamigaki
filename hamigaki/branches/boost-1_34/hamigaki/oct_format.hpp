@@ -1,6 +1,6 @@
 //  oct_format.hpp: octal formatting
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -66,7 +66,7 @@ inline std::basic_string<CharT> to_oct(T n)
     std::basic_string<CharT> s;
     for (std::size_t i = 0; i < Size; ++i)
     {
-        s += oct_traits<CharT>::to_oct(n & 07);
+        s += oct_traits<CharT>::to_oct(static_cast<int>(n & 07));
         n >>= 3;
     }
     std::reverse(s.begin(), s.end());
@@ -79,7 +79,7 @@ inline std::basic_string<CharT> to_oct(T n)
     std::basic_string<CharT> s;
     while (n)
     {
-        s += oct_traits<CharT>::to_oct(n & 07);
+        s += oct_traits<CharT>::to_oct(static_cast<int>(n & 07));
         n >>= 3;
     }
     s.push_back('0');

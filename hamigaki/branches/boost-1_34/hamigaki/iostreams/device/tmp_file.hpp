@@ -23,6 +23,11 @@
     #include BOOST_ABI_PREFIX
 #endif
 
+#ifdef BOOST_MSVC
+    #pragma warning(push)
+    #pragma warning(disable : 4251)
+#endif
+
 namespace hamigaki { namespace iostreams {
 
 class HAMIGAKI_IOSTREAMS_DECL tmp_file
@@ -54,6 +59,10 @@ private:
 } } // End namespaces iostreams, hamigaki.
 
 HAMIGAKI_IOSTREAMS_CATABLE(hamigaki::iostreams::tmp_file, 0)
+
+#ifdef BOOST_MSVC
+    #pragma warning(pop)
+#endif
 
 #ifdef BOOST_HAS_ABI_HEADERS
     #include BOOST_ABI_SUFFIX

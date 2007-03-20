@@ -1,6 +1,6 @@
 //  zip_file_sink_impl.hpp: ZIP file sink implementation
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -14,7 +14,6 @@
 #include <hamigaki/archivers/detail/zip_encryption_keys.hpp>
 #include <hamigaki/archivers/detail/zlib_params.hpp>
 #include <boost/functional/hash/hash.hpp>
-#include <boost/iostreams/filter/zlib.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/variate_generator.hpp>

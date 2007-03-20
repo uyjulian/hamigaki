@@ -105,19 +105,25 @@ struct date_time
         date_time tmp;
 
         ptime pt(date(1970, 1, 1), time_duration());
-        pt += seconds(ts.seconds);
+        pt += hours(static_cast<long>(ts.seconds / 3600));
+        pt += seconds(static_cast<long>(ts.seconds % 3600));
 
         const date& d = pt.date();
         to_dec<char>(static_cast<unsigned>(d.year())).copy(tmp.year, 4);
-        iso_detail::fill_dec2(tmp.month, d.month());
-        iso_detail::fill_dec2(tmp.day, d.day());
+        iso_detail::fill_dec2(
+            tmp.month, static_cast<boost::uint8_t>(d.month()));
+        iso_detail::fill_dec2(tmp.day, static_cast<boost::uint8_t>(d.day()));
 
         const time_duration& td = pt.time_of_day();
-        iso_detail::fill_dec2(tmp.hour, td.hours());
-        iso_detail::fill_dec2(tmp.minute, td.minutes());
-        iso_detail::fill_dec2(tmp.second, td.seconds());
+        iso_detail::fill_dec2(
+            tmp.hour, static_cast<boost::uint8_t>(td.hours()));
+        iso_detail::fill_dec2(
+            tmp.minute, static_cast<boost::uint8_t>(td.minutes()));
+        iso_detail::fill_dec2(
+            tmp.second, static_cast<boost::uint8_t>(td.seconds()));
 
-        iso_detail::fill_dec2(tmp.centisecond, ts.nanoseconds/10000000ul);
+        iso_detail::fill_dec2(tmp.centisecond,
+            static_cast<boost::uint8_t>(ts.nanoseconds/10000000ul));
 
         return tmp;
     }
@@ -206,17 +212,18 @@ struct binary_date_time
         binary_date_time tmp;
 
         ptime pt(date(1970, 1, 1), time_duration());
-        pt += seconds(ts.seconds);
+        pt += hours(static_cast<long>(ts.seconds / 3600));
+        pt += seconds(static_cast<long>(ts.seconds % 3600));
 
         const date& d = pt.date();
-        tmp.year = d.year() - 1900;
-        tmp.month = d.month();
-        tmp.day = d.day();
+        tmp.year = static_cast<boost::uint8_t>(d.year() - 1900);
+        tmp.month = static_cast<boost::uint8_t>(d.month());
+        tmp.day = static_cast<boost::uint8_t>(d.day());
 
         const time_duration& td = pt.time_of_day();
-        tmp.hour = td.hours();
-        tmp.minute = td.minutes();
-        tmp.second = td.seconds();
+        tmp.hour = static_cast<boost::uint8_t>(td.hours());
+        tmp.minute = static_cast<boost::uint8_t>(td.minutes());
+        tmp.second = static_cast<boost::uint8_t>(td.seconds());
 
         return tmp;
     }
