@@ -1,0 +1,28 @@
+# Hamigaki Filesystem Library Jamfile
+
+#  Copyright Takeshi Mouri 2006, 2007.
+#  Use, modification, and distribution are subject to the
+#  Boost Software License, Version 1.0. (See accompanying file
+#  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#  See http://hamigaki.sourceforge.jp/libs/filesystem for library home page.
+
+project hamigaki/filesystem
+    : requirements
+      <link>shared:<define>HAMIGAKI_FILESYSTEM_DYN_LINK
+      <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
+      <library>/boost/filesystem//boost_filesystem
+    : usage-requirements
+      <link>shared:<define>HAMIGAKI_FILESYSTEM_DYN_LINK
+      <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
+      <library>/boost/filesystem//boost_filesystem
+    : source-location ../src
+    ;
+
+SOURCES =
+    file_status
+    shell_link
+    symlink
+    ;
+
+lib hamigaki_filesystem : $(SOURCES).cpp ;
