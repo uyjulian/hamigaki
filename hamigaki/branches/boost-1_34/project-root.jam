@@ -5,11 +5,11 @@
 #  Boost Software License, Version 1.0. (See accompanying file
 #  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-import os ;
+import modules ;
 
 path-constant HAMIGAKI_ROOT : . ;
-path-constant BOOST_ROOT : [ os.environ BOOST_ROOT ] ;
-path-constant BOOST_INCLUDE : [ os.environ BOOST_INCLUDE ] ;
-path-constant BOOST_LIBPATH : [ os.environ BOOST_LIBPATH ] ;
+path-constant BOOST_ROOT : [ modules.peek : BOOST_ROOT ] ;
+path-constant BOOST_INCLUDE : [ modules.peek : BOOST_INCLUDE ] ;
+path-constant BOOST_LIBPATH : [ modules.peek : BOOST_LIBPATH ] ;
 
 use-project /boost : $(BOOST_ROOT) ;
