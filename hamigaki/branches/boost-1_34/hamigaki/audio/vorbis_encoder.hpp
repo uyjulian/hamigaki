@@ -27,6 +27,11 @@
     #include BOOST_ABI_PREFIX
 #endif
 
+#ifdef BOOST_MSVC
+    #pragma warning(push)
+    #pragma warning(disable : 4275)
+#endif
+
 namespace hamigaki { namespace audio {
 
 struct vorbis_encode_params
@@ -350,6 +355,10 @@ make_vorbis_file_sink(const Sink& sink,
 }
 
 } } // End namespaces audio, hamigaki.
+
+#ifdef BOOST_MSVC
+    #pragma warning(pop)
+#endif
 
 #ifdef BOOST_HAS_ABI_HEADERS
     #include BOOST_ABI_SUFFIX

@@ -17,7 +17,7 @@
 #include <boost/ref.hpp>
 
 #if !defined(HAMIGAKI_ARCHIVERS_NO_BZIP2)
-    #include <boost/iostreams/filter/bzip2.hpp>
+    #include <hamigaki/archivers/detail/bzip2.hpp>
 #endif
 
 namespace hamigaki { namespace archivers { namespace detail {
