@@ -1,6 +1,6 @@
 //  direct_sound.cpp: DirectSound device
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -68,7 +68,7 @@ namespace
 
 } // namespace
 
-device_info enum_devices(device_info_iterator::self& self)
+HAMIGAKI_AUDIO_DECL device_info enum_devices(device_info_iterator::self& self)
 {
 #if !defined(HAMIGAKI_AUDIO_NO_DS_ENUM)
     ::DirectSoundEnumerateA(&enum_devices_callback, &self);
@@ -88,6 +88,7 @@ device_info enum_devices(device_info_iterator::self& self)
     HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(device_info())
 }
 
+HAMIGAKI_AUDIO_DECL
 device_info enum_capture_devices(device_info_iterator::self& self)
 {
 #if !defined(HAMIGAKI_AUDIO_NO_DS_ENUM)

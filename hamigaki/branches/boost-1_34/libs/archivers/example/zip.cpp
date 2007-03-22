@@ -1,6 +1,6 @@
 //  zip.cpp: a simple ZIP compressing program
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -71,8 +71,8 @@ int main(int argc, char* argv[])
 
             if (s.has_uid() && s.has_gid())
             {
-                head.gid = s.gid();
-                head.uid = s.uid();
+                head.gid = static_cast<boost::uint16_t>(s.gid());
+                head.uid = static_cast<boost::uint16_t>(s.uid());
             }
 
             zip.create_entry(head);

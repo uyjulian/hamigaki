@@ -1,6 +1,6 @@
 //  tbz2_file.hpp: tar.bz2 file device
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,8 +10,8 @@
 #ifndef HAMIGAKI_ARCHIVERS_TBZ2_FILE_HPP
 #define HAMIGAKI_ARCHIVERS_TBZ2_FILE_HPP
 
+#include <hamigaki/archivers/detail/bzip2.hpp>
 #include <hamigaki/archivers/tar_file.hpp>
-#include <boost/iostreams/filter/bzip2.hpp>
 
 namespace hamigaki { namespace archivers {
 
