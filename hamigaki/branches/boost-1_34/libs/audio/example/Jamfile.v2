@@ -1,0 +1,28 @@
+# Hamigaki Audio Library Example Jamfile
+
+#  Copyright Takeshi Mouri 2007.
+#  Use, modification, and distribution are subject to the
+#  Boost Software License, Version 1.0. (See accompanying file
+#  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+
+project
+    : requirements
+      <hardcode-dll-paths>true
+      <library>/hamigaki/audio//hamigaki_audio
+    ;
+
+exe aiff_play : aiff_play.cpp ;
+exe asio_example : asio_example.cpp /boost/thread//boost_thread ;
+exe asio_ogg_play : asio_ogg_play.cpp ;
+exe ds_capture : ds_capture.cpp /boost/thread//boost_thread ;
+exe falcom_play : falcom_play.cpp ;
+exe frog_round : frog_round.cpp /boost/thread//boost_thread ;
+exe ogg_play : ogg_play.cpp ;
+exe pcm_play : pcm_play.cpp ;
+exe pcm_record : pcm_record.cpp /boost/thread//boost_thread ;
+exe raw_play : raw_play.cpp ;
+exe vorbis_encoder_example : vorbis_encoder_example.cpp ;
+exe vorbis_file_example : vorbis_file_example.cpp ;
+exe wav2aif : wav2aif.cpp ;

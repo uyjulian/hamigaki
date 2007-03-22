@@ -1,0 +1,50 @@
+# Hamigaki Archivers Library Example Jamfile
+
+#  Copyright Takeshi Mouri 2007.
+#  Use, modification, and distribution are subject to the
+#  Boost Software License, Version 1.0. (See accompanying file
+#  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+
+import modules ;
+
+local NO_BZIP2 = [ modules.peek : NO_BZIP2 ] ;
+local NO_ZLIB = [ modules.peek : NO_ZLIB ] ;
+
+local options = ;
+if $(NO_BZIP2)
+{
+    options += <define>HAMIGAKI_ARCHIVERS_NO_BZIP2 ;
+}
+
+project
+    : requirements
+      <hardcode-dll-paths>true
+      <link>shared:<define>BOOST_IOSTREAMS_DYN_LINK=1
+      $(options)
+    ;
+
+alias boost_filesystem : /boost/filesystem//boost_filesystem ;
+alias boost_iostreams : /boost/iostreams//boost_iostreams ;
+alias filesystems : /hamigaki/filesystem//hamigaki_filesystem ;
+alias iostreams : /hamigaki/iostreams//hamigaki_iostreams ;
+
+exe append_lha : append_lha.cpp filesystems ;
+exe delete_lha : delete_lha.cpp boost_filesystem ;
+exe delete_zip : delete_zip.cpp boost_filesystem ;
+exe iso : iso.cpp filesystems ;
+exe lha : lha.cpp filesystems iostreams ;
+exe tar : tar.cpp filesystems iostreams ;
+exe uniso : uniso.cpp boost_filesystem ;
+exe unlha : unlha.cpp filesystems ;
+exe untar : untar.cpp filesystems ;
+
+if ! $(NO_ZLIB)
+{
+    exe archive : archive.cpp boost_iostreams filesystems ;
+    exe extract : extract.cpp boost_iostreams filesystems ;
+    exe list_zip : list_zip.cpp boost_filesystem boost_iostreams iostreams ;
+    exe unzip : unzip.cpp boost_iostreams filesystems iostreams ;
+    exe zip : zip.cpp boost_iostreams filesystems iostreams ;
+}
