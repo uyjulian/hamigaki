@@ -1,0 +1,54 @@
+# Hamigaki Audio Library Test Jamfile
+
+#  Copyright Takeshi Mouri 2007.
+#  Use, modification, and distribution are subject to the
+#  Boost Software License, Version 1.0. (See accompanying file
+#  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+
+using testing ;
+
+local NO_ASIO = [ modules.peek : NO_ASIO ] ;
+local NO_DXSDK = [ modules.peek : NO_DXSDK ] ;
+local NO_OGG = [ modules.peek : NO_OGG ] ;
+local NO_VORBIS = [ modules.peek : NO_VORBIS ] ;
+
+project
+    : requirements
+      <library>/boost/test//boost_unit_test_framework/<link>static
+      <library>/hamigaki/audio//hamigaki_audio
+    ;
+
+local tests =
+    [ run aiff_file_test.cpp /hamigaki/iostreams//hamigaki_iostreams ]
+    [ run pcm_sink_test.cpp ]
+    [ run pcm_source_test.cpp ]
+    [ run wave_file_test.cpp /hamigaki/iostreams//hamigaki_iostreams ]
+    ;
+
+if ! $(NO_ASIO)
+{
+    tests +=
+        [ run asio_sink_test.cpp ]
+        [ run asio_source_test.cpp ]
+        ;
+}
+
+if ! $(NO_DXSDK)
+{
+    tests +=
+        [ run direct_sound_test.cpp ]
+        [ run ds_capture_test.cpp ]
+        [ run ds_enum_test.cpp : : : <test-info>always_show_run_output ]
+        ;
+}
+
+if ! $(NO_VORBIS)
+{
+    tests +=
+        [ run vorbis_file_test.cpp /hamigaki/iostreams//hamigaki_iostreams ]
+        ;
+}
+
+test-suite "audio" : $(tests) ;

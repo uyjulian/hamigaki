@@ -1,0 +1,73 @@
+# Hamigaki Audio Library Jamfile
+
+#  Copyright Takeshi Mouri 2007.
+#  Use, modification, and distribution are subject to the
+#  Boost Software License, Version 1.0. (See accompanying file
+#  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+
+import modules ;
+
+local NO_ASIO = [ modules.peek : NO_ASIO ] ;
+local NO_DXSDK = [ modules.peek : NO_DXSDK ] ;
+local NO_OGG = [ modules.peek : NO_OGG ] ;
+local NO_VORBIS = [ modules.peek : NO_VORBIS ] ;
+
+project hamigaki/audio
+    : requirements
+      <link>shared:<define>HAMIGAKI_AUDIO_DYN_LINK=1
+    : usage-requirements
+      <link>shared:<define>HAMIGAKI_AUDIO_DYN_LINK=1
+    : source-location ../src
+    ;
+
+SOURCES =
+    pcm_device
+    ;
+
+LIBRARIES =
+    ;
+
+if ! $(NO_ASIO)
+{
+    SOURCES +=
+        asio
+        asio_drivers
+        ;
+
+    LIBRARIES += /site-config//asio ;
+}
+
+if ! $(NO_DXSDK)
+{
+    SOURCES +=
+        direct_sound
+        direct_sound_capture
+        ;
+
+    lib dsound
+        :
+        /site-config//dxsdk
+        :
+        <name>dsound
+        $(DXSDK_LIBPATH)
+        ;
+
+    LIBRARIES += dsound ;
+}
+
+if ! $(NO_VORBIS)
+{
+    SOURCES +=
+        vorbis_encoder
+        vorbis_file
+        ;
+
+    LIBRARIES +=
+        /site-config//vorbisenc
+        /site-config//vorbisfile
+        ;
+}
+
+lib hamigaki_audio : $(SOURCES).cpp $(LIBRARIES) ;
