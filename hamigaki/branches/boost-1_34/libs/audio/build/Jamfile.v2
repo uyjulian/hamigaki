@@ -51,13 +51,12 @@ if ! $(NO_DXSDK)
         /site-config//dxsdk
         :
         <name>dsound
-        $(DXSDK_LIBPATH)
         ;
 
     LIBRARIES += dsound ;
 }
 
-if ! $(NO_VORBIS)
+if ! $(NO_OGG) && ! $(NO_VORBIS)
 {
     SOURCES +=
         vorbis_encoder
@@ -70,4 +69,15 @@ if ! $(NO_VORBIS)
         ;
 }
 
-lib hamigaki_audio : $(SOURCES).cpp $(LIBRARIES) ;
+lib hamigaki_audio
+    :
+    $(SOURCES).cpp
+    $(LIBRARIES)
+    :
+    <toolset>gcc,<os>NT:<find-static-library>ole32
+    <toolset>gcc,<os>NT:<find-static-library>winmm
+    :
+    :
+    <toolset>gcc,<os>NT:<find-static-library>ole32
+    <toolset>gcc,<os>NT:<find-static-library>winmm
+    ;

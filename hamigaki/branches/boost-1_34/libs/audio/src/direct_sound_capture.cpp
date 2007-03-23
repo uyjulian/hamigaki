@@ -1,13 +1,12 @@
 //  direct_sound_capture.cpp: DirectSound capture device
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 //  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
 
-#if defined(HAMIGAKI_HAS_DXSDK)
 #define HAMIGAKI_AUDIO_SOURCE
 #include <hamigaki/audio/direct_sound.hpp>
 #include <boost/assert.hpp>
@@ -330,5 +329,3 @@ direct_sound_capture::create_buffer(const pcm_format& f)
 }
 
 } } // End namespaces audio, hamigaki.
-
-#endif // defined(HAMIGAKI_HAS_DXSDK)

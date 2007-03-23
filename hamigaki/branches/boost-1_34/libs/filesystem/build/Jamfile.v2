@@ -7,6 +7,8 @@
 
 #  See http://hamigaki.sourceforge.jp/libs/filesystem for library home page.
 
+import os ;
+
 project hamigaki/filesystem
     : requirements
       <link>shared:<define>HAMIGAKI_FILESYSTEM_DYN_LINK
@@ -25,4 +27,12 @@ SOURCES =
     symlink
     ;
 
-lib hamigaki_filesystem : $(SOURCES).cpp ;
+lib hamigaki_filesystem
+    :
+    $(SOURCES).cpp
+    :
+    <toolset>gcc,<os>NT:<find-static-library>ole32
+    :
+    :
+    <toolset>gcc,<os>NT:<find-static-library>ole32
+    ;

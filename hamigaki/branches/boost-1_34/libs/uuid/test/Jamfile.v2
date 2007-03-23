@@ -21,7 +21,7 @@ local tests =
 
 if [ os.name ] = NT
 {
-    tests += [ run guid_cvt_test.cpp : ] ;
+    tests += [ run guid_cvt_test.cpp : : : <toolset>gcc:<find-static-library>ole32 ] ;
 }
 
 test-suite "uuid" : $(tests) ;

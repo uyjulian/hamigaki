@@ -7,7 +7,6 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
 
-#if defined(HAMIGAKI_HAS_DXSDK)
 #define HAMIGAKI_AUDIO_SOURCE
 #include <hamigaki/audio/direct_sound.hpp>
 #include <boost/assert.hpp>
@@ -505,5 +504,3 @@ direct_sound_buffer direct_sound_device::create_buffer(const pcm_format& f)
 }
 
 } } // End namespaces audio, hamigaki.
-
-#endif // defined(HAMIGAKI_HAS_DXSDK)
