@@ -7,8 +7,6 @@
 
 #  See http://hamigaki.sourceforge.jp/libs/filesystem for library home page.
 
-import os ;
-
 project hamigaki/filesystem
     : requirements
       <link>shared:<define>HAMIGAKI_FILESYSTEM_DYN_LINK
