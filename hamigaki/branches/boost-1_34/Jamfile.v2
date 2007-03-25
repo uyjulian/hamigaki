@@ -1,10 +1,10 @@
 # Hamigaki Library Root Jamfile
-
+#
 #  Copyright Takeshi Mouri 2007.
 #  Use, modification, and distribution are subject to the
 #  Boost Software License, Version 1.0. (See accompanying file
 #  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-
+#
 # Original Copyright
 # ============================================================================>
 # Copyright Vladimir Prus 2002-2006.
@@ -160,7 +160,7 @@ rule handle-static-runtime ( properties * )
 project hamigaki
     : requirements
       <include>.
-      <include>$(BOOST_INCLUDE)
+      <include>$(BOOST_ROOT)
       <toolset>msvc-8.0:<cxxflags>-wd4819
       <toolset>msvc-8.0:<cxxflags>-wd4996
       # disable auto-linking for all targets here,
@@ -173,7 +173,7 @@ project hamigaki
             
     : usage-requirements
       <include>.
-      <include>$(BOOST_INCLUDE)
+      <include>$(BOOST_ROOT)
     : build-dir bin.v2
     : default-build $(default-build)
     ;
