@@ -1,6 +1,6 @@
 //  asio.hpp: ASIO devices
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -19,6 +19,11 @@
 
 #ifdef BOOST_HAS_ABI_HEADERS
     #include BOOST_ABI_PREFIX
+#endif
+
+#ifdef BOOST_MSVC
+    #pragma warning(push)
+    #pragma warning(disable : 4251)
 #endif
 
 #if defined(BOOST_WINDOWS) && !defined(__GNUC__)
@@ -116,6 +121,10 @@ private:
 };
 
 } } // End namespaces audio, hamigaki.
+
+#ifdef BOOST_MSVC
+    #pragma warning(pop)
+#endif
 
 #ifdef BOOST_HAS_ABI_HEADERS
     #include BOOST_ABI_SUFFIX

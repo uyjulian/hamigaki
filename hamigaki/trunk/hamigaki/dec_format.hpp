@@ -1,6 +1,6 @@
 //  dec_format.hpp: decimal formatting
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -73,7 +73,7 @@ inline std::basic_string<CharT> to_dec_impl(T n, boost::mpl::bool_<false>)
     std::basic_string<CharT> s;
     while (n)
     {
-        s += dec_traits<CharT>::to_dec(n % 10);
+        s += dec_traits<CharT>::to_dec(static_cast<int>(n % 10));
         n /= 10;
     }
     std::reverse(s.begin(), s.end());
@@ -94,7 +94,7 @@ inline std::basic_string<CharT> to_dec_impl(T n, boost::mpl::bool_<true>)
             T tmp = n % 10;
             if (tmp > T())
                 tmp -= 10;
-            s += dec_traits<CharT>::to_dec(-tmp);
+            s += dec_traits<CharT>::to_dec(static_cast<int>(-tmp));
             n /= 10;
         }
         s.push_back('-');
@@ -103,7 +103,7 @@ inline std::basic_string<CharT> to_dec_impl(T n, boost::mpl::bool_<true>)
     {
         while (n)
         {
-            s += dec_traits<CharT>::to_dec(n % 10);
+            s += dec_traits<CharT>::to_dec(static_cast<int>(n % 10));
             n /= 10;
         }
     }

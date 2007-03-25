@@ -1,0 +1,80 @@
+# Hamigaki Archivers Library Test Jamfile
+
+#  Copyright Takeshi Mouri 2006, 2007.
+#  Use, modification, and distribution are subject to the
+#  Boost Software License, Version 1.0. (See accompanying file
+#  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+
+import modules ;
+using testing ;
+
+local NO_BZIP2 = [ modules.peek : NO_BZIP2 ] ;
+local NO_ZLIB = [ modules.peek : NO_ZLIB ] ;
+
+project
+    : requirements
+      <library>/boost/test//boost_unit_test_framework/<link>static
+      <library>/hamigaki/iostreams//hamigaki_iostreams
+    ;
+
+rule test-with-bzip2 ( sources * : requirements * ) {
+    return [
+            run $(sources)
+            :
+            :
+            :
+            <library>/boost/iostreams//boost_iostreams
+            <link>shared:<define>BOOST_IOSTREAMS_DYN_LINK=1
+            $(requirements)
+    ] ;
+}
+
+rule test-with-zlib ( sources * : requirements * ) {
+    return [
+            test-with-bzip2 $(sources)
+            :
+            <define>HAMIGAKI_ARCHIVERS_NO_BZIP2
+            $(requirements)
+    ] ;
+}
+
+local tests =
+    [ run cpio_binary_test.cpp : ]
+    [ run cpio_posix_test.cpp : ]
+    [ run cpio_svr4_test.cpp : ]
+    [ run cpio_svr4_chksum_test.cpp : ]
+    [ run iso9660_1999_test.cpp : ]
+    [ run iso9660_lv1_test.cpp : ]
+    [ run iso9660_lv2_test.cpp : ]
+    [ run iso9660_lv3_test.cpp : ]
+    [ run iso_date_time_test.cpp : ]
+    [ run joliet_test.cpp : ]
+    [ run lzh_h0_test.cpp : ]
+    [ run lzh_h1_test.cpp : ]
+    [ run lzh_h2_test.cpp : ]
+    [ run lzh_update_test.cpp : ]
+    [ run rock_ridge_test.cpp : ]
+    [ run tar_gnu_test.cpp : ]
+    [ run tar_pax_test.cpp : ]
+    [ run tar_ustar_test.cpp : ]
+;
+
+if ! $(NO_ZLIB)
+{
+    tests +=
+        [ test-with-zlib zip_test.cpp : ]
+        [ test-with-zlib zip_crypt_test.cpp : ]
+        [ test-with-zlib zip_update_test.cpp : ]
+    ;
+
+    if ! $(NO_BZIP2)
+    {
+        tests +=
+            [ test-with-bzip2 zip_bz2_test.cpp : ]
+        ;
+    }
+}
+
+test-suite "iostreams" : $(tests) ;

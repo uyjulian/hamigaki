@@ -1,6 +1,6 @@
 //  iso9660_lv1_test.cpp: test case for ISO 9660 Level 1
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -103,7 +103,7 @@ void iso9660_test()
     head.recorded_time.hour     = 23u;
     head.recorded_time.minute   = 59u;
     head.recorded_time.second   = 59u;
-    head.recorded_time.timezone = 9*15;
+    head.recorded_time.timezone = 9*4;
 
     io_ex::tmp_file archive;
     ar::basic_iso_file_sink<

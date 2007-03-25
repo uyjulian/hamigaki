@@ -8,8 +8,11 @@
 //  See http://hamigaki.sourceforge.jp/libs/filesystem for library home page.
 
 #define HAMIGAKI_FILESYSTEM_SOURCE
-#define BOOST_ALL_NO_LIB
 #define NOMINMAX
+
+#if !defined(BOOST_ALL_NO_LIB)
+    #define BOOST_ALL_NO_LIB
+#endif
 
 #if !defined(_WIN32_WINNT)
     #define _WIN32_WINNT 0x0500

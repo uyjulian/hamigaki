@@ -1,6 +1,6 @@
 //  archive.cpp: multi-format archiver
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -188,9 +188,9 @@ struct header_traits<ar::zip::header>
             head.creation_time = e.creation_time->to_time_t();
 
         if (e.uid)
-            head.uid = e.uid.get();
+            head.uid = static_cast<boost::uint16_t>(e.uid.get());
         if (e.gid)
-            head.gid = e.gid.get();
+            head.gid = static_cast<boost::uint16_t>(e.gid.get());
 
         return head;
     }
@@ -394,7 +394,7 @@ int main(int argc, char* argv[])
             }
 
             if (s.has_attributes())
-                e.attributes = s.attributes();
+                e.attributes = static_cast<boost::uint16_t>(s.attributes());
             if (s.has_permissions())
                 e.permissions = s.permissions();
 

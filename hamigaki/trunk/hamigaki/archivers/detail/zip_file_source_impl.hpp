@@ -1,6 +1,6 @@
 //  zip_file_source_impl.hpp: ZIP file source implementation
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -13,12 +13,11 @@
 #include <hamigaki/archivers/detail/raw_zip_file_source_impl.hpp>
 #include <hamigaki/archivers/detail/zip_encryption_keys.hpp>
 #include <hamigaki/archivers/detail/zlib_params.hpp>
-#include <boost/iostreams/filter/zlib.hpp>
 #include <boost/none.hpp>
 #include <boost/ref.hpp>
 
 #if !defined(HAMIGAKI_ARCHIVERS_NO_BZIP2)
-    #include <boost/iostreams/filter/bzip2.hpp>
+    #include <hamigaki/archivers/detail/bzip2.hpp>
 #endif
 
 namespace hamigaki { namespace archivers { namespace detail {

@@ -1,6 +1,6 @@
 //  hex_format.hpp: hexadecimal formatting
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -112,7 +112,8 @@ struct to_hex_helper
         std::basic_string<CharT> s;
         for (std::size_t i = 0; i < sizeof(n); ++i)
         {
-            boost::uint8_t tmp = n >> ((sizeof(n)-1-i)*8);
+            boost::uint8_t tmp =
+                static_cast<boost::uint8_t>((n >> ((sizeof(n)-1-i)*8)) & 0xFFu);
             s += hex_traits<CharT>::to_hex(tmp / 16, is_upper);
             s += hex_traits<CharT>::to_hex(tmp % 16, is_upper);
         }

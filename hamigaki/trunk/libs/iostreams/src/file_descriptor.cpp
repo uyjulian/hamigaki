@@ -1,6 +1,6 @@
 //  file_descriptor.cpp: low-level file device
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -33,6 +33,11 @@ namespace detail
 {
 
 #if defined(BOOST_WINDOWS)
+
+#ifdef BOOST_MSVC
+    #pragma warning(disable : 4275)
+#endif
+
 namespace
 {
 

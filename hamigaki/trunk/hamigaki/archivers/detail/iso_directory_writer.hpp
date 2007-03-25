@@ -496,7 +496,8 @@ private:
     {
         iostreams::stream_offset offset = iostreams::tell_offset(sink);
         BOOST_ASSERT((offset & lbn_mask_) == 0);
-        return static_cast<boost::uint64_t>(offset) >> lbn_shift_;
+        return static_cast<boost::uint32_t>(
+            static_cast<boost::uint64_t>(offset) >> lbn_shift_);
     }
 
     boost::uint16_t find_path(

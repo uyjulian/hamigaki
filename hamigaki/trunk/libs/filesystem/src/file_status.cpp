@@ -1,6 +1,6 @@
 //  file_status.cpp: the file status operations
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -8,8 +8,11 @@
 //  See http://hamigaki.sourceforge.jp/libs/filesystem for library home page.
 
 #define HAMIGAKI_FILESYSTEM_SOURCE
-#define BOOST_ALL_NO_LIB
 #define NOMINMAX
+
+#if !defined(BOOST_ALL_NO_LIB)
+    #define BOOST_ALL_NO_LIB
+#endif
 
 #if !defined(_WIN32_WINNT)
     #define _WIN32_WINNT 0x0500
@@ -327,7 +330,7 @@ void last_write_time(
     }
 
     ::DWORD code = ::GetLastError();
-    throw boost::filesystem::filesystem_error(
+    throw hamigaki::filesystem::filesystem_path_error(
         "hamigaki::filesystem::last_write_time", p, code);
 }
 
@@ -355,7 +358,7 @@ void last_access_time(
     }
 
     ::DWORD code = ::GetLastError();
-    throw boost::filesystem::filesystem_error(
+    throw hamigaki::filesystem::filesystem_path_error(
         "hamigaki::filesystem::last_access_time", p, code);
 }
 
@@ -383,7 +386,7 @@ void creation_time(
     }
 
     ::DWORD code = ::GetLastError();
-    throw boost::filesystem::filesystem_error(
+    throw hamigaki::filesystem::filesystem_path_error(
         "hamigaki::filesystem::creation_time", p, code);
 }
 
@@ -519,7 +522,7 @@ void last_write_time(
     }
 
     int code = errno;
-    throw boost::filesystem::filesystem_error(
+    throw hamigaki::filesystem::filesystem_path_error(
         "hamigaki::filesystem::last_write_time", p, code);
 }
 
@@ -540,7 +543,7 @@ void last_access_time(
     }
 
     int code = errno;
-    throw boost::filesystem::filesystem_error(
+    throw hamigaki::filesystem::filesystem_path_error(
         "hamigaki::filesystem::last_access_time", p, code);
 }
 
