@@ -1,6 +1,6 @@
 //  config.hpp: configuration file for Hamigaki.Audio
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -26,11 +26,9 @@
     #define HAMIGAKI_AUDIO_DECL
 #endif
 
-#if defined(HAMIGAKI_HAS_DXSDK)
-    #if defined(__GNUC__)
-        #define HAMIGAKI_AUDIO_NO_DS_ENUM
-        #define HAMIGAKI_AUDIO_NO_CREATE_DS_CAPTRUE
-    #endif
+#if defined(__GNUC__)
+    #define HAMIGAKI_AUDIO_NO_DS_ENUM
+    #define HAMIGAKI_AUDIO_NO_CREATE_DS_CAPTRUE
 #endif
 
 #endif // HAMIGAKI_AUDIO_DETAIL_CONFIG_HPP
