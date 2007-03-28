@@ -1,6 +1,6 @@
 //  pcm_record.cpp: a simple WAVE recorder
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -35,14 +35,14 @@ int main(int argc, char* argv[])
         fmt.channels = 1;
         fmt.rate = 22050;
 
-        audio::wave_file_sink file(argv[1], fmt);
-        io_ex::background_copy bg_copy(audio::pcm_source(fmt, 1024*4), file);
+        audio::wave_file_sink wav(argv[1], fmt);
+        io_ex::background_copy bg_copy(audio::pcm_source(fmt), wav);
 
         std::cout << "Press ENTER key to stop recording..." << std::endl;
         std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
 
         bg_copy.stop();
-        file.close();
+        wav.close();
 
         return 0;
     }

@@ -1,6 +1,6 @@
 //  pcm_play.cpp: a simple WAVE player
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -29,13 +29,13 @@ int main(int argc, char* argv[])
             return 1;
         }
 
-        audio::wave_file_source file(argv[1]);
+        audio::wave_file_source wav(argv[1]);
 
-        std::cout << "rate = " << file.format().rate << std::endl;
-        std::cout << "bits = " << file.format().bits() << std::endl;
-        std::cout << "channels = " << file.format().channels << std::endl;
+        std::cout << "rate = " << wav.format().rate << std::endl;
+        std::cout << "bits = " << wav.format().bits() << std::endl;
+        std::cout << "channels = " << wav.format().channels << std::endl;
 
-        io::copy(file, audio::pcm_sink(file.format(), 1024*4));
+        io::copy(wav, audio::pcm_sink(wav.format()));
 
         return 0;
     }

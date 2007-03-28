@@ -1,6 +1,6 @@
 //  raw_play.cpp: pcm raw data (22kHz,16bit,Mono) player
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 
         io::copy(
             io::file_source((std::string(argv[1])), BOOST_IOS::binary),
-            hamigaki::audio::pcm_sink(fmt, 1024));
+            hamigaki::audio::pcm_sink(fmt));
 
         return 0;
     }
