@@ -26,3 +26,25 @@ exe raw_play : raw_play.cpp ;
 exe vorbis_encoder_example : vorbis_encoder_example.cpp ;
 exe vorbis_file_example : vorbis_file_example.cpp ;
 exe wav2aif : wav2aif.cpp ;
+
+install dist-bin
+    :
+    aiff_play
+    asio_example
+    asio_ogg_play
+    ds_capture
+    falcom_play
+    frog_round
+    ogg_play
+    pcm_play
+    pcm_record
+    raw_play
+    vorbis_encoder_example
+    vorbis_file_example
+    wav2aif
+    :
+    <install-type>EXE
+    <location>../../../dist/bin
+    ;
+
+explicit dist-bin ;
