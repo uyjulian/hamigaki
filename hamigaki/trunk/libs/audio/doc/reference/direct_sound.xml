@@ -4,7 +4,7 @@
 <!--
   Hamigaki.Audio Library Document Source
 
-  Copyright Takeshi Mouri 2006.
+  Copyright Takeshi Mouri 2006, 2007.
   Use, modification, and distribution are subject to the
   Boost Software License, Version 1.0. (See accompanying file
   LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -14,7 +14,7 @@
 <header name="hamigaki/audio/direct_sound.hpp">
   <namespace name="hamigaki">
     <namespace name="audio">
-      <class name="direct_sound_buffer">
+      <class name="direct_sound_sink">
         <description>
           <para>モデルとなるコンセプト:<simplelist type='inline'>
               <member><conceptname>Sink</conceptname></member>
@@ -93,7 +93,7 @@
           </method>
 
           <method name="create_buffer">
-            <type>direct_sound_buffer</type>
+            <type><classname>direct_sound_sink</classname></type>
             <parameter name="f">
               <paramtype>const <classname>pcm_format</classname>&amp;</paramtype>
             </parameter>
@@ -101,7 +101,7 @@
           </method>
 
           <method name="create_buffer">
-            <type>direct_sound_buffer</type>
+            <type><classname>direct_sound_sink</classname></type>
             <parameter name="f">
               <paramtype>const <classname>pcm_format</classname>&amp;</paramtype>
             </parameter>
@@ -113,7 +113,7 @@
         </method-group>
       </class>
 
-      <class name="direct_sound_capture_buffer">
+      <class name="direct_sound_source">
         <description>
           <para>モデルとなるコンセプト:<simplelist type='inline'>
               <member><conceptname>Source</conceptname></member>
@@ -173,7 +173,7 @@
 
         <method-group name="modifier">
           <method name="create_buffer">
-            <type>direct_sound_buffer</type>
+            <type><classname>direct_sound_source</classname></type>
             <parameter name="f">
               <paramtype>const <classname>pcm_format</classname>&amp;</paramtype>
             </parameter>
@@ -181,7 +181,7 @@
           </method>
 
           <method name="create_buffer">
-            <type>direct_sound_buffer</type>
+            <type><classname>direct_sound_source</classname></type>
             <parameter name="f">
               <paramtype>const <classname>pcm_format</classname>&amp;</paramtype>
             </parameter>

@@ -97,18 +97,19 @@ private:
     long error_;
 };
 
-class HAMIGAKI_AUDIO_DECL direct_sound_buffer
+class HAMIGAKI_AUDIO_DECL direct_sound_sink
 {
 public:
     typedef char char_type;
 
-    struct category :
-        boost::iostreams::sink_tag,
-        boost::iostreams::closable_tag,
-        boost::iostreams::optimally_buffered_tag,
-        pcm_format_tag {};
+    struct category
+        : boost::iostreams::sink_tag
+        , boost::iostreams::closable_tag
+        , boost::iostreams::optimally_buffered_tag
+        , pcm_format_tag
+    {};
 
-    direct_sound_buffer(::IDirectSoundBuffer* p,
+    direct_sound_sink(::IDirectSoundBuffer* p,
         const pcm_format& f, std::size_t buffer_size);
 
     pcm_format format() const;
@@ -136,28 +137,29 @@ public:
 
     void format(const pcm_format& f);
 
-    direct_sound_buffer create_buffer(
+    direct_sound_sink create_buffer(
         const pcm_format& f, std::size_t buffer_size);
 
-    direct_sound_buffer create_buffer(const pcm_format& f);
+    direct_sound_sink create_buffer(const pcm_format& f);
 
 private:
     class impl;
     boost::shared_ptr<impl> pimpl_;
 };
 
-class HAMIGAKI_AUDIO_DECL direct_sound_capture_buffer
+class HAMIGAKI_AUDIO_DECL direct_sound_source
 {
 public:
     typedef char char_type;
 
-    struct category :
-        boost::iostreams::source_tag,
-        boost::iostreams::closable_tag,
-        boost::iostreams::optimally_buffered_tag,
-        pcm_format_tag {};
+    struct category
+        : boost::iostreams::source_tag
+        , boost::iostreams::closable_tag
+        , boost::iostreams::optimally_buffered_tag
+        , pcm_format_tag
+    {};
 
-    direct_sound_capture_buffer(::IDirectSoundCaptureBuffer* p,
+    direct_sound_source(::IDirectSoundCaptureBuffer* p,
         const pcm_format& f, std::size_t buffer_size);
 
     pcm_format format() const;
@@ -181,10 +183,10 @@ public:
     direct_sound_capture();
     explicit direct_sound_capture(const uuid& driver_guid);
 
-    direct_sound_capture_buffer create_buffer(
+    direct_sound_source create_buffer(
         const pcm_format& f, std::size_t buffer_size);
 
-    direct_sound_capture_buffer create_buffer(const pcm_format& f);
+    direct_sound_source create_buffer(const pcm_format& f);
 
 private:
     class impl;

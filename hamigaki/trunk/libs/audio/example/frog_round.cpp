@@ -1,6 +1,6 @@
 //  frog_round.cpp: an example for DirectSound multi-buffer mixing
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -67,7 +67,7 @@ const int tempo = 100;
 #define C2 NOTE(60,4)
 #define E2 NOTE(64,4)
 
-void frog_round(audio::direct_sound_buffer buffer, int wait)
+void frog_round(audio::direct_sound_sink sink, int wait)
 {
     int msec = wait*8*60*1000/tempo;
 
@@ -76,7 +76,7 @@ void frog_round(audio::direct_sound_buffer buffer, int wait)
     utc += thread_ex::milliseconds(msec % 1000);
     boost::thread::sleep(utc);
 
-    const audio::pcm_format& fmt = buffer.format();
+    const audio::pcm_format& fmt = sink.format();
 
     using namespace io_ex::cat_operators;
 
@@ -86,7 +86,7 @@ void frog_round(audio::direct_sound_buffer buffer, int wait)
         E4 + F4 + G4 + A4 + G4 + F4 + E2 +
         C2      + C2      + C2      + C2 +
         CC + DD + EE + FF + E4 + D4 + C2 ,
-        audio::widen<float>(buffer)
+        audio::widen<float>(sink)
     );
 }
 
@@ -106,9 +106,9 @@ int main()
         boost::thread_group threads;
         for (int i = 0; i < 3; ++i)
         {
-            audio::direct_sound_buffer buffer =
+            audio::direct_sound_sink sink =
                 dev.create_buffer(fmt, fmt.optimal_buffer_size());
-            threads.create_thread(boost::bind(&frog_round, buffer, i));
+            threads.create_thread(boost::bind(&frog_round, sink, i));
         }
         threads.join_all();
 

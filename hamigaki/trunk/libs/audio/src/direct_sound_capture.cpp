@@ -31,7 +31,7 @@ namespace
 
 const std::size_t buffer_count = 4;
 
-class direct_sound_capture_buffer_base : boost::noncopyable
+class direct_sound_source_base : boost::noncopyable
 {
 private:
     struct raw_buffer
@@ -91,7 +91,7 @@ private:
     };
 
 public:
-    explicit direct_sound_capture_buffer_base(
+    explicit direct_sound_source_base(
         const boost::shared_ptr< ::IDirectSoundCaptureBuffer>& ptr) : ptr_(ptr)
     {
     }
@@ -148,10 +148,10 @@ HRESULT direct_sound_capture_create(
 
 } // namespace
 
-class direct_sound_capture_buffer::impl
-    : private direct_sound_capture_buffer_base
+class direct_sound_source::impl
+    : private direct_sound_source_base
 {
-    typedef direct_sound_capture_buffer_base base_type;
+    typedef direct_sound_source_base base_type;
 
 public:
     impl(const boost::shared_ptr< ::IDirectSoundCaptureBuffer>& ptr,
@@ -278,7 +278,7 @@ private:
     ::IDirectSoundCapture* ptr_;
 };
 
-direct_sound_capture_buffer::direct_sound_capture_buffer(
+direct_sound_source::direct_sound_source(
     ::IDirectSoundCaptureBuffer* p,
     const pcm_format& f, std::size_t buffer_size)
 {
@@ -288,17 +288,17 @@ direct_sound_capture_buffer::direct_sound_capture_buffer(
     pimpl_.reset(new impl(tmp, f, buffer_size));
 }
 
-pcm_format direct_sound_capture_buffer::format() const
+pcm_format direct_sound_source::format() const
 {
     return pimpl_->format();
 }
 
-std::streamsize direct_sound_capture_buffer::read(char* s, std::streamsize n)
+std::streamsize direct_sound_source::read(char* s, std::streamsize n)
 {
     return pimpl_->read(s, n);
 }
 
-void direct_sound_capture_buffer::close()
+void direct_sound_source::close()
 {
     pimpl_->close();
 }
@@ -313,19 +313,19 @@ direct_sound_capture::direct_sound_capture(const uuid& driver_guid)
 {
 }
 
-direct_sound_capture_buffer direct_sound_capture::create_buffer(
+direct_sound_source direct_sound_capture::create_buffer(
     const pcm_format& f, std::size_t buffer_size)
 {
     ::IDirectSoundCaptureBuffer* tmp = pimpl_->create_buffer(f, buffer_size);
-    return direct_sound_capture_buffer(tmp, f, buffer_size);
+    return direct_sound_source(tmp, f, buffer_size);
 }
 
-direct_sound_capture_buffer
+direct_sound_source
 direct_sound_capture::create_buffer(const pcm_format& f)
 {
     const std::size_t buffer_size = f.optimal_buffer_size();
     ::IDirectSoundCaptureBuffer* tmp = pimpl_->create_buffer(f, buffer_size);
-    return direct_sound_capture_buffer(tmp, f, buffer_size);
+    return direct_sound_source(tmp, f, buffer_size);
 }
 
 } } // End namespaces audio, hamigaki.

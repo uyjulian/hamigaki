@@ -128,7 +128,7 @@ namespace
 
 const std::size_t buffer_count = 4;
 
-class direct_sound_buffer_base : boost::noncopyable
+class direct_sound_sink_base : boost::noncopyable
 {
 private:
     struct raw_buffer
@@ -217,7 +217,7 @@ private:
     };
 
 public:
-    explicit direct_sound_buffer_base(
+    explicit direct_sound_sink_base(
         const boost::shared_ptr< ::IDirectSoundBuffer>& ptr) : ptr_(ptr)
     {
     }
@@ -266,9 +266,9 @@ private:
 
 } // namespace
 
-class direct_sound_buffer::impl : private direct_sound_buffer_base
+class direct_sound_sink::impl : private direct_sound_sink_base
 {
-    typedef direct_sound_buffer_base base_type;
+    typedef direct_sound_sink_base base_type;
 
 public:
     impl(const boost::shared_ptr< ::IDirectSoundBuffer>& ptr,
@@ -439,7 +439,7 @@ private:
     ::IDirectSound* ptr_;
 };
 
-direct_sound_buffer::direct_sound_buffer(
+direct_sound_sink::direct_sound_sink(
     ::IDirectSoundBuffer* p, const pcm_format& f, std::size_t buffer_size)
 {
     boost::shared_ptr< ::IDirectSoundBuffer> tmp(p, com_release());
@@ -447,17 +447,17 @@ direct_sound_buffer::direct_sound_buffer(
     pimpl_.reset(new impl(tmp, f, buffer_size));
 }
 
-pcm_format direct_sound_buffer::format() const
+pcm_format direct_sound_sink::format() const
 {
     return pimpl_->format();
 }
 
-std::streamsize direct_sound_buffer::write(const char* s, std::streamsize n)
+std::streamsize direct_sound_sink::write(const char* s, std::streamsize n)
 {
     return pimpl_->write(s, n);
 }
 
-void direct_sound_buffer::close()
+void direct_sound_sink::close()
 {
     pimpl_->close();
 }
@@ -489,18 +489,18 @@ void direct_sound_device::format(const pcm_format& f)
     pimpl_->format(f);
 }
 
-direct_sound_buffer direct_sound_device::create_buffer(
+direct_sound_sink direct_sound_device::create_buffer(
     const pcm_format& f, std::size_t buffer_size)
 {
     ::IDirectSoundBuffer* tmp = pimpl_->create_buffer(f, buffer_size);
-    return direct_sound_buffer(tmp, f, buffer_size);
+    return direct_sound_sink(tmp, f, buffer_size);
 }
 
-direct_sound_buffer direct_sound_device::create_buffer(const pcm_format& f)
+direct_sound_sink direct_sound_device::create_buffer(const pcm_format& f)
 {
     const std::size_t buffer_size = f.optimal_buffer_size();
     ::IDirectSoundBuffer* tmp = pimpl_->create_buffer(f, buffer_size);
-    return direct_sound_buffer(tmp, f, buffer_size);
+    return direct_sound_sink(tmp, f, buffer_size);
 }
 
 } } // End namespaces audio, hamigaki.
