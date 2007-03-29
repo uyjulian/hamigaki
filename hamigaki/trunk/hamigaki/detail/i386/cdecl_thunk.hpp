@@ -8,20 +8,11 @@
 #ifndef HAMIGAKI_DETAIL_I386_CDECL_THUNK_HPP
 #define HAMIGAKI_DETAIL_I386_CDECL_THUNK_HPP
 
+#include <hamigaki/detail/i386/func_ptr_cast.hpp>
 #include <boost/assert.hpp>
-#include <boost/cstdint.hpp>
 #include <cstring>
 
 namespace hamigaki { namespace detail {
-
-typedef boost::int32_t intptr_t;
-typedef boost::uint32_t uintptr_t;
-
-template <class T, class U>
-inline T func_ptr_cast(U func_ptr)
-{
-    return reinterpret_cast<T>(reinterpret_cast<uintptr_t>(func_ptr));
-}
 
 template<std::size_t Argc>
 class cdecl_thunk
