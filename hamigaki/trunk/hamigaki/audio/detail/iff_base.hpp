@@ -1,6 +1,6 @@
 //  iff_base.hpp: IFF/RIFF base classes
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -228,7 +228,7 @@ public:
 
     boost::iostreams::stream_offset total() const
     {
-        return chunk_.size;
+        return size_;
     }
 
     std::streamsize read(char_type* s, std::streamsize n)

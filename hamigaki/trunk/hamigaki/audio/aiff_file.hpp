@@ -79,6 +79,11 @@ public:
         return format_;
     }
 
+    boost::iostreams::stream_offset total() const
+    {
+        return size_;
+    }
+
     std::streamsize read(char* s, std::streamsize n)
     {
         off_t rest = size_ - position_;
@@ -286,6 +291,11 @@ public:
         return pimpl_->format();
     }
 
+    boost::iostreams::stream_offset total() const
+    {
+        return pimpl_->total();
+    }
+
     std::streamsize read(char_type* s, std::streamsize n)
     {
         return pimpl_->read(s, n);
@@ -328,6 +338,11 @@ public:
     pcm_format format() const
     {
         return impl_.format();
+    }
+
+    boost::iostreams::stream_offset total() const
+    {
+        return impl_.total();
     }
 
     std::streamsize read(char_type* s, std::streamsize n)

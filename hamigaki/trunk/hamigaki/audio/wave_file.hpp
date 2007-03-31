@@ -1,6 +1,6 @@
 //  wave_file.hpp: WAVE file device
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -40,6 +40,11 @@ public:
     pcm_format format() const
     {
         return format_;
+    }
+
+    boost::iostreams::stream_offset total() const
+    {
+        return iff_.total();
     }
 
     std::streamsize read(char* s, std::streamsize n)
@@ -197,6 +202,11 @@ public:
         return pimpl_->format();
     }
 
+    boost::iostreams::stream_offset total() const
+    {
+        return pimpl_->total();
+    }
+
     std::streamsize read(char_type* s, std::streamsize n)
     {
         return pimpl_->read(s, n);
@@ -239,6 +249,11 @@ public:
     pcm_format format() const
     {
         return impl_.format();
+    }
+
+    boost::iostreams::stream_offset total() const
+    {
+        return impl_.total();
     }
 
     std::streamsize read(char_type* s, std::streamsize n)
