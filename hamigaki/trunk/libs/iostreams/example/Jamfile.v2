@@ -9,5 +9,5 @@
 
 alias boost_thread : /boost/thread//boost_thread ;
 
-exe background_copy_example : background_copy_example.cpp boost_thread ;
+exe background_copy_example : background_copy_example.cpp boost_thread : <threading>multi ;
 exe base64_encoder_example : base64_encoder_example.cpp ;

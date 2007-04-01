@@ -9,23 +9,26 @@
 
 using testing ;
 
+alias hamigaki_iostreams : /hamigaki/iostreams//hamigaki_iostreams ;
+alias boost_thread : /boost/thread//boost_thread ;
+
 project
     : requirements
       <library>/boost/test//boost_unit_test_framework/<link>static
     ;
 
 test-suite "iostreams" :
-    [ run background_copy_test.cpp /boost/thread//boost_thread ]
+    [ run background_copy_test.cpp boost_thread : : : <threading>multi ]
     [ run base64_test.cpp : ]
     [ run concatenate_test.cpp : ]
     [ run file_test.cpp : ]
-    [ run file_descriptor_test.cpp /hamigaki/iostreams//hamigaki_iostreams ]
+    [ run file_descriptor_test.cpp hamigaki_iostreams ]
     [ run huffman_test.cpp : ]
     [ run lazy_restrict_test.cpp : ]
     [ run lzhuf_test.cpp : ]
     [ run lzss_test.cpp : ]
     [ run modified_lzss_test.cpp : ]
     [ run repeat_test.cpp : ]
-    [ run tmp_file_test.cpp /hamigaki/iostreams//hamigaki_iostreams ]
+    [ run tmp_file_test.cpp hamigaki_iostreams ]
     [ run urlsafe_base64_test.cpp : ]
     ;
