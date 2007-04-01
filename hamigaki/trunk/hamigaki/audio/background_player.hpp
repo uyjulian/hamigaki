@@ -130,6 +130,7 @@ public:
         : src_(src), sink_(sink), buffer_(buffer_size)
         , done_(false), interrupted_(false), except_ptr_(&storage)
     {
+        buffer_.set(0, 0);
         position_ = boost::iostreams::position_to_offset(
             hamigaki::audio::detail::seek_in(src_, 0, BOOST_IOS::cur));
         seekable_ = (position_ != std::streampos(-1));

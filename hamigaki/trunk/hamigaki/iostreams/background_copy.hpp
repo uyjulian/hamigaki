@@ -74,6 +74,7 @@ public:
         : src_(src), sink_(sink), buffer_(buffer_size), total_(0)
         , done_(false), interrupted_(false), except_ptr_(&storage)
     {
+        buffer_.set(0, 0);
     }
 
 private:
