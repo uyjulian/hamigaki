@@ -228,7 +228,7 @@ public:
 
     boost::iostreams::stream_offset total() const
     {
-        return size_;
+        return chunk_.total();
     }
 
     std::streamsize read(char_type* s, std::streamsize n)
