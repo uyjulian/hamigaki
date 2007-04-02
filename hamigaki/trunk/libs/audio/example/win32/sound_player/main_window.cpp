@@ -25,7 +25,7 @@ namespace io = boost::iostreams;
 class main_window::impl
 {
 public:
-    explicit impl(::HWND handle) : handle_(handle), timer_(0)
+    explicit impl(::HWND handle) : handle_(handle), timer_(0), total_(-1)
     {
         ::HINSTANCE hInstance =
             reinterpret_cast< ::HINSTANCE>(::GetModuleHandle(0));
@@ -75,11 +75,10 @@ public:
 
             const audio::pcm_format& fmt = wav.format();
             block_size_ = static_cast<int>(fmt.block_size());
-
-            const int total = static_cast<int>(wav.total());
+            total_ = static_cast<int>(wav.total());
             ::EnableWindow(slider_, TRUE);
             ::SendMessage(
-                slider_, TBM_SETRANGEMAX, FALSE, total/block_size_);
+                slider_, TBM_SETRANGEMAX, FALSE, total_/block_size_);
             ::SendMessage(slider_, TBM_SETPOS, TRUE, 0);
 
             player_.open(
@@ -91,13 +90,12 @@ public:
         {
             audio::vorbis_file_source vf(filename);
             block_size_ = static_cast<int>(vf.info().channels);
-
-            const int total = static_cast<int>(vf.total());
-            if (total > 0)
+            total_ = static_cast<int>(vf.total());
+            if (total_ > 0)
             {
                 ::EnableWindow(slider_, TRUE);
                 ::SendMessage(
-                    slider_, TBM_SETRANGEMAX, FALSE, total/block_size_);
+                    slider_, TBM_SETRANGEMAX, FALSE, total_/block_size_);
                 ::SendMessage(slider_, TBM_SETPOS, TRUE, 0);
             }
             else
@@ -122,7 +120,7 @@ public:
 
     void play()
     {
-        if (::IsWindowEnabled(slider_) != FALSE)
+        if (total_ >= 0)
         {
             ::EnableWindow(slider_, FALSE);
 
@@ -131,7 +129,11 @@ public:
             if (pos != max_val)
                 player_.seek(pos*block_size_, BOOST_IOS::beg);
             else
+            {
+                ::SendMessage(slider_, TBM_SETPOS, TRUE, 0);
                 player_.seek(0, BOOST_IOS::beg);
+
+            }
         }
 
         player_.play();
@@ -148,12 +150,8 @@ public:
         timer_ = 0;
         player_.stop();
         player_.seek(0, BOOST_IOS::beg);
-        ::SetWindowText(play_btn_, "Play");
-        ::EnableWindow(stop_btn_, FALSE);
-        update_progress();
 
-        if (static_cast<int>(player_.tell()) >= 0)
-            ::EnableWindow(slider_, TRUE);
+        update_progress();
     }
 
     void pause()
@@ -161,12 +159,8 @@ public:
         ::KillTimer(handle_, timer_);
         timer_ = 0;
         player_.stop();
-        ::SetWindowText(play_btn_, "Play");
-        ::EnableWindow(stop_btn_, FALSE);
-        update_progress();
 
-        if (static_cast<int>(player_.tell()) >= 0)
-            ::EnableWindow(slider_, TRUE);
+        update_progress();
     }
 
     bool playing() const
@@ -180,6 +174,7 @@ private:
     ::HWND stop_btn_;
     ::HWND slider_;
     audio::background_player player_;
+    int total_;
     int block_size_;
     ::UINT_PTR timer_;
 
@@ -193,20 +188,25 @@ private:
     {
         if (player_.playing())
         {
-            const int pos = static_cast<int>(player_.tell());
-            if (pos >= 0)
+            if (total_ >= 0)
+            {
+                const int pos = static_cast<int>(player_.tell());
                 ::SendMessage(slider_, TBM_SETPOS, TRUE, pos/block_size_);
+            }
         }
         else
         {
-            ::KillTimer(handle_, timer_);
-            timer_ = 0;
+            if (timer_ != 0)
+            {
+                ::KillTimer(handle_, timer_);
+                timer_ = 0;
+            }
             ::SetWindowText(play_btn_, "Play");
             ::EnableWindow(stop_btn_, FALSE);
 
-            const int pos = static_cast<int>(player_.tell());
-            if (pos >= 0)
+            if (total_ >= 0)
             {
+                const int pos = static_cast<int>(player_.tell());
                 ::SendMessage(slider_, TBM_SETPOS, TRUE, pos/block_size_);
                 ::EnableWindow(slider_, TRUE);
             }
