@@ -224,7 +224,6 @@ public:
 
     ~impl()
     {
-        close();
         ::waveOutReset(handle_);
         ::waveOutClose(handle_);
     }
