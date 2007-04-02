@@ -7,6 +7,7 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
 
+#include <hamigaki/audio/aiff_file.hpp>
 #include <hamigaki/audio/background_player.hpp>
 #include <hamigaki/audio/pcm_device.hpp>
 #include <hamigaki/audio/vorbis_file.hpp>
@@ -73,16 +74,23 @@ public:
         {
             audio::wave_file_source wav(filename);
 
-            const audio::pcm_format& fmt = wav.format();
-            block_size_ = static_cast<int>(fmt.block_size());
-            total_ = static_cast<int>(wav.total());
+            audio::pcm_format fmt = wav.format();
+            block_size_ = 1;
+            total_ = static_cast<int>(wav.total() / fmt.block_size());
+
+            if (fmt.type == audio::int8)
+                fmt.type = audio::uint8;
+            else
+                fmt.type = audio::int_le16;
+
             ::EnableWindow(slider_, TRUE);
             ::SendMessage(
                 slider_, TBM_SETRANGEMAX, FALSE, total_/block_size_);
             ::SendMessage(slider_, TBM_SETPOS, TRUE, 0);
 
             player_.open(
-                wav, audio::pcm_sink(fmt),
+                audio::widen<double>(wav),
+                audio::widen<double>(audio::pcm_sink(fmt)),
                 fmt.optimal_buffer_size()
             );
         }
@@ -110,6 +118,30 @@ public:
             player_.open(
                 vf, audio::widen<float>(audio::pcm_sink(fmt)),
                 vf.optimal_buffer_size()
+            );
+        }
+        else if (algo::iends_with(filename, ".aiff"))
+        {
+            audio::aiff_file_source aiff(filename);
+
+            audio::pcm_format fmt = aiff.format();
+            block_size_ = 1;
+            total_ = static_cast<int>(aiff.total() / fmt.block_size());
+
+            if (fmt.type == audio::int8)
+                fmt.type = audio::uint8;
+            else
+                fmt.type = audio::int_le16;
+
+            ::EnableWindow(slider_, TRUE);
+            ::SendMessage(
+                slider_, TBM_SETRANGEMAX, FALSE, total_/block_size_);
+            ::SendMessage(slider_, TBM_SETPOS, TRUE, 0);
+
+            player_.open(
+                audio::widen<boost::int_t<16> >(aiff),
+                audio::widen<boost::int_t<16> >(audio::pcm_sink(fmt)),
+                fmt.optimal_buffer_size()
             );
         }
         else
