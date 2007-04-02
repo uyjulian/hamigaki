@@ -32,7 +32,7 @@ public:
 
         play_btn_ = ::CreateWindowEx(
             0, "BUTTON", "Play",
-            WS_CHILD | WS_VISIBLE | WS_DISABLED | BS_NOTIFY | BS_PUSHBUTTON,
+            WS_CHILD | WS_VISIBLE | WS_DISABLED | BS_PUSHBUTTON,
             51, 55, 75, 23, handle_,
             reinterpret_cast< ::HMENU>(static_cast< ::UINT_PTR>(IDC_PLAY)),
             hInstance, 0
@@ -40,7 +40,7 @@ public:
 
         stop_btn_ = ::CreateWindowEx(
             0, "BUTTON", "Stop",
-            WS_CHILD | WS_VISIBLE | WS_DISABLED | BS_NOTIFY | BS_PUSHBUTTON,
+            WS_CHILD | WS_VISIBLE | WS_DISABLED | BS_PUSHBUTTON,
             152, 55, 75, 23, handle_,
             reinterpret_cast< ::HMENU>(static_cast< ::UINT_PTR>(IDC_STOP)),
             hInstance, 0
