@@ -1,6 +1,6 @@
 //  wide_adaptor.hpp: an adaptor for making wide character stream
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -70,11 +70,12 @@ class wide_adaptor
 public:
     typedef typename impl_type::char_type char_type;
 
-    struct category :
-        boost::iostreams::mode_of<Device>::type,
-        boost::iostreams::device_tag,
-        boost::iostreams::closable_tag,
-        boost::iostreams::optimally_buffered_tag {};
+    struct category
+        : boost::iostreams::mode_of<Device>::type
+        , boost::iostreams::device_tag
+        , boost::iostreams::closable_tag
+        , boost::iostreams::optimally_buffered_tag
+    {};
 
     explicit wide_adaptor(const Device& dev)
         : pimpl_(

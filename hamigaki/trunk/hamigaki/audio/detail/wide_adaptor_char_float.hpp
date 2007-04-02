@@ -1,6 +1,6 @@
 //  wide_adaptor_char_float.hpp: char <-> floating point converter
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -12,7 +12,7 @@
 
 #include <hamigaki/audio/detail/cvt_int32.hpp>
 #include <hamigaki/audio/detail/float.hpp>
-#include <hamigaki/iostreams/try_seek.hpp>
+#include <hamigaki/iostreams/positioning.hpp>
 #include <boost/iostreams/operations.hpp>
 #include <vector>
 
@@ -66,7 +66,7 @@ public:
     {
         const std::streamsize smp_sz = sample_size(type_);
         off *= smp_sz;
-        std::streampos pos = iostreams::try_seek(dev_, off, way, which);
+        std::streampos pos = boost::iostreams::seek(dev_, off, way, which);
         off = iostreams::to_offset(pos);
         off /= smp_sz;
         return iostreams::to_position(off);

@@ -1,6 +1,6 @@
 //  wide_adaptor_char_float.hpp: floating point <-> floating point converter
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,7 +10,7 @@
 #ifndef HAMIGAKI_AUDIO_DETAIL_WIDE_ADAPTOR_FLOAT_FLOAT_HPP
 #define HAMIGAKI_AUDIO_DETAIL_WIDE_ADAPTOR_FLOAT_FLOAT_HPP
 
-#include <hamigaki/iostreams/try_seek.hpp>
+#include <hamigaki/iostreams/positioning.hpp>
 #include <boost/iostreams/operations.hpp>
 #include <vector>
 
@@ -64,7 +64,7 @@ public:
         boost::iostreams::stream_offset off,
         BOOST_IOS::seekdir way, BOOST_IOS::openmode which)
     {
-        return iostreams::try_seek(dev_, off, way, which);
+        return boost::iostreams::seek(dev_, off, way, which);
     }
 
     std::streamsize optimal_buffer_size() const
