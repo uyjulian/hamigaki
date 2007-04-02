@@ -26,7 +26,7 @@ namespace io = boost::iostreams;
 class main_window::impl
 {
 public:
-    explicit impl(::HWND handle) : handle_(handle), timer_(0), total_(-1)
+    explicit impl(::HWND handle) : handle_(handle), total_(-1), timer_(0)
     {
         ::HINSTANCE hInstance =
             reinterpret_cast< ::HINSTANCE>(::GetModuleHandle(0));
