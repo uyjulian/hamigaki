@@ -1,6 +1,6 @@
 //  seek.hpp: the extensions of boost::iostreams::seek()
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,22 +10,10 @@
 #ifndef HAMIGAKI_IOSTREAMS_SEEK_HPP
 #define HAMIGAKI_IOSTREAMS_SEEK_HPP
 
-#include <boost/iostreams/positioning.hpp>
+#include <hamigaki/iostreams/positioning.hpp>
 #include <boost/iostreams/seek.hpp>
 
 namespace hamigaki { namespace iostreams {
-
-typedef boost::iostreams::stream_offset stream_offset;
-
-inline std::streampos to_position(stream_offset n)
-{
-    return boost::iostreams::offset_to_position(n);
-}
-
-inline stream_offset to_offset(std::streampos pos)
-{
-    return boost::iostreams::position_to_offset(pos);
-}
 
 template<typename T>
 inline std::streampos
