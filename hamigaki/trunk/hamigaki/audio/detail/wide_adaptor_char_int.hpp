@@ -12,6 +12,7 @@
 
 #include <hamigaki/audio/detail/cvt_int32.hpp>
 #include <hamigaki/audio/detail/float.hpp>
+#include <hamigaki/iostreams/try_seek.hpp>
 #include <boost/iostreams/operations.hpp>
 #include <boost/integer.hpp>
 #include <vector>
@@ -65,6 +66,18 @@ public:
             total += write_once(s + total, n - total);
 
         return total;
+    }
+
+    std::streampos seek(
+        boost::iostreams::stream_offset off,
+        BOOST_IOS::seekdir way, BOOST_IOS::openmode which)
+    {
+        const std::streamsize smp_sz = sample_size(type_);
+        off *= smp_sz;
+        std::streampos pos = iostreams::try_seek(dev_, off, way, which);
+        off = iostreams::to_offset(pos);
+        off /= smp_sz;
+        return iostreams::to_position(off);
     }
 
     std::streamsize optimal_buffer_size() const

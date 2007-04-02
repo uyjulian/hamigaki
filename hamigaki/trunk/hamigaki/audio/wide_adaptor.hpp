@@ -112,6 +112,16 @@ public:
         return pimpl_->write(s, n);
     }
 
+    std::streampos seek(iostreams::stream_offset off, BOOST_IOS::seekdir way)
+    {
+        return this->seek_impl(off, way,
+            boost::is_convertible<
+                typename boost::iostreams::mode_of<Device>::type,
+                boost::iostreams::output
+            >()
+        );
+    }
+
     std::streamsize optimal_buffer_size() const
     {
         return pimpl_->optimal_buffer_size();
@@ -128,6 +138,20 @@ private:
     void close_impl(const boost::true_type&)
     {
         pimpl_->close(BOOST_IOS::out);
+    }
+
+    std::streampos seek_impl(
+        iostreams::stream_offset off, BOOST_IOS::seekdir way,
+        const boost::false_type&)
+    {
+        return pimpl_->seek(off, way, BOOST_IOS::in);
+    }
+
+    std::streampos seek_impl(
+        iostreams::stream_offset off, BOOST_IOS::seekdir way,
+        const boost::true_type&)
+    {
+        return pimpl_->seek(off, way, BOOST_IOS::out);
     }
 };
 

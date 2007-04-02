@@ -10,6 +10,7 @@
 #ifndef HAMIGAKI_AUDIO_DETAIL_WIDE_ADAPTOR_FLOAT_FLOAT_HPP
 #define HAMIGAKI_AUDIO_DETAIL_WIDE_ADAPTOR_FLOAT_FLOAT_HPP
 
+#include <hamigaki/iostreams/try_seek.hpp>
 #include <boost/iostreams/operations.hpp>
 #include <vector>
 
@@ -57,6 +58,13 @@ public:
             total += write_once(s + total, n - total);
 
         return total;
+    }
+
+    std::streampos seek(
+        boost::iostreams::stream_offset off,
+        BOOST_IOS::seekdir way, BOOST_IOS::openmode which)
+    {
+        return iostreams::try_seek(dev_, off, way, which);
     }
 
     std::streamsize optimal_buffer_size() const
