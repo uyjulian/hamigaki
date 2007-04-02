@@ -16,7 +16,7 @@
 #include <boost/iostreams/flush.hpp>
 #include <boost/iostreams/positioning.hpp>
 #include <boost/iostreams/read.hpp>
-#include <boost/iostreams/traits.hpp> 
+#include <boost/iostreams/traits.hpp>
 #include <boost/iostreams/write.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
@@ -50,7 +50,7 @@ struct seek_in_impl<boost::iostreams::any_tag>
     static std::streampos
     seek(T&, boost::iostreams::stream_offset, BOOST_IOS::seekdir)
     {
-        return -1;
+        return std::streampos(std::streamoff(-1));
     }
 };
 
