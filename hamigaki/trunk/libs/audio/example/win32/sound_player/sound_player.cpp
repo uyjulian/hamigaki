@@ -7,12 +7,14 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
 
+#include <boost/scoped_array.hpp>
 #include <cstring>
 #include <stdexcept>
 
 #include "main_window.hpp"
 #include <windows.h>
 #include <commctrl.h>
+#include <shellapi.h>
 #include "controls.h"
 #include "menus.h"
 
@@ -44,6 +46,7 @@ bool get_open_file_name(::HWND hwnd, std::string& filename)
 #endif
     ofn.hwndOwner = hwnd;
     ofn.lpstrFilter =
+        "Sound Files\0*.wav;*.ogg\0"
         "WAV Files (*.wav)\0*.wav\0"
         "Ogg Files (*.ogg)\0*.ogg\0"
         ;
@@ -56,6 +59,16 @@ bool get_open_file_name(::HWND hwnd, std::string& filename)
 
     filename = buf;
     return true;
+}
+
+std::string get_drop_filename(::HDROP drop)
+{
+    ::UINT size = ::DragQueryFileA(drop, 0, 0, 0);
+    boost::scoped_array<char> buf(new char[size+1]);
+    ::DragQueryFileA(drop, 0, buf.get(), size+1);
+    buf[size] = '\0';
+
+    return buf.get();
 }
 
 ::LRESULT CALLBACK window_proc(
@@ -104,10 +117,19 @@ bool get_open_file_name(::HWND hwnd, std::string& filename)
             else if (code == ID_FILE_EXIT)
                 ::DestroyWindow(hwnd);
         }
+        else if (uMsg == WM_DROPFILES)
+        {
+            ::HDROP drop = reinterpret_cast< ::HDROP>(wParam);
+            std::string filename = get_drop_filename(drop);
+            ::DragFinish(drop);
+
+            pimpl->open(filename);
+            pimpl->play();
+        }
     }
     catch (const std::exception& e)
     {
-        ::MessageBoxA(0, e.what(), "Sound Player", MB_OK);
+        ::MessageBoxA(hwnd, e.what(), "Sound Player", MB_OK);
     }
     return ::DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
@@ -146,7 +168,7 @@ bool get_open_file_name(::HWND hwnd, std::string& filename)
     r.bottom = 100;
 
     ::DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
-    ::DWORD ex_style = 0;
+    ::DWORD ex_style = WS_EX_ACCEPTFILES;
 
     ::AdjustWindowRectEx(&r, style, TRUE, ex_style);
 
