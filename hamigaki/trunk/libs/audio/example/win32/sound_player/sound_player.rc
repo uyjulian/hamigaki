@@ -16,8 +16,10 @@ IDR_MENU MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "&Open...",    ID_FILE_LOAD
+        MENUITEM "&Open...",            ID_FILE_LOAD
         MENUITEM SEPARATOR
-        MENUITEM "E&xit",       ID_FILE_EXIT
+        MENUITEM "&Properties...",      ID_FILE_PROP,   GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",               ID_FILE_EXIT
     END
 END

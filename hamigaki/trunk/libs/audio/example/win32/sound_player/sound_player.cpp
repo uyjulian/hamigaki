@@ -9,6 +9,8 @@
 
 #include <boost/scoped_array.hpp>
 #include <cstring>
+#include <iomanip>
+#include <sstream>
 #include <stdexcept>
 
 #include "main_window.hpp"
@@ -46,10 +48,10 @@ bool get_open_file_name(::HWND hwnd, std::string& filename)
 #endif
     ofn.hwndOwner = hwnd;
     ofn.lpstrFilter =
-        "Sound Files\0*.wav;*.ogg;*.aiff\0"
-        "WAV Files (*.wav)\0*.wav\0"
+        "Sound Files\0*.wav;*.ogg;*.aiff;*.aif\0"
+        "WAVE Files (*.wav)\0*.wav\0"
         "Ogg Files (*.ogg)\0*.ogg\0"
-        "AIFF Files (*.aiff)\0*.ogg\0"
+        "AIFF Files (*.aiff;*.aif)\0*.ogg\0"
         ;
     ofn.Flags = OFN_FILEMUSTEXIST;
     ofn.lpstrFile = buf;
@@ -70,6 +72,24 @@ std::string get_drop_filename(::HDROP drop)
     buf[size] = '\0';
 
     return buf.get();
+}
+
+void show_properties(::HWND hwnd, const audio_info& info)
+{
+    std::ostringstream os;
+    os
+        << "container:\t" << info.container << '\n'
+        << "encoding:\t" << info.encoding << '\n'
+        << "length:\t\t" << std::setfill('0')
+            << std::setw(2) << (info.length/3600) << ':'
+            << std::setw(2) << (info.length/60%60) << ':'
+            << std::setw(2) << (info.length%60) << std::setfill(' ') << '\n'
+        << "bit rate:\t\t" << (info.bit_rate/1000) << "kbps\n"
+        << "quantization bit:\t" << info.bits << " bit\n"
+        << "sampling rate:\t" << (info.sampling_rate/1000) << "kHz\n"
+        << "channel:\t\t" << info.channels << '\n'
+        ;
+    ::MessageBoxA(hwnd, os.str().c_str(), "Properties", MB_OK);
 }
 
 ::LRESULT CALLBACK window_proc(
@@ -115,6 +135,8 @@ std::string get_drop_filename(::HDROP drop)
                     pimpl->play();
                 }
             }
+            else if (code == ID_FILE_PROP)
+                ::show_properties(hwnd, pimpl->info());
             else if (code == ID_FILE_EXIT)
                 ::DestroyWindow(hwnd);
         }

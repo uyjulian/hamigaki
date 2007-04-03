@@ -18,6 +18,7 @@
 #include "main_window.hpp"
 #include <commctrl.h>
 #include "controls.h"
+#include "menus.h"
 
 namespace audio = hamigaki::audio;
 namespace algo = boost::algorithm;
@@ -75,8 +76,25 @@ public:
             audio::wave_file_source wav(filename);
 
             audio::pcm_format fmt = wav.format();
-            block_size_ = 1;
-            total_ = static_cast<int>(wav.total() / fmt.block_size());
+
+            info_.container = "RIFF";
+            if ((fmt.type == audio::float_le32) ||
+                (fmt.type == audio::float_le64) )
+            {
+                info_.encoding = "Floating Point PCM (little-endian)";
+            }
+            else
+                info_.encoding = "Linear PCM (little-endian)";
+            info_.length = wav.total() / fmt.block_size() / fmt.rate;
+            info_.bit_rate = fmt.bits() * fmt.rate * fmt.channels;
+            info_.bits = fmt.bits();
+            info_.sampling_rate = fmt.rate;
+            info_.channels = fmt.channels;
+
+            block_size_ = fmt.channels;
+            total_ = static_cast<int>(
+                wav.total() / (fmt.block_size()/fmt.channels)
+            );
 
             if (fmt.type == audio::int8)
                 fmt.type = audio::uint8;
@@ -97,19 +115,32 @@ public:
         else if (algo::iends_with(filename, ".ogg"))
         {
             audio::vorbis_file_source vf(filename);
-            block_size_ = static_cast<int>(vf.info().channels);
+
+            const audio::vorbis_info& info = vf.info();
+
+            info_.container = "Ogg";
+            info_.encoding = "Vorbis";
+            info_.bit_rate = info.bitrate_nominal;
+            info_.bits = 32;
+            info_.sampling_rate = info.rate;
+            info_.channels = info.channels;
+
+            block_size_ = static_cast<int>(info.channels);
             total_ = static_cast<int>(vf.total());
             if (total_ > 0)
             {
+                info_.length = vf.total() / info.rate;
                 ::EnableWindow(slider_, TRUE);
                 ::SendMessage(
                     slider_, TBM_SETRANGEMAX, FALSE, total_/block_size_);
                 ::SendMessage(slider_, TBM_SETPOS, TRUE, 0);
             }
             else
+            {
+                info_.length = -1;
                 ::EnableWindow(slider_, FALSE);
+            }
 
-            const audio::vorbis_info& info = vf.info();
             audio::pcm_format fmt;
             fmt.type = audio::int_le16;
             fmt.channels = info.channels;
@@ -120,13 +151,26 @@ public:
                 vf.optimal_buffer_size()
             );
         }
-        else if (algo::iends_with(filename, ".aiff"))
+        else if (
+            (algo::iends_with(filename, ".aiff")) ||
+            (algo::iends_with(filename, ".aif" )) )
         {
             audio::aiff_file_source aiff(filename);
 
             audio::pcm_format fmt = aiff.format();
-            block_size_ = 1;
-            total_ = static_cast<int>(aiff.total() / fmt.block_size());
+
+            info_.container = "IFF";
+            info_.encoding = "Linear PCM (big-endian)";
+            info_.length = aiff.total() / fmt.block_size() / fmt.rate;
+            info_.bit_rate = fmt.bits() * fmt.rate * fmt.channels;
+            info_.bits = fmt.bits();
+            info_.sampling_rate = fmt.rate;
+            info_.channels = fmt.channels;
+
+            block_size_ = fmt.channels;
+            total_ = static_cast<int>(
+                aiff.total() / (fmt.block_size()/fmt.channels)
+            );
 
             if (fmt.type == audio::int8)
                 fmt.type = audio::uint8;
@@ -148,6 +192,9 @@ public:
             throw std::runtime_error("unsupported file format");
 
         ::EnableWindow(play_btn_, TRUE);
+
+        ::EnableMenuItem(
+            ::GetMenu(handle_), ID_FILE_PROP, MF_BYCOMMAND|MF_ENABLED);
     }
 
     void play()
@@ -200,6 +247,11 @@ public:
         return timer_ != 0;
     }
 
+    audio_info info() const
+    {
+        return info_;
+    }
+
 private:
     ::HWND handle_;
     ::HWND play_btn_;
@@ -209,6 +261,7 @@ private:
     int total_;
     int block_size_;
     ::UINT_PTR timer_;
+    audio_info info_;
 
     static void CALLBACK timer_callback(
         ::HWND, ::UINT, ::UINT_PTR idEvent, ::DWORD)
@@ -273,4 +326,9 @@ void main_window::pause()
 bool main_window::playing() const
 {
     return pimpl_->playing();
+}
+
+audio_info main_window::info() const
+{
+    return pimpl_->info();
 }

@@ -9,4 +9,5 @@
 
 #define IDR_MENU        101
 #define ID_FILE_LOAD    40001
-#define ID_FILE_EXIT    40002
+#define ID_FILE_PROP    40002
+#define ID_FILE_EXIT    40003

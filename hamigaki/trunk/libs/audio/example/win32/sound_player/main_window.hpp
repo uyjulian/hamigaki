@@ -12,6 +12,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <string>
+#include "audio_info.hpp"
 #include <windows.h>
 
 class main_window
@@ -24,6 +25,7 @@ public:
     void stop();
     void pause();
     bool playing() const;
+    audio_info info() const;
 
 private:
     class impl;
