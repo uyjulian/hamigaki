@@ -87,8 +87,14 @@ void show_properties(::HWND hwnd, const audio_info& info)
         << "bit rate:\t\t" << (info.bit_rate/1000) << "kbps\n"
         << "quantization bit:\t" << info.bits << " bit\n"
         << "sampling rate:\t" << (info.sampling_rate/1000) << "kHz\n"
-        << "channel:\t\t" << info.channels << '\n'
+        << "channel:\t\t" << info.channels
         ;
+
+    if (info.channels == 1)
+        os << " (Mono)";
+    else if (info.channels == 2)
+        os << " (Stereo)";
+
     ::MessageBoxA(hwnd, os.str().c_str(), "Properties", MB_OK);
 }
 
@@ -190,7 +196,7 @@ void show_properties(::HWND hwnd, const audio_info& info)
     r.right = 280;
     r.bottom = 100;
 
-    ::DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU;
+    ::DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
     ::DWORD ex_style = WS_EX_ACCEPTFILES;
 
     ::AdjustWindowRectEx(&r, style, TRUE, ex_style);
