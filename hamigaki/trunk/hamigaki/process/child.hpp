@@ -13,6 +13,7 @@
 #include <hamigaki/process/detail/config.hpp>
 #include <hamigaki/process/ipc_map.hpp>
 #include <hamigaki/process/pipe_device.hpp>
+#include <hamigaki/process/status.hpp>
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <vector>
@@ -38,7 +39,7 @@ public:
 
     explicit child(const std::string& path, const ipc_map& ipc = ipc_map());
 
-    void wait();
+    status wait();
 
     pipe_sink& stdin_sink();
     pipe_source& stdout_source();

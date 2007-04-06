@@ -12,6 +12,7 @@
 #include <boost/config.hpp>
 #include <hamigaki/process/child.hpp>
 #include <boost/algorithm/string/replace.hpp>
+#include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <cstring>
 #include <stdexcept>
@@ -196,12 +197,28 @@ public:
 
     ~impl()
     {
+        ::DWORD code;
+        ::GetExitCodeProcess(handle_, &code);
+        if (code == STILL_ACTIVE)
+        {
+            ::TerminateProcess(handle_, 0);
+            ::WaitForSingleObject(handle_, INFINITE);
+        }
+
         ::CloseHandle(handle_);
     }
 
-    void wait()
+    status wait()
     {
         ::WaitForSingleObject(handle_, INFINITE);
+
+        ::DWORD code;
+        if (::GetExitCodeProcess(handle_, &code) == FALSE)
+            throw std::runtime_error("GetExitCodeProcess() failed");
+
+        BOOST_ASSERT(code != STILL_ACTIVE);
+
+        return status(static_cast<unsigned>(code));
     }
 
     pipe_sink& stdin_sink()
@@ -245,9 +262,9 @@ child::child(const std::string& path, const ipc_map& ipc)
     pimpl_.reset(new impl(path, args, ipc));
 }
 
-void child::wait()
+status child::wait()
 {
-    pimpl_->wait();
+    return pimpl_->wait();
 }
 
 pipe_sink& child::stdin_sink()

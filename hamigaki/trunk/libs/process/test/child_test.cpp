@@ -41,9 +41,19 @@ void sort_test()
     c.wait();
 }
 
+void terminate_test()
+{
+#if defined(BOOST_WINDOWS)
+    proc::child c("C:\\WINDOWS\\system32\\sort.exe");
+#else
+    proc::child c("/usr/bin/sort");
+#endif
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("child process test");
     test->add(BOOST_TEST_CASE(&sort_test));
+    test->add(BOOST_TEST_CASE(&terminate_test));
     return test;
 }
