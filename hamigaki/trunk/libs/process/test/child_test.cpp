@@ -26,7 +26,7 @@ void sort_test()
 #if defined(BOOST_WINDOWS)
     proc::child c("C:\\WINDOWS\\system32\\sort.exe", ipc);
 #else
-    proc::child c("/usr/bin/sort", ipc);
+    proc::child c("/bin/sort", ipc);
 #endif
 
     proc::pipe_sink& sink = c.stdin_sink();
@@ -46,7 +46,7 @@ void terminate_test()
 #if defined(BOOST_WINDOWS)
     proc::child c("C:\\WINDOWS\\system32\\sort.exe");
 #else
-    proc::child c("/usr/bin/sort");
+    proc::child c("/bin/sort");
 #endif
 }
 

@@ -12,16 +12,18 @@
 #include <boost/config.hpp>
 #include <hamigaki/process/pipe_device.hpp>
 #include <boost/iostreams/detail/ios.hpp>
+#include <boost/noncopyable.hpp>
 
 #if defined(BOOST_WINDOWS)
     #include <windows.h>
 #else
+    #include <unistd.h>
 #endif
 
 namespace hamigaki { namespace process {
 
 #if defined(BOOST_WINDOWS)
-class pipe_source::impl
+class pipe_source::impl : private boost::noncopyable
 {
 public:
     impl(::HANDLE h, bool close_on_exit)
@@ -58,7 +60,7 @@ private:
     bool close_on_exit_;
 };
 
-class pipe_sink::impl
+class pipe_sink::impl : private boost::noncopyable
 {
 public:
     impl(::HANDLE h, bool close_on_exit)
@@ -87,6 +89,64 @@ private:
     bool close_on_exit_;
 };
 #else // not defined(BOOST_WINDOWS)
+class pipe_source::impl : private boost::noncopyable
+{
+public:
+    impl(int h, bool close_on_exit)
+        : handle_(h), close_on_exit_(close_on_exit)
+    {
+    }
+
+    ~impl()
+    {
+        if (close_on_exit_ && (handle_ != -1))
+            ::close(handle_);
+    }
+
+    std::streamsize read(char* s, std::streamsize n)
+    {
+        std::streamsize amt = ::read(handle_, s, static_cast<std::size_t>(n));
+        if (amt == -1)
+            throw BOOST_IOSTREAMS_FAILURE("bad read");
+
+        return
+            amt == 0
+            ? static_cast<std::streamsize>(-1)
+            : static_cast<std::streamsize>(amt);
+    }
+
+private:
+    int handle_;
+    bool close_on_exit_;
+};
+
+class pipe_sink::impl : private boost::noncopyable
+{
+public:
+    impl(int h, bool close_on_exit)
+        : handle_(h), close_on_exit_(close_on_exit)
+    {
+    }
+
+    ~impl()
+    {
+        if (close_on_exit_ && (handle_ != -1))
+            ::close(handle_);
+    }
+
+    std::streamsize write(const char* s, std::streamsize n)
+    {
+        std::streamsize amt = ::write(handle_, s, static_cast<std::size_t>(n));
+        if (amt == -1)
+            throw BOOST_IOSTREAMS_FAILURE("bad write");
+
+        return amt;
+    }
+
+private:
+    int handle_;
+    bool close_on_exit_;
+};
 #endif // not defined(BOOST_WINDOWS)
 
 pipe_source::pipe_source()
