@@ -141,7 +141,6 @@ private:
     UpdateProcThreadAttributePtr update_func_;
     boost::scoped_array<char> buffer_;
     ::_PROC_THREAD_ATTRIBUTE_LIST* ptr_;
-    ::HANDLE parent_;
 };
 
 class startup_info
