@@ -1,6 +1,6 @@
 //  dynamic_link_library.hpp: a wrapper class for dynamic link library
 
-//  Copyright Takeshi Mouri 2006.
+//  Copyright Takeshi Mouri 2006, 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -9,6 +9,7 @@
 #define HAMIGAKI_DETAIL_WINDOWS_DYNAMIC_LINK_LIBRARY_HPP
 
 #include <boost/noncopyable.hpp>
+#include <new>
 #include <stdexcept>
 #include <string>
 #include <windows.h>
@@ -35,9 +36,14 @@ public:
             ::FreeLibrary(handle_);
     }
 
+    ::FARPROC get_proc_address(const char* name, const std::nothrow_t&)
+    {
+        return ::GetProcAddress(handle_, name);
+    }
+
     ::FARPROC get_proc_address(const char* name)
     {
-        ::FARPROC ptr = ::GetProcAddress(handle_, name);
+        ::FARPROC ptr = this->get_proc_address(name, std::nothrow);
         if (ptr == 0)
         {
             std::string msg("cannot find symbol: ");
