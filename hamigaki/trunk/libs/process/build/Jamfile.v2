@@ -25,3 +25,13 @@ SOURCES =
     ;
 
 lib hamigaki_process : $(SOURCES).cpp ;
+
+install dist-lib
+    :
+    hamigaki_process
+    :
+    <install-type>LIB
+    <location>../../../dist/lib
+    ;
+
+explicit dist-lib ;
