@@ -19,7 +19,22 @@
 #include <stdexcept>
 
 #if defined(BOOST_WINDOWS)
+    #include <hamigaki/detail/windows/dynamic_link_library.hpp>
     #include <windows.h>
+
+    #if !defined(EXTENDED_STARTUPINFO_PRESENT)
+
+        #define EXTENDED_STARTUPINFO_PRESENT        0x00080000
+        #define PROC_THREAD_ATTRIBUTE_HANDLE_LIST   0x00020002
+
+        struct _PROC_THREAD_ATTRIBUTE_LIST;
+
+        typedef struct _STARTUPINFOEXA
+        {
+            STARTUPINFOA StartupInfo;
+            _PROC_THREAD_ATTRIBUTE_LIST* lpAttributeList;
+        } STARTUPINFOEXA;
+    #endif
 #else
     #include <sys/wait.h>
     #include <fcntl.h>
@@ -31,6 +46,142 @@ namespace hamigaki { namespace process {
 #if defined(BOOST_WINDOWS)
 namespace
 {
+
+using detail::windows::dynamic_link_library;
+
+class attr_list : private boost::noncopyable
+{
+private:
+    typedef ::BOOL (__stdcall *InitializeProcThreadAttributeListPtr)(
+        ::_PROC_THREAD_ATTRIBUTE_LIST* lpAttributeList,
+        ::DWORD dwAttributeCount,
+        ::DWORD dwFlags,
+        ::SIZE_T* lpSize
+    );
+
+    typedef void (__stdcall *DeleteProcThreadAttributeListPtr)(
+        ::_PROC_THREAD_ATTRIBUTE_LIST* lpAttributeList
+    );
+
+    typedef ::BOOL (__stdcall *UpdateProcThreadAttributePtr)(
+        ::_PROC_THREAD_ATTRIBUTE_LIST* lpAttributeList,
+        ::DWORD dwFlags,
+        ::DWORD_PTR Attribute,
+        void* lpValue,
+        ::SIZE_T cbSize,
+        void* lpPreviousValue,
+        ::SIZE_T* lpReturnSize
+    );
+
+public:
+    explicit attr_list(unsigned long size) : dll_("kernel32.dll"), ptr_(0)
+    {
+        init_func_ =
+            reinterpret_cast<InitializeProcThreadAttributeListPtr>(
+                dll_.get_proc_address(
+                    "InitializeProcThreadAttributeList", std::nothrow));
+        if (init_func_ == 0)
+            return;
+
+        del_func_ =
+            reinterpret_cast<DeleteProcThreadAttributeListPtr>(
+                dll_.get_proc_address(
+                    "DeleteProcThreadAttributeList", std::nothrow));
+        if (del_func_ == 0)
+            return;
+
+        update_func_ =
+            reinterpret_cast<UpdateProcThreadAttributePtr>(
+                dll_.get_proc_address(
+                    "UpdateProcThreadAttribute", std::nothrow));
+        if (update_func_ == 0)
+            return;
+
+        ::SIZE_T buf_size = 0;
+        (*init_func_)(0, size, 0, &buf_size);
+
+        BOOST_ASSERT(::GetLastError() == ERROR_INSUFFICIENT_BUFFER);
+
+        buffer_.reset(new char[buf_size]);
+        ptr_ = reinterpret_cast< ::_PROC_THREAD_ATTRIBUTE_LIST*>(buffer_.get());
+
+        if ((*init_func_)(ptr_, size, 0, &buf_size) == FALSE)
+        {
+            throw std::runtime_error(
+                "InitializeProcThreadAttributeList() failed");
+        }
+    }
+
+    ~attr_list()
+    {
+        if (del_func_ != 0)
+            (*del_func_)(ptr_);
+    }
+
+    ::_PROC_THREAD_ATTRIBUTE_LIST* get() const
+    {
+        return ptr_;
+    }
+
+    void set_handl_list(::HANDLE* handles, std::size_t size)
+    {
+        if ((*update_func_)(
+            ptr_, 0, PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
+            handles, size*sizeof(::HANDLE), 0, 0) == FALSE)
+        {
+            throw std::runtime_error(
+                "UpdateProcThreadAttribute() failed");
+        }
+    }
+
+private:
+    dynamic_link_library dll_;
+    InitializeProcThreadAttributeListPtr init_func_;
+    DeleteProcThreadAttributeListPtr del_func_;
+    UpdateProcThreadAttributePtr update_func_;
+    boost::scoped_array<char> buffer_;
+    ::_PROC_THREAD_ATTRIBUTE_LIST* ptr_;
+    ::HANDLE parent_;
+};
+
+class startup_info
+{
+public:
+    explicit startup_info(::_PROC_THREAD_ATTRIBUTE_LIST* attr)
+    {
+        if (attr)
+        {
+            buffer_.reset(new char[sizeof(::STARTUPINFOEXA)]);
+            std::memset(buffer_.get(), 0, sizeof(::STARTUPINFOEXA));
+            ::STARTUPINFOEXA* ex_ptr =
+                reinterpret_cast< ::STARTUPINFOEXA*>(buffer_.get());
+            ex_ptr->lpAttributeList = attr;
+            ptr_ = &ex_ptr->StartupInfo;
+            ptr_->cb = sizeof(::STARTUPINFOA);
+        }
+        else
+        {
+            buffer_.reset(new char[sizeof(::STARTUPINFOA)]);
+            std::memset(buffer_.get(), 0, sizeof(::STARTUPINFOA));
+            ptr_ = reinterpret_cast< ::STARTUPINFOA*>(buffer_.get());
+            ptr_->cb = sizeof(::STARTUPINFOA);
+        }
+    }
+
+    ::STARTUPINFOA* get() const
+    {
+        return ptr_;
+    }
+
+    ::STARTUPINFOA* operator->() const
+    {
+        return ptr_;
+    }
+
+private:
+    boost::scoped_array<char> buffer_;
+    ::STARTUPINFOA* ptr_;
+};
 
 void make_command_line(
     std::vector<char>& cmd, const std::vector<std::string>& args)
@@ -80,6 +231,24 @@ private:
     ::HANDLE handle_;
 };
 
+bool is_console(::HANDLE h)
+{
+    ::DWORD mode;
+    // Is this OK?
+    return ::GetConsoleMode(h, &mode) != FALSE;
+}
+
+// Note:
+// The process attributes (LPPROC_THREAD_ATTRIBUTE_LIST)
+// never contain any console input buffer and any console screen buffer.
+bool need_inheritance(::HANDLE h)
+{
+    if (h == INVALID_HANDLE_VALUE)
+        return false;
+    else
+        return !is_console(h);
+}
+
 } // namespace
 
 class child::impl : private boost::noncopyable
@@ -91,13 +260,17 @@ public:
         std::vector<char> cmd;
         hamigaki::process::make_command_line(cmd, args);
 
-        ::STARTUPINFOA start_info;
-        std::memset(&start_info, 0, sizeof(start_info));
-        start_info.cb = sizeof(start_info);
-        start_info.dwFlags = STARTF_USESTDHANDLES;
-        start_info.hStdInput = ::GetStdHandle(STD_INPUT_HANDLE);
-        start_info.hStdOutput = ::GetStdHandle(STD_OUTPUT_HANDLE);
-        start_info.hStdError = ::GetStdHandle(STD_ERROR_HANDLE);
+        // This variable must be defined before "attr"
+        ::HANDLE handles[3];
+        std::size_t handle_count = 0;
+
+        attr_list attr(3u);
+
+        startup_info start_info(attr.get());
+        start_info->dwFlags = STARTF_USESTDHANDLES;
+        start_info->hStdInput = ::GetStdHandle(STD_INPUT_HANDLE);
+        start_info->hStdOutput = ::GetStdHandle(STD_OUTPUT_HANDLE);
+        start_info->hStdError = ::GetStdHandle(STD_ERROR_HANDLE);
 
         file_descriptor peer_stdin;
         file_descriptor peer_stdout;
@@ -116,10 +289,10 @@ public:
 
             ::SetHandleInformation(
                 read_end, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-            start_info.hStdInput = read_end;
+            start_info->hStdInput = read_end;
         }
         else if (t == stream_behavior::close)
-            start_info.hStdInput = INVALID_HANDLE_VALUE;
+            start_info->hStdInput = INVALID_HANDLE_VALUE;
         else if (t == stream_behavior::silence)
         {
             ::HANDLE h = ::CreateFile(
@@ -128,7 +301,7 @@ public:
 
             ::SetHandleInformation(
                 h, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-            start_info.hStdInput = h;
+            start_info->hStdInput = h;
         }
 
         t = ipc_.stdout_behavior().get_type();
@@ -144,10 +317,10 @@ public:
 
             ::SetHandleInformation(
                 write_end, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-            start_info.hStdOutput = write_end;
+            start_info->hStdOutput = write_end;
         }
         else if (t == stream_behavior::close)
-            start_info.hStdOutput = INVALID_HANDLE_VALUE;
+            start_info->hStdOutput = INVALID_HANDLE_VALUE;
         else if (t == stream_behavior::silence)
         {
             ::HANDLE h = ::CreateFile(
@@ -156,7 +329,7 @@ public:
 
             ::SetHandleInformation(
                 h, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-            start_info.hStdOutput = h;
+            start_info->hStdOutput = h;
         }
 
         t = ipc_.stderr_behavior().get_type();
@@ -172,10 +345,10 @@ public:
 
             ::SetHandleInformation(
                 write_end, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-            start_info.hStdError = write_end;
+            start_info->hStdError = write_end;
         }
         else if (t == stream_behavior::close)
-            start_info.hStdError = INVALID_HANDLE_VALUE;
+            start_info->hStdError = INVALID_HANDLE_VALUE;
         else if (t == stream_behavior::silence)
         {
             ::HANDLE h = ::CreateFile(
@@ -184,13 +357,28 @@ public:
 
             ::SetHandleInformation(
                 h, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-            start_info.hStdError = h;
+            start_info->hStdError = h;
+        }
+
+        if (need_inheritance(start_info->hStdInput))
+            handles[handle_count++] = start_info->hStdInput;
+        if (need_inheritance(start_info->hStdOutput))
+            handles[handle_count++] = start_info->hStdOutput;
+        if (need_inheritance(start_info->hStdError))
+            handles[handle_count++] = start_info->hStdError;
+
+        if (attr.get() != 0)
+        {
+            if (handle_count != 0)
+                attr.set_handl_list(handles, handle_count);
         }
 
         ::PROCESS_INFORMATION proc_info;
         if (::CreateProcessA(
             path.c_str(), &cmd[0], 0, 0,
-            TRUE, 0, 0, 0, &start_info, &proc_info) == FALSE)
+            TRUE,
+            attr.get() ? EXTENDED_STARTUPINFO_PRESENT : 0,
+            0, 0, start_info.get(), &proc_info) == FALSE)
         {
             throw std::runtime_error("CreateProcessA() failed");
         }
