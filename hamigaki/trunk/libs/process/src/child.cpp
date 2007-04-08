@@ -562,12 +562,39 @@ public:
         handle_ = ::fork();
         if (handle_ == 0)
         {
-            ::dup2(peer_stdin.get(), 0);
-            ::dup2(peer_stdout.get(), 1);
-            ::dup2(peer_stderr.get(), 2);
+            for (int i = 0; i < open_max; ++i)
+            {
+                if ((i != peer_stdin .get()) &&
+                    (i != peer_stdout.get()) &&
+                    (i != peer_stderr.get()) )
+                {
+                    ::close(i);
+                }
+            }
 
-            for (int i = 3; i < open_max; ++i)
-                ::close(i);
+            int fds[3];
+            fds[0] = ::fcntl(peer_stdin .get(), F_DUPFD, 3);
+            fds[1] = ::fcntl(peer_stdout.get(), F_DUPFD, 4);
+            fds[2] = ::fcntl(peer_stderr.get(), F_DUPFD, 5);
+
+            peer_stdin .reset(-1);
+            peer_stdout.reset(-1);
+            peer_stderr.reset(-1);
+
+            for (int i = 0; i < 3; ++i)
+            {
+                ::dup2(fds[i], i);
+                ::close(fds[i]);
+            }
+
+#if !defined(NDEBUG)
+            int next_fd = ::dup(0);
+            ::close(next_fd);
+
+            // Note: assert() isn't async-signal-safe
+            if (next_fd != 3)
+                ::_exit(next_fd);
+#endif
 
             if (::execve(ph, a, e) == -1)
                 ::_exit(127);
