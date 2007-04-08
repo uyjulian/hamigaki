@@ -38,7 +38,9 @@ void sort_test()
 
     BOOST_CHECK_EQUAL(dst, std::string("e\r\nq\r\nw\r\n"));
 
-    c.wait();
+    const proc::status& st = c.wait();
+    BOOST_CHECK(st.get_type() == proc::status::exited);
+    BOOST_CHECK_EQUAL(st.code(), 0u);
 }
 
 void terminate_test()
