@@ -555,9 +555,9 @@ public:
         char* const* a = (char* const*)argv.get();
         char* const* e = (char* const*)environ; // TODO
 
-        int max_fd = static_cast<int>(::sysconf(_SC_OPEN_MAX));
-        if (max_fd == -1)
-            max_fd = 255;
+        int open_max = static_cast<int>(::sysconf(_SC_OPEN_MAX));
+        if (open_max == -1)
+            open_max = 256;
 
         handle_ = ::fork();
         if (handle_ == 0)
@@ -566,7 +566,7 @@ public:
             ::dup2(peer_stdout.get(), 1);
             ::dup2(peer_stderr.get(), 2);
 
-            for (int i = max_fd; i > 2; --i)
+            for (int i = 3; i < open_max; ++i)
                 ::close(i);
 
             if (::execve(ph, a, e) == -1)
