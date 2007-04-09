@@ -115,7 +115,7 @@ public:
         proc::pipe_source src = bjam_proc_->stdout_source();
 
         thread_.reset(new boost::thread(
-            boost::bind(&bjam_thread, handle_, src)));
+            boost::bind(&bjam_thread, log_list_, src)));
     }
 
     void stop()
