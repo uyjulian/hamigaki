@@ -17,6 +17,7 @@
 #include <boost/scoped_array.hpp>
 #include <cstring>
 #include <stdexcept>
+                            #include <iostream>
 
 #if defined(BOOST_WINDOWS)
     #include <hamigaki/detail/windows/dynamic_link_library.hpp>
@@ -388,13 +389,7 @@ public:
 
     ~impl()
     {
-        ::DWORD code;
-        ::GetExitCodeProcess(handle_, &code);
-        if (code == STILL_ACTIVE)
-        {
-            ::TerminateProcess(handle_, 0);
-            ::WaitForSingleObject(handle_, INFINITE);
-        }
+        terminate();
 
         ::CloseHandle(handle_);
     }
@@ -410,6 +405,17 @@ public:
         BOOST_ASSERT(code != STILL_ACTIVE);
 
         return status(static_cast<unsigned>(code));
+    }
+
+    void terminate()
+    {
+        ::DWORD code;
+        ::GetExitCodeProcess(handle_, &code);
+        if (code == STILL_ACTIVE)
+        {
+            ::TerminateProcess(handle_, 0);
+            ::WaitForSingleObject(handle_, INFINITE);
+        }
     }
 
     pipe_sink& stdin_sink()
@@ -605,11 +611,7 @@ public:
 
     ~impl()
     {
-        if (handle_ != static_cast< ::pid_t>(-1))
-        {
-            ::kill(handle_, SIGKILL);
-            ::waitpid(handle_, 0, 0);
-        }
+        terminate();
     }
 
     status wait()
@@ -647,6 +649,15 @@ public:
 #endif
         BOOST_ASSERT(!"unknown exit status");
         return status();
+    }
+
+    void terminate()
+    {
+        if (handle_ != static_cast< ::pid_t>(-1))
+        {
+            ::kill(handle_, SIGKILL);
+            wait();
+        }
     }
 
     pipe_sink& stdin_sink()
@@ -692,6 +703,11 @@ child::child(const std::string& path, const ipc_map& ipc)
 status child::wait()
 {
     return pimpl_->wait();
+}
+
+void child::terminate()
+{
+    return pimpl_->terminate();
 }
 
 pipe_sink& child::stdin_sink()

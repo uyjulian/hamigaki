@@ -40,6 +40,7 @@ public:
     explicit child(const std::string& path, const ipc_map& ipc = ipc_map());
 
     status wait();
+    void terminate();
 
     pipe_sink& stdin_sink();
     pipe_source& stdout_source();
