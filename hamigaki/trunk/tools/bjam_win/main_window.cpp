@@ -82,8 +82,11 @@ bool get_open_file_name(::HWND hwnd, std::string& filename)
         }
         else if (uMsg == WM_SIZE)
         {
-            if (pimpl)
-                pimpl->update_size();
+            if ((wParam == SIZE_MAXIMIZED) || (wParam == SIZE_RESTORED))
+            {
+                if (pimpl)
+                    pimpl->update_size();
+            }
         }
     }
     catch (const std::exception& e)
