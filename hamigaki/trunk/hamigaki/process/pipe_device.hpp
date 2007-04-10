@@ -11,6 +11,7 @@
 #define HAMIGAKI_PROCESS_PIPE_DEVICE_HPP
 
 #include <hamigaki/process/detail/config.hpp>
+#include <hamigaki/process/detail/auto_link.hpp>
 #include <boost/iostreams/categories.hpp>
 #include <boost/shared_ptr.hpp>
 
