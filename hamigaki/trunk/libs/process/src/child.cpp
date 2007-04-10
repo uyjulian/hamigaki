@@ -254,7 +254,7 @@ class child::impl : private boost::noncopyable
 {
 public:
     impl(const std::string& path,
-        const std::vector<std::string>& args, const context& ctx) : ipc_(ctx)
+        const std::vector<std::string>& args, const context& ctx) : ctx_(ctx)
     {
         std::vector<char> cmd;
         hamigaki::process::make_command_line(cmd, args);
@@ -275,7 +275,7 @@ public:
         file_descriptor peer_stdout;
         file_descriptor peer_stderr;
 
-        stream_behavior::type t = ipc_.stdin_behavior().get_type();
+        stream_behavior::type t = ctx_.stdin_behavior().get_type();
         if (t == stream_behavior::capture)
         {
             ::HANDLE read_end;
@@ -303,7 +303,7 @@ public:
             start_info->hStdInput = h;
         }
 
-        t = ipc_.stdout_behavior().get_type();
+        t = ctx_.stdout_behavior().get_type();
         if (t == stream_behavior::capture)
         {
             ::HANDLE read_end;
@@ -331,7 +331,7 @@ public:
             start_info->hStdOutput = h;
         }
 
-        t = ipc_.stderr_behavior().get_type();
+        t = ctx_.stderr_behavior().get_type();
         if (t == stream_behavior::capture)
         {
             ::HANDLE read_end;
@@ -436,7 +436,7 @@ public:
 
 private:
     ::HANDLE handle_;
-    context ipc_;
+    context ctx_;
     pipe_sink stdin_;
     pipe_source stdout_;
     pipe_source stderr_;
@@ -480,7 +480,7 @@ class child::impl : private boost::noncopyable
 {
 public:
     impl(const std::string& path,
-        const std::vector<std::string>& args, const context& ctx) : ipc_(ctx)
+        const std::vector<std::string>& args, const context& ctx) : ctx_(ctx)
     {
         boost::scoped_array<char*> argv(new char*[args.size()+1]);
 
@@ -504,7 +504,7 @@ public:
         file_descriptor peer_stdout;
         file_descriptor peer_stderr;
 
-        stream_behavior::type t = ipc_.stdin_behavior().get_type();
+        stream_behavior::type t = ctx_.stdin_behavior().get_type();
         if (t == stream_behavior::capture)
         {
             int fds[2];
@@ -522,7 +522,7 @@ public:
             peer_stdin.reset(fd);
         }
 
-        t = ipc_.stdout_behavior().get_type();
+        t = ctx_.stdout_behavior().get_type();
         if (t == stream_behavior::capture)
         {
             int fds[2];
@@ -540,7 +540,7 @@ public:
             peer_stdout.reset(fd);
         }
 
-        t = ipc_.stderr_behavior().get_type();
+        t = ctx_.stderr_behavior().get_type();
         if (t == stream_behavior::capture)
         {
             int fds[2];
@@ -678,7 +678,7 @@ public:
 
 private:
     ::pid_t handle_;
-    context ipc_;
+    context ctx_;
     pipe_sink stdin_;
     pipe_source stdout_;
     pipe_source stderr_;
