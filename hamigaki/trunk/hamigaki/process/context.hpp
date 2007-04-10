@@ -11,6 +11,7 @@
 #define HAMIGAKI_PROCESS_CONTEXT_HPP
 
 #include <hamigaki/process/stream_behavior.hpp>
+#include <string>
 
 namespace hamigaki { namespace process {
 
@@ -47,10 +48,21 @@ public:
         stderr_behavior_ = b;
     }
 
+    std::string work_directory() const
+    {
+        return work_directory_;
+    }
+
+    void work_directory(const std::string& dir)
+    {
+        work_directory_ = dir;
+    }
+
 private:
     stream_behavior stdin_behavior_;
     stream_behavior stdout_behavior_;
     stream_behavior stderr_behavior_;
+    std::string work_directory_;
 };
 
 } } // End namespaces process, hamigaki.

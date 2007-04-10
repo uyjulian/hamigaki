@@ -376,10 +376,14 @@ public:
         if (attr.get())
             flags |= EXTENDED_STARTUPINFO_PRESENT;
 
+        const std::string dir_buf = ctx_.work_directory();
+        const char* work_dir =
+            dir_buf.empty() ? static_cast<const char*>(0) : dir_buf.c_str();
+
         ::PROCESS_INFORMATION proc_info;
         if (::CreateProcessA(
             path.c_str(), &cmd[0], 0, 0, TRUE, flags,
-            0, 0, start_info.get(), &proc_info) == FALSE)
+            0, work_dir, start_info.get(), &proc_info) == FALSE)
         {
             throw std::runtime_error("CreateProcessA() failed");
         }
@@ -562,6 +566,10 @@ public:
         char* const* a = (char* const*)argv.get();
         char* const* e = (char* const*)environ; // TODO
 
+        const std::string dir_buf = ctx_.work_directory();
+        const char* work_dir =
+            dir_buf.empty() ? static_cast<const char*>(0) : dir_buf.c_str();
+
         int open_max = static_cast<int>(::sysconf(_SC_OPEN_MAX));
         if (open_max == -1)
             open_max = 256;
@@ -602,6 +610,9 @@ public:
             if (next_fd != 3)
                 ::_exit(next_fd);
 #endif
+
+            if ((work_dir != 0) && (::chdir(work_dir) == -1))
+                ::_exit(127);
 
             if (::execve(ph, a, e) == -1)
                 ::_exit(127);

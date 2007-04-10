@@ -109,9 +109,7 @@ public:
         ctx.stdout_behavior(proc::capture_stream());
         ctx.stderr_behavior(proc::silence_stream());
 
-        // FIXME
-        ::SetCurrentDirectory(
-            jamfile_.branch_path().native_directory_string().c_str());
+        ctx.work_directory(jamfile_.branch_path().native_directory_string());
 
         bjam_proc_.reset(new proc::child(bjam, args, ctx));
 
