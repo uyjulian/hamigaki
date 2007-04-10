@@ -12,6 +12,7 @@ subproject libs/process/build ;
 lib hamigaki_process
     :
         ../src/child.cpp
+        ../src/launch_shell.cpp
         ../src/pipe_device.cpp
     :
         [ common-names ]

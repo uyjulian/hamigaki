@@ -21,6 +21,7 @@ project hamigaki/process
 
 SOURCES =
     child
+    launch_shell
     pipe_device
     ;
 

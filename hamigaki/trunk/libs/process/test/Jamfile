@@ -38,4 +38,5 @@ rule process-test ( sources + : requirements * )
 
 test-suite process :
     [ process-test child_test.cpp : ]
+    [ process-test shell_test.cpp : ]
     ;
