@@ -602,15 +602,6 @@ public:
                 ::close(fds[i]);
             }
 
-#if !defined(NDEBUG)
-            int next_fd = ::dup(0);
-            ::close(next_fd);
-
-            // Note: assert() isn't async-signal-safe
-            if (next_fd != 3)
-                ::_exit(next_fd);
-#endif
-
             if ((work_dir != 0) && (::chdir(work_dir) == -1))
                 ::_exit(127);
 
