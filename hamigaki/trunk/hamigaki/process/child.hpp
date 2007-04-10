@@ -11,7 +11,7 @@
 #define HAMIGAKI_PROCESS_CHILD_HPP
 
 #include <hamigaki/process/detail/config.hpp>
-#include <hamigaki/process/ipc_map.hpp>
+#include <hamigaki/process/context.hpp>
 #include <hamigaki/process/pipe_device.hpp>
 #include <hamigaki/process/status.hpp>
 #include <boost/shared_ptr.hpp>
@@ -34,10 +34,10 @@ class HAMIGAKI_PROCESS_DECL child
 public:
     child(
         const std::string& path, const std::vector<std::string>& args,
-        const ipc_map& ipc = ipc_map()
+        const context& ipc = context()
     );
 
-    explicit child(const std::string& path, const ipc_map& ipc = ipc_map());
+    explicit child(const std::string& path, const context& ctx = context());
 
     status wait();
     void terminate();

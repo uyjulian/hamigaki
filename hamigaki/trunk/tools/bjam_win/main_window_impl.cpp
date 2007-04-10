@@ -104,16 +104,16 @@ public:
         args.push_back("bjam");
         args.push_back("--v2");
 
-        proc::ipc_map ipc;
-        ipc.stdin_behavior(proc::silence_stream());
-        ipc.stdout_behavior(proc::capture_stream());
-        ipc.stderr_behavior(proc::silence_stream());
+        proc::context ctx;
+        ctx.stdin_behavior(proc::silence_stream());
+        ctx.stdout_behavior(proc::capture_stream());
+        ctx.stderr_behavior(proc::silence_stream());
 
         // FIXME
         ::SetCurrentDirectory(
             jamfile_.branch_path().native_directory_string().c_str());
 
-        bjam_proc_.reset(new proc::child(bjam, args, ipc));
+        bjam_proc_.reset(new proc::child(bjam, args, ctx));
 
         proc::pipe_source src = bjam_proc_->stdout_source();
 

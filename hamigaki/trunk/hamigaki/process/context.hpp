@@ -1,4 +1,4 @@
-//  ipc_map.hpp: interprocess communication mapper
+//  context.hpp: process context
 
 //  Copyright Takeshi Mouri 2007.
 //  Use, modification, and distribution are subject to the
@@ -7,14 +7,14 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/process for library home page.
 
-#ifndef HAMIGAKI_PROCESS_IPC_MAP_HPP
-#define HAMIGAKI_PROCESS_IPC_MAP_HPP
+#ifndef HAMIGAKI_PROCESS_CONTEXT_HPP
+#define HAMIGAKI_PROCESS_CONTEXT_HPP
 
 #include <hamigaki/process/stream_behavior.hpp>
 
 namespace hamigaki { namespace process {
 
-class ipc_map
+class context
 {
 public:
     stream_behavior stdin_behavior() const
@@ -55,4 +55,4 @@ private:
 
 } } // End namespaces process, hamigaki.
 
-#endif // HAMIGAKI_PROCESS_IPC_MAP_HPP
+#endif // HAMIGAKI_PROCESS_CONTEXT_HPP

@@ -254,7 +254,7 @@ class child::impl : private boost::noncopyable
 {
 public:
     impl(const std::string& path,
-        const std::vector<std::string>& args, const ipc_map& ipc) : ipc_(ipc)
+        const std::vector<std::string>& args, const context& ctx) : ipc_(ctx)
     {
         std::vector<char> cmd;
         hamigaki::process::make_command_line(cmd, args);
@@ -436,7 +436,7 @@ public:
 
 private:
     ::HANDLE handle_;
-    ipc_map ipc_;
+    context ipc_;
     pipe_sink stdin_;
     pipe_source stdout_;
     pipe_source stderr_;
@@ -480,7 +480,7 @@ class child::impl : private boost::noncopyable
 {
 public:
     impl(const std::string& path,
-        const std::vector<std::string>& args, const ipc_map& ipc) : ipc_(ipc)
+        const std::vector<std::string>& args, const context& ctx) : ipc_(ctx)
     {
         boost::scoped_array<char*> argv(new char*[args.size()+1]);
 
@@ -678,7 +678,7 @@ public:
 
 private:
     ::pid_t handle_;
-    ipc_map ipc_;
+    context ipc_;
     pipe_sink stdin_;
     pipe_source stdout_;
     pipe_source stderr_;
@@ -687,18 +687,18 @@ private:
 
 child::child(
     const std::string& path, const std::vector<std::string>& args,
-    const ipc_map& ipc
+    const context& ctx
 )
-    : pimpl_(new impl(path, args, ipc))
+    : pimpl_(new impl(path, args, ctx))
 {
 }
 
-child::child(const std::string& path, const ipc_map& ipc)
+child::child(const std::string& path, const context& ctx)
 {
     std::vector<std::string> args;
     args.push_back(path);
 
-    pimpl_.reset(new impl(path, args, ipc));
+    pimpl_.reset(new impl(path, args, ctx));
 }
 
 status child::wait()

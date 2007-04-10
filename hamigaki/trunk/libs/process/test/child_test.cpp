@@ -18,15 +18,15 @@ namespace ut = boost::unit_test;
 
 void sort_test()
 {
-    proc::ipc_map ipc;
-    ipc.stdin_behavior(proc::capture_stream());
-    ipc.stdout_behavior(proc::capture_stream());
-    ipc.stderr_behavior(proc::silence_stream());
+    proc::context ctx;
+    ctx.stdin_behavior(proc::capture_stream());
+    ctx.stdout_behavior(proc::capture_stream());
+    ctx.stderr_behavior(proc::silence_stream());
 
 #if defined(BOOST_WINDOWS)
-    proc::child c("C:\\WINDOWS\\system32\\sort.exe", ipc);
+    proc::child c("C:\\WINDOWS\\system32\\sort.exe", ctx);
 #else
-    proc::child c("/bin/sort", ipc);
+    proc::child c("/bin/sort", ctx);
 #endif
 
     proc::pipe_sink& sink = c.stdin_sink();
