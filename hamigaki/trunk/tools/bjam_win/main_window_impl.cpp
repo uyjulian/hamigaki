@@ -41,6 +41,8 @@ std::string search_path(const std::string& name)
 
 void bjam_thread(::HWND hwnd, proc::pipe_source src)
 {
+    ::SendMessage(hwnd, LB_RESETCONTENT, 0, 0);
+
     io::stream<proc::pipe_source> is(src);
     std::string line;
     while (std::getline(is, line))
@@ -69,7 +71,8 @@ public:
 
         log_list_ = ::CreateWindowEx(
             WS_EX_CLIENTEDGE, "LISTBOX", "",
-            WS_CHILD | WS_VISIBLE | LBS_HASSTRINGS,
+            WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL |
+            LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT,
             0, 0,
             rect.right-rect.left, rect.bottom-rect.top,
             handle_, 0, hInstance, 0
