@@ -17,7 +17,6 @@
 #include <boost/scoped_array.hpp>
 #include <cstring>
 #include <stdexcept>
-                            #include <iostream>
 
 #if defined(BOOST_WINDOWS)
     #include <hamigaki/detail/windows/dynamic_link_library.hpp>
@@ -373,11 +372,13 @@ public:
                 attr.set_handl_list(handles, handle_count);
         }
 
+        ::DWORD flags = CREATE_NO_WINDOW;
+        if (attr.get())
+            flags |= EXTENDED_STARTUPINFO_PRESENT;
+
         ::PROCESS_INFORMATION proc_info;
         if (::CreateProcessA(
-            path.c_str(), &cmd[0], 0, 0,
-            TRUE,
-            attr.get() ? EXTENDED_STARTUPINFO_PRESENT : 0,
+            path.c_str(), &cmd[0], 0, 0, TRUE, flags,
             0, 0, start_info.get(), &proc_info) == FALSE)
         {
             throw std::runtime_error("CreateProcessA() failed");
