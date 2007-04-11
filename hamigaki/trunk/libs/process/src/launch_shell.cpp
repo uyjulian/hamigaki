@@ -10,7 +10,7 @@
 #define HAMIGAKI_PROCESS_SOURCE
 #define NOMINMAX
 #include <boost/config.hpp>
-#include <hamigaki/process/launch_shell.hpp>
+#include <hamigaki/process/shell.hpp>
 
 #if defined(BOOST_WINDOWS)
     #include <windows.h>

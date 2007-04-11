@@ -14,6 +14,7 @@ lib hamigaki_process
         ../src/child.cpp
         ../src/launch_shell.cpp
         ../src/pipe_device.cpp
+        ../src/shell_expand.cpp
     :
         [ common-names ]
         <include>$(HAMIGAKI_ROOT)  <sysinclude>$(HAMIGAKI_ROOT)
@@ -27,7 +28,9 @@ lib hamigaki_process
 dll hamigaki_process
     :
         ../src/child.cpp
+        ../src/launch_shell.cpp
         ../src/pipe_device.cpp
+        ../src/shell_expand.cpp
     :
         <library-path>$(BOOST_LIBPATH)
         find-boost-iostreams-lib

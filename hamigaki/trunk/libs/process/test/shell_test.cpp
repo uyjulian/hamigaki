@@ -7,7 +7,7 @@
 
 //  See http://hamigaki.sourceforge.jp/libs/process for library home page.
 
-#include <hamigaki/process/launch_shell.hpp>
+#include <hamigaki/process/shell.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/test/unit_test.hpp>
@@ -16,7 +16,7 @@ namespace proc = hamigaki::process;
 namespace io = boost::iostreams;
 namespace ut = boost::unit_test;
 
-void sort_test()
+void launch_shell_test()
 {
     proc::context ctx;
     ctx.stdin_behavior(proc::capture_stream());
@@ -39,9 +39,27 @@ void sort_test()
     BOOST_CHECK_EQUAL(st.code(), 0u);
 }
 
+void shell_expand_test()
+{
+    BOOST_CHECK_EQUAL(proc::shell_expand("echo foo"), std::string("foo"));
+
+#if defined(BOOST_WINDOWS)
+    BOOST_CHECK_EQUAL(
+        proc::shell_expand("echo foo&echo bar"),
+        std::string("foo bar")
+    );
+#else
+    BOOST_CHECK_EQUAL(
+        proc::shell_expand("echo foo;echo bar"),
+        std::string("foo bar")
+    );
+#endif
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("shell test");
-    test->add(BOOST_TEST_CASE(&sort_test));
+    test->add(BOOST_TEST_CASE(&launch_shell_test));
+    test->add(BOOST_TEST_CASE(&shell_expand_test));
     return test;
 }

@@ -23,6 +23,7 @@ SOURCES =
     child
     launch_shell
     pipe_device
+    shell_expand
     ;
 
 lib hamigaki_process : $(SOURCES).cpp ;

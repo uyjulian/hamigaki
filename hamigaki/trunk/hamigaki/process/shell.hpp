@@ -1,4 +1,4 @@
-//  launch_shell.hpp: launch a process on command shell
+//  shell.hpp: utilities for command shell
 
 //  Copyright Takeshi Mouri 2007.
 //  Use, modification, and distribution are subject to the
@@ -21,6 +21,8 @@ inline child launch_shell(const std::string& cmd)
 {
     return process::launch_shell(cmd, context());
 }
+
+HAMIGAKI_PROCESS_DECL std::string shell_expand(const std::string& cmd);
 
 } } // End namespaces process, hamigaki.
 
