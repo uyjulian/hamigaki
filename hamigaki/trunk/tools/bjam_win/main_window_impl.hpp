@@ -17,11 +17,14 @@
 class main_window
 {
 public:
+    static const ::UINT proc_end_msg = WM_APP;
+
     explicit main_window(::HWND handle);
 
     void open(const std::string& filename);
     void run();
     void stop();
+    void wait();
     bool running() const;
 
     void update_size();

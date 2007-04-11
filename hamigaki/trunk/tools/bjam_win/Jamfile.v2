@@ -19,6 +19,7 @@ project
 exe bjam_win
     :
     bjam_win.cpp
+    list_box.cpp
     main_window.cpp
     main_window_impl.cpp
     bjam_win.rc

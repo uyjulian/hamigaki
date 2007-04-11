@@ -88,6 +88,11 @@ bool get_open_file_name(::HWND hwnd, std::string& filename)
                     pimpl->update_size();
             }
         }
+        else if (uMsg == main_window::proc_end_msg)
+        {
+            if (pimpl)
+                pimpl->wait();
+        }
     }
     catch (const std::exception& e)
     {

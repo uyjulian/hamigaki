@@ -22,7 +22,7 @@ BEGIN
     END
     POPUP "&Build"
     BEGIN
-        MENUITEM "&Run",                ID_BUILD_RUN
-        MENUITEM "&Stop",               ID_BUILD_STOP
+        MENUITEM "&Run",                ID_BUILD_RUN,   GRAYED
+        MENUITEM "&Stop",               ID_BUILD_STOP,  GRAYED
     END
 END

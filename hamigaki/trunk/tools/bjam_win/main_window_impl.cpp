@@ -13,6 +13,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/bind.hpp>
 #include <boost/scoped_ptr.hpp>
+#include "list_box.hpp"
 #include "main_window_impl.hpp"
 #include <commctrl.h>
 #include "menus.h"
@@ -41,19 +42,29 @@ std::string search_path(const std::string& name)
 
 void bjam_thread(::HWND hwnd, proc::pipe_source src)
 {
-    ::SendMessage(hwnd, LB_RESETCONTENT, 0, 0);
-
-    io::stream<proc::pipe_source> is(src);
-    std::string line;
-    while (std::getline(is, line))
+    try
     {
-        if (!line.empty() && (line[line.size()-1] == '\r'))
-            line.resize(line.size()-1);
+        ::SendMessage(hwnd, LB_RESETCONTENT, 0, 0);
 
-        ::SendMessage(hwnd, LB_ADDSTRING, 0,
-            reinterpret_cast< ::LPARAM>(line.c_str())
-        );
+        io::stream<proc::pipe_source> is(src);
+        std::string line;
+        while (std::getline(is, line))
+        {
+            if (!line.empty() && (line[line.size()-1] == '\r'))
+                line.resize(line.size()-1);
+
+            ::SendMessage(hwnd, LB_ADDSTRING, 0,
+                reinterpret_cast< ::LPARAM>(line.c_str())
+            );
+        }
+
     }
+    catch (const std::exception& e)
+    {
+        ::MessageBoxA(hwnd, e.what(), "bjam for Windows", MB_OK);
+    }
+
+    ::PostMessage(::GetParent(hwnd), main_window::proc_end_msg, 0, 0);
 }
 
 } // namespace
@@ -77,6 +88,7 @@ public:
             rect.right-rect.left, rect.bottom-rect.top,
             handle_, 0, hInstance, 0
         );
+        subclass_list_box(log_list_);
     }
 
     ~impl()
@@ -93,7 +105,13 @@ public:
 
     void open(const std::string& filename)
     {
+        if (running())
+            stop();
+
         jamfile_ = fs::path(filename, fs::native);
+
+        ::EnableMenuItem(
+            ::GetMenu(handle_), ID_BUILD_RUN, MF_BYCOMMAND|MF_ENABLED);
     }
 
     void run()
@@ -117,14 +135,29 @@ public:
 
         thread_.reset(new boost::thread(
             boost::bind(&bjam_thread, log_list_, src)));
+
+        ::EnableMenuItem(
+            ::GetMenu(handle_), ID_BUILD_RUN, MF_BYCOMMAND|MF_GRAYED);
+        ::EnableMenuItem(
+            ::GetMenu(handle_), ID_BUILD_STOP, MF_BYCOMMAND|MF_ENABLED);
     }
 
     void stop()
     {
         bjam_proc_->terminate();
+        wait();
+    }
+
+    void wait()
+    {
         thread_->join();
         thread_.reset();
         bjam_proc_.reset();
+
+        ::EnableMenuItem(
+            ::GetMenu(handle_), ID_BUILD_RUN, MF_BYCOMMAND|MF_ENABLED);
+        ::EnableMenuItem(
+            ::GetMenu(handle_), ID_BUILD_STOP, MF_BYCOMMAND|MF_GRAYED);
     }
 
     bool running() const
@@ -166,6 +199,11 @@ void main_window::run()
 void main_window::stop()
 {
     pimpl_->stop();
+}
+
+void main_window::wait()
+{
+    pimpl_->wait();
 }
 
 bool main_window::running() const
