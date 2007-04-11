@@ -33,6 +33,9 @@ HAMIGAKI_PROCESS_DECL std::string shell_expand(const std::string& cmd)
         io::compose(detail::shell_expand_filter(), src),
         io::back_inserter(buf)
     );
+
+    c.wait();
+
     return buf;
 }
 
