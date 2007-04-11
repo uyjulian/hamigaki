@@ -418,7 +418,7 @@ public:
         ::GetExitCodeProcess(handle_, &code);
         if (code == STILL_ACTIVE)
         {
-            ::TerminateProcess(handle_, 0);
+            ::TerminateProcess(handle_, 1);
             ::WaitForSingleObject(handle_, INFINITE);
         }
     }
