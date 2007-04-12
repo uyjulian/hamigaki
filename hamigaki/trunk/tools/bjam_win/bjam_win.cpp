@@ -28,7 +28,8 @@ void init_common_controls()
 #endif
 }
 
-int WINAPI WinMain(::HINSTANCE hInstance, ::HINSTANCE, ::LPSTR, int nCmdShow)
+int WINAPI WinMain(
+    ::HINSTANCE hInstance, ::HINSTANCE, ::LPSTR lpCmdLine, int nCmdShow)
 {
     try
     {
@@ -39,6 +40,21 @@ int WINAPI WinMain(::HINSTANCE hInstance, ::HINSTANCE, ::LPSTR, int nCmdShow)
 
         ::ShowWindow(hwnd, nCmdShow);
         ::UpdateWindow(hwnd);
+
+        if (*lpCmdLine != '\0')
+        {
+            std::string filename = lpCmdLine;
+
+            if ((filename.size() >= 2) &&
+                (filename[0] == '"') &&
+                (filename[filename.size()-1] == '"') )
+            {
+                filename.erase(0, 1);
+                filename.erase(filename.size()-1, 1);
+            }
+
+            main_window_open_jamfile(hwnd, filename);
+        }
 
         ::MSG msg;
         while (::GetMessage(&msg, 0, 0, 0))

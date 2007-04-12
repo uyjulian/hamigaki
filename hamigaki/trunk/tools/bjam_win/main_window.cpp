@@ -7,9 +7,11 @@
 
 //  See http://hamigaki.sourceforge.jp/ for library home page.
 
+#include <boost/scoped_array.hpp>
 #include "main_window_impl.hpp"
 #include "main_window.hpp"
 #include "menus.h"
+#include <shellapi.h>
 
 namespace
 {
@@ -40,6 +42,16 @@ bool get_open_file_name(::HWND hwnd, std::string& filename)
 
     filename = buf;
     return true;
+}
+
+std::string get_drop_filename(::HDROP drop)
+{
+    ::UINT size = ::DragQueryFileA(drop, 0, 0, 0);
+    boost::scoped_array<char> buf(new char[size+1]);
+    ::DragQueryFileA(drop, 0, buf.get(), size+1);
+    buf[size] = '\0';
+
+    return buf.get();
 }
 
 ::LRESULT CALLBACK window_proc(
@@ -88,6 +100,15 @@ bool get_open_file_name(::HWND hwnd, std::string& filename)
                     pimpl->update_size();
             }
         }
+        else if (uMsg == WM_DROPFILES)
+        {
+            ::HDROP drop = reinterpret_cast< ::HDROP>(wParam);
+            std::string filename = get_drop_filename(drop);
+            ::DragFinish(drop);
+
+            if (pimpl)
+                pimpl->open(filename);
+        }
         else if (uMsg == main_window::proc_end_msg)
         {
             if (pimpl)
@@ -131,7 +152,7 @@ bool get_open_file_name(::HWND hwnd, std::string& filename)
 ::HWND create_main_window(::HINSTANCE hInstance, ::ATOM cls)
 {
     ::DWORD style = WS_OVERLAPPEDWINDOW;
-    ::DWORD ex_style = 0;
+    ::DWORD ex_style = WS_EX_ACCEPTFILES;
 
     ::HWND hwnd = ::CreateWindowEx(
         ex_style, MAKEINTATOM(cls), "bjam for Windows", style,
@@ -142,4 +163,17 @@ bool get_open_file_name(::HWND hwnd, std::string& filename)
         throw std::runtime_error("CreateWindowEx() failed");
 
     return hwnd;
+}
+
+void main_window_open_jamfile(::HWND hwnd, const std::string& filename)
+{
+    main_window* pimpl =
+        reinterpret_cast<main_window*>(
+            GetWindowLongPtr(hwnd, GWLP_USERDATA)
+        );
+
+    
+
+    if (pimpl)
+        pimpl->open(filename);
 }

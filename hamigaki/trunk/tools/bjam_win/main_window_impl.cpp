@@ -25,6 +25,8 @@ namespace io = boost::iostreams;
 namespace
 {
 
+const char app_title[] = "bjam for Windows";
+
 std::string search_path(const std::string& name)
 {
     char buf[MAX_PATH];
@@ -61,7 +63,7 @@ void bjam_thread(::HWND hwnd, proc::pipe_source src)
     }
     catch (const std::exception& e)
     {
-        ::MessageBoxA(hwnd, e.what(), "bjam for Windows", MB_OK);
+        ::MessageBoxA(hwnd, e.what(), app_title, MB_OK);
     }
 
     ::PostMessage(::GetParent(hwnd), main_window::proc_end_msg, 0, 0);
@@ -109,6 +111,13 @@ public:
             stop();
 
         jamfile_ = fs::path(filename, fs::native);
+
+        std::string title;
+        title += filename;
+        title += " - ";
+        title += app_title;
+
+        ::SetWindowTextA(handle_, title.c_str());
 
         ::EnableMenuItem(
             ::GetMenu(handle_), ID_BUILD_RUN, MF_BYCOMMAND|MF_ENABLED);
