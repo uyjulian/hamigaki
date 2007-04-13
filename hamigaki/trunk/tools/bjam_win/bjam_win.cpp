@@ -22,7 +22,7 @@ void init_common_controls()
     ::INITCOMMONCONTROLSEX data;
     std::memset(&data, 0, sizeof(data));
     data.dwSize = sizeof(data);
-    data.dwICC = ICC_BAR_CLASSES;
+    data.dwICC = ICC_BAR_CLASSES | ICC_COOL_CLASSES;
     if (::InitCommonControlsEx(&data) == FALSE)
         throw std::runtime_error("InitCommonControlsEx() failed");
 #endif

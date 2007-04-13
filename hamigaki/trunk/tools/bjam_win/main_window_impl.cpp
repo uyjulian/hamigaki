@@ -12,6 +12,7 @@
 #include <boost/iostreams/stream.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/bind.hpp>
+#include <boost/scoped_array.hpp>
 #include <boost/scoped_ptr.hpp>
 #include "list_box.hpp"
 #include "main_window_impl.hpp"
@@ -69,6 +70,40 @@ void bjam_thread(::HWND hwnd, proc::pipe_source src)
     ::PostMessage(::GetParent(hwnd), main_window::proc_end_msg, 0, 0);
 }
 
+::HWND create_toolset_combo_box(::HWND parent)
+{
+    ::HINSTANCE hInstance =
+        reinterpret_cast< ::HINSTANCE>(::GetModuleHandle(0));
+
+    ::HWND hwnd = ::CreateWindowExA(
+        WS_EX_CLIENTEDGE, "COMBOBOX", "",
+        WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | CBS_DROPDOWNLIST,
+        0, 0, 0, 100,
+        parent, 0, hInstance, 0
+    );
+
+    ::SendMessage(hwnd, CB_ADDSTRING,
+        0, reinterpret_cast< ::LPARAM>("msvc-8.0"));
+    ::SendMessage(hwnd, CB_ADDSTRING,
+        0, reinterpret_cast< ::LPARAM>("msvc-7.1"));
+    ::SendMessage(hwnd, CB_ADDSTRING,
+        0, reinterpret_cast< ::LPARAM>("gcc-mingw-3.4.2"));
+
+    ::SendMessage(hwnd, CB_SETCURSEL, 0, 0);
+
+    return hwnd;
+}
+
+std::string get_combo_box_seltext(::HWND hwnd)
+{
+    ::WPARAM index = ::SendMessage(hwnd, CB_GETCURSEL, 0, 0);
+    ::WPARAM size = ::SendMessage(hwnd, CB_GETLBTEXTLEN, index, 0);
+    boost::scoped_array<char> buf(new char[size+1]);
+    ::SendMessage(
+        hwnd, CB_GETLBTEXT, index, reinterpret_cast< ::LPARAM>(buf.get()));
+    return std::string(buf.get(), size);
+}
+
 } // namespace
 
 class main_window::impl
@@ -79,14 +114,49 @@ public:
         ::HINSTANCE hInstance =
             reinterpret_cast< ::HINSTANCE>(::GetModuleHandle(0));
 
+        rebar_ = ::CreateWindowExA(
+            WS_EX_TOOLWINDOW, REBARCLASSNAME, "",
+            WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+            RBS_VARHEIGHT | CCS_NODIVIDER,
+            0, 0, 0, 0,
+            handle_, 0, hInstance, 0
+        );
+
+        ::REBARINFO bar_info;
+        std::memset(&bar_info, 0, sizeof(bar_info));
+        bar_info.cbSize = sizeof(bar_info);
+
+        ::SendMessage(
+            rebar_, RB_SETBARINFO, 0, reinterpret_cast< ::LPARAM>(&bar_info));
+
+        toolset_ = create_toolset_combo_box(rebar_);
+
         ::RECT rect;
-        ::GetClientRect(handle_, &rect);
+        ::GetWindowRect(toolset_, &rect);
+
+        ::REBARBANDINFOA band_info;
+        std::memset(&band_info, 0, sizeof(band_info));
+        band_info.cbSize = sizeof(band_info);
+        band_info.fMask =
+            RBBIM_TEXT | RBBIM_STYLE | RBBIM_CHILD |
+            RBBIM_CHILDSIZE | RBBIM_SIZE;
+        band_info.fStyle = RBBS_CHILDEDGE;
+        band_info.lpText = "Toolset:";
+        band_info.hwndChild = toolset_;
+        band_info.cxMinChild = 0;
+        band_info.cyMinChild = rect.bottom - rect.top;
+        band_info.cx = 200;
+
+        ::SendMessage(rebar_, RB_INSERTBAND,
+            -1, reinterpret_cast< ::LPARAM>(&band_info));
+
+        rect = calc_log_list_size();
 
         log_list_ = ::CreateWindowEx(
             WS_EX_CLIENTEDGE, "LISTBOX", "",
-            WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL |
+            WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL | WS_CLIPSIBLINGS |
             LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT,
-            0, 0,
+            rect.left, rect.top,
             rect.right-rect.left, rect.bottom-rect.top,
             handle_, 0, hInstance, 0
         );
@@ -130,6 +200,7 @@ public:
         std::vector<std::string> args;
         args.push_back("bjam");
         args.push_back("--v2");
+        args.push_back("toolset=" + get_combo_box_seltext(toolset_));
 
         proc::context ctx;
         ctx.stdin_behavior(proc::silence_stream());
@@ -176,19 +247,33 @@ public:
 
     void update_size()
     {
-        ::RECT rect;
-        ::GetClientRect(handle_, &rect);
+        ::RECT rect = calc_log_list_size();
 
-        ::MoveWindow(log_list_, 0, 0,
+        ::MoveWindow(log_list_, rect.left, rect.top,
             rect.right-rect.left, rect.bottom-rect.top, TRUE);
     }
 
 private:
     ::HWND handle_;
+    ::HWND rebar_;
+    ::HWND toolset_;
     ::HWND log_list_;
     fs::path jamfile_;
     boost::scoped_ptr<proc::child> bjam_proc_;
     boost::scoped_ptr<boost::thread> thread_;
+
+    ::RECT calc_log_list_size()
+    {
+        ::RECT rect;
+        ::GetClientRect(handle_, &rect);
+
+        ::RECT bar;
+        ::GetWindowRect(rebar_, &bar);
+
+        rect.top += (bar.bottom - bar.top);
+
+        return rect;
+    }
 };
 
 main_window::main_window(::HWND handle) : pimpl_(new impl(handle))

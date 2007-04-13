@@ -151,7 +151,7 @@ std::string get_drop_filename(::HDROP drop)
 
 ::HWND create_main_window(::HINSTANCE hInstance, ::ATOM cls)
 {
-    ::DWORD style = WS_OVERLAPPEDWINDOW;
+    ::DWORD style = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN;
     ::DWORD ex_style = WS_EX_ACCEPTFILES;
 
     ::HWND hwnd = ::CreateWindowEx(
