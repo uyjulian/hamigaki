@@ -11,6 +11,7 @@
 #define NOMINMAX
 #include <boost/config.hpp>
 #include <hamigaki/process/shell.hpp>
+#include <stdexcept>
 
 #if defined(BOOST_WINDOWS)
     #include <windows.h>
