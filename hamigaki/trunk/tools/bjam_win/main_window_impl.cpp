@@ -12,11 +12,12 @@
 #include <boost/iostreams/stream.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/bind.hpp>
-#include <boost/scoped_array.hpp>
 #include <boost/scoped_ptr.hpp>
+#include "combo_box.hpp"
 #include "list_box.hpp"
+#include "window.hpp"
 #include "main_window_impl.hpp"
-#include <commctrl.h>
+#include "rebar.hpp"
 #include "menus.h"
 
 namespace proc = hamigaki::process;
@@ -47,7 +48,7 @@ void bjam_thread(::HWND hwnd, proc::pipe_source src)
 {
     try
     {
-        ::SendMessage(hwnd, LB_RESETCONTENT, 0, 0);
+        list_box::reset_content(hwnd);
 
         io::stream<proc::pipe_source> is(src);
         std::string line;
@@ -56,9 +57,7 @@ void bjam_thread(::HWND hwnd, proc::pipe_source src)
             if (!line.empty() && (line[line.size()-1] == '\r'))
                 line.resize(line.size()-1);
 
-            ::SendMessage(hwnd, LB_ADDSTRING, 0,
-                reinterpret_cast< ::LPARAM>(line.c_str())
-            );
+            list_box::add_string(hwnd, line);
         }
 
     }
@@ -82,26 +81,13 @@ void bjam_thread(::HWND hwnd, proc::pipe_source src)
         parent, 0, hInstance, 0
     );
 
-    ::SendMessage(hwnd, CB_ADDSTRING,
-        0, reinterpret_cast< ::LPARAM>("msvc-8.0"));
-    ::SendMessage(hwnd, CB_ADDSTRING,
-        0, reinterpret_cast< ::LPARAM>("msvc-7.1"));
-    ::SendMessage(hwnd, CB_ADDSTRING,
-        0, reinterpret_cast< ::LPARAM>("gcc-3.4.2"));
+    combo_box::add_string(hwnd, "msvc-8.0");
+    combo_box::add_string(hwnd, "msvc-7.1");
+    combo_box::add_string(hwnd, "gcc-3.4.2");
 
-    ::SendMessage(hwnd, CB_SETCURSEL, 0, 0);
+    combo_box::select_by_index(hwnd, 0);
 
     return hwnd;
-}
-
-std::string get_combo_box_seltext(::HWND hwnd)
-{
-    ::WPARAM index = ::SendMessage(hwnd, CB_GETCURSEL, 0, 0);
-    ::WPARAM size = ::SendMessage(hwnd, CB_GETLBTEXTLEN, index, 0);
-    boost::scoped_array<char> buf(new char[size+1]);
-    ::SendMessage(
-        hwnd, CB_GETLBTEXT, index, reinterpret_cast< ::LPARAM>(buf.get()));
-    return std::string(buf.get(), size);
 }
 
 } // namespace
@@ -125,9 +111,7 @@ public:
         ::REBARINFO bar_info;
         std::memset(&bar_info, 0, sizeof(bar_info));
         bar_info.cbSize = sizeof(bar_info);
-
-        ::SendMessage(
-            rebar_, RB_SETBARINFO, 0, reinterpret_cast< ::LPARAM>(&bar_info));
+        rebar::bar_info(rebar_, bar_info);
 
         toolset_ = create_toolset_combo_box(rebar_);
 
@@ -147,12 +131,11 @@ public:
         band_info.cyMinChild = rect.bottom - rect.top;
         band_info.cx = 200;
 
-        ::SendMessage(rebar_, RB_INSERTBAND,
-            -1, reinterpret_cast< ::LPARAM>(&band_info));
+        rebar::add_band(rebar_, band_info);
 
         rect = calc_log_list_size();
 
-        log_list_ = ::CreateWindowEx(
+        log_list_ = ::CreateWindowExA(
             WS_EX_CLIENTEDGE, "LISTBOX", "",
             WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL | WS_CLIPSIBLINGS |
             LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT,
@@ -186,11 +169,9 @@ public:
         title += filename;
         title += " - ";
         title += app_title;
+        window::set_text(handle_, title);
 
-        ::SetWindowTextA(handle_, title.c_str());
-
-        ::EnableMenuItem(
-            ::GetMenu(handle_), ID_BUILD_RUN, MF_BYCOMMAND|MF_ENABLED);
+        enable_menu_item(ID_BUILD_RUN);
     }
 
     void run()
@@ -200,7 +181,7 @@ public:
         std::vector<std::string> args;
         args.push_back("bjam");
         args.push_back("--v2");
-        args.push_back("toolset=" + get_combo_box_seltext(toolset_));
+        args.push_back("toolset=" + window::get_text(toolset_));
 
         proc::context ctx;
         ctx.stdin_behavior(proc::silence_stream());
@@ -216,10 +197,8 @@ public:
         thread_.reset(new boost::thread(
             boost::bind(&bjam_thread, log_list_, src)));
 
-        ::EnableMenuItem(
-            ::GetMenu(handle_), ID_BUILD_RUN, MF_BYCOMMAND|MF_GRAYED);
-        ::EnableMenuItem(
-            ::GetMenu(handle_), ID_BUILD_STOP, MF_BYCOMMAND|MF_ENABLED);
+        disable_menu_item(ID_BUILD_RUN);
+        enable_menu_item(ID_BUILD_STOP);
     }
 
     void stop()
@@ -234,10 +213,8 @@ public:
         thread_.reset();
         bjam_proc_.reset();
 
-        ::EnableMenuItem(
-            ::GetMenu(handle_), ID_BUILD_RUN, MF_BYCOMMAND|MF_ENABLED);
-        ::EnableMenuItem(
-            ::GetMenu(handle_), ID_BUILD_STOP, MF_BYCOMMAND|MF_GRAYED);
+        enable_menu_item(ID_BUILD_RUN);
+        disable_menu_item(ID_BUILD_STOP);
     }
 
     bool running() const
@@ -273,6 +250,16 @@ private:
         rect.top += (bar.bottom - bar.top);
 
         return rect;
+    }
+
+    void enable_menu_item(::UINT id)
+    {
+        ::EnableMenuItem(::GetMenu(handle_), id, MF_BYCOMMAND|MF_ENABLED);
+    }
+
+    void disable_menu_item(::UINT id)
+    {
+        ::EnableMenuItem(::GetMenu(handle_), id, MF_BYCOMMAND|MF_GRAYED);
     }
 };
 
