@@ -348,6 +348,19 @@ public:
         }
         else if (t == stream_behavior::close)
             start_info->hStdError = INVALID_HANDLE_VALUE;
+        else if (t == stream_behavior::redirect_to_stdout)
+        {
+            ::HANDLE self = ::GetCurrentProcess();
+
+            ::HANDLE h;
+            ::DuplicateHandle(
+                self, start_info->hStdOutput, self, &h,
+                0, TRUE, DUPLICATE_SAME_ACCESS
+            );
+            peer_stderr.reset(h);
+
+            start_info->hStdError = h;
+        }
         else if (t == stream_behavior::silence)
         {
             ::HANDLE h = ::CreateFile(
@@ -553,6 +566,13 @@ public:
 
             peer_stderr.reset(fds[1]);
             stderr_ = pipe_source(fds[0], true);
+        }
+        else if (t == stream_behavior::redirect_to_stdout)
+        {
+            int fd = ::dup(peer_stdout.get());
+            if (fd == -1)
+                throw std::runtime_error("dup() failed");
+            peer_stderr.reset(fd);
         }
         else if (t == stream_behavior::silence)
         {

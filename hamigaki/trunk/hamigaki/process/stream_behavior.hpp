@@ -15,7 +15,7 @@ namespace hamigaki { namespace process {
 class stream_behavior
 {
 public:
-    enum type { capture, close, inherit, silence };
+    enum type { capture, close, inherit, redirect_to_stdout, silence };
 
     stream_behavior() : type_(inherit)
     {
@@ -47,6 +47,11 @@ inline stream_behavior close_stream()
 inline stream_behavior inherit_stream()
 {
     return stream_behavior(stream_behavior::inherit);
+}
+
+inline stream_behavior redirect_stream_to_stdout()
+{
+    return stream_behavior(stream_behavior::redirect_to_stdout);
 }
 
 inline stream_behavior silence_stream()

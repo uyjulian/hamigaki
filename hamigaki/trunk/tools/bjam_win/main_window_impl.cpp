@@ -87,7 +87,7 @@ void bjam_thread(::HWND hwnd, proc::pipe_source src)
     ::SendMessage(hwnd, CB_ADDSTRING,
         0, reinterpret_cast< ::LPARAM>("msvc-7.1"));
     ::SendMessage(hwnd, CB_ADDSTRING,
-        0, reinterpret_cast< ::LPARAM>("gcc-mingw-3.4.2"));
+        0, reinterpret_cast< ::LPARAM>("gcc-3.4.2"));
 
     ::SendMessage(hwnd, CB_SETCURSEL, 0, 0);
 
@@ -205,7 +205,7 @@ public:
         proc::context ctx;
         ctx.stdin_behavior(proc::silence_stream());
         ctx.stdout_behavior(proc::capture_stream());
-        ctx.stderr_behavior(proc::silence_stream());
+        ctx.stderr_behavior(proc::redirect_stream_to_stdout());
 
         ctx.work_directory(jamfile_.branch_path().native_directory_string());
 
