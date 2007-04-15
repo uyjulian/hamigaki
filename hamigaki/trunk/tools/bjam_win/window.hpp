@@ -51,6 +51,29 @@ inline void set_text(::HWND hwnd, const std::string& s)
     set_text(hwnd, s.c_str());
 }
 
+inline ::RECT bounding_rect(::HWND hwnd)
+{
+    ::RECT rect;
+    if (::GetWindowRect(hwnd, &rect) == FALSE)
+    {
+        throw std::runtime_error(
+            "cannot retrieves the bounding rectangle of the window");
+    }
+    return rect;
+}
+
+inline ::LONG width(::HWND hwnd)
+{
+    const ::RECT& rect = bounding_rect(hwnd);
+    return rect.right - rect.left;
+}
+
+inline ::LONG height(::HWND hwnd)
+{
+    const ::RECT& rect = bounding_rect(hwnd);
+    return rect.bottom - rect.top;
+}
+
 } // End namespace window
 
 #endif // WINDOW_HPP

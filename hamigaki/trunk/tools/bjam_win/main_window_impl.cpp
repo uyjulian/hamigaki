@@ -18,6 +18,7 @@
 #include "window.hpp"
 #include "main_window_impl.hpp"
 #include "rebar.hpp"
+#include "controls.h"
 #include "menus.h"
 
 namespace proc = hamigaki::process;
@@ -69,7 +70,7 @@ void bjam_thread(::HWND hwnd, proc::pipe_source src)
     ::PostMessage(::GetParent(hwnd), main_window::proc_end_msg, 0, 0);
 }
 
-::HWND create_toolset_combo_box(::HWND parent)
+::HWND create_combo_box(::HWND parent)
 {
     ::HINSTANCE hInstance =
         reinterpret_cast< ::HINSTANCE>(::GetModuleHandle(0));
@@ -81,9 +82,53 @@ void bjam_thread(::HWND hwnd, proc::pipe_source src)
         parent, 0, hInstance, 0
     );
 
+    return hwnd;
+}
+
+::HWND create_toolset_combo_box(::HWND parent)
+{
+    ::HWND hwnd = create_combo_box(parent);
+
     combo_box::add_string(hwnd, "msvc-8.0");
     combo_box::add_string(hwnd, "msvc-7.1");
     combo_box::add_string(hwnd, "gcc-3.4.2");
+
+    combo_box::select_by_index(hwnd, 0);
+
+    return hwnd;
+}
+
+::HWND create_variant_combo_box(::HWND parent)
+{
+    ::HWND hwnd = create_combo_box(parent);
+
+    combo_box::add_string(hwnd, "debug");
+    combo_box::add_string(hwnd, "release");
+    combo_box::add_string(hwnd, "profile");
+
+    combo_box::select_by_index(hwnd, 0);
+
+    return hwnd;
+}
+
+::HWND create_threading_combo_box(::HWND parent)
+{
+    ::HWND hwnd = create_combo_box(parent);
+
+    combo_box::add_string(hwnd, "single");
+    combo_box::add_string(hwnd, "multi");
+
+    combo_box::select_by_index(hwnd, 0);
+
+    return hwnd;
+}
+
+::HWND create_link_combo_box(::HWND parent)
+{
+    ::HWND hwnd = create_combo_box(parent);
+
+    combo_box::add_string(hwnd, "shared");
+    combo_box::add_string(hwnd, "static");
 
     combo_box::select_by_index(hwnd, 0);
 
@@ -105,7 +150,9 @@ public:
             WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
             RBS_VARHEIGHT | CCS_NODIVIDER,
             0, 0, 0, 0,
-            handle_, 0, hInstance, 0
+            handle_,
+            reinterpret_cast< ::HMENU>(static_cast< ::UINT_PTR>(IDC_REBAR)),
+            hInstance, 0
         );
 
         ::REBARINFO bar_info;
@@ -114,26 +161,21 @@ public:
         rebar::bar_info(rebar_, bar_info);
 
         toolset_ = create_toolset_combo_box(rebar_);
+        add_band(toolset_, "Toolset:", 170);
 
-        ::RECT rect;
-        ::GetWindowRect(toolset_, &rect);
+        variant_ = create_variant_combo_box(rebar_);
+        add_band(variant_, "Variant:", 140);
 
-        ::REBARBANDINFOA band_info;
-        std::memset(&band_info, 0, sizeof(band_info));
-        band_info.cbSize = sizeof(band_info);
-        band_info.fMask =
-            RBBIM_TEXT | RBBIM_STYLE | RBBIM_CHILD |
-            RBBIM_CHILDSIZE | RBBIM_SIZE;
-        band_info.fStyle = RBBS_CHILDEDGE;
-        band_info.lpText = "Toolset:";
-        band_info.hwndChild = toolset_;
-        band_info.cxMinChild = 0;
-        band_info.cyMinChild = rect.bottom - rect.top;
-        band_info.cx = 200;
+        threading_ = create_threading_combo_box(rebar_);
+        add_band(threading_, "Threading:", 150);
 
-        rebar::add_band(rebar_, band_info);
+        link_ = create_link_combo_box(rebar_);
+        add_band(link_, "Link:", 120);
 
-        rect = calc_log_list_size();
+        runtime_link_ = create_link_combo_box(rebar_);
+        add_band(runtime_link_, "Runtime link:", 170);
+
+        ::RECT rect = calc_log_list_size();
 
         log_list_ = ::CreateWindowExA(
             WS_EX_CLIENTEDGE, "LISTBOX", "",
@@ -182,6 +224,10 @@ public:
         args.push_back("bjam");
         args.push_back("--v2");
         args.push_back("toolset=" + window::get_text(toolset_));
+        args.push_back("variant=" + window::get_text(variant_));
+        args.push_back("threading=" + window::get_text(threading_));
+        args.push_back("link=" + window::get_text(link_));
+        args.push_back("runtime-link=" + window::get_text(runtime_link_));
 
         proc::context ctx;
         ctx.stdin_behavior(proc::silence_stream());
@@ -224,7 +270,15 @@ public:
 
     void update_size()
     {
-        ::RECT rect = calc_log_list_size();
+        ::RECT rect;
+        ::GetClientRect(handle_, &rect);
+
+        ::SendMessage(
+            rebar_, WM_SIZE, SIZE_RESTORED,
+            MAKELPARAM(rect.right-rect.left, rect.bottom-rect.top)
+        );
+
+        rect = calc_log_list_size();
 
         ::MoveWindow(log_list_, rect.left, rect.top,
             rect.right-rect.left, rect.bottom-rect.top, TRUE);
@@ -234,10 +288,32 @@ private:
     ::HWND handle_;
     ::HWND rebar_;
     ::HWND toolset_;
+    ::HWND variant_;
+    ::HWND threading_;
+    ::HWND link_;
+    ::HWND runtime_link_;
     ::HWND log_list_;
     fs::path jamfile_;
     boost::scoped_ptr<proc::child> bjam_proc_;
     boost::scoped_ptr<boost::thread> thread_;
+
+    void add_band(::HWND hwnd, const char* text, ::UINT width)
+    {
+        ::REBARBANDINFOA band_info;
+        std::memset(&band_info, 0, sizeof(band_info));
+        band_info.cbSize = sizeof(band_info);
+        band_info.fMask =
+            RBBIM_TEXT | RBBIM_STYLE | RBBIM_CHILD |
+            RBBIM_CHILDSIZE | RBBIM_SIZE;
+        band_info.fStyle = RBBS_CHILDEDGE;
+        band_info.lpText = const_cast<char*>(text);
+        band_info.hwndChild = hwnd;
+        band_info.cxMinChild = 0;
+        band_info.cyMinChild = window::height(hwnd);
+        band_info.cx = width;
+
+        rebar::add_band(rebar_, band_info);
+    }
 
     ::RECT calc_log_list_size()
     {

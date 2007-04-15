@@ -10,7 +10,9 @@
 #include <boost/scoped_array.hpp>
 #include "main_window_impl.hpp"
 #include "main_window.hpp"
+#include "controls.h"
 #include "menus.h"
+#include <commctrl.h>
 #include <shellapi.h>
 
 namespace
@@ -108,6 +110,15 @@ std::string get_drop_filename(::HDROP drop)
 
             if (pimpl)
                 pimpl->open(filename);
+        }
+        else if (uMsg == WM_NOTIFY)
+        {
+            ::NMHDR& head = *reinterpret_cast< ::NMHDR*>(lParam);
+            if ((head.idFrom == IDC_REBAR) && (head.code == RBN_HEIGHTCHANGE))
+            {
+                if (pimpl)
+                    pimpl->update_size();
+            }
         }
         else if (uMsg == main_window::proc_end_msg)
         {
