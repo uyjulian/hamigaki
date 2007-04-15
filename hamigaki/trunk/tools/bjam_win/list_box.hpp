@@ -14,9 +14,9 @@
 #include <string>
 #include <windows.h>
 
-void subclass_list_box(::HWND hwnd);
-
 namespace list_box {
+
+void enable_horizontal_scroll_bar(::HWND hwnd);
 
 inline ::UINT_PTR add_string(::HWND hwnd, const char* s)
 {
@@ -39,6 +39,14 @@ inline ::UINT_PTR add_string(::HWND hwnd, const std::string& s)
 inline void reset_content(::HWND hwnd)
 {
     ::SendMessage(hwnd, LB_RESETCONTENT, 0, 0);
+}
+
+inline void anchor_index(::HWND hwnd, ::UINT_PTR index)
+{
+    ::LRESULT res = ::SendMessage(hwnd, LB_SETANCHORINDEX, index, 0);
+
+    if (res == LB_ERR)
+        throw std::runtime_error("cannot set the anchor for the list box");
 }
 
 } // End namespace list_box

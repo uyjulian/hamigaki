@@ -119,10 +119,14 @@ private:
 
 } // namespace
 
-void subclass_list_box(::HWND hwnd)
+namespace list_box {
+
+void enable_horizontal_scroll_bar(::HWND hwnd)
 {
     ::LONG_PTR old = SetWindowLongPtr(
         hwnd, GWLP_WNDPROC, reinterpret_cast< ::LONG_PTR>(&window_proc));
 
     ::SetPropA(hwnd, old_wndproc_name, reinterpret_cast< ::HANDLE>(old));
 }
+
+} // End namespace list_box

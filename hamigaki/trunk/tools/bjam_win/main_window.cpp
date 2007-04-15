@@ -183,8 +183,6 @@ void main_window_open_jamfile(::HWND hwnd, const std::string& filename)
             GetWindowLongPtr(hwnd, GWLP_USERDATA)
         );
 
-    
-
     if (pimpl)
         pimpl->open(filename);
 }

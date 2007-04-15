@@ -58,7 +58,8 @@ void bjam_thread(::HWND hwnd, proc::pipe_source src)
             if (!line.empty() && (line[line.size()-1] == '\r'))
                 line.resize(line.size()-1);
 
-            list_box::add_string(hwnd, line);
+            ::UINT_PTR index = list_box::add_string(hwnd, line);
+            list_box::anchor_index(hwnd, index);
         }
 
     }
@@ -75,11 +76,9 @@ void bjam_thread(::HWND hwnd, proc::pipe_source src)
     ::HINSTANCE hInstance =
         reinterpret_cast< ::HINSTANCE>(::GetModuleHandle(0));
 
-    ::HWND hwnd = ::CreateWindowExA(
-        WS_EX_CLIENTEDGE, "COMBOBOX", "",
-        WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | CBS_DROPDOWNLIST,
-        0, 0, 0, 100,
-        parent, 0, hInstance, 0
+    ::HWND hwnd = window::create_child(
+        WS_EX_CLIENTEDGE, "COMBOBOX", "", CBS_DROPDOWNLIST,
+        0, 0, 0, 100, parent, 0, hInstance
     );
 
     return hwnd;
@@ -145,14 +144,10 @@ public:
         ::HINSTANCE hInstance =
             reinterpret_cast< ::HINSTANCE>(::GetModuleHandle(0));
 
-        rebar_ = ::CreateWindowExA(
+        rebar_ = window::create_child(
             WS_EX_TOOLWINDOW, REBARCLASSNAME, "",
-            WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
-            RBS_VARHEIGHT | CCS_NODIVIDER,
-            0, 0, 0, 0,
-            handle_,
-            reinterpret_cast< ::HMENU>(static_cast< ::UINT_PTR>(IDC_REBAR)),
-            hInstance, 0
+            WS_CLIPCHILDREN | RBS_VARHEIGHT | CCS_NODIVIDER,
+            0, 0, 0, 0, handle_, IDC_REBAR, hInstance
         );
 
         ::REBARINFO bar_info;
@@ -177,15 +172,14 @@ public:
 
         ::RECT rect = calc_log_list_size();
 
-        log_list_ = ::CreateWindowExA(
+        log_list_ = window::create_child(
             WS_EX_CLIENTEDGE, "LISTBOX", "",
-            WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL | WS_CLIPSIBLINGS |
-            LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT,
+            WS_HSCROLL | WS_VSCROLL | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT,
             rect.left, rect.top,
             rect.right-rect.left, rect.bottom-rect.top,
-            handle_, 0, hInstance, 0
+            handle_, 0, hInstance
         );
-        subclass_list_box(log_list_);
+        list_box::enable_horizontal_scroll_bar(log_list_);
     }
 
     ~impl()
@@ -245,6 +239,8 @@ public:
 
         disable_menu_item(ID_BUILD_RUN);
         enable_menu_item(ID_BUILD_STOP);
+
+        ::SetFocus(log_list_);
     }
 
     void stop()
