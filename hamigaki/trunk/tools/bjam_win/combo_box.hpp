@@ -28,11 +28,25 @@ inline ::UINT_PTR add_string(::HWND hwnd, const char* s)
     return static_cast< ::UINT_PTR>(res);
 }
 
+inline void reset_content(::HWND hwnd)
+{
+    ::SendMessage(hwnd, CB_RESETCONTENT, 0, 0);
+}
+
 inline void select_by_index(::HWND hwnd, ::UINT_PTR index)
 {
     ::LRESULT res = ::SendMessage(hwnd, CB_SETCURSEL, index, 0);
     if (res == CB_ERR)
         throw std::out_of_range("bad index for the combo box");
+}
+
+inline ::UINT_PTR selected_index(::HWND hwnd)
+{
+    ::LRESULT res = ::SendMessage(hwnd, CB_GETCURSEL, 0, 0);
+    if (res == CB_ERR)
+        throw std::runtime_error("no item is selected for the combo box");
+
+    return static_cast< ::UINT_PTR>(res);
 }
 
 } // End namespace combo_box

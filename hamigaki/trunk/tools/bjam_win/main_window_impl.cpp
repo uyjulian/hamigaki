@@ -13,6 +13,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/bind.hpp>
 #include <boost/scoped_ptr.hpp>
+#include "bjam_parser.hpp"
 #include "combo_box.hpp"
 #include "list_box.hpp"
 #include "window.hpp"
@@ -134,6 +135,21 @@ void bjam_thread(::HWND hwnd, proc::pipe_source src)
     return hwnd;
 }
 
+void set_bjam_targets(::HWND hwnd, const std::string& filename)
+{
+    combo_box::reset_content(hwnd);
+    combo_box::add_string(hwnd, "(all)");
+
+    std::vector<std::string> targets;
+    if (parse_jamfile(filename, targets))
+    {
+        for (std::size_t i = 0, size = targets.size(); i < size; ++i)
+            combo_box::add_string(hwnd, targets[i].c_str());
+    }
+
+    combo_box::select_by_index(hwnd, 0);
+}
+
 } // namespace
 
 class main_window::impl
@@ -170,6 +186,9 @@ public:
         runtime_link_ = create_link_combo_box(rebar_);
         add_band(runtime_link_, "Runtime link:", 170);
 
+        target_ = create_combo_box(rebar_);
+        add_band(target_, "Target:", 200);
+
         ::RECT rect = calc_log_list_size();
 
         log_list_ = window::create_child(
@@ -201,6 +220,8 @@ public:
 
         jamfile_ = fs::path(filename, fs::native);
 
+        set_bjam_targets(target_, filename);
+
         std::string title;
         title += filename;
         title += " - ";
@@ -222,6 +243,9 @@ public:
         args.push_back("threading=" + window::get_text(threading_));
         args.push_back("link=" + window::get_text(link_));
         args.push_back("runtime-link=" + window::get_text(runtime_link_));
+
+        if (combo_box::selected_index(target_) != 0)
+            args.push_back(window::get_text(target_));
 
         proc::context ctx;
         ctx.stdin_behavior(proc::silence_stream());
@@ -288,6 +312,7 @@ private:
     ::HWND threading_;
     ::HWND link_;
     ::HWND runtime_link_;
+    ::HWND target_;
     ::HWND log_list_;
     fs::path jamfile_;
     boost::scoped_ptr<proc::child> bjam_proc_;
