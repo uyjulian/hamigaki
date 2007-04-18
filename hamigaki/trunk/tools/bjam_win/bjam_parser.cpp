@@ -21,6 +21,27 @@ using namespace boost::spirit;
 namespace
 {
 
+struct bjam_skip_grammar : grammar<bjam_skip_grammar>
+{
+    template<class ScannerT>
+    struct definition
+    {
+        typedef rule<ScannerT> rule_t;
+
+        rule_t skip;
+
+        definition(const bjam_skip_grammar&)
+        {
+            skip
+                =   space_p
+                |   '#' >> *(anychar_p - '\n') >> '\n'
+                ;
+        }
+
+        const rule_t& start() const { return skip; }
+    };
+};
+
 struct bjam_grammar : grammar<bjam_grammar>
 {
     explicit bjam_grammar(std::vector<std::string>& vs) : storage(vs)
@@ -45,6 +66,10 @@ struct bjam_grammar : grammar<bjam_grammar>
         rule_t invoke0, invoke, rule_expansion;
         rule_t pattern, switch_;
         rule_t exe, lib;
+#if BOOST_VERSION >= 103400
+        rule_t jamfile;
+        bjam_skip_grammar skip;
+#endif
 
         definition(const bjam_grammar& self)
         {
@@ -260,33 +285,23 @@ struct bjam_grammar : grammar<bjam_grammar>
                     |   lib
                     )
                 ;
+
+#if BOOST_VERSION >= 103400
+            jamfile
+                =   statements
+                    >> lexeme_d[!skip]
+                ;
+#endif
         }
 
         const rule_t& start() const
         {
+#if BOOST_VERSION < 103400
             return statements;
+#else
+            return jamfile;
+#endif
         }
-    };
-};
-
-struct bjam_skip_grammar : grammar<bjam_skip_grammar>
-{
-    template<class ScannerT>
-    struct definition
-    {
-        typedef rule<ScannerT> rule_t;
-
-        rule_t skip;
-
-        definition(const bjam_skip_grammar&)
-        {
-            skip
-                =   space_p
-                |   '#' >> *(anychar_p - '\n') >> '\n'
-                ;
-        }
-
-        const rule_t& start() const { return skip; }
     };
 };
 
