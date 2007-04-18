@@ -33,6 +33,9 @@ public:
     {
         std::string s(first, last);
 
+        if (s.find('$') != std::string::npos)
+            return;
+
         std::string::size_type pos = s.rfind('.');
         if (pos != std::string::npos)
             s.erase(pos);
@@ -87,7 +90,7 @@ struct bjam_grammar : grammar<bjam_grammar>
 
         rule_t statements, statement, literal, varexp, rulename;
         rule_t actions, action_modifiers, action_binds;
-        rule_t cond0, cond, block, if_, for_, while_;
+        rule_t cond0, cond, block, if_, for_, while_, rule_;
         rule_t invoke, rule_expansion;
         rule_t pattern, switch_;
         rule_t exe, lib, test, test_rule;
@@ -242,6 +245,14 @@ struct bjam_grammar : grammar<bjam_grammar>
                     >> block
                 ;
 
+            rule_
+                =   "rule" >> literal
+                    >>  (   '(' >> *( varexp | ':' ) >> ')'
+                        |   *( varexp | ':' )
+                        )
+                    >> block
+                ;
+
             pattern
                 =   lexeme_d
                     [
@@ -306,6 +317,9 @@ struct bjam_grammar : grammar<bjam_grammar>
                 |   lib
                 |   test
                 |   invoke
+                |   "break"
+                |   "continue"
+                |   "return" >> *( varexp | ':' )
                 ;
 
             statements
@@ -315,6 +329,7 @@ struct bjam_grammar : grammar<bjam_grammar>
                     |   for_
                     |   while_
                     |   switch_
+                    |   rule_
                     |   statement >> ';'
                     )
                 ;
