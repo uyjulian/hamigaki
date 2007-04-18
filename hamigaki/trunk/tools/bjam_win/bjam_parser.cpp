@@ -21,6 +21,31 @@ using namespace boost::spirit;
 namespace
 {
 
+class push_back_test_actor
+{
+public:
+    push_back_test_actor(std::vector<std::string>& vs) : vs_(vs)
+    {
+    }
+
+    template<class Iterator>
+    void operator()(Iterator first, Iterator last) const
+    {
+        std::string s(first, last);
+
+        std::string::size_type pos = s.rfind('.');
+        if (pos != std::string::npos)
+            s.erase(pos);
+
+        s.append(".test");
+
+        vs_.push_back(s);
+    }
+
+private:
+    std::vector<std::string>& vs_;
+};
+
 struct bjam_skip_grammar : grammar<bjam_skip_grammar>
 {
     template<class ScannerT>
@@ -60,12 +85,12 @@ struct bjam_grammar : grammar<bjam_grammar>
 
         symbols<> keyword;
 
-        rule_t statements, literal, varexp, vardef, rulename;
+        rule_t statements, statement, literal, varexp, rulename;
         rule_t actions, action_modifiers, action_binds;
         rule_t cond0, cond, block, if_, for_, while_;
-        rule_t invoke0, invoke, rule_expansion;
+        rule_t invoke, rule_expansion;
         rule_t pattern, switch_;
-        rule_t exe, lib;
+        rule_t exe, lib, test, test_rule;
 #if BOOST_VERSION >= 103400
         rule_t jamfile;
         bjam_skip_grammar skip;
@@ -140,15 +165,6 @@ struct bjam_grammar : grammar<bjam_grammar>
                 |   literal
                 ;
 
-            vardef
-                =   !str_p("local")
-                    >> literal
-                    >> !( "on" >> +varexp )
-                    >>  ( ch_p('=') | "+=" | "?=" )
-                    >> *varexp
-                    >> ';'
-                ;
-
             action_modifiers
                 =  *(   str_p("existing")
                     |   str_p("ignore")
@@ -165,7 +181,7 @@ struct bjam_grammar : grammar<bjam_grammar>
                 ;
 
             rulename
-                =   literal - "exe" - "lib"
+                =   literal - "exe" - "lib" - test_rule
                 ;
 
             actions
@@ -211,7 +227,7 @@ struct bjam_grammar : grammar<bjam_grammar>
             if_
                 =   "if" >> cond
                     >> block
-                    >> !( "else" >> block )
+                    >> !( "else" >> ( if_ | block ) )
                 ;
 
             for_
@@ -244,16 +260,16 @@ struct bjam_grammar : grammar<bjam_grammar>
                     >> '}'
                 ;
 
-            invoke0
-                =   rulename >> *( varexp | ':' )
-                ;
-
             invoke
-                =   invoke0 >> ';'
+                =   !str_p("local")
+                    >> rulename
+                    >> !( "on" >> +varexp )
+                    >> !( ch_p('=') | "+=" | "?=" )
+                    >> *( varexp | ':' )
                 ;
 
             rule_expansion
-                =   '[' >> invoke0 >> ']'
+                =   '[' >> statement >> ']'
                 ;
 
             exe
@@ -261,7 +277,6 @@ struct bjam_grammar : grammar<bjam_grammar>
                     >> literal[push_back_a(self.storage)]
                     >> ':'
                     >> *( varexp | ':' )
-                    >> ';'
                 ;
 
             lib
@@ -269,7 +284,28 @@ struct bjam_grammar : grammar<bjam_grammar>
                     >> literal[push_back_a(self.storage)]
                     >> ':'
                     >> *( varexp | ':' )
-                    >> ';'
+                ;
+
+            test_rule
+                =   str_p("compile")
+                |   "compile-fail"
+                |   "link"
+                |   "link-fail"
+                |   "run"
+                |   "run-fail"
+                ;
+
+            test
+                =   test_rule
+                    >> literal[push_back_test_actor(self.storage)]
+                    >> *( varexp | ':' )
+                ;
+
+            statement
+                =   exe
+                |   lib
+                |   test
+                |   invoke
                 ;
 
             statements
@@ -279,10 +315,7 @@ struct bjam_grammar : grammar<bjam_grammar>
                     |   for_
                     |   while_
                     |   switch_
-                    |   invoke
-                    |   vardef
-                    |   exe
-                    |   lib
+                    |   statement >> ';'
                     )
                 ;
 
