@@ -8,6 +8,7 @@
 //  See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include <boost/scoped_array.hpp>
+#include <stdexcept>
 #include "main_window_impl.hpp"
 #include "main_window.hpp"
 #include "controls.h"
