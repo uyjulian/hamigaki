@@ -78,7 +78,7 @@ void bjam_thread(::HWND hwnd, proc::pipe_source src)
         reinterpret_cast< ::HINSTANCE>(::GetModuleHandle(0));
 
     ::HWND hwnd = window::create_child(
-        WS_EX_CLIENTEDGE, "COMBOBOX", "", CBS_DROPDOWNLIST,
+        WS_EX_CLIENTEDGE, "COMBOBOX", "", WS_VSCROLL | CBS_DROPDOWNLIST,
         0, 0, 0, 100, parent, 0, hInstance
     );
 
