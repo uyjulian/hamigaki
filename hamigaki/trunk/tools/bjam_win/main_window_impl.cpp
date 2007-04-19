@@ -155,14 +155,14 @@ void set_bjam_targets(::HWND hwnd, const std::string& filename)
 class main_window::impl
 {
 public:
-    explicit impl(::HWND handle) : handle_(handle)
+    explicit impl(::HWND handle) : handle_(handle), total_band_width_(0)
     {
         ::HINSTANCE hInstance =
             reinterpret_cast< ::HINSTANCE>(::GetModuleHandle(0));
 
         rebar_ = window::create_child(
             WS_EX_TOOLWINDOW, REBARCLASSNAME, "",
-            WS_CLIPCHILDREN | RBS_VARHEIGHT | CCS_NODIVIDER,
+            WS_CLIPCHILDREN | RBS_VARHEIGHT | RBS_BANDBORDERS | CCS_NODIVIDER,
             0, 0, 0, 0, handle_, IDC_REBAR, hInstance
         );
 
@@ -187,9 +187,9 @@ public:
         add_band(runtime_link_, "Runtime link:", 170);
 
         target_ = create_combo_box(rebar_);
-        add_band(target_, "Target:", 200);
+        add_band(target_, "Target:", 180);
 
-        ::RECT rect = calc_log_list_size();
+        ::RECT rect = calc_log_list_rect();
 
         log_list_ = window::create_child(
             WS_EX_CLIENTEDGE, "LISTBOX", "",
@@ -228,6 +228,7 @@ public:
         title += app_title;
         window::set_text(handle_, title);
 
+        list_box::reset_content(log_list_);
         enable_menu_item(ID_BUILD_RUN);
     }
 
@@ -290,15 +291,14 @@ public:
 
     void update_size()
     {
-        ::RECT rect;
-        ::GetClientRect(handle_, &rect);
+        ::SIZE client_size = window::client_area_size(handle_);
 
         ::SendMessage(
             rebar_, WM_SIZE, SIZE_RESTORED,
-            MAKELPARAM(rect.right-rect.left, rect.bottom-rect.top)
+            MAKELPARAM(client_size.cx, client_size.cy)
         );
 
-        rect = calc_log_list_size();
+        ::RECT rect = calc_log_list_rect();
 
         ::MoveWindow(log_list_, rect.left, rect.top,
             rect.right-rect.left, rect.bottom-rect.top, TRUE);
@@ -317,6 +317,7 @@ private:
     fs::path jamfile_;
     boost::scoped_ptr<proc::child> bjam_proc_;
     boost::scoped_ptr<boost::thread> thread_;
+    ::UINT total_band_width_;
 
     void add_band(::HWND hwnd, const char* text, ::UINT width)
     {
@@ -333,19 +334,29 @@ private:
         band_info.cyMinChild = window::height(hwnd);
         band_info.cx = width;
 
+        ::UINT client_width =
+            static_cast< ::UINT>(window::client_area_width(handle_));
+
+        total_band_width_ += width;
+        if (total_band_width_ > client_width)
+        {
+            total_band_width_ = width;
+            band_info.fStyle |= RBBS_BREAK;
+        }
+
         rebar::add_band(rebar_, band_info);
     }
 
-    ::RECT calc_log_list_size()
+    ::RECT calc_log_list_rect()
     {
+        ::SIZE client_size = window::client_area_size(handle_);
+        ::LONG rebar_height = window::height(rebar_);
+
         ::RECT rect;
-        ::GetClientRect(handle_, &rect);
-
-        ::RECT bar;
-        ::GetWindowRect(rebar_, &bar);
-
-        rect.top += (bar.bottom - bar.top);
-
+        rect.left = 0;
+        rect.top = rebar_height;
+        rect.right = client_size.cx;
+        rect.bottom = client_size.cy;
         return rect;
     }
 

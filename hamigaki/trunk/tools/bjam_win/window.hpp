@@ -81,16 +81,51 @@ inline ::RECT bounding_rect(::HWND hwnd)
     return rect;
 }
 
-inline ::LONG width(::HWND hwnd)
+inline ::SIZE size(::HWND hwnd)
 {
     const ::RECT& rect = bounding_rect(hwnd);
-    return rect.right - rect.left;
+
+    ::SIZE sz;
+    sz.cx = rect.right - rect.left;
+    sz.cy = rect.bottom - rect.top;
+
+    return sz;
+}
+
+inline ::LONG width(::HWND hwnd)
+{
+    return size(hwnd).cx;
 }
 
 inline ::LONG height(::HWND hwnd)
 {
-    const ::RECT& rect = bounding_rect(hwnd);
-    return rect.bottom - rect.top;
+    return size(hwnd).cy;
+}
+
+inline ::SIZE client_area_size(::HWND hwnd)
+{
+    ::RECT rect;
+    if (::GetClientRect(hwnd, &rect) == FALSE)
+    {
+        throw std::runtime_error(
+            "cannot retrieves the coordinates of the window's client area");
+    }
+
+    ::SIZE sz;
+    sz.cx = rect.right;
+    sz.cy = rect.bottom;
+
+    return sz;
+}
+
+inline ::LONG client_area_width(::HWND hwnd)
+{
+    return client_area_size(hwnd).cx;
+}
+
+inline ::LONG client_area_height(::HWND hwnd)
+{
+    return client_area_size(hwnd).cy;
 }
 
 } // End namespace window
