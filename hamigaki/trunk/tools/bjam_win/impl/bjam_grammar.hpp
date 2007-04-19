@@ -1,4 +1,4 @@
-//  bjam_parser.cpp: bjam parser
+//  bjam_grammar.hpp: bjam grammar
 
 //  Copyright Takeshi Mouri 2007.
 //  Use, modification, and distribution are subject to the
@@ -7,19 +7,16 @@
 
 //  See http://hamigaki.sourceforge.jp/ for library home page.
 
-#include "bjam_parser.hpp"
+#ifndef IMPL_BJAM_GRAMMAR_HPP
+#define IMPL_BJAM_GRAMMAR_HPP
+
 #include <boost/spirit/core.hpp>
 #include <boost/spirit/actor/push_back_actor.hpp>
 #include <boost/spirit/symbols/symbols.hpp>
 #include <boost/spirit/utility/chset.hpp>
 #include <boost/spirit/utility/chset_operators.hpp>
-#include <fstream>
-#include <iterator>
-
-using namespace boost::spirit;
-
-namespace
-{
+#include <vector>
+#include <string>
 
 class push_back_test_actor
 {
@@ -49,17 +46,19 @@ private:
     std::vector<std::string>& vs_;
 };
 
-struct bjam_skip_grammar : grammar<bjam_skip_grammar>
+struct bjam_skip_grammar : boost::spirit::grammar<bjam_skip_grammar>
 {
     template<class ScannerT>
     struct definition
     {
-        typedef rule<ScannerT> rule_t;
+        typedef boost::spirit::rule<ScannerT> rule_t;
 
         rule_t skip;
 
         definition(const bjam_skip_grammar&)
         {
+            using namespace boost::spirit;
+
             skip
                 =   space_p
                 |   '#' >> *(anychar_p - '\n') >> '\n'
@@ -70,7 +69,7 @@ struct bjam_skip_grammar : grammar<bjam_skip_grammar>
     };
 };
 
-struct bjam_grammar : grammar<bjam_grammar>
+struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
 {
     explicit bjam_grammar(std::vector<std::string>& vs) : storage(vs)
     {
@@ -81,12 +80,15 @@ struct bjam_grammar : grammar<bjam_grammar>
     template<class ScannerT>
     struct definition
     {
-        typedef rule<ScannerT> rule_t;
-        typedef rule<typename lexeme_scanner<ScannerT>::type> lexeme_rule_t;
+        typedef boost::spirit::rule<ScannerT> rule_t;
+
+        typedef boost::spirit::rule<
+            typename boost::spirit::lexeme_scanner<ScannerT>::type
+        > lexeme_rule_t;
 
         lexeme_rule_t literal_char, escape_char, pattern_char;
 
-        symbols<> keyword;
+        boost::spirit::symbols<> keyword;
 
         rule_t statements, statement, literal, varexp, rulename;
         rule_t actions, action_modifiers, action_binds;
@@ -101,6 +103,8 @@ struct bjam_grammar : grammar<bjam_grammar>
 
         definition(const bjam_grammar& self)
         {
+            using namespace boost::spirit;
+
             literal_char
                 =   anychar_p - space_p - '"' - '\\'
                 ;
@@ -353,20 +357,4 @@ struct bjam_grammar : grammar<bjam_grammar>
     };
 };
 
-} // namespace
-
-bool parse_jamfile(
-    const std::string& filename, std::vector<std::string>& targets)
-{
-    std::ifstream is(filename.c_str(), std::ios_base::binary);
-
-    std::string src(
-        std::istreambuf_iterator<char>(is),
-        (std::istreambuf_iterator<char>())
-    );
-
-    bjam_grammar g(targets);
-    bjam_skip_grammar skip;
-
-    return parse(src.c_str(), g, skip).full;
-}
+#endif // IMPL_BJAM_GRAMMAR_HPP
