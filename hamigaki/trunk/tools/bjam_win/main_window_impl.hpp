@@ -23,6 +23,7 @@ public:
 
     void open(const std::string& filename);
     void run();
+    void clean();
     void stop();
     void wait();
     bool running() const;

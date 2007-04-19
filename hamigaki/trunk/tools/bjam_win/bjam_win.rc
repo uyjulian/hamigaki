@@ -23,6 +23,8 @@ BEGIN
     POPUP "&Build"
     BEGIN
         MENUITEM "&Run",                ID_BUILD_RUN,   GRAYED
+        MENUITEM "&Clean",              ID_BUILD_CLEAN, GRAYED
+        MENUITEM SEPARATOR
         MENUITEM "&Stop",               ID_BUILD_STOP,  GRAYED
     END
 END

@@ -67,8 +67,6 @@ public:
         if (pos != std::string::npos)
             s.erase(pos);
 
-        s.append(".test");
-
         vs_.push_back(s);
     }
 
@@ -90,8 +88,6 @@ public:
 
         if (s.find('$') != std::string::npos)
             return;
-
-        s.append(".test");
 
         vs_.push_back(s);
     }

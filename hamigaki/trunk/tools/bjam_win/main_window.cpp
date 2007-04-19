@@ -97,6 +97,8 @@ std::string get_drop_filename(::HDROP drop)
                 ::DestroyWindow(hwnd);
             else if (code == ID_BUILD_RUN)
                 pimpl->run();
+            else if (code == ID_BUILD_CLEAN)
+                pimpl->clean();
             else if (code == ID_BUILD_STOP)
                 pimpl->stop();
         }

@@ -230,42 +230,17 @@ public:
 
         list_box::reset_content(log_list_);
         enable_menu_item(ID_BUILD_RUN);
+        enable_menu_item(ID_BUILD_CLEAN);
     }
 
     void run()
     {
-        std::string bjam = search_path("bjam.exe");
+        excute(false);
+    }
 
-        std::vector<std::string> args;
-        args.push_back("bjam");
-        args.push_back("--v2");
-        args.push_back("toolset=" + window::get_text(toolset_));
-        args.push_back("variant=" + window::get_text(variant_));
-        args.push_back("threading=" + window::get_text(threading_));
-        args.push_back("link=" + window::get_text(link_));
-        args.push_back("runtime-link=" + window::get_text(runtime_link_));
-
-        if (combo_box::selected_index(target_) != 0)
-            args.push_back(window::get_text(target_));
-
-        proc::context ctx;
-        ctx.stdin_behavior(proc::silence_stream());
-        ctx.stdout_behavior(proc::capture_stream());
-        ctx.stderr_behavior(proc::redirect_stream_to_stdout());
-
-        ctx.work_directory(jamfile_.branch_path().native_directory_string());
-
-        bjam_proc_.reset(new proc::child(bjam, args, ctx));
-
-        proc::pipe_source src = bjam_proc_->stdout_source();
-
-        thread_.reset(new boost::thread(
-            boost::bind(&bjam_thread, log_list_, src)));
-
-        disable_menu_item(ID_BUILD_RUN);
-        enable_menu_item(ID_BUILD_STOP);
-
-        ::SetFocus(log_list_);
+    void clean()
+    {
+        excute(true);
     }
 
     void stop()
@@ -281,6 +256,7 @@ public:
         bjam_proc_.reset();
 
         enable_menu_item(ID_BUILD_RUN);
+        enable_menu_item(ID_BUILD_CLEAN);
         disable_menu_item(ID_BUILD_STOP);
     }
 
@@ -369,6 +345,46 @@ private:
     {
         ::EnableMenuItem(::GetMenu(handle_), id, MF_BYCOMMAND|MF_GRAYED);
     }
+
+    void excute(bool clean)
+    {
+        std::string bjam = search_path("bjam.exe");
+
+        std::vector<std::string> args;
+        args.push_back("bjam");
+        args.push_back("--v2");
+        args.push_back("toolset=" + window::get_text(toolset_));
+        args.push_back("variant=" + window::get_text(variant_));
+        args.push_back("threading=" + window::get_text(threading_));
+        args.push_back("link=" + window::get_text(link_));
+        args.push_back("runtime-link=" + window::get_text(runtime_link_));
+
+        if (clean)
+            args.push_back("--clean");
+
+        if (combo_box::selected_index(target_) != 0)
+            args.push_back(window::get_text(target_));
+
+        proc::context ctx;
+        ctx.stdin_behavior(proc::silence_stream());
+        ctx.stdout_behavior(proc::capture_stream());
+        ctx.stderr_behavior(proc::redirect_stream_to_stdout());
+
+        ctx.work_directory(jamfile_.branch_path().native_directory_string());
+
+        bjam_proc_.reset(new proc::child(bjam, args, ctx));
+
+        proc::pipe_source src = bjam_proc_->stdout_source();
+
+        thread_.reset(new boost::thread(
+            boost::bind(&bjam_thread, log_list_, src)));
+
+        disable_menu_item(ID_BUILD_RUN);
+        disable_menu_item(ID_BUILD_CLEAN);
+        enable_menu_item(ID_BUILD_STOP);
+
+        ::SetFocus(log_list_);
+    }
 };
 
 main_window::main_window(::HWND handle) : pimpl_(new impl(handle))
@@ -383,6 +399,11 @@ void main_window::open(const std::string& filename)
 void main_window::run()
 {
     pimpl_->run();
+}
+
+void main_window::clean()
+{
+    pimpl_->clean();
 }
 
 void main_window::stop()

@@ -11,4 +11,5 @@
 #define ID_FILE_LOAD    40001
 #define ID_FILE_EXIT    40002
 #define ID_BUILD_RUN    40011
-#define ID_BUILD_STOP   40012
+#define ID_BUILD_CLEAN  40012
+#define ID_BUILD_STOP   40013
