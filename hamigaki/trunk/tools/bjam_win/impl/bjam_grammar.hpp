@@ -11,17 +11,75 @@
 #define IMPL_BJAM_GRAMMAR_HPP
 
 #include <boost/spirit/core.hpp>
-#include <boost/spirit/actor/push_back_actor.hpp>
 #include <boost/spirit/symbols/symbols.hpp>
 #include <boost/spirit/utility/chset.hpp>
 #include <boost/spirit/utility/chset_operators.hpp>
 #include <vector>
 #include <string>
 
+inline void remove_branch_path(std::string& s)
+{
+    std::string::size_type pos = s.rfind('/');
+    if (pos != std::string::npos)
+        s.erase(0, pos+1);
+}
+
+class push_back_target_actor
+{
+public:
+    explicit push_back_target_actor(std::vector<std::string>& vs) : vs_(vs)
+    {
+    }
+
+    template<class Iterator>
+    void operator()(Iterator first, Iterator last) const
+    {
+        std::string s(first, last);
+        ::remove_branch_path(s);
+
+        if (s.find('$') != std::string::npos)
+            return;
+
+        vs_.push_back(s);
+    }
+
+private:
+    std::vector<std::string>& vs_;
+};
+
 class push_back_test_actor
 {
 public:
-    push_back_test_actor(std::vector<std::string>& vs) : vs_(vs)
+    explicit push_back_test_actor(std::vector<std::string>& vs) : vs_(vs)
+    {
+    }
+
+    template<class Iterator>
+    void operator()(Iterator first, Iterator last) const
+    {
+        std::string s(first, last);
+        ::remove_branch_path(s);
+
+        if (s.find('$') != std::string::npos)
+            return;
+
+        std::string::size_type pos = s.rfind('.');
+        if (pos != std::string::npos)
+            s.erase(pos);
+
+        s.append(".test");
+
+        vs_.push_back(s);
+    }
+
+private:
+    std::vector<std::string>& vs_;
+};
+
+class push_back_bpl_test_actor
+{
+public:
+    explicit push_back_bpl_test_actor(std::vector<std::string>& vs) : vs_(vs)
     {
     }
 
@@ -32,10 +90,6 @@ public:
 
         if (s.find('$') != std::string::npos)
             return;
-
-        std::string::size_type pos = s.rfind('.');
-        if (pos != std::string::npos)
-            s.erase(pos);
 
         s.append(".test");
 
@@ -86,7 +140,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
             typename boost::spirit::lexeme_scanner<ScannerT>::type
         > lexeme_rule_t;
 
-        lexeme_rule_t literal_char, escape_char, pattern_char;
+        lexeme_rule_t literal_char, quote_char, pattern_char;
 
         boost::spirit::symbols<> keyword;
 
@@ -95,7 +149,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
         rule_t cond0, cond, block, if_, for_, while_, rule_;
         rule_t invoke, rule_expansion;
         rule_t pattern, switch_;
-        rule_t exe, lib, test, test_rule;
+        rule_t exe, lib, test, test_rule, bpl_test;
 #if BOOST_VERSION >= 103400
         rule_t jamfile;
         bjam_skip_grammar skip;
@@ -109,8 +163,8 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 =   anychar_p - space_p - '"' - '\\'
                 ;
 
-            escape_char
-                =   '\\' >> anychar_p
+            quote_char
+                =   anychar_p - '"' - '\\'
                 ;
 
             pattern_char
@@ -162,8 +216,11 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
             literal
                 =   lexeme_d
                     [
-                            (+literal_char - keyword)
-                        |   ('"' >> *( escape_char | literal_char ) >> '"')
+                       +(   literal_char
+                        |   '"'
+                            >> *( quote_char | '\\' >> anychar_p )
+                            >> '"'
+                        ) - keyword
                     ]
                 ;
 
@@ -262,7 +319,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                     [
                        +(   pattern_char
                         |   '[' >> !ch_p('^') >> +pattern_char >> ']'
-                        |   escape_char
+                        |   '\\' >> anychar_p
                         )
                     ]
                 ;
@@ -289,25 +346,25 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
 
             exe
                 =   "exe"
-                    >> literal[push_back_a(self.storage)]
+                    >> literal[push_back_target_actor(self.storage)]
                     >> ':'
                     >> *( varexp | ':' )
                 ;
 
             lib
                 =   "lib"
-                    >> literal[push_back_a(self.storage)]
+                    >> literal[push_back_target_actor(self.storage)]
                     >> ':'
                     >> *( varexp | ':' )
                 ;
 
             test_rule
-                =   str_p("compile")
-                |   "compile-fail"
-                |   "link"
+                =   str_p("compile-fail")
+                |   "compile"
                 |   "link-fail"
-                |   "run"
+                |   "link"
                 |   "run-fail"
+                |   "run"
                 ;
 
             test
@@ -316,14 +373,22 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                     >> *( varexp | ':' )
                 ;
 
+            bpl_test
+                =   "bpl-test"
+                    >> literal[push_back_bpl_test_actor(self.storage)]
+                    >> *( varexp | ':' )
+                ;
+
             statement
                 =   exe
                 |   lib
                 |   test
+                |   bpl_test
                 |   invoke
                 |   "break"
                 |   "continue"
                 |   "return" >> *( varexp | ':' )
+                |   "include" >> varexp
                 ;
 
             statements
