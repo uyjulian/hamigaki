@@ -13,6 +13,11 @@
 #include "main_window.hpp"
 #include "controls.h"
 #include "menus.h"
+
+#if !defined(_WIN32_IE)
+    #define _WIN32_IE 0x0501
+#endif
+
 #include <commctrl.h>
 #include <shellapi.h>
 
