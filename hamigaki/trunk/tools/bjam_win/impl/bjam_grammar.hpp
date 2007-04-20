@@ -11,6 +11,7 @@
 #define IMPL_BJAM_GRAMMAR_HPP
 
 #include <boost/spirit/core.hpp>
+#include <boost/spirit/attribute/closure.hpp>
 #include <boost/spirit/symbols/symbols.hpp>
 #include <boost/spirit/utility/chset.hpp>
 #include <boost/spirit/utility/chset_operators.hpp>
@@ -47,6 +48,19 @@ private:
     std::vector<std::string>& vs_;
 };
 
+struct testing_params
+{
+    std::string source;
+    std::string target_name;
+
+    testing_params(){}
+
+    testing_params(const std::string& src, const std::string& name)
+        : source(src), target_name(name)
+    {
+    }
+};
+
 class push_back_test_actor
 {
 public:
@@ -54,18 +68,23 @@ public:
     {
     }
 
-    template<class Iterator>
-    void operator()(Iterator first, Iterator last) const
+    void operator()(const testing_params& val) const
     {
-        std::string s(first, last);
-        ::remove_branch_path(s);
+        std::string s = val.target_name;
+
+        if (s.empty())
+        {
+            s = val.source;
+
+            ::remove_branch_path(s);
+
+            std::string::size_type pos = s.rfind('.');
+            if (pos != std::string::npos)
+                s.erase(pos);
+        }
 
         if (s.find('$') != std::string::npos)
             return;
-
-        std::string::size_type pos = s.rfind('.');
-        if (pos != std::string::npos)
-            s.erase(pos);
 
         vs_.push_back(s);
     }
@@ -145,15 +164,29 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
         rule_t cond0, cond, block, if_, for_, while_, rule_;
         rule_t invoke, rule_expansion;
         rule_t pattern, switch_;
-        rule_t exe, lib, test, test_rule, bpl_test;
+        rule_t exe, lib, test_rule, bpl_test;
 #if BOOST_VERSION >= 103400
         rule_t jamfile;
         bjam_skip_grammar skip;
 #endif
 
+        struct test_closure
+            : boost::spirit::closure<
+                test_closure,
+                testing_params, std::string, std::string
+            >
+        {
+            member1 val;
+            member2 source;
+            member3 target_name;
+        };
+
+        boost::spirit::rule<ScannerT, typename test_closure::context_t> test;
+
         definition(const bjam_grammar& self)
         {
             using namespace boost::spirit;
+            using namespace phoenix;
 
             literal_char
                 =   anychar_p - space_p - '"' - '\\'
@@ -365,8 +398,30 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
 
             test
                 =   test_rule
-                    >> literal[push_back_test_actor(self.storage)]
-                    >> *( varexp | ':' )
+                    // sources
+                    >>  literal
+                        [
+                            test.source = construct_<std::string>(arg1, arg2)
+                        ]
+                    >> *( varexp )
+                    >> !( ':' >> *( varexp ) )  // args
+                    >> !( ':' >> *( varexp ) )  // input-files
+                    >> !( ':' >> *( varexp ) )  // requirements
+                    // target-name
+                    >> !(   ':'
+                            >>  varexp
+                                [
+                                    test.target_name =
+                                        construct_<std::string>(arg1, arg2)
+                                ]
+                        )
+                    >> !( ':' >> *( varexp ) )  // default-build
+                    >>  eps_p
+                        [
+                            test.val =
+                                construct_<testing_params>(
+                                    test.source, test.target_name)
+                        ]
                 ;
 
             bpl_test
@@ -378,7 +433,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
             statement
                 =   exe
                 |   lib
-                |   test
+                |   test[push_back_test_actor(self.storage)]
                 |   bpl_test
                 |   invoke
                 |   "break"
