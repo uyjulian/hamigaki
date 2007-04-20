@@ -164,7 +164,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
         rule_t cond0, cond, block, if_, for_, while_, rule_;
         rule_t invoke, rule_expansion;
         rule_t pattern, switch_;
-        rule_t exe, lib, test_rule, bpl_test;
+        rule_t exe, lib, test_rule, run_rule, bpl_test;
 #if BOOST_VERSION >= 103400
         rule_t jamfile;
         bjam_skip_grammar skip;
@@ -182,6 +182,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
         };
 
         boost::spirit::rule<ScannerT, typename test_closure::context_t> test;
+        boost::spirit::rule<ScannerT, typename test_closure::context_t> run;
 
         definition(const bjam_grammar& self)
         {
@@ -274,7 +275,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             rulename
-                =   literal - "exe" - "lib" - test_rule
+                =   literal - "exe" - "lib" - test_rule - run_rule
                 ;
 
             actions
@@ -392,8 +393,6 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 |   "compile"
                 |   "link-fail"
                 |   "link"
-                |   "run-fail"
-                |   "run"
                 ;
 
             test
@@ -404,8 +403,6 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                             test.source = construct_<std::string>(arg1, arg2)
                         ]
                     >> *( varexp )
-                    >> !( ':' >> *( varexp ) )  // args
-                    >> !( ':' >> *( varexp ) )  // input-files
                     >> !( ':' >> *( varexp ) )  // requirements
                     // target-name
                     >> !(   ':'
@@ -415,12 +412,44 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                                         construct_<std::string>(arg1, arg2)
                                 ]
                         )
-                    >> !( ':' >> *( varexp ) )  // default-build
                     >>  eps_p
                         [
                             test.val =
                                 construct_<testing_params>(
                                     test.source, test.target_name)
+                        ]
+                ;
+
+            run_rule
+                =   str_p("run-fail")
+                |   "run"
+                ;
+
+            run
+                =   run_rule
+                    // sources
+                    >>  literal
+                        [
+                            run.source = construct_<std::string>(arg1, arg2)
+                        ]
+                    >> *( varexp )
+                    >> !( ':' >> *( varexp ) )  // args
+                    >> !( ':' >> *( varexp ) )  // input-files
+                    >> !( ':' >> *( varexp ) )  // requirements
+                    // target-name
+                    >> !(   ':'
+                            >>  varexp
+                                [
+                                    run.target_name =
+                                        construct_<std::string>(arg1, arg2)
+                                ]
+                        )
+                    >> !( ':' >> *( varexp ) )  // default-build
+                    >>  eps_p
+                        [
+                            run.val =
+                                construct_<testing_params>(
+                                    run.source, run.target_name)
                         ]
                 ;
 
@@ -434,6 +463,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 =   exe
                 |   lib
                 |   test[push_back_test_actor(self.storage)]
+                |   run[push_back_test_actor(self.storage)]
                 |   bpl_test
                 |   invoke
                 |   "break"
