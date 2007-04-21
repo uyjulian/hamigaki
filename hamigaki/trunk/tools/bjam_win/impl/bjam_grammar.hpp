@@ -115,29 +115,6 @@ private:
     std::vector<std::string>& vs_;
 };
 
-struct bjam_skip_grammar : boost::spirit::grammar<bjam_skip_grammar>
-{
-    template<class ScannerT>
-    struct definition
-    {
-        typedef boost::spirit::rule<ScannerT> rule_t;
-
-        rule_t skip;
-
-        definition(const bjam_skip_grammar&)
-        {
-            using namespace boost::spirit;
-
-            skip
-                =   space_p
-                |   '#' >> *(anychar_p - '\n') >> '\n'
-                ;
-        }
-
-        const rule_t& start() const { return skip; }
-    };
-};
-
 struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
 {
     explicit bjam_grammar(std::vector<std::string>& vs) : storage(vs)
@@ -151,24 +128,17 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
     {
         typedef boost::spirit::rule<ScannerT> rule_t;
 
-        typedef boost::spirit::rule<
-            typename boost::spirit::lexeme_scanner<ScannerT>::type
-        > lexeme_rule_t;
-
-        lexeme_rule_t literal_char, quote_char, pattern_char;
-
         boost::spirit::symbols<> keyword;
 
-        rule_t statements, statement, literal, varexp, rulename;
+        rule_t literal_char, quote_char, pattern_char;
+        rule_t comment, space;
+        rule_t statements, statement0, statement, literal, varexp, rulename;
         rule_t actions, action_modifiers, action_binds;
-        rule_t cond0, cond, block, if_, for_, while_, rule_;
+        rule_t cond0, cond, block, if_, for_, while_, rule_, module;
         rule_t invoke, rule_expansion;
         rule_t pattern, switch_;
         rule_t exe, lib, test_rule, run_rule, bpl_test;
-#if BOOST_VERSION >= 103400
         rule_t jamfile;
-        bjam_skip_grammar skip;
-#endif
 
         struct test_closure
             : boost::spirit::closure<
@@ -232,6 +202,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ,   "in"
                 ,   "include"
                 ,   "local"
+                ,   "module"
                 ,   "on"
                 ,   "piecemeal"
                 ,   "quietly"
@@ -243,15 +214,20 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ,   "while"
                 ;
 
+            comment
+                =   '#' >> *(anychar_p - '\n') >> '\n'
+                ;
+
+            space
+                =   space_p >> *(space_p | comment)
+                ;
+
             literal
-                =   lexeme_d
-                    [
-                       +(   literal_char
-                        |   '"'
-                            >> *( quote_char | '\\' >> anychar_p )
-                            >> '"'
-                        ) - keyword
-                    ]
+                =  +(   literal_char
+                    |   '"'
+                        >> *( quote_char | '\\' >> anychar_p )
+                        >> '"'
+                    ) - keyword
                 ;
 
             varexp
@@ -260,18 +236,23 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             action_modifiers
-                =  *(   str_p("existing")
-                    |   str_p("ignore")
-                    |   str_p("piecemeal")
-                    |   str_p("quietly")
-                    |   str_p("together")
-                    |   str_p("updated")
+                =  *(
+                        space
+                        >>
+                        (   str_p("existing")
+                        |   str_p("ignore")
+                        |   str_p("piecemeal")
+                        |   str_p("quietly")
+                        |   str_p("together")
+                        |   str_p("updated")
+                        )
                     )
                 ;
 
             action_binds
-                =   str_p("bind")
-                    >> +literal
+                =   space
+                    >> str_p("bind")
+                    >> +(space >> literal)
                 ;
 
             rulename
@@ -281,111 +262,132 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
             actions
                 =   str_p("actions")
                     >> action_modifiers
+                    >> space
                     >> rulename
                     >> !action_binds
+                    >> space
                     >> '{'
-                    >> lexeme_d[ *(~chset<>('}')) ]
+                    >> space_p
+                    >> *(~chset<>('}'))
                     >> '}'
                 ;
 
             cond0
-                =   '(' >> cond >> ')'
-                |   '!' >> cond
+                =   '(' >> space >> cond >> space >> ')'
+                |   '!' >> space >> cond
                 |   varexp
-                    >> !(
-                            (
-                                ch_p('=')
-                            |   "!="
-                            |   '<'
-                            |   "<="
-                            |   '>'
-                            |   ">="
-                            |   "in"
-                            )
-                            >> varexp
-                        )
+                    >>
+                   !(   space >> '='  >> space >> varexp
+                    |   space >> "!=" >> space >> varexp
+                    |   space >> '<'  >> space >> varexp
+                    |   space >> "<=" >> space >> varexp
+                    |   space >> '>'  >> space >> varexp
+                    |   space >> ">=" >> space >> varexp
+                    |   space >> "in" >> *(space >> varexp)
+                    )
                 ;
 
             cond
                 =   cond0
-                    >> *(
-                            ( str_p("&&") | "||" )
-                            >> cond0
+                    >> *(   space >> "&&" >> space >> cond0
+                        |   space >> "||" >> space >> cond0
                         )
                 ;
 
             block
-                =   '{' >> statements >> '}'
+                =   '{' >> !(space >> statements) >> space >> '}'
                 ;
 
             if_
-                =   "if" >> cond
+                =   "if" >> space >> cond >> space
                     >> block
-                    >> !( "else" >> ( if_ | block ) )
+                    >> !( space >> "else" >> space >> ( if_ | block ) )
                 ;
 
             for_
                 =   "for"
-                    >> !str_p("local") >> literal
-                    >> "in" >> *varexp
+                    >> !( space >> str_p("local") )
+                    >> space
+                    >> literal
+                    >> space
+                    >> "in" >> *( space >> varexp )
+                    >> space
                     >> block
                 ;
 
             while_
-                =   "while" >> cond
+                =   "while" >> space >> cond >> space
                     >> block
                 ;
 
             rule_
-                =   "rule" >> literal
-                    >>  (   '(' >> *( varexp | ':' ) >> ')'
-                        |   *( varexp | ':' )
+                =   "rule" >> space >> literal >> space
+                    >>  (   '(' >> *( space >> (varexp | ':') ) >> space >> ')'
+                        |   *( space >> (varexp | ':') )
                         )
+                    >> space
+                    >> block
+                ;
+
+            module
+                =   "module" >> space >> literal >> space
                     >> block
                 ;
 
             pattern
-                =   lexeme_d
-                    [
-                       +(   pattern_char
-                        |   '[' >> !ch_p('^') >> +pattern_char >> ']'
-                        |   '\\' >> anychar_p
-                        )
-                    ]
+                =  +(   pattern_char
+                    |   '[' >> !ch_p('^') >> +pattern_char >> ']'
+                    |   '\\' >> anychar_p
+                    )
                 ;
 
             switch_
                 =   "switch"
+                    >> space
                     >> varexp
+                    >> space
                     >> '{'
-                    >> *( "case" >> pattern >> ':' >> statements )
+                    >> *(
+                            space
+                            >> "case"
+                            >> space
+                            >> pattern
+                            >> space
+                            >> ':'
+                            >> !(space >> statements)
+                        )
+                    >> space
                     >> '}'
                 ;
 
             invoke
-                =   !str_p("local")
+                =   !(str_p("local") >> space)
                     >> rulename
-                    >> !( "on" >> +varexp )
-                    >> !( ch_p('=') | "+=" | "?=" )
-                    >> *( varexp | ':' )
+                    >> !( space >> "on" >> +(space >> varexp) )
+                    >> !( space >> (ch_p('=') | "+=" | "?=") )
+                    >> *( space >> (varexp | ':') )
                 ;
 
             rule_expansion
-                =   '[' >> statement >> ']'
+                =   '[' >> space >> statement0 >> space >> ']'
                 ;
 
             exe
                 =   "exe"
+                    >> space
                     >> literal[push_back_target_actor(self.storage)]
+                    >> space
                     >> ':'
-                    >> *( varexp | ':' )
+                    >> *( space >> (varexp | ':') )
                 ;
 
             lib
                 =   "lib"
+                    >> space
                     >> literal[push_back_target_actor(self.storage)]
+                    >> space
                     >> ':'
-                    >> *( varexp | ':' )
+                    >> *( space >> (varexp | ':') )
                 ;
 
             test_rule
@@ -397,15 +399,18 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
 
             test
                 =   test_rule
+                    >> space
                     // sources
                     >>  literal
                         [
                             test.source = construct_<std::string>(arg1, arg2)
                         ]
-                    >> *( varexp )
-                    >> !( ':' >> *( varexp ) )  // requirements
+                    >> *( space >> varexp )
+                    >> !( space >> ':' >> *(space >> varexp) )  // requirements
                     // target-name
-                    >> !(   ':'
+                    >> !(   space
+                            >> ':'
+                            >> space
                             >>  varexp
                                 [
                                     test.target_name =
@@ -427,24 +432,27 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
 
             run
                 =   run_rule
+                    >> space
                     // sources
                     >>  literal
                         [
                             run.source = construct_<std::string>(arg1, arg2)
                         ]
-                    >> *( varexp )
-                    >> !( ':' >> *( varexp ) )  // args
-                    >> !( ':' >> *( varexp ) )  // input-files
-                    >> !( ':' >> *( varexp ) )  // requirements
+                    >> *( space >> varexp )
+                    >> !( space >> ':' >> *(space >> varexp) )  // args
+                    >> !( space >> ':' >> *(space >> varexp) )  // input-files
+                    >> !( space >> ':' >> *(space >> varexp) )  // requirements
                     // target-name
-                    >> !(   ':'
+                    >> !(   space
+                            >> ':'
+                            >> space
                             >>  varexp
                                 [
                                     run.target_name =
                                         construct_<std::string>(arg1, arg2)
                                 ]
                         )
-                    >> !( ':' >> *( varexp ) )  // default-build
+                    >> !( space >> ':' >> *(space >> varexp) )  // default-build
                     >>  eps_p
                         [
                             run.val =
@@ -455,11 +463,12 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
 
             bpl_test
                 =   "bpl-test"
+                    >> space
                     >> literal[push_back_bpl_test_actor(self.storage)]
-                    >> *( varexp | ':' )
+                    >> *( space >> (varexp | ':') )
                 ;
 
-            statement
+            statement0
                 =   exe
                 |   lib
                 |   test[push_back_test_actor(self.storage)]
@@ -468,37 +477,37 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 |   invoke
                 |   "break"
                 |   "continue"
-                |   "return" >> *( varexp | ':' )
-                |   "include" >> varexp
+                |   "return" >> *( space >> (varexp | ':') )
+                |   "include" >> space >> varexp
                 ;
 
-            statements
-                =  *(   actions
+            statement
+                =   (   actions
                     |   block
                     |   if_
                     |   for_
                     |   while_
                     |   switch_
                     |   rule_
-                    |   statement >> ';'
+                    |   module
+                    |   statement0 >> space >> ';'
                     )
                 ;
 
-#if BOOST_VERSION >= 103400
-            jamfile
-                =   statements
-                    >> lexeme_d[!skip]
+            statements
+                =   statement >> *(space >> statement)
                 ;
-#endif
+
+            jamfile
+                =   *(space_p | comment)
+                    >> !statements
+                    >> !space
+                ;
         }
 
         const rule_t& start() const
         {
-#if BOOST_VERSION < 103400
-            return statements;
-#else
             return jamfile;
-#endif
         }
     };
 };

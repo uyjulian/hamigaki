@@ -37,8 +37,7 @@ int main(int argc, char* argv[])
 
         std::vector<std::string> targets;
         bjam_grammar g(targets);
-        bjam_skip_grammar skip;
-        parse_info<const char*> info = parse(str.c_str(), g, skip);
+        parse_info<const char*> info = parse(str.c_str(), g);
 
         if (!info.full)
         {

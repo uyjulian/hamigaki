@@ -23,7 +23,6 @@ bool parse_jamfile(
     );
 
     bjam_grammar g(targets);
-    bjam_skip_grammar skip;
 
-    return boost::spirit::parse(src.c_str(), g, skip).full;
+    return boost::spirit::parse(src.c_str(), g).full;
 }
