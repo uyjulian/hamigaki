@@ -115,6 +115,30 @@ private:
     std::vector<std::string>& vs_;
 };
 
+class push_back_boostbook_actor
+{
+public:
+    explicit push_back_boostbook_actor(std::vector<std::string>& vs) : vs_(vs)
+    {
+    }
+
+    template<class Iterator>
+    void operator()(Iterator, Iterator) const
+    {
+        vs_.push_back("html");
+        vs_.push_back("onehtml");
+        vs_.push_back("man");
+        vs_.push_back("docbook");
+        vs_.push_back("fo");
+        vs_.push_back("pdf");
+        vs_.push_back("ps");
+        vs_.push_back("tests");
+    }
+
+private:
+    std::vector<std::string>& vs_;
+};
+
 struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
 {
     explicit bjam_grammar(std::vector<std::string>& vs) : storage(vs)
@@ -137,7 +161,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
         rule_t cond0, cond, block, if_, for_, while_, rule_, module;
         rule_t invoke, rule_expansion;
         rule_t pattern, switch_;
-        rule_t exe, lib, test_rule, run_rule, bpl_test;
+        rule_t exe, lib, install, boostbook, test_rule, run_rule, bpl_test;
         rule_t jamfile;
 
         struct test_closure
@@ -256,7 +280,8 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             rulename
-                =   literal - "exe" - "lib" - test_rule - run_rule
+                =   literal - "exe" - "lib" - "install" - "boostbook"
+                    - test_rule - run_rule - bpl_test
                 ;
 
             actions
@@ -390,6 +415,20 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                     >> *( space >> (varexp | ':') )
                 ;
 
+            install
+                =   "install"
+                    >> space
+                    >> literal[push_back_target_actor(self.storage)]
+                    >> space
+                    >> ':'
+                    >> *( space >> (varexp | ':') )
+                ;
+
+            boostbook
+                =   "boostbook"
+                    >> *( space >> (varexp | ':') )
+                ;
+
             test_rule
                 =   str_p("compile-fail")
                 |   "compile"
@@ -471,6 +510,8 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
             statement0
                 =   exe
                 |   lib
+                |   install
+                |   boostbook[push_back_boostbook_actor(self.storage)]
                 |   test[push_back_test_actor(self.storage)]
                 |   run[push_back_test_actor(self.storage)]
                 |   bpl_test
