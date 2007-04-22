@@ -22,6 +22,7 @@ subinclude libs/integer/test ;
 subinclude libs/iostreams/test ;
 subinclude libs/iterator/test ;
 subinclude libs/math/test ;
+subinclude libs/process/test ;
 subinclude libs/type_traits/test ;
 subinclude libs/uuid/test ;
 

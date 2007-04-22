@@ -24,6 +24,7 @@ build-project ../libs/integer/test ;
 build-project ../libs/iostreams/test ;
 build-project ../libs/iterator/test ;
 build-project ../libs/math/test ;
+build-project ../libs/process/test ;
 build-project ../libs/type_traits/test ;
 build-project ../libs/uuid/test ;
 
