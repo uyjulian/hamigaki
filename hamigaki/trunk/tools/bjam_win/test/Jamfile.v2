@@ -8,10 +8,12 @@
 #  See http://hamigaki.sourceforge.jp/ for library home page.
 
 exe bjam_grammar_test : bjam_grammar_test.cpp ;
+exe var_expand_grammar_test : var_expand_grammar_test.cpp ;
 
 install dist-bin
     :
     bjam_grammar_test
+    var_expand_grammar_test
     :
     <install-type>EXE
     <location>../../../dist/bin
