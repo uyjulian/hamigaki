@@ -215,9 +215,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ,   "||"
                 ,   "actions"
                 ,   "bind"
-                ,   "break"
                 ,   "case"
-                ,   "continue"
                 ,   "else"
                 ,   "existing"
                 ,   "for"
@@ -248,6 +246,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
 
             literal
                 =  +(   literal_char
+                    |   '\\' >> anychar_p
                     |   '"'
                         >> *( quote_char | '\\' >> anychar_p )
                         >> '"'
@@ -346,11 +345,16 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             rule_
-                =   "rule" >> space >> literal >> space
-                    >>  (   '(' >> *( space >> (varexp | ':') ) >> space >> ')'
-                        |   *( space >> (varexp | ':') )
+                =   !("local" >> space)
+                    >> "rule" >> space >> literal >> space
+                    >>  (   '('
+                            >> *( space
+                            >> (varexp | ':') )
+                            >> space
+                            >> ')'
+                            >> space
+                        |   *( (varexp | ':') >> space )
                         )
-                    >> space
                     >> block
                 ;
 
@@ -516,8 +520,6 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 |   run[push_back_test_actor(self.storage)]
                 |   bpl_test
                 |   invoke
-                |   "break"
-                |   "continue"
                 |   "return" >> *( space >> (varexp | ':') )
                 |   "include" >> space >> varexp
                 ;
