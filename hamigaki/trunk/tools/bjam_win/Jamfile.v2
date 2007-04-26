@@ -20,6 +20,7 @@ exe bjam_win
     :
     bjam_win.cpp
     bjam_parser.cpp
+    glob.cpp
     list_box.cpp
     main_window.cpp
     main_window_impl.cpp
