@@ -97,6 +97,15 @@ inline bool pattern_match_impl(
 
                 ptn_beg = ++next;
             }
+            else if (ptn == '\\')
+            {
+                if (ptn_beg == ptn_end)
+                    throw std::runtime_error("escape sequence not end");
+
+                ptn = *(ptn_beg++);
+                if (ptn != *str_beg)
+                    return false;
+            }
             else if ((ptn != '?') && (ptn != *str_beg))
                 return false;
 

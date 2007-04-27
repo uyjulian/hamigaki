@@ -37,5 +37,11 @@ int test_main(int, char*[])
     BOOST_CHECK(pattern_match("[ab]")("b"));
     BOOST_CHECK(!pattern_match("[ab]")("c"));
 
+    BOOST_CHECK(!pattern_match("\\*")("test.c"));
+    BOOST_CHECK(pattern_match("\\*")("*"));
+
+    BOOST_CHECK(pattern_match("\\[")("["));
+    BOOST_CHECK(pattern_match("\\[[a]")("[a"));
+
     return 0;
 }
