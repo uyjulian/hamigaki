@@ -155,10 +155,10 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
         boost::spirit::symbols<> keyword;
 
         rule_t literal_char, quote_char, pattern_char;
-        rule_t comment, space;
+        rule_t comment, space, special_rule;
         rule_t statements, statement0, statement, literal, varexp, rulename;
         rule_t actions, action_modifiers, action_binds;
-        rule_t cond0, cond, block, if_, for_, while_, rule_, module;
+        rule_t cond0, cond, block, if_, for_, while_, rule_, module, local;
         rule_t invoke, rule_expansion;
         rule_t pattern, switch_;
         rule_t exe, lib, install, boostbook, test_rule, run_rule, bpl_test;
@@ -236,6 +236,16 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ,   "while"
                 ;
 
+            special_rule
+                =   test_rule
+                |   run_rule
+                |   bpl_test
+                |   "exe"
+                |   "lib"
+                |   "install"
+                |   "boostbook"
+                ;
+
             comment
                 =   '#' >> *(anychar_p - '\n') >> '\n'
                 ;
@@ -279,8 +289,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             rulename
-                =   literal - "exe" - "lib" - "install" - "boostbook"
-                    - test_rule - run_rule - bpl_test
+                =   literal - special_rule
                 ;
 
             actions
@@ -345,8 +354,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             rule_
-                =   !("local" >> space)
-                    >> "rule" >> space >> literal >> space
+                =   "rule" >> space >> literal >> space
                     >>  (   '('
                             >> *( space
                             >> (varexp | ':') )
@@ -361,6 +369,16 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
             module
                 =   "module" >> space >> literal >> space
                     >> block
+                ;
+
+            local
+                =   "local"
+                    >> space
+                    >>  (   rule_
+                        |   +(varexp >> space)
+                            >> !( '=' >> *(space >> varexp) >> space)
+                            >> ';'
+                        )
                 ;
 
             pattern
@@ -390,8 +408,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             invoke
-                =   !(str_p("local") >> space)
-                    >> rulename
+                =   (varexp - keyword - special_rule)
                     >> !( space >> "on" >> +(space >> varexp) )
                     >> !( space >> (ch_p('=') | "+=" | "?=") )
                     >> *( space >> (varexp | ':') )
@@ -533,6 +550,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                     |   switch_
                     |   rule_
                     |   module
+                    |   local
                     |   statement0 >> space >> ';'
                     )
                 ;
