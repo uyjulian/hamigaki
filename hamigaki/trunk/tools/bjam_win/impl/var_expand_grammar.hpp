@@ -12,9 +12,11 @@
 
 #include "./variables.hpp"
 #include <boost/algorithm/string/case_conv.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <boost/spirit/core.hpp>
 #include <boost/spirit/attribute/closure.hpp>
 #include <boost/spirit/phoenix/binders.hpp>
+#include <boost/none.hpp>
 #include <boost/optional.hpp>
 #include <algorithm>
 
@@ -38,6 +40,15 @@ struct range_closure
     member1 val;
     member2 lower;
     member3 upper;
+};
+
+struct str_closure
+    : boost::spirit::closure<
+        str_closure,
+        std::string
+    >
+{
+    member1 val;
 };
 
 struct expand_closure
@@ -105,30 +116,6 @@ struct slice_actor
     }
 };
 
-struct parent_dir_actor
-{
-    typedef void result_type;
-
-    void operator()(std::vector<std::string>& vs) const
-    {
-        for (std::size_t i = 0; i < vs.size(); ++i)
-        {
-            const std::string& s = vs[i];
-
-            std::string::size_type sl = s.rfind('/');
-            std::string::size_type bs = s.rfind('\\');
-
-            const std::string::size_type npos = std::string::npos;
-            if (sl == npos)
-                sl = 0;
-            if (bs == npos)
-                bs = 0;
-
-            vs[i] = s.substr(0, (std::max)(sl, bs));
-        }
-    }
-};
-
 struct upper_actor
 {
     typedef void result_type;
@@ -151,27 +138,119 @@ struct lower_actor
     }
 };
 
+struct convert_actor
+{
+    typedef void result_type;
+
+    void operator()(std::vector<std::string>& vs) const
+    {
+        for (std::size_t i = 0; i < vs.size(); ++i)
+            boost::algorithm::replace_all(vs[i], "/", "\\");
+    }
+};
+
+inline std::string::size_type find_grist_end(const std::string& s)
+{
+    if (s.empty() || (s[0] != '<'))
+        return 0;
+    else
+    {
+        std::string::size_type pos = s.find('>');
+        if (pos == std::string::npos)
+            return 0;
+        else
+            return pos+1;
+    }
+}
+
+inline std::string::size_type find_dir_end(
+    const std::string& s, std::string::size_type start)
+{
+    std::string::size_type sl = s.rfind('/');
+    std::string::size_type bs = s.rfind('\\');
+
+    if (sl == std::string::npos)
+        sl = start;
+    if (bs == std::string::npos)
+        bs = start;
+
+    std::string::size_type pos = (std::max)((std::max)(sl, bs), start);
+    if ((pos == start) && (pos < s.size()) &&
+        ((s[pos] == '/') || (s[pos] == '\\')) )
+    {
+        ++pos;
+    }
+    else if ((pos > start) && (s[pos-1] == ':'))
+        ++pos;
+    return pos;
+}
+
+inline std::string::size_type find_basename(
+    const std::string& s, std::string::size_type start)
+{
+    std::string::size_type sl = s.rfind('/');
+    std::string::size_type bs = s.rfind('\\');
+
+    if (sl == std::string::npos)
+        sl = start;
+    else
+        sl = sl + 1;
+
+    if (bs == std::string::npos)
+        bs = start;
+    else
+        bs = bs + 1;
+
+    return (std::max)((std::max)(sl, bs), start);
+}
+
+inline std::string::size_type find_member(
+    const std::string& s, std::string::size_type start)
+{
+    if (s.empty() || (*s.rbegin() != ')'))
+        return s.size();
+
+    std::string::size_type pos = s.find('(', start);
+    if (pos != std::string::npos)
+        return pos;
+    else
+        return s.size();
+}
+
+inline std::string::size_type find_dot(
+    const std::string& s,
+    std::string::size_type start, std::string::size_type finish)
+{
+    std::string::size_type pos = s.find('.', start);
+    if (pos < finish)
+        return pos;
+    else
+        return finish;
+}
+
+struct parent_dir_actor
+{
+    typedef void result_type;
+
+    void operator()(std::vector<std::string>& vs) const
+    {
+        for (std::size_t i = 0; i < vs.size(); ++i)
+        {
+            const std::string& s = vs[i];
+            std::string::size_type start = ::find_grist_end(s);
+            std::string::size_type end = ::find_dir_end(s, start);
+            vs[i] = s.substr(start, end - start);
+        }
+    }
+};
+
 struct grist_actor
 {
     typedef void result_type;
 
-    static std::string::size_type find_grist_end(const std::string& s)
-    {
-        if (s.empty() || (s[0] != '<'))
-            return 0;
-        else
-        {
-            std::string::size_type pos = s.find('>');
-            if (pos == std::string::npos)
-                return 0;
-            else
-                return pos+1;
-        }
-    }
-
     void operator()(
         std::vector<std::string>& vs,
-        const boost::optional<std::string>& val) const
+        boost::optional<std::string>& val) const
     {
         if (val)
         {
@@ -183,17 +262,249 @@ struct grist_actor
             for (std::size_t i = 0; i < vs.size(); ++i)
             {
                 std::string& s = vs[i];
-                s.replace(0, grist_actor::find_grist_end(s), grist);
+                s.replace(0, ::find_grist_end(s), grist);
             }
+
+            val = boost::none;
         }
         else
         {
             for (std::size_t i = 0; i < vs.size(); ++i)
             {
                 const std::string& s = vs[i];
-                vs[i] = s.substr(0, grist_actor::find_grist_end(s));
+                vs[i] = s.substr(0, ::find_grist_end(s));
             }
         }
+    }
+};
+
+struct directory_actor
+{
+    typedef void result_type;
+
+    void operator()(
+        std::vector<std::string>& vs,
+        boost::optional<std::string>& val) const
+    {
+        if (val)
+        {
+            std::string dir = *val;
+            dir += '\\';
+
+            for (std::size_t i = 0; i < vs.size(); ++i)
+            {
+                std::string& s = vs[i];
+                std::string::size_type start = ::find_grist_end(s);
+                std::string::size_type end = ::find_basename(s, start);
+                std::string::size_type member = ::find_member(s, end);
+                if (end != member)
+                    s.replace(start, end-start, dir);
+                else
+                    s.replace(start, end-start, *val);
+            }
+
+            val = boost::none;
+        }
+        else
+        {
+            for (std::size_t i = 0; i < vs.size(); ++i)
+            {
+                const std::string& s = vs[i];
+                std::string::size_type start = ::find_grist_end(s);
+                std::string::size_type end = ::find_dir_end(s, start);
+                vs[i] = s.substr(start, end-start);
+            }
+        }
+    }
+};
+
+struct basename_actor
+{
+    typedef void result_type;
+
+    void operator()(
+        std::vector<std::string>& vs,
+        boost::optional<std::string>& val) const
+    {
+        if (val)
+        {
+            for (std::size_t i = 0; i < vs.size(); ++i)
+            {
+                std::string& s = vs[i];
+                std::string::size_type dir = ::find_grist_end(s);
+                std::string::size_type start = ::find_basename(s, dir);
+                std::string::size_type member = ::find_member(s, start);
+                std::string::size_type dot = ::find_dot(s, start, member);
+                s.replace(start, dot-start, *val);
+            }
+
+            val = boost::none;
+        }
+        else
+        {
+            for (std::size_t i = 0; i < vs.size(); ++i)
+            {
+                const std::string& s = vs[i];
+                std::string::size_type dir = ::find_grist_end(s);
+                std::string::size_type start = ::find_basename(s, dir);
+                std::string::size_type member = ::find_member(s, start);
+                std::string::size_type dot = ::find_dot(s, start, member);
+                vs[i] = s.substr(start, dot-start);
+            }
+        }
+    }
+};
+
+struct suffix_actor
+{
+    typedef void result_type;
+
+    void operator()(
+        std::vector<std::string>& vs,
+        boost::optional<std::string>& val) const
+    {
+        if (val)
+        {
+            for (std::size_t i = 0; i < vs.size(); ++i)
+            {
+                std::string& s = vs[i];
+                std::string::size_type dir = ::find_grist_end(s);
+                std::string::size_type base = ::find_basename(s, dir);
+                std::string::size_type member = ::find_member(s, base);
+                std::string::size_type dot = ::find_dot(s, base, member);
+                s.replace(dot, member-dot, *val);
+            }
+
+            val = boost::none;
+        }
+        else
+        {
+            for (std::size_t i = 0; i < vs.size(); ++i)
+            {
+                const std::string& s = vs[i];
+                std::string::size_type dir = ::find_grist_end(s);
+                std::string::size_type base = ::find_basename(s, dir);
+                std::string::size_type member = ::find_member(s, base);
+                std::string::size_type dot = ::find_dot(s, base, member);
+                vs[i] = s.substr(dot, member-dot);
+            }
+        }
+    }
+};
+
+struct member_actor
+{
+    typedef void result_type;
+
+    void operator()(
+        std::vector<std::string>& vs,
+        boost::optional<std::string>& val) const
+    {
+        if (val)
+        {
+            std::string strval;
+            strval += '(';
+            strval += *val;
+            strval += ')';
+
+            for (std::size_t i = 0; i < vs.size(); ++i)
+            {
+                std::string& s = vs[i];
+                std::string::size_type dir = ::find_grist_end(s);
+                std::string::size_type base = ::find_basename(s, dir);
+                std::string::size_type member = ::find_member(s, base);
+                s.replace(member, s.size()-member, strval);
+            }
+
+            val = boost::none;
+        }
+        else
+        {
+            for (std::size_t i = 0; i < vs.size(); ++i)
+            {
+                const std::string& s = vs[i];
+                std::string::size_type dir = ::find_grist_end(s);
+                std::string::size_type base = ::find_basename(s, dir);
+                std::string::size_type member = ::find_member(s, base);
+                vs[i] = s.substr(member, s.size()-member);
+            }
+        }
+    }
+};
+
+struct root_actor
+{
+    typedef void result_type;
+
+    void operator()(
+        std::vector<std::string>& vs,
+        boost::optional<std::string>& val) const
+    {
+        std::string root = *val;
+        if (!root.empty() && (*root.rbegin()!='/') && (*root.rbegin()!='\\'))
+            root += '\\';
+
+        for (std::size_t i = 0; i < vs.size(); ++i)
+        {
+            std::string& s = vs[i];
+            std::string::size_type start = ::find_grist_end(s);
+            std::string::size_type end = ::find_basename(s, start);
+
+            if (start != end)
+            {
+                if ((s[start] == '/') || (s[start] == '\\'))
+                    continue;
+
+                if ((end - start >= 3u) && (s[start+1] == ':') &&
+                    ((s[start+2] == '/') || (s[start+2] == '\\')) )
+                {
+                    continue;
+                }
+            }
+
+            s.insert(start, root);
+        }
+
+        val = boost::none;
+    }
+};
+
+struct empty_actor
+{
+    typedef void result_type;
+
+    void operator()(
+        std::vector<std::string>& vs,
+        boost::optional<std::string>& val) const
+    {
+        if (vs.empty())
+            vs.push_back(*val);
+
+        val = boost::none;
+    }
+};
+
+struct join_actor
+{
+    typedef void result_type;
+
+    void operator()(
+        std::vector<std::string>& vs,
+        boost::optional<std::string>& val) const
+    {
+        std::string str;
+        for (std::size_t i = 0; i < vs.size(); ++i)
+        {
+            if (i != 0)
+                str += *val;
+            str += vs[i];
+        }
+
+        std::vector<std::string> tmp;
+        tmp.push_back(str);
+        vs.swap(tmp);
+
+        val = boost::none;
     }
 };
 
@@ -248,6 +559,9 @@ struct var_expand_grammar
             ScannerT, typename vars_closure::context_t> vars_rule_t;
 
         typedef boost::spirit::rule<
+            ScannerT, typename str_closure::context_t> str_rule_t;
+
+        typedef boost::spirit::rule<
             ScannerT, typename range_closure::context_t> range_rule_t;
 
         typedef boost::spirit::rule<
@@ -255,6 +569,7 @@ struct var_expand_grammar
 
         vars_rule_t top, expr;
         range_rule_t index_range;
+        str_rule_t strval;
         expand_rule_t variable;
 
         definition(const var_expand_grammar& self)
@@ -279,6 +594,13 @@ struct var_expand_grammar
                                     index_range.lower, index_range.upper
                                 )
                         ]
+                ;
+
+            strval
+                =   (*(anychar_p - ')' - ':'))
+                    [
+                        strval.val = construct_<std::string>(arg1, arg2)
+                    ]
                 ;
 
             variable
@@ -307,23 +629,72 @@ struct var_expand_grammar
                                     [
                                         bind(lower_actor())(variable.val)
                                     ]
+                                |   ch_p('T')
+                                    [
+                                        bind(convert_actor())(variable.val)
+                                    ]
                                 |   ch_p('G')
-                                    >> !(   '='
-                                            >> (*(anychar_p - ')' - ':'))
-                                            [
-                                                variable.str =
-                                                    construct_<std::string>(
-                                                        arg1, arg2
-                                                    )
-                                            ]
-                                        )
+                                    >> !('=' >> strval[variable.str = arg1])
                                     >> eps_p
                                     [
                                         bind(grist_actor())
                                             (variable.val, variable.str)
                                     ]
+                                |   ch_p('D')
+                                    >> !('=' >> strval[variable.str = arg1]
+                                        )
+                                    >> eps_p
+                                    [
+                                        bind(directory_actor())
+                                            (variable.val, variable.str)
+                                    ]
+                                |   ch_p('B')
+                                    >> !('=' >> strval[variable.str = arg1]
+                                        )
+                                    >> eps_p
+                                    [
+                                        bind(basename_actor())
+                                            (variable.val, variable.str)
+                                    ]
+                                |   ch_p('S')
+                                    >> !('=' >> strval[variable.str = arg1]
+                                        )
+                                    >> eps_p
+                                    [
+                                        bind(suffix_actor())
+                                            (variable.val, variable.str)
+                                    ]
+                                |   ch_p('M')
+                                    >> !('=' >> strval[variable.str = arg1]
+                                        )
+                                    >> eps_p
+                                    [
+                                        bind(member_actor())
+                                            (variable.val, variable.str)
+                                    ]
+                                |   ch_p('R')
+                                    >> '=' >> strval[variable.str = arg1]
+                                    >> eps_p
+                                    [
+                                        bind(root_actor())
+                                            (variable.val, variable.str)
+                                    ]
+                                |   ch_p('E')
+                                    >> '=' >> strval[variable.str = arg1]
+                                    >> eps_p
+                                    [
+                                        bind(empty_actor())
+                                            (variable.val, variable.str)
+                                    ]
+                                |   ch_p('J')
+                                    >> '=' >> strval[variable.str = arg1]
+                                    >> eps_p
+                                    [
+                                        bind(join_actor())
+                                            (variable.val, variable.str)
+                                    ]
                                 |   alpha_p
-                                    >> !( '=' >> *(anychar_p - ')' - ':') )
+                                    >> !( '=' >> strval )
                                 )
                         )
                     >> ')'

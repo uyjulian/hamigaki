@@ -67,8 +67,14 @@ int main(int argc, char* argv[])
         {
             std::vector<std::string> vs;
             vs.push_back("abc.txt");
+            vs.push_back("abc.txt(member)");
+            vs.push_back("C:\\");
+            vs.push_back("C:/");
+            vs.push_back("/");
+            vs.push_back("C:\\Boost\\Jamfile");
             vs.push_back("C:\\Temp\\log.txt");
             vs.push_back("C:\\Windows\\System32\\kernel32.dll");
+            vs.push_back("C:/Windows/System32/kernel32.dll");
             table.add("P");
             table.assign("P", vs);
         }
@@ -80,11 +86,34 @@ int main(int argc, char* argv[])
             table.add("G");
             table.assign("G", vs);
         }
+        {
+            std::vector<std::string> vs;
+            vs.push_back("abc");
+            vs.push_back("");
+            table.add("E");
+            table.assign("E", vs);
+        }
 
         ::expand_test(table, "$($(Z)[2-4]:UL)");
+        ::expand_test(table, "$(P:T)");
         ::expand_test(table, "$(P:P)");
+        ::expand_test(table, "$(P:B)");
+        ::expand_test(table, "$(P:B=new)");
+        ::expand_test(table, "$(P:S)");
+        ::expand_test(table, "$(P:S=.new)");
+        ::expand_test(table, "$(P:M)");
+        ::expand_test(table, "$(P:M=new)");
+        ::expand_test(table, "$(P:D)");
+        ::expand_test(table, "$(P:D=/var)");
+        ::expand_test(table, "$(P:R=/)");
+        ::expand_test(table, "$(P:R=/var)");
         ::expand_test(table, "$(G:G)");
         ::expand_test(table, "$(G:G=new)");
+        ::expand_test(table, "$(E:E=new)");
+        ::expand_test(table, "$(NONE:E=new)");
+        ::expand_test(table, "$(:E=new)");
+        ::expand_test(table, "$(X:J=,)");
+        ::expand_test(table, "$(X:J=)");
 
         return 0;
     }
