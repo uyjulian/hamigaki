@@ -93,27 +93,40 @@ int main(int argc, char* argv[])
             table.add("E");
             table.assign("E", vs);
         }
+        {
+            std::vector<std::string> vs;
+            vs.push_back(",");
+            vs.push_back("_");
+            table.add("J");
+            table.assign("J", vs);
+        }
 
         ::expand_test(table, "$($(Z)[2-4]:UL)");
         ::expand_test(table, "$(P:T)");
         ::expand_test(table, "$(P:P)");
         ::expand_test(table, "$(P:B)");
         ::expand_test(table, "$(P:B=new)");
+        ::expand_test(table, "$(P:B=$(Y))");
         ::expand_test(table, "$(P:S)");
         ::expand_test(table, "$(P:S=.new)");
         ::expand_test(table, "$(P:M)");
         ::expand_test(table, "$(P:M=new)");
+        ::expand_test(table, "$(P:M=$(Y))");
         ::expand_test(table, "$(P:D)");
         ::expand_test(table, "$(P:D=/var)");
         ::expand_test(table, "$(P:R=/)");
         ::expand_test(table, "$(P:R=/var)");
         ::expand_test(table, "$(G:G)");
         ::expand_test(table, "$(G:G=new)");
+        ::expand_test(table, "$(G:G=$(Y))");
         ::expand_test(table, "$(E:E=new)");
         ::expand_test(table, "$(NONE:E=new)");
         ::expand_test(table, "$(:E=new)");
+        ::expand_test(table, "$(:E=$(Y))");
         ::expand_test(table, "$(X:J=,)");
         ::expand_test(table, "$(X:J=)");
+        ::expand_test(table, "$(X:J=$(J))");
+        ::expand_test(table, "$(:E=e:G=g:D=d:B=b:S=.s:M=m)");
 
         return 0;
     }
