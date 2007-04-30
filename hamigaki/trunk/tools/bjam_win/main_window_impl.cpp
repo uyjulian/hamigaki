@@ -251,13 +251,16 @@ public:
 
     void wait()
     {
-        thread_->join();
-        thread_.reset();
-        bjam_proc_.reset();
+        if (thread_.get())
+        {
+            thread_->join();
+            thread_.reset();
+            bjam_proc_.reset();
 
-        enable_menu_item(ID_BUILD_RUN);
-        enable_menu_item(ID_BUILD_CLEAN);
-        disable_menu_item(ID_BUILD_STOP);
+            enable_menu_item(ID_BUILD_RUN);
+            enable_menu_item(ID_BUILD_CLEAN);
+            disable_menu_item(ID_BUILD_STOP);
+        }
     }
 
     bool running() const
