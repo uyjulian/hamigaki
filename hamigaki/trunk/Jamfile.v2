@@ -160,7 +160,7 @@ rule handle-static-runtime ( properties * )
 project hamigaki
     : requirements
       <include>.
-      <include>$(BOOST_ROOT)
+      <library>/boost//headers
       <toolset>msvc-8.0:<cxxflags>-wd4819
       <toolset>msvc-8.0:<cxxflags>-wd4996
       # disable auto-linking for all targets here,
@@ -173,7 +173,6 @@ project hamigaki
             
     : usage-requirements
       <include>.
-      <include>$(BOOST_ROOT)
     : build-dir bin.v2
     : default-build $(default-build)
     ;
