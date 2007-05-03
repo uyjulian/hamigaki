@@ -36,7 +36,9 @@ int main(int argc, char* argv[])
         }
 
         std::vector<std::string> targets;
-        bjam_grammar g(targets);
+        variables vars;
+        rule_table rules;
+        bjam_grammar g(targets, vars, rules);
         parse_info<const char*> info = parse(str.c_str(), g);
 
         if (!info.full)

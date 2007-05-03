@@ -127,6 +127,7 @@ int main(int argc, char* argv[])
         ::expand_test(table, "$(X:J=)");
         ::expand_test(table, "$(X:J=$(J))");
         ::expand_test(table, "$(:E=e:G=g:D=d:B=b:S=.s:M=m)");
+        ::expand_test(table, "<toolset>gcc:<link>static");
 
         return 0;
     }

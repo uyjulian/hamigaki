@@ -739,7 +739,23 @@ struct var_expand_grammar
                 ;
 
             top
-                =   expr[ self.val = arg1 ]
+                =   eps_p[top.val = bind(make_str_vec_actor())(arg1, arg2)]
+                    >>
+                   *(   variable
+                        [
+                            top.val =
+                                bind(append_str_vec_actor())(top.val, arg1)
+                        ]
+                    |   (+(anychar_p - '$'))
+                        [
+                            top.val =
+                                bind(append_str_vec_actor())(
+                                    top.val, 
+                                    bind(make_str_vec_actor())(arg1, arg2)
+                                )
+                        ]
+                    )
+                    >> eps_p[self.val = top.val]
                 ;
         }
 

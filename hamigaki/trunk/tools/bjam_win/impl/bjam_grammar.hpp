@@ -10,11 +10,22 @@
 #ifndef IMPL_BJAM_GRAMMAR_HPP
 #define IMPL_BJAM_GRAMMAR_HPP
 
+// TODO
+#define PHOENIX_LIMIT 4
+#define BOOST_SPIRIT_GRAMMAR_STARTRULE_TYPE_LIMIT 4
+
+#include "./rule_table.hpp"
+#include "./var_expand_grammar.hpp"
+#include <hamigaki/spirit/phoenix/stl/append.hpp>
+#include <hamigaki/spirit/phoenix/stl/empty.hpp>
+#include <hamigaki/spirit/phoenix/stl/push_back.hpp>
 #include <boost/spirit/core.hpp>
 #include <boost/spirit/attribute/closure.hpp>
+#include <boost/spirit/dynamic/if.hpp>
 #include <boost/spirit/symbols/symbols.hpp>
 #include <boost/spirit/utility/chset.hpp>
 #include <boost/spirit/utility/chset_operators.hpp>
+#include <boost/spirit/utility/grammar_def.hpp>
 #include <vector>
 #include <string>
 
@@ -25,174 +36,430 @@ inline void remove_branch_path(std::string& s)
         s.erase(0, pos+1);
 }
 
-class push_back_target_actor
+struct has_non_empty_element_impl
+{
+    typedef bool result_type;
+
+    bool operator()(const std::vector<std::string>& vs) const
+    {
+        using hamigaki::phoenix::empty;
+        using namespace ::phoenix;
+        return std::find_if(vs.begin(), vs.end(), !empty(arg1)) != vs.end();
+    }
+};
+
+const ::phoenix::functor<has_non_empty_element_impl>
+has_non_empty_element = has_non_empty_element_impl();
+
+struct includes_impl
+{
+    typedef bool result_type;
+
+    bool operator()(
+        const std::vector<std::string>& big,
+        const std::vector<std::string>& small) const
+    {
+        std::vector<std::string> b(big);
+        std::vector<std::string> s(small);
+
+        std::sort(b.begin(), b.end());
+        std::sort(s.begin(), s.end());
+
+        return std::includes(b.begin(), b.end(), s.begin(), s.end());
+    }
+};
+
+const ::phoenix::functor<includes_impl> includes = includes_impl();
+
+class vars_add_actor
 {
 public:
-    explicit push_back_target_actor(std::vector<std::string>& vs) : vs_(vs)
+    typedef void result_type;
+
+    explicit vars_add_actor(variables& t) : table_(t)
     {
     }
 
-    template<class Iterator>
-    void operator()(Iterator first, Iterator last) const
+    void operator()(const std::vector<std::string>& vs) const
     {
-        std::string s(first, last);
-        ::remove_branch_path(s);
-
-        if (s.find('$') != std::string::npos)
-            return;
-
-        vs_.push_back(s);
+        std::vector<std::string> result;
+        for (std::size_t i = 0; i < vs.size(); ++i)
+            table_.add(vs[i]);
     }
 
 private:
-    std::vector<std::string>& vs_;
+    variables& table_;
 };
 
-struct testing_params
+struct vars_assign_impl
 {
-    std::string source;
-    std::string target_name;
+    typedef void result_type;
 
-    testing_params(){}
-
-    testing_params(const std::string& src, const std::string& name)
-        : source(src), target_name(name)
+    void operator()(
+        variables& table,
+        const std::vector<std::string>& keys,
+        const std::vector<std::string>& vals) const
     {
+        for (std::size_t i = 0; i < keys.size(); ++i)
+            table.assign(keys[i], vals);
     }
 };
 
-class push_back_test_actor
+const ::phoenix::functor<vars_assign_impl> vars_assign = vars_assign_impl();
+
+struct vars_append_impl
 {
-public:
-    explicit push_back_test_actor(std::vector<std::string>& vs) : vs_(vs)
+    typedef void result_type;
+
+    void operator()(
+        variables& table,
+        const std::vector<std::string>& keys,
+        const std::vector<std::string>& vals) const
     {
+        for (std::size_t i = 0; i < keys.size(); ++i)
+            table.append(keys[i], vals);
     }
+};
 
-    void operator()(const testing_params& val) const
+const ::phoenix::functor<vars_append_impl> vars_append = vars_append_impl();
+
+struct vars_default_impl
+{
+    typedef void result_type;
+
+    void operator()(
+        variables& table,
+        const std::vector<std::string>& keys,
+        const std::vector<std::string>& vals) const
     {
-        std::string s = val.target_name;
-
-        if (s.empty())
+        for (std::size_t i = 0; i < keys.size(); ++i)
         {
-            s = val.source;
+            const std::string& key = keys[i];
+            const std::vector<std::string>* p = table.find(key);
+            if (!p || p->empty())
+                table.assign(key, vals);
+        }
+    }
+};
 
+const ::phoenix::functor<vars_default_impl> vars_default = vars_default_impl();
+
+struct vars_expand_impl
+{
+    typedef std::vector<std::string> result_type;
+
+    std::vector<std::string>
+    operator()(variables& table, const std::string& str) const
+    {
+        using namespace boost::spirit;
+        using namespace phoenix;
+
+        var_expand_grammar g(table);
+        std::vector<std::string> val;
+        parse_info<const char*> info = parse(str.c_str(), g[var(val) = arg1]);
+
+        // TODO
+        if (!info.full)
+            throw std::runtime_error("prase error '" + str + "'");
+
+        return val;
+    }
+};
+
+const ::phoenix::functor<vars_expand_impl> vars_expand = vars_expand_impl();
+
+struct add_rule_impl
+{
+    typedef void result_type;
+
+    void operator()(
+        rule_table& table,
+        const std::string& name,
+        const std::vector<std::vector<std::string> >& fields,
+        const std::string& block) const
+    {
+        table.add(name, rule_data(fields, block));
+    }
+};
+
+const ::phoenix::functor<add_rule_impl> add_rule = add_rule_impl();
+
+struct bjam_grammar
+    : boost::spirit::grammar<bjam_grammar,vars_closure::context_t>
+{
+    enum
+    {
+        jamfile, statements, invoke, cond0
+    };
+
+    explicit bjam_grammar(
+        std::vector<std::string>& vs, variables& vt, rule_table& rs
+    )
+        : storage(vs), vars(vt), rules(rs)
+    {
+    }
+
+    std::vector<std::string>& storage;
+    variables& vars;
+    rule_table& rules;
+
+    void
+    invoke_rule_normal(
+        std::vector<std::string>& result,
+        const std::string& name,
+        const std::vector<std::vector<std::string> >& fields) const
+    {
+        namespace hp = hamigaki::phoenix;
+        using namespace boost::spirit;
+        using namespace phoenix;
+
+        const rule_data* data = rules.find(name);
+        // TODO
+        if (!data)
+            return;
+
+        variables new_vars(vars);
+        rule_table new_rules(rules);
+
+        for (std::size_t i = 0; i < 9; ++i)
+        {
+            std::string name(1u, "123456789"[i]);
+            new_vars.add_local(name);
+            if (i < fields.size())
+                new_vars.assign(name, fields[i]);
+        }
+
+        bjam_grammar g(storage, new_vars, new_rules);
+        parse_info<const char*> info =
+            boost::spirit::parse(
+                data->block.c_str(),
+                g.use_parser<bjam_grammar::statements>()
+                [
+                    hp::append(var(result), arg1)
+                ]
+            );
+
+        // TODO
+        if (!info.full)
+            throw std::runtime_error("prase error");
+    }
+
+    void invoke_rule_run(
+        const std::vector<std::vector<std::string> >& fields) const
+    {
+        const std::string& src = fields.at(0).at(0);
+
+        std::string target;
+        if ((fields.size() < 5) || fields[4].empty())
+        {
+            std::string s = src;
             ::remove_branch_path(s);
 
             std::string::size_type pos = s.rfind('.');
             if (pos != std::string::npos)
                 s.erase(pos);
+
+            target = s;
+        }
+        else
+            target = fields[4][0];
+
+        storage.push_back(target);
+    }
+
+    void invoke_rule_test(
+        const std::vector<std::vector<std::string> >& fields) const
+    {
+        const std::string& src = fields.at(0).at(0);
+
+        std::string target;
+        if ((fields.size() < 3) || fields[2].empty())
+        {
+            std::string s = src;
+            ::remove_branch_path(s);
+
+            std::string::size_type pos = s.rfind('.');
+            if (pos != std::string::npos)
+                s.erase(pos);
+
+            target = s;
+        }
+        else
+            target = fields[2][0];
+
+        storage.push_back(target);
+    }
+
+    std::vector<std::string>
+    invoke_rule(
+        const std::vector<std::string>& rule_name,
+        const std::vector<std::vector<std::string> >& fields) const
+    {
+        namespace hp = hamigaki::phoenix;
+        using namespace boost::spirit;
+        using namespace phoenix;
+
+        std::vector<std::string> result;
+
+        for (std::size_t i = 0; i < rule_name.size(); ++i)
+        {
+            const std::string& name = rule_name[i];
+            if ((name == "exe") || (name == "lib") || (name == "bpl-test"))
+                storage.push_back(fields.at(0).at(0));
+            else if (name == "boostbook")
+            {
+                storage.push_back("html");
+                storage.push_back("onehtml");
+                storage.push_back("man");
+                storage.push_back("docbook");
+                storage.push_back("fo");
+                storage.push_back("pdf");
+                storage.push_back("ps");
+                storage.push_back("tests");
+            }
+            else if ((name == "run") || (name == "run-fail"))
+                this->invoke_rule_run(fields);
+            else if (
+                (name == "compile") || (name == "compile-fail") ||
+                (name == "link") || (name == "link-fail") )
+            {
+                this->invoke_rule_test(fields);
+            }
+            else
+                this->invoke_rule_normal(result, name, fields);
         }
 
-        if (s.find('$') != std::string::npos)
-            return;
-
-        vs_.push_back(s);
+        return result;
     }
 
-private:
-    std::vector<std::string>& vs_;
-};
-
-class push_back_bpl_test_actor
-{
-public:
-    explicit push_back_bpl_test_actor(std::vector<std::string>& vs) : vs_(vs)
+    struct invoke_closure
+        : boost::spirit::closure<
+              invoke_closure
+            , variables::mapped_type
+            , variables::mapped_type
+            , std::vector<variables::mapped_type>
+        >
     {
-    }
+        member1 val;
+        member2 rulename;
+        member3 fields;
+    };
 
-    template<class Iterator>
-    void operator()(Iterator first, Iterator last) const
+    struct cond0_closure
+        : boost::spirit::closure<
+              cond0_closure
+            , bool
+            , variables::mapped_type
+            , variables::mapped_type
+        >
     {
-        std::string s(first, last);
-
-        if (s.find('$') != std::string::npos)
-            return;
-
-        vs_.push_back(s);
-    }
-
-private:
-    std::vector<std::string>& vs_;
-};
-
-class push_back_boostbook_actor
-{
-public:
-    explicit push_back_boostbook_actor(std::vector<std::string>& vs) : vs_(vs)
-    {
-    }
-
-    template<class Iterator>
-    void operator()(Iterator, Iterator) const
-    {
-        vs_.push_back("html");
-        vs_.push_back("onehtml");
-        vs_.push_back("man");
-        vs_.push_back("docbook");
-        vs_.push_back("fo");
-        vs_.push_back("pdf");
-        vs_.push_back("ps");
-        vs_.push_back("tests");
-    }
-
-private:
-    std::vector<std::string>& vs_;
-};
-
-struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
-{
-    explicit bjam_grammar(std::vector<std::string>& vs) : storage(vs)
-    {
-    }
-
-    std::vector<std::string>& storage;
+        member1 val;
+        member2 lhs;
+        member3 rhs;
+    };
 
     template<class ScannerT>
     struct definition
+        : boost::spirit::grammar_def<
+              boost::spirit::rule<ScannerT, typename vars_closure::context_t>
+            , boost::spirit::same
+            , boost::spirit::rule<ScannerT, typename invoke_closure::context_t>
+            , boost::spirit::rule<ScannerT, typename cond0_closure::context_t>
+        >
     {
         typedef boost::spirit::rule<ScannerT> rule_t;
 
         boost::spirit::symbols<> keyword;
 
-        rule_t literal_char, quote_char, pattern_char;
         rule_t comment, space, special_rule;
-        rule_t statements, statement0, statement, literal, varexp, rulename;
         rule_t actions, action_modifiers, action_binds;
-        rule_t cond0, cond, block, if_, for_, while_, rule_, module, local;
-        rule_t invoke, rule_expansion;
+        rule_t if_, for_, while_, module, local;
+        rule_t include, statement;
         rule_t pattern, switch_;
-        rule_t exe, lib, install, boostbook, test_rule, run_rule, bpl_test;
-        rule_t jamfile;
 
-        struct test_closure
-            : boost::spirit::closure<
-                test_closure,
-                testing_params, std::string, std::string
-            >
+        struct char_closure : boost::spirit::closure<char_closure,char>
         {
             member1 val;
-            member2 source;
-            member3 target_name;
         };
 
-        boost::spirit::rule<ScannerT, typename test_closure::context_t> test;
-        boost::spirit::rule<ScannerT, typename test_closure::context_t> run;
+        boost::spirit::rule<
+            ScannerT,
+            typename char_closure::context_t
+        > literal_char, quote_char, pattern_char;
+
+        boost::spirit::rule<
+            ScannerT, typename invoke_closure::context_t> invoke;
+
+        boost::spirit::rule<
+            ScannerT, typename cond0_closure::context_t> cond0;
+
+        struct bool_closure : boost::spirit::closure<bool_closure,bool>
+        {
+            member1 val;
+        };
+
+        boost::spirit::rule<
+            ScannerT, typename bool_closure::context_t> cond;
+
+        struct str_closure : boost::spirit::closure<str_closure,std::string>
+        {
+            member1 val;
+        };
+
+        boost::spirit::rule<
+            ScannerT, typename str_closure::context_t> block, literal;
+
+        struct tmp_vars_closure
+            : boost::spirit::closure<
+                  tmp_vars_closure
+                , int
+                , std::vector<std::string>
+            >
+        {
+            member2 tmp;
+        };
+
+        boost::spirit::rule<
+            ScannerT, typename tmp_vars_closure::context_t> assign_;
+
+        struct rule_closure
+            : boost::spirit::closure<
+                  rule_closure
+                , int
+                , std::string
+                , std::vector<std::vector<std::string> >
+            >
+        {
+            member2 rulename;
+            member3 fields;
+        };
+
+        boost::spirit::rule<
+            ScannerT, typename rule_closure::context_t> rule_;
+
+        typedef boost::spirit::rule<
+            ScannerT, typename vars_closure::context_t> vars_rule_t;
+
+        vars_rule_t jamfile, statements, list, varexp;
+        vars_rule_t rule_expansion, return_;
 
         definition(const bjam_grammar& self)
         {
+            namespace hp = hamigaki::phoenix;
             using namespace boost::spirit;
             using namespace phoenix;
 
             literal_char
-                =   anychar_p - space_p - '"' - '\\'
+                =   anychar_p[literal_char.val = arg1] - space_p - '"' - '\\'
                 ;
 
             quote_char
-                =   anychar_p - '"' - '\\'
+                =   anychar_p[quote_char.val = arg1] - '"' - '\\'
                 ;
 
             pattern_char
-                =   anychar_p - space_p - '\\' - '[' - ']'
+                =   anychar_p[pattern_char.val = arg1]
+                    - space_p - '\\' - '[' - ']'
                 ;
 
             keyword
@@ -236,16 +503,6 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ,   "while"
                 ;
 
-            special_rule
-                =   test_rule
-                |   run_rule
-                |   bpl_test
-                |   "exe"
-                |   "lib"
-                |   "install"
-                |   "boostbook"
-                ;
-
             comment
                 =   '#' >> *(anychar_p - '\n') >> '\n'
                 ;
@@ -255,17 +512,25 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             literal
-                =  +(   literal_char
-                    |   '\\' >> anychar_p
+                =  +(   literal_char[literal.val += arg1]
+                    |   '\\' >> anychar_p[literal.val += arg1]
                     |   '"'
-                        >> *( quote_char | '\\' >> anychar_p )
+                        >> *(   quote_char[literal.val += arg1]
+                            | '\\' >> anychar_p[literal.val += arg1]
+                            )
                         >> '"'
                     ) - keyword
                 ;
 
             varexp
                 =   rule_expansion
+                    [
+                        varexp.val = arg1
+                    ]
                 |   literal
+                    [
+                        varexp.val = vars_expand(boost::ref(self.vars), arg1)
+                    ]
                 ;
 
             action_modifiers
@@ -288,15 +553,11 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                     >> +(space >> literal)
                 ;
 
-            rulename
-                =   literal - special_rule
-                ;
-
             actions
                 =   str_p("actions")
                     >> action_modifiers
                     >> space
-                    >> rulename
+                    >> varexp
                     >> !action_binds
                     >> space
                     >> '{'
@@ -306,29 +567,103 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             cond0
-                =   '(' >> space >> cond >> space >> ')'
-                |   '!' >> space >> cond
+                =   '(' >> space >> cond[cond0.val = arg1] >> space >> ')'
+                |   '!' >> space >> cond[cond0.val = !arg1]
                 |   varexp
+                    [
+                        cond0.val = has_non_empty_element(cond0.lhs = arg1)
+                    ]
                     >>
-                   !(   space >> '='  >> space >> varexp
-                    |   space >> "!=" >> space >> varexp
-                    |   space >> '<'  >> space >> varexp
-                    |   space >> "<=" >> space >> varexp
-                    |   space >> '>'  >> space >> varexp
-                    |   space >> ">=" >> space >> varexp
-                    |   space >> "in" >> *(space >> varexp)
+                   !(   space >> '='  >> space
+                        >> varexp
+                        [
+                            cond0.val = (cond0.lhs == arg1)
+                        ]
+                    |   space >> "!=" >> space
+                        >> varexp
+                        [
+                            cond0.val = (cond0.lhs != arg1)
+                        ]
+                    |   space >> '<'  >> space
+                        >> varexp
+                        [
+                            cond0.val = (cond0.lhs < arg1)
+                        ]
+                    |   space >> "<=" >> space
+                        >> varexp
+                        [
+                            cond0.val = (cond0.lhs <= arg1)
+                        ]
+                    |   space >> '>'  >> space
+                        >> varexp
+                        [
+                            cond0.val = (cond0.lhs > arg1)
+                        ]
+                    |   space >> ">=" >> space
+                        >> varexp
+                        [
+                            cond0.val = (cond0.lhs >= arg1)
+                        ]
+                    |   space >> "in"
+                        >>  (
+                               *(   space
+                                    >> varexp[hp::append(cond0.rhs, arg1)]
+                                )
+                            )
+                            [
+                                cond0.val = includes(cond0.rhs, cond0.lhs)
+                            ]
                     )
                 ;
 
             cond
-                =   cond0
-                    >> *(   space >> "&&" >> space >> cond0
-                        |   space >> "||" >> space >> cond0
+                =   cond0[cond.val = arg1]
+                    >> *(   space
+                            >> "&&"
+                            >> space
+                            >>  if_p(cond.val)
+                                [
+                                    cond0[cond.val = arg1]
+                                ]
+                                .else_p
+                                [
+                                    no_actions_d
+                                    [
+                                        self.use_parser<bjam_grammar::cond0>()
+                                    ]
+                                ]
+                        |   space
+                            >> "||"
+                            >> space
+                            >>  if_p(cond.val)
+                                [
+                                    no_actions_d
+                                    [
+                                        self.use_parser<bjam_grammar::cond0>()
+                                    ]
+                                ]
+                                .else_p
+                                [
+                                    cond0[cond.val = arg1]
+                                ]
                         )
                 ;
 
             block
-                =   '{' >> !(space >> statements) >> space >> '}'
+                =   '{'
+                    >> space
+                    >> !(
+                            no_actions_d
+                            [
+                                self.use_parser<bjam_grammar::statements>()
+                                >> eps_p
+                            ]
+                            [
+                                block.val = construct_<std::string>(arg1, arg2)
+                            ]
+                            >> space
+                        )
+                    >> '}'
                 ;
 
             if_
@@ -354,16 +689,39 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             rule_
-                =   "rule" >> space >> literal >> space
-                    >>  (   '('
-                            >> *( space
-                            >> (varexp | ':') )
+                =   "rule"
+                    >> space
+                    >> literal[rule_.rulename]
+                    >> space
+                    >>  !(  '('
                             >> space
+                            >> !(   list
+                                    [
+                                        hp::push_back(rule_.fields, arg1)
+                                    ]
+                                    >> space
+                                )
+                            >> *(   ':'
+                                    >> space
+                                    >> !(   list
+                                            [
+                                                hp::push_back(rule_.fields,arg1)
+                                            ]
+                                            >> space
+                                        )
+                                )
                             >> ')'
                             >> space
-                        |   *( (varexp | ':') >> space )
                         )
                     >> block
+                    [
+                        add_rule(
+                            boost::ref(self.rules),
+                            rule_.rulename,
+                            rule_.fields,
+                            arg1
+                        )
+                    ]
                 ;
 
             module
@@ -407,138 +765,83 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                     >> '}'
                 ;
 
+            list
+                =   varexp[hp::append(list.val, arg1)]
+                    >> *(space >> varexp[hp::append(list.val, arg1)])
+                ;
+
+            assign_
+                =   varexp
+                    [
+                        bind(vars_add_actor(self.vars))(assign_.tmp = arg1)
+                    ]
+                    >> !( space >> "on" >> !(space >> list) )
+                    >> space
+                    >>  (   '='
+                            >> !(   space
+                                    >> list
+                                    [
+                                        vars_assign(
+                                            boost::ref(self.vars),
+                                            assign_.tmp, arg1
+                                        )
+                                    ]
+                                )
+                        |   "+="
+                            >> !(   space
+                                    >> list
+                                    [
+                                        vars_append(
+                                            boost::ref(self.vars),
+                                            assign_.tmp, arg1
+                                        )
+                                    ]
+                                )
+                        |   "?="
+                            >> !(   space
+                                    >> list
+                                    [
+                                        vars_default(
+                                            boost::ref(self.vars),
+                                            assign_.tmp, arg1
+                                        )
+                                    ]
+                                )
+                        )
+                ;
+
             invoke
-                =   (varexp - keyword - special_rule)
-                    >> !( space >> "on" >> +(space >> varexp) )
-                    >> !( space >> (ch_p('=') | "+=" | "?=") )
-                    >> *( space >> (varexp | ':') )
+                =   varexp[invoke.rulename = arg1]
+                    >> !(   space
+                            >> list[hp::push_back(invoke.fields, arg1)]
+                        )
+                    >> *(   space
+                            >> ':'
+                            >> !(   space
+                                    >> list[hp::push_back(invoke.fields, arg1)]
+                                )
+                        )
+                    >> eps_p
+                    [
+                        invoke.val = bind(&bjam_grammar::invoke_rule)(
+                            var(self), invoke.rulename, invoke.fields)
+                    ]
                 ;
 
             rule_expansion
-                =   '[' >> space >> statement0 >> space >> ']'
-                ;
-
-            exe
-                =   "exe"
+                =   '['
                     >> space
-                    >> literal[push_back_target_actor(self.storage)]
+                    >> invoke[rule_expansion.val = arg1]
                     >> space
-                    >> ':'
-                    >> *( space >> (varexp | ':') )
+                    >> ']'
                 ;
 
-            lib
-                =   "lib"
-                    >> space
-                    >> literal[push_back_target_actor(self.storage)]
-                    >> space
-                    >> ':'
-                    >> *( space >> (varexp | ':') )
+            return_
+                =   "return" >> !( space >> list[return_.val = arg1] )
                 ;
 
-            install
-                =   "install"
-                    >> space
-                    >> literal[push_back_target_actor(self.storage)]
-                    >> space
-                    >> ':'
-                    >> *( space >> (varexp | ':') )
-                ;
-
-            boostbook
-                =   "boostbook"
-                    >> *( space >> (varexp | ':') )
-                ;
-
-            test_rule
-                =   str_p("compile-fail")
-                |   "compile"
-                |   "link-fail"
-                |   "link"
-                ;
-
-            test
-                =   test_rule
-                    >> space
-                    // sources
-                    >>  literal
-                        [
-                            test.source = construct_<std::string>(arg1, arg2)
-                        ]
-                    >> *( space >> varexp )
-                    >> !( space >> ':' >> *(space >> varexp) )  // requirements
-                    // target-name
-                    >> !(   space
-                            >> ':'
-                            >> space
-                            >>  varexp
-                                [
-                                    test.target_name =
-                                        construct_<std::string>(arg1, arg2)
-                                ]
-                        )
-                    >>  eps_p
-                        [
-                            test.val =
-                                construct_<testing_params>(
-                                    test.source, test.target_name)
-                        ]
-                ;
-
-            run_rule
-                =   str_p("run-fail")
-                |   "run"
-                ;
-
-            run
-                =   run_rule
-                    >> space
-                    // sources
-                    >>  literal
-                        [
-                            run.source = construct_<std::string>(arg1, arg2)
-                        ]
-                    >> *( space >> varexp )
-                    >> !( space >> ':' >> *(space >> varexp) )  // args
-                    >> !( space >> ':' >> *(space >> varexp) )  // input-files
-                    >> !( space >> ':' >> *(space >> varexp) )  // requirements
-                    // target-name
-                    >> !(   space
-                            >> ':'
-                            >> space
-                            >>  varexp
-                                [
-                                    run.target_name =
-                                        construct_<std::string>(arg1, arg2)
-                                ]
-                        )
-                    >> !( space >> ':' >> *(space >> varexp) )  // default-build
-                    >>  eps_p
-                        [
-                            run.val =
-                                construct_<testing_params>(
-                                    run.source, run.target_name)
-                        ]
-                ;
-
-            bpl_test
-                =   "bpl-test"
-                    >> space
-                    >> literal[push_back_bpl_test_actor(self.storage)]
-                    >> *( space >> (varexp | ':') )
-                ;
-
-            statement0
-                =   exe
-                |   lib
-                |   install
-                |   boostbook[push_back_boostbook_actor(self.storage)]
-                |   test[push_back_test_actor(self.storage)]
-                |   run[push_back_test_actor(self.storage)]
-                |   bpl_test
-                |   invoke
-                |   "return" >> *( space >> (varexp | ':') )
-                |   "include" >> space >> varexp
+            include
+                =   "include" >> space >> varexp
                 ;
 
             statement
@@ -551,12 +854,22 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                     |   rule_
                     |   module
                     |   local
-                    |   statement0 >> space >> ';'
+                    |   include >> space >> ';'
+                    |   invoke >> space >> ';'
+                    |   assign_ >> space >> ';'
                     )
                 ;
 
             statements
-                =   statement >> *(space >> statement)
+                =   (   statement
+                    |   return_[statements.val = arg1] >> space >> ';'
+                    )
+                    >> *(   space
+                            >>  (   statement
+                                |   return_[statements.val = arg1]
+                                    >> space >> ';'
+                                )
+                        )
                 ;
 
             jamfile
@@ -564,11 +877,8 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                     >> !statements
                     >> !space
                 ;
-        }
 
-        const rule_t& start() const
-        {
-            return jamfile;
+            this->start_parsers(jamfile, statements, invoke, cond0);
         }
     };
 };

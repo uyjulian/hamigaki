@@ -22,7 +22,10 @@ bool parse_jamfile(
         (std::istreambuf_iterator<char>())
     );
 
-    bjam_grammar g(targets);
+    variables vars;
+    rule_table rules;
+
+    bjam_grammar g(targets, vars, rules);
 
     return boost::spirit::parse(src.c_str(), g).full;
 }
