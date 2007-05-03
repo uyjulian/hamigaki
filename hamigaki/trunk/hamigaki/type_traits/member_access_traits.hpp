@@ -53,7 +53,7 @@ struct member_access_traits
     typedef typename boost::add_pointer<member_type>::type pointer;
 };
 
-} // End namespaces hamigaki.
+} // End namespace hamigaki.
 
 #endif
 

@@ -111,6 +111,6 @@ struct member_access_traits<const volatile T&,U>
 {
 };
 
-} // End namespaces hamigaki.
+} // End namespace hamigaki.
 
 #endif // HAMIGAKI_TYPE_TRAITS_DETAIL_BORLAND_MEMBER_ACCESS_TRAITS_HPP
