@@ -189,12 +189,10 @@ struct bjam_grammar
 {
     enum
     {
-        jamfile, statements, invoke, cond0, if_
+        jamfile, statements_, invoke, cond0, if_
     };
 
-    explicit bjam_grammar(
-        std::vector<std::string>& vs, variables& vt, rule_table& rs
-    )
+    bjam_grammar(std::vector<std::string>& vs, variables& vt, rule_table& rs)
         : storage(vs), vars(vt), rules(rs)
     {
     }
@@ -214,7 +212,7 @@ struct bjam_grammar
         parse_info<const char*> info =
             boost::spirit::parse(
                 src.c_str(),
-                g.use_parser<bjam_grammar::statements>()
+                g.use_parser<bjam_grammar::statements_>()
             );
 
         // TODO
@@ -243,7 +241,7 @@ struct bjam_grammar
             parse_info<const char*> info =
                 boost::spirit::parse(
                     src.c_str(),
-                    g.use_parser<bjam_grammar::statements>()
+                    g.use_parser<bjam_grammar::statements_>()
                 );
 
             // TODO
@@ -282,7 +280,7 @@ struct bjam_grammar
         parse_info<const char*> info =
             boost::spirit::parse(
                 data->source.c_str(),
-                g.use_parser<bjam_grammar::statements>()
+                g.use_parser<bjam_grammar::statements_>()
                 [
                     hp::append(var(result), arg1)
                 ]
@@ -429,8 +427,8 @@ struct bjam_grammar
     template<class ScannerT>
     struct definition
         : boost::spirit::grammar_def<
-              boost::spirit::rule<ScannerT, typename vars_closure::context_t>
-            , boost::spirit::same
+              boost::spirit::rule<ScannerT>
+            , boost::spirit::rule<ScannerT, typename vars_closure::context_t>
             , boost::spirit::rule<ScannerT, typename invoke_closure::context_t>
             , boost::spirit::rule<ScannerT, typename cond0_closure::context_t>
             , boost::spirit::rule<ScannerT, typename if_closure::context_t>
@@ -440,11 +438,12 @@ struct bjam_grammar
 
         boost::spirit::symbols<> keyword;
 
-        rule_t comment, space, special_rule;
+        rule_t comment, space;
         rule_t actions, action_modifiers, action_binds;
         rule_t while_, module, local;
         rule_t include, statement;
         rule_t pattern, switch_;
+        rule_t jamfile;
 
         struct char_closure : boost::spirit::closure<char_closure,char>
         {
@@ -527,7 +526,7 @@ struct bjam_grammar
         typedef boost::spirit::rule<
             ScannerT, typename vars_closure::context_t> vars_rule_t;
 
-        vars_rule_t jamfile, statements, list, varexp;
+        vars_rule_t statements_, statements, list, varexp;
         vars_rule_t rule_expansion, return_;
 
         definition(const bjam_grammar& self)
@@ -742,7 +741,7 @@ struct bjam_grammar
                     >> !(
                             no_actions_d
                             [
-                                self.use_parser<bjam_grammar::statements>()
+                                self.use_parser<bjam_grammar::statements_>()
                                 >> eps_p
                             ]
                             [
@@ -816,7 +815,7 @@ struct bjam_grammar
             rule_
                 =   "rule"
                     >> space
-                    >> literal[rule_.rulename]
+                    >> literal[rule_.rulename = arg1]
                     >> space
                     >>  !(  '('
                             >> space
@@ -884,7 +883,13 @@ struct bjam_grammar
                             >> pattern
                             >> space
                             >> ':'
-                            >> !(space >> statements)
+                            >> !(   space
+                                    >> no_actions_d
+                                    [
+                                        self.use_parser<
+                                            bjam_grammar::statements_>()
+                                    ]
+                                )
                         )
                     >> space
                     >> '}'
@@ -1015,6 +1020,10 @@ struct bjam_grammar
                         )
                 ;
 
+            statements_
+                =   statements[self.val = arg1]
+                ;
+
             jamfile
                 =   *(space_p | comment)
                     >> !statements
@@ -1022,7 +1031,7 @@ struct bjam_grammar
                 ;
 
             this->start_parsers(
-                jamfile, statements, invoke, cond0, if_);
+                jamfile, statements_, invoke, cond0, if_);
         }
     };
 };
