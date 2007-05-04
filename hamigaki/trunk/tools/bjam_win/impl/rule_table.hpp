@@ -19,14 +19,14 @@ struct rule_data
     typedef std::vector<std::string> field_type;
 
     std::vector<field_type> fields;
-    std::string block;
+    std::string source;
 
     rule_data()
     {
     }
 
-    rule_data(const std::vector<field_type>& f, const std::string& b)
-        : fields(f), block(b)
+    rule_data(const std::vector<field_type>& f, const std::string& src)
+        : fields(f), source(src)
     {
     }
 };

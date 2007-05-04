@@ -11,8 +11,8 @@
 #define IMPL_BJAM_GRAMMAR_HPP
 
 // TODO
-#define PHOENIX_LIMIT 4
-#define BOOST_SPIRIT_GRAMMAR_STARTRULE_TYPE_LIMIT 4
+#define PHOENIX_LIMIT 5
+#define BOOST_SPIRIT_GRAMMAR_STARTRULE_TYPE_LIMIT 5
 
 #include "./rule_table.hpp"
 #include "./var_expand_grammar.hpp"
@@ -176,9 +176,9 @@ struct add_rule_impl
         rule_table& table,
         const std::string& name,
         const std::vector<std::vector<std::string> >& fields,
-        const std::string& block) const
+        const std::string& src) const
     {
-        table.add(name, rule_data(fields, block));
+        table.add(name, rule_data(fields, src));
     }
 };
 
@@ -189,7 +189,7 @@ struct bjam_grammar
 {
     enum
     {
-        jamfile, statements, invoke, cond0
+        jamfile, statements, invoke, cond0, if_
     };
 
     explicit bjam_grammar(
@@ -202,6 +202,55 @@ struct bjam_grammar
     std::vector<std::string>& storage;
     variables& vars;
     rule_table& rules;
+
+    void enter_block(const std::string& src) const
+    {
+        using namespace boost::spirit;
+
+        variables new_vars(&vars);
+        rule_table new_rules(&rules);
+
+        bjam_grammar g(storage, new_vars, new_rules);
+        parse_info<const char*> info =
+            boost::spirit::parse(
+                src.c_str(),
+                g.use_parser<bjam_grammar::statements>()
+            );
+
+        // TODO
+        if (!info.full)
+            throw std::runtime_error("prase error");
+    }
+
+    void for_block(
+        const std::string& name,
+        const std::vector<std::string>& list,
+        const std::string& src) const
+    {
+        using namespace boost::spirit;
+
+        for (std::size_t i = 0; i < list.size(); ++i)
+        {
+            variables new_vars(&vars);
+            rule_table new_rules(&rules);
+
+            new_vars.add_local(name);
+            std::vector<std::string> tmp;
+            tmp.push_back(list[i]);
+            new_vars.assign(name, tmp);
+
+            bjam_grammar g(storage, new_vars, new_rules);
+            parse_info<const char*> info =
+                boost::spirit::parse(
+                    src.c_str(),
+                    g.use_parser<bjam_grammar::statements>()
+                );
+
+            // TODO
+            if (!info.full)
+                throw std::runtime_error("prase error");
+        }
+    }
 
     void
     invoke_rule_normal(
@@ -218,8 +267,8 @@ struct bjam_grammar
         if (!data)
             return;
 
-        variables new_vars(vars);
-        rule_table new_rules(rules);
+        variables new_vars(&vars);
+        rule_table new_rules(&rules);
 
         for (std::size_t i = 0; i < 9; ++i)
         {
@@ -232,7 +281,7 @@ struct bjam_grammar
         bjam_grammar g(storage, new_vars, new_rules);
         parse_info<const char*> info =
             boost::spirit::parse(
-                data->block.c_str(),
+                data->source.c_str(),
                 g.use_parser<bjam_grammar::statements>()
                 [
                     hp::append(var(result), arg1)
@@ -247,7 +296,10 @@ struct bjam_grammar
     void invoke_rule_run(
         const std::vector<std::vector<std::string> >& fields) const
     {
-        const std::string& src = fields.at(0).at(0);
+        if (fields.empty() || fields[0].empty())
+            return;
+
+        const std::string& src = fields[0][0];
 
         std::string target;
         if ((fields.size() < 5) || fields[4].empty())
@@ -270,7 +322,10 @@ struct bjam_grammar
     void invoke_rule_test(
         const std::vector<std::vector<std::string> >& fields) const
     {
-        const std::string& src = fields.at(0).at(0);
+        if (fields.empty() || fields[0].empty())
+            return;
+
+        const std::string& src = fields[0][0];
 
         std::string target;
         if ((fields.size() < 3) || fields[2].empty())
@@ -305,7 +360,10 @@ struct bjam_grammar
         {
             const std::string& name = rule_name[i];
             if ((name == "exe") || (name == "lib") || (name == "bpl-test"))
-                storage.push_back(fields.at(0).at(0));
+            {
+                if (!fields.empty() && !fields[0].empty())
+                    storage.push_back(fields[0][0]);
+            }
             else if (name == "boostbook")
             {
                 storage.push_back("html");
@@ -358,6 +416,16 @@ struct bjam_grammar
         member3 rhs;
     };
 
+    struct if_closure
+        : boost::spirit::closure<
+              if_closure
+            , int
+            , bool
+        >
+    {
+        member2 cond;
+    };
+
     template<class ScannerT>
     struct definition
         : boost::spirit::grammar_def<
@@ -365,6 +433,7 @@ struct bjam_grammar
             , boost::spirit::same
             , boost::spirit::rule<ScannerT, typename invoke_closure::context_t>
             , boost::spirit::rule<ScannerT, typename cond0_closure::context_t>
+            , boost::spirit::rule<ScannerT, typename if_closure::context_t>
         >
     {
         typedef boost::spirit::rule<ScannerT> rule_t;
@@ -373,7 +442,7 @@ struct bjam_grammar
 
         rule_t comment, space, special_rule;
         rule_t actions, action_modifiers, action_binds;
-        rule_t if_, for_, while_, module, local;
+        rule_t while_, module, local;
         rule_t include, statement;
         rule_t pattern, switch_;
 
@@ -400,6 +469,9 @@ struct bjam_grammar
 
         boost::spirit::rule<
             ScannerT, typename bool_closure::context_t> cond;
+
+        boost::spirit::rule<
+            ScannerT, typename if_closure::context_t> if_;
 
         struct str_closure : boost::spirit::closure<str_closure,std::string>
         {
@@ -436,6 +508,21 @@ struct bjam_grammar
 
         boost::spirit::rule<
             ScannerT, typename rule_closure::context_t> rule_;
+
+        struct for_closure
+            : boost::spirit::closure<
+                  for_closure
+                , int
+                , std::string
+                , variables::mapped_type
+            >
+        {
+            member2 name;
+            member3 list;
+        };
+
+        boost::spirit::rule<
+            ScannerT, typename for_closure::context_t> for_;
 
         typedef boost::spirit::rule<
             ScannerT, typename vars_closure::context_t> vars_rule_t;
@@ -667,20 +754,58 @@ struct bjam_grammar
                 ;
 
             if_
-                =   "if" >> space >> cond >> space
-                    >> block
-                    >> !( space >> "else" >> space >> ( if_ | block ) )
+                =   "if"
+                    >> space
+                    >> cond[if_.cond = arg1]
+                    >> space
+                    >>  if_p(if_.cond)
+                        [
+                            block
+                            [
+                                bind(&bjam_grammar::enter_block)
+                                    (var(self), arg1)
+                            ]
+                        ].else_p
+                        [
+                            block
+                        ]
+                    >> !(
+                            space
+                            >> "else"
+                            >> space
+                            >>  if_p(if_.cond)
+                                [
+                                    no_actions_d
+                                    [
+                                        self.use_parser<bjam_grammar::if_>()
+                                    ]
+                                |   block
+                                ].else_p
+                                [
+                                    if_
+                                |   block
+                                    [
+                                        bind(&bjam_grammar::enter_block)
+                                            (var(self), arg1)
+                                    ]
+                                ]
+                        )
                 ;
 
             for_
                 =   "for"
                     >> !( space >> str_p("local") )
                     >> space
-                    >> literal
+                    >> literal[for_.name = arg1]
                     >> space
-                    >> "in" >> *( space >> varexp )
+                    >> "in"
                     >> space
+                    >> !( list[for_.list = arg1] >> space )
                     >> block
+                    [
+                        bind(&bjam_grammar::for_block)
+                            (var(self), for_.name, for_.list, arg1)
+                    ]
                 ;
 
             while_
@@ -812,13 +937,28 @@ struct bjam_grammar
 
             invoke
                 =   varexp[invoke.rulename = arg1]
-                    >> !(   space
+                    >>  (   space
                             >> list[hp::push_back(invoke.fields, arg1)]
+                        |   eps_p
+                            [
+                                hp::push_back(
+                                    invoke.fields,
+                                    construct_<std::vector<std::string> >()
+                                )
+                            ]
                         )
                     >> *(   space
                             >> ':'
-                            >> !(   space
+                            >>  (   space
                                     >> list[hp::push_back(invoke.fields, arg1)]
+                                |   eps_p
+                                    [
+                                        hp::push_back(
+                                            invoke.fields,
+                                            construct_<
+                                                std::vector<std::string> >()
+                                        )
+                                    ]
                                 )
                         )
                     >> eps_p
@@ -847,6 +987,9 @@ struct bjam_grammar
             statement
                 =   (   actions
                     |   block
+                        [
+                            bind(&bjam_grammar::enter_block)(var(self), arg1)
+                        ]
                     |   if_
                     |   for_
                     |   while_
@@ -878,7 +1021,8 @@ struct bjam_grammar
                     >> !space
                 ;
 
-            this->start_parsers(jamfile, statements, invoke, cond0);
+            this->start_parsers(
+                jamfile, statements, invoke, cond0, if_);
         }
     };
 };
