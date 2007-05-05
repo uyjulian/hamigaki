@@ -466,7 +466,8 @@ struct bjam_grammar
         for (std::size_t i = 0; i < rule_name.size(); ++i)
         {
             const std::string& name = rule_name[i];
-            if ((name == "exe") || (name == "lib") || (name == "bpl-test"))
+            if ((name == "exe") || (name == "lib") || (name == "install") ||
+                (name == "bpl-test") )
             {
                 if (!fields.empty() && !fields[0].empty())
                     storage.push_back(fields[0][0]);
