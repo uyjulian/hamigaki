@@ -11,8 +11,8 @@
 #define IMPL_BJAM_GRAMMAR_HPP
 
 // TODO
-#define PHOENIX_LIMIT 5
-#define BOOST_SPIRIT_GRAMMAR_STARTRULE_TYPE_LIMIT 5
+#define PHOENIX_LIMIT 6
+#define BOOST_SPIRIT_GRAMMAR_STARTRULE_TYPE_LIMIT 6
 
 #include "./rule_table.hpp"
 #include "./var_expand_grammar.hpp"
@@ -35,6 +35,21 @@ inline void remove_branch_path(std::string& s)
     if (pos != std::string::npos)
         s.erase(0, pos+1);
 }
+
+struct bool2vec_impl
+{
+    typedef void result_type;
+
+    void operator()(std::vector<std::string>& vs, bool b) const
+    {
+        std::vector<std::string> tmp;
+        if (b)
+            tmp.push_back(std::string());
+        vs.swap(tmp);
+    }
+};
+
+const ::phoenix::functor<bool2vec_impl> bool2vec = bool2vec_impl();
 
 struct has_non_empty_element_impl
 {
@@ -189,7 +204,7 @@ struct bjam_grammar
 {
     enum
     {
-        jamfile, statements_, invoke, cond0, if_
+        jamfile, statements_, invoke, cond0, cond_, if_
     };
 
     bjam_grammar(std::vector<std::string>& vs, variables& vt, rule_table& rs)
@@ -236,6 +251,49 @@ struct bjam_grammar
             std::vector<std::string> tmp;
             tmp.push_back(list[i]);
             new_vars.assign(name, tmp);
+
+            bjam_grammar g(storage, new_vars, new_rules);
+            parse_info<const char*> info =
+                boost::spirit::parse(
+                    src.c_str(),
+                    g.use_parser<bjam_grammar::statements_>()
+                );
+
+            // TODO
+            if (!info.full)
+                throw std::runtime_error("prase error");
+        }
+    }
+
+    bool eval_cond(const std::string& src) const
+    {
+        using namespace boost::spirit;
+        using namespace phoenix;
+
+        std::vector<std::string> tmp;
+        parse_info<const char*> info =
+            boost::spirit::parse(
+                src.c_str(),
+                this->use_parser<bjam_grammar::cond_>()[var(tmp) = arg1]
+            );
+
+        // TODO
+        if (!info.full)
+            throw std::runtime_error("prase error");
+
+        return !tmp.empty();
+    }
+
+    void while_block(
+        const std::string& cond,
+        const std::string& src) const
+    {
+        using namespace boost::spirit;
+
+        while (this->eval_cond(cond))
+        {
+            variables new_vars(&vars);
+            rule_table new_rules(&rules);
 
             bjam_grammar g(storage, new_vars, new_rules);
             parse_info<const char*> info =
@@ -431,6 +489,7 @@ struct bjam_grammar
             , boost::spirit::rule<ScannerT, typename vars_closure::context_t>
             , boost::spirit::rule<ScannerT, typename invoke_closure::context_t>
             , boost::spirit::rule<ScannerT, typename cond0_closure::context_t>
+            , boost::spirit::rule<ScannerT, typename vars_closure::context_t>
             , boost::spirit::rule<ScannerT, typename if_closure::context_t>
         >
     {
@@ -440,7 +499,7 @@ struct bjam_grammar
 
         rule_t comment, space;
         rule_t actions, action_modifiers, action_binds;
-        rule_t while_, module, local;
+        rule_t module, local;
         rule_t include, statement;
         rule_t pattern, switch_;
         rule_t jamfile;
@@ -480,18 +539,20 @@ struct bjam_grammar
         boost::spirit::rule<
             ScannerT, typename str_closure::context_t> block, literal;
 
-        struct tmp_vars_closure
+        struct assign_closure
             : boost::spirit::closure<
-                  tmp_vars_closure
+                  assign_closure
                 , int
+                , std::vector<std::string>
                 , std::vector<std::string>
             >
         {
-            member2 tmp;
+            member2 names;
+            member3 elements;
         };
 
         boost::spirit::rule<
-            ScannerT, typename tmp_vars_closure::context_t> assign_;
+            ScannerT, typename assign_closure::context_t> assign_;
 
         struct rule_closure
             : boost::spirit::closure<
@@ -523,10 +584,23 @@ struct bjam_grammar
         boost::spirit::rule<
             ScannerT, typename for_closure::context_t> for_;
 
+        struct while_closure
+            : boost::spirit::closure<
+                  while_closure
+                , int
+                , std::string
+            >
+        {
+            member2 cond;
+        };
+
+        boost::spirit::rule<
+            ScannerT, typename while_closure::context_t> while_;
+
         typedef boost::spirit::rule<
             ScannerT, typename vars_closure::context_t> vars_rule_t;
 
-        vars_rule_t statements_, statements, list, varexp;
+        vars_rule_t statements_, statements, list, varexp, cond_;
         vars_rule_t rule_expansion, return_;
 
         definition(const bjam_grammar& self)
@@ -735,6 +809,10 @@ struct bjam_grammar
                         )
                 ;
 
+            cond_
+                =   cond[bool2vec(self.val, arg1)]
+                ;
+
             block
                 =   '{'
                     >> space
@@ -808,8 +886,22 @@ struct bjam_grammar
                 ;
 
             while_
-                =   "while" >> space >> cond >> space
+                =   "while"
+                    >> space
+                    >>  no_actions_d
+                        [
+                            self.use_parser<bjam_grammar::cond_>() >> eps_p
+                        ]
+                        [
+                            while_.cond =
+                                construct_<std::string>(arg1,arg2)
+                        ]
+                    >> space
                     >> block
+                    [
+                        bind(&bjam_grammar::while_block)
+                            (var(self), while_.cond, arg1)
+                    ]
                 ;
 
             rule_
@@ -903,27 +995,26 @@ struct bjam_grammar
             assign_
                 =   varexp
                     [
-                        bind(vars_add_actor(self.vars))(assign_.tmp = arg1)
+                        bind(vars_add_actor(self.vars))(assign_.names = arg1)
                     ]
                     >> !( space >> "on" >> !(space >> list) )
                     >> space
                     >>  (   '='
-                            >> !(   space
-                                    >> list
-                                    [
-                                        vars_assign(
-                                            boost::ref(self.vars),
-                                            assign_.tmp, arg1
-                                        )
-                                    ]
-                                )
+                            >> !( space >> list[assign_.elements = arg1] )
+                            >>  eps_p
+                                [
+                                    vars_assign(
+                                        boost::ref(self.vars),
+                                        assign_.names, assign_.elements
+                                    )
+                                ]
                         |   "+="
                             >> !(   space
                                     >> list
                                     [
                                         vars_append(
                                             boost::ref(self.vars),
-                                            assign_.tmp, arg1
+                                            assign_.names, arg1
                                         )
                                     ]
                                 )
@@ -933,7 +1024,7 @@ struct bjam_grammar
                                     [
                                         vars_default(
                                             boost::ref(self.vars),
-                                            assign_.tmp, arg1
+                                            assign_.names, arg1
                                         )
                                     ]
                                 )
@@ -1031,7 +1122,7 @@ struct bjam_grammar
                 ;
 
             this->start_parsers(
-                jamfile, statements_, invoke, cond0, if_);
+                jamfile, statements_, invoke, cond0, cond_, if_);
         }
     };
 };
