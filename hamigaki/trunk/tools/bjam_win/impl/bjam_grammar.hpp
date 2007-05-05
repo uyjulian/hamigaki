@@ -86,12 +86,12 @@ struct includes_impl
 
 const ::phoenix::functor<includes_impl> includes = includes_impl();
 
-class vars_add_actor
+class add_vars_actor
 {
 public:
     typedef void result_type;
 
-    explicit vars_add_actor(variables& t) : table_(t)
+    explicit add_vars_actor(variables& t) : table_(t)
     {
     }
 
@@ -106,7 +106,27 @@ private:
     variables& table_;
 };
 
-struct vars_assign_impl
+class add_local_vars_actor
+{
+public:
+    typedef void result_type;
+
+    explicit add_local_vars_actor(variables& t) : table_(t)
+    {
+    }
+
+    void operator()(const std::vector<std::string>& vs) const
+    {
+        std::vector<std::string> result;
+        for (std::size_t i = 0; i < vs.size(); ++i)
+            table_.add_local(vs[i]);
+    }
+
+private:
+    variables& table_;
+};
+
+struct assign_vars_impl
 {
     typedef void result_type;
 
@@ -120,9 +140,9 @@ struct vars_assign_impl
     }
 };
 
-const ::phoenix::functor<vars_assign_impl> vars_assign = vars_assign_impl();
+const ::phoenix::functor<assign_vars_impl> assign_vars = assign_vars_impl();
 
-struct vars_append_impl
+struct append_vars_impl
 {
     typedef void result_type;
 
@@ -136,9 +156,9 @@ struct vars_append_impl
     }
 };
 
-const ::phoenix::functor<vars_append_impl> vars_append = vars_append_impl();
+const ::phoenix::functor<append_vars_impl> append_vars = append_vars_impl();
 
-struct vars_default_impl
+struct default_vars_impl
 {
     typedef void result_type;
 
@@ -157,9 +177,9 @@ struct vars_default_impl
     }
 };
 
-const ::phoenix::functor<vars_default_impl> vars_default = vars_default_impl();
+const ::phoenix::functor<default_vars_impl> default_vars = default_vars_impl();
 
-struct vars_expand_impl
+struct expand_vars_impl
 {
     typedef std::vector<std::string> result_type;
 
@@ -181,7 +201,7 @@ struct vars_expand_impl
     }
 };
 
-const ::phoenix::functor<vars_expand_impl> vars_expand = vars_expand_impl();
+const ::phoenix::functor<expand_vars_impl> expand_vars = expand_vars_impl();
 
 struct add_rule_impl
 {
@@ -189,11 +209,15 @@ struct add_rule_impl
 
     void operator()(
         rule_table& table,
+        bool is_local,
         const std::string& name,
         const std::vector<std::vector<std::string> >& fields,
         const std::string& src) const
     {
-        table.add(name, rule_data(fields, src));
+        if (is_local)
+            table.add_local(name, rule_data(fields, src));
+        else
+            table.add(name, rule_data(fields, src));
     }
 };
 
@@ -220,6 +244,9 @@ struct bjam_grammar
     {
         using namespace boost::spirit;
 
+        if (src.empty())
+            return;
+
         variables new_vars(&vars);
         rule_table new_rules(&rules);
 
@@ -236,6 +263,7 @@ struct bjam_grammar
     }
 
     void for_block(
+        bool is_local,
         const std::string& name,
         const std::vector<std::string>& list,
         const std::string& src) const
@@ -247,10 +275,17 @@ struct bjam_grammar
             variables new_vars(&vars);
             rule_table new_rules(&rules);
 
-            new_vars.add_local(name);
+            if (is_local)
+                new_vars.add_local(name);
+            else
+                new_vars.add(name);
+
             std::vector<std::string> tmp;
             tmp.push_back(list[i]);
             new_vars.assign(name, tmp);
+
+            if (src.empty())
+                continue;
 
             bjam_grammar g(storage, new_vars, new_rules);
             parse_info<const char*> info =
@@ -269,6 +304,9 @@ struct bjam_grammar
     {
         using namespace boost::spirit;
         using namespace phoenix;
+
+        if (src.empty())
+            return false;
 
         std::vector<std::string> tmp;
         parse_info<const char*> info =
@@ -292,6 +330,9 @@ struct bjam_grammar
 
         while (this->eval_cond(cond))
         {
+            if (src.empty())
+                continue;
+
             variables new_vars(&vars);
             rule_table new_rules(&rules);
 
@@ -562,16 +603,17 @@ struct bjam_grammar
         };
 
         boost::spirit::rule<
-            ScannerT, typename assign_closure::context_t> assign_;
+            ScannerT, typename assign_closure::context_t> assign_, local_assign;
 
         struct rule_closure
             : boost::spirit::closure<
                   rule_closure
-                , int
+                , bool
                 , std::string
                 , std::vector<std::vector<std::string> >
             >
         {
+            member1 local;
             member2 rulename;
             member3 fields;
         };
@@ -582,11 +624,12 @@ struct bjam_grammar
         struct for_closure
             : boost::spirit::closure<
                   for_closure
-                , int
+                , bool
                 , std::string
                 , variables::mapped_type
             >
         {
+            member1 local;
             member2 name;
             member3 list;
         };
@@ -699,7 +742,7 @@ struct bjam_grammar
                     ]
                 |   literal
                     [
-                        varexp.val = vars_expand(boost::ref(self.vars), arg1)
+                        varexp.val = expand_vars(boost::ref(self.vars), arg1)
                     ]
                 ;
 
@@ -880,8 +923,8 @@ struct bjam_grammar
                 ;
 
             for_
-                =   "for"
-                    >> !( space >> str_p("local") )
+                =   str_p("for")[for_.local = false]
+                    >> !( space >> str_p("local")[for_.local = true] )
                     >> space
                     >> literal[for_.name = arg1]
                     >> space
@@ -891,7 +934,7 @@ struct bjam_grammar
                     >> block
                     [
                         bind(&bjam_grammar::for_block)
-                            (var(self), for_.name, for_.list, arg1)
+                            (var(self), for_.local, for_.name, for_.list, arg1)
                     ]
                 ;
 
@@ -943,6 +986,7 @@ struct bjam_grammar
                     [
                         add_rule(
                             boost::ref(self.rules),
+                            rule_.local,
                             rule_.rulename,
                             rule_.fields,
                             arg1
@@ -955,13 +999,33 @@ struct bjam_grammar
                     >> block
                 ;
 
+            local_assign
+                =   list
+                    [
+                        bind(add_local_vars_actor(self.vars))
+                            (local_assign.names = arg1)
+                    ]
+                    >> space
+                    >> !(   '='
+                            >> space
+                            >> !(   list
+                                    [
+                                        assign_vars(
+                                            boost::ref(self.vars),
+                                            local_assign.names, arg1
+                                        )
+                                    ]
+                                    >> space
+                                )
+                        )
+                    >> ';'
+                ;
+
             local
                 =   "local"
                     >> space
-                    >>  (   rule_
-                        |   +(varexp >> space)
-                            >> !( '=' >> *(space >> varexp) >> space)
-                            >> ';'
+                    >>  (   rule_(true)
+                        |   local_assign
                         )
                 ;
 
@@ -1005,7 +1069,7 @@ struct bjam_grammar
             assign_
                 =   varexp
                     [
-                        bind(vars_add_actor(self.vars))(assign_.names = arg1)
+                        bind(add_vars_actor(self.vars))(assign_.names = arg1)
                     ]
                     >> !( space >> "on" >> !(space >> list) )
                     >> space
@@ -1013,7 +1077,7 @@ struct bjam_grammar
                             >> !( space >> list[assign_.elements = arg1] )
                             >>  eps_p
                                 [
-                                    vars_assign(
+                                    assign_vars(
                                         boost::ref(self.vars),
                                         assign_.names, assign_.elements
                                     )
@@ -1022,7 +1086,7 @@ struct bjam_grammar
                             >> !(   space
                                     >> list
                                     [
-                                        vars_append(
+                                        append_vars(
                                             boost::ref(self.vars),
                                             assign_.names, arg1
                                         )
@@ -1032,7 +1096,7 @@ struct bjam_grammar
                             >> !(   space
                                     >> list
                                     [
-                                        vars_default(
+                                        default_vars(
                                             boost::ref(self.vars),
                                             assign_.names, arg1
                                         )
@@ -1100,7 +1164,7 @@ struct bjam_grammar
                     |   for_
                     |   while_
                     |   switch_
-                    |   rule_
+                    |   rule_(false)
                     |   module
                     |   local
                     |   include >> space >> ';'
