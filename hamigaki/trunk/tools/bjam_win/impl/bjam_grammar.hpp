@@ -308,8 +308,7 @@ struct bjam_grammar
         }
     }
 
-    void
-    invoke_rule_normal(
+    void invoke_rule_normal(
         std::vector<std::string>& result,
         const std::string& name,
         const std::vector<std::vector<std::string> >& fields) const
@@ -332,6 +331,17 @@ struct bjam_grammar
             new_vars.add_local(name);
             if (i < fields.size())
                 new_vars.assign(name, fields[i]);
+        }
+
+        for (std::size_t i = 0; i < data->fields.size(); ++i)
+        {
+            if (i < fields.size())
+                ::set_rule_arguments(new_vars, data->fields[i], fields[i]);
+            else
+            {
+                ::set_rule_arguments(
+                    new_vars, data->fields[i], std::vector<std::string>());
+            }
         }
 
         bjam_grammar g(storage, new_vars, new_rules);

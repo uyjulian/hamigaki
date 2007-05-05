@@ -13,6 +13,7 @@
 #include <boost/assert.hpp>
 #include <map>
 #include <vector>
+#include <stdexcept>
 #include <string>
 
 class variables
@@ -81,5 +82,57 @@ private:
     variables* global_;
     table_type local_;
 };
+
+inline void set_rule_arguments(
+    variables& vars,
+    const std::vector<std::string>& params,
+    const std::vector<std::string>& args)
+{
+    typedef std::vector<std::string>::const_iterator iter_type;
+    iter_type p = params.begin();
+    iter_type a = args.begin();
+
+    while (p != params.end())
+    {
+        const std::string& name = *(p++);
+
+        std::string opt;
+        if (p != params.end())
+            opt = *p;
+
+        std::vector<std::string> values;
+        if (opt == "?")
+        {
+            if (a != args.end())
+                values.push_back(*(a++));
+            ++p;
+        }
+        else if (opt == "*")
+        {
+            values.assign(a, args.end());
+            ++p;
+            a = args.end();
+        }
+        else if (opt == "+")
+        {
+            if (a == args.end())
+                throw std::runtime_error("missing a rule argument");
+
+            values.assign(a, args.end());
+            ++p;
+            a = args.end();
+        }
+        else
+        {
+            if (a == args.end())
+                throw std::runtime_error("missing a rule argument");
+
+            values.push_back(*(a++));
+        }
+
+        vars.add_local(name);
+        vars.assign(name, values);
+    }
+}
 
 #endif // IMPL_VARIABLES_HPP
