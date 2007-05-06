@@ -366,6 +366,14 @@ struct bjam_grammar
         variables new_vars(&vars);
         rule_table new_rules(&rules);
 
+        new_vars.add_local("<");
+        if (!fields.empty())
+            new_vars.assign("<", fields[0]);
+
+        new_vars.add_local(">");
+        if (fields.size() > 1)
+            new_vars.assign(">", fields[1]);
+
         for (std::size_t i = 0; i < 9; ++i)
         {
             std::string name(1u, "123456789"[i]);
