@@ -94,32 +94,26 @@ inline void set_rule_arguments(
 
     while (p != params.end())
     {
-        const std::string& name = *(p++);
+        std::string name;
+        if ((*p != "?") && (*p != "*") && (*p != "+"))
+            name = *(p++);
 
         std::string opt;
         if (p != params.end())
-            opt = *p;
+        {
+            if ((*p == "?") || (*p == "*") || (*p == "+"))
+                opt = *(p++);
+        }
 
         std::vector<std::string> values;
         if (opt == "?")
         {
             if (a != args.end())
                 values.push_back(*(a++));
-            ++p;
         }
         else if (opt == "*")
         {
             values.assign(a, args.end());
-            ++p;
-            a = args.end();
-        }
-        else if (opt == "+")
-        {
-            if (a == args.end())
-                throw std::runtime_error("missing a rule argument");
-
-            values.assign(a, args.end());
-            ++p;
             a = args.end();
         }
         else
@@ -127,11 +121,20 @@ inline void set_rule_arguments(
             if (a == args.end())
                 throw std::runtime_error("missing a rule argument");
 
-            values.push_back(*(a++));
+            if (opt == "+")
+            {
+                values.assign(a, args.end());
+                a = args.end();
+            }
+            else
+                values.push_back(*(a++));
         }
 
-        vars.add_local(name);
-        vars.assign(name, values);
+        if (!name.empty())
+        {
+            vars.add_local(name);
+            vars.assign(name, values);
+        }
     }
 }
 
