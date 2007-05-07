@@ -1,18 +1,20 @@
-//  rule_table.hpp: the table of the rule_table
+//  rule_table.hpp: the table of the rules
 
 //  Copyright Takeshi Mouri 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/ for library home page.
+//  See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
 
-#ifndef IMPL_RULE_TABLE_HPP
-#define IMPL_RULE_TABLE_HPP
+#ifndef HAMIGAKI_BJAM_UTIL_RULE_TABLE_HPP
+#define HAMIGAKI_BJAM_UTIL_RULE_TABLE_HPP
 
 #include <map>
 #include <string>
 #include <vector>
+
+namespace hamigaki { namespace bjam {
 
 struct rule_data
 {
@@ -71,4 +73,6 @@ private:
     table_type local_;
 };
 
-#endif // IMPL_RULE_TABLE_HPP
+} } // End namespaces bjam, hamigaki.
+
+#endif // HAMIGAKI_BJAM_UTIL_RULE_TABLE_HPP

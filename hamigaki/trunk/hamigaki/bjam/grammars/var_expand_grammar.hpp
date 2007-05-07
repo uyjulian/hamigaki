@@ -5,12 +5,12 @@
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/ for library home page.
+//  See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
 
-#ifndef IMPL_VAR_EXPAND_GRAMMAR_HPP
-#define IMPL_VAR_EXPAND_GRAMMAR_HPP
+#ifndef HAMIGAKI_BJAM_GRAMMARS_VAR_EXPAND_GRAMMAR_HPP
+#define HAMIGAKI_BJAM_GRAMMARS_VAR_EXPAND_GRAMMAR_HPP
 
-#include "./variables.hpp"
+#include <hamigaki/bjam/util/variable_table.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/spirit/core.hpp>
@@ -18,10 +18,15 @@
 #include <boost/spirit/phoenix/binders.hpp>
 #include <algorithm>
 
+namespace hamigaki { namespace bjam { namespace grammars {
+
+namespace closures
+{
+
 struct vars_closure
     : boost::spirit::closure<
         vars_closure,
-        variables::mapped_type
+        variable_table::mapped_type
     >
 {
     member1 val;
@@ -43,20 +48,25 @@ struct range_closure
 struct expand_closure
     : boost::spirit::closure<
         expand_closure,
-        variables::mapped_type,
-        variables::mapped_type
+        variable_table::mapped_type,
+        variable_table::mapped_type
     >
 {
     member1 val;
     member2 rep;
 };
 
+} // namespace closures
+
+namespace impl
+{
+
 class vars_expand_actor
 {
 public:
     typedef std::vector<std::string> result_type;
 
-    explicit vars_expand_actor(const variables& t)
+    explicit vars_expand_actor(const variable_table& t)
         : table_(t)
     {
     }
@@ -75,7 +85,7 @@ public:
     }
 
 private:
-    const variables& table_;
+    const variable_table& table_;
 };
 
 struct slice_actor
@@ -226,8 +236,8 @@ struct parent_dir_actor
         for (std::size_t i = 0; i < vs.size(); ++i)
         {
             const std::string& s = vs[i];
-            std::string::size_type start = ::find_grist_end(s);
-            std::string::size_type end = ::find_dir_end(s, start);
+            std::string::size_type start = impl::find_grist_end(s);
+            std::string::size_type end = impl::find_dir_end(s, start);
             vs[i] = s.substr(start, end - start);
         }
     }
@@ -254,7 +264,7 @@ struct grist_actor
                 for (std::size_t i = 0; i < vs.size(); ++i)
                 {
                     std::string s = vs[i];
-                    s.replace(0, ::find_grist_end(s), grist);
+                    s.replace(0, impl::find_grist_end(s), grist);
                     result.push_back(s);
                 }
             }
@@ -267,7 +277,7 @@ struct grist_actor
             for (std::size_t i = 0; i < vs.size(); ++i)
             {
                 const std::string& s = vs[i];
-                vs[i] = s.substr(0, ::find_grist_end(s));
+                vs[i] = s.substr(0, impl::find_grist_end(s));
             }
         }
     }
@@ -292,9 +302,9 @@ struct directory_actor
                 for (std::size_t i = 0; i < vs.size(); ++i)
                 {
                     std::string s = vs[i];
-                    std::string::size_type start = ::find_grist_end(s);
-                    std::string::size_type end = ::find_basename(s, start);
-                    std::string::size_type member = ::find_member(s, end);
+                    std::string::size_type start = impl::find_grist_end(s);
+                    std::string::size_type end = impl::find_basename(s, start);
+                    std::string::size_type member = impl::find_member(s, end);
                     if (end != member)
                         s.replace(start, end-start, dir);
                     else
@@ -311,8 +321,8 @@ struct directory_actor
             for (std::size_t i = 0; i < vs.size(); ++i)
             {
                 const std::string& s = vs[i];
-                std::string::size_type start = ::find_grist_end(s);
-                std::string::size_type end = ::find_dir_end(s, start);
+                std::string::size_type start = impl::find_grist_end(s);
+                std::string::size_type end = impl::find_dir_end(s, start);
                 vs[i] = s.substr(start, end-start);
             }
         }
@@ -335,10 +345,11 @@ struct basename_actor
                 for (std::size_t i = 0; i < vs.size(); ++i)
                 {
                     std::string s = vs[i];
-                    std::string::size_type dir = ::find_grist_end(s);
-                    std::string::size_type start = ::find_basename(s, dir);
-                    std::string::size_type member = ::find_member(s, start);
-                    std::string::size_type dot = ::find_dot(s, start, member);
+                    std::string::size_type dir = impl::find_grist_end(s);
+                    std::string::size_type start = impl::find_basename(s, dir);
+                    std::string::size_type member = impl::find_member(s, start);
+                    std::string::size_type dot =
+                        impl::find_dot(s, start, member);
                     s.replace(start, dot-start, val[j]);
                     result.push_back(s);
                 }
@@ -352,10 +363,10 @@ struct basename_actor
             for (std::size_t i = 0; i < vs.size(); ++i)
             {
                 const std::string& s = vs[i];
-                std::string::size_type dir = ::find_grist_end(s);
-                std::string::size_type start = ::find_basename(s, dir);
-                std::string::size_type member = ::find_member(s, start);
-                std::string::size_type dot = ::find_dot(s, start, member);
+                std::string::size_type dir = impl::find_grist_end(s);
+                std::string::size_type start = impl::find_basename(s, dir);
+                std::string::size_type member = impl::find_member(s, start);
+                std::string::size_type dot = impl::find_dot(s, start, member);
                 vs[i] = s.substr(start, dot-start);
             }
         }
@@ -378,10 +389,11 @@ struct suffix_actor
                 for (std::size_t i = 0; i < vs.size(); ++i)
                 {
                     std::string s = vs[i];
-                    std::string::size_type dir = ::find_grist_end(s);
-                    std::string::size_type base = ::find_basename(s, dir);
-                    std::string::size_type member = ::find_member(s, base);
-                    std::string::size_type dot = ::find_dot(s, base, member);
+                    std::string::size_type dir = impl::find_grist_end(s);
+                    std::string::size_type base = impl::find_basename(s, dir);
+                    std::string::size_type member =impl::find_member(s, base);
+                    std::string::size_type dot =
+                        impl::find_dot(s, base, member);
                     s.replace(dot, member-dot, val[j]);
                     result.push_back(s);
                 }
@@ -395,10 +407,10 @@ struct suffix_actor
             for (std::size_t i = 0; i < vs.size(); ++i)
             {
                 const std::string& s = vs[i];
-                std::string::size_type dir = ::find_grist_end(s);
-                std::string::size_type base = ::find_basename(s, dir);
-                std::string::size_type member = ::find_member(s, base);
-                std::string::size_type dot = ::find_dot(s, base, member);
+                std::string::size_type dir = impl::find_grist_end(s);
+                std::string::size_type base = impl::find_basename(s, dir);
+                std::string::size_type member = impl::find_member(s, base);
+                std::string::size_type dot = impl::find_dot(s, base, member);
                 vs[i] = s.substr(dot, member-dot);
             }
         }
@@ -426,9 +438,9 @@ struct member_actor
                 for (std::size_t i = 0; i < vs.size(); ++i)
                 {
                     std::string s = vs[i];
-                    std::string::size_type dir = ::find_grist_end(s);
-                    std::string::size_type base = ::find_basename(s, dir);
-                    std::string::size_type member = ::find_member(s, base);
+                    std::string::size_type dir = impl::find_grist_end(s);
+                    std::string::size_type base = impl::find_basename(s, dir);
+                    std::string::size_type member = impl::find_member(s, base);
                     s.replace(member, s.size()-member, strval);
                     result.push_back(s);
                 }
@@ -442,9 +454,9 @@ struct member_actor
             for (std::size_t i = 0; i < vs.size(); ++i)
             {
                 const std::string& s = vs[i];
-                std::string::size_type dir = ::find_grist_end(s);
-                std::string::size_type base = ::find_basename(s, dir);
-                std::string::size_type member = ::find_member(s, base);
+                std::string::size_type dir = impl::find_grist_end(s);
+                std::string::size_type base = impl::find_basename(s, dir);
+                std::string::size_type member = impl::find_member(s, base);
                 vs[i] = s.substr(member, s.size()-member);
             }
         }
@@ -472,8 +484,8 @@ struct root_actor
             for (std::size_t i = 0; i < vs.size(); ++i)
             {
                 std::string s = vs[i];
-                std::string::size_type start = ::find_grist_end(s);
-                std::string::size_type end = ::find_basename(s, start);
+                std::string::size_type start = impl::find_grist_end(s);
+                std::string::size_type end = impl::find_basename(s, start);
 
                 bool has_root = false;
 
@@ -570,15 +582,20 @@ struct append_str_vec_actor
     }
 };
 
+} // namespace impl
+
 struct var_expand_grammar
-    : boost::spirit::grammar<var_expand_grammar,vars_closure::context_t>
+    : boost::spirit::grammar<
+        var_expand_grammar,
+        closures::vars_closure::context_t
+    >
 {
-    explicit var_expand_grammar(const variables& t)
+    explicit var_expand_grammar(const variable_table& t)
         : table(t)
     {
     }
 
-    const variables& table;
+    const variable_table& table;
 
     template<class ScannerT>
     struct definition
@@ -586,13 +603,14 @@ struct var_expand_grammar
         typedef boost::spirit::rule<ScannerT> rule_t;
 
         typedef boost::spirit::rule<
-            ScannerT, typename vars_closure::context_t> vars_rule_t;
+            ScannerT, typename closures::vars_closure::context_t> vars_rule_t;
 
         typedef boost::spirit::rule<
-            ScannerT, typename range_closure::context_t> range_rule_t;
+            ScannerT, typename closures::range_closure::context_t> range_rule_t;
 
         typedef boost::spirit::rule<
-            ScannerT, typename expand_closure::context_t> expand_rule_t;
+            ScannerT,
+            typename closures::expand_closure::context_t> expand_rule_t;
 
         vars_rule_t top, expr;
         range_rule_t index_range;
@@ -601,7 +619,7 @@ struct var_expand_grammar
         definition(const var_expand_grammar& self)
         {
             using namespace boost::spirit;
-            using namespace phoenix;
+            using namespace ::phoenix;
 
             index_range
                 =   '['
@@ -627,36 +645,38 @@ struct var_expand_grammar
                     >> expr
                         [
                             variable.val =
-                                bind(vars_expand_actor(self.table))(arg1)
+                                bind(impl::vars_expand_actor(self.table))(arg1)
                         ]
                     >> !index_range
                         [
                             variable.val =
-                                bind(slice_actor())(variable.val, arg1)
+                                bind(impl::slice_actor())(variable.val, arg1)
                         ]
                     >> *(
                             ':'
                             >> +(   ch_p('P')
                                     [
-                                        bind(parent_dir_actor())(variable.val)
+                                        bind(impl::parent_dir_actor())
+                                            (variable.val)
                                     ]
                                 |   ch_p('U')
                                     [
-                                        bind(upper_actor())(variable.val)
+                                        bind(impl::upper_actor())(variable.val)
                                     ]
                                 |   ch_p('L')
                                     [
-                                        bind(lower_actor())(variable.val)
+                                        bind(impl::lower_actor())(variable.val)
                                     ]
                                 |   ch_p('T')
                                     [
-                                        bind(convert_actor())(variable.val)
+                                        bind(impl::convert_actor())
+                                            (variable.val)
                                     ]
                                 |   ch_p('G')
                                     >> !('=' >> expr[variable.rep = arg1])
                                     >> eps_p
                                     [
-                                        bind(grist_actor())
+                                        bind(impl::grist_actor())
                                             (variable.val, variable.rep)
                                     ]
                                 |   ch_p('D')
@@ -664,7 +684,7 @@ struct var_expand_grammar
                                         )
                                     >> eps_p
                                     [
-                                        bind(directory_actor())
+                                        bind(impl::directory_actor())
                                             (variable.val, variable.rep)
                                     ]
                                 |   ch_p('B')
@@ -672,7 +692,7 @@ struct var_expand_grammar
                                         )
                                     >> eps_p
                                     [
-                                        bind(basename_actor())
+                                        bind(impl::basename_actor())
                                             (variable.val, variable.rep)
                                     ]
                                 |   ch_p('S')
@@ -680,7 +700,7 @@ struct var_expand_grammar
                                         )
                                     >> eps_p
                                     [
-                                        bind(suffix_actor())
+                                        bind(impl::suffix_actor())
                                             (variable.val, variable.rep)
                                     ]
                                 |   ch_p('M')
@@ -688,28 +708,28 @@ struct var_expand_grammar
                                         )
                                     >> eps_p
                                     [
-                                        bind(member_actor())
+                                        bind(impl::member_actor())
                                             (variable.val, variable.rep)
                                     ]
                                 |   ch_p('R')
                                     >> '=' >> expr[variable.rep = arg1]
                                     >> eps_p
                                     [
-                                        bind(root_actor())
+                                        bind(impl::root_actor())
                                             (variable.val, variable.rep)
                                     ]
                                 |   ch_p('E')
                                     >> '=' >> expr[variable.rep = arg1]
                                     >> eps_p
                                     [
-                                        bind(empty_actor())
+                                        bind(impl::empty_actor())
                                             (variable.val, variable.rep)
                                     ]
                                 |   ch_p('J')
                                     >> '=' >> expr[variable.rep = arg1]
                                     >> eps_p
                                     [
-                                        bind(join_actor())
+                                        bind(impl::join_actor())
                                             (variable.val, variable.rep)
                                     ]
                                 |   alpha_p
@@ -720,38 +740,45 @@ struct var_expand_grammar
                 ;
 
             expr
-                =   eps_p[expr.val = bind(make_str_vec_actor())(arg1, arg2)]
+                =   eps_p
+                    [
+                        expr.val = bind(impl::make_str_vec_actor())(arg1, arg2)
+                    ]
                     >>
                    *(   variable
                         [
                             expr.val =
-                                bind(append_str_vec_actor())(expr.val, arg1)
+                                bind(impl::append_str_vec_actor())
+                                    (expr.val, arg1)
                         ]
                     |   (+(anychar_p - '$' - ')' - '[' - ':'))
                         [
                             expr.val =
-                                bind(append_str_vec_actor())(
+                                bind(impl::append_str_vec_actor())(
                                     expr.val, 
-                                    bind(make_str_vec_actor())(arg1, arg2)
+                                    bind(impl::make_str_vec_actor())(arg1, arg2)
                                 )
                         ]
                     )
                 ;
 
             top
-                =   eps_p[top.val = bind(make_str_vec_actor())(arg1, arg2)]
+                =   eps_p[
+                        top.val = bind(impl::make_str_vec_actor())(arg1, arg2)
+                    ]
                     >>
                    *(   variable
                         [
                             top.val =
-                                bind(append_str_vec_actor())(top.val, arg1)
+                                bind(impl::append_str_vec_actor())
+                                    (top.val, arg1)
                         ]
                     |   (+(anychar_p - '$'))
                         [
                             top.val =
-                                bind(append_str_vec_actor())(
+                                bind(impl::append_str_vec_actor())(
                                     top.val, 
-                                    bind(make_str_vec_actor())(arg1, arg2)
+                                    bind(impl::make_str_vec_actor())(arg1, arg2)
                                 )
                         ]
                     )
@@ -766,4 +793,6 @@ struct var_expand_grammar
     };
 };
 
-#endif // IMPL_VAR_EXPAND_GRAMMAR_HPP
+} } } // End namespaces grammars, bjam, hamigaki.
+
+#endif // HAMIGAKI_BJAM_GRAMMARS_VAR_EXPAND_GRAMMAR_HPP

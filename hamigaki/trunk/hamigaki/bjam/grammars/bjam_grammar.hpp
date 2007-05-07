@@ -5,17 +5,17 @@
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/ for library home page.
+//  See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
 
-#ifndef IMPL_BJAM_GRAMMAR_HPP
-#define IMPL_BJAM_GRAMMAR_HPP
+#ifndef HAMIGAKI_BJAM_GRAMMARS_BJAM_GRAMMAR_HPP
+#define HAMIGAKI_BJAM_GRAMMARS_BJAM_GRAMMAR_HPP
 
 // TODO
 #define PHOENIX_LIMIT 6
 #define BOOST_SPIRIT_GRAMMAR_STARTRULE_TYPE_LIMIT 6
 
-#include "./rule_table.hpp"
-#include "./var_expand_grammar.hpp"
+#include <hamigaki/bjam/grammars/var_expand_grammar.hpp>
+#include <hamigaki/bjam/util/rule_table.hpp>
 #include <hamigaki/spirit/phoenix/stl/append.hpp>
 #include <hamigaki/spirit/phoenix/stl/empty.hpp>
 #include <hamigaki/spirit/phoenix/stl/push_back.hpp>
@@ -28,6 +28,11 @@
 #include <boost/spirit/utility/grammar_def.hpp>
 #include <vector>
 #include <string>
+
+namespace hamigaki { namespace bjam { namespace grammars {
+
+namespace impl
+{
 
 inline void remove_branch_path(std::string& s)
 {
@@ -91,7 +96,7 @@ class add_vars_actor
 public:
     typedef void result_type;
 
-    explicit add_vars_actor(variables& t) : table_(t)
+    explicit add_vars_actor(variable_table& t) : table_(t)
     {
     }
 
@@ -103,7 +108,7 @@ public:
     }
 
 private:
-    variables& table_;
+    variable_table& table_;
 };
 
 class add_local_vars_actor
@@ -111,7 +116,7 @@ class add_local_vars_actor
 public:
     typedef void result_type;
 
-    explicit add_local_vars_actor(variables& t) : table_(t)
+    explicit add_local_vars_actor(variable_table& t) : table_(t)
     {
     }
 
@@ -123,7 +128,7 @@ public:
     }
 
 private:
-    variables& table_;
+    variable_table& table_;
 };
 
 struct assign_vars_impl
@@ -131,7 +136,7 @@ struct assign_vars_impl
     typedef void result_type;
 
     void operator()(
-        variables& table,
+        variable_table& table,
         const std::vector<std::string>& keys,
         const std::vector<std::string>& vals) const
     {
@@ -147,7 +152,7 @@ struct append_vars_impl
     typedef void result_type;
 
     void operator()(
-        variables& table,
+        variable_table& table,
         const std::vector<std::string>& keys,
         const std::vector<std::string>& vals) const
     {
@@ -163,7 +168,7 @@ struct default_vars_impl
     typedef void result_type;
 
     void operator()(
-        variables& table,
+        variable_table& table,
         const std::vector<std::string>& keys,
         const std::vector<std::string>& vals) const
     {
@@ -184,10 +189,10 @@ struct expand_vars_impl
     typedef std::vector<std::string> result_type;
 
     std::vector<std::string>
-    operator()(variables& table, const std::string& str) const
+    operator()(variable_table& table, const std::string& str) const
     {
         using namespace boost::spirit;
-        using namespace phoenix;
+        using namespace ::phoenix;
 
         var_expand_grammar g(table);
         std::vector<std::string> val;
@@ -223,21 +228,25 @@ struct add_rule_impl
 
 const ::phoenix::functor<add_rule_impl> add_rule = add_rule_impl();
 
+} // namespace impl
+
 struct bjam_grammar
-    : boost::spirit::grammar<bjam_grammar,vars_closure::context_t>
+    : boost::spirit::grammar<bjam_grammar,closures::vars_closure::context_t>
 {
     enum
     {
         jamfile, statements_, invoke, cond0, cond_, if_
     };
 
-    bjam_grammar(std::vector<std::string>& vs, variables& vt, rule_table& rs)
+    bjam_grammar(
+        std::vector<std::string>& vs, variable_table& vt, rule_table& rs
+    )
         : storage(vs), vars(vt), rules(rs)
     {
     }
 
     std::vector<std::string>& storage;
-    variables& vars;
+    variable_table& vars;
     rule_table& rules;
 
     void enter_block(const std::string& src) const
@@ -247,7 +256,7 @@ struct bjam_grammar
         if (src.empty())
             return;
 
-        variables new_vars(&vars);
+        variable_table new_vars(&vars);
         rule_table new_rules(&rules);
 
         bjam_grammar g(storage, new_vars, new_rules);
@@ -272,7 +281,7 @@ struct bjam_grammar
 
         for (std::size_t i = 0; i < list.size(); ++i)
         {
-            variables new_vars(&vars);
+            variable_table new_vars(&vars);
             rule_table new_rules(&rules);
 
             if (is_local)
@@ -303,7 +312,7 @@ struct bjam_grammar
     bool eval_cond(const std::string& src) const
     {
         using namespace boost::spirit;
-        using namespace phoenix;
+        using namespace ::phoenix;
 
         if (src.empty())
             return false;
@@ -333,7 +342,7 @@ struct bjam_grammar
             if (src.empty())
                 continue;
 
-            variables new_vars(&vars);
+            variable_table new_vars(&vars);
             rule_table new_rules(&rules);
 
             bjam_grammar g(storage, new_vars, new_rules);
@@ -356,14 +365,14 @@ struct bjam_grammar
     {
         namespace hp = hamigaki::phoenix;
         using namespace boost::spirit;
-        using namespace phoenix;
+        using namespace ::phoenix;
 
         const rule_data* data = rules.find(name);
         // TODO
         if (!data)
             return;
 
-        variables new_vars(&vars);
+        variable_table new_vars(&vars);
         rule_table new_rules(&rules);
 
         new_vars.add_local("<");
@@ -385,10 +394,10 @@ struct bjam_grammar
         for (std::size_t i = 0; i < data->fields.size(); ++i)
         {
             if (i < fields.size())
-                ::set_rule_arguments(new_vars, data->fields[i], fields[i]);
+                bjam::set_rule_arguments(new_vars, data->fields[i], fields[i]);
             else
             {
-                ::set_rule_arguments(
+                bjam::set_rule_arguments(
                     new_vars, data->fields[i], std::vector<std::string>());
             }
         }
@@ -420,7 +429,7 @@ struct bjam_grammar
         if ((fields.size() < 5) || fields[4].empty())
         {
             std::string s = src;
-            ::remove_branch_path(s);
+            impl::remove_branch_path(s);
 
             std::string::size_type pos = s.rfind('.');
             if (pos != std::string::npos)
@@ -446,7 +455,7 @@ struct bjam_grammar
         if ((fields.size() < 3) || fields[2].empty())
         {
             std::string s = src;
-            ::remove_branch_path(s);
+            impl::remove_branch_path(s);
 
             std::string::size_type pos = s.rfind('.');
             if (pos != std::string::npos)
@@ -467,7 +476,7 @@ struct bjam_grammar
     {
         namespace hp = hamigaki::phoenix;
         using namespace boost::spirit;
-        using namespace phoenix;
+        using namespace ::phoenix;
 
         std::vector<std::string> result;
 
@@ -509,9 +518,9 @@ struct bjam_grammar
     struct invoke_closure
         : boost::spirit::closure<
               invoke_closure
-            , variables::mapped_type
-            , variables::mapped_type
-            , std::vector<variables::mapped_type>
+            , variable_table::mapped_type
+            , variable_table::mapped_type
+            , std::vector<variable_table::mapped_type>
         >
     {
         member1 val;
@@ -523,8 +532,8 @@ struct bjam_grammar
         : boost::spirit::closure<
               cond0_closure
             , bool
-            , variables::mapped_type
-            , variables::mapped_type
+            , variable_table::mapped_type
+            , variable_table::mapped_type
         >
     {
         member1 val;
@@ -546,10 +555,16 @@ struct bjam_grammar
     struct definition
         : boost::spirit::grammar_def<
               boost::spirit::rule<ScannerT>
-            , boost::spirit::rule<ScannerT, typename vars_closure::context_t>
+            , boost::spirit::rule<
+                ScannerT,
+                typename closures::vars_closure::context_t
+              >
             , boost::spirit::rule<ScannerT, typename invoke_closure::context_t>
             , boost::spirit::rule<ScannerT, typename cond0_closure::context_t>
-            , boost::spirit::rule<ScannerT, typename vars_closure::context_t>
+            , boost::spirit::rule<
+                ScannerT,
+                typename closures::vars_closure::context_t
+              >
             , boost::spirit::rule<ScannerT, typename if_closure::context_t>
         >
     {
@@ -635,7 +650,7 @@ struct bjam_grammar
                   for_closure
                 , bool
                 , std::string
-                , variables::mapped_type
+                , variable_table::mapped_type
             >
         {
             member1 local;
@@ -660,7 +675,7 @@ struct bjam_grammar
             ScannerT, typename while_closure::context_t> while_;
 
         typedef boost::spirit::rule<
-            ScannerT, typename vars_closure::context_t> vars_rule_t;
+            ScannerT, typename closures::vars_closure::context_t> vars_rule_t;
 
         vars_rule_t statements_, statements, list, varexp, cond_;
         vars_rule_t rule_expansion, return_;
@@ -669,7 +684,7 @@ struct bjam_grammar
         {
             namespace hp = hamigaki::phoenix;
             using namespace boost::spirit;
-            using namespace phoenix;
+            using namespace ::phoenix;
 
             literal_char
                 =   anychar_p[literal_char.val = arg1] - space_p - '"' - '\\'
@@ -751,7 +766,8 @@ struct bjam_grammar
                     ]
                 |   literal
                     [
-                        varexp.val = expand_vars(boost::ref(self.vars), arg1)
+                        varexp.val =
+                            impl::expand_vars(boost::ref(self.vars), arg1)
                     ]
                 ;
 
@@ -793,7 +809,8 @@ struct bjam_grammar
                 |   '!' >> space >> cond[cond0.val = !arg1]
                 |   varexp
                     [
-                        cond0.val = has_non_empty_element(cond0.lhs = arg1)
+                        cond0.val =
+                            impl::has_non_empty_element(cond0.lhs = arg1)
                     ]
                     >>
                    !(   space >> '='  >> space
@@ -833,7 +850,7 @@ struct bjam_grammar
                                 )
                             )
                             [
-                                cond0.val = includes(cond0.rhs, cond0.lhs)
+                                cond0.val = impl::includes(cond0.rhs, cond0.lhs)
                             ]
                     )
                 ;
@@ -872,7 +889,7 @@ struct bjam_grammar
                 ;
 
             cond_
-                =   cond[bool2vec(self.val, arg1)]
+                =   cond[impl::bool2vec(self.val, arg1)]
                 ;
 
             block
@@ -993,7 +1010,7 @@ struct bjam_grammar
                         )
                     >> block
                     [
-                        add_rule(
+                        impl::add_rule(
                             boost::ref(self.rules),
                             rule_.local,
                             rule_.rulename,
@@ -1011,7 +1028,7 @@ struct bjam_grammar
             local_assign
                 =   list
                     [
-                        bind(add_local_vars_actor(self.vars))
+                        bind(impl::add_local_vars_actor(self.vars))
                             (local_assign.names = arg1)
                     ]
                     >> space
@@ -1019,7 +1036,7 @@ struct bjam_grammar
                             >> space
                             >> !(   list
                                     [
-                                        assign_vars(
+                                        impl::assign_vars(
                                             boost::ref(self.vars),
                                             local_assign.names, arg1
                                         )
@@ -1078,7 +1095,8 @@ struct bjam_grammar
             assign_
                 =   varexp
                     [
-                        bind(add_vars_actor(self.vars))(assign_.names = arg1)
+                        bind(impl::add_vars_actor(self.vars))
+                            (assign_.names = arg1)
                     ]
                     >> !( space >> "on" >> !(space >> list) )
                     >> space
@@ -1086,7 +1104,7 @@ struct bjam_grammar
                             >> !( space >> list[assign_.elements = arg1] )
                             >>  eps_p
                                 [
-                                    assign_vars(
+                                    impl::assign_vars(
                                         boost::ref(self.vars),
                                         assign_.names, assign_.elements
                                     )
@@ -1095,7 +1113,7 @@ struct bjam_grammar
                             >> !(   space
                                     >> list
                                     [
-                                        append_vars(
+                                        impl::append_vars(
                                             boost::ref(self.vars),
                                             assign_.names, arg1
                                         )
@@ -1105,7 +1123,7 @@ struct bjam_grammar
                             >> !(   space
                                     >> list
                                     [
-                                        default_vars(
+                                        impl::default_vars(
                                             boost::ref(self.vars),
                                             assign_.names, arg1
                                         )
@@ -1210,4 +1228,6 @@ struct bjam_grammar
     };
 };
 
-#endif // IMPL_BJAM_GRAMMAR_HPP
+} } } // End namespaces grammars, bjam, hamigaki.
+
+#endif // HAMIGAKI_BJAM_GRAMMARS_BJAM_GRAMMAR_HPP

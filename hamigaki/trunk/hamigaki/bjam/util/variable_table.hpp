@@ -1,14 +1,14 @@
-//  variables.hpp: the table of the variables
+//  variable_table.hpp: the table of the variables
 
 //  Copyright Takeshi Mouri 2007.
 //  Use, modification, and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/ for library home page.
+//  See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
 
-#ifndef IMPL_VARIABLES_HPP
-#define IMPL_VARIABLES_HPP
+#ifndef HAMIGAKI_BJAM_UTIL_VARIABLE_TABLE_HPP
+#define HAMIGAKI_BJAM_UTIL_VARIABLE_TABLE_HPP
 
 #include <boost/assert.hpp>
 #include <map>
@@ -16,14 +16,16 @@
 #include <stdexcept>
 #include <string>
 
-class variables
+namespace hamigaki { namespace bjam {
+
+class variable_table
 {
 public:
     typedef std::string key_type;
     typedef std::vector<std::string> mapped_type;
     typedef std::map<key_type,mapped_type> table_type;
 
-    explicit variables(variables* g=0) : global_(g)
+    explicit variable_table(variable_table* g=0) : global_(g)
     {
     }
 
@@ -79,12 +81,12 @@ public:
     }
 
 private:
-    variables* global_;
+    variable_table* global_;
     table_type local_;
 };
 
 inline void set_rule_arguments(
-    variables& vars,
+    variable_table& vars,
     const std::vector<std::string>& params,
     const std::vector<std::string>& args)
 {
@@ -138,4 +140,6 @@ inline void set_rule_arguments(
     }
 }
 
-#endif // IMPL_VARIABLES_HPP
+} } // End namespaces bjam, hamigaki.
+
+#endif // HAMIGAKI_BJAM_UTIL_VARIABLE_TABLE_HPP

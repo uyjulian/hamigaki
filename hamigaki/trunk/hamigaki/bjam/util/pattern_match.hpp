@@ -5,16 +5,21 @@
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/ for library home page.
+//  See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
 
-#ifndef IMPL_PATTERN_MATCH_HPP
-#define IMPL_PATTERN_MATCH_HPP
+#ifndef HAMIGAKI_BJAM_UTIL_PATTERN_MATCH_HPP
+#define HAMIGAKI_BJAM_UTIL_PATTERN_MATCH_HPP
 
 #include <algorithm>
 #include <bitset>
 #include <functional>
 #include <stdexcept>
 #include <string>
+
+namespace hamigaki { namespace bjam {
+
+namespace impl
+{
 
 inline std::bitset<256>
 make_char_class(
@@ -68,7 +73,7 @@ inline bool pattern_match_impl(
             iter_type next = str_end;
             while (next != str_beg)
             {
-                if (pattern_match_impl(ptn_beg, ptn_end, next, str_end))
+                if (impl::pattern_match_impl(ptn_beg, ptn_end, next, str_end))
                     return true;
                 --next;
             }
@@ -91,7 +96,8 @@ inline bool pattern_match_impl(
                 if (next == ptn_end)
                     throw std::runtime_error("character class not end");
 
-                const std::bitset<256>& mask = ::make_char_class(ptn_beg, next);
+                const std::bitset<256>& mask =
+                    impl::make_char_class(ptn_beg, next);
                 if (!mask.test(static_cast<unsigned char>(*str_beg)))
                     return false;
 
@@ -115,6 +121,8 @@ inline bool pattern_match_impl(
     return str_beg == str_end;
 }
 
+} // namespace impl
+
 struct pattern_match
     : public std::unary_function<std::string,bool>
 {
@@ -129,7 +137,7 @@ public:
 
     bool operator()(const std::string& s) const
     {
-        return ::pattern_match_impl(
+        return impl::pattern_match_impl(
             pattern_.begin(), pattern_.end(), s.begin(), s.end()
         );
     }
@@ -138,4 +146,6 @@ private:
     std::string pattern_;
 };
 
-#endif // IMPL_PATTERN_MATCH_HPP
+} } // End namespaces bjam, hamigaki.
+
+#endif // HAMIGAKI_BJAM_UTIL_PATTERN_MATCH_HPP
