@@ -30,9 +30,9 @@ struct vars_closure
 struct range_closure
     : boost::spirit::closure<
         range_closure,
-        std::pair<unsigned,unsigned>,
-        unsigned,
-        unsigned
+        std::pair<int,int>,
+        int,
+        int
     >
 {
     member1 val;
@@ -85,21 +85,26 @@ struct slice_actor
     std::vector<std::string>
     operator()(
         const std::vector<std::string>& vs,
-        const std::pair<unsigned,unsigned>& r) const
+        const std::pair<int,int>& r) const
     {
-        unsigned n = r.first;
-        unsigned m = r.second;
+        int n = r.first;
+        int m = r.second;
+
+        const int size = static_cast<int>(vs.size());
+
+        if (n < 0)
+            n += size;
 
         if (m == 0)
-            m = static_cast<unsigned>(vs.size());
+            m = size;
+        else
+            m += (size + 1);
 
         std::vector<std::string> result;
-        for (unsigned i = n; i <= m; ++i)
+        for (int i = n; i <= m; ++i)
         {
-            if (i <= static_cast<unsigned>(vs.size()))
+            if (i <= size)
                 result.push_back(vs[i-1]);
-            else
-                result.push_back(std::string());
         }
         return result;
     }
@@ -531,7 +536,8 @@ struct join_actor
         }
 
         std::vector<std::string> tmp;
-        tmp.push_back(str);
+        if (!str.empty())
+            tmp.push_back(str);
         vs.swap(tmp);
 
         val.clear();
@@ -605,18 +611,18 @@ struct var_expand_grammar
 
             index_range
                 =   '['
-                    >> uint_p
+                    >> int_p
                     [
                         index_range.lower = index_range.upper = arg1
                     ]
                     >> !(
-                        ch_p('-')[index_range.upper = 0u]
-                        >> !uint_p[index_range.upper = arg1]
+                        ch_p('-')[index_range.upper = 0]
+                        >> !int_p[index_range.upper = arg1]
                         )
                     >> ch_p(']')
                         [
                             index_range.val =
-                                construct_<std::pair<unsigned,unsigned> >(
+                                construct_<std::pair<int,int> >(
                                     index_range.lower, index_range.upper
                                 )
                         ]
