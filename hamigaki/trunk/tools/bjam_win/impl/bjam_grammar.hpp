@@ -14,20 +14,18 @@
 #define PHOENIX_LIMIT 6
 #define BOOST_SPIRIT_GRAMMAR_STARTRULE_TYPE_LIMIT 6
 
+#include "./bjam_context.hpp"
+#include "./glob.hpp"
 #include "./rule_table.hpp"
 #include "./var_expand_grammar.hpp"
 #include <hamigaki/spirit/phoenix/stl/append.hpp>
 #include <hamigaki/spirit/phoenix/stl/empty.hpp>
 #include <hamigaki/spirit/phoenix/stl/push_back.hpp>
-#include <boost/spirit/core.hpp>
-#include <boost/spirit/attribute/closure.hpp>
 #include <boost/spirit/dynamic/if.hpp>
 #include <boost/spirit/symbols/symbols.hpp>
 #include <boost/spirit/utility/chset.hpp>
 #include <boost/spirit/utility/chset_operators.hpp>
 #include <boost/spirit/utility/grammar_def.hpp>
-#include <vector>
-#include <string>
 
 inline void remove_branch_path(std::string& s)
 {
@@ -231,12 +229,12 @@ struct bjam_grammar
         jamfile, statements_, invoke, cond0, cond_, if_
     };
 
-    bjam_grammar(std::vector<std::string>& vs, variables& vt, rule_table& rs)
-        : storage(vs), vars(vt), rules(rs)
+    bjam_grammar(bjam_context& ctx, variables& vt, rule_table& rs)
+        : context(ctx), vars(vt), rules(rs)
     {
     }
 
-    std::vector<std::string>& storage;
+    bjam_context& context;
     variables& vars;
     rule_table& rules;
 
@@ -250,7 +248,7 @@ struct bjam_grammar
         variables new_vars(&vars);
         rule_table new_rules(&rules);
 
-        bjam_grammar g(storage, new_vars, new_rules);
+        bjam_grammar g(context, new_vars, new_rules);
         parse_info<const char*> info =
             boost::spirit::parse(
                 src.c_str(),
@@ -287,7 +285,7 @@ struct bjam_grammar
             if (src.empty())
                 continue;
 
-            bjam_grammar g(storage, new_vars, new_rules);
+            bjam_grammar g(context, new_vars, new_rules);
             parse_info<const char*> info =
                 boost::spirit::parse(
                     src.c_str(),
@@ -336,7 +334,7 @@ struct bjam_grammar
             variables new_vars(&vars);
             rule_table new_rules(&rules);
 
-            bjam_grammar g(storage, new_vars, new_rules);
+            bjam_grammar g(context, new_vars, new_rules);
             parse_info<const char*> info =
                 boost::spirit::parse(
                     src.c_str(),
@@ -393,7 +391,7 @@ struct bjam_grammar
             }
         }
 
-        bjam_grammar g(storage, new_vars, new_rules);
+        bjam_grammar g(context, new_vars, new_rules);
         parse_info<const char*> info =
             boost::spirit::parse(
                 data->source.c_str(),
@@ -406,6 +404,46 @@ struct bjam_grammar
         // TODO
         if (!info.full)
             throw std::runtime_error("prase error");
+    }
+
+    void invoke_rule_glob(
+        std::vector<std::string>& result,
+        const std::vector<std::vector<std::string> >& fields) const
+    {
+        if (fields.size() < 2)
+            return;
+
+        const std::vector<std::string>& dirs = fields[0];
+        const std::vector<std::string>& patterns = fields[1];
+
+        for (std::size_t i = 0; i < dirs.size(); ++i)
+        {
+            for (std::size_t j = 0; j < patterns.size(); ++j)
+            {
+                const std::vector<std::string>& tmp =
+                    ::glob(context.working_directory, dirs[i], patterns[j]);
+
+                result.insert(result.end(), tmp.begin(), tmp.end());
+            }
+        }
+    }
+
+    void invoke_rule_glob_recursively(
+        std::vector<std::string>& result,
+        const std::vector<std::vector<std::string> >& fields) const
+    {
+        if (fields.empty())
+            return;
+
+        const std::vector<std::string>& patterns = fields[0];
+
+        for (std::size_t i = 0; i < patterns.size(); ++i)
+        {
+            const std::vector<std::string>& tmp =
+                ::glob_recursive(context.working_directory, patterns[i]);
+
+            result.insert(result.end(), tmp.begin(), tmp.end());
+        }
     }
 
     void invoke_rule_run(
@@ -431,7 +469,7 @@ struct bjam_grammar
         else
             target = fields[4][0];
 
-        storage.push_back(target);
+        context.targets.push_back(target);
     }
 
     void invoke_rule_test(
@@ -457,7 +495,7 @@ struct bjam_grammar
         else
             target = fields[2][0];
 
-        storage.push_back(target);
+        context.targets.push_back(target);
     }
 
     std::vector<std::string>
@@ -478,18 +516,18 @@ struct bjam_grammar
                 (name == "bpl-test") )
             {
                 if (!fields.empty() && !fields[0].empty())
-                    storage.push_back(fields[0][0]);
+                    context.targets.push_back(fields[0][0]);
             }
             else if (name == "boostbook")
             {
-                storage.push_back("html");
-                storage.push_back("onehtml");
-                storage.push_back("man");
-                storage.push_back("docbook");
-                storage.push_back("fo");
-                storage.push_back("pdf");
-                storage.push_back("ps");
-                storage.push_back("tests");
+                context.targets.push_back("html");
+                context.targets.push_back("onehtml");
+                context.targets.push_back("man");
+                context.targets.push_back("docbook");
+                context.targets.push_back("fo");
+                context.targets.push_back("pdf");
+                context.targets.push_back("ps");
+                context.targets.push_back("tests");
             }
             else if ((name == "run") || (name == "run-fail"))
                 this->invoke_rule_run(fields);
@@ -499,6 +537,10 @@ struct bjam_grammar
             {
                 this->invoke_rule_test(fields);
             }
+            else if (name == "GLOB")
+                invoke_rule_glob(result, fields);
+            else if (name == "GLOB-RECURSIVELY")
+                invoke_rule_glob_recursively(result, fields);
             else
                 this->invoke_rule_normal(result, name, fields);
         }

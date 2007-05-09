@@ -14,6 +14,7 @@
 #include <iterator>
 
 using namespace boost::spirit;
+namespace fs = boost::filesystem;
 
 int main(int argc, char* argv[])
 {
@@ -35,10 +36,12 @@ int main(int argc, char* argv[])
             );
         }
 
-        std::vector<std::string> targets;
+        bjam_context ctx;
+        ctx.working_directory = fs::path(argv[1], fs::no_check).branch_path();
+
         variables vars;
         rule_table rules;
-        bjam_grammar g(targets, vars, rules);
+        bjam_grammar g(ctx, vars, rules);
         parse_info<const char*> info = parse(str.c_str(), g);
 
         if (!info.full)
@@ -49,7 +52,7 @@ int main(int argc, char* argv[])
         }
 
         std::copy(
-            targets.begin(), targets.end(),
+            ctx.targets.begin(), ctx.targets.end(),
             std::ostream_iterator<std::string>(std::cout, "\n")
         );
 

@@ -12,6 +12,8 @@
 #include <fstream>
 #include <iterator>
 
+namespace fs = boost::filesystem;
+
 bool parse_jamfile(
     const std::string& filename, std::vector<std::string>& targets)
 {
@@ -22,10 +24,19 @@ bool parse_jamfile(
         (std::istreambuf_iterator<char>())
     );
 
+    bjam_context ctx;
+    ctx.working_directory = fs::path(filename, fs::no_check).branch_path();
+
     variables vars;
     rule_table rules;
 
-    bjam_grammar g(targets, vars, rules);
+    bjam_grammar g(ctx, vars, rules);
 
-    return boost::spirit::parse(src.c_str(), g).full;
+    if (boost::spirit::parse(src.c_str(), g).full)
+    {
+        targets.swap(ctx.targets);
+        return true;
+    }
+    else
+        return false;
 }
