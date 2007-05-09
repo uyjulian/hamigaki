@@ -1,4 +1,4 @@
-//  glob_test.cpp: a test driver for glob()
+//  glob_recursive_test.cpp: a test driver for glob_recursive()
 
 //  Copyright Takeshi Mouri 2007.
 //  Use, modification, and distribution are subject to the
@@ -20,15 +20,16 @@ int main(int argc, char* argv[])
 {
     try
     {
-        if (argc != 3)
+        if (argc != 2)
         {
-            std::cerr << "Usage: glob_test (dir) (pattern)" << std::endl;
+            std::cerr
+                << "Usage: glob_recursive_test (pattern)" << std::endl;
             return 1;
         }
 
         fs::path work = fs::current_path();
 
-        const std::vector<std::string>& vs = glob(work, argv[1], argv[2]);
+        const std::vector<std::string>& vs = glob_recursive(work, argv[1]);
 
         std::copy(
             vs.begin(), vs.end(),
