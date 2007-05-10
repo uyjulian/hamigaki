@@ -96,7 +96,6 @@ public:
 
     void operator()(const std::vector<std::string>& vs) const
     {
-        std::vector<std::string> result;
         for (std::size_t i = 0; i < vs.size(); ++i)
             table_.add(vs[i]);
     }
@@ -116,7 +115,6 @@ public:
 
     void operator()(const std::vector<std::string>& vs) const
     {
-        std::vector<std::string> result;
         for (std::size_t i = 0; i < vs.size(); ++i)
             table_.add_local(vs[i]);
     }
@@ -500,6 +498,79 @@ struct bjam_grammar
         result.insert(result.end(), tmp.begin(), tmp.end());
     }
 
+    void invoke_rule_modules_poke(
+        const std::vector<std::vector<std::string> >& fields) const
+    {
+        if ((fields.size() < 2) || fields[1].empty())
+            return;
+
+        // not supported
+        if (!fields[0].empty())
+            return;
+
+        const std::vector<std::string>& names = fields[1];
+
+        std::vector<std::string> values;
+        if (fields.size() >= 3)
+            values = fields[2];
+
+        for (std::size_t i = 0; i < names.size(); ++i)
+            vars.poke(names[i], values);
+    }
+
+    void invoke_rule_modules_peek(
+        std::vector<std::string>& result,
+        const std::vector<std::vector<std::string> >& fields) const
+    {
+        if ((fields.size() < 2) || fields[1].empty())
+            return;
+
+        // not supported
+        if (!fields[0].empty())
+            return;
+
+        const std::vector<std::string>& names = fields[1];
+
+        for (std::size_t i = 0; i < names.size(); ++i)
+        {
+            const std::vector<std::string>* p = vars.peek(names[i]);
+            if (p)
+                result.insert(result.end(), p->begin(), p->end());
+        }
+    }
+
+    void invoke_rule_project_path_constant(
+        const std::vector<std::vector<std::string> >& fields) const
+    {
+        if ((fields.size() < 2) || fields[0].empty() || fields[1].empty())
+            return;
+
+        const std::string& name = fields[0][0];
+        std::vector<std::string> values = fields[1];
+
+        for (std::size_t i = 0; i < values.size(); ++i)
+        {
+            values[i] =
+                path::native(
+                    path::root(values[i], context.working_directory.string())
+                );
+        }
+
+        vars.poke(name, values);
+    }
+
+    void invoke_rule_project_constant(
+        const std::vector<std::vector<std::string> >& fields) const
+    {
+        if ((fields.size() < 2) || fields[0].empty() || fields[1].empty())
+            return;
+
+        const std::string& name = fields[0][0];
+        const std::vector<std::string>& values = fields[1];
+
+        vars.poke(name, values);
+    }
+
     void invoke_rule_run(
         const std::vector<std::vector<std::string> >& fields) const
     {
@@ -622,6 +693,14 @@ struct bjam_grammar
                 invoke_rule_path_glob(result, fields);
             else if (name == "glob")
                 invoke_rule_project_glob(result, fields);
+            else if (name == "modules.poke")
+                invoke_rule_modules_poke(fields);
+            else if (name == "modules.peek")
+                invoke_rule_modules_peek(result, fields);
+            else if (name == "path-constant")
+                invoke_rule_project_path_constant(fields);
+            else if (name == "constant")
+                invoke_rule_project_constant(fields);
             else
                 this->invoke_rule_normal(result, name, fields);
         }

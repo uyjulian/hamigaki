@@ -78,6 +78,28 @@ public:
             return 0;
     }
 
+    void poke(const std::string& k, const mapped_type& m)
+    {
+        if (global_)
+            global_->poke(k, m);
+        else
+            local_[k] = m;
+    }
+
+    const mapped_type* peek(const std::string& k) const
+    {
+        if (global_)
+            return global_->peek(k);
+        else
+        {
+            table_type::const_iterator it = local_.find(k);
+            if (it != local_.end())
+                return &(it->second);
+            else
+                return 0;
+        }
+    }
+
 private:
     variables* global_;
     table_type local_;
