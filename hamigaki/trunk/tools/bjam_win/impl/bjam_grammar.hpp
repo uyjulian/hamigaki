@@ -15,7 +15,7 @@
 #define BOOST_SPIRIT_GRAMMAR_STARTRULE_TYPE_LIMIT 6
 
 #include "./bjam_context.hpp"
-#include "./glob.hpp"
+#include "./path.hpp"
 #include "./rule_table.hpp"
 #include "./var_expand_grammar.hpp"
 #include <hamigaki/spirit/phoenix/stl/append.hpp>
@@ -26,6 +26,7 @@
 #include <boost/spirit/utility/chset.hpp>
 #include <boost/spirit/utility/chset_operators.hpp>
 #include <boost/spirit/utility/grammar_def.hpp>
+#include <cstring>
 
 inline void remove_branch_path(std::string& s)
 {
@@ -446,6 +447,59 @@ struct bjam_grammar
         }
     }
 
+    void invoke_rule_path_make(
+        std::vector<std::string>& result,
+        const std::vector<std::vector<std::string> >& fields) const
+    {
+        if (fields.empty() || fields[0].empty())
+            return;
+
+        result.push_back(path::make(fields[0][0]));
+    }
+
+    void invoke_rule_path_glob(
+        std::vector<std::string>& result,
+        const std::vector<std::vector<std::string> >& fields) const
+    {
+        if (fields.size() < 2)
+            return;
+
+        std::vector<std::string> dirs = fields[0];
+        if (dirs.empty())
+            return;
+
+        const std::vector<std::string>& patterns = fields[1];
+        std::vector<std::string> ex_patterns;
+        if (fields.size() >= 3)
+            ex_patterns = fields[2];
+
+        const std::vector<std::string>& tmp =
+            path::glob(context.working_directory, dirs, patterns, ex_patterns);
+
+        result.insert(result.end(), tmp.begin(), tmp.end());
+    }
+
+    void invoke_rule_project_glob(
+        std::vector<std::string>& result,
+        const std::vector<std::vector<std::string> >& fields) const
+    {
+        if (fields.empty())
+            return;
+
+        std::vector<std::string> dirs;
+        dirs.push_back("");
+
+        const std::vector<std::string>& patterns = fields[0];
+        std::vector<std::string> ex_patterns;
+        if (fields.size() >= 2)
+            ex_patterns = fields[1];
+
+        const std::vector<std::string>& tmp =
+            path::glob(context.working_directory, dirs, patterns, ex_patterns);
+
+        result.insert(result.end(), tmp.begin(), tmp.end());
+    }
+
     void invoke_rule_run(
         const std::vector<std::vector<std::string> >& fields) const
     {
@@ -509,17 +563,38 @@ struct bjam_grammar
 
         std::vector<std::string> result;
 
+        const char* simple_rules[] =
+        {
+            "alias",
+            "bpl-test",
+            "doxygen",
+            "exe",
+            "html",
+            "install",
+            "lib",
+            "stage",
+            "xml",
+        };
+
         for (std::size_t i = 0; i < rule_name.size(); ++i)
         {
             const std::string& name = rule_name[i];
-            if ((name == "exe") || (name == "lib") || (name == "install") ||
-                (name == "bpl-test") )
+
+            if (std::binary_search(
+                    simple_rules,
+                    simple_rules + sizeof(simple_rules)/sizeof(simple_rules[0]),
+                    name.c_str(),
+                    bind(&std::strcmp)(arg1,arg2) < 0)
+                )
             {
                 if (!fields.empty() && !fields[0].empty())
                     context.targets.push_back(fields[0][0]);
             }
             else if (name == "boostbook")
             {
+                if (!fields.empty() && !fields[0].empty())
+                    context.targets.push_back(fields[0][0]);
+
                 context.targets.push_back("html");
                 context.targets.push_back("onehtml");
                 context.targets.push_back("man");
@@ -541,6 +616,12 @@ struct bjam_grammar
                 invoke_rule_glob(result, fields);
             else if (name == "GLOB-RECURSIVELY")
                 invoke_rule_glob_recursively(result, fields);
+            else if (name == "path.make")
+                invoke_rule_path_make(result, fields);
+            else if (name == "path.glob")
+                invoke_rule_path_glob(result, fields);
+            else if (name == "glob")
+                invoke_rule_project_glob(result, fields);
             else
                 this->invoke_rule_normal(result, name, fields);
         }

@@ -17,6 +17,7 @@ test-suite "bjam_win"
 exe bjam_grammar_test : bjam_grammar_test.cpp ;
 exe glob_recursive_test : glob_recursive_test.cpp ;
 exe glob_test : glob_test.cpp ;
+exe path_glob_test : path_glob_test.cpp ;
 exe var_expand_grammar_test : var_expand_grammar_test.cpp ;
 
 install dist-bin
@@ -24,6 +25,7 @@ install dist-bin
     bjam_grammar_test
     glob_recursive_test
     glob_test
+    path_glob_test
     var_expand_grammar_test
     :
     <install-type>EXE
