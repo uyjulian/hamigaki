@@ -116,7 +116,7 @@ glob_recursive(
         const std::string ptn(pattern, 0, slash);
         const std::string rest_ptn(pattern, slash+1);
 
-        if (!::contains_wildcard(pattern))
+        if (!::contains_wildcard(ptn))
         {
             const std::string& ph = ::path_join_nt(dir, ptn);
             if (fs::is_directory(fs::path(ph, fs::no_check)))
