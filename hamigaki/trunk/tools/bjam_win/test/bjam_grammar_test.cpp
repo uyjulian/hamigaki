@@ -37,7 +37,8 @@ int main(int argc, char* argv[])
         }
 
         bjam_context ctx;
-        ctx.working_directory = fs::path(argv[1], fs::no_check).branch_path();
+        ctx.working_directory =
+            fs::system_complete(fs::path(argv[1], fs::no_check)).branch_path();
 
         variables vars;
         rule_table rules;
