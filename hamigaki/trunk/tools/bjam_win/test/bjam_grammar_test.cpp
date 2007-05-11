@@ -7,7 +7,8 @@
 
 //  See http://hamigaki.sourceforge.jp/ for library home page.
 
-#include "../impl/bjam_grammar.hpp"
+#define NOMINMAX
+#include "../impl/bjam_preload.hpp"
 #include <exception>
 #include <fstream>
 #include <iostream>
@@ -42,6 +43,8 @@ int main(int argc, char* argv[])
 
         variables vars;
         rule_table rules;
+        ::bjam_preload(ctx.working_directory, vars, rules);
+
         bjam_grammar g(ctx, vars, rules);
         parse_info<const char*> info = parse(str.c_str(), g);
 
@@ -52,7 +55,8 @@ int main(int argc, char* argv[])
             return 1;
         }
 
-        std::copy(
+        std::sort(ctx.targets.begin(), ctx.targets.end());
+        std::unique_copy(
             ctx.targets.begin(), ctx.targets.end(),
             std::ostream_iterator<std::string>(std::cout, "\n")
         );

@@ -8,9 +8,7 @@
 //  See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "bjam_parser.hpp"
-#include "impl/bjam_grammar.hpp"
-#include <fstream>
-#include <iterator>
+#include "impl/bjam_preload.hpp"
 
 namespace fs = boost::filesystem;
 
@@ -18,6 +16,8 @@ bool parse_jamfile(
     const std::string& filename, std::vector<std::string>& targets)
 {
     std::ifstream is(filename.c_str(), std::ios_base::binary);
+    if (!is)
+        return false;
 
     std::string src(
         std::istreambuf_iterator<char>(is),
@@ -30,11 +30,20 @@ bool parse_jamfile(
     variables vars;
     rule_table rules;
 
+    ::bjam_preload(ctx.working_directory, vars, rules);
+
     bjam_grammar g(ctx, vars, rules);
 
     if (boost::spirit::parse(src.c_str(), g).full)
     {
         targets.swap(ctx.targets);
+        std::sort(targets.begin(), targets.end());
+
+        targets.erase(
+            std::unique(targets.begin(), targets.end()),
+            targets.end()
+        );
+
         return true;
     }
     else
