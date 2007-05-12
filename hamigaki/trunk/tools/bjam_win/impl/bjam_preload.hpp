@@ -39,6 +39,16 @@ private:
     char* ptr_;
 };
 
+inline void add_variable(
+    variables& vars, const std::string& name, const std::string& value)
+{
+    std::vector<std::string> values;
+    values.push_back(value);
+
+    vars.add(name);
+    vars.assign(name, values);
+}
+
 inline void import_environment_variables(variables& vars)
 {
     impl::environment_strings env;
@@ -52,11 +62,7 @@ inline void import_environment_variables(variables& vars)
         std::string name(s, 0, eq);
         std::string value(s, eq+1);
 
-        std::vector<std::string> values;
-        values.push_back(value);
-
-        vars.add(name);
-        vars.assign(name, values);
+        impl::add_variable(vars, name, value);
     }
 }
 
@@ -116,6 +122,21 @@ inline void bjam_preload(
 
     impl::import_environment_variables(vars);
 
+    // Note: replace the environment variable "OS"
+#if defined(__CYGWIN__)
+    impl::add_variable(vars, "OS", "CYGWIN");
+    impl::add_variable(vars, "UNIX", "true");
+#else
+    impl::add_variable(vars, "OS", "NT");
+    impl::add_variable(vars, "NT", "true");
+#endif
+
+# if defined( __ia64__ ) || defined( __IA64__ )
+    impl::add_variable(vars, "OSPLAT", "IA64");
+#else
+    impl::add_variable(vars, "OSPLAT", "X86");
+# endif
+
     std::vector<std::string> user_dirs;
     if (const list_type* p1 = vars.find("HOMEDRIVE"))
     {
@@ -152,11 +173,12 @@ inline void bjam_preload(
     }
 
     fs::path ph = work;
-    while (ph.has_branch_path())
+    while (!impl::parse_project_root(ph, ctx, vars, rules))
     {
-        ph = ph.branch_path();
-        if (impl::parse_project_root(ph, ctx, vars, rules))
+        if (!ph.has_branch_path())
             break;
+
+        ph = ph.branch_path();
     }
 }
 
