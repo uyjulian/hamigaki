@@ -72,14 +72,14 @@ void bjam_thread(::HWND hwnd, proc::pipe_source src)
     ::PostMessage(::GetParent(hwnd), main_window::proc_end_msg, 0, 0);
 }
 
-::HWND create_combo_box(::HWND parent)
+::HWND create_combo_box(::HWND parent, int height=100)
 {
     ::HINSTANCE hInstance =
         reinterpret_cast< ::HINSTANCE>(::GetModuleHandle(0));
 
     ::HWND hwnd = window::create_child(
         WS_EX_CLIENTEDGE, "COMBOBOX", "", WS_VSCROLL | CBS_DROPDOWNLIST,
-        0, 0, 0, 100, parent, 0, hInstance
+        0, 0, 0, height, parent, 0, hInstance
     );
 
     return hwnd;
@@ -186,7 +186,7 @@ public:
         runtime_link_ = create_link_combo_box(rebar_);
         add_band(runtime_link_, "Runtime link:", 170);
 
-        target_ = create_combo_box(rebar_);
+        target_ = create_combo_box(rebar_, 200);
         add_band(target_, "Target:", 180);
 
         ::RECT rect = calc_log_list_rect();
