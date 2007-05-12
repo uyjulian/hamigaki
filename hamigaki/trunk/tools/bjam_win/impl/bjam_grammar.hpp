@@ -701,6 +701,8 @@ struct bjam_grammar
                 invoke_rule_project_path_constant(fields);
             else if (name == "constant")
                 invoke_rule_project_constant(fields);
+            else if (name == "os.name")
+                result.push_back(vars.peek("OS")->front());
             else
                 this->invoke_rule_normal(result, name, fields);
         }
