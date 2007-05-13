@@ -10,14 +10,13 @@
 #ifndef IMPL_BJAM_CONTEXT_HPP
 #define IMPL_BJAM_CONTEXT_HPP
 
+#include "./bjam_target.hpp"
 #include <boost/filesystem/path.hpp>
-#include <string>
-#include <vector>
 
 struct bjam_context
 {
     boost::filesystem::path working_directory;
-    std::vector<std::string> targets;
+    std::vector<bjam_target> targets;
 };
 
 #endif // IMPL_BJAM_CONTEXT_HPP

@@ -13,7 +13,7 @@
 namespace fs = boost::filesystem;
 
 bool parse_jamfile(
-    const std::string& filename, std::vector<std::string>& targets)
+    const std::string& filename, std::vector<bjam_target>& targets)
 {
     std::ifstream is(filename.c_str(), std::ios_base::binary);
     if (!is)

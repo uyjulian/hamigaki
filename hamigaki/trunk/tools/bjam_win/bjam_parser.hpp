@@ -10,10 +10,9 @@
 #ifndef BJAM_PARSER_HPP
 #define BJAM_PARSER_HPP
 
-#include <vector>
-#include <string>
+#include "impl/bjam_target.hpp"
 
 bool parse_jamfile(
-    const std::string& filename, std::vector<std::string>& targets);
+    const std::string& filename, std::vector<bjam_target>& targets);
 
 #endif // BJAM_PARSER_HPP

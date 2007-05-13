@@ -17,6 +17,11 @@
 using namespace boost::spirit;
 namespace fs = boost::filesystem;
 
+std::ostream& operator<<(std::ostream& os, const bjam_target& x)
+{
+    return os << x.name;
+}
+
 int main(int argc, char* argv[])
 {
     try
@@ -58,7 +63,7 @@ int main(int argc, char* argv[])
         std::sort(ctx.targets.begin(), ctx.targets.end());
         std::unique_copy(
             ctx.targets.begin(), ctx.targets.end(),
-            std::ostream_iterator<std::string>(std::cout, "\n")
+            std::ostream_iterator<bjam_target>(std::cout, "\n")
         );
 
         return 0;

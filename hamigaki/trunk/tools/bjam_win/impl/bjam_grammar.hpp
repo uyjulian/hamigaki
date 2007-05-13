@@ -579,7 +579,8 @@ struct bjam_grammar
 
         const std::string& src = fields[0][0];
 
-        std::string target;
+        bjam_target target;
+        target.type = "run";
         if ((fields.size() < 5) || fields[4].empty())
         {
             std::string s = src;
@@ -589,15 +590,19 @@ struct bjam_grammar
             if (pos != std::string::npos)
                 s.erase(pos);
 
-            target = s;
+            target.name = s;
         }
         else
-            target = fields[4][0];
+            target.name = fields[4][0];
+
+        if (fields.size() >= 4)
+            target.requirements = fields[3];
 
         context.targets.push_back(target);
     }
 
     void invoke_rule_test(
+        const std::string& type,
         const std::vector<std::vector<std::string> >& fields) const
     {
         if (fields.empty() || fields[0].empty())
@@ -605,7 +610,8 @@ struct bjam_grammar
 
         const std::string& src = fields[0][0];
 
-        std::string target;
+        bjam_target target;
+        target.type = type;
         if ((fields.size() < 3) || fields[2].empty())
         {
             std::string s = src;
@@ -615,10 +621,13 @@ struct bjam_grammar
             if (pos != std::string::npos)
                 s.erase(pos);
 
-            target = s;
+            target.name = s;
         }
         else
-            target = fields[2][0];
+            target.name = fields[2][0];
+
+        if (fields.size() >= 2)
+            target.requirements = fields[1];
 
         context.targets.push_back(target);
     }
@@ -659,21 +668,38 @@ struct bjam_grammar
                 )
             {
                 if (!fields.empty() && !fields[0].empty())
-                    context.targets.push_back(fields[0][0]);
+                {
+                    bjam_target target;
+                    target.type = name;
+                    target.name = fields[0][0];
+                    if (fields.size() >= 3)
+                        target.requirements = fields[2];
+                    if (fields.size() >= 5)
+                        target.usage_requirements = fields[4];
+                    context.targets.push_back(target);
+                }
             }
             else if (name == "boostbook")
             {
-                if (!fields.empty() && !fields[0].empty())
-                    context.targets.push_back(fields[0][0]);
+                bjam_target target;
+                if (fields.size() >= 3)
+                    target.requirements = fields[2];
 
-                context.targets.push_back("html");
-                context.targets.push_back("onehtml");
-                context.targets.push_back("man");
-                context.targets.push_back("docbook");
-                context.targets.push_back("fo");
-                context.targets.push_back("pdf");
-                context.targets.push_back("ps");
-                context.targets.push_back("tests");
+                if (!fields.empty() && !fields[0].empty())
+                {
+                    target.type = name;
+                    target.name = fields[0][0];
+                    context.targets.push_back(target);
+                }
+
+                context.targets.push_back(target.set_typed_name("html"));
+                context.targets.push_back(target.set_typed_name("onehtml"));
+                context.targets.push_back(target.set_typed_name("man"));
+                context.targets.push_back(target.set_typed_name("docbook"));
+                context.targets.push_back(target.set_typed_name("fo"));
+                context.targets.push_back(target.set_typed_name("pdf"));
+                context.targets.push_back(target.set_typed_name("ps"));
+                context.targets.push_back(target.set_typed_name("tests"));
             }
             else if ((name == "run") || (name == "run-fail"))
                 this->invoke_rule_run(fields);
@@ -681,7 +707,7 @@ struct bjam_grammar
                 (name == "compile") || (name == "compile-fail") ||
                 (name == "link") || (name == "link-fail") )
             {
-                this->invoke_rule_test(fields);
+                this->invoke_rule_test(name, fields);
             }
             else if (name == "GLOB")
                 invoke_rule_glob(result, fields);

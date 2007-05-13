@@ -140,11 +140,11 @@ void set_bjam_targets(::HWND hwnd, const std::string& filename)
     combo_box::reset_content(hwnd);
     combo_box::add_string(hwnd, "(all)");
 
-    std::vector<std::string> targets;
+    std::vector<bjam_target> targets;
     if (parse_jamfile(filename, targets))
     {
         for (std::size_t i = 0, size = targets.size(); i < size; ++i)
-            combo_box::add_string(hwnd, targets[i].c_str());
+            combo_box::add_string(hwnd, targets[i].name.c_str());
     }
 
     combo_box::select_by_index(hwnd, 0);
