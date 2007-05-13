@@ -1,11 +1,11 @@
-//  reparse_point.cpp: the types for the reparse points
+// reparse_point.cpp: the types for the reparse points
 
-//  Copyright Takeshi Mouri 2006.
-//  Use, modification, and distribution are subject to the
-//  Boost Software License, Version 1.0. (See accompanying file
-//  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Copyright Takeshi Mouri 2006, 2007.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/libs/filesystem for library home page.
+// See http://hamigaki.sourceforge.jp/libs/filesystem for library home page.
 
 #ifndef HAMIGAKI_FILESYSTEM_DETAIL_REPARSE_POINT_HPP
 #define HAMIGAKI_FILESYSTEM_DETAIL_REPARSE_POINT_HPP

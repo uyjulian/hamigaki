@@ -1,11 +1,11 @@
-//  zip64_end_cent_dir.hpp: Zip64 end of central directory
+// zip64_end_cent_dir.hpp: Zip64 end of central directory
 
-//  Copyright Takeshi Mouri 2006.
-//  Use, modification, and distribution are subject to the
-//  Boost Software License, Version 1.0. (See accompanying file
-//  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Copyright Takeshi Mouri 2006, 2007.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+// See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
 #ifndef HAMIGAKI_ARCHIVERS_ZIP_ZIP64_END_CENT_DIR_HPP
 #define HAMIGAKI_ARCHIVERS_ZIP_ZIP64_END_CENT_DIR_HPP

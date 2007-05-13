@@ -1,11 +1,11 @@
-//  iso.cpp: a simple ISO image archiver program
+// iso.cpp: a simple ISO image archiver program
 
-//  Copyright Takeshi Mouri 2006.
-//  Use, modification, and distribution are subject to the
-//  Boost Software License, Version 1.0. (See accompanying file
-//  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Copyright Takeshi Mouri 2006, 2007.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+// See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
 #include <hamigaki/archivers/iso_file.hpp>
 #include <hamigaki/filesystem/operations.hpp>

@@ -1,110 +1,110 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
-	"http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
 <!--
-	Hamigaki.Archivers Library Document Source
+  Hamigaki.Archivers Library Document Source
 
-	Copyright Takeshi Mouri 2007.
-	Use, modification, and distribution are subject to the
-	Boost Software License, Version 1.0. (See accompanying file
-	LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
 
-	See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 -->
 <header name="hamigaki/archivers/iso/posix/file_attributes.hpp">
-	<namespace name="hamigaki">
-		<namespace name="archivers">
-			<namespace name="iso">
-				<namespace name="posix">
-					<struct name="file_attributes">
-						<method-group name="queries">
-							<method name="empty" cv="const">
-								<type>bool</type>
-								<returns><simpara>空であれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
-							</method>
-						</method-group>
+  <namespace name="hamigaki">
+    <namespace name="archivers">
+      <namespace name="iso">
+        <namespace name="posix">
+          <struct name="file_attributes">
+            <method-group name="queries">
+              <method name="empty" cv="const">
+                <type>bool</type>
+                <returns><simpara>空であれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
+              </method>
+            </method-group>
 
-						<method-group name="operators">
-							<method name="operator==" cv="const">
-								<type>bool</type>
-								<parameter name="rhs">
-									<paramtype>const file_attributes&amp;</paramtype>
-								</parameter>
-							</method>
+            <method-group name="operators">
+              <method name="operator==" cv="const">
+                <type>bool</type>
+                <parameter name="rhs">
+                  <paramtype>const file_attributes&amp;</paramtype>
+                </parameter>
+              </method>
 
-							<method name="operator!=" cv="const">
-								<type>bool</type>
-								<parameter name="rhs">
-									<paramtype>const file_attributes&amp;</paramtype>
-								</parameter>
-							</method>
-						</method-group>
+              <method name="operator!=" cv="const">
+                <type>bool</type>
+                <parameter name="rhs">
+                  <paramtype>const file_attributes&amp;</paramtype>
+                </parameter>
+              </method>
+            </method-group>
 
-						<data-member name="permissions">
-							<type>boost::uint32_t</type>
-						</data-member>
+            <data-member name="permissions">
+              <type>boost::uint32_t</type>
+            </data-member>
 
-						<data-member name="links">
-							<type>boost::uint32_t</type>
-						</data-member>
+            <data-member name="links">
+              <type>boost::uint32_t</type>
+            </data-member>
 
-						<data-member name="uid">
-							<type>boost::uint32_t</type>
-						</data-member>
+            <data-member name="uid">
+              <type>boost::uint32_t</type>
+            </data-member>
 
-						<data-member name="gid">
-							<type>boost::uint32_t</type>
-						</data-member>
+            <data-member name="gid">
+              <type>boost::uint32_t</type>
+            </data-member>
 
-						<data-member name="serial_no">
-							<type>boost::uint32_t</type>
-						</data-member>
+            <data-member name="serial_no">
+              <type>boost::uint32_t</type>
+            </data-member>
 
-						<description>
-							<para>
-								<informaltable frame="all">
-									<tgroup cols="3">
-										<thead>
-											<row>
-												<entry>メンバ変数</entry>
-												<entry>意味</entry>
-												<entry>規定値</entry>
-											</row>
-										</thead>
-										<tbody>
-											<row>
-												<entry>permissions</entry>
-												<entry>ファイル許可属性</entry>
-												<entry>0100644u</entry>
-											</row>
-											<row>
-												<entry>links</entry>
-												<entry>リンクカウント</entry>
-												<entry>1u</entry>
-											</row>
-											<row>
-												<entry>uid</entry>
-												<entry>ユーザーID</entry>
-												<entry>0u</entry>
-											</row>
-											<row>
-												<entry>gid</entry>
-												<entry>グループID</entry>
-												<entry>0u</entry>
-											</row>
-											<row>
-												<entry>serial_no</entry>
-												<entry>シリアル番号</entry>
-												<entry>0u</entry>
-											</row>
-										</tbody>
-									</tgroup>
-								</informaltable>
-							</para>
-						</description>
-					</struct>
-				</namespace>
-			</namespace>
-		</namespace>
-	</namespace>
+            <description>
+              <para>
+                <informaltable frame="all">
+                  <tgroup cols="3">
+                    <thead>
+                      <row>
+                        <entry>メンバ変数</entry>
+                        <entry>意味</entry>
+                        <entry>規定値</entry>
+                      </row>
+                    </thead>
+                    <tbody>
+                      <row>
+                        <entry>permissions</entry>
+                        <entry>ファイル許可属性</entry>
+                        <entry>0100644u</entry>
+                      </row>
+                      <row>
+                        <entry>links</entry>
+                        <entry>リンクカウント</entry>
+                        <entry>1u</entry>
+                      </row>
+                      <row>
+                        <entry>uid</entry>
+                        <entry>ユーザーID</entry>
+                        <entry>0u</entry>
+                      </row>
+                      <row>
+                        <entry>gid</entry>
+                        <entry>グループID</entry>
+                        <entry>0u</entry>
+                      </row>
+                      <row>
+                        <entry>serial_no</entry>
+                        <entry>シリアル番号</entry>
+                        <entry>0u</entry>
+                      </row>
+                    </tbody>
+                  </tgroup>
+                </informaltable>
+              </para>
+            </description>
+          </struct>
+        </namespace>
+      </namespace>
+    </namespace>
+  </namespace>
 </header>

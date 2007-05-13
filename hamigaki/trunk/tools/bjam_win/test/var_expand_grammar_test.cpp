@@ -1,11 +1,11 @@
-//  var_expand_grammar_test.cpp: a test driver for var_expand_grammar
+// var_expand_grammar_test.cpp: a test driver for var_expand_grammar
 
-//  Copyright Takeshi Mouri 2007.
-//  Use, modification, and distribution are subject to the
-//  Boost Software License, Version 1.0. (See accompanying file
-//  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Copyright Takeshi Mouri 2007.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/ for library home page.
+// See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "../impl/var_expand_grammar.hpp"
 #include <exception>

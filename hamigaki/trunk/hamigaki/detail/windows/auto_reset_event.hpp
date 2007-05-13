@@ -1,9 +1,9 @@
-//  auto_reset_event.hpp: auto-reset event object
+// auto_reset_event.hpp: auto-reset event object
 
-//  Copyright Takeshi Mouri 2006.
-//  Use, modification, and distribution are subject to the
-//  Boost Software License, Version 1.0. (See accompanying file
-//  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Copyright Takeshi Mouri 2006, 2007.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
 #ifndef HAMIGAKI_DETAIL_WINDOWS_AUTO_RESET_EVENT_HPP
 #define HAMIGAKI_DETAIL_WINDOWS_AUTO_RESET_EVENT_HPP

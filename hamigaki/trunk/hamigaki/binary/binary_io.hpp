@@ -1,11 +1,11 @@
-//  binary_io.hpp: binary I/O using struct_traits
+// binary_io.hpp: binary I/O using struct_traits
 
-//  Copyright Takeshi Mouri 2006, 2007.
-//  Use, modification, and distribution are subject to the
-//  Boost Software License, Version 1.0. (See accompanying file
-//  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Copyright Takeshi Mouri 2006, 2007.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/libs/binary
+// See http://hamigaki.sourceforge.jp/libs/binary
 
 #ifndef HAMIGAKI_BINARY_BINARY_IO_HPP
 #define HAMIGAKI_BINARY_BINARY_IO_HPP

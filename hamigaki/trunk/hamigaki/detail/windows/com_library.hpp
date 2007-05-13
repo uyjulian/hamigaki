@@ -1,9 +1,9 @@
-//  com_library.hpp: helper for COM initialization
+// com_library.hpp: helper for COM initialization
 
-//  Copyright Takeshi Mouri 2006.
-//  Use, modification, and distribution are subject to the
-//  Boost Software License, Version 1.0. (See accompanying file
-//  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Copyright Takeshi Mouri 2006, 2007.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
 #ifndef HAMIGAKI_DETAIL_WINDOWS_COM_LIBRARY_HPP
 #define HAMIGAKI_DETAIL_WINDOWS_COM_LIBRARY_HPP

@@ -1,11 +1,11 @@
-//  concatenate_test.cpp: test case for concatenate
+// concatenate_test.cpp: test case for concatenate
 
-//  Copyright Takeshi Mouri 2006.
-//  Use, modification, and distribution are subject to the
-//  Boost Software License, Version 1.0. (See accompanying file
-//  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Copyright Takeshi Mouri 2006, 2007.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
+// See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
 
 #include <hamigaki/iostreams/concatenate.hpp>
 #include <boost/iostreams/device/array.hpp>

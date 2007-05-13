@@ -1,11 +1,11 @@
-//  test_struct.hpp: struct for test
+// test_struct.hpp: struct for test
 
-//  Copyright Takeshi Mouri 2007.
-//  Use, modification, and distribution are subject to the
-//  Boost Software License, Version 1.0. (See accompanying file
-//  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Copyright Takeshi Mouri 2007.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/libs/binary for library home page.
+// See http://hamigaki.sourceforge.jp/libs/binary for library home page.
 
 #ifndef HAMIGAKI_BINARY_TEST_STRUCT_HPP
 #define HAMIGAKI_BINARY_TEST_STRUCT_HPP

@@ -1,11 +1,11 @@
-//  attributes.hpp: MS-DOS file attributes
+// attributes.hpp: MS-DOS file attributes
 
-//  Copyright Takeshi Mouri 2006.
-//  Use, modification, and distribution are subject to the
-//  Boost Software License, Version 1.0. (See accompanying file
-//  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Copyright Takeshi Mouri 2006, 2007.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+// See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
 #ifndef HAMIGAKI_ARCHIVERS_MSDOS_ATTRIBUTES_HPP
 #define HAMIGAKI_ARCHIVERS_MSDOS_ATTRIBUTES_HPP

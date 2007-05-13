@@ -1,11 +1,11 @@
-//  auto_max.hpp: select the minimum value with automatic result type detection
+// auto_max.hpp: select the minimum value with automatic result type detection
 
-//  Copyright Takeshi Mouri 2006.
-//  Use, modification, and distribution are subject to the
-//  Boost Software License, Version 1.0. (See accompanying file
-//  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Copyright Takeshi Mouri 2006, 2007.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/libs/integer
+// See http://hamigaki.sourceforge.jp/libs/integer
 
 #ifndef HAMIGAKI_INTEGER_AUTO_MAX_HPP
 #define HAMIGAKI_INTEGER_AUTO_MAX_HPP

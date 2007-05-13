@@ -1,11 +1,11 @@
-//  asio_stub_default.hpp: ASIO API stub functions
+// asio_stub_default.hpp: ASIO API stub functions
 
-//  Copyright Takeshi Mouri 2006.
-//  Use, modification, and distribution are subject to the
-//  Boost Software License, Version 1.0. (See accompanying file
-//  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Copyright Takeshi Mouri 2006, 2007.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+// See http://hamigaki.sourceforge.jp/libs/audio for library home page.
 
 #ifndef HAMIGAKI_AUDIO_DETAIL_ASIO_STUB_DEFAULT_HPP
 #define HAMIGAKI_AUDIO_DETAIL_ASIO_STUB_DEFAULT_HPP

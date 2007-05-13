@@ -1,11 +1,11 @@
-//  vorbis_file.cpp: vorbisfile device adapter
+// vorbis_file.cpp: vorbisfile device adapter
 
-//  Copyright Takeshi Mouri 2006.
-//  Use, modification, and distribution are subject to the
-//  Boost Software License, Version 1.0. (See accompanying file
-//  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Copyright Takeshi Mouri 2006, 2007.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
-//  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+// See http://hamigaki.sourceforge.jp/libs/audio for library home page.
 
 #define HAMIGAKI_AUDIO_SOURCE
 #include <hamigaki/audio/vorbis_file.hpp>

@@ -1,9 +1,9 @@
-//  cdecl_thunk.hpp: an instance thunk for __cdecl functions for i386
+// cdecl_thunk.hpp: an instance thunk for __cdecl functions for i386
 
-//  Copyright Takeshi Mouri 2006.
-//  Use, modification, and distribution are subject to the
-//  Boost Software License, Version 1.0. (See accompanying file
-//  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Copyright Takeshi Mouri 2006, 2007.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
 
 #ifndef HAMIGAKI_DETAIL_I386_CDECL_THUNK_HPP
 #define HAMIGAKI_DETAIL_I386_CDECL_THUNK_HPP
