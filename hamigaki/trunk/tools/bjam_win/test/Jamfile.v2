@@ -12,6 +12,7 @@ using testing ;
 test-suite "bjam_win"
 	:
 	[ run pattern_match_test.cpp ]
+	[ run target_path_test.cpp ]
 	;
 
 exe bjam_grammar_test : bjam_grammar_test.cpp ;
