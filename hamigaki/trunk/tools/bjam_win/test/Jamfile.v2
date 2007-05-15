@@ -10,10 +10,10 @@
 using testing ;
 
 test-suite "bjam_win"
-	:
-	[ run pattern_match_test.cpp ]
-	[ run target_path_test.cpp ]
-	;
+    :
+    [ run pattern_match_test.cpp ]
+    [ run target_path_test.cpp ]
+    ;
 
 exe bjam_grammar_test : bjam_grammar_test.cpp ;
 exe glob_recursive_test : glob_recursive_test.cpp ;
