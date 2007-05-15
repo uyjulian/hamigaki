@@ -26,6 +26,8 @@
 #include <boost/spirit/utility/chset.hpp>
 #include <boost/spirit/utility/chset_operators.hpp>
 #include <boost/spirit/utility/grammar_def.hpp>
+#include <boost/next_prior.hpp>
+#include <boost/regex.hpp>
 #include <cstring>
 
 inline void remove_branch_path(std::string& s)
@@ -427,6 +429,31 @@ struct bjam_grammar
         }
     }
 
+    void invoke_rule_match(
+        std::vector<std::string>& result,
+        const std::vector<std::vector<std::string> >& fields) const
+    {
+        if (fields.size() < 2)
+            return;
+
+        const std::vector<std::string>& regexps = fields[0];
+        const std::vector<std::string>& list = fields[1];
+
+        for (std::size_t j = 0; j < regexps.size(); ++j)
+        {
+            boost::regex rex(regexps[j]);
+            for (std::size_t i = 0; i < list.size(); ++i)
+            {
+                boost::smatch what;
+                if (regex_match(list[i], what, rex))
+                {
+                    result.insert(
+                        result.end(), boost::next(what.begin()), what.end());
+                }
+            }
+        }
+    }
+
     void invoke_rule_glob_recursively(
         std::vector<std::string>& result,
         const std::vector<std::vector<std::string> >& fields) const
@@ -709,6 +736,8 @@ struct bjam_grammar
             {
                 this->invoke_rule_test(name, fields);
             }
+            else if (name == "MATCH")
+                invoke_rule_match(result, fields);
             else if (name == "GLOB")
                 invoke_rule_glob(result, fields);
             else if (name == "GLOB-RECURSIVELY")

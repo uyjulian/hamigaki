@@ -12,6 +12,7 @@ project
       <hardcode-dll-paths>true
       <library>/hamigaki/process//hamigaki_process
       <library>/boost/filesystem//boost_filesystem
+      <library>/boost/regex//boost_regex
       <library>/boost/thread//boost_thread
       <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
     ;
