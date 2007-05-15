@@ -106,7 +106,7 @@ glob_recursive(
             const std::string& ph = ::path_join_nt(dir, pattern);
 
             std::vector<std::string> tmp;
-            if (fs::exists(fs::path(ph, fs::no_check)))
+            if (fs::exists(fs::complete(fs::path(ph, fs::no_check), work)))
                 tmp.push_back(ph);
             return tmp;
         }
@@ -119,7 +119,7 @@ glob_recursive(
         if (!::contains_wildcard(ptn))
         {
             const std::string& ph = ::path_join_nt(dir, ptn);
-            if (fs::is_directory(fs::path(ph, fs::no_check)))
+            if (fs::is_directory(fs::complete(fs::path(ph,fs::no_check), work)))
                 return ::glob_recursive(work, ph, rest_ptn);
             else
                 return std::vector<std::string>();
