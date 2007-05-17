@@ -21,11 +21,12 @@
 
     <copyright>
       <year>2006</year>
+      <year>2007</year>
       <holder>Takeshi Mouri</holder>
     </copyright>
 
     <legalnotice>
-      <para>Use, modification, and distribution are subject to the Boost Software License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)</para>
+      <para>Distributed under the Boost Software License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)</para>
     </legalnotice>
 
     <librarypurpose>
