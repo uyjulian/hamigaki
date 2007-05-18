@@ -15,6 +15,7 @@ DEPENDS all : test ;
 subinclude libs/archivers/test ;
 subinclude libs/audio/test ;
 subinclude libs/binary/test ;
+subinclude libs/bjam/test ;
 subinclude libs/checksum/test ;
 subinclude libs/coroutine/test ;
 subinclude libs/filesystem/test ;

@@ -17,6 +17,7 @@ import testing ;
 build-project ../libs/archivers/test ;
 build-project ../libs/audio/test ;
 build-project ../libs/binary/test ;
+build-project ../libs/bjam/test ;
 build-project ../libs/checksum/test ;
 build-project ../libs/coroutine/test ;
 build-project ../libs/filesystem/test ;
