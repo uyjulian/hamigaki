@@ -19,10 +19,17 @@ void non_punct_p_test()
     BOOST_CHECK(!parse("", bjam::non_punct_p, space_p).hit);
     BOOST_CHECK(parse("foo", bjam::non_punct_p, space_p).full);
     BOOST_CHECK(parse("if", bjam::non_punct_p, space_p).full);
+    BOOST_CHECK(parse("\"if\"", bjam::non_punct_p, space_p).full);
+    BOOST_CHECK(parse("i\\f", bjam::non_punct_p, space_p).full);
     BOOST_CHECK(!parse(":", bjam::non_punct_p, space_p).full);
     BOOST_CHECK(parse("ifelse", bjam::non_punct_p, space_p).full);
     BOOST_CHECK(parse("foo bar", +bjam::non_punct_p, space_p).full);
     BOOST_CHECK(parse("if else", +bjam::non_punct_p, space_p).full);
+
+    // unfinished escape sequences
+    BOOST_CHECK(parse("foo\\", bjam::non_punct_p, space_p).full);
+    BOOST_CHECK(parse("if\\", bjam::non_punct_p, space_p).full);
+    BOOST_CHECK(!parse(":\\", bjam::non_punct_p, space_p).full);
 }
 
 ut::test_suite* init_unit_test_suite(int, char* [])
