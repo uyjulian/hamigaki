@@ -7,6 +7,8 @@
 
 # See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
 
+import path ;
+import sequence ;
 using testing ;
 
 project
@@ -18,4 +20,5 @@ test-suite bjam :
     [ run arg_p_test.cpp ]
     [ run keyword_p_test.cpp ]
     [ run non_punct_p_test.cpp ]
+    [ run string_p_test.cpp ]
     ;

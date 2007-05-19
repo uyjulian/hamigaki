@@ -37,4 +37,5 @@ test-suite bjam :
     [ bjam-test arg_p_test.cpp : ]
     [ bjam-test keyword_p_test.cpp : ]
     [ bjam-test non_punct_p_test.cpp : ]
+    [ bjam-test string_p_test.cpp : ]
     ;
