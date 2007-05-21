@@ -44,54 +44,50 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             rules
-                =   rule
-                    >> !rules
+                =   rule >> !rules
                 |   keyword_p("local")
-                    >> !list
+                    >> list
                     >> !assign_list
                     >> keyword_p(";")
                     >> block
                 ;
 
             assign_list
-                =   keyword_p("=") >> !list
+                =   keyword_p("=") >> list
                 ;
 
             arglist
-                =   keyword_p("(") >> !lol >> keyword_p(")")
+                =   keyword_p("(") >> lol >> keyword_p(")")
                 ;
 
             rule
                 =   keyword_p("{") >> block >> keyword_p("}")
-                |   keyword_p("include") >> !list >> keyword_p(";")
-                |   arg_p >> !lol >> keyword_p(";")
-                |   arg >> assign >> !list >> keyword_p(";")
-                |   arg >> keyword_p("on") >> !list
-                    >> assign >> !list >> keyword_p(";")
-                |   keyword_p("return") >> !list >> keyword_p(";")
+                |   keyword_p("include") >> list >> keyword_p(";")
+                |   arg_p >> lol >> keyword_p(";")
+                |   arg >> assign >> list >> keyword_p(";")
+                |   arg >> keyword_p("on") >> list
+                    >> assign >> list >> keyword_p(";")
+                |   keyword_p("return") >> list >> keyword_p(";")
                 |   keyword_p("for") >> !keyword_p("local") >> arg_p
-                    >> keyword_p("in") >> !list
+                    >> keyword_p("in") >> list
                     >> keyword_p("{") >> block >> keyword_p("}")
-                |   keyword_p("switch") >> !list
+                |   keyword_p("switch") >> list
                     >> keyword_p("{") >> cases >> keyword_p("}")
-                |   keyword_p("module") >> !list
+                |   keyword_p("module") >> list
                     >> keyword_p("{") >> block >> keyword_p("}") 
-                |   keyword_p("class") >> !lol
+                |   keyword_p("class") >> lol
                     >> keyword_p("{") >> block >> keyword_p("}") 
                 |   keyword_p("while") >> expr
                     >> keyword_p("{") >> block >> keyword_p("}") 
                 |   keyword_p("if") >> expr
                     >> keyword_p("{") >> block >> keyword_p("}")
-                    >> !(keyword_p("else") >> rule)
+                    >> !( keyword_p("else") >> rule )
                 |   !keyword_p("local") >> keyword_p("rule") >> arg_p
                     >> !arglist >> rule
                 |   keyword_p("on") >> arg >> rule
                 |   keyword_p("actions") >> eflags >> arg_p >> !bindlist
                     >> eps_p(keyword_p("{"))
-                    >> lexeme_d
-                    [
-                        '{' >> string_p
-                    ]
+                    >> lexeme_d[ '{' >> string_p ]
                     >> keyword_p("}")
                 ;
 
@@ -104,31 +100,31 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
 
             expr
                 =   and_expr
-                    >> *(   keyword_p("|")  >> and_expr
-                        |   keyword_p("||") >> and_expr
+                    %   (   keyword_p("|")
+                        |   keyword_p("||")
                         )
                 ;
 
             and_expr
                 =   eq_expr
-                    >> *(   keyword_p("&")   >> eq_expr
-                        |   keyword_p("&&")  >> eq_expr
+                    %   (   keyword_p("&")
+                        |   keyword_p("&&")
                         )
                 ;
 
             eq_expr
                 =   rel_expr
-                    >> *(   keyword_p("=")   >> rel_expr
-                        |   keyword_p("!=")  >> rel_expr
+                    %   (   keyword_p("=")
+                        |   keyword_p("!=")
                         )
                 ;
 
             rel_expr
                 =   not_expr
-                    >> *(   keyword_p("<")  >> not_expr
-                        |   keyword_p("<=") >> not_expr
-                        |   keyword_p(">")  >> not_expr
-                        |   keyword_p(">=") >> not_expr
+                    %   (   keyword_p("<")
+                        |   keyword_p("<=")
+                        |   keyword_p(">")
+                        |   keyword_p(">=")
                         )
                 ;
 
@@ -137,7 +133,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             prim_expr
-                =   arg >> !(keyword_p("in")  >> !list)
+                =   arg >> !(keyword_p("in")  >> list)
                 |   keyword_p("(") >> expr >> keyword_p(")")
                 ;
 
@@ -150,11 +146,11 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             lol
-                =   list || (keyword_p(":") >> !lol)
+                =   list % keyword_p(":")
                 ;
 
             list
-                = +non_punct
+                = *non_punct
                 ;
 
             non_punct
@@ -168,8 +164,8 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             func
-                =   arg >> !lol
-                |   keyword_p("on") >> arg >> arg >> !lol
+                =   arg >> lol
+                |   keyword_p("on") >> arg >> arg >> lol
                 |   keyword_p("on") >> arg >> keyword_p("return") >> list
                 ;
 
