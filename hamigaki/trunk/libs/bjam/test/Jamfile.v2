@@ -14,11 +14,13 @@ using testing ;
 project
     : requirements
       <library>/boost/test//boost_unit_test_framework/<link>static
+      <library>/hamigaki/bjam//hamigaki_bjam
     ;
 
 test-suite bjam :
     [ run arg_p_test.cpp ]
     [ run keyword_p_test.cpp ]
     [ run non_punct_p_test.cpp ]
+    [ run path_test.cpp ]
     [ run string_p_test.cpp ]
     ;
