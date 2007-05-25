@@ -17,6 +17,7 @@ project hamigaki/bjam
 
 SOURCES =
     path
+    variable_expansion
     ;
 
 lib hamigaki_bjam

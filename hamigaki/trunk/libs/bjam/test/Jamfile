@@ -35,6 +35,7 @@ rule bjam-test ( sources + : requirements * )
 
 test-suite bjam :
     [ bjam-test arg_p_test.cpp : ]
+    [ bjam-test expand_variable_test.cpp : ]
     [ bjam-test keyword_p_test.cpp : ]
     [ bjam-test non_punct_p_test.cpp : ]
     [ bjam-test path_test.cpp : ]
