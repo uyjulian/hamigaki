@@ -291,13 +291,19 @@ std::string apply_modifiers(const std::string& value, const modifiers& mods)
 
 void expand_variable_impl(
     list_type& result, const std::string& prefix, const std::string& s,
-    const variable_table& table, const list_of_list& args)
+    const variable_table& table, const list_of_list& args, bool is_last)
 {
     const size_type colon = s.find(magic::colon);
 
     modifiers mods;
     if (colon != std::string::npos)
+    {
         parse_modifiers(mods, s.substr(colon+1));
+
+        // Note: This may be a bjam bug
+        if (((mods.flags & modifiers::join) != 0) && !is_last)
+            return;
+    }
 
     size_type name_end = colon;
 
@@ -335,8 +341,25 @@ void expand_variable_impl(
 
     if (start < values.size())
     {
-        for (std::size_t i = start; i < last; ++i)
-            result.push_back(prefix + apply_modifiers(values[i], mods));
+        if ((mods.flags & modifiers::join) != 0)
+        {
+            std::string tmp = prefix;
+            bool need_separator = false;
+            for (std::size_t i = start; i < last; ++i)
+            {
+                if (need_separator)
+                    tmp += mods.join_value;
+                else
+                    need_separator = true;
+                tmp += apply_modifiers(values[i], mods);
+            }
+            result.push_back(tmp);
+        }
+        else
+        {
+            for (std::size_t i = start; i < last; ++i)
+                result.push_back(prefix + apply_modifiers(values[i], mods));
+        }
     }
     else if ((mods.flags & modifiers::empty) != 0)
         result.push_back(prefix + apply_modifiers(mods.empty_value, mods));
@@ -376,7 +399,10 @@ void expand_variable(
     const std::string prefix(s, 0, dol);
     list_type values;
     for (std::size_t i = 0; i < names.size(); ++i)
-        expand_variable_impl(values, prefix, names[i], table, args);
+    {
+        bool is_last = i == (names.size() - 1);
+        expand_variable_impl(values, prefix, names[i], table, args, is_last);
+    }
 
     list_type rests;
     bjam::expand_variable(rests, s.substr(name_end+1), table, args);

@@ -128,6 +128,30 @@ void empty_test()
         result.begin(), result.end(), expect.begin(), expect.end());
 }
 
+void join_test()
+{
+    bjam::variable_table table;
+    table.set_values("X", boost::assign::list_of("a")("b")("c"));
+    table.set_values("Y", boost::assign::list_of(".")("-"));
+
+    bjam::list_of_list args;
+
+    bjam::list_type result;
+    bjam::list_type expect;
+
+    expect = boost::assign::list_of("a_b_c");
+    bjam::expand_variable(result, "$(X:J=_)", table, args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+    // Note: This may be a bjam bug
+    result.clear();
+    expect = boost::assign::list_of("a-b-c");
+    bjam::expand_variable(result, "$(X:J=$(Y))", table, args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+}
+
 void path_test()
 {
     bjam::variable_table table;
@@ -164,6 +188,7 @@ void path_test()
 
     result.clear();
 #if defined(__CYGWIN__)
+    // FIXME: Cygwin may not be installed to the default location
     expect = boost::assign::list_of("C:\\cygwin\\tmp");
 #else
     expect = boost::assign::list_of("/tmp");
@@ -180,6 +205,7 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&index_test));
     test->add(BOOST_TEST_CASE(&case_conv_test));
     test->add(BOOST_TEST_CASE(&empty_test));
+    test->add(BOOST_TEST_CASE(&join_test));
     test->add(BOOST_TEST_CASE(&path_test));
     return test;
 }
