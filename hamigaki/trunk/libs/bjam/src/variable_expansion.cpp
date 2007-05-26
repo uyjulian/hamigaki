@@ -17,6 +17,11 @@
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/optional.hpp>
 
+#if defined(__CYGWIN__)
+    #include <sys/cygwin.h>
+    #include <windef.h>
+#endif
+
 namespace hamigaki { namespace bjam {
 
 namespace
@@ -219,6 +224,10 @@ void parse_modifiers(modifiers& mods, const std::string& s)
             mods.suffix_value = parse_modifier_filename(mods_ptr, s, i);
         else if (c == 'M')
             mods.member_value = parse_modifier_filename(mods_ptr, s, i);
+        else if (c == 'T')
+            mods.flags |= modifiers::slash;
+        else if (c == 'W')
+            mods.flags |= modifiers::windows;
         else
             break;
     }
@@ -227,6 +236,15 @@ void parse_modifiers(modifiers& mods, const std::string& s)
 std::string apply_modifiers(const std::string& value, const modifiers& mods)
 {
     std::string result = value;
+
+#if defined(__CYGWIN__)
+    if ((mods.flags & modifiers::windows) != 0)
+    {
+        char buf[MAX_PATH];
+        if (::cygwin_conv_to_win32_path(result.c_str(), buf) != -1)
+            result = buf;
+    }
+#endif
 
     if ((mods.flags & modifiers::upper) != 0)
         boost::algorithm::to_upper(result, std::locale::classic());

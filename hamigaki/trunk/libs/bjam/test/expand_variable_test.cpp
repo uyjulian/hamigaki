@@ -132,6 +132,8 @@ void path_test()
 {
     bjam::variable_table table;
     table.set_values("X", boost::assign::list_of("<g>/d/b.s(m)"));
+    table.set_values("SYS", boost::assign::list_of("C:\\Windows\\System32"));
+    table.set_values("TMP", boost::assign::list_of("/tmp"));
     bjam::list_of_list args;
 
     bjam::list_type result;
@@ -145,6 +147,22 @@ void path_test()
     result.clear();
     expect = boost::assign::list_of("<g>/d/b.txt(m)");
     bjam::expand_variable(result, "$(X:S=.txt)", table, args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+    result.clear();
+    expect = boost::assign::list_of("C:/Windows/System32");
+    bjam::expand_variable(result, "$(SYS:T)", table, args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+    result.clear();
+#if defined(__CYGWIN__)
+    expect = boost::assign::list_of("C:\\cygwin\\tmp");
+#else
+    expect = boost::assign::list_of("/tmp");
+#endif
+    bjam::expand_variable(result, "$(TMP:W)", table, args);
     BOOST_CHECK_EQUAL_COLLECTIONS(
         result.begin(), result.end(), expect.begin(), expect.end());
 }
