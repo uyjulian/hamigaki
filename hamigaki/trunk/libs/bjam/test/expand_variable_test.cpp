@@ -151,6 +151,12 @@ void path_test()
         result.begin(), result.end(), expect.begin(), expect.end());
 
     result.clear();
+    expect = boost::assign::list_of("<g>/d");
+    bjam::expand_variable(result, "$(X:P)", table, args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+    result.clear();
     expect = boost::assign::list_of("C:/Windows/System32");
     bjam::expand_variable(result, "$(SYS:T)", table, args);
     BOOST_CHECK_EQUAL_COLLECTIONS(

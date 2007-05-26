@@ -145,7 +145,8 @@ struct modifiers
     {
         return
             grist_value || root_value || dir_value ||
-            base_value || suffix_value || member_value;
+            base_value || suffix_value || member_value ||
+            ((flags & parent) != 0);
     }
 };
 
@@ -265,12 +266,22 @@ std::string apply_modifiers(const std::string& value, const modifiers& mods)
             ph.root = *mods.root_value;
         if (mods.dir_value)
             ph.dir = *mods.dir_value;
-        if (mods.base_value)
-            ph.base = *mods.base_value;
-        if (mods.suffix_value)
-            ph.suffix = *mods.suffix_value;
-        if (mods.member_value)
-            ph.member = *mods.member_value;
+
+        if ((mods.flags & modifiers::parent) != 0)
+        {
+            ph.base.clear();
+            ph.suffix.clear();
+            ph.member.clear();
+        }
+        else
+        {
+            if (mods.base_value)
+                ph.base = *mods.base_value;
+            if (mods.suffix_value)
+                ph.suffix = *mods.suffix_value;
+            if (mods.member_value)
+                ph.member = *mods.member_value;
+        }
 
         result = bjam::make_path(ph);
     }
