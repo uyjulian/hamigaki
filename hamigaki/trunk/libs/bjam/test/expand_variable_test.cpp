@@ -198,6 +198,41 @@ void path_test()
         result.begin(), result.end(), expect.begin(), expect.end());
 }
 
+void args_test()
+{
+    bjam::variable_table table;
+
+    bjam::list_of_list args;
+    args.push_back(boost::assign::list_of("a")("b")("c"));
+    args.push_back(boost::assign::list_of("1")("2"));
+
+    bjam::list_type result;
+    bjam::list_type expect;
+
+    expect = boost::assign::list_of("a")("b")("c");
+    bjam::expand_variable(result, "$(1)", table, args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+    result.clear();
+    expect = boost::assign::list_of("1")("2");
+    bjam::expand_variable(result, "$(2)", table, args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+    result.clear();
+    expect = boost::assign::list_of("a")("b")("c");
+    bjam::expand_variable(result, "$(<)", table, args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+    result.clear();
+    expect = boost::assign::list_of("1")("2");
+    bjam::expand_variable(result, "$(>)", table, args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("expand_variable test");
@@ -207,5 +242,6 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&empty_test));
     test->add(BOOST_TEST_CASE(&join_test));
     test->add(BOOST_TEST_CASE(&path_test));
+    test->add(BOOST_TEST_CASE(&args_test));
     return test;
 }
