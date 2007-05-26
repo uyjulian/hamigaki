@@ -11,6 +11,7 @@
 #include <hamigaki/bjam/util/cartesian_product.hpp>
 #include <hamigaki/bjam/util/path.hpp>
 #include <hamigaki/bjam/util/variable_expansion.hpp>
+#include <hamigaki/integer/auto_max.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/iterator/transform_iterator.hpp>
@@ -113,13 +114,13 @@ std::pair<int,int> parse_index_range(const std::string& s)
 
 struct modifiers
 {
-    static const unsigned lower     = 0x0001;
-    static const unsigned upper     = 0x0002;
-    static const unsigned parent    = 0x0004;
-    static const unsigned empty     = 0x0008;
-    static const unsigned join      = 0x0010;
-    static const unsigned slash     = 0x0800;
-    static const unsigned windows   = 0x1000;
+    static const unsigned lower     = 0x01;
+    static const unsigned upper     = 0x02;
+    static const unsigned parent    = 0x04;
+    static const unsigned empty     = 0x08;
+    static const unsigned join      = 0x10;
+    static const unsigned slash     = 0x20;
+    static const unsigned windows   = 0x40;
 
     modifiers() : flags(0)
     {
@@ -135,7 +136,7 @@ struct modifiers
     boost::optional<std::string> suffix_value;
     boost::optional<std::string> member_value;
 
-    bool have_path_components() const
+    bool has_path_components() const
     {
         return
             grist_value || root_value || dir_value ||
@@ -235,7 +236,7 @@ std::string apply_modifiers(const std::string& value, const modifiers& mods)
     if ((mods.flags & modifiers::slash) != 0)
         boost::algorithm::replace_all(result, "\\", "/");
 
-    if (mods.have_path_components())
+    if (mods.has_path_components())
     {
         path_components ph;
         bjam::split_path(ph, result);
@@ -272,7 +273,7 @@ void expand_variable_impl(
     size_type name_end = colon;
 
     size_type lbracket = s.find(magic::lbracket);
-    std::pair<int,int> rng(1,-1);
+    std::pair<int,int> rng(0,-1);
     if (lbracket < colon)
     {
         size_type rbracket =
@@ -293,21 +294,23 @@ void expand_variable_impl(
         rng.first += values.size();
     else
         --rng.first;
-    if (rng.first < 0)
-        rng.first = 0;
-
-    const std::size_t start = static_cast<std::size_t>(rng.first);
 
     if (rng.second < 0)
         rng.second += values.size() + 1;
     if (rng.second <= rng.first)
         return;
 
+    const std::size_t start = hamigaki::auto_max(rng.first, 0u);
     const std::size_t last =
         (std::min)(static_cast<std::size_t>(rng.second), values.size());
 
-    for (std::size_t i = start; i < last; ++i)
-        result.push_back(prefix + apply_modifiers(values[i], mods));
+    if (start < values.size())
+    {
+        for (std::size_t i = start; i < last; ++i)
+            result.push_back(prefix + apply_modifiers(values[i], mods));
+    }
+    else if ((mods.flags & modifiers::empty) != 0)
+        result.push_back(prefix + apply_modifiers(mods.empty_value, mods));
 }
 
 } // namespace

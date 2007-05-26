@@ -74,37 +74,69 @@ void index_test()
         result.begin(), result.end(), expect.begin(), expect.end());
 }
 
-void modifiers_test()
+void case_conv_test()
 {
     bjam::variable_table table;
-    table.set_values("A", boost::assign::list_of("aBcD"));
-    table.set_values("X", boost::assign::list_of("<g>/d/b.s(m)"));
+    table.set_values("X", boost::assign::list_of("aBcD"));
     bjam::list_of_list args;
 
     bjam::list_type result;
     bjam::list_type expect;
 
     expect = boost::assign::list_of("abcd");
-    bjam::expand_variable(result, "$(A:L)", table, args);
+    bjam::expand_variable(result, "$(X:L)", table, args);
     BOOST_CHECK_EQUAL_COLLECTIONS(
         result.begin(), result.end(), expect.begin(), expect.end());
 
     result.clear();
     expect = boost::assign::list_of("ABCD");
-    bjam::expand_variable(result, "$(A:U)", table, args);
+    bjam::expand_variable(result, "$(X:U)", table, args);
     BOOST_CHECK_EQUAL_COLLECTIONS(
         result.begin(), result.end(), expect.begin(), expect.end());
 
-// TODO:
-#if 0
     result.clear();
+    expect = boost::assign::list_of("ABCD");
+    bjam::expand_variable(result, "$(X:UL)", table, args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+}
+
+void empty_test()
+{
+    bjam::variable_table table;
+    table.set_values("X", boost::assign::list_of("a")("b")("c"));
+    bjam::list_of_list args;
+
+    bjam::list_type result;
+    bjam::list_type expect;
+
     expect = boost::assign::list_of("hoge");
     bjam::expand_variable(result, "$(:E=hoge)", table, args);
     BOOST_CHECK_EQUAL_COLLECTIONS(
         result.begin(), result.end(), expect.begin(), expect.end());
-#endif
 
     result.clear();
+    expect = boost::assign::list_of("a")("b")("c");
+    bjam::expand_variable(result, "$(:E=$(X))", table, args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+    result.clear();
+    expect = boost::assign::list_of("a")("b")("c");
+    bjam::expand_variable(result, "$([1]:E=$(X))", table, args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+}
+
+void path_test()
+{
+    bjam::variable_table table;
+    table.set_values("X", boost::assign::list_of("<g>/d/b.s(m)"));
+    bjam::list_of_list args;
+
+    bjam::list_type result;
+    bjam::list_type expect;
+
     expect = boost::assign::list_of("b.s");
     bjam::expand_variable(result, "$(X:BS)", table, args);
     BOOST_CHECK_EQUAL_COLLECTIONS(
@@ -122,6 +154,8 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     ut::test_suite* test = BOOST_TEST_SUITE("expand_variable test");
     test->add(BOOST_TEST_CASE(&simple_test));
     test->add(BOOST_TEST_CASE(&index_test));
-    test->add(BOOST_TEST_CASE(&modifiers_test));
+    test->add(BOOST_TEST_CASE(&case_conv_test));
+    test->add(BOOST_TEST_CASE(&empty_test));
+    test->add(BOOST_TEST_CASE(&path_test));
     return test;
 }
