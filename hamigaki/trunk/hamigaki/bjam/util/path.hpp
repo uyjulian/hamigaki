@@ -32,6 +32,10 @@ struct path_components
 HAMIGAKI_BJAM_DECL void split_path(path_components& ph, const std::string& s);
 HAMIGAKI_BJAM_DECL std::string make_path(const path_components& ph);
 
+HAMIGAKI_BJAM_DECL std::string tmp_directory();
+HAMIGAKI_BJAM_DECL std::string tmp_filename();
+HAMIGAKI_BJAM_DECL std::string tmp_file_path();
+
 } } // End namespaces bjam, hamigaki.
 
 #ifdef BOOST_HAS_ABI_HEADERS

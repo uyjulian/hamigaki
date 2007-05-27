@@ -8,10 +8,18 @@
 // See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
 
 #define HAMIGAKI_BJAM_SOURCE
+#define NOMINMAX
 #include <hamigaki/bjam/util/path.hpp>
+#include <hamigaki/detail/random.hpp>
+#include <boost/format.hpp>
 
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
+    #include <boost/scoped_array.hpp>
+    #include <boost/assert.hpp>
+    #include <windows.h>
     #define HAMIGAKI_BJAM_WINDOWS
+#else
+    #include <cstdlib>
 #endif
 
 namespace hamigaki { namespace bjam {
@@ -176,6 +184,43 @@ HAMIGAKI_BJAM_DECL std::string make_path(const path_components& ph)
     }
 
     return buf;
+}
+
+HAMIGAKI_BJAM_DECL std::string tmp_directory()
+{
+#if defined(HAMIGAKI_BJAM_WINDOWS)
+    ::DWORD size = ::GetTempPathA(0, 0);
+    BOOST_ASSERT(size != 0);
+
+    boost::scoped_array<char> buf(new char[size]);
+    size = ::GetTempPathA(size, buf.get());
+
+    // Note: "C:\\" -> "C:" !!!
+    if ((size != 0) && (buf[size-1] == '\\'))
+        --size;
+
+    return std::string(buf.get(), size);
+#else
+    // Note: environment variables have potentially race conditions
+    if (const char* s = std::getenv("TMPDIR"))
+        return s;
+    else
+        return "/tmp";
+#endif
+}
+
+HAMIGAKI_BJAM_DECL std::string tmp_filename()
+{
+    boost::uint32_t rnd = hamigaki::detail::random_ui32();
+    return (boost::format("hamigaki_bjam_%1$08x.tmp") % rnd).str();
+}
+
+HAMIGAKI_BJAM_DECL std::string tmp_file_path()
+{
+    std::string s = tmp_directory();
+    s += path_delimiter;
+    s += tmp_filename();
+    return s;
 }
 
 } } // End namespaces bjam, hamigaki.

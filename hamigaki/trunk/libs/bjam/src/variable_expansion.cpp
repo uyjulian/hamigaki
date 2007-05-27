@@ -289,26 +289,6 @@ std::string apply_modifiers(const std::string& value, const modifiers& mods)
     return result;
 }
 
-const list_type& get_variable_values(
-    const variable_table& table, const list_of_list& args,
-    const std::string& name)
-{
-    if (name.size() == 1)
-    {
-        char c = name[0];
-        if (c == '<')
-            return args[0];
-        else if (c == '>')
-            return args[1];
-        else if ((c >= '1') && (c <= '9'))
-            return args[static_cast<std::size_t>(c - '1')];
-        else
-            return table.get_values(name);
-    }
-    else
-        return table.get_values(name);
-}
-
 void expand_variable_impl(
     list_type& result, const std::string& prefix, const std::string& s,
     const variable_table& table, const list_of_list& args, bool is_last)
@@ -344,8 +324,10 @@ void expand_variable_impl(
     else
         lbracket = std::string::npos;
 
+
+    list_type values_buf;
     const list_type& values =
-        get_variable_values(table, args, s.substr(0, name_end));
+        get_variable_values(values_buf, s.substr(0, name_end), table, args);
 
     if (rng.first < 0)
         rng.first += values.size();
@@ -388,6 +370,60 @@ void expand_variable_impl(
 }
 
 } // namespace
+
+HAMIGAKI_BJAM_DECL
+const list_type& get_variable_values(
+    list_type& buf, const std::string& name, const variable_table& table)
+{
+    if (name == "TMPDIR")
+    {
+        buf.push_back(tmp_directory());
+        return buf;
+    }
+    else if (name == "TMPNAME")
+    {
+        buf.push_back(tmp_filename());
+        return buf;
+    }
+    else if (name == "TMPFILE")
+    {
+        buf.push_back(tmp_file_path());
+        return buf;
+    }
+    else if (name == "STDOUT")
+    {
+        buf.push_back("STDOUT");
+        return buf;
+    }
+    else if (name == "STDERR")
+    {
+        buf.push_back("STDERR");
+        return buf;
+    }
+    else
+        return table.get_values(name);
+}
+
+HAMIGAKI_BJAM_DECL
+const list_type& get_variable_values(
+    list_type& buf, const std::string& name,
+    const variable_table& table, const list_of_list& args)
+{
+    if (name.size() == 1)
+    {
+        char c = name[0];
+        if (c == '<')
+            return args[0];
+        else if (c == '>')
+            return args[1];
+        else if ((c >= '1') && (c <= '9'))
+            return args[static_cast<std::size_t>(c - '1')];
+        else
+            return table.get_values(name);
+    }
+    else
+        return get_variable_values(buf, name, table);
+}
 
 HAMIGAKI_BJAM_DECL
 void expand_variable(

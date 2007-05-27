@@ -1,4 +1,4 @@
-// expand_variable_test.cpp: test case for expand_variable
+// expand_variable_test.cpp: test case for expand_variable()
 
 // Copyright Takeshi Mouri 2007.
 // Distributed under the Boost Software License, Version 1.0.
@@ -233,6 +233,37 @@ void args_test()
         result.begin(), result.end(), expect.begin(), expect.end());
 }
 
+void fixed_test()
+{
+    bjam::variable_table table;
+    bjam::list_of_list args;
+    bjam::list_type result;
+    bjam::list_type expect;
+
+    bjam::expand_variable(result, "$(TMPDIR)", table, args);
+    BOOST_CHECK(!result.empty());
+
+    result.clear();
+    bjam::expand_variable(result, "$(TMPNAME)", table, args);
+    BOOST_CHECK(!result.empty());
+
+    result.clear();
+    bjam::expand_variable(result, "$(TMPFILE)", table, args);
+    BOOST_CHECK(!result.empty());
+
+    result.clear();
+    expect = boost::assign::list_of("STDOUT");
+    bjam::expand_variable(result, "$(STDOUT)", table, args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+    result.clear();
+    expect = boost::assign::list_of("STDERR");
+    bjam::expand_variable(result, "$(STDERR)", table, args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("expand_variable test");
@@ -243,5 +274,6 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&join_test));
     test->add(BOOST_TEST_CASE(&path_test));
     test->add(BOOST_TEST_CASE(&args_test));
+    test->add(BOOST_TEST_CASE(&fixed_test));
     return test;
 }
