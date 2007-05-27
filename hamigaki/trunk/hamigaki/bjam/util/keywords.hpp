@@ -10,6 +10,7 @@
 #ifndef HAMIGAKI_BJAM_UTIL_KEYWORDS_HPP
 #define HAMIGAKI_BJAM_UTIL_KEYWORDS_HPP
 
+#include <climits> // required for <boost/spirit/phoenix/operators.hpp>
 #include <boost/spirit/phoenix.hpp>
 #include <algorithm>
 #include <cstring>
