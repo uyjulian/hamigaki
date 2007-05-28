@@ -135,10 +135,13 @@ public:
     {
         if (pimpl_.get() == 0)
             pimpl_.reset(new impl_type(1u, s));
+        else if (pimpl_.unique())
+            pimpl_->push_back(s);
         else
         {
-            unique();
-            pimpl_->push_back(s);
+            boost::shared_ptr<impl_type> tmp(new impl_type(*pimpl_));
+            tmp->push_back(s);
+            pimpl_.swap(tmp);
         }
     }
 
@@ -150,10 +153,13 @@ public:
             BOOST_ASSERT(position == iterator());
             pimpl_.reset(new impl_type(first, last));
         }
+        else if (pimpl_.unique())
+            pimpl_->insert(position, first, last);
         else
         {
-            unique();
-            pimpl_->insert(position, first, last);
+            boost::shared_ptr<impl_type> tmp(new impl_type(*pimpl_));
+            tmp->insert(position, first, last);
+            pimpl_.swap(tmp);
         }
     }
 
@@ -169,15 +175,6 @@ public:
 
 private:
     boost::shared_ptr<impl_type> pimpl_;
-
-    void unique()
-    {
-        if (!pimpl_.unique())
-        {
-            boost::shared_ptr<impl_type> tmp(new impl_type(*pimpl_));
-            pimpl_.swap(tmp);
-        }
-    }
 };
 
 typedef string_list list_type;
