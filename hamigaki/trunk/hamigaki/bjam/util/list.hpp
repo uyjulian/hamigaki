@@ -11,16 +11,24 @@
 #define HAMIGAKI_BJAM_UTIL_LIST_HPP
 
 #include <boost/assert.hpp>
+#include <boost/operators.hpp>
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <vector>
 
 namespace hamigaki { namespace bjam {
 
-class string_list
+class string_list : boost::totally_ordered<string_list>
 {
 private:
     typedef std::vector<std::string> impl_type;
+
+    struct safe_bool_helper
+    {
+        void non_null() {};
+    };
+
+    typedef void (safe_bool_helper::*safe_bool)();
 
 public:
     typedef impl_type::reference reference;
@@ -37,6 +45,11 @@ public:
     typedef impl_type::const_reverse_iterator const_reverse_iterator;
 
     string_list()
+    {
+    }
+
+    explicit string_list(const std::string& s)
+        : pimpl_(new impl_type(1u, s))
     {
     }
 
@@ -173,6 +186,92 @@ public:
         pimpl_.reset();
     }
 
+    // additional member functions
+
+    int compare(const string_list& rhs) const
+    {
+        const_iterator lb = this->begin();
+        const_iterator le = this->end();
+
+        const_iterator rb = rhs.begin();
+        const_iterator re = rhs.end();
+
+        while (true)
+        {
+            if (lb != le)
+            {
+                if (rb != re)
+                {
+                    if (int cmp = (lb++)->compare(*(rb++)))
+                        return cmp;
+                }
+                else
+                {
+                    if (!(lb++)->empty())
+                        return 1;
+                }
+            }
+            else
+            {
+                if (rb != re)
+                {
+                    if (!(rb++)->empty())
+                        return -1;
+                }
+                else
+                    break;
+            }
+        }
+        return 0;
+    }
+
+    operator safe_bool() const
+    {
+        if (this->compare(string_list()) != 0)
+            return &safe_bool_helper::non_null;
+        else
+            return static_cast<safe_bool>(0);
+    }
+
+    bool operator!() const
+    {
+        return !this->operator safe_bool();
+    }
+
+    bool operator<(const string_list& rhs) const
+    {
+        return this->compare(rhs) < 0;
+    }
+
+    bool operator==(const string_list& rhs) const
+    {
+        return this->compare(rhs) == 0;
+    }
+
+    string_list& operator+=(const std::string& rhs)
+    {
+        this->push_back(rhs);
+        return *this;
+    }
+
+    string_list& operator+=(const string_list& rhs)
+    {
+        if (impl_type* rp = rhs.pimpl_.get())
+        {
+            if (pimpl_.get() == 0)
+                pimpl_ = rhs.pimpl_;
+            else if (pimpl_.unique())
+                pimpl_->insert(pimpl_->end(), rp->begin(), rp->end());
+            else
+            {
+                boost::shared_ptr<impl_type> tmp(new impl_type(*pimpl_));
+                tmp->insert(pimpl_->end(), rp->begin(), rp->end());
+                pimpl_.swap(tmp);
+            }
+        }
+        return *this;
+    }
+
 private:
     boost::shared_ptr<impl_type> pimpl_;
 };
@@ -180,5 +279,36 @@ private:
 typedef string_list list_type;
 
 } } // End namespaces bjam, hamigaki.
+
+namespace phoenix {
+
+struct logical_not_op;
+
+template<typename TagT, typename T>
+struct unary_operator;
+
+template<>
+struct unary_operator<logical_not_op,hamigaki::bjam::string_list>
+{
+    typedef bool result_type;
+
+    static result_type eval(const hamigaki::bjam::string_list& v)
+    {
+        return !v;
+    }
+};
+
+template<>
+struct unary_operator<logical_not_op,const hamigaki::bjam::string_list>
+{
+    typedef bool result_type;
+
+    static result_type eval(const hamigaki::bjam::string_list& v)
+    {
+        return !v;
+    }
+};
+
+} // End namespace phoenix.
 
 #endif // HAMIGAKI_BJAM_UTIL_LIST_HPP
