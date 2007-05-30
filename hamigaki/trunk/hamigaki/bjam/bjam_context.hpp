@@ -21,9 +21,9 @@ public:
     typedef rule_table::rule_def_ptr rule_def_ptr;
     typedef variable_table::iterator variable_iterator;
 
-    context() : cur_module_(&root_module_)
+    context()
     {
-        frames_.push_back(frame(&root_module_));
+        frames_.push_back(frame(root_module_));
     }
 
     frame& current_frame()

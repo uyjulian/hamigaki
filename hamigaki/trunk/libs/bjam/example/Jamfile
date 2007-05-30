@@ -13,6 +13,7 @@ subproject libs/bjam/example ;
 
 template bjam
     : # sources
+      <lib>../build/hamigaki_bjam
     : # build requirements
       <define>BOOST_ALL_NO_LIB=1
       <include>$(HAMIGAKI_ROOT)  <sysinclude>$(HAMIGAKI_ROOT)

@@ -12,6 +12,15 @@
 
 #include <boost/config.hpp>
 
+#if !defined(PHOENIX_LIMIT)
+    #define PHOENIX_LIMIT 6
+#endif
+
+#if PHOENIX_LIMIT < 6
+    #error "Hamigaki.Bjam requires PHOENIX_LIMIT >= 6"
+#endif
+
+
 #if defined(BOOST_HAS_DECLSPEC)
     #if defined(HAMIGAKI_ALL_DYN_LINK) || defined(HAMIGAKI_BJAM_DYN_LINK)
         #if defined(HAMIGAKI_BJAM_SOURCE)

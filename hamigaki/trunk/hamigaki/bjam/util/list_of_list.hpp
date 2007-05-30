@@ -12,6 +12,10 @@
 
 #include <hamigaki/bjam/util/list.hpp>
 
+#if defined(BOOST_SPIRIT_DEBUG)
+    #include <ostream>
+#endif
+
 namespace hamigaki { namespace bjam {
 
 class list_of_list
@@ -52,11 +56,30 @@ public:
             lists_[size_++] = x;
     }
 
+    list_of_list& operator+=(const value_type& x)
+    {
+        this->push_back(x);
+        return *this;
+    }
+
 private:
     size_type size_;
     value_type lists_[static_max_size];
     value_type empty_;
 };
+
+#if defined(BOOST_SPIRIT_DEBUG)
+inline std::ostream& operator<<(std::ostream& os, const list_of_list& x)
+{
+    for (std::size_t i = 0, size = x.size(); i < size; ++i)
+    {
+        if (i != 0)
+            os << " : ";
+        os << x[i];
+    }
+    return os;
+}
+#endif
 
 } } // End namespaces bjam, hamigaki.
 

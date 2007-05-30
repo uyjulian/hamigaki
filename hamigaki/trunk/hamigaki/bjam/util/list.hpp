@@ -13,8 +13,13 @@
 #include <boost/assert.hpp>
 #include <boost/operators.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/version.hpp>
 #include <string>
 #include <vector>
+
+#if defined(BOOST_SPIRIT_DEBUG)
+    #include <ostream>
+#endif
 
 namespace hamigaki { namespace bjam {
 
@@ -276,10 +281,30 @@ private:
     boost::shared_ptr<impl_type> pimpl_;
 };
 
+#if defined(BOOST_SPIRIT_DEBUG)
+inline std::ostream& operator<<(std::ostream& os, const string_list& x)
+{
+    typedef string_list::const_iterator iter_type;
+
+    iter_type beg = x.begin();
+    iter_type end = x.end();
+
+    for (iter_type i = beg; i != end; ++i)
+    {
+        if (i != beg)
+            os << ' ';
+
+        os << *i;
+    }
+    return os;
+}
+#endif
+
 typedef string_list list_type;
 
 } } // End namespaces bjam, hamigaki.
 
+#if BOOST_VERSION >= 103400
 namespace phoenix {
 
 struct logical_not_op;
@@ -310,5 +335,6 @@ struct unary_operator<logical_not_op,const hamigaki::bjam::string_list>
 };
 
 } // End namespace phoenix.
+#endif
 
 #endif // HAMIGAKI_BJAM_UTIL_LIST_HPP

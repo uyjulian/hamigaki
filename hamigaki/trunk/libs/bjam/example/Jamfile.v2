@@ -7,4 +7,9 @@
 
 # See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
 
+project
+    : requirements
+      <library>/hamigaki/bjam//hamigaki_bjam
+    ;
+
 exe bjam_check : bjam_check.cpp ;

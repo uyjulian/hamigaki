@@ -43,7 +43,8 @@ void check_syntax(const char* filename)
         );
     }
 
-    bjam::bjam_grammar g;
+    bjam::context ctx;
+    bjam::bjam_grammar g(ctx);
     bjam::skip_parser skip;
     parse_info<const char*> info = parse(str.c_str(), g, skip);
 
