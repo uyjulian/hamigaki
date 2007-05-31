@@ -13,6 +13,7 @@
 #include <hamigaki/bjam/grammars/bjam_actions.hpp>
 #include <hamigaki/bjam/grammars/bjam_closures.hpp>
 #include <hamigaki/bjam/util/argument_parser.hpp>
+#include <hamigaki/bjam/util/eval_in_module.hpp>
 #include <hamigaki/bjam/util/keyword_parser.hpp>
 #include <hamigaki/bjam/util/string_parser.hpp>
 #include <hamigaki/bjam/bjam_context.hpp>
@@ -56,6 +57,11 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
 
         typedef boost::spirit::rule<
             ScannerT,
+            typename module_stmt_closure::context_t
+        > module_stmt_rule_t;
+
+        typedef boost::spirit::rule<
+            ScannerT,
             typename rule_stmt_closure::context_t
         > rule_stmt_rule_t;
 
@@ -65,6 +71,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
         list_rule_t rule;
         set_stmt_rule_t set_stmt;
         assign_rule_t assign;
+        module_stmt_rule_t module_stmt;
         rule_stmt_rule_t rule_stmt;
         list_rule_t expr, and_expr, eq_expr, rel_expr, not_expr, prim_expr;
         rule_t cases, case_;
@@ -104,12 +111,13 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             assign_list
-                =   keyword_p("=") >> list [assign_list.val = arg1]
+                =   keyword_p("=")
+                    >> list [assign_list.values = arg1]
                 ;
 
             arglist
                 =   keyword_p("(")
-                    >> lol [arglist.val = arg1]
+                    >> lol [arglist.values = arg1]
                     >> keyword_p(")")
                 ;
 
@@ -121,19 +129,18 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 |   arg >> keyword_p("on") >> list
                     >> assign >> list >> keyword_p(";")
                 |   keyword_p("return")
-                    >> list [rule.val = arg1]
+                    >> list [rule.values = arg1]
                     >> keyword_p(";")
                 |   keyword_p("for") >> !keyword_p("local") >> arg_p
                     >> keyword_p("in") >> list
                     >> keyword_p("{") >> block >> keyword_p("}")
                 |   keyword_p("switch") >> list
                     >> keyword_p("{") >> cases >> keyword_p("}")
-                |   keyword_p("module") >> list
-                    >> keyword_p("{") >> block >> keyword_p("}") 
+                |   module_stmt
                 |   keyword_p("class") >> lol
-                    >> keyword_p("{") >> block >> keyword_p("}") 
+                    >> keyword_p("{") >> block >> keyword_p("}")
                 |   keyword_p("while") >> expr
-                    >> keyword_p("{") >> block >> keyword_p("}") 
+                    >> keyword_p("{") >> block >> keyword_p("}")
                 |   keyword_p("if") >> expr
                     >> keyword_p("{") >> block >> keyword_p("}")
                     >> !( keyword_p("else") >> rule )
@@ -148,33 +155,44 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
             set_stmt
                 =   arg [set_stmt.names = arg1]
                     >> assign [set_stmt.mode = arg1]
-                    >> list [set_stmt.val = arg1]
+                    >> list [set_stmt.values = arg1]
                     >> keyword_p(";")
                     [
                         var_set(
                             boost::ref(self.context), set_stmt.mode,
-                            set_stmt.names, set_stmt.val
+                            set_stmt.names, set_stmt.values
                         )
                     ]
                 ;
 
             assign
-                =   keyword_p("=") [assign.val = assign_mode::set]
-                |   keyword_p("+=") [assign.val = assign_mode::append]
-                |   keyword_p("?=") [assign.val = assign_mode::set_default]
+                =   keyword_p("=") [assign.values = assign_mode::set]
+                |   keyword_p("+=") [assign.values = assign_mode::append]
+                |   keyword_p("?=") [assign.values = assign_mode::set_default]
                 |   keyword_p("default")
                     >> keyword_p("=")
                     [
-                        assign.val = assign_mode::set_default
+                        assign.values = assign_mode::set_default
                     ]
+                ;
+
+            module_stmt
+                =   keyword_p("module")
+                    >> list [module_stmt.name = try_front(arg1)]
+                    >> keyword_p("{")
+                    >> eval_in_module_d(self.context, module_stmt.name)
+                    [
+                        block [module_stmt.values = arg1]
+                    ]
+                    >> keyword_p("}")
                 ;
 
             rule_stmt
                 =   eps_p [rule_stmt.exported = true]
-                    >> !( keyword_p("local") [rule_stmt.exported = false] )
+                    >> !keyword_p("local") [rule_stmt.exported = false]
                     >> keyword_p("rule")
                     >> arg_p [rule_stmt.name = arg1]
-                    >> !( arglist [rule_stmt.params = arg1] )
+                    >> !arglist [rule_stmt.params = arg1]
                     >> rule_nocalc
                     [
                         rule_set(
@@ -186,118 +204,118 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             expr
-                =   and_expr [expr.val = arg1]
+                =   and_expr [expr.values = arg1]
                     >> *(
                             ( keyword_p("|") | keyword_p("||") )
-                            >> if_p(expr.val)
+                            >> if_p(expr.values)
                             [
-                                and_expr_nocalc [hp::clear(expr.val)]
+                                and_expr_nocalc [hp::clear(expr.values)]
                             ]
                             .else_p
                             [
-                                and_expr [expr.val = arg1]
+                                and_expr [expr.values = arg1]
                             ]
                         )
                 ;
 
             and_expr
-                =   eq_expr [and_expr.val = arg1]
+                =   eq_expr [and_expr.values = arg1]
                     >> *(
                             ( keyword_p("&") | keyword_p("&&") )
-                            >> if_p(and_expr.val)
+                            >> if_p(and_expr.values)
                             [
                                 eq_expr
                                 [
                                     if_(!arg1)
                                     [
-                                        hp::clear(and_expr.val)
+                                        hp::clear(and_expr.values)
                                     ]
                                 ]
                             ]
                             .else_p
                             [
-                                eq_expr_nocalc [hp::clear(and_expr.val)]
+                                eq_expr_nocalc [hp::clear(and_expr.values)]
                             ]
                         )
                 ;
 
             eq_expr
-                =   rel_expr [eq_expr.val = arg1]
+                =   rel_expr [eq_expr.values = arg1]
                     >> *(   keyword_p("=")
                             >> rel_expr
                             [
-                                if_(eq_expr.val == arg1)
+                                if_(eq_expr.values == arg1)
                                 [
-                                    set_true(eq_expr.val, arg1)
+                                    set_true(eq_expr.values, arg1)
                                 ]
                                 .else_
                                 [
-                                    hp::clear(eq_expr.val)
+                                    hp::clear(eq_expr.values)
                                 ]
                             ]
                         |   keyword_p("!=")
                             >> rel_expr
                             [
-                                if_(eq_expr.val != arg1)
+                                if_(eq_expr.values != arg1)
                                 [
-                                    set_true(eq_expr.val, arg1)
+                                    set_true(eq_expr.values, arg1)
                                 ]
                                 .else_
                                 [
-                                    hp::clear(eq_expr.val)
+                                    hp::clear(eq_expr.values)
                                 ]
                             ]
                         )
                 ;
 
             rel_expr
-                =   not_expr [rel_expr.val = arg1]
+                =   not_expr [rel_expr.values = arg1]
                     >> *(   keyword_p("<")
                             >> not_expr
                             [
-                                if_(rel_expr.val < arg1)
+                                if_(rel_expr.values < arg1)
                                 [
-                                    set_true(rel_expr.val, arg1)
+                                    set_true(rel_expr.values, arg1)
                                 ]
                                 .else_
                                 [
-                                    hp::clear(rel_expr.val)
+                                    hp::clear(rel_expr.values)
                                 ]
                             ]
                         |   keyword_p("<=")
                             >> not_expr
                             [
-                                if_(rel_expr.val <= arg1)
+                                if_(rel_expr.values <= arg1)
                                 [
-                                    set_true(rel_expr.val, arg1)
+                                    set_true(rel_expr.values, arg1)
                                 ]
                                 .else_
                                 [
-                                    hp::clear(rel_expr.val)
+                                    hp::clear(rel_expr.values)
                                 ]
                             ]
                         |   keyword_p(">")
                             >> not_expr
                             [
-                                if_(rel_expr.val > arg1)
+                                if_(rel_expr.values > arg1)
                                 [
-                                    set_true(rel_expr.val, arg1)
+                                    set_true(rel_expr.values, arg1)
                                 ]
                                 .else_
                                 [
-                                    hp::clear(rel_expr.val)
+                                    hp::clear(rel_expr.values)
                                 ]
                             ]
                         |   keyword_p(">=")
                             >> not_expr
                             [
-                                if_(rel_expr.val >= arg1)
+                                if_(rel_expr.values >= arg1)
                                 [
-                                    set_true(rel_expr.val, arg1)
+                                    set_true(rel_expr.values, arg1)
                                 ]
                                 .else_
                                 [
-                                    hp::clear(rel_expr.val)
+                                    hp::clear(rel_expr.values)
                                 ]
                             ]
                         )
@@ -309,30 +327,30 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                     [
                         if_(arg1)
                         [
-                            hp::clear(not_expr.val)
+                            hp::clear(not_expr.values)
                         ]
                         .else_
                         [
-                            set_true(not_expr.val, arg1)
+                            set_true(not_expr.values, arg1)
                         ]
                     ]
-                |   prim_expr [not_expr.val = arg1]
+                |   prim_expr [not_expr.values = arg1]
                 ;
 
             prim_expr
-                =   arg [prim_expr.val = arg1]
+                =   arg [prim_expr.values = arg1]
                     >> !(   keyword_p("in")
-                            >> if_p(prim_expr.val)
+                            >> if_p(prim_expr.values)
                             [
                                 list
                                 [
-                                    if_(includes(prim_expr.val, arg1))
+                                    if_(includes(prim_expr.values, arg1))
                                     [
-                                        set_true(prim_expr.val, arg1)
+                                        set_true(prim_expr.values, arg1)
                                     ]
                                     .else_
                                     [
-                                        hp::clear(prim_expr.val)
+                                        hp::clear(prim_expr.values)
                                     ]
                                 ]
                             ]
@@ -340,12 +358,12 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                             [
                                 list_nocalc
                                 [
-                                    set_true(prim_expr.val)
+                                    set_true(prim_expr.values)
                                 ]
                             ]
                         )
                 |   keyword_p("(")
-                    >> expr [prim_expr.val = arg1]
+                    >> expr [prim_expr.values = arg1]
                     >> keyword_p(")")
                 ;
 
@@ -358,32 +376,32 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             lol
-                =   list [lol.val += arg1]
+                =   list [lol.values += arg1]
                     % keyword_p(":")
                 ;
 
             list
-                = *non_punct [list.val += arg1]
+                =   *non_punct [list.values += arg1]
                 ;
 
             non_punct
                 =   non_punct_p
                     [
                         var_expand(
-                            boost::ref(self.context), non_punct.val, arg1)
+                            boost::ref(self.context), non_punct.values, arg1)
                     ]
                 |   keyword_p("[")
-                    >> func [non_punct.val = arg1]
+                    >> func [non_punct.values = arg1]
                     >> keyword_p("]")
                 ;
 
             arg
                 =   arg_p
                     [
-                        var_expand(boost::ref(self.context), arg.val, arg1)
+                        var_expand(boost::ref(self.context), arg.values, arg1)
                     ]
                 |   keyword_p("[")
-                    >> func [arg.val = arg1]
+                    >> func [arg.values = arg1]
                     >> keyword_p("]")
                 ;
 
@@ -561,6 +579,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
             BOOST_SPIRIT_DEBUG_RULE(rule);
             BOOST_SPIRIT_DEBUG_RULE(set_stmt);
             BOOST_SPIRIT_DEBUG_RULE(assign);
+            BOOST_SPIRIT_DEBUG_RULE(module_stmt);
             BOOST_SPIRIT_DEBUG_RULE(rule_stmt);
             BOOST_SPIRIT_DEBUG_RULE(expr);
             BOOST_SPIRIT_DEBUG_RULE(and_expr);

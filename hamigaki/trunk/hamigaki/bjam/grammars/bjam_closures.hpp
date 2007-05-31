@@ -23,7 +23,7 @@ struct list_closure
         , list_type
     >
 {
-    member1 val;
+    member1 values;
 };
 
 struct lol_closure
@@ -32,7 +32,7 @@ struct lol_closure
         , list_of_list
     >
 {
-    member1 val;
+    member1 values;
 };
 
 struct assign_closure
@@ -41,7 +41,7 @@ struct assign_closure
         , assign_mode::values
     >
 {
-    member1 val;
+    member1 values;
 };
 
 struct set_stmt_closure
@@ -52,9 +52,20 @@ struct set_stmt_closure
         , assign_mode::values
     >
 {
-    member1 val;
+    member1 values;
     member2 names;
     member3 mode;
+};
+
+struct module_stmt_closure
+    : boost::spirit::closure<
+          module_stmt_closure
+        , list_type
+        , boost::optional<std::string>
+    >
+{
+    member1 values;
+    member2 name;
 };
 
 struct rule_stmt_closure

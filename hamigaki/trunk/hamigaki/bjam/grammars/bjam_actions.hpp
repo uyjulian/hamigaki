@@ -43,6 +43,22 @@ struct set_true_impl
 const ::phoenix::functor<set_true_impl> set_true = set_true_impl();
 
 
+struct try_front_impl
+{
+    typedef boost::optional<std::string> result_type;
+
+    boost::optional<std::string> operator()(const list_type& x) const
+    {
+        if (x.empty())
+            return boost::optional<std::string>();
+        else
+            return *x.begin();
+    }
+};
+
+const ::phoenix::functor<try_front_impl> try_front = try_front_impl();
+
+
 struct includes_impl
 {
     typedef bool result_type;
