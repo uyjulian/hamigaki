@@ -10,6 +10,7 @@
 #ifndef HAMIGAKI_BJAM_UTIL_LIST_HPP
 #define HAMIGAKI_BJAM_UTIL_LIST_HPP
 
+#include <hamigaki/iterator/optional_iterator.hpp>
 #include <boost/assert.hpp>
 #include <boost/operators.hpp>
 #include <boost/shared_ptr.hpp>
@@ -38,16 +39,18 @@ private:
 public:
     typedef impl_type::reference reference;
     typedef impl_type::const_reference const_reference;
-    typedef impl_type::iterator iterator;
-    typedef impl_type::const_iterator const_iterator;
+    typedef optional_iterator<impl_type::iterator> iterator;
+    typedef optional_iterator<impl_type::const_iterator> const_iterator;
     typedef impl_type::size_type size_type;
     typedef impl_type::difference_type difference_type;
     typedef impl_type::value_type value_type;
     typedef impl_type::allocator_type allocator_type;
     typedef impl_type::pointer pointer;
     typedef impl_type::const_pointer const_pointer;
-    typedef impl_type::reverse_iterator reverse_iterator;
-    typedef impl_type::const_reverse_iterator const_reverse_iterator;
+    typedef optional_iterator<impl_type::reverse_iterator> reverse_iterator;
+    typedef optional_iterator<
+        impl_type::const_reverse_iterator
+    > const_reverse_iterator;
 
     string_list()
     {
@@ -172,11 +175,11 @@ public:
             pimpl_.reset(new impl_type(first, last));
         }
         else if (pimpl_.unique())
-            pimpl_->insert(position, first, last);
+            pimpl_->insert(position.base(), first, last);
         else
         {
             boost::shared_ptr<impl_type> tmp(new impl_type(*pimpl_));
-            tmp->insert(position, first, last);
+            tmp->insert(position.base(), first, last);
             pimpl_.swap(tmp);
         }
     }
