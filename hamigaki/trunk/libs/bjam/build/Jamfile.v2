@@ -16,6 +16,7 @@ project hamigaki/bjam
     ;
 
 SOURCES =
+    instantiate_bjam_grammar
     path
     variable_expansion
     ;

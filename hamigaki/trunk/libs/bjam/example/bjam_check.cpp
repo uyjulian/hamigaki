@@ -8,8 +8,7 @@
 // See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
 
 //#define BOOST_SPIRIT_DEBUG
-#include <hamigaki/bjam/grammars/bjam_grammar.hpp>
-#include <hamigaki/bjam/util/skip_parser.hpp>
+#include <hamigaki/bjam/grammars/bjam_grammar_gen.hpp>
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -31,6 +30,16 @@ std::string get_first_line(const char* s)
         return s;
 }
 
+parse_info<const char*> parse_bjam(const std::string& s, bjam::context& ctx)
+{
+    typedef bjam::bjam_grammar_gen<const char*> grammar_type;
+
+    const char* first = s.c_str();
+    const char* last = first + s.size();
+
+    return grammar_type::parse_bjam_grammar(first, last, ctx);
+}
+
 void check_syntax(const char* filename)
 {
     std::string str;
@@ -44,9 +53,7 @@ void check_syntax(const char* filename)
     }
 
     bjam::context ctx;
-    bjam::bjam_grammar g(ctx);
-    bjam::skip_parser skip;
-    parse_info<const char*> info = parse(str.c_str(), g, skip);
+    parse_info<const char*> info = parse_bjam(str, ctx);
 
     if (!info.full)
     {

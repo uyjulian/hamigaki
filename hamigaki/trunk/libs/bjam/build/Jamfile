@@ -11,6 +11,7 @@ subproject libs/bjam/build ;
 
 lib hamigaki_bjam
     :
+        ../src/instantiate_bjam_grammar.cpp
         ../src/path.cpp
         ../src/variable_expansion.cpp
     :
@@ -25,6 +26,7 @@ lib hamigaki_bjam
 
 dll hamigaki_bjam
     :
+        ../src/instantiate_bjam_grammar.cpp
         ../src/path.cpp
         ../src/variable_expansion.cpp
     :

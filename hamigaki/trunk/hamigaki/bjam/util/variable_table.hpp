@@ -11,6 +11,7 @@
 #define HAMIGAKI_BJAM_UTIL_VARIABLE_TABLE_HPP
 
 #include <hamigaki/bjam/util/list.hpp>
+#include <boost/noncopyable.hpp>
 #include <map>
 
 namespace hamigaki { namespace bjam {
@@ -68,6 +69,31 @@ public:
 private:
     table_type table_;
     list_type empty_;
+};
+
+class scoped_swap_values : boost::noncopyable
+{
+public:
+    scoped_swap_values(
+        variable_table& table, const std::string& name, bool is_local
+    )
+        : table_(table), name_(name), is_local_(is_local)
+    {
+        if (!is_local_)
+            table_.swap_values(name_, old_values_);
+    }
+
+    ~scoped_swap_values()
+    {
+        if (!is_local_)
+            table_.swap_values(name_, old_values_);
+    }
+
+private:
+    variable_table& table_;
+    std::string name_;
+    bool is_local_;
+    list_type old_values_;
 };
 
 } } // End namespaces bjam, hamigaki.

@@ -10,15 +10,21 @@
 #ifndef HAMIGAKI_BJAM_GRAMMARS_BJAM_GRAMMAR_HPP
 #define HAMIGAKI_BJAM_GRAMMARS_BJAM_GRAMMAR_HPP
 
+#include <hamigaki/bjam/bjam_config.hpp>
 #include <hamigaki/bjam/grammars/bjam_actions.hpp>
 #include <hamigaki/bjam/grammars/bjam_closures.hpp>
+#include <hamigaki/bjam/grammars/bjam_grammar_gen.hpp>
 #include <hamigaki/bjam/util/argument_parser.hpp>
 #include <hamigaki/bjam/util/eval_in_module.hpp>
 #include <hamigaki/bjam/util/keyword_parser.hpp>
+#include <hamigaki/bjam/util/skip_parser.hpp>
 #include <hamigaki/bjam/util/string_parser.hpp>
-#include <hamigaki/bjam/bjam_context.hpp>
 #include <hamigaki/spirit/phoenix/stl/clear.hpp>
 #include <boost/spirit/dynamic/if.hpp>
+
+#ifdef BOOST_HAS_ABI_HEADERS
+    #include BOOST_ABI_PREFIX
+#endif
 
 namespace hamigaki { namespace bjam {
 
@@ -57,6 +63,11 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
 
         typedef boost::spirit::rule<
             ScannerT,
+            typename for_stmt_closure::context_t
+        > for_stmt_rule_t;
+
+        typedef boost::spirit::rule<
+            ScannerT,
             typename module_stmt_closure::context_t
         > module_stmt_rule_t;
 
@@ -71,6 +82,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
         list_rule_t rule;
         set_stmt_rule_t set_stmt;
         assign_rule_t assign;
+        for_stmt_rule_t for_stmt;
         module_stmt_rule_t module_stmt;
         rule_stmt_rule_t rule_stmt;
         list_rule_t expr, and_expr, eq_expr, rel_expr, not_expr, prim_expr;
@@ -131,9 +143,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 |   keyword_p("return")
                     >> list [rule.values = arg1]
                     >> keyword_p(";")
-                |   keyword_p("for") >> !keyword_p("local") >> arg_p
-                    >> keyword_p("in") >> list
-                    >> keyword_p("{") >> block >> keyword_p("}")
+                |   for_stmt
                 |   keyword_p("switch") >> list
                     >> keyword_p("{") >> cases >> keyword_p("}")
                 |   module_stmt
@@ -174,6 +184,24 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                     [
                         assign.values = assign_mode::set_default
                     ]
+                ;
+
+            for_stmt
+                =   keyword_p("for") [for_stmt.is_local = false]
+                    >> !keyword_p("local") [for_stmt.is_local = true]
+                    >> arg_p [for_stmt.name = arg1]
+                    >> keyword_p("in")
+                    >> list [for_stmt.values = arg1]
+                    >> keyword_p("{")
+                    >> block_nocalc
+                    [
+                        for_block(
+                            boost::ref(self.context),
+                            for_stmt.name, for_stmt.values,
+                            arg1, arg2, for_stmt.is_local
+                        )
+                    ]
+                    >> keyword_p("}")
                 ;
 
             module_stmt
@@ -624,6 +652,31 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
     };
 };
 
+#if HAMIGAKI_BJAM_SEPARATE_GRAMMAR_INSTANTIATION != 0
+    #define HAMIGAKI_BJAM_GRAMMAR_GEN_INLINE
+#else
+    #define HAMIGAKI_BJAM_GRAMMAR_GEN_INLINE inline
+#endif 
+
+template<class IteratorT>
+HAMIGAKI_BJAM_GRAMMAR_GEN_INLINE
+boost::spirit::parse_info<IteratorT>
+bjam_grammar_gen<IteratorT>::parse_bjam_grammar(
+    const IteratorT& first, const IteratorT& last, context& ctx)
+{
+    bjam::bjam_grammar g(ctx);
+    bjam::skip_parser skip;
+
+    IteratorT current = first;
+    return boost::spirit::parse(current, last, g, skip);
+}
+
+#undef HAMIGAKI_BJAM_GRAMMAR_GEN_INLINE
+
 } } // End namespaces bjam, hamigaki.
+
+#ifdef BOOST_HAS_ABI_HEADERS
+    #include BOOST_ABI_SUFFIX
+#endif
 
 #endif // HAMIGAKI_BJAM_GRAMMARS_BJAM_GRAMMAR_HPP

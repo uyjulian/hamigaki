@@ -11,6 +11,7 @@
 #define HAMIGAKI_BJAM_GRAMMARS_BJAM_ACTIONS_HPP
 
 #include <hamigaki/bjam/grammars/assign_modes.hpp>
+#include <hamigaki/bjam/grammars/bjam_grammar_gen.hpp>
 #include <hamigaki/bjam/util/variable_expansion.hpp>
 #include <hamigaki/bjam/bjam_context.hpp>
 #include <climits> // required for <boost/spirit/phoenix/operators.hpp>
@@ -158,6 +159,33 @@ struct rule_set_impl
 };
 
 const ::phoenix::functor<rule_set_impl> rule_set = rule_set_impl();
+
+
+struct for_block_impl
+{
+    typedef void result_type;
+
+    template<class Iterator>
+    void operator()(
+        context& ctx, const std::string& name, const list_type& values,
+        Iterator first, Iterator last, bool is_local) const
+    {
+        typedef bjam_grammar_gen<Iterator> grammar_type;
+        typedef list_type::const_iterator iter_type;
+
+        frame& f = ctx.current_frame();
+        variable_table& table = f.current_module().variables;
+
+        scoped_swap_values guard(table, name, is_local);
+        for (iter_type i = values.begin(); i != values.end(); ++i)
+        {
+            table.set_values(name, list_type(*i));
+            grammar_type::parse_bjam_grammar(first, last, ctx);
+        }
+    }
+};
+
+const ::phoenix::functor<for_block_impl> for_block = for_block_impl();
 
 } } // End namespaces bjam, hamigaki.
 

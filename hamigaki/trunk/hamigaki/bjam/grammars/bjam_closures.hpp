@@ -57,6 +57,19 @@ struct set_stmt_closure
     member3 mode;
 };
 
+struct for_stmt_closure
+    : boost::spirit::closure<
+          for_stmt_closure
+        , std::string
+        , list_type
+        , bool
+    >
+{
+    member1 name;
+    member2 values;
+    member3 is_local;
+};
+
 struct module_stmt_closure
     : boost::spirit::closure<
           module_stmt_closure
