@@ -79,13 +79,13 @@ public:
     )
         : table_(table), name_(name), is_local_(is_local)
     {
-        if (!is_local_)
+        if (is_local_)
             table_.swap_values(name_, old_values_);
     }
 
     ~scoped_swap_values()
     {
-        if (!is_local_)
+        if (is_local_)
             table_.swap_values(name_, old_values_);
     }
 
