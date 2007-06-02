@@ -35,6 +35,19 @@ struct lol_closure
     member1 values;
 };
 
+struct invoke_stmt_closure
+    : boost::spirit::closure<
+          invoke_stmt_closure
+        , list_type
+        , std::string
+        , list_of_list
+    >
+{
+    member1 values;
+    member2 name;
+    member3 args;
+};
+
 struct assign_closure
     : boost::spirit::closure<
           assign_closure

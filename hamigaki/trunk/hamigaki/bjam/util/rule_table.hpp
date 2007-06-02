@@ -11,7 +11,6 @@
 #define HAMIGAKI_BJAM_UTIL_RULE_TABLE_HPP
 
 #include <hamigaki/bjam/util/rule_definition.hpp>
-#include <boost/shared_ptr.hpp>
 #include <map>
 
 namespace hamigaki { namespace bjam {
@@ -19,7 +18,6 @@ namespace hamigaki { namespace bjam {
 class rule_table
 {
 public:
-    typedef boost::shared_ptr<rule_definition> rule_def_ptr;
     typedef std::map<std::string,rule_def_ptr> table_type;
     typedef table_type::const_iterator iterator;
 

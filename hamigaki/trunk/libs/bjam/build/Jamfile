@@ -9,11 +9,16 @@
 
 subproject libs/bjam/build ;
 
+SOURCES =
+    builtin_rules
+    instantiate_bjam_grammar
+    path
+    variable_expansion
+    ;
+
 lib hamigaki_bjam
     :
-        ../src/instantiate_bjam_grammar.cpp
-        ../src/path.cpp
-        ../src/variable_expansion.cpp
+        ../src/$(SOURCES).cpp
     :
         [ common-names ]
         <include>$(HAMIGAKI_ROOT)  <sysinclude>$(HAMIGAKI_ROOT)
@@ -26,9 +31,7 @@ lib hamigaki_bjam
 
 dll hamigaki_bjam
     :
-        ../src/instantiate_bjam_grammar.cpp
-        ../src/path.cpp
-        ../src/variable_expansion.cpp
+        ../src/$(SOURCES).cpp
     :
         <library-path>$(BOOST_LIBPATH)
         [ common-names ]

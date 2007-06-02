@@ -53,6 +53,11 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
 
         typedef boost::spirit::rule<
             ScannerT,
+            typename invoke_stmt_closure::context_t
+        > invoke_stmt_rule_t;
+
+        typedef boost::spirit::rule<
+            ScannerT,
             typename assign_closure::context_t
         > assign_rule_t;
 
@@ -80,6 +85,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
         list_rule_t block, rules, assign_list;
         lol_rule_t arglist;
         list_rule_t rule;
+        invoke_stmt_rule_t invoke_stmt;
         set_stmt_rule_t set_stmt;
         assign_rule_t assign;
         for_stmt_rule_t for_stmt;
@@ -136,7 +142,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
             rule
                 =   keyword_p("{") >> block >> keyword_p("}")
                 |   keyword_p("include") >> list >> keyword_p(";")
-                |   arg_p >> lol >> keyword_p(";")
+                |   invoke_stmt
                 |   set_stmt
                 |   arg >> keyword_p("on") >> list
                     >> assign >> list >> keyword_p(";")
@@ -160,6 +166,19 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                     >> eps_p(keyword_p("{"))
                     >> lexeme_d[ '{' >> string_p ]
                     >> keyword_p("}")
+                ;
+
+            invoke_stmt
+                =   arg_p [invoke_stmt.name = arg1]
+                    >> lol [invoke_stmt.args = arg1]
+                    >> keyword_p(";")
+                    [
+                        invoke_stmt.values =
+                            invoke_rule(
+                                boost::ref(self.context),
+                                invoke_stmt.name, invoke_stmt.args
+                            )
+                    ]
                 ;
 
             set_stmt

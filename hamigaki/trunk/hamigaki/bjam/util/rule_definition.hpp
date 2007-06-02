@@ -27,10 +27,12 @@ struct rule_definition
 
     list_of_list parameters;
     boost::shared_ptr<std::string> body;
-    boost::function2<void,list_type&,context&> native;
+    boost::function1<void,context&> native;
     boost::optional<std::string> module_name;
     bool exported;
 };
+
+typedef boost::shared_ptr<rule_definition> rule_def_ptr;
 
 } } // End namespaces bjam, hamigaki.
 

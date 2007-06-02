@@ -161,6 +161,20 @@ struct rule_set_impl
 const ::phoenix::functor<rule_set_impl> rule_set = rule_set_impl();
 
 
+struct invoke_rule_impl
+{
+    typedef list_type result_type;
+
+    list_type operator()(
+        context& ctx, const std::string& name, const list_of_list& args) const
+    {
+        return ctx.invoke_rule(name, args);
+    }
+};
+
+const ::phoenix::functor<invoke_rule_impl> invoke_rule = invoke_rule_impl();
+
+
 struct for_block_impl
 {
     typedef void result_type;

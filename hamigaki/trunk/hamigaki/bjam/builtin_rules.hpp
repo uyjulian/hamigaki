@@ -1,4 +1,4 @@
-// bjam_grammar_gen.hpp: bjam grammar generator
+// builtin_rules.hpp: bjam builtin rules
 
 // Copyright Takeshi Mouri 2007.
 // Distributed under the Boost Software License, Version 1.0.
@@ -7,11 +7,11 @@
 
 // See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
 
-#ifndef HAMIGAKI_BJAM_GRAMMARS_BJAM_GRAMMAR_GEN_HPP
-#define HAMIGAKI_BJAM_GRAMMARS_BJAM_GRAMMAR_GEN_HPP
+#ifndef HAMIGAKI_BJAM_BUILTIN_RULES_HPP
+#define HAMIGAKI_BJAM_BUILTIN_RULES_HPP
 
 #include <hamigaki/bjam/bjam_config.hpp>
-#include <boost/spirit/core.hpp>
+#include <hamigaki/bjam/util/list.hpp>
 
 #ifdef BOOST_HAS_ABI_HEADERS
     #include BOOST_ABI_PREFIX
@@ -21,15 +21,13 @@ namespace hamigaki { namespace bjam {
 
 class context;
 
-template<class IteratorT>
-struct HAMIGAKI_BJAM_DECL bjam_grammar_gen
+namespace builtins
 {
-    typedef IteratorT iterator_type;
 
-    static boost::spirit::parse_info<IteratorT>
-    parse_bjam_grammar(
-        const iterator_type& first, const iterator_type& last, context& ctx);
-};
+HAMIGAKI_BJAM_DECL void echo(context& ctx);
+HAMIGAKI_BJAM_DECL void exit(context& ctx);
+
+} // namespace builtins
 
 } } // End namespaces bjam, hamigaki.
 
@@ -37,4 +35,4 @@ struct HAMIGAKI_BJAM_DECL bjam_grammar_gen
     #include BOOST_ABI_SUFFIX
 #endif
 
-#endif // HAMIGAKI_BJAM_GRAMMARS_BJAM_GRAMMAR_GEN_HPP
+#endif // HAMIGAKI_BJAM_BUILTIN_RULES_HPP

@@ -37,6 +37,11 @@ public:
         return *module_;
     }
 
+    const module& current_module() const
+    {
+        return *module_;
+    }
+
     const boost::optional<std::string>& module_name() const
     {
         return module_name_;
@@ -47,9 +52,19 @@ public:
         return rule_name_;
     }
 
-    const list_of_list& arguments() const
+    void rule_name(const boost::optional<std::string>& name)
+    {
+        rule_name_ = name;
+    }
+
+    list_of_list& arguments()
     {
         return arguments_;
+    }
+
+    list_type& result()
+    {
+        return result_;
     }
 
 private:
@@ -57,6 +72,7 @@ private:
     boost::optional<std::string> module_name_;
     boost::optional<std::string> rule_name_;
     list_of_list arguments_;
+    list_type result_;
 };
 
 } } // End namespaces bjam, hamigaki.

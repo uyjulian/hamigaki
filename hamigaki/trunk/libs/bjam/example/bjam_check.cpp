@@ -9,6 +9,7 @@
 
 //#define BOOST_SPIRIT_DEBUG
 #include <hamigaki/bjam/grammars/bjam_grammar_gen.hpp>
+#include <hamigaki/bjam/bjam_context.hpp>
 #include <fstream>
 #include <iostream>
 #include <iterator>
