@@ -13,6 +13,7 @@
 #include <hamigaki/bjam/util/list.hpp>
 #include <boost/noncopyable.hpp>
 #include <map>
+#include <stdexcept>
 
 namespace hamigaki { namespace bjam {
 
@@ -66,6 +67,20 @@ public:
         table_.swap(rhs.table_);
     }
 
+    void push_local_variables(variable_table& local)
+    {
+        typedef table_type::iterator iter_type;
+
+        table_type& t = local.table_;
+        for (iter_type i = t.begin(), end = t.end(); i != end; ++i)
+            this->swap_values(i->first, i->second);
+    }
+
+    void pop_local_variables(variable_table& local)
+    {
+        this->push_local_variables(local);
+    }
+
 private:
     table_type table_;
     list_type empty_;
@@ -95,6 +110,76 @@ private:
     bool is_local_;
     list_type old_values_;
 };
+
+class scoped_push_local_variables : boost::noncopyable
+{
+public:
+    scoped_push_local_variables(variable_table& table, variable_table& local)
+        : table_(table), local_(local)
+    {
+        table_.push_local_variables(local_);
+    }
+
+    ~scoped_push_local_variables()
+    {
+        table_.pop_local_variables(local_);
+    }
+
+private:
+    variable_table& table_;
+    variable_table& local_;
+};
+
+inline void set_rule_argument(
+    variable_table& table, const list_type& param, const list_type& arg)
+{
+    typedef list_type::const_iterator iter_type;
+
+    iter_type p = param.begin();
+    iter_type a = arg.begin();
+
+    while (p != param.end())
+    {
+        std::string name;
+        if ((*p != "?") && (*p != "*") && (*p != "+"))
+            name = *(p++);
+
+        std::string opt;
+        if (p != param.end())
+        {
+            if ((*p == "?") || (*p == "*") || (*p == "+"))
+                opt = *(p++);
+        }
+
+        list_type values;
+        if (opt == "?")
+        {
+            if (a != arg.end())
+                values.push_back(*(a++));
+        }
+        else if (opt == "*")
+        {
+            values = list_type(a, arg.end());
+            a = arg.end();
+        }
+        else
+        {
+            if (a == arg.end())
+                throw std::runtime_error("missing a rule argument"); // TODO
+
+            if (opt == "+")
+            {
+                values = list_type(a, arg.end());
+                a = arg.end();
+            }
+            else
+                values.push_back(*(a++));
+        }
+
+        if (!name.empty())
+            table.set_values(name, values);
+    }
+}
 
 } } // End namespaces bjam, hamigaki.
 
