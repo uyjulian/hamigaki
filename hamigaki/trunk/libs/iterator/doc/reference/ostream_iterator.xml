@@ -63,7 +63,7 @@ delim = 0;]]></programlisting></para></effects>
         </parameter>
 
         <parameter name="delimiter">
-          <paramtype>CharT</paramtype>
+          <paramtype>const CharT*</paramtype>
         </parameter>
 
         <effects><para><programlisting><![CDATA[out_stream = &s;
