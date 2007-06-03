@@ -90,6 +90,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
         assign_rule_t assign;
         for_stmt_rule_t for_stmt;
         module_stmt_rule_t module_stmt;
+        list_rule_t if_stmt;
         rule_stmt_rule_t rule_stmt;
         list_rule_t expr, and_expr, eq_expr, rel_expr, not_expr, prim_expr;
         rule_t cases, case_;
@@ -157,9 +158,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                     >> keyword_p("{") >> block >> keyword_p("}")
                 |   keyword_p("while") >> expr
                     >> keyword_p("{") >> block >> keyword_p("}")
-                |   keyword_p("if") >> expr
-                    >> keyword_p("{") >> block >> keyword_p("}")
-                    >> !( keyword_p("else") >> rule )
+                |   if_stmt
                 |   rule_stmt
                 |   keyword_p("on") >> arg >> rule
                 |   keyword_p("actions") >> eflags >> arg_p >> !bindlist
@@ -232,6 +231,27 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                         block [module_stmt.values = arg1]
                     ]
                     >> keyword_p("}")
+                ;
+
+            if_stmt
+                =   keyword_p("if")
+                    >> expr [if_stmt.values = arg1]
+                    >> if_p(if_stmt.values)
+                    [
+                        keyword_p("{")
+                        >> block [if_stmt.values = arg1]
+                        >> keyword_p("}")
+                        >> !( keyword_p("else") >> rule_nocalc )
+                    ]
+                    .else_p
+                    [
+                        keyword_p("{")
+                        >> block_nocalc
+                        >> keyword_p("}")
+                        >> !(   keyword_p("else")
+                                >> rule [if_stmt.values = arg1]
+                            )
+                    ]
                 ;
 
             rule_stmt
