@@ -11,6 +11,7 @@
 #define HAMIGAKI_BJAM_GRAMMARS_BJAM_ACTIONS_HPP
 
 #include <hamigaki/bjam/grammars/assign_modes.hpp>
+#include <hamigaki/bjam/grammars/bjam_expression_grammar_gen.hpp>
 #include <hamigaki/bjam/grammars/bjam_grammar_gen.hpp>
 #include <hamigaki/bjam/util/variable_expansion.hpp>
 #include <hamigaki/bjam/bjam_context.hpp>
@@ -82,6 +83,21 @@ struct includes_impl
 };
 
 const ::phoenix::functor<includes_impl> includes = includes_impl();
+
+
+struct eval_expr_impl
+{
+    typedef list_type result_type;
+
+    template<class Iterator>
+    list_type operator()(context& ctx, Iterator first, Iterator last) const
+    {
+        typedef bjam_expression_grammar_gen<Iterator> grammar_type;
+        return grammar_type::evaluate(first, last, ctx);
+    }
+};
+
+const ::phoenix::functor<eval_expr_impl> eval_expr = eval_expr_impl();
 
 
 struct var_set_impl

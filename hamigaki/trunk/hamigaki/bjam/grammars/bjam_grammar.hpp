@@ -92,7 +92,6 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
         module_stmt_rule_t module_stmt;
         list_rule_t if_stmt;
         rule_stmt_rule_t rule_stmt;
-        list_rule_t expr, and_expr, eq_expr, rel_expr, not_expr, prim_expr;
         rule_t cases, case_;
         lol_rule_t lol;
         list_rule_t list, non_punct, arg, func;
@@ -156,7 +155,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 |   module_stmt
                 |   keyword_p("class") >> lol
                     >> keyword_p("{") >> block >> keyword_p("}")
-                |   keyword_p("while") >> expr
+                |   keyword_p("while") >> expr_nocalc
                     >> keyword_p("{") >> block >> keyword_p("}")
                 |   if_stmt
                 |   rule_stmt
@@ -235,7 +234,11 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
 
             if_stmt
                 =   keyword_p("if")
-                    >> expr [if_stmt.values = arg1]
+                    >> expr_nocalc
+                    [
+                        if_stmt.values =
+                            eval_expr(boost::ref(self.context), arg1, arg2)
+                    ]
                     >> if_p(if_stmt.values)
                     [
                         keyword_p("{")
@@ -268,170 +271,6 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                             arg1, arg2, rule_stmt.exported
                         )
                     ]
-                ;
-
-            expr
-                =   and_expr [expr.values = arg1]
-                    >> *(
-                            ( keyword_p("|") | keyword_p("||") )
-                            >> if_p(expr.values)
-                            [
-                                and_expr_nocalc [hp::clear(expr.values)]
-                            ]
-                            .else_p
-                            [
-                                and_expr [expr.values = arg1]
-                            ]
-                        )
-                ;
-
-            and_expr
-                =   eq_expr [and_expr.values = arg1]
-                    >> *(
-                            ( keyword_p("&") | keyword_p("&&") )
-                            >> if_p(and_expr.values)
-                            [
-                                eq_expr
-                                [
-                                    if_(!arg1)
-                                    [
-                                        hp::clear(and_expr.values)
-                                    ]
-                                ]
-                            ]
-                            .else_p
-                            [
-                                eq_expr_nocalc [hp::clear(and_expr.values)]
-                            ]
-                        )
-                ;
-
-            eq_expr
-                =   rel_expr [eq_expr.values = arg1]
-                    >> *(   keyword_p("=")
-                            >> rel_expr
-                            [
-                                if_(eq_expr.values == arg1)
-                                [
-                                    set_true(eq_expr.values, arg1)
-                                ]
-                                .else_
-                                [
-                                    hp::clear(eq_expr.values)
-                                ]
-                            ]
-                        |   keyword_p("!=")
-                            >> rel_expr
-                            [
-                                if_(eq_expr.values != arg1)
-                                [
-                                    set_true(eq_expr.values, arg1)
-                                ]
-                                .else_
-                                [
-                                    hp::clear(eq_expr.values)
-                                ]
-                            ]
-                        )
-                ;
-
-            rel_expr
-                =   not_expr [rel_expr.values = arg1]
-                    >> *(   keyword_p("<")
-                            >> not_expr
-                            [
-                                if_(rel_expr.values < arg1)
-                                [
-                                    set_true(rel_expr.values, arg1)
-                                ]
-                                .else_
-                                [
-                                    hp::clear(rel_expr.values)
-                                ]
-                            ]
-                        |   keyword_p("<=")
-                            >> not_expr
-                            [
-                                if_(rel_expr.values <= arg1)
-                                [
-                                    set_true(rel_expr.values, arg1)
-                                ]
-                                .else_
-                                [
-                                    hp::clear(rel_expr.values)
-                                ]
-                            ]
-                        |   keyword_p(">")
-                            >> not_expr
-                            [
-                                if_(rel_expr.values > arg1)
-                                [
-                                    set_true(rel_expr.values, arg1)
-                                ]
-                                .else_
-                                [
-                                    hp::clear(rel_expr.values)
-                                ]
-                            ]
-                        |   keyword_p(">=")
-                            >> not_expr
-                            [
-                                if_(rel_expr.values >= arg1)
-                                [
-                                    set_true(rel_expr.values, arg1)
-                                ]
-                                .else_
-                                [
-                                    hp::clear(rel_expr.values)
-                                ]
-                            ]
-                        )
-                ;
-
-            not_expr
-                =   keyword_p("!")
-                    >> prim_expr
-                    [
-                        if_(arg1)
-                        [
-                            hp::clear(not_expr.values)
-                        ]
-                        .else_
-                        [
-                            set_true(not_expr.values, arg1)
-                        ]
-                    ]
-                |   prim_expr [not_expr.values = arg1]
-                ;
-
-            prim_expr
-                =   arg [prim_expr.values = arg1]
-                    >> !(   keyword_p("in")
-                            >> if_p(prim_expr.values)
-                            [
-                                list
-                                [
-                                    if_(includes(prim_expr.values, arg1))
-                                    [
-                                        set_true(prim_expr.values, arg1)
-                                    ]
-                                    .else_
-                                    [
-                                        hp::clear(prim_expr.values)
-                                    ]
-                                ]
-                            ]
-                            .else_p
-                            [
-                                list_nocalc
-                                [
-                                    set_true(prim_expr.values)
-                                ]
-                            ]
-                        )
-                |   keyword_p("(")
-                    >> expr [prim_expr.values = arg1]
-                    >> keyword_p(")")
                 ;
 
             cases
@@ -648,12 +487,6 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
             BOOST_SPIRIT_DEBUG_RULE(assign);
             BOOST_SPIRIT_DEBUG_RULE(module_stmt);
             BOOST_SPIRIT_DEBUG_RULE(rule_stmt);
-            BOOST_SPIRIT_DEBUG_RULE(expr);
-            BOOST_SPIRIT_DEBUG_RULE(and_expr);
-            BOOST_SPIRIT_DEBUG_RULE(eq_expr);
-            BOOST_SPIRIT_DEBUG_RULE(rel_expr);
-            BOOST_SPIRIT_DEBUG_RULE(not_expr);
-            BOOST_SPIRIT_DEBUG_RULE(prim_expr);
             BOOST_SPIRIT_DEBUG_RULE(cases);
             BOOST_SPIRIT_DEBUG_RULE(case_);
             BOOST_SPIRIT_DEBUG_RULE(lol);
