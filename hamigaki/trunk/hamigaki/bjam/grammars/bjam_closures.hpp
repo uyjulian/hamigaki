@@ -94,6 +94,17 @@ struct module_stmt_closure
     member2 name;
 };
 
+struct while_stmt_closure
+    : boost::spirit::closure<
+          while_stmt_closure
+        , list_type
+        , std::string
+    >
+{
+    member1 values;
+    member2 expr;
+};
+
 struct rule_stmt_closure
     : boost::spirit::closure<
           rule_stmt_closure

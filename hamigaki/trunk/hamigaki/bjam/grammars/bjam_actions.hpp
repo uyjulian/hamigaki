@@ -217,6 +217,25 @@ struct for_block_impl
 
 const ::phoenix::functor<for_block_impl> for_block = for_block_impl();
 
+
+struct while_block_impl
+{
+    typedef void result_type;
+
+    template<class Iterator>
+    void operator()(
+        context& ctx, const std::string& expr,
+        Iterator first, Iterator last) const
+    {
+        typedef bjam_grammar_gen<Iterator> grammar_type;
+
+        while (eval_expr_impl()(ctx, expr.c_str(), expr.c_str()+expr.size()))
+            grammar_type::parse_bjam_grammar(first, last, ctx);
+    }
+};
+
+const ::phoenix::functor<while_block_impl> while_block = while_block_impl();
+
 } } // End namespaces bjam, hamigaki.
 
 #endif // HAMIGAKI_BJAM_GRAMMARS_BJAM_ACTIONS_HPP

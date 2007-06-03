@@ -78,6 +78,11 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
 
         typedef boost::spirit::rule<
             ScannerT,
+            typename while_stmt_closure::context_t
+        > while_stmt_rule_t;
+
+        typedef boost::spirit::rule<
+            ScannerT,
             typename rule_stmt_closure::context_t
         > rule_stmt_rule_t;
 
@@ -90,6 +95,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
         assign_rule_t assign;
         for_stmt_rule_t for_stmt;
         module_stmt_rule_t module_stmt;
+        while_stmt_rule_t while_stmt;
         list_rule_t if_stmt;
         rule_stmt_rule_t rule_stmt;
         rule_t cases, case_;
@@ -155,8 +161,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 |   module_stmt
                 |   keyword_p("class") >> lol
                     >> keyword_p("{") >> block >> keyword_p("}")
-                |   keyword_p("while") >> expr_nocalc
-                    >> keyword_p("{") >> block >> keyword_p("}")
+                |   while_stmt
                 |   if_stmt
                 |   rule_stmt
                 |   keyword_p("on") >> arg >> rule
@@ -228,6 +233,20 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                     >> eval_in_module_d(self.context, module_stmt.name)
                     [
                         block [module_stmt.values = arg1]
+                    ]
+                    >> keyword_p("}")
+                ;
+
+            while_stmt
+                =   keyword_p("while")
+                    >> expr_nocalc [while_stmt.expr = arg1]
+                    >> keyword_p("{")
+                    >> block_nocalc
+                    [
+                        while_block(
+                            boost::ref(self.context),
+                            while_stmt.expr, arg1, arg2
+                        )
                     ]
                     >> keyword_p("}")
                 ;
