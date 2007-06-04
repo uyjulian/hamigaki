@@ -17,6 +17,7 @@
 #include <hamigaki/bjam/bjam_context.hpp>
 #include <climits> // required for <boost/spirit/phoenix/operators.hpp>
 #include <boost/spirit/phoenix.hpp>
+#include <boost/next_prior.hpp>
 
 namespace hamigaki { namespace bjam {
 
@@ -136,16 +137,17 @@ const ::phoenix::functor<var_set_impl> var_set = var_set_impl();
 
 struct var_expand_impl
 {
-    typedef void result_type;
+    typedef list_type result_type;
 
-    void operator()(
-        context& ctx, list_type& result, const std::string& s) const
+    list_type operator()(context& ctx, const std::string& s) const
     {
         frame& f = ctx.current_frame();
         const variable_table& table = f.current_module().variables;
         const list_of_list& args = f.arguments();
 
+        list_type result;
         bjam::expand_variable(result, s, table, args);
+        return result;
     }
 };
 
@@ -177,6 +179,38 @@ struct rule_set_impl
 const ::phoenix::functor<rule_set_impl> rule_set = rule_set_impl();
 
 
+struct split_rule_name_impl
+{
+    typedef boost::optional<std::string> result_type;
+
+    boost::optional<std::string>
+    operator()(const list_type& values, list_of_list& args) const
+    {
+        if (values.empty())
+            return boost::optional<std::string>();
+
+        list_type arg(boost::next(values.begin()), values.end());
+        if (args.empty())
+            args.push_back(arg);
+        else
+        {
+            list_of_list tmp;
+            arg += args[0];
+            tmp.push_back(arg);
+            for (std::size_t i = 1, size = args.size(); i < size; ++i)
+                tmp.push_back(args[i]);
+            args.swap(tmp);
+        }
+
+        return values[0];
+    }
+};
+
+const ::phoenix::functor<
+    split_rule_name_impl
+> split_rule_name = split_rule_name_impl();
+
+
 struct invoke_rule_impl
 {
     typedef list_type result_type;
@@ -186,9 +220,50 @@ struct invoke_rule_impl
     {
         return ctx.invoke_rule(name, args);
     }
+
+    list_type operator()(
+        context& ctx,
+        const boost::optional<std::string>& name,
+        const list_of_list& args) const
+    {
+        if (name)
+            return ctx.invoke_rule(*name, args);
+        else
+            return list_type();
+    }
 };
 
 const ::phoenix::functor<invoke_rule_impl> invoke_rule = invoke_rule_impl();
+
+
+struct get_return_values_impl
+{
+    typedef list_type result_type;
+
+    list_type operator()(context& ctx) const
+    {
+        return ctx.current_frame().result();
+    }
+};
+
+const ::phoenix::functor<
+    get_return_values_impl
+> get_return_values = get_return_values_impl();
+
+
+struct set_return_values_impl
+{
+    typedef void result_type;
+
+    void operator()(context& ctx, const list_type& values) const
+    {
+        ctx.current_frame().result() = values;
+    }
+};
+
+const ::phoenix::functor<
+    set_return_values_impl
+> set_return_values = set_return_values_impl();
 
 
 struct for_block_impl

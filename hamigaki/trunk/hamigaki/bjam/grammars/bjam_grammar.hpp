@@ -100,7 +100,8 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
         rule_stmt_rule_t rule_stmt;
         rule_t cases, case_;
         lol_rule_t lol;
-        list_rule_t list, non_punct, arg, func;
+        list_rule_t list, non_punct, arg;
+        invoke_stmt_rule_t func;
         rule_t eflags, eflag, bindlist;
 
         rule_t block_nocalc, rules_nocalc, assign_list_nocalc;
@@ -118,20 +119,25 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
             using namespace ::phoenix;
 
             run
-                =   !rules >> end_p
+                =   !rules
+                    [
+                        set_return_values(boost::ref(self.context), arg1)
+                    ]
+                    >> end_p
                 ;
 
             block
-                =   !rules
+                =   !rules [block.values = arg1]
                 ;
 
             rules
-                =   rule >> !rules
+                =   rule [rules.values = arg1]
+                    >> !rules [rules.values = arg1]
                 |   keyword_p("local")
                     >> list
                     >> !assign_list
                     >> keyword_p(";")
-                    >> block
+                    >> block [rules.values = arg1]
                 ;
 
             assign_list
@@ -146,10 +152,12 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             rule
-                =   keyword_p("{") >> block >> keyword_p("}")
+                =   keyword_p("{")
+                    >> block [rule.values = arg1]
+                    >> keyword_p("}")
                 |   keyword_p("include") >> list >> keyword_p(";")
-                |   invoke_stmt
-                |   set_stmt
+                |   invoke_stmt [rule.values = arg1]
+                |   set_stmt [rule.values = arg1]
                 |   arg >> keyword_p("on") >> list
                     >> assign >> list >> keyword_p(";")
                 |   keyword_p("return")
@@ -161,8 +169,8 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 |   module_stmt
                 |   keyword_p("class") >> lol
                     >> keyword_p("{") >> block >> keyword_p("}")
-                |   while_stmt
-                |   if_stmt
+                |   while_stmt [rule.values = arg1]
+                |   if_stmt [rule.values = arg1]
                 |   rule_stmt
                 |   keyword_p("on") >> arg >> rule
                 |   keyword_p("actions") >> eflags >> arg_p >> !bindlist
@@ -172,8 +180,19 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             invoke_stmt
-                =   arg_p [invoke_stmt.name = arg1]
-                    >> lol [invoke_stmt.args = arg1]
+                =   arg_p
+                    [
+                        invoke_stmt.values =
+                            var_expand(boost::ref(self.context), arg1)
+                    ]
+                    >> lol
+                    [
+                        invoke_stmt.args = arg1,
+                        invoke_stmt.name =
+                            split_rule_name(
+                                invoke_stmt.values, invoke_stmt.args
+                            )
+                    ]
                     >> keyword_p(";")
                     [
                         invoke_stmt.values =
@@ -249,6 +268,10 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                         )
                     ]
                     >> keyword_p("}")
+                    [
+                        while_stmt.values =
+                            get_return_values(boost::ref(self.context))
+                    ]
                 ;
 
             if_stmt
@@ -312,8 +335,8 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
             non_punct
                 =   non_punct_p
                     [
-                        var_expand(
-                            boost::ref(self.context), non_punct.values, arg1)
+                        non_punct.values =
+                            var_expand(boost::ref(self.context), arg1)
                     ]
                 |   keyword_p("[")
                     >> func [non_punct.values = arg1]
@@ -323,7 +346,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
             arg
                 =   arg_p
                     [
-                        var_expand(boost::ref(self.context), arg.values, arg1)
+                        arg.values = var_expand(boost::ref(self.context), arg1)
                     ]
                 |   keyword_p("[")
                     >> func [arg.values = arg1]
@@ -331,7 +354,20 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             func
-                =   arg >> lol
+                =   arg [func.values = arg1]
+                    >> lol
+                    [
+                        func.args = arg1,
+                        func.name =
+                            split_rule_name(
+                                func.values, func.args
+                            ),
+                        func.values =
+                            invoke_rule(
+                                boost::ref(self.context),
+                                func.name, func.args
+                            )
+                    ]
                 |   keyword_p("on") >> arg >> arg >> lol
                 |   keyword_p("on") >> arg >> keyword_p("return") >> list
                 ;

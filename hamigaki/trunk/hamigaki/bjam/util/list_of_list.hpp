@@ -62,6 +62,14 @@ public:
         return *this;
     }
 
+    void swap(list_of_list& rhs)
+    {
+        std::swap(size_, rhs.size_);
+
+        for (std::size_t i = 0; i < static_max_size; ++i)
+            lists_[i].swap(rhs.lists_[i]);
+    }
+
 private:
     size_type size_;
     value_type lists_[static_max_size];

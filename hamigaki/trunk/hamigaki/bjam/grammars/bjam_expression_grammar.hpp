@@ -52,10 +52,16 @@ struct bjam_expression_grammar
             typename lol_closure::context_t
         > lol_rule_t;
 
+        typedef boost::spirit::rule<
+            ScannerT,
+            typename invoke_stmt_closure::context_t
+        > invoke_stmt_rule_t;
+
         list_rule_t top;
         list_rule_t expr, and_expr, eq_expr, rel_expr, not_expr, prim_expr;
         lol_rule_t lol;
-        list_rule_t list, non_punct, arg, func;
+        list_rule_t list, non_punct, arg;
+        invoke_stmt_rule_t func;
 
         rule_t expr_nocalc, and_expr_nocalc, eq_expr_nocalc;
         rule_t rel_expr_nocalc, not_expr_nocalc, prim_expr_nocalc;
@@ -248,8 +254,8 @@ struct bjam_expression_grammar
             non_punct
                 =   non_punct_p
                     [
-                        var_expand(
-                            boost::ref(self.context), non_punct.values, arg1)
+                        non_punct.values =
+                            var_expand(boost::ref(self.context), arg1)
                     ]
                 |   keyword_p("[")
                     >> func [non_punct.values = arg1]
@@ -259,7 +265,7 @@ struct bjam_expression_grammar
             arg
                 =   arg_p
                     [
-                        var_expand(boost::ref(self.context), arg.values, arg1)
+                        arg.values = var_expand(boost::ref(self.context), arg1)
                     ]
                 |   keyword_p("[")
                     >> func [arg.values = arg1]
@@ -267,7 +273,20 @@ struct bjam_expression_grammar
                 ;
 
             func
-                =   arg >> lol
+                =   arg [func.values = arg1]
+                    >> lol
+                    [
+                        func.args = arg1,
+                        func.name =
+                            split_rule_name(
+                                func.values, func.args
+                            ),
+                        func.values =
+                            invoke_rule(
+                                boost::ref(self.context),
+                                func.name, func.args
+                            )
+                    ]
                 |   keyword_p("on") >> arg >> arg >> lol
                 |   keyword_p("on") >> arg >> keyword_p("return") >> list
                 ;

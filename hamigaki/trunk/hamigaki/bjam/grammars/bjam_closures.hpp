@@ -39,7 +39,7 @@ struct invoke_stmt_closure
     : boost::spirit::closure<
           invoke_stmt_closure
         , list_type
-        , std::string
+        , boost::optional<std::string>
         , list_of_list
     >
 {
