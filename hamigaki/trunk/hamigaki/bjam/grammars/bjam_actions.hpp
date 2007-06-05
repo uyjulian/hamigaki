@@ -109,36 +109,6 @@ struct rule_set_impl
 const ::phoenix::functor<rule_set_impl> rule_set = rule_set_impl();
 
 
-struct get_return_values_impl
-{
-    typedef list_type result_type;
-
-    list_type operator()(context& ctx) const
-    {
-        return ctx.current_frame().result();
-    }
-};
-
-const ::phoenix::functor<
-    get_return_values_impl
-> get_return_values = get_return_values_impl();
-
-
-struct set_return_values_impl
-{
-    typedef void result_type;
-
-    void operator()(context& ctx, const list_type& values) const
-    {
-        ctx.current_frame().result() = values;
-    }
-};
-
-const ::phoenix::functor<
-    set_return_values_impl
-> set_return_values = set_return_values_impl();
-
-
 struct for_block_impl
 {
     typedef void result_type;
@@ -168,17 +138,19 @@ const ::phoenix::functor<for_block_impl> for_block = for_block_impl();
 
 struct while_block_impl
 {
-    typedef void result_type;
+    typedef list_type result_type;
 
     template<class Iterator>
-    void operator()(
+    list_type operator()(
         context& ctx, const std::string& expr,
         Iterator first, Iterator last) const
     {
         typedef bjam_grammar_gen<Iterator> grammar_type;
 
+        list_type result;
         while (eval_expr_impl()(ctx, expr.c_str(), expr.c_str()+expr.size()))
-            grammar_type::parse_bjam_grammar(first, last, ctx);
+            result = grammar_type::parse_bjam_grammar(first, last, ctx).values;
+        return result;
     }
 };
 

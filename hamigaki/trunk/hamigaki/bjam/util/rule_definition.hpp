@@ -27,7 +27,7 @@ struct rule_definition
 
     list_of_list parameters;
     boost::shared_ptr<std::string> body;
-    boost::function1<void,context&> native;
+    boost::function1<list_type,context&> native;
     boost::optional<std::string> module_name;
     bool exported;
 };

@@ -16,7 +16,6 @@
 #include <stdexcept>
 
 namespace bjam = hamigaki::bjam;
-using namespace boost::spirit;
 
 std::string get_first_line(const char* s)
 {
@@ -31,7 +30,8 @@ std::string get_first_line(const char* s)
         return s;
 }
 
-parse_info<const char*> parse_bjam(const std::string& s, bjam::context& ctx)
+bjam::parse_info<const char*>
+parse_bjam(const std::string& s, bjam::context& ctx)
 {
     typedef bjam::bjam_grammar_gen<const char*> grammar_type;
 
@@ -54,7 +54,7 @@ void check_syntax(const char* filename)
     }
 
     bjam::context ctx;
-    parse_info<const char*> info = parse_bjam(str, ctx);
+    bjam::parse_info<const char*> info = parse_bjam(str, ctx);
 
     if (!info.full)
     {

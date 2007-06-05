@@ -26,7 +26,8 @@
 
 namespace hamigaki { namespace bjam {
 
-struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
+struct bjam_grammar
+    : boost::spirit::grammar<bjam_grammar, list_closure::context_t>
 {
     bjam_grammar(bjam::context& ctx) : context(ctx)
     {
@@ -112,10 +113,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
             using namespace ::phoenix;
 
             run
-                =   !rules
-                    [
-                        set_return_values(boost::ref(self.context), arg1)
-                    ]
+                =   !rules [self.values = arg1]
                     >> end_p
                 ;
 
@@ -255,16 +253,13 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                     >> keyword_p("{")
                     >> block_nocalc
                     [
-                        while_block(
-                            boost::ref(self.context),
-                            while_stmt.expr, arg1, arg2
-                        )
+                        while_stmt.values =
+                            while_block(
+                                boost::ref(self.context),
+                                while_stmt.expr, arg1, arg2
+                            )
                     ]
                     >> keyword_p("}")
-                    [
-                        while_stmt.values =
-                            get_return_values(boost::ref(self.context))
-                    ]
                 ;
 
             if_stmt
@@ -451,15 +446,28 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
 
 template<class IteratorT>
 HAMIGAKI_BJAM_GRAMMAR_GEN_INLINE
-boost::spirit::parse_info<IteratorT>
+parse_info<IteratorT>
 bjam_grammar_gen<IteratorT>::parse_bjam_grammar(
     const IteratorT& first, const IteratorT& last, context& ctx)
 {
+    using namespace ::phoenix;
+
     bjam::bjam_grammar g(ctx);
     bjam::skip_parser skip;
 
     IteratorT current = first;
-    return boost::spirit::parse(current, last, g, skip);
+
+    bjam::parse_info<IteratorT> result;
+
+    boost::spirit::parse_info<IteratorT> info =
+        boost::spirit::parse(current, last, g[var(result.values) = arg1], skip);
+
+    result.stop = info.stop;
+    result.hit = info.hit;
+    result.full = info.full;
+    result.length = info.length;
+
+    return result;
 }
 
 #undef HAMIGAKI_BJAM_GRAMMAR_GEN_INLINE

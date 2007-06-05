@@ -69,7 +69,7 @@ public:
 
     void set_builtin_rule(
         const std::string& name, const list_of_list& params,
-        const boost::function1<void,context&>& func)
+        const boost::function1<list_type,context&>& func)
     {
         rule_def_ptr def(new rule_definition);
 
@@ -169,7 +169,7 @@ context::invoke_rule(const std::string& name, const list_of_list& args)
     scoped_push_local_variables using_local(cur_module.variables, local);
 
     if (rule->native)
-        rule->native(*this);
+        return rule->native(*this);
     else
     {
         // Note: make a copy for the re-definition of the rule
@@ -178,10 +178,8 @@ context::invoke_rule(const std::string& name, const list_of_list& args)
         const char* last = first + body->size();
 
         typedef bjam::bjam_grammar_gen<const char*> grammar_type;
-        grammar_type::parse_bjam_grammar(first, last, *this);
+        return grammar_type::parse_bjam_grammar(first, last, *this).values;
     }
-
-    return current_frame().result();
 }
 
 } } // End namespaces bjam, hamigaki.

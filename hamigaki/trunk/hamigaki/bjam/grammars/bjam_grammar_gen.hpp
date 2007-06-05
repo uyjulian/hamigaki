@@ -11,7 +11,7 @@
 #define HAMIGAKI_BJAM_GRAMMARS_BJAM_GRAMMAR_GEN_HPP
 
 #include <hamigaki/bjam/bjam_config.hpp>
-#include <boost/spirit/core.hpp>
+#include <hamigaki/bjam/util/list.hpp>
 
 #ifdef BOOST_HAS_ABI_HEADERS
     #include BOOST_ABI_PREFIX
@@ -21,12 +21,22 @@ namespace hamigaki { namespace bjam {
 
 class context;
 
+template<class IteratorT=const char*>
+struct parse_info
+{
+    IteratorT stop;
+    bool hit;
+    bool full;
+    std::size_t length;
+    list_type values;
+};
+
 template<class IteratorT>
 struct HAMIGAKI_BJAM_DECL bjam_grammar_gen
 {
     typedef IteratorT iterator_type;
 
-    static boost::spirit::parse_info<IteratorT>
+    static parse_info<IteratorT>
     parse_bjam_grammar(
         const iterator_type& first, const iterator_type& last, context& ctx);
 };

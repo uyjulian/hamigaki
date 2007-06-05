@@ -62,17 +62,11 @@ public:
         return arguments_;
     }
 
-    list_type& result()
-    {
-        return result_;
-    }
-
 private:
     module* module_;
     boost::optional<std::string> module_name_;
     boost::optional<std::string> rule_name_;
     list_of_list arguments_;
-    list_type result_;
 };
 
 } } // End namespaces bjam, hamigaki.
