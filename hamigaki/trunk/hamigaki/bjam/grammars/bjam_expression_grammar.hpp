@@ -11,14 +11,10 @@
 #define HAMIGAKI_BJAM_GRAMMARS_BJAM_EXPRESSION_GRAMMAR_HPP
 
 #include <hamigaki/bjam/bjam_config.hpp>
-#include <hamigaki/bjam/grammars/bjam_actions.hpp>
-#include <hamigaki/bjam/grammars/bjam_closures.hpp>
+#include <hamigaki/bjam/grammars/base_definition.hpp>
+#include <hamigaki/bjam/grammars/bjam_expression_actions.hpp>
 #include <hamigaki/bjam/grammars/bjam_expression_grammar_gen.hpp>
-#include <hamigaki/bjam/grammars/bjam_grammar_gen.hpp>
-#include <hamigaki/bjam/util/argument_parser.hpp>
-#include <hamigaki/bjam/util/keyword_parser.hpp>
 #include <hamigaki/bjam/util/skip_parser.hpp>
-#include <hamigaki/bjam/util/string_parser.hpp>
 #include <hamigaki/spirit/phoenix/stl/clear.hpp>
 #include <boost/spirit/dynamic/if.hpp>
 
@@ -38,37 +34,22 @@ struct bjam_expression_grammar
     bjam::context& context;
 
     template<class ScannerT>
-    struct definition
+    struct definition : base_definition<ScannerT>
     {
-        typedef boost::spirit::rule<ScannerT> rule_t;
+        typedef base_definition<ScannerT> base_type;
+        typedef typename base_type::list_rule_t list_rule_t;
 
-        typedef boost::spirit::rule<
-            ScannerT,
-            typename list_closure::context_t
-        > list_rule_t;
-
-        typedef boost::spirit::rule<
-            ScannerT,
-            typename lol_closure::context_t
-        > lol_rule_t;
-
-        typedef boost::spirit::rule<
-            ScannerT,
-            typename invoke_stmt_closure::context_t
-        > invoke_stmt_rule_t;
+        using base_type::and_expr_nocalc;
+        using base_type::eq_expr_nocalc;
+        using base_type::arg;
+        using base_type::list;
+        using base_type::list_nocalc;
 
         list_rule_t top;
         list_rule_t expr, and_expr, eq_expr, rel_expr, not_expr, prim_expr;
-        lol_rule_t lol;
-        list_rule_t list, non_punct, arg;
-        invoke_stmt_rule_t func;
-
-        rule_t expr_nocalc, and_expr_nocalc, eq_expr_nocalc;
-        rule_t rel_expr_nocalc, not_expr_nocalc, prim_expr_nocalc;
-        rule_t lol_nocalc, list_nocalc, non_punct_nocalc, arg_nocalc;
-        rule_t func_nocalc;
 
         definition(const bjam_expression_grammar& self)
+            : base_definition<ScannerT>(self.context)
         {
             namespace hp = hamigaki::phoenix;
             using namespace boost::spirit;
@@ -242,122 +223,6 @@ struct bjam_expression_grammar
                     >> keyword_p(")")
                 ;
 
-            lol
-                =   list [lol.values += arg1]
-                    % keyword_p(":")
-                ;
-
-            list
-                =   *non_punct [list.values += arg1]
-                ;
-
-            non_punct
-                =   non_punct_p
-                    [
-                        non_punct.values =
-                            var_expand(boost::ref(self.context), arg1)
-                    ]
-                |   keyword_p("[")
-                    >> func [non_punct.values = arg1]
-                    >> keyword_p("]")
-                ;
-
-            arg
-                =   arg_p
-                    [
-                        arg.values = var_expand(boost::ref(self.context), arg1)
-                    ]
-                |   keyword_p("[")
-                    >> func [arg.values = arg1]
-                    >> keyword_p("]")
-                ;
-
-            func
-                =   arg [func.values = arg1]
-                    >> lol
-                    [
-                        func.args = arg1,
-                        func.name =
-                            split_rule_name(
-                                func.values, func.args
-                            ),
-                        func.values =
-                            invoke_rule(
-                                boost::ref(self.context),
-                                func.name, func.args
-                            )
-                    ]
-                |   keyword_p("on") >> arg >> arg >> lol
-                |   keyword_p("on") >> arg >> keyword_p("return") >> list
-                ;
-
-
-            // "nocalc" versions
-
-            expr_nocalc
-                =   and_expr_nocalc
-                    %   (   keyword_p("|")
-                        |   keyword_p("||")
-                        )
-                ;
-
-            and_expr_nocalc
-                =   eq_expr_nocalc
-                    %   (   keyword_p("&")
-                        |   keyword_p("&&")
-                        )
-                ;
-
-            eq_expr_nocalc
-                =   rel_expr_nocalc
-                    %   (   keyword_p("=")
-                        |   keyword_p("!=")
-                        )
-                ;
-
-            rel_expr_nocalc
-                =   not_expr_nocalc
-                    %   (   keyword_p("<")
-                        |   keyword_p("<=")
-                        |   keyword_p(">")
-                        |   keyword_p(">=")
-                        )
-                ;
-
-            not_expr_nocalc
-                =   *keyword_p("!") >> prim_expr_nocalc
-                ;
-
-            prim_expr_nocalc
-                =   arg_nocalc >> !(keyword_p("in")  >> list_nocalc)
-                |   keyword_p("(") >> expr_nocalc >> keyword_p(")")
-                ;
-
-            lol_nocalc
-                =   list_nocalc % keyword_p(":")
-                ;
-
-            list_nocalc
-                = *non_punct_nocalc
-                ;
-
-            non_punct_nocalc
-                =   non_punct_p
-                |   keyword_p("[") >> func_nocalc >> keyword_p("]")
-                ;
-
-            arg_nocalc
-                =   arg_p
-                |   keyword_p("[") >> func_nocalc >> keyword_p("]")
-                ;
-
-            func_nocalc
-                =   arg_nocalc >> lol_nocalc
-                |   keyword_p("on") >> arg_nocalc >> arg_nocalc >> lol_nocalc
-                |   keyword_p("on") >> arg_nocalc
-                    >> keyword_p("return") >> list_nocalc
-                ;
-
             BOOST_SPIRIT_DEBUG_RULE(top);
             BOOST_SPIRIT_DEBUG_RULE(expr);
             BOOST_SPIRIT_DEBUG_RULE(and_expr);
@@ -365,22 +230,6 @@ struct bjam_expression_grammar
             BOOST_SPIRIT_DEBUG_RULE(rel_expr);
             BOOST_SPIRIT_DEBUG_RULE(not_expr);
             BOOST_SPIRIT_DEBUG_RULE(prim_expr);
-            BOOST_SPIRIT_DEBUG_RULE(lol);
-            BOOST_SPIRIT_DEBUG_RULE(list);
-            BOOST_SPIRIT_DEBUG_RULE(non_punct);
-            BOOST_SPIRIT_DEBUG_RULE(arg);
-            BOOST_SPIRIT_DEBUG_RULE(func);
-            BOOST_SPIRIT_DEBUG_RULE(expr_nocalc);
-            BOOST_SPIRIT_DEBUG_RULE(and_expr_nocalc);
-            BOOST_SPIRIT_DEBUG_RULE(eq_expr_nocalc);
-            BOOST_SPIRIT_DEBUG_RULE(rel_expr_nocalc);
-            BOOST_SPIRIT_DEBUG_RULE(not_expr_nocalc);
-            BOOST_SPIRIT_DEBUG_RULE(prim_expr_nocalc);
-            BOOST_SPIRIT_DEBUG_RULE(lol_nocalc);
-            BOOST_SPIRIT_DEBUG_RULE(list_nocalc);
-            BOOST_SPIRIT_DEBUG_RULE(non_punct_nocalc);
-            BOOST_SPIRIT_DEBUG_RULE(arg_nocalc);
-            BOOST_SPIRIT_DEBUG_RULE(func_nocalc);
         }
 
         const list_rule_t& start() const { return top; }

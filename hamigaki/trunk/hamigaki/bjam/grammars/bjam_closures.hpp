@@ -11,29 +11,12 @@
 #define HAMIGAKI_BJAM_GRAMMARS_BJAM_CLOSURES_HPP
 
 #include <hamigaki/bjam/grammars/assign_modes.hpp>
-#include <hamigaki/bjam/util/list.hpp>
+#include <hamigaki/bjam/util/list_of_list.hpp>
 #include <boost/spirit/core.hpp>
 #include <boost/spirit/attribute/closure.hpp>
+#include <boost/optional.hpp>
 
 namespace hamigaki { namespace bjam {
-
-struct list_closure
-    : boost::spirit::closure<
-          list_closure
-        , list_type
-    >
-{
-    member1 values;
-};
-
-struct lol_closure
-    : boost::spirit::closure<
-          lol_closure
-        , list_of_list
-    >
-{
-    member1 values;
-};
 
 struct invoke_stmt_closure
     : boost::spirit::closure<
