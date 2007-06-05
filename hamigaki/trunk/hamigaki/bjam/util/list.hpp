@@ -179,7 +179,9 @@ public:
         else
         {
             boost::shared_ptr<impl_type> tmp(new impl_type(*pimpl_));
-            tmp->insert(position.base(), first, last);
+            std::ptrdiff_t dist = position.base() - pimpl_->begin();
+            typename impl_type::iterator pos = tmp->begin() + dist;
+            tmp->insert(pos, first, last);
             pimpl_.swap(tmp);
         }
     }
@@ -273,7 +275,7 @@ public:
             else
             {
                 boost::shared_ptr<impl_type> tmp(new impl_type(*pimpl_));
-                tmp->insert(pimpl_->end(), rp->begin(), rp->end());
+                tmp->insert(tmp->end(), rp->begin(), rp->end());
                 pimpl_.swap(tmp);
             }
         }
