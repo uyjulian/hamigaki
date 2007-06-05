@@ -65,7 +65,7 @@ struct bjam_expression_grammar
                             ( keyword_p("|") | keyword_p("||") )
                             >> if_p(expr.values)
                             [
-                                and_expr_nocalc [hp::clear(expr.values)]
+                                and_expr_nocalc
                             ]
                             .else_p
                             [
