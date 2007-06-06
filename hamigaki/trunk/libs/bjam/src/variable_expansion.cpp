@@ -290,7 +290,7 @@ std::string apply_modifiers(const std::string& value, const modifiers& mods)
 }
 
 void expand_variable_impl(
-    list_type& result, const std::string& prefix, const std::string& s,
+    string_list& result, const std::string& prefix, const std::string& s,
     const variable_table& table, const list_of_list& args, bool is_last)
 {
     const size_type colon = s.find(magic::colon);
@@ -325,8 +325,8 @@ void expand_variable_impl(
         lbracket = std::string::npos;
 
 
-    list_type values_buf;
-    const list_type& values =
+    string_list values_buf;
+    const string_list& values =
         get_variable_values(values_buf, s.substr(0, name_end), table, args);
 
     if (rng.first < 0)
@@ -372,8 +372,8 @@ void expand_variable_impl(
 } // namespace
 
 HAMIGAKI_BJAM_DECL
-const list_type& get_variable_values(
-    list_type& buf, const std::string& name, const variable_table& table)
+const string_list& get_variable_values(
+    string_list& buf, const std::string& name, const variable_table& table)
 {
     if (name == "TMPDIR")
     {
@@ -405,8 +405,8 @@ const list_type& get_variable_values(
 }
 
 HAMIGAKI_BJAM_DECL
-const list_type& get_variable_values(
-    list_type& buf, const std::string& name,
+const string_list& get_variable_values(
+    string_list& buf, const std::string& name,
     const variable_table& table, const list_of_list& args)
 {
     if (name.size() == 1)
@@ -426,46 +426,42 @@ const list_type& get_variable_values(
 }
 
 HAMIGAKI_BJAM_DECL
-void expand_variable(
-    list_type& result, const std::string& s,
+string_list expand_variable(
+    const std::string& s,
     const variable_table& table, const list_of_list& args)
 {
-    result.clear();
-
     const size_type dol = s.find("$(");
     if (dol == std::string::npos)
-    {
-        result.push_back(s);
-        return;
-    }
+        return string_list(s);
 
     const size_type name_start = dol + 2;
     const size_type name_end = find_lparen_nested(s, name_start);
 
     // Note: the original bjam crashes in this case
     if (name_end == std::string::npos)
-        return;
+        return string_list();
 
     std::string name(
         boost::make_transform_iterator<convert_to_magic>(s.begin()+name_start),
         boost::make_transform_iterator<convert_to_magic>(s.begin()+name_end)
     );
 
-    list_type names;
-    bjam::expand_variable(names, name, table, args);
+    string_list names = bjam::expand_variable(name, table, args);
 
     const std::string prefix(s, 0, dol);
-    list_type values;
+    string_list values;
     for (std::size_t i = 0; i < names.size(); ++i)
     {
         bool is_last = i == (names.size() - 1);
         expand_variable_impl(values, prefix, names[i], table, args, is_last);
     }
 
-    list_type rests;
-    bjam::expand_variable(rests, s.substr(name_end+1), table, args);
+    string_list rests =
+        bjam::expand_variable(s.substr(name_end+1), table, args);
 
+    string_list result;
     bjam::append_production(result, values, rests);
+    return result;
 }
 
 } } // End namespaces bjam, hamigaki.

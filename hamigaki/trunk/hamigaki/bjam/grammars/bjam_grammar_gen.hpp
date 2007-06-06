@@ -28,7 +28,7 @@ struct parse_info
     bool hit;
     bool full;
     std::size_t length;
-    list_type values;
+    string_list values;
 };
 
 template<class IteratorT>

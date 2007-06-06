@@ -20,7 +20,7 @@ namespace hamigaki { namespace bjam {
 struct list_closure
     : boost::spirit::closure<
           list_closure
-        , list_type
+        , string_list
     >
 {
     member1 values;
@@ -38,7 +38,7 @@ struct lol_closure
 struct func_closure
     : boost::spirit::closure<
           func_closure
-        , list_type
+        , string_list
         , boost::optional<std::string>
         , list_of_list
     >

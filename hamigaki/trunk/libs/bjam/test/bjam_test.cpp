@@ -15,7 +15,7 @@
 namespace bjam = hamigaki::bjam;
 namespace ut = boost::unit_test;
 
-bjam::list_type eval(bjam::context& ctx, const std::string& src)
+bjam::string_list eval(bjam::context& ctx, const std::string& src)
 {
     typedef bjam::bjam_grammar_gen<const char*> grammar_type;
 
@@ -33,8 +33,8 @@ bjam::list_type eval(bjam::context& ctx, const std::string& src)
 void empty_test()
 {
     bjam::context ctx;
-    bjam::list_type result;
-    bjam::list_type expect;
+    bjam::string_list result;
+    bjam::string_list expect;
 
     result = eval(ctx, "");
     expect.clear();
@@ -45,9 +45,9 @@ void empty_test()
 void set_test()
 {
     bjam::context ctx;
-    bjam::list_type result;
-    bjam::list_type expect;
-    bjam::list_type values;
+    bjam::string_list result;
+    bjam::string_list expect;
+    bjam::string_list values;
 
     result = eval(ctx, "A = ;");
     expect.clear();
@@ -97,8 +97,8 @@ void set_test()
 void return_test()
 {
     bjam::context ctx;
-    bjam::list_type result;
-    bjam::list_type expect;
+    bjam::string_list result;
+    bjam::string_list expect;
 
     result = eval(ctx, "return a ;");
     expect = boost::assign::list_of("a");
@@ -114,8 +114,8 @@ void return_test()
 void if_test()
 {
     bjam::context ctx;
-    bjam::list_type result;
-    bjam::list_type expect;
+    bjam::string_list result;
+    bjam::string_list expect;
 
     result = eval(ctx, "if a { return b ; }");
     expect = boost::assign::list_of("b");

@@ -20,21 +20,21 @@ struct set_true_impl
 {
     typedef void result_type;
 
-    void operator()(list_type& lhs, const list_type& rhs) const
+    void operator()(string_list& lhs, const string_list& rhs) const
     {
         if (!lhs)
         {
             if (rhs)
                 lhs = rhs;
             else
-                lhs = list_type("1");
+                lhs = string_list("1");
         }
     }
 
-    void operator()(list_type& lhs) const
+    void operator()(string_list& lhs) const
     {
         if (!lhs)
-            lhs = list_type("1");
+            lhs = string_list("1");
     }
 };
 
@@ -45,9 +45,9 @@ struct includes_impl
 {
     typedef bool result_type;
 
-    bool operator()(const list_type& lhs, const list_type& rhs) const
+    bool operator()(const string_list& lhs, const string_list& rhs) const
     {
-        typedef list_type::const_iterator iter_type;
+        typedef string_list::const_iterator iter_type;
 
         iter_type lb = lhs.begin();
         iter_type le = lhs.end();

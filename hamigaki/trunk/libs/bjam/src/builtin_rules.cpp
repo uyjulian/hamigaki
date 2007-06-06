@@ -19,11 +19,11 @@
 
 namespace hamigaki { namespace bjam { namespace builtins {
 
-HAMIGAKI_BJAM_DECL list_type echo(context& ctx)
+HAMIGAKI_BJAM_DECL string_list echo(context& ctx)
 {
     frame& f = ctx.current_frame();
     const list_of_list& args = f.arguments();
-    const list_type& arg1 = args[0];
+    const string_list& arg1 = args[0];
 
     std::copy(
         arg1.begin(), arg1.end(),
@@ -31,15 +31,15 @@ HAMIGAKI_BJAM_DECL list_type echo(context& ctx)
     );
     std::cout << '\n';
 
-    return list_type();
+    return string_list();
 }
 
-HAMIGAKI_BJAM_DECL list_type exit(context& ctx)
+HAMIGAKI_BJAM_DECL string_list exit(context& ctx)
 {
     frame& f = ctx.current_frame();
     const list_of_list& args = f.arguments();
-    const list_type& arg1 = args[0];
-    const list_type& arg2 = args[1];
+    const string_list& arg1 = args[0];
+    const string_list& arg2 = args[1];
 
     std::ostringstream os;
     std::copy(
@@ -53,7 +53,7 @@ HAMIGAKI_BJAM_DECL list_type exit(context& ctx)
 
     throw exit_exception(os.str(), code);
 
-    BOOST_UNREACHABLE_RETURN(list_type())
+    BOOST_UNREACHABLE_RETURN(string_list())
 }
 
 } } } // End namespaces builtins, bjam, hamigaki.

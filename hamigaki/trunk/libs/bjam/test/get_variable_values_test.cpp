@@ -20,27 +20,27 @@ void simple_test()
     table.set_values("X", boost::assign::list_of("hoge"));
 
     {
-        bjam::list_type expect = boost::assign::list_of("");
-        bjam::list_type buf;
-        const bjam::list_type& result =
+        bjam::string_list expect = boost::assign::list_of("");
+        bjam::string_list buf;
+        const bjam::string_list& result =
             bjam::get_variable_values(buf, "", table);
         BOOST_CHECK_EQUAL_COLLECTIONS(
             result.begin(), result.end(), expect.begin(), expect.end());
     }
 
     {
-        bjam::list_type expect;
-        bjam::list_type buf;
-        const bjam::list_type& result =
+        bjam::string_list expect;
+        bjam::string_list buf;
+        const bjam::string_list& result =
             bjam::get_variable_values(buf, "abc", table);
         BOOST_CHECK_EQUAL_COLLECTIONS(
             result.begin(), result.end(), expect.begin(), expect.end());
     }
 
     {
-        bjam::list_type expect = boost::assign::list_of("hoge");
-        bjam::list_type buf;
-        const bjam::list_type& result =
+        bjam::string_list expect = boost::assign::list_of("hoge");
+        bjam::string_list buf;
+        const bjam::string_list& result =
             bjam::get_variable_values(buf, "X", table);
         BOOST_CHECK_EQUAL_COLLECTIONS(
             result.begin(), result.end(), expect.begin(), expect.end());
@@ -56,36 +56,36 @@ void args_test()
     args.push_back(boost::assign::list_of("1")("2"));
 
     {
-        bjam::list_type expect = boost::assign::list_of("a")("b")("c");
-        bjam::list_type buf;
-        const bjam::list_type& result =
+        bjam::string_list expect = boost::assign::list_of("a")("b")("c");
+        bjam::string_list buf;
+        const bjam::string_list& result =
             bjam::get_variable_values(buf, "1", table, args);
         BOOST_CHECK_EQUAL_COLLECTIONS(
             result.begin(), result.end(), expect.begin(), expect.end());
     }
 
     {
-        bjam::list_type expect = boost::assign::list_of("1")("2");
-        bjam::list_type buf;
-        const bjam::list_type& result =
+        bjam::string_list expect = boost::assign::list_of("1")("2");
+        bjam::string_list buf;
+        const bjam::string_list& result =
             bjam::get_variable_values(buf, "2", table, args);
         BOOST_CHECK_EQUAL_COLLECTIONS(
             result.begin(), result.end(), expect.begin(), expect.end());
     }
 
     {
-        bjam::list_type expect = boost::assign::list_of("a")("b")("c");
-        bjam::list_type buf;
-        const bjam::list_type& result =
+        bjam::string_list expect = boost::assign::list_of("a")("b")("c");
+        bjam::string_list buf;
+        const bjam::string_list& result =
             bjam::get_variable_values(buf, "<", table, args);
         BOOST_CHECK_EQUAL_COLLECTIONS(
             result.begin(), result.end(), expect.begin(), expect.end());
     }
 
     {
-        bjam::list_type expect = boost::assign::list_of("1")("2");
-        bjam::list_type buf;
-        const bjam::list_type& result =
+        bjam::string_list expect = boost::assign::list_of("1")("2");
+        bjam::string_list buf;
+        const bjam::string_list& result =
             bjam::get_variable_values(buf, ">", table, args);
         BOOST_CHECK_EQUAL_COLLECTIONS(
             result.begin(), result.end(), expect.begin(), expect.end());
@@ -95,33 +95,33 @@ void args_test()
 void fixed_test()
 {
     bjam::variable_table table;
-    bjam::list_type expect;
+    bjam::string_list expect;
 
     {
-        bjam::list_type buf;
-        const bjam::list_type& result
+        bjam::string_list buf;
+        const bjam::string_list& result
             = bjam::get_variable_values(buf, "TMPDIR", table);
         BOOST_CHECK(&result == &buf);
     }
 
     {
-        bjam::list_type buf;
-        const bjam::list_type& result
+        bjam::string_list buf;
+        const bjam::string_list& result
             = bjam::get_variable_values(buf, "TMPNAME", table);
         BOOST_CHECK(&result == &buf);
     }
 
     {
-        bjam::list_type buf;
-        const bjam::list_type& result
+        bjam::string_list buf;
+        const bjam::string_list& result
             = bjam::get_variable_values(buf, "TMPFILE", table);
         BOOST_CHECK(&result == &buf);
     }
 
     expect = boost::assign::list_of("STDOUT");
     {
-        bjam::list_type buf;
-        const bjam::list_type& result
+        bjam::string_list buf;
+        const bjam::string_list& result
             = bjam::get_variable_values(buf, "STDOUT", table);
         BOOST_CHECK_EQUAL_COLLECTIONS(
             result.begin(), result.end(), expect.begin(), expect.end());
@@ -129,8 +129,8 @@ void fixed_test()
 
     expect = boost::assign::list_of("STDERR");
     {
-        bjam::list_type buf;
-        const bjam::list_type& result
+        bjam::string_list buf;
+        const bjam::string_list& result
             = bjam::get_variable_values(buf, "STDERR", table);
         BOOST_CHECK_EQUAL_COLLECTIONS(
             result.begin(), result.end(), expect.begin(), expect.end());

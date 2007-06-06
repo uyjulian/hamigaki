@@ -244,7 +244,7 @@ struct bjam_expression_grammar
 
 template<class IteratorT>
 HAMIGAKI_BJAM_EXPRGRAMMAR_GEN_INLINE
-list_type bjam_expression_grammar_gen<IteratorT>::evaluate(
+string_list bjam_expression_grammar_gen<IteratorT>::evaluate(
     const IteratorT& first, const IteratorT& last, context& ctx)
 {
     using namespace ::phoenix;
@@ -253,7 +253,7 @@ list_type bjam_expression_grammar_gen<IteratorT>::evaluate(
     bjam::skip_parser skip;
 
     IteratorT current = first;
-    list_type result;
+    string_list result;
     boost::spirit::parse(current, last, g [var(result) = arg1], skip);
     return result;
 }

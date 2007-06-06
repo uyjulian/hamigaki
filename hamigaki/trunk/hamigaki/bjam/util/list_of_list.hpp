@@ -21,7 +21,7 @@ namespace hamigaki { namespace bjam {
 class list_of_list
 {
 public:
-    typedef list_type value_type;
+    typedef string_list value_type;
     typedef const value_type& const_reference;
     typedef const value_type* const_pointer;
     typedef std::size_t size_type;

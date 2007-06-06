@@ -20,17 +20,15 @@ namespace hamigaki { namespace bjam {
 
 struct var_expand_impl
 {
-    typedef list_type result_type;
+    typedef string_list result_type;
 
-    list_type operator()(context& ctx, const std::string& s) const
+    string_list operator()(context& ctx, const std::string& s) const
     {
         frame& f = ctx.current_frame();
         const variable_table& table = f.current_module().variables;
         const list_of_list& args = f.arguments();
 
-        list_type result;
-        bjam::expand_variable(result, s, table, args);
-        return result;
+        return bjam::expand_variable(s, table, args);
     }
 };
 
@@ -42,12 +40,12 @@ struct split_rule_name_impl
     typedef boost::optional<std::string> result_type;
 
     boost::optional<std::string>
-    operator()(const list_type& values, list_of_list& args) const
+    operator()(const string_list& values, list_of_list& args) const
     {
         if (values.empty())
             return boost::optional<std::string>();
 
-        list_type arg(boost::next(values.begin()), values.end());
+        string_list arg(boost::next(values.begin()), values.end());
         if (args.empty())
             args.push_back(arg);
         else
@@ -71,15 +69,15 @@ const ::phoenix::functor<
 
 struct invoke_rule_impl
 {
-    typedef list_type result_type;
+    typedef string_list result_type;
 
-    list_type operator()(
+    string_list operator()(
         context& ctx, const std::string& name, const list_of_list& args) const
     {
         return ctx.invoke_rule(name, args);
     }
 
-    list_type operator()(
+    string_list operator()(
         context& ctx,
         const boost::optional<std::string>& name,
         const list_of_list& args) const
@@ -87,7 +85,7 @@ struct invoke_rule_impl
         if (name)
             return ctx.invoke_rule(*name, args);
         else
-            return list_type();
+            return string_list();
     }
 };
 

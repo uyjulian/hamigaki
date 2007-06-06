@@ -20,10 +20,10 @@ namespace hamigaki { namespace bjam {
 class variable_table
 {
 public:
-    typedef std::map<std::string,list_type> table_type;
+    typedef std::map<std::string,string_list> table_type;
     typedef table_type::const_iterator iterator;
 
-    const list_type& get_values(const std::string& name) const
+    const string_list& get_values(const std::string& name) const
     {
         typedef table_type::const_iterator iter_type;
 
@@ -34,25 +34,24 @@ public:
             return empty_;
     }
 
-    void set_values(const std::string& name, const list_type& values)
+    void set_values(const std::string& name, const string_list& values)
     {
         table_[name] = values;
     }
 
-    void append_values(const std::string& name, const list_type& values)
+    void append_values(const std::string& name, const string_list& values)
     {
-        list_type& v = table_[name];
-        v.insert(v.end(), values.begin(), values.end());
+        table_[name] += values;
     }
 
-    void set_default_values(const std::string& name, const list_type& values)
+    void set_default_values(const std::string& name, const string_list& values)
     {
-        list_type& v = table_[name];
+        string_list& v = table_[name];
         if (v.empty())
             v = values;
     }
 
-    void swap_values(const std::string& name, list_type& values)
+    void swap_values(const std::string& name, string_list& values)
     {
         table_[name].swap(values);
     }
@@ -83,7 +82,7 @@ public:
 
 private:
     table_type table_;
-    list_type empty_;
+    string_list empty_;
 };
 
 class scoped_swap_values : boost::noncopyable
@@ -108,7 +107,7 @@ private:
     variable_table& table_;
     std::string name_;
     bool is_local_;
-    list_type old_values_;
+    string_list old_values_;
 };
 
 class scoped_push_local_variables : boost::noncopyable
@@ -131,9 +130,9 @@ private:
 };
 
 inline void set_rule_argument(
-    variable_table& table, const list_type& param, const list_type& arg)
+    variable_table& table, const string_list& param, const string_list& arg)
 {
-    typedef list_type::const_iterator iter_type;
+    typedef string_list::const_iterator iter_type;
 
     iter_type p = param.begin();
     iter_type a = arg.begin();
@@ -151,7 +150,7 @@ inline void set_rule_argument(
                 opt = *(p++);
         }
 
-        list_type values;
+        string_list values;
         if (opt == "?")
         {
             if (a != arg.end())
@@ -159,7 +158,7 @@ inline void set_rule_argument(
         }
         else if (opt == "*")
         {
-            values = list_type(a, arg.end());
+            values = string_list(a, arg.end());
             a = arg.end();
         }
         else
@@ -169,7 +168,7 @@ inline void set_rule_argument(
 
             if (opt == "+")
             {
-                values = list_type(a, arg.end());
+                values = string_list(a, arg.end());
                 a = arg.end();
             }
             else

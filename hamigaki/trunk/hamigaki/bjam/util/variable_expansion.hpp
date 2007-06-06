@@ -21,17 +21,17 @@
 namespace hamigaki { namespace bjam {
 
 HAMIGAKI_BJAM_DECL
-const list_type& get_variable_values(
-    list_type& buf, const std::string& name, const variable_table& table);
+const string_list& get_variable_values(
+    string_list& buf, const std::string& name, const variable_table& table);
 
 HAMIGAKI_BJAM_DECL
-const list_type& get_variable_values(
-    list_type& buf, const std::string& name,
+const string_list& get_variable_values(
+    string_list& buf, const std::string& name,
     const variable_table& table, const list_of_list& args);
 
 HAMIGAKI_BJAM_DECL
-void expand_variable(
-    list_type& result, const std::string& s,
+string_list expand_variable(
+    const std::string& s,
     const variable_table& table, const list_of_list& args);
 
 } } // End namespaces bjam, hamigaki.

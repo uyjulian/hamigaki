@@ -21,7 +21,7 @@ namespace hamigaki { namespace bjam {
 struct invoke_stmt_closure
     : boost::spirit::closure<
           invoke_stmt_closure
-        , list_type
+        , string_list
         , boost::optional<std::string>
         , list_of_list
     >
@@ -43,8 +43,8 @@ struct assign_closure
 struct set_stmt_closure
     : boost::spirit::closure<
           set_stmt_closure
-        , list_type
-        , list_type
+        , string_list
+        , string_list
         , assign_mode::values
     >
 {
@@ -57,7 +57,7 @@ struct for_stmt_closure
     : boost::spirit::closure<
           for_stmt_closure
         , std::string
-        , list_type
+        , string_list
         , bool
     >
 {
@@ -69,7 +69,7 @@ struct for_stmt_closure
 struct module_stmt_closure
     : boost::spirit::closure<
           module_stmt_closure
-        , list_type
+        , string_list
         , boost::optional<std::string>
     >
 {
@@ -80,7 +80,7 @@ struct module_stmt_closure
 struct while_stmt_closure
     : boost::spirit::closure<
           while_stmt_closure
-        , list_type
+        , string_list
         , std::string
     >
 {

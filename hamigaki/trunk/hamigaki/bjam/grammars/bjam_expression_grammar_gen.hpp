@@ -27,7 +27,7 @@ struct HAMIGAKI_BJAM_DECL bjam_expression_grammar_gen
 {
     typedef IteratorT iterator_type;
 
-    static list_type evaluate(
+    static string_list evaluate(
         const iterator_type& first, const iterator_type& last, context& ctx);
 };
 

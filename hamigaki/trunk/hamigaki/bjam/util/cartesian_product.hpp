@@ -39,7 +39,7 @@ inline OutputIterator cartesian_product(
 }
 
 inline void append_production(
-    list_type& out, const list_type& lhs, const list_type& rhs)
+    string_list& out, const string_list& lhs, const string_list& rhs)
 {
     bjam::cartesian_product(
         lhs.begin(), lhs.end(),
@@ -50,7 +50,7 @@ inline void append_production(
 }
 
 inline void append_production(
-    list_type& out, const std::string& lhs, const list_type& rhs)
+    string_list& out, const std::string& lhs, const string_list& rhs)
 {
     std::transform(
         rhs.begin(), rhs.end(),

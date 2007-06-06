@@ -23,7 +23,7 @@ struct try_front_impl
 {
     typedef boost::optional<std::string> result_type;
 
-    boost::optional<std::string> operator()(const list_type& x) const
+    boost::optional<std::string> operator()(const string_list& x) const
     {
         if (x.empty())
             return boost::optional<std::string>();
@@ -37,10 +37,10 @@ const ::phoenix::functor<try_front_impl> try_front = try_front_impl();
 
 struct eval_expr_impl
 {
-    typedef list_type result_type;
+    typedef string_list result_type;
 
     template<class Iterator>
-    list_type operator()(context& ctx, Iterator first, Iterator last) const
+    string_list operator()(context& ctx, Iterator first, Iterator last) const
     {
         typedef bjam_expression_grammar_gen<Iterator> grammar_type;
         return grammar_type::evaluate(first, last, ctx);
@@ -56,12 +56,12 @@ struct var_set_impl
 
     void operator()(
         context& ctx, assign_mode::values mode,
-        const list_type& names, const list_type& values) const
+        const string_list& names, const string_list& values) const
     {
         variable_table& table =
             ctx.current_frame().current_module().variables;
 
-        typedef list_type::const_iterator iter_type;
+        typedef string_list::const_iterator iter_type;
 
         if (mode == assign_mode::set)
         {
@@ -115,11 +115,11 @@ struct for_block_impl
 
     template<class Iterator>
     void operator()(
-        context& ctx, const std::string& name, const list_type& values,
+        context& ctx, const std::string& name, const string_list& values,
         Iterator first, Iterator last, bool is_local) const
     {
         typedef bjam_grammar_gen<Iterator> grammar_type;
-        typedef list_type::const_iterator iter_type;
+        typedef string_list::const_iterator iter_type;
 
         frame& f = ctx.current_frame();
         variable_table& table = f.current_module().variables;
@@ -127,7 +127,7 @@ struct for_block_impl
         scoped_swap_values guard(table, name, is_local);
         for (iter_type i = values.begin(); i != values.end(); ++i)
         {
-            table.set_values(name, list_type(*i));
+            table.set_values(name, string_list(*i));
             grammar_type::parse_bjam_grammar(first, last, ctx);
         }
     }
@@ -138,16 +138,16 @@ const ::phoenix::functor<for_block_impl> for_block = for_block_impl();
 
 struct while_block_impl
 {
-    typedef list_type result_type;
+    typedef string_list result_type;
 
     template<class Iterator>
-    list_type operator()(
+    string_list operator()(
         context& ctx, const std::string& expr,
         Iterator first, Iterator last) const
     {
         typedef bjam_grammar_gen<Iterator> grammar_type;
 
-        list_type result;
+        string_list result;
         while (eval_expr_impl()(ctx, expr.c_str(), expr.c_str()+expr.size()))
             result = grammar_type::parse_bjam_grammar(first, last, ctx).values;
         return result;

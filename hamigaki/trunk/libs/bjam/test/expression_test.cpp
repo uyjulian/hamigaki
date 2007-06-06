@@ -15,7 +15,7 @@
 namespace bjam = hamigaki::bjam;
 namespace ut = boost::unit_test;
 
-bjam::list_type eval(bjam::context& ctx, const std::string& expr)
+bjam::string_list eval(bjam::context& ctx, const std::string& expr)
 {
     typedef bjam::bjam_expression_grammar_gen<const char*> grammar_type;
 
@@ -32,8 +32,8 @@ void simple_test()
     bjam::variable_table& vars = m.variables;
     vars.set_values("X", boost::assign::list_of("a"));
 
-    bjam::list_type result;
-    bjam::list_type expect;
+    bjam::string_list result;
+    bjam::string_list expect;
 
     result = eval(ctx, "0");
     expect = boost::assign::list_of("0");
@@ -54,8 +54,8 @@ void simple_test()
 void eq_test()
 {
     bjam::context ctx;
-    bjam::list_type result;
-    bjam::list_type expect;
+    bjam::string_list result;
+    bjam::string_list expect;
 
     result = eval(ctx, "a = a");
     expect = boost::assign::list_of("a");
@@ -71,8 +71,8 @@ void eq_test()
 void not_eq_test()
 {
     bjam::context ctx;
-    bjam::list_type result;
-    bjam::list_type expect;
+    bjam::string_list result;
+    bjam::string_list expect;
 
     result = eval(ctx, "a != a");
     expect.clear();
@@ -88,8 +88,8 @@ void not_eq_test()
 void lt_test()
 {
     bjam::context ctx;
-    bjam::list_type result;
-    bjam::list_type expect;
+    bjam::string_list result;
+    bjam::string_list expect;
 
     result = eval(ctx, "a < b");
     expect = boost::assign::list_of("a");
@@ -110,8 +110,8 @@ void lt_test()
 void lt_eq_test()
 {
     bjam::context ctx;
-    bjam::list_type result;
-    bjam::list_type expect;
+    bjam::string_list result;
+    bjam::string_list expect;
 
     result = eval(ctx, "a <= b");
     expect = boost::assign::list_of("a");
@@ -132,8 +132,8 @@ void lt_eq_test()
 void gt_test()
 {
     bjam::context ctx;
-    bjam::list_type result;
-    bjam::list_type expect;
+    bjam::string_list result;
+    bjam::string_list expect;
 
     result = eval(ctx, "a > b");
     expect.clear();
@@ -154,8 +154,8 @@ void gt_test()
 void gt_eq_test()
 {
     bjam::context ctx;
-    bjam::list_type result;
-    bjam::list_type expect;
+    bjam::string_list result;
+    bjam::string_list expect;
 
     result = eval(ctx, "a >= b");
     expect.clear();
@@ -176,8 +176,8 @@ void gt_eq_test()
 void and_test()
 {
     bjam::context ctx;
-    bjam::list_type result;
-    bjam::list_type expect;
+    bjam::string_list result;
+    bjam::string_list expect;
 
     result = eval(ctx, "a && b");
     expect = boost::assign::list_of("a");
@@ -203,8 +203,8 @@ void and_test()
 void or_test()
 {
     bjam::context ctx;
-    bjam::list_type result;
-    bjam::list_type expect;
+    bjam::string_list result;
+    bjam::string_list expect;
 
     result = eval(ctx, "a || b");
     expect = boost::assign::list_of("a");
@@ -234,8 +234,8 @@ void in_test()
     bjam::variable_table& vars = m.variables;
     vars.set_values("X", boost::assign::list_of("a")("b"));
 
-    bjam::list_type result;
-    bjam::list_type expect;
+    bjam::string_list result;
+    bjam::string_list expect;
 
     result = eval(ctx, "a in a");
     expect = boost::assign::list_of("a");
@@ -261,8 +261,8 @@ void in_test()
 void not_test()
 {
     bjam::context ctx;
-    bjam::list_type result;
-    bjam::list_type expect;
+    bjam::string_list result;
+    bjam::string_list expect;
 
     result = eval(ctx, "! a");
     expect.clear();
@@ -278,8 +278,8 @@ void not_test()
 void paren_test()
 {
     bjam::context ctx;
-    bjam::list_type result;
-    bjam::list_type expect;
+    bjam::string_list result;
+    bjam::string_list expect;
 
     result = eval(ctx, "( a )");
     expect = boost::assign::list_of("a");
@@ -296,8 +296,8 @@ void short_circuit_test()
 {
     bjam::context ctx;
 
-    bjam::list_type result;
-    bjam::list_type expect;
+    bjam::string_list result;
+    bjam::string_list expect;
 
     result = eval(ctx, "$() && [ EXIT ]");
     expect.clear();

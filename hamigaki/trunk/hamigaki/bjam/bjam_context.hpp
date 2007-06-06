@@ -69,7 +69,7 @@ public:
 
     void set_builtin_rule(
         const std::string& name, const list_of_list& params,
-        const boost::function1<list_type,context&>& func)
+        const boost::function1<string_list,context&>& func)
     {
         rule_def_ptr def(new rule_definition);
 
@@ -93,7 +93,7 @@ public:
         return rule_def_ptr();
     }
 
-    list_type invoke_rule(const std::string& name, const list_of_list& args);
+    string_list invoke_rule(const std::string& name, const list_of_list& args);
 
 private:
     module root_module_;
@@ -140,14 +140,14 @@ private:
     bjam::context& ctx_;
 };
 
-inline list_type
+inline string_list
 context::invoke_rule(const std::string& name, const list_of_list& args)
 {
     rule_def_ptr rule = this->get_rule_definition(name);
 
     // TODO: may throw some exception
     if (!rule)
-        return list_type();
+        return string_list();
 
     frame& old = current_frame();
 

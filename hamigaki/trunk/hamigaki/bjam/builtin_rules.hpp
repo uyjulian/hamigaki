@@ -24,8 +24,8 @@ class context;
 namespace builtins
 {
 
-HAMIGAKI_BJAM_DECL list_type echo(context& ctx);
-HAMIGAKI_BJAM_DECL list_type exit(context& ctx);
+HAMIGAKI_BJAM_DECL string_list echo(context& ctx);
+HAMIGAKI_BJAM_DECL string_list exit(context& ctx);
 
 } // namespace builtins
 

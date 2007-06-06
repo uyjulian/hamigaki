@@ -166,26 +166,6 @@ public:
         }
     }
 
-    template<class InputIterator>
-    void insert(iterator position, InputIterator first, InputIterator last)
-    {
-        if (pimpl_.get() == 0)
-        {
-            BOOST_ASSERT(position == iterator());
-            pimpl_.reset(new impl_type(first, last));
-        }
-        else if (pimpl_.unique())
-            pimpl_->insert(position.base(), first, last);
-        else
-        {
-            boost::shared_ptr<impl_type> tmp(new impl_type(*pimpl_));
-            std::ptrdiff_t dist = position.base() - pimpl_->begin();
-            typename impl_type::iterator pos = tmp->begin() + dist;
-            tmp->insert(pos, first, last);
-            pimpl_.swap(tmp);
-        }
-    }
-
     void swap(string_list& rhs)
     {
         pimpl_.swap(rhs.pimpl_);
@@ -304,8 +284,6 @@ inline std::ostream& operator<<(std::ostream& os, const string_list& x)
     return os;
 }
 #endif
-
-typedef string_list list_type;
 
 } } // End namespaces bjam, hamigaki.
 
