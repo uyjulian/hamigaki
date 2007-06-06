@@ -66,6 +66,19 @@ struct for_stmt_closure
     member3 is_local;
 };
 
+struct switch_stmt_closure
+    : boost::spirit::closure<
+          switch_stmt_closure
+        , string_list
+        , std::string
+        , std::string
+    >
+{
+    member1 values;
+    member2 value;
+    member3 pattern;
+};
+
 struct module_stmt_closure
     : boost::spirit::closure<
           module_stmt_closure

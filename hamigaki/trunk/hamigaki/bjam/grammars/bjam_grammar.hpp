@@ -65,6 +65,11 @@ struct bjam_grammar
 
         typedef boost::spirit::rule<
             ScannerT,
+            typename switch_stmt_closure::context_t
+        > switch_stmt_rule_t;
+
+        typedef boost::spirit::rule<
+            ScannerT,
             typename module_stmt_closure::context_t
         > module_stmt_rule_t;
 
@@ -94,17 +99,17 @@ struct bjam_grammar
         set_stmt_rule_t set_stmt;
         assign_rule_t assign;
         for_stmt_rule_t for_stmt;
+        switch_stmt_rule_t switch_stmt;
         module_stmt_rule_t module_stmt;
         while_stmt_rule_t while_stmt;
         list_rule_t if_stmt;
         rule_stmt_rule_t rule_stmt;
-        rule_t cases, case_;
         rule_t eflags, eflag, bindlist;
 
         rule_t block_nocalc, rules_nocalc, assign_list_nocalc;
         rule_t arglist_nocalc, rule_nocalc;
-        rule_t cases_nocalc, case_nocalc;
-        rule_t eflags_nocalc, eflag_nocalc, bindlist_nocalc;
+        rule_t cases_nocalc;
+        rule_t eflags_nocalc, bindlist_nocalc;
 
         definition(const bjam_grammar& self)
             : base_definition<ScannerT>(self.context)
@@ -155,8 +160,7 @@ struct bjam_grammar
                     >> list [rule.values = arg1]
                     >> keyword_p(";")
                 |   for_stmt
-                |   keyword_p("switch") >> list
-                    >> keyword_p("{") >> cases >> keyword_p("}")
+                |   switch_stmt [rule.values = arg1]
                 |   module_stmt [rule.values = arg1]
                 |   keyword_p("class") >> lol
                     >> keyword_p("{") >> block >> keyword_p("}")
@@ -236,6 +240,30 @@ struct bjam_grammar
                     >> keyword_p("}")
                 ;
 
+            switch_stmt
+                =   keyword_p("switch")
+                    >> list [switch_stmt.value = force_front(arg1)]
+                    >> keyword_p("{")
+                    >> *(   keyword_p("case")
+                            >> arg_p [switch_stmt.pattern = arg1]
+                            >> keyword_p(":")
+                            >> if_p
+                            (
+                                case_match(
+                                    switch_stmt.pattern, switch_stmt.value)
+                            )
+                            [
+                                block [switch_stmt.values = arg1]
+                                >> cases_nocalc
+                            ]
+                            .else_p
+                            [
+                                block_nocalc
+                            ]
+                        )
+                    >> keyword_p("}")
+                ;
+
             module_stmt
                 =   keyword_p("module")
                     >> list [module_stmt.name = try_front(arg1)]
@@ -301,14 +329,6 @@ struct bjam_grammar
                             arg1, arg2, rule_stmt.exported
                         )
                     ]
-                ;
-
-            cases
-                =   *case_
-                ;
-
-            case_
-                =   keyword_p("case") >> arg_p >> keyword_p(":") >> block
                 ;
 
             eflags
@@ -384,23 +404,21 @@ struct bjam_grammar
                 ;
 
             cases_nocalc
-                =   *case_nocalc
-                ;
-
-            case_nocalc
-                =   keyword_p("case") >> arg_p >> keyword_p(":") >> block_nocalc
+                =  *(   keyword_p("case")
+                        >> arg_p
+                        >> keyword_p(":")
+                        >> block_nocalc
+                    )
                 ;
 
             eflags_nocalc
-                = *eflag_nocalc;
-
-            eflag_nocalc
-                =   keyword_p("updated")
-                |   keyword_p("together")
-                |   keyword_p("ignore")
-                |   keyword_p("quietly")
-                |   keyword_p("piecemeal")
-                |   keyword_p("existing")
+                =  *(   keyword_p("updated")
+                    |   keyword_p("together")
+                    |   keyword_p("ignore")
+                    |   keyword_p("quietly")
+                    |   keyword_p("piecemeal")
+                    |   keyword_p("existing")
+                    )
                 ;
 
             bindlist_nocalc
@@ -413,12 +431,15 @@ struct bjam_grammar
             BOOST_SPIRIT_DEBUG_RULE(assign_list);
             BOOST_SPIRIT_DEBUG_RULE(arglist);
             BOOST_SPIRIT_DEBUG_RULE(rule);
+            BOOST_SPIRIT_DEBUG_RULE(invoke_stmt);
             BOOST_SPIRIT_DEBUG_RULE(set_stmt);
             BOOST_SPIRIT_DEBUG_RULE(assign);
+            BOOST_SPIRIT_DEBUG_RULE(for_stmt);
+            BOOST_SPIRIT_DEBUG_RULE(switch_stmt);
             BOOST_SPIRIT_DEBUG_RULE(module_stmt);
+            BOOST_SPIRIT_DEBUG_RULE(while_stmt);
+            BOOST_SPIRIT_DEBUG_RULE(if_stmt);
             BOOST_SPIRIT_DEBUG_RULE(rule_stmt);
-            BOOST_SPIRIT_DEBUG_RULE(cases);
-            BOOST_SPIRIT_DEBUG_RULE(case_);
             BOOST_SPIRIT_DEBUG_RULE(eflags);
             BOOST_SPIRIT_DEBUG_RULE(eflag);
             BOOST_SPIRIT_DEBUG_RULE(bindlist);
@@ -428,9 +449,7 @@ struct bjam_grammar
             BOOST_SPIRIT_DEBUG_RULE(arglist_nocalc);
             BOOST_SPIRIT_DEBUG_RULE(rule_nocalc);
             BOOST_SPIRIT_DEBUG_RULE(cases_nocalc);
-            BOOST_SPIRIT_DEBUG_RULE(case_nocalc);
             BOOST_SPIRIT_DEBUG_RULE(eflags_nocalc);
-            BOOST_SPIRIT_DEBUG_RULE(eflag_nocalc);
             BOOST_SPIRIT_DEBUG_RULE(bindlist_nocalc);
         }
 

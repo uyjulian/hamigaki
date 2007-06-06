@@ -20,6 +20,7 @@ SOURCES =
     instantiate_bjam_exprgr
     instantiate_bjam_grammar
     path
+    pattern
     variable_expansion
     ;
 

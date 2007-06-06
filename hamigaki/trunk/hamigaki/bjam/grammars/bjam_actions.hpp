@@ -13,6 +13,7 @@
 #include <hamigaki/bjam/grammars/assign_modes.hpp>
 #include <hamigaki/bjam/grammars/bjam_expression_grammar_gen.hpp>
 #include <hamigaki/bjam/grammars/bjam_grammar_gen.hpp>
+#include <hamigaki/bjam/util/pattern.hpp>
 #include <hamigaki/bjam/bjam_context.hpp>
 #include <climits> // required for <boost/spirit/phoenix/operators.hpp>
 #include <boost/spirit/phoenix.hpp>
@@ -33,6 +34,22 @@ struct try_front_impl
 };
 
 const ::phoenix::functor<try_front_impl> try_front = try_front_impl();
+
+
+struct force_front_impl
+{
+    typedef std::string result_type;
+
+    std::string operator()(const string_list& x) const
+    {
+        if (x.empty())
+            return std::string();
+        else
+            return *x.begin();
+    }
+};
+
+const ::phoenix::functor<force_front_impl> force_front = force_front_impl();
 
 
 struct eval_expr_impl
@@ -155,6 +172,19 @@ struct while_block_impl
 };
 
 const ::phoenix::functor<while_block_impl> while_block = while_block_impl();
+
+
+struct case_match_impl
+{
+    typedef bool result_type;
+
+    bool operator()(const std::string& pattern, const std::string& value) const
+    {
+        return pattern_match(pattern, value);
+    }
+};
+
+const ::phoenix::functor<case_match_impl> case_match = case_match_impl();
 
 } } // End namespaces bjam, hamigaki.
 

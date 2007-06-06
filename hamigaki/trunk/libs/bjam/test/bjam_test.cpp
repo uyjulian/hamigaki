@@ -208,6 +208,57 @@ void while_test()
         values.begin(), values.end(), expect.begin(), expect.end());
 }
 
+void switch_test()
+{
+    bjam::context ctx;
+    bjam::string_list result;
+    bjam::string_list expect;
+
+    result = eval(ctx, "switch $() { }");
+    expect.clear();
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+
+    result = eval(ctx, "switch a { case a : return b ; }");
+    expect = boost::assign::list_of("b");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+
+    result = eval(ctx, "switch ab { case a? : return c ; }");
+    expect = boost::assign::list_of("c");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+
+    result = eval(ctx, "switch $() { case \"\" : return a ; }");
+    expect = boost::assign::list_of("a");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+
+    result = eval(ctx, "switch ab { case cd : return e ; }");
+    expect.clear();
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+
+    result = eval(
+        ctx,
+        "switch b { case a : EXIT ; case b : return 2 ; case c : EXIT ; }"
+    );
+    expect = boost::assign::list_of("2");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+
+    result = eval(ctx, "switch a { case a : return 1 ; case a : return 2 ; }");
+    expect = boost::assign::list_of("1");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+}
+
 void rule_test()
 {
     bjam::context ctx;
@@ -277,6 +328,7 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&if_test));
     test->add(BOOST_TEST_CASE(&for_test));
     test->add(BOOST_TEST_CASE(&while_test));
+    test->add(BOOST_TEST_CASE(&switch_test));
     test->add(BOOST_TEST_CASE(&rule_test));
     test->add(BOOST_TEST_CASE(&module_test));
     return test;
