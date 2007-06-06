@@ -157,7 +157,7 @@ struct bjam_grammar
                 |   for_stmt
                 |   keyword_p("switch") >> list
                     >> keyword_p("{") >> cases >> keyword_p("}")
-                |   module_stmt
+                |   module_stmt [rule.values = arg1]
                 |   keyword_p("class") >> lol
                     >> keyword_p("{") >> block >> keyword_p("}")
                 |   while_stmt [rule.values = arg1]
