@@ -138,6 +138,136 @@ void if_test()
         result.begin(), result.end(), expect.begin(), expect.end());
 }
 
+void for_test()
+{
+    bjam::context ctx;
+    bjam::string_list result;
+    bjam::string_list expect;
+    bjam::string_list values;
+
+    result = eval(ctx, "for A in { }");
+    expect.clear();
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+
+    result = eval(ctx, "for A in a b { }");
+    expect.clear();
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+    values = ctx.current_frame().current_module().variables.get_values("A");
+    expect = boost::assign::list_of("b");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        values.begin(), values.end(), expect.begin(), expect.end());
+
+
+    result = eval(ctx, "for A in a b { B += $(A) ; }");
+    expect.clear();
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+    values = ctx.current_frame().current_module().variables.get_values("B");
+    expect = boost::assign::list_of("a")("b");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        values.begin(), values.end(), expect.begin(), expect.end());
+
+
+    result = eval(ctx, "for local C in a b { }");
+    expect.clear();
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+    values = ctx.current_frame().current_module().variables.get_values("C");
+    expect.clear();
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        values.begin(), values.end(), expect.begin(), expect.end());
+}
+
+void while_test()
+{
+    bjam::context ctx;
+    bjam::string_list result;
+    bjam::string_list expect;
+    bjam::string_list values;
+
+    result = eval(ctx, "while $() { }");
+    expect.clear();
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+
+    result = eval(ctx, "B = a a ; while $(A) != $(B) { A += a ; }");
+    expect = boost::assign::list_of("a");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+    values = ctx.current_frame().current_module().variables.get_values("A");
+    expect = boost::assign::list_of("a")("a");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        values.begin(), values.end(), expect.begin(), expect.end());
+}
+
+void rule_test()
+{
+    bjam::context ctx;
+    bjam::string_list result;
+    bjam::string_list expect;
+
+    result = eval(ctx, "rule r1 { }");
+    expect.clear();
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+
+    result = eval(ctx, "r1 ;");
+    expect.clear();
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+
+    result = eval(ctx, "rule r2 { return a ; } r2 ;");
+    expect = boost::assign::list_of("a");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+
+    result = eval(ctx, "rule r3 { return $(1) ; } r3 a b ;");
+    expect = boost::assign::list_of("a")("b");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+
+    result = eval(ctx, "rule r4 ( A ) { return $(A) ; } r4 a ;");
+    expect = boost::assign::list_of("a");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+}
+
+void module_test()
+{
+    bjam::context ctx;
+    bjam::string_list result;
+    bjam::string_list expect;
+
+    result = eval(ctx, "module m1 { }");
+    expect.clear();
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+
+    result = eval(ctx, "module m1 { A = a ; }");
+    expect = boost::assign::list_of("a");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+
+    result = eval(ctx, "A = b ; module m1 { return $(A) ; }");
+    expect = boost::assign::list_of("a");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("bjam_grammar test");
@@ -145,5 +275,9 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&set_test));
     test->add(BOOST_TEST_CASE(&return_test));
     test->add(BOOST_TEST_CASE(&if_test));
+    test->add(BOOST_TEST_CASE(&for_test));
+    test->add(BOOST_TEST_CASE(&while_test));
+    test->add(BOOST_TEST_CASE(&rule_test));
+    test->add(BOOST_TEST_CASE(&module_test));
     return test;
 }
