@@ -16,8 +16,11 @@
 #include <hamigaki/bjam/grammars/bjam_closures.hpp>
 #include <hamigaki/bjam/grammars/bjam_grammar_gen.hpp>
 #include <hamigaki/bjam/util/eval_in_module.hpp>
+#include <hamigaki/bjam/util/eval_on_target.hpp>
 #include <hamigaki/bjam/util/skip_parser.hpp>
 #include <hamigaki/bjam/util/string_parser.hpp>
+#include <hamigaki/spirit/phoenix/stl/empty.hpp>
+#include <hamigaki/spirit/phoenix/stl/front.hpp>
 #include <boost/spirit/dynamic/if.hpp>
 
 #ifdef BOOST_HAS_ABI_HEADERS
@@ -88,6 +91,11 @@ struct bjam_grammar
             typename rule_stmt_closure::context_t
         > rule_stmt_rule_t;
 
+        typedef boost::spirit::rule<
+            ScannerT,
+            typename on_stmt_closure::context_t
+        > on_stmt_rule_t;
+
         using base_type::list;
         using base_type::lol;
         using base_type::arg;
@@ -110,6 +118,7 @@ struct bjam_grammar
         while_stmt_rule_t while_stmt;
         list_rule_t if_stmt;
         rule_stmt_rule_t rule_stmt;
+        on_stmt_rule_t on_stmt;
         rule_t eflags, eflag, bindlist;
 
         rule_t block_nocalc, rules_nocalc, assign_list_nocalc;
@@ -120,6 +129,7 @@ struct bjam_grammar
         definition(const bjam_grammar& self)
             : base_definition<ScannerT>(self.context)
         {
+            namespace hp = hamigaki::phoenix;
             using namespace boost::spirit;
             using namespace ::phoenix;
 
@@ -172,7 +182,7 @@ struct bjam_grammar
                 |   while_stmt [rule.values = arg1]
                 |   if_stmt [rule.values = arg1]
                 |   rule_stmt
-                |   keyword_p("on") >> arg >> rule
+                |   on_stmt [rule.values = arg1]
                 |   keyword_p("actions") >> eflags >> arg_p >> !bindlist
                     >> eps_p(keyword_p("{"))
                     >> lexeme_d[ '{' >> string_p ]
@@ -349,6 +359,25 @@ struct bjam_grammar
                             rule_stmt.name, rule_stmt.params,
                             arg1, arg2, rule_stmt.exported
                         )
+                    ]
+                ;
+
+            on_stmt
+                =   keyword_p("on")
+                    >> arg [on_stmt.targets = arg1]
+                    >> if_p(hp::empty(on_stmt.targets))
+                    [
+                        rule_nocalc
+                    ]
+                    .else_p
+                    [
+                        eval_on_target_d
+                        (
+                            self.context, hp::front(on_stmt.targets)
+                        )
+                        [
+                            rule [on_stmt.values = arg1]
+                        ]
                     ]
                 ;
 

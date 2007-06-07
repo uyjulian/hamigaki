@@ -128,6 +128,17 @@ struct rule_stmt_closure
     member3 exported;
 };
 
+struct on_stmt_closure
+    : boost::spirit::closure<
+          on_stmt_closure
+        , string_list
+        , string_list
+    >
+{
+    member1 values;
+    member2 targets;
+};
+
 } } // End namespaces bjam, hamigaki.
 
 #endif // HAMIGAKI_BJAM_GRAMMARS_BJAM_CLOSURES_HPP
