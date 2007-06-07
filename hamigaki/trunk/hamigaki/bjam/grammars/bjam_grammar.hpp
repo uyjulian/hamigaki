@@ -60,6 +60,11 @@ struct bjam_grammar
 
         typedef boost::spirit::rule<
             ScannerT,
+            typename set_on_stmt_closure::context_t
+        > set_on_stmt_rule_t;
+
+        typedef boost::spirit::rule<
+            ScannerT,
             typename for_stmt_closure::context_t
         > for_stmt_rule_t;
 
@@ -97,6 +102,7 @@ struct bjam_grammar
         list_rule_t rule;
         invoke_stmt_rule_t invoke_stmt;
         set_stmt_rule_t set_stmt;
+        set_on_stmt_rule_t set_on_stmt;
         assign_rule_t assign;
         for_stmt_rule_t for_stmt;
         switch_stmt_rule_t switch_stmt;
@@ -154,8 +160,7 @@ struct bjam_grammar
                 |   keyword_p("include") >> list >> keyword_p(";")
                 |   invoke_stmt [rule.values = arg1]
                 |   set_stmt [rule.values = arg1]
-                |   arg >> keyword_p("on") >> list
-                    >> assign >> list >> keyword_p(";")
+                |   set_on_stmt [rule.values = arg1]
                 |   keyword_p("return")
                     >> list [rule.values = arg1]
                     >> keyword_p(";")
@@ -207,6 +212,22 @@ struct bjam_grammar
                         var_set(
                             boost::ref(self.context), set_stmt.mode,
                             set_stmt.names, set_stmt.values
+                        )
+                    ]
+                ;
+
+            set_on_stmt
+                =   arg [set_on_stmt.names = arg1]
+                    >> keyword_p("on")
+                    >> list [set_on_stmt.targets = arg1]
+                    >> assign [set_on_stmt.mode = arg1]
+                    >> list [set_on_stmt.values = arg1]
+                    >> keyword_p(";")
+                    [
+                        var_set_on(
+                            boost::ref(self.context),
+                            set_on_stmt.mode, set_on_stmt.targets,
+                            set_on_stmt.names, set_on_stmt.values
                         )
                     ]
                 ;
@@ -433,6 +454,7 @@ struct bjam_grammar
             BOOST_SPIRIT_DEBUG_RULE(rule);
             BOOST_SPIRIT_DEBUG_RULE(invoke_stmt);
             BOOST_SPIRIT_DEBUG_RULE(set_stmt);
+            BOOST_SPIRIT_DEBUG_RULE(set_on_stmt);
             BOOST_SPIRIT_DEBUG_RULE(assign);
             BOOST_SPIRIT_DEBUG_RULE(for_stmt);
             BOOST_SPIRIT_DEBUG_RULE(switch_stmt);

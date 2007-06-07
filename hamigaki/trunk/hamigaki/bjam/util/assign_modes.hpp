@@ -7,8 +7,8 @@
 
 // See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
 
-#ifndef HAMIGAKI_BJAM_GRAMMARS_ASSIGN_MODES_HPP
-#define HAMIGAKI_BJAM_GRAMMARS_ASSIGN_MODES_HPP
+#ifndef HAMIGAKI_BJAM_UTIL_ASSIGN_MODES_HPP
+#define HAMIGAKI_BJAM_UTIL_ASSIGN_MODES_HPP
 
 #if defined(BOOST_SPIRIT_DEBUG)
     #include <ostream>
@@ -40,4 +40,4 @@ inline std::ostream& operator<<(std::ostream& os, assign_mode::values x)
 
 } } // End namespaces bjam, hamigaki.
 
-#endif // HAMIGAKI_BJAM_GRAMMARS_ASSIGN_MODES_HPP
+#endif // HAMIGAKI_BJAM_UTIL_ASSIGN_MODES_HPP

@@ -10,6 +10,7 @@
 #ifndef HAMIGAKI_BJAM_UTIL_VARIABLE_TABLE_HPP
 #define HAMIGAKI_BJAM_UTIL_VARIABLE_TABLE_HPP
 
+#include <hamigaki/bjam/util/assign_modes.hpp>
 #include <hamigaki/bjam/util/list.hpp>
 #include <boost/noncopyable.hpp>
 #include <map>
@@ -84,6 +85,29 @@ private:
     table_type table_;
     string_list empty_;
 };
+
+inline void set_variables(
+    variable_table& table, assign_mode::values mode,
+    const string_list& names, const string_list& values)
+{
+    typedef string_list::const_iterator iter_type;
+
+    if (mode == assign_mode::set)
+    {
+        for (iter_type i = names.begin(), end = names.end(); i != end; ++i)
+            table.set_values(*i, values);
+    }
+    else if (mode == assign_mode::append)
+    {
+        for (iter_type i = names.begin(), end = names.end(); i != end; ++i)
+            table.append_values(*i, values);
+    }
+    else
+    {
+        for (iter_type i = names.begin(), end = names.end(); i != end; ++i)
+            table.set_default_values(*i, values);
+    }
+}
 
 class scoped_swap_values : boost::noncopyable
 {

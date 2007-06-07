@@ -12,6 +12,7 @@
 
 #include <hamigaki/bjam/grammars/bjam_grammar_gen.hpp>
 #include <hamigaki/bjam/util/frame.hpp>
+#include <hamigaki/bjam/util/target.hpp>
 #include <hamigaki/bjam/builtin_rules.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/noncopyable.hpp>
@@ -28,15 +29,15 @@ public:
         frames_.push_back(frame(root_module_));
 
         list_of_list params;
-        set_builtin_rule("ECHO", params, &builtins::echo);
-        set_builtin_rule("Echo", params, &builtins::echo);
-        set_builtin_rule("echo", params, &builtins::echo);
+        set_native_rule("ECHO", params, &builtins::echo);
+        set_native_rule("Echo", params, &builtins::echo);
+        set_native_rule("echo", params, &builtins::echo);
 
         params.push_back(boost::assign::list_of("messages")("*"));
         params.push_back(boost::assign::list_of("result-value")("?"));
-        set_builtin_rule("EXIT", params, &builtins::exit);
-        set_builtin_rule("Exit", params, &builtins::exit);
-        set_builtin_rule("exit", params, &builtins::exit);
+        set_native_rule("EXIT", params, &builtins::exit);
+        set_native_rule("Exit", params, &builtins::exit);
+        set_native_rule("exit", params, &builtins::exit);
     }
 
     frame& current_frame()
@@ -67,13 +68,18 @@ public:
             f.change_module(root_module_, name);
     }
 
-    void set_builtin_rule(
+    target& get_target(const std::string& name)
+    {
+        return targets_[name];
+    }
+
+    void set_native_rule(
         const std::string& name, const list_of_list& params,
         const boost::function1<string_list,context&>& func)
     {
         rule_def_ptr def(new rule_definition);
 
-        def->parameters;
+        def->parameters = params;
         def->native = func;
 
         root_module_.rules.set_rule_definition(name, def);
@@ -98,6 +104,7 @@ public:
 private:
     module root_module_;
     std::map<std::string,module> modules_;
+    std::map<std::string,target> targets_;
     std::vector<frame> frames_;
 };
 
@@ -121,6 +128,29 @@ public:
 private:
     bjam::context& ctx_;
     boost::optional<std::string> old_name_;
+};
+
+class scoped_on_target : private boost::noncopyable
+{
+public:
+    scoped_on_target(
+        bjam::context& ctx, const std::string& name
+    )
+        : ctx_(ctx), name_(name)
+    {
+        module& m = ctx_.current_frame().current_module();
+        m.variables.push_local_variables(ctx_.get_target(name_).variables);
+    }
+
+    ~scoped_on_target()
+    {
+        module& m = ctx_.current_frame().current_module();
+        m.variables.pop_local_variables(ctx_.get_target(name_).variables);
+    }
+
+private:
+    bjam::context& ctx_;
+    std::string name_;
 };
 
 class scoped_push_frame : private boost::noncopyable

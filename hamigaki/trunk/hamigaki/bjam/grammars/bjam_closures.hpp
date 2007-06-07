@@ -10,7 +10,6 @@
 #ifndef HAMIGAKI_BJAM_GRAMMARS_BJAM_CLOSURES_HPP
 #define HAMIGAKI_BJAM_GRAMMARS_BJAM_CLOSURES_HPP
 
-#include <hamigaki/bjam/grammars/assign_modes.hpp>
 #include <hamigaki/bjam/util/list_of_list.hpp>
 #include <boost/spirit/core.hpp>
 #include <boost/spirit/attribute/closure.hpp>
@@ -51,6 +50,21 @@ struct set_stmt_closure
     member1 values;
     member2 names;
     member3 mode;
+};
+
+struct set_on_stmt_closure
+    : boost::spirit::closure<
+          set_on_stmt_closure
+        , string_list
+        , string_list
+        , assign_mode::values
+        , string_list
+    >
+{
+    member1 values;
+    member2 names;
+    member3 mode;
+    member4 targets;
 };
 
 struct for_stmt_closure

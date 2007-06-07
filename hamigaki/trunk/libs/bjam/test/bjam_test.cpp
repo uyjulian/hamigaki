@@ -94,6 +94,35 @@ void set_test()
         values.begin(), values.end(), expect.begin(), expect.end());
 }
 
+void set_on_test()
+{
+    bjam::context ctx;
+    bjam::string_list result;
+    bjam::string_list expect;
+    bjam::string_list values;
+
+    result = eval(ctx, "A on t1 = ;");
+    expect.clear();
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+
+    result = eval(ctx, "A on t1 = a ;");
+    expect = boost::assign::list_of("a");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+    values = ctx.current_frame().current_module().variables.get_values("A");
+    expect.clear();
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        values.begin(), values.end(), expect.begin(), expect.end());
+
+    values = ctx.get_target("t1").variables.get_values("A");
+    expect = boost::assign::list_of("a");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        values.begin(), values.end(), expect.begin(), expect.end());
+}
+
 void return_test()
 {
     bjam::context ctx;
@@ -324,6 +353,7 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     ut::test_suite* test = BOOST_TEST_SUITE("bjam_grammar test");
     test->add(BOOST_TEST_CASE(&empty_test));
     test->add(BOOST_TEST_CASE(&set_test));
+    test->add(BOOST_TEST_CASE(&set_on_test));
     test->add(BOOST_TEST_CASE(&return_test));
     test->add(BOOST_TEST_CASE(&if_test));
     test->add(BOOST_TEST_CASE(&for_test));

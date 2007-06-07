@@ -10,7 +10,6 @@
 #ifndef HAMIGAKI_BJAM_GRAMMARS_BJAM_ACTIONS_HPP
 #define HAMIGAKI_BJAM_GRAMMARS_BJAM_ACTIONS_HPP
 
-#include <hamigaki/bjam/grammars/assign_modes.hpp>
 #include <hamigaki/bjam/grammars/bjam_expression_grammar_gen.hpp>
 #include <hamigaki/bjam/grammars/bjam_grammar_gen.hpp>
 #include <hamigaki/bjam/util/pattern.hpp>
@@ -78,27 +77,36 @@ struct var_set_impl
         variable_table& table =
             ctx.current_frame().current_module().variables;
 
-        typedef string_list::const_iterator iter_type;
-
-        if (mode == assign_mode::set)
-        {
-            for (iter_type i = names.begin(), end = names.end(); i != end; ++i)
-                table.set_values(*i, values);
-        }
-        else if (mode == assign_mode::append)
-        {
-            for (iter_type i = names.begin(), end = names.end(); i != end; ++i)
-                table.append_values(*i, values);
-        }
-        else
-        {
-            for (iter_type i = names.begin(), end = names.end(); i != end; ++i)
-                table.set_default_values(*i, values);
-        }
+        set_variables(table, mode, names, values);
     }
 };
 
 const ::phoenix::functor<var_set_impl> var_set = var_set_impl();
+
+
+struct var_set_on_impl
+{
+    typedef void result_type;
+
+    void operator()(
+        context& ctx,
+        assign_mode::values mode, const string_list& targets,
+        const string_list& names, const string_list& values) const
+    {
+        if (mode != assign_mode::append)
+            mode = assign_mode::set;
+
+        typedef string_list::const_iterator iter_type;
+
+        for (iter_type i = targets.begin(), end = targets.end(); i != end; ++i)
+        {
+            variable_table& table = ctx.get_target(*i).variables;
+            set_variables(table, mode, names, values);
+        }
+    }
+};
+
+const ::phoenix::functor<var_set_on_impl> var_set_on = var_set_on_impl();
 
 
 struct rule_set_impl
