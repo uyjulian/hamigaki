@@ -367,6 +367,34 @@ void on_test()
         result.begin(), result.end(), expect.begin(), expect.end());
 }
 
+void func_test()
+{
+    bjam::context ctx;
+    bjam::string_list result;
+    bjam::string_list expect;
+
+    eval(ctx, "rule r1 return $(A) ;");
+    eval(ctx, "A = 1 ; A on t1 = 2 ;");
+
+
+    result = eval(ctx, "return [ r1 ] ;");
+    expect = boost::assign::list_of("1");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+
+    result = eval(ctx, "return [ on t1 r1 ] ;");
+    expect = boost::assign::list_of("2");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+
+    result = eval(ctx, "return [ on t1 return $(A) ] ;");
+    expect = boost::assign::list_of("2");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("bjam_grammar test");
@@ -381,5 +409,6 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&rule_test));
     test->add(BOOST_TEST_CASE(&module_test));
     test->add(BOOST_TEST_CASE(&on_test));
+    test->add(BOOST_TEST_CASE(&func_test));
     return test;
 }

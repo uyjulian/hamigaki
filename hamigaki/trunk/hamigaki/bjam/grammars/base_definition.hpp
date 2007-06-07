@@ -14,7 +14,10 @@
 #include <hamigaki/bjam/grammars/base_closures.hpp>
 #include <hamigaki/bjam/grammars/base_actions.hpp>
 #include <hamigaki/bjam/util/argument_parser.hpp>
+#include <hamigaki/bjam/util/eval_on_target.hpp>
 #include <hamigaki/bjam/util/keyword_parser.hpp>
+#include <hamigaki/spirit/phoenix/stl/empty.hpp>
+#include <hamigaki/spirit/phoenix/stl/front.hpp>
 
 #ifdef BOOST_HAS_ABI_HEADERS
     #include BOOST_ABI_PREFIX
@@ -42,9 +45,15 @@ struct base_definition
         typename func_closure::context_t
     > func_rule_t;
 
+    typedef boost::spirit::rule<
+        ScannerT,
+        typename func0_closure::context_t
+    > func0_rule_t;
+
     lol_rule_t lol;
     list_rule_t list, non_punct, arg;
     func_rule_t func;
+    func0_rule_t func0;
 
     rule_t expr_nocalc, and_expr_nocalc, eq_expr_nocalc;
     rule_t rel_expr_nocalc, not_expr_nocalc, prim_expr_nocalc;
@@ -53,6 +62,7 @@ struct base_definition
 
     base_definition(bjam::context& context)
     {
+        namespace hp = hamigaki::phoenix;
         using namespace boost::spirit;
         using namespace ::phoenix;
 
@@ -87,22 +97,39 @@ struct base_definition
             ;
 
         func
-            =   arg [func.values = arg1]
+            =   func0 [func.values = arg1]
+            |   keyword_p("on")
+                >> arg [func.targets = arg1]
+                >> if_p(hp::empty(func.targets))
+                [
+                    arg_nocalc >> lol_nocalc
+                |   keyword_p("return") >> list_nocalc
+                ]
+                .else_p
+                [
+                    eval_on_target_d(context, hp::front(func.targets))
+                    [
+                        func0 [func.values = arg1]
+                    |   keyword_p("return") >> list [func.values = arg1]
+                    ]
+                ]
+            ;
+
+        func0
+            =   arg [func0.values = arg1]
                 >> lol
                 [
-                    func.args = arg1,
-                    func.name =
+                    func0.args = arg1,
+                    func0.name =
                         split_rule_name(
-                            func.values, func.args
+                            func0.values, func0.args
                         ),
-                    func.values =
+                    func0.values =
                         invoke_rule(
                             boost::ref(context),
-                            func.name, func.args
+                            func0.name, func0.args
                         )
                 ]
-            |   keyword_p("on") >> arg >> arg >> lol
-            |   keyword_p("on") >> arg >> keyword_p("return") >> list
             ;
 
 
@@ -177,6 +204,7 @@ struct base_definition
         BOOST_SPIRIT_DEBUG_RULE(non_punct);
         BOOST_SPIRIT_DEBUG_RULE(arg);
         BOOST_SPIRIT_DEBUG_RULE(func);
+        BOOST_SPIRIT_DEBUG_RULE(func0);
         BOOST_SPIRIT_DEBUG_RULE(expr_nocalc);
         BOOST_SPIRIT_DEBUG_RULE(and_expr_nocalc);
         BOOST_SPIRIT_DEBUG_RULE(eq_expr_nocalc);

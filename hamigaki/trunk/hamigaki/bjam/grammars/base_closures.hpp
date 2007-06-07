@@ -39,6 +39,17 @@ struct func_closure
     : boost::spirit::closure<
           func_closure
         , string_list
+        , string_list
+    >
+{
+    member1 values;
+    member2 targets;
+};
+
+struct func0_closure
+    : boost::spirit::closure<
+          func0_closure
+        , string_list
         , boost::optional<std::string>
         , list_of_list
     >

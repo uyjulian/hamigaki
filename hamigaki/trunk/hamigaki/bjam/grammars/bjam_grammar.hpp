@@ -16,11 +16,8 @@
 #include <hamigaki/bjam/grammars/bjam_closures.hpp>
 #include <hamigaki/bjam/grammars/bjam_grammar_gen.hpp>
 #include <hamigaki/bjam/util/eval_in_module.hpp>
-#include <hamigaki/bjam/util/eval_on_target.hpp>
 #include <hamigaki/bjam/util/skip_parser.hpp>
 #include <hamigaki/bjam/util/string_parser.hpp>
-#include <hamigaki/spirit/phoenix/stl/empty.hpp>
-#include <hamigaki/spirit/phoenix/stl/front.hpp>
 #include <boost/spirit/dynamic/if.hpp>
 
 #ifdef BOOST_HAS_ABI_HEADERS
@@ -491,6 +488,7 @@ struct bjam_grammar
             BOOST_SPIRIT_DEBUG_RULE(while_stmt);
             BOOST_SPIRIT_DEBUG_RULE(if_stmt);
             BOOST_SPIRIT_DEBUG_RULE(rule_stmt);
+            BOOST_SPIRIT_DEBUG_RULE(on_stmt);
             BOOST_SPIRIT_DEBUG_RULE(eflags);
             BOOST_SPIRIT_DEBUG_RULE(eflag);
             BOOST_SPIRIT_DEBUG_RULE(bindlist);
