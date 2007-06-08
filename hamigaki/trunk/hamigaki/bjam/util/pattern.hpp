@@ -20,7 +20,7 @@
 namespace hamigaki { namespace bjam {
 
 HAMIGAKI_BJAM_DECL
-inline bool pattern_match(const std::string& pattern, const std::string& str);
+bool pattern_match(const std::string& pattern, const std::string& str);
 
 } } // End namespaces bjam, hamigaki.
 
