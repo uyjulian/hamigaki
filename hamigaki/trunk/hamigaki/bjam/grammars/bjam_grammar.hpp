@@ -75,6 +75,11 @@ struct bjam_grammar
 
         typedef boost::spirit::rule<
             ScannerT,
+            typename cases_closure::context_t
+        > cases_rule_t;
+
+        typedef boost::spirit::rule<
+            ScannerT,
             typename module_stmt_closure::context_t
         > module_stmt_rule_t;
 
@@ -111,6 +116,7 @@ struct bjam_grammar
         assign_rule_t assign;
         for_stmt_rule_t for_stmt;
         switch_stmt_rule_t switch_stmt;
+        cases_rule_t cases;
         module_stmt_rule_t module_stmt;
         while_stmt_rule_t while_stmt;
         list_rule_t if_stmt;
@@ -267,24 +273,25 @@ struct bjam_grammar
                 =   keyword_p("switch")
                     >> list [switch_stmt.value = force_front(arg1)]
                     >> keyword_p("{")
-                    >> *(   keyword_p("case")
-                            >> arg_p [switch_stmt.pattern = arg1]
-                            >> keyword_p(":")
-                            >> if_p
-                            (
-                                case_match(
-                                    switch_stmt.pattern, switch_stmt.value)
-                            )
-                            [
-                                block [switch_stmt.values = arg1]
-                                >> cases_nocalc
-                            ]
-                            .else_p
-                            [
-                                block_nocalc
-                            ]
-                        )
+                    >> cases [switch_stmt.values = arg1]
                     >> keyword_p("}")
+                ;
+
+            cases
+                =  !(   keyword_p("case")
+                        >> arg_p [cases.pattern = arg1]
+                        >> keyword_p(":")
+                        >> if_p(case_match(cases.pattern, switch_stmt.value))
+                        [
+                            block [cases.values = arg1]
+                            >> cases_nocalc
+                        ]
+                        .else_p
+                        [
+                            block_nocalc
+                            >> cases [cases.values = arg1]
+                        ]
+                    )
                 ;
 
             module_stmt
@@ -471,6 +478,7 @@ struct bjam_grammar
             BOOST_SPIRIT_DEBUG_RULE(assign);
             BOOST_SPIRIT_DEBUG_RULE(for_stmt);
             BOOST_SPIRIT_DEBUG_RULE(switch_stmt);
+            BOOST_SPIRIT_DEBUG_RULE(cases);
             BOOST_SPIRIT_DEBUG_RULE(module_stmt);
             BOOST_SPIRIT_DEBUG_RULE(while_stmt);
             BOOST_SPIRIT_DEBUG_RULE(if_stmt);

@@ -85,12 +85,21 @@ struct switch_stmt_closure
           switch_stmt_closure
         , string_list
         , std::string
-        , std::string
     >
 {
     member1 values;
     member2 value;
-    member3 pattern;
+};
+
+struct cases_closure
+    : boost::spirit::closure<
+          cases_closure
+        , string_list
+        , std::string
+    >
+{
+    member1 values;
+    member2 pattern;
 };
 
 struct module_stmt_closure
