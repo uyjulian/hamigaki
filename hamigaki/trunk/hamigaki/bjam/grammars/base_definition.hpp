@@ -66,6 +66,8 @@ struct base_definition
         using namespace boost::spirit;
         using namespace ::phoenix;
 
+        const actor<variable<bjam::context> > ctx(context);
+
         lol
             =   list [lol.values += arg1]
                 % keyword_p(":")
@@ -76,21 +78,14 @@ struct base_definition
             ;
 
         non_punct
-            =   non_punct_p
-                [
-                    non_punct.values =
-                        var_expand(boost::ref(context), arg1)
-                ]
+            =   non_punct_p [non_punct.values = var_expand(ctx, arg1)]
             |   keyword_p("[")
                 >> func [non_punct.values = arg1]
                 >> keyword_p("]")
             ;
 
         arg
-            =   arg_p
-                [
-                    arg.values = var_expand(boost::ref(context), arg1)
-                ]
+            =   arg_p [arg.values = var_expand(ctx, arg1)]
             |   keyword_p("[")
                 >> func [arg.values = arg1]
                 >> keyword_p("]")
@@ -120,15 +115,8 @@ struct base_definition
                 >> lol
                 [
                     func0.args = arg1,
-                    func0.name =
-                        split_rule_name(
-                            func0.values, func0.args
-                        ),
-                    func0.values =
-                        invoke_rule(
-                            boost::ref(context),
-                            func0.name, func0.args
-                        )
+                    func0.name = split_rule_name(func0.values, func0.args),
+                    func0.values = invoke_rule(ctx,func0.name, func0.args)
                 ]
             ;
 

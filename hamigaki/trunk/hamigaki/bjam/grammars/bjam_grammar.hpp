@@ -130,6 +130,8 @@ struct bjam_grammar
             using namespace boost::spirit;
             using namespace ::phoenix;
 
+            const actor<variable<bjam::context> > ctx(self.context);
+
             run
                 =   !rules [self.values = arg1]
                     >> end_p
@@ -187,11 +189,7 @@ struct bjam_grammar
                 ;
 
             invoke_stmt
-                =   arg_p
-                    [
-                        invoke_stmt.values =
-                            var_expand(boost::ref(self.context), arg1)
-                    ]
+                =   arg_p [invoke_stmt.values = var_expand(ctx, arg1)]
                     >> lol
                     [
                         invoke_stmt.args = arg1,
@@ -203,10 +201,7 @@ struct bjam_grammar
                     >> keyword_p(";")
                     [
                         invoke_stmt.values =
-                            invoke_rule(
-                                boost::ref(self.context),
-                                invoke_stmt.name, invoke_stmt.args
-                            )
+                            invoke_rule(ctx, invoke_stmt.name, invoke_stmt.args)
                     ]
                 ;
 
@@ -217,7 +212,7 @@ struct bjam_grammar
                     >> keyword_p(";")
                     [
                         var_set(
-                            boost::ref(self.context), set_stmt.mode,
+                            ctx, set_stmt.mode,
                             set_stmt.names, set_stmt.values
                         )
                     ]
@@ -232,7 +227,7 @@ struct bjam_grammar
                     >> keyword_p(";")
                     [
                         var_set_on(
-                            boost::ref(self.context),
+                            ctx,
                             set_on_stmt.mode, set_on_stmt.targets,
                             set_on_stmt.names, set_on_stmt.values
                         )
@@ -260,7 +255,7 @@ struct bjam_grammar
                     >> block_nocalc
                     [
                         for_block(
-                            boost::ref(self.context),
+                            ctx,
                             for_stmt.name, for_stmt.values,
                             arg1, arg2, for_stmt.is_local
                         )
@@ -310,21 +305,14 @@ struct bjam_grammar
                     >> block_nocalc
                     [
                         while_stmt.values =
-                            while_block(
-                                boost::ref(self.context),
-                                while_stmt.expr, arg1, arg2
-                            )
+                            while_block(ctx, while_stmt.expr, arg1, arg2)
                     ]
                     >> keyword_p("}")
                 ;
 
             if_stmt
                 =   keyword_p("if")
-                    >> expr_nocalc
-                    [
-                        if_stmt.values =
-                            eval_expr(boost::ref(self.context), arg1, arg2)
-                    ]
+                    >> expr_nocalc [if_stmt.values = eval_expr(ctx, arg1, arg2)]
                     >> if_p(if_stmt.values)
                     [
                         keyword_p("{")
@@ -352,8 +340,7 @@ struct bjam_grammar
                     >> rule_nocalc
                     [
                         rule_set(
-                            boost::ref(self.context),
-                            rule_stmt.name, rule_stmt.params,
+                            ctx, rule_stmt.name, rule_stmt.params,
                             arg1, arg2, rule_stmt.exported
                         )
                     ]
