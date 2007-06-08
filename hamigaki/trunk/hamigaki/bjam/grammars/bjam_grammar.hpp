@@ -16,6 +16,7 @@
 #include <hamigaki/bjam/grammars/bjam_closures.hpp>
 #include <hamigaki/bjam/grammars/bjam_grammar_gen.hpp>
 #include <hamigaki/bjam/util/eval_in_module.hpp>
+#include <hamigaki/bjam/util/eval_with_variables.hpp>
 #include <hamigaki/bjam/util/skip_parser.hpp>
 #include <hamigaki/bjam/util/string_parser.hpp>
 #include <boost/spirit/dynamic/if.hpp>
@@ -42,6 +43,11 @@ struct bjam_grammar
         typedef typename base_type::rule_t rule_t;
         typedef typename base_type::list_rule_t list_rule_t;
         typedef typename base_type::lol_rule_t lol_rule_t;
+
+        typedef boost::spirit::rule<
+            ScannerT,
+            typename local_set_stmt_closure::context_t
+        > local_set_stmt_rule_t;
 
         typedef boost::spirit::rule<
             ScannerT,
@@ -108,6 +114,7 @@ struct bjam_grammar
 
         rule_t run;
         list_rule_t block, rules, assign_list;
+        local_set_stmt_rule_t local_set_stmt;
         lol_rule_t arglist;
         list_rule_t rule;
         invoke_stmt_rule_t invoke_stmt;
@@ -150,11 +157,22 @@ struct bjam_grammar
             rules
                 =   rule [rules.values = arg1]
                     >> !rules [rules.values = arg1]
-                |   keyword_p("local")
-                    >> list
-                    >> !assign_list
+                |   local_set_stmt [rules.values = arg1]
+                ;
+
+            local_set_stmt
+                =   keyword_p("local")
+                    >> list [local_set_stmt.names = arg1]
+                    >> !assign_list [local_set_stmt.values = arg1]
                     >> keyword_p(";")
-                    >> block [rules.values = arg1]
+                    >> eval_with_variables_d
+                    (
+                        self.context,
+                        local_set_stmt.names, local_set_stmt.values
+                    )
+                    [
+                        block [local_set_stmt.values = arg1]
+                    ]
                 ;
 
             assign_list
@@ -469,6 +487,7 @@ struct bjam_grammar
             BOOST_SPIRIT_DEBUG_RULE(run);
             BOOST_SPIRIT_DEBUG_RULE(block);
             BOOST_SPIRIT_DEBUG_RULE(rules);
+            BOOST_SPIRIT_DEBUG_RULE(local_set_stmt);
             BOOST_SPIRIT_DEBUG_RULE(assign_list);
             BOOST_SPIRIT_DEBUG_RULE(arglist);
             BOOST_SPIRIT_DEBUG_RULE(rule);

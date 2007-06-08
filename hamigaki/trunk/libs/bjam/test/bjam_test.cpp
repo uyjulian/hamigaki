@@ -123,6 +123,40 @@ void set_on_test()
         values.begin(), values.end(), expect.begin(), expect.end());
 }
 
+void local_set_test()
+{
+    bjam::context ctx;
+    bjam::string_list result;
+    bjam::string_list expect;
+    bjam::string_list values;
+
+    result = eval(ctx, "local A = a ;");
+    expect.clear();
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+    values = ctx.current_frame().current_module().variables.get_values("A");
+    expect.clear();
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        values.begin(), values.end(), expect.begin(), expect.end());
+
+
+    result = eval(ctx, "A = 1 ; local A = 2 ; B = $(A) ;");
+    expect = boost::assign::list_of("2");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+    values = ctx.current_frame().current_module().variables.get_values("A");
+    expect = boost::assign::list_of("1");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        values.begin(), values.end(), expect.begin(), expect.end());
+
+    values = ctx.current_frame().current_module().variables.get_values("B");
+    expect = boost::assign::list_of("2");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        values.begin(), values.end(), expect.begin(), expect.end());
+}
+
 void return_test()
 {
     bjam::context ctx;
@@ -401,6 +435,7 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&empty_test));
     test->add(BOOST_TEST_CASE(&set_test));
     test->add(BOOST_TEST_CASE(&set_on_test));
+    test->add(BOOST_TEST_CASE(&local_set_test));
     test->add(BOOST_TEST_CASE(&return_test));
     test->add(BOOST_TEST_CASE(&if_test));
     test->add(BOOST_TEST_CASE(&for_test));

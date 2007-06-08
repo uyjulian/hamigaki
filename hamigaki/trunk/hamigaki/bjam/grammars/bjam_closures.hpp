@@ -17,6 +17,17 @@
 
 namespace hamigaki { namespace bjam {
 
+struct local_set_stmt_closure
+    : boost::spirit::closure<
+          local_set_stmt_closure
+        , string_list
+        , string_list
+    >
+{
+    member1 values;
+    member2 names;
+};
+
 struct invoke_stmt_closure
     : boost::spirit::closure<
           invoke_stmt_closure
