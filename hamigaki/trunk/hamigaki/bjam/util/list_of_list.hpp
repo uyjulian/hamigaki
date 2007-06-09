@@ -70,6 +70,13 @@ public:
             lists_[i].swap(rhs.lists_[i]);
     }
 
+    void clear()
+    {
+        for (std::size_t i = 0; i < size_; ++i)
+            lists_[i].clear();
+        size_ = 0;
+    }
+
 private:
     size_type size_;
     value_type lists_[static_max_size];

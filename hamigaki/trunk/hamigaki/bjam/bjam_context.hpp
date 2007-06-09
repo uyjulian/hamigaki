@@ -30,14 +30,19 @@ public:
 
         list_of_list params;
         set_native_rule("ECHO", params, &builtins::echo);
-        set_native_rule("Echo", params, &builtins::echo);
-        set_native_rule("echo", params, &builtins::echo);
+        set_native_rule("Echo", params, &builtins::echo, false);
+        set_native_rule("echo", params, &builtins::echo, false);
 
         params.push_back(boost::assign::list_of("messages")("*"));
         params.push_back(boost::assign::list_of("result-value")("?"));
         set_native_rule("EXIT", params, &builtins::exit);
-        set_native_rule("Exit", params, &builtins::exit);
-        set_native_rule("exit", params, &builtins::exit);
+        set_native_rule("Exit", params, &builtins::exit, false);
+        set_native_rule("exit", params, &builtins::exit, false);
+
+        params.clear();
+        params.push_back(boost::assign::list_of("module")("?"));
+        set_native_rule("RULENAMES", params, &builtins::rulenames);
+        set_native_rule("VARNAMES", params, &builtins::varnames);
     }
 
     frame& current_frame()
@@ -53,6 +58,14 @@ public:
     void pop_frame()
     {
         frames_.pop_back();
+    }
+
+    module& get_module(const boost::optional<std::string>& name)
+    {
+        if (name)
+            return modules_[*name];
+        else
+            return root_module_;
     }
 
     void change_module(const boost::optional<std::string>& name)
@@ -75,12 +88,14 @@ public:
 
     void set_native_rule(
         const std::string& name, const list_of_list& params,
-        const boost::function1<string_list,context&>& func)
+        const boost::function1<string_list,context&>& func,
+        bool exported = true)
     {
         rule_def_ptr def(new rule_definition);
 
         def->parameters = params;
         def->native = func;
+        def->exported = exported;
 
         root_module_.rules.set_rule_definition(name, def);
     }
@@ -196,12 +211,12 @@ context::invoke_rule(const std::string& name, const list_of_list& args)
     for (std::size_t i = 0; i < params.size(); ++i)
         bjam::set_rule_argument(local, params[i], args[i]);
 
-    scoped_push_local_variables using_local(cur_module.variables, local);
-
     if (rule->native)
         return rule->native(*this);
     else
     {
+        scoped_push_local_variables using_local(cur_module.variables, local);
+
         // Note: make a copy for the re-definition of the rule
         boost::shared_ptr<std::string> body = rule->body;
         const char* first = body->c_str();

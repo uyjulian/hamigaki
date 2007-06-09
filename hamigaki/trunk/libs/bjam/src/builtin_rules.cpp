@@ -12,12 +12,29 @@
 #include <hamigaki/bjam/bjam_context.hpp>
 #include <hamigaki/bjam/builtin_rules.hpp>
 #include <hamigaki/bjam/bjam_exceptions.hpp>
+#include <hamigaki/iterator/first_iterator.hpp>
 #include <hamigaki/iterator/ostream_iterator.hpp>
+#include <boost/iterator/filter_iterator.hpp>
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
 
 namespace hamigaki { namespace bjam { namespace builtins {
+
+namespace
+{
+
+struct is_exported
+{
+    typedef rule_table::table_type::value_type value_type;
+
+    bool operator()(const value_type& x) const
+    {
+        return x.second->exported;
+    }
+};
+
+} // namespace
 
 HAMIGAKI_BJAM_DECL string_list echo(context& ctx)
 {
@@ -54,6 +71,48 @@ HAMIGAKI_BJAM_DECL string_list exit(context& ctx)
     throw exit_exception(os.str(), code);
 
     BOOST_UNREACHABLE_RETURN(string_list())
+}
+
+HAMIGAKI_BJAM_DECL string_list rulenames(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+    const string_list& arg1 = args[0];
+
+    boost::optional<std::string> name;
+    if (!arg1.empty())
+        name = arg1[0];
+
+    module& m = ctx.get_module(name);
+
+    rule_table::iterator beg, end;
+    boost::tie(beg, end) = m.rules.entries();
+
+    return string_list(
+        make_first_iterator(boost::make_filter_iterator<is_exported>(beg, end)),
+        make_first_iterator(boost::make_filter_iterator<is_exported>(end, end))
+    );
+}
+
+HAMIGAKI_BJAM_DECL string_list varnames(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+    const string_list& arg1 = args[0];
+
+    boost::optional<std::string> name;
+    if (!arg1.empty())
+        name = arg1[0];
+
+    module& m = ctx.get_module(name);
+
+    variable_table::iterator beg, end;
+    boost::tie(beg, end) = m.variables.entries();
+
+    return string_list(
+        make_first_iterator(beg),
+        make_first_iterator(end)
+    );
 }
 
 } } } // End namespaces builtins, bjam, hamigaki.
