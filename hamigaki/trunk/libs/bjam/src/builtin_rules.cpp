@@ -115,4 +115,36 @@ HAMIGAKI_BJAM_DECL string_list varnames(context& ctx)
     );
 }
 
+HAMIGAKI_BJAM_DECL string_list import(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    module& src_module = ctx.get_module(args[0].try_front());
+    const string_list& src_rules = args[1];
+    const boost::optional<std::string>& tgt_module_name = args[2].try_front();
+    module& tgt_module = ctx.get_module(tgt_module_name);
+    const string_list& tgt_rules = args[3];
+    const bool localize = !args[4].empty();
+
+    if (src_rules.size() != tgt_rules.size())
+        throw std::runtime_error("the count of rule names mismatch"); // FIXME
+
+    for (std::size_t i = 0, size = src_rules.size(); i < size; ++i)
+    {
+        rule_def_ptr src = src_module.rules.get_rule_definition(src_rules[i]);
+        if (!src)
+            throw std::runtime_error("rule not found"); // FIXME
+
+        rule_def_ptr def(new rule_definition(*src));
+        if (localize)
+            def->module_name = tgt_module_name;
+        def->exported = false;
+
+        tgt_module.rules.set_rule_definition(tgt_rules[i], def);
+    }
+
+    return string_list();
+}
+
 } } } // End namespaces builtins, bjam, hamigaki.

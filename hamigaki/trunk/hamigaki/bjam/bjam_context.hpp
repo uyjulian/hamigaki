@@ -43,6 +43,14 @@ public:
         params.push_back(boost::assign::list_of("module")("?"));
         set_native_rule("RULENAMES", params, &builtins::rulenames);
         set_native_rule("VARNAMES", params, &builtins::varnames);
+
+        params.clear();
+        params.push_back(boost::assign::list_of("source_module")("?"));
+        params.push_back(boost::assign::list_of("source_rules")("*"));
+        params.push_back(boost::assign::list_of("target_module")("?"));
+        params.push_back(boost::assign::list_of("target_rules")("*"));
+        params.push_back(boost::assign::list_of("localize")("?"));
+        set_native_rule("IMPORT", params, &builtins::import);
     }
 
     frame& current_frame()

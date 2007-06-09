@@ -13,6 +13,7 @@
 #include <hamigaki/iterator/optional_iterator.hpp>
 #include <boost/assert.hpp>
 #include <boost/operators.hpp>
+#include <boost/optional.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/version.hpp>
 #include <string>
@@ -260,6 +261,14 @@ public:
             }
         }
         return *this;
+    }
+
+    boost::optional<std::string> try_front() const
+    {
+        if (impl_type* p = pimpl_.get())
+            return p->front();
+        else
+            return boost::optional<std::string>();
     }
 
 private:

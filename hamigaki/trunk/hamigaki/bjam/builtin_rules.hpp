@@ -30,6 +30,8 @@ HAMIGAKI_BJAM_DECL string_list exit(context& ctx);
 HAMIGAKI_BJAM_DECL string_list rulenames(context& ctx);
 HAMIGAKI_BJAM_DECL string_list varnames(context& ctx);
 
+HAMIGAKI_BJAM_DECL string_list import(context& ctx);
+
 } // namespace builtins
 
 } } // End namespaces bjam, hamigaki.
