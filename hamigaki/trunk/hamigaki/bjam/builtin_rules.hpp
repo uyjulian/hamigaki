@@ -34,6 +34,8 @@ HAMIGAKI_BJAM_DECL string_list import(context& ctx);
 
 } // namespace builtins
 
+HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx);
+
 } } // End namespaces bjam, hamigaki.
 
 #ifdef BOOST_HAS_ABI_HEADERS

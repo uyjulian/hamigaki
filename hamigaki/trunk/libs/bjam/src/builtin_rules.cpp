@@ -14,12 +14,16 @@
 #include <hamigaki/bjam/bjam_exceptions.hpp>
 #include <hamigaki/iterator/first_iterator.hpp>
 #include <hamigaki/iterator/ostream_iterator.hpp>
+#include <boost/assign/list_of.hpp>
 #include <boost/iterator/filter_iterator.hpp>
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
 
-namespace hamigaki { namespace bjam { namespace builtins {
+namespace hamigaki { namespace bjam {
+
+namespace builtins
+{
 
 namespace
 {
@@ -147,4 +151,33 @@ HAMIGAKI_BJAM_DECL string_list import(context& ctx)
     return string_list();
 }
 
-} } } // End namespaces builtins, bjam, hamigaki.
+} // namespace builtins
+
+HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
+{
+    list_of_list params;
+    ctx.set_native_rule("ECHO", params, &builtins::echo);
+    ctx.set_native_rule("Echo", params, &builtins::echo, false);
+    ctx.set_native_rule("echo", params, &builtins::echo, false);
+
+    params.push_back(boost::assign::list_of("messages")("*"));
+    params.push_back(boost::assign::list_of("result-value")("?"));
+    ctx.set_native_rule("EXIT", params, &builtins::exit);
+    ctx.set_native_rule("Exit", params, &builtins::exit, false);
+    ctx.set_native_rule("exit", params, &builtins::exit, false);
+
+    params.clear();
+    params.push_back(boost::assign::list_of("module")("?"));
+    ctx.set_native_rule("RULENAMES", params, &builtins::rulenames);
+    ctx.set_native_rule("VARNAMES", params, &builtins::varnames);
+
+    params.clear();
+    params.push_back(boost::assign::list_of("source_module")("?"));
+    params.push_back(boost::assign::list_of("source_rules")("*"));
+    params.push_back(boost::assign::list_of("target_module")("?"));
+    params.push_back(boost::assign::list_of("target_rules")("*"));
+    params.push_back(boost::assign::list_of("localize")("?"));
+    ctx.set_native_rule("IMPORT", params, &builtins::import);
+}
+
+} } // End namespaces bjam, hamigaki.

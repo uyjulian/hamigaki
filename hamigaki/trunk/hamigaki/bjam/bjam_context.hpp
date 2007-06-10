@@ -14,7 +14,6 @@
 #include <hamigaki/bjam/util/frame.hpp>
 #include <hamigaki/bjam/util/target.hpp>
 #include <hamigaki/bjam/builtin_rules.hpp>
-#include <boost/assign/list_of.hpp>
 #include <boost/noncopyable.hpp>
 
 namespace hamigaki { namespace bjam {
@@ -27,30 +26,7 @@ public:
     context()
     {
         frames_.push_back(frame(root_module_));
-
-        list_of_list params;
-        set_native_rule("ECHO", params, &builtins::echo);
-        set_native_rule("Echo", params, &builtins::echo, false);
-        set_native_rule("echo", params, &builtins::echo, false);
-
-        params.push_back(boost::assign::list_of("messages")("*"));
-        params.push_back(boost::assign::list_of("result-value")("?"));
-        set_native_rule("EXIT", params, &builtins::exit);
-        set_native_rule("Exit", params, &builtins::exit, false);
-        set_native_rule("exit", params, &builtins::exit, false);
-
-        params.clear();
-        params.push_back(boost::assign::list_of("module")("?"));
-        set_native_rule("RULENAMES", params, &builtins::rulenames);
-        set_native_rule("VARNAMES", params, &builtins::varnames);
-
-        params.clear();
-        params.push_back(boost::assign::list_of("source_module")("?"));
-        params.push_back(boost::assign::list_of("source_rules")("*"));
-        params.push_back(boost::assign::list_of("target_module")("?"));
-        params.push_back(boost::assign::list_of("target_rules")("*"));
-        params.push_back(boost::assign::list_of("localize")("?"));
-        set_native_rule("IMPORT", params, &builtins::import);
+        set_builtin_rules(*this);
     }
 
     frame& current_frame()
