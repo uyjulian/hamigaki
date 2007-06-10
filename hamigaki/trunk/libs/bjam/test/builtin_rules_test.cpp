@@ -111,6 +111,7 @@ void rulenames_test()
             ("ECHO")
             ("EXIT")
             ("IMPORT")
+            ("IMPORT_MODULE")
             ("RULENAMES")
             ("VARNAMES")
         ;
@@ -158,6 +159,23 @@ void import_test()
     }
 }
 
+void import_module_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+
+    args.push_back(boost::assign::list_of("m1")("m2"));
+    args.push_back(boost::assign::list_of("m3"));
+    BOOST_CHECK(ctx.invoke_rule("IMPORT_MODULE", args).empty());
+
+    std::set<std::string> expect = boost::assign::list_of("m1")("m2");
+    const std::set<std::string>& result =
+        ctx.get_module(std::string("m3")).imported_modules;
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("builtin rules test");
@@ -166,5 +184,6 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&rulenames_test));
     test->add(BOOST_TEST_CASE(&varnames_test));
     test->add(BOOST_TEST_CASE(&import_test));
+    test->add(BOOST_TEST_CASE(&import_module_test));
     return test;
 }

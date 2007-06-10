@@ -25,6 +25,7 @@ test-suite bjam :
     [ run expression_test.cpp ]
     [ run get_variable_values_test.cpp ]
     [ run keyword_p_test.cpp ]
+    [ run module_test.cpp ]
     [ run non_punct_p_test.cpp ]
     [ run path_test.cpp ]
     [ run string_p_test.cpp ]

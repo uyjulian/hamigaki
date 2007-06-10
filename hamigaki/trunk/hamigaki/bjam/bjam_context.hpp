@@ -52,6 +52,20 @@ public:
             return root_module_;
     }
 
+    const module& get_module(const boost::optional<std::string>& name) const
+    {
+        if (name)
+        {
+            typedef std::map<std::string,module>::const_iterator iter_type;
+            iter_type i = modules_.find(*name);
+            if (i == modules_.end())
+                throw std::runtime_error("module not found"); // FIXME
+            return i->second;
+        }
+        else
+            return root_module_;
+    }
+
     void change_module(const boost::optional<std::string>& name)
     {
         frame& f = current_frame();
@@ -95,6 +109,15 @@ public:
         if (rule_def_ptr p = root_module_.rules.get_rule_definition(name))
             return p;
 
+        std::string::size_type dot = name.find('.');
+        if (dot != std::string::npos)
+        {
+            std::string module_name(name, 0u, dot);
+            std::string rule_name(name, dot+1);
+
+            return this->get_imported_rule_definition(module_name, rule_name);
+        }
+
         return rule_def_ptr();
     }
 
@@ -105,6 +128,26 @@ private:
     std::map<std::string,module> modules_;
     std::map<std::string,target> targets_;
     std::vector<frame> frames_;
+
+    rule_def_ptr get_imported_rule_definition(
+        const std::string& module_name, const std::string& rule_name) const
+    {
+        const frame& f = frames_.back();
+
+        const std::set<std::string>& table =
+            f.current_module().imported_modules;
+        if (table.find(module_name) == table.end())
+            return rule_def_ptr();
+
+        const module& m = this->get_module(module_name);
+        if (rule_def_ptr p = m.rules.get_rule_definition(rule_name))
+        {
+            if (p->exported)
+                return p;
+        }
+
+        return rule_def_ptr();
+    }
 };
 
 class scoped_change_module : private boost::noncopyable
