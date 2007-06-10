@@ -12,6 +12,7 @@
 
 #include <hamigaki/bjam/grammars/bjam_expression_grammar_gen.hpp>
 #include <hamigaki/bjam/grammars/bjam_grammar_gen.hpp>
+#include <hamigaki/bjam/util/class.hpp>
 #include <hamigaki/bjam/util/pattern.hpp>
 #include <hamigaki/bjam/bjam_context.hpp>
 #include <climits> // required for <boost/spirit/phoenix/operators.hpp>
@@ -159,6 +160,22 @@ struct for_block_impl
 };
 
 const ::phoenix::functor<for_block_impl> for_block = for_block_impl();
+
+
+struct create_class_impl
+{
+    typedef std::string result_type;
+
+    std::string operator()(context& ctx, const list_of_list& lol) const
+    {
+        if (lol[0].empty())
+            throw std::runtime_error("missing class name"); // FIXME
+
+        return make_class(ctx, lol[0][0], lol[1]);
+    }
+};
+
+const ::phoenix::functor<create_class_impl> create_class = create_class_impl();
 
 
 struct while_block_impl

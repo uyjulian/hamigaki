@@ -124,6 +124,15 @@ struct module_stmt_closure
     member2 name;
 };
 
+struct class_stmt_closure
+    : boost::spirit::closure<
+          class_stmt_closure
+        , std::string
+    >
+{
+    member1 module_name;
+};
+
 struct while_stmt_closure
     : boost::spirit::closure<
           while_stmt_closure

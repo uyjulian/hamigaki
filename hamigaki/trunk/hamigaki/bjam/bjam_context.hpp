@@ -66,6 +66,11 @@ public:
             return root_module_;
     }
 
+    bool is_defined_module(const std::string& name) const
+    {
+        return modules_.find(name) != modules_.end();
+    }
+
     void change_module(const boost::optional<std::string>& name)
     {
         frame& f = current_frame();

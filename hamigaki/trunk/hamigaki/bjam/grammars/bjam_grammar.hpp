@@ -91,6 +91,11 @@ struct bjam_grammar
 
         typedef boost::spirit::rule<
             ScannerT,
+            typename class_stmt_closure::context_t
+        > class_stmt_rule_t;
+
+        typedef boost::spirit::rule<
+            ScannerT,
             typename while_stmt_closure::context_t
         > while_stmt_rule_t;
 
@@ -125,6 +130,7 @@ struct bjam_grammar
         switch_stmt_rule_t switch_stmt;
         cases_rule_t cases;
         module_stmt_rule_t module_stmt;
+        class_stmt_rule_t class_stmt;
         while_stmt_rule_t while_stmt;
         list_rule_t if_stmt;
         rule_stmt_rule_t rule_stmt;
@@ -200,8 +206,7 @@ struct bjam_grammar
                 |   for_stmt
                 |   switch_stmt [rule.values = arg1]
                 |   module_stmt [rule.values = arg1]
-                |   keyword_p("class") >> lol
-                    >> keyword_p("{") >> block >> keyword_p("}")
+                |   class_stmt
                 |   while_stmt [rule.values = arg1]
                 |   if_stmt [rule.values = arg1]
                 |   rule_stmt
@@ -319,6 +324,20 @@ struct bjam_grammar
                     >> eval_in_module_d(self.context, module_stmt.name)
                     [
                         block [module_stmt.values = arg1]
+                    ]
+                    >> keyword_p("}")
+                ;
+
+            class_stmt
+                =   keyword_p("class")
+                    >> lol
+                    [
+                        class_stmt.module_name = create_class(ctx, arg1)
+                    ]
+                    >> keyword_p("{")
+                    >> eval_in_module_d(self.context, class_stmt.module_name)
+                    [
+                        block
                     ]
                     >> keyword_p("}")
                 ;

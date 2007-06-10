@@ -382,6 +382,20 @@ void module_test()
         result.begin(), result.end(), expect.begin(), expect.end());
 }
 
+void class_test()
+{
+    bjam::context ctx;
+
+    BOOST_CHECK(eval(ctx, "class c1 { }").empty());
+    BOOST_CHECK(eval(ctx, "class c2 : c1 { }").empty());
+    BOOST_CHECK(eval(ctx, "class c3 { rule r { } }").empty());
+    BOOST_CHECK(eval(ctx, "class c4 : c3 { }").empty());
+
+    bjam::module& m = ctx.get_module(std::string("class@c4"));
+    bjam::rule_def_ptr def = m.rules.get_rule_definition("c3.r");
+    BOOST_CHECK(def.get() != 0);
+}
+
 void on_test()
 {
     bjam::context ctx;
@@ -443,6 +457,7 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&switch_test));
     test->add(BOOST_TEST_CASE(&rule_test));
     test->add(BOOST_TEST_CASE(&module_test));
+    test->add(BOOST_TEST_CASE(&class_test));
     test->add(BOOST_TEST_CASE(&on_test));
     test->add(BOOST_TEST_CASE(&func_test));
     return test;
