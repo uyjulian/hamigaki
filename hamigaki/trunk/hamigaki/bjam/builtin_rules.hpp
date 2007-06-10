@@ -31,6 +31,7 @@ HAMIGAKI_BJAM_DECL string_list rulenames(context& ctx);
 HAMIGAKI_BJAM_DECL string_list varnames(context& ctx);
 
 HAMIGAKI_BJAM_DECL string_list import(context& ctx);
+HAMIGAKI_BJAM_DECL string_list export_(context& ctx);
 
 HAMIGAKI_BJAM_DECL string_list import_module(context& ctx);
 

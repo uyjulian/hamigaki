@@ -110,6 +110,7 @@ void rulenames_test()
         boost::assign::list_of
             ("ECHO")
             ("EXIT")
+            ("EXPORT")
             ("IMPORT")
             ("IMPORT_MODULE")
             ("RULENAMES")
@@ -159,6 +160,26 @@ void import_test()
     }
 }
 
+void export_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+    bjam::string_list rules;
+
+    BOOST_CHECK(ctx.invoke_rule("EXPORT", args).empty());
+
+
+    rules = ctx.invoke_rule("RULENAMES", args);
+    BOOST_CHECK(std::find(rules.begin(), rules.end(), "echo") == rules.end());
+
+    args.push_back(bjam::string_list());
+    args.push_back(boost::assign::list_of("echo"));
+    BOOST_CHECK(ctx.invoke_rule("EXPORT", args).empty());
+
+    rules = ctx.invoke_rule("RULENAMES", args);
+    BOOST_CHECK(std::find(rules.begin(), rules.end(), "echo") != rules.end());
+}
+
 void import_module_test()
 {
     bjam::context ctx;
@@ -184,6 +205,7 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&rulenames_test));
     test->add(BOOST_TEST_CASE(&varnames_test));
     test->add(BOOST_TEST_CASE(&import_test));
+    test->add(BOOST_TEST_CASE(&export_test));
     test->add(BOOST_TEST_CASE(&import_module_test));
     return test;
 }

@@ -151,6 +151,26 @@ HAMIGAKI_BJAM_DECL string_list import(context& ctx)
     return string_list();
 }
 
+HAMIGAKI_BJAM_DECL string_list export_(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    module& m = ctx.get_module(args[0].try_front());
+    const string_list& rules = args[1];
+
+    for (std::size_t i = 0, size = rules.size(); i < size; ++i)
+    {
+        rule_def_ptr def = m.rules.get_rule_definition(rules[i]);
+        if (!def)
+            throw std::runtime_error("rule not found"); // FIXME
+
+        def->exported = true;
+    }
+
+    return string_list();
+}
+
 HAMIGAKI_BJAM_DECL string_list import_module(context& ctx)
 {
     frame& f = ctx.current_frame();
@@ -191,6 +211,11 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     params.push_back(boost::assign::list_of("target_rules")("*"));
     params.push_back(boost::assign::list_of("localize")("?"));
     ctx.set_native_rule("IMPORT", params, &builtins::import);
+
+    params.clear();
+    params.push_back(boost::assign::list_of("module")("?"));
+    params.push_back(boost::assign::list_of("rules")("*"));
+    ctx.set_native_rule("EXPORT", params, &builtins::export_);
 
     params.clear();
     params.push_back(boost::assign::list_of("modules_to_import")("+"));
