@@ -184,6 +184,17 @@ HAMIGAKI_BJAM_DECL string_list import_module(context& ctx)
     return string_list();
 }
 
+HAMIGAKI_BJAM_DECL string_list instance(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    module& instance_module = ctx.get_module(args[0][0]);
+    instance_module.class_module = args[1][0];
+
+    return string_list();
+}
+
 } // namespace builtins
 
 HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
@@ -221,6 +232,11 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     params.push_back(boost::assign::list_of("modules_to_import")("+"));
     params.push_back(boost::assign::list_of("target_module")("?"));
     ctx.set_native_rule("IMPORT_MODULE", params, &builtins::import_module);
+
+    params.clear();
+    params.push_back(boost::assign::list_of("instance_module"));
+    params.push_back(boost::assign::list_of("class_module"));
+    ctx.set_native_rule("INSTANCE", params, &builtins::instance);
 }
 
 } } // End namespaces bjam, hamigaki.

@@ -113,6 +113,7 @@ void rulenames_test()
             ("EXPORT")
             ("IMPORT")
             ("IMPORT_MODULE")
+            ("INSTANCE")
             ("RULENAMES")
             ("VARNAMES")
         ;
@@ -197,6 +198,19 @@ void import_module_test()
         result.begin(), result.end(), expect.begin(), expect.end());
 }
 
+void instance_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+
+    args.push_back(boost::assign::list_of("obj"));
+    args.push_back(boost::assign::list_of("cls"));
+    BOOST_CHECK(ctx.invoke_rule("INSTANCE", args).empty());
+
+    boost::optional<std::string> expect(std::string("cls"));
+    BOOST_CHECK_EQUAL(ctx.get_module(std::string("obj")).class_module, expect);
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("builtin rules test");
@@ -207,5 +221,6 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&import_test));
     test->add(BOOST_TEST_CASE(&export_test));
     test->add(BOOST_TEST_CASE(&import_module_test));
+    test->add(BOOST_TEST_CASE(&instance_test));
     return test;
 }

@@ -35,6 +35,8 @@ HAMIGAKI_BJAM_DECL string_list export_(context& ctx);
 
 HAMIGAKI_BJAM_DECL string_list import_module(context& ctx);
 
+HAMIGAKI_BJAM_DECL string_list instance(context& ctx);
+
 } // namespace builtins
 
 HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx);
