@@ -21,6 +21,7 @@ template bjam
       <library-path>$(BOOST_LIBPATH)
       <vc-8_0><*><cflags>-wd4996
       <vc-8_0><*><cflags>-wd4819
+      find-boost-filesystem-lib
     : # build variants
     ;
 
