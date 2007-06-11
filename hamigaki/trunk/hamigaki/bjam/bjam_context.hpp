@@ -10,13 +10,21 @@
 #ifndef HAMIGAKI_BJAM_BJAM_CONTEXT_HPP
 #define HAMIGAKI_BJAM_BJAM_CONTEXT_HPP
 
+#include <hamigaki/bjam/bjam_config.hpp>
 #include <hamigaki/bjam/grammars/bjam_grammar_gen.hpp>
 #include <hamigaki/bjam/util/frame.hpp>
 #include <hamigaki/bjam/util/target.hpp>
-#include <hamigaki/bjam/builtin_rules.hpp>
 #include <boost/noncopyable.hpp>
 
+#ifdef BOOST_HAS_ABI_HEADERS
+    #include BOOST_ABI_PREFIX
+#endif
+
 namespace hamigaki { namespace bjam {
+
+class context;
+
+HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx);
 
 class context : private boost::noncopyable
 {
@@ -260,5 +268,9 @@ context::invoke_rule(const std::string& name, const list_of_list& args)
 }
 
 } } // End namespaces bjam, hamigaki.
+
+#ifdef BOOST_HAS_ABI_HEADERS
+    #include BOOST_ABI_SUFFIX
+#endif
 
 #endif // HAMIGAKI_BJAM_BJAM_CONTEXT_HPP
