@@ -30,10 +30,13 @@ void check_bases(const context& ctx, const string_list& bases)
 bool is_localized_rule(
     const context& ctx, const rule_def_ptr& def, const std::string& module_name)
 {
-    if (def->module_name == module_name)
+    if (!def->module_name)
+        return false;
+
+    if (*def->module_name == module_name)
         return true;
 
-    const module& m = ctx.get_module(def->module_name);
+    const module& m = ctx.get_module(*def->module_name);
 
     if (const std::string* p = m.class_module.get_ptr())
         return *p == module_name;
