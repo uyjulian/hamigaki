@@ -82,6 +82,7 @@ struct include_impl
             return;
 
         const std::string& target_name = names[0];
+        scoped_on_target gurad(ctx, target_name);
         const std::string& filename = search_target(ctx, target_name);
 
         std::string str;
@@ -99,7 +100,6 @@ struct include_impl
         const char* first = str.c_str();
         const char* last = first + str.size();
 
-        scoped_on_target gurad(ctx, target_name);
         grammar_type::parse_bjam_grammar(first, last, ctx);
     }
 };
