@@ -443,6 +443,13 @@ void func_test()
         result.begin(), result.end(), expect.begin(), expect.end());
 }
 
+void include_test()
+{
+    bjam::context ctx;
+
+    BOOST_CHECK(eval(ctx, "include include_test.jam ;").empty());
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("bjam_grammar test");
@@ -460,5 +467,6 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&class_test));
     test->add(BOOST_TEST_CASE(&on_test));
     test->add(BOOST_TEST_CASE(&func_test));
+    test->add(BOOST_TEST_CASE(&include_test));
     return test;
 }

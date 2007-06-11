@@ -14,9 +14,12 @@
 #include <hamigaki/bjam/grammars/bjam_grammar_gen.hpp>
 #include <hamigaki/bjam/util/class.hpp>
 #include <hamigaki/bjam/util/pattern.hpp>
+#include <hamigaki/bjam/util/search.hpp>
 #include <hamigaki/bjam/bjam_context.hpp>
 #include <climits> // required for <boost/spirit/phoenix/operators.hpp>
 #include <boost/spirit/phoenix.hpp>
+#include <fstream>
+#include <iterator>
 
 namespace hamigaki { namespace bjam {
 
@@ -65,6 +68,43 @@ struct eval_expr_impl
 };
 
 const ::phoenix::functor<eval_expr_impl> eval_expr = eval_expr_impl();
+
+
+struct include_impl
+{
+    typedef void result_type;
+
+    void operator()(context& ctx, const string_list& names) const
+    {
+        typedef bjam_grammar_gen<const char*> grammar_type;
+
+        if (names.empty())
+            return;
+
+        const std::string& target_name = names[0];
+        const std::string& filename = search_target(ctx, target_name);
+
+        std::string str;
+        {
+            std::ifstream is(filename.c_str(), std::ios_base::binary);
+            if (!is)
+                throw std::runtime_error("file not found"); // FIXME
+
+            str.assign(
+                std::istreambuf_iterator<char>(is),
+                (std::istreambuf_iterator<char>())
+            );
+        }
+
+        const char* first = str.c_str();
+        const char* last = first + str.size();
+
+        scoped_on_target gurad(ctx, target_name);
+        grammar_type::parse_bjam_grammar(first, last, ctx);
+    }
+};
+
+const ::phoenix::functor<include_impl> include = include_impl();
 
 
 struct var_set_impl

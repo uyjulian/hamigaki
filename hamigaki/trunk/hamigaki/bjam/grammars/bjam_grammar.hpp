@@ -122,6 +122,7 @@ struct bjam_grammar
         local_set_stmt_rule_t local_set_stmt;
         lol_rule_t arglist;
         list_rule_t rule;
+        rule_t include_stmt;
         invoke_stmt_rule_t invoke_stmt;
         set_stmt_rule_t set_stmt;
         set_on_stmt_rule_t set_on_stmt;
@@ -196,7 +197,7 @@ struct bjam_grammar
                 =   keyword_p("{")
                     >> block [rule.values = arg1]
                     >> keyword_p("}")
-                |   keyword_p("include") >> list >> keyword_p(";")
+                |   include_stmt
                 |   invoke_stmt [rule.values = arg1]
                 |   set_stmt [rule.values = arg1]
                 |   set_on_stmt [rule.values = arg1]
@@ -215,6 +216,12 @@ struct bjam_grammar
                     >> eps_p(keyword_p("{"))
                     >> lexeme_d[ '{' >> string_p ]
                     >> keyword_p("}")
+                ;
+
+            include_stmt
+                =   keyword_p("include")
+                    >> list [include(ctx, arg1)]
+                    >> keyword_p(";")
                 ;
 
             invoke_stmt

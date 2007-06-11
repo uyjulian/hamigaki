@@ -10,8 +10,12 @@
 project hamigaki/bjam
     : requirements
       <link>shared:<define>HAMIGAKI_BJAM_DYN_LINK
+      <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
+      <library>/boost/filesystem//boost_filesystem
     : usage-requirements
       <link>shared:<define>HAMIGAKI_BJAM_DYN_LINK
+      <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
+      <library>/boost/filesystem//boost_filesystem
     : source-location ../src
     ;
 
@@ -22,6 +26,7 @@ SOURCES =
     instantiate_bjam_grammar
     path
     pattern
+    search
     variable_expansion
     ;
 

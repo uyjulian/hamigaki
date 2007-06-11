@@ -16,6 +16,7 @@ SOURCES =
     instantiate_bjam_grammar
     path
     pattern
+    search
     variable_expansion
     ;
 
@@ -37,6 +38,7 @@ dll hamigaki_bjam
         ../src/$(SOURCES).cpp
     :
         <library-path>$(BOOST_LIBPATH)
+        find-boost-filesystem-lib
         [ common-names ]
         <define>HAMIGAKI_BJAM_DYN_LINK=1
         <runtime-link>dynamic
