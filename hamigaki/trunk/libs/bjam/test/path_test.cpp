@@ -33,7 +33,7 @@ void split_path_test()
     BOOST_CHECK_EQUAL(ph.suffix, ".suffix");
     BOOST_CHECK_EQUAL(ph.member, "member");
 
-#if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
+#if defined(BOOST_WINDOWS)
     bjam::split_path(ph, "<grist>C:\\dir\\base.suffix(member)");
     BOOST_CHECK_EQUAL(ph.grist, "<grist>");
     BOOST_CHECK_EQUAL(ph.root, "");
@@ -70,7 +70,7 @@ void make_path_test()
     ph.base = "base";
     ph.suffix = ".suffix";
     ph.member = "member";
-#if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
+#if defined(BOOST_WINDOWS)
     BOOST_CHECK_EQUAL(bjam::make_path(ph), "<grist>/dir\\base.suffix(member)");
 #else
     BOOST_CHECK_EQUAL(bjam::make_path(ph), "<grist>/dir/base.suffix(member)");
@@ -109,7 +109,7 @@ void make_path_test()
     ph.member = "member";
     BOOST_CHECK_EQUAL(bjam::make_path(ph), "<grist>/root/dir(member)");
 
-#if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
+#if defined(BOOST_WINDOWS)
     ph.grist = "<grist>";
     ph.root = "C:\\";
     ph.dir = "\\dir\\";

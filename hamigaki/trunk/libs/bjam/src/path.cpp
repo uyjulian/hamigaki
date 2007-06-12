@@ -13,11 +13,10 @@
 #include <hamigaki/detail/random.hpp>
 #include <boost/format.hpp>
 
-#if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
+#if defined(BOOST_WINDOWS)
     #include <boost/scoped_array.hpp>
     #include <boost/assert.hpp>
     #include <windows.h>
-    #define HAMIGAKI_BJAM_WINDOWS
 #else
     #include <cstdlib>
 #endif
@@ -27,7 +26,7 @@ namespace hamigaki { namespace bjam {
 namespace
 {
 
-#if defined(HAMIGAKI_BJAM_WINDOWS)
+#if defined(BOOST_WINDOWS)
 const char path_delimiter = '\\';
 #else
 const char path_delimiter = '/';
@@ -35,7 +34,7 @@ const char path_delimiter = '/';
 
 inline bool is_path_delimiter(char c)
 {
-#if defined(HAMIGAKI_BJAM_WINDOWS)
+#if defined(BOOST_WINDOWS)
     return (c == '/') || (c == '\\');
 #else
     return c == '/';
@@ -44,7 +43,7 @@ inline bool is_path_delimiter(char c)
 
 inline std::string::size_type rfind_path_delimiter(const std::string& s)
 {
-#if defined(HAMIGAKI_BJAM_WINDOWS)
+#if defined(BOOST_WINDOWS)
     return s.find_last_of("/\\");
 #else
     return s.rfind('/');
@@ -55,7 +54,7 @@ inline bool is_rooted(const std::string& s)
 {
     if (is_path_delimiter(s[0]))
         return true;
-#if defined(HAMIGAKI_BJAM_WINDOWS)
+#if defined(BOOST_WINDOWS)
     else if ((s.size() >= 2) && (s[1] == ';'))
         return true;
 #endif
@@ -188,7 +187,7 @@ HAMIGAKI_BJAM_DECL std::string make_path(const path_components& ph)
 
 HAMIGAKI_BJAM_DECL std::string tmp_directory()
 {
-#if defined(HAMIGAKI_BJAM_WINDOWS)
+#if defined(BOOST_WINDOWS)
     ::DWORD size = ::GetTempPathA(0, 0);
     BOOST_ASSERT(size != 0);
 
