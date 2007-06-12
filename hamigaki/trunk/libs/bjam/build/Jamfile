@@ -12,6 +12,7 @@ subproject libs/bjam/build ;
 SOURCES =
     builtin_rules
     class
+    glob
     instantiate_bjam_exprgr
     instantiate_bjam_grammar
     path
