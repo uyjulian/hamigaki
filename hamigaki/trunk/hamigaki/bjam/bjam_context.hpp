@@ -24,6 +24,7 @@ namespace hamigaki { namespace bjam {
 
 class context;
 
+HAMIGAKI_BJAM_DECL void set_predefined_variables(context& ctx);
 HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx);
 
 class context : private boost::noncopyable
@@ -34,6 +35,7 @@ public:
     context()
     {
         frames_.push_back(frame(root_module_));
+        set_predefined_variables(*this);
         set_builtin_rules(*this);
     }
 

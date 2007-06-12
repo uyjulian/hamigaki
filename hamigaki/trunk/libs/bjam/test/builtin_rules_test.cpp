@@ -129,6 +129,9 @@ void varnames_test()
     bjam::string_list result;
     bjam::string_list expect;
 
+    // clear pre-defined variables
+    ctx.get_module(boost::none).variables.clear();
+
     result = ctx.invoke_rule("VARNAMES", args);
     BOOST_CHECK_EQUAL_COLLECTIONS(
         result.begin(), result.end(), expect.begin(), expect.end());

@@ -52,6 +52,11 @@ public:
             v = values;
     }
 
+    void clear()
+    {
+        table_.clear();
+    }
+
     void swap_values(const std::string& name, string_list& values)
     {
         table_[name].swap(values);

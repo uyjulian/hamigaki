@@ -26,6 +26,7 @@ SOURCES =
     instantiate_bjam_grammar
     path
     pattern
+    predefined_variables
     search
     variable_expansion
     ;
