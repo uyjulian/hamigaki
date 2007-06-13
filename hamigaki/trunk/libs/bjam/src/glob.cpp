@@ -40,10 +40,7 @@ string_list glob_impl(
     string_list result;
 
     fs::path ph(dir, fs::native);
-    if (!ph.has_root_directory())
-        ph = work / ph;
-    else if (!ph.has_root_name())
-        ph = work.root_name() / ph;
+    ph = fs::complete(ph, work);
 
     path_components compo;
     compo.dir = dir;
@@ -66,10 +63,11 @@ string_list glob_impl(
             continue;
         std::string leaf = it->path().leaf();
 #endif
+        std::string s = leaf;
         if (case_insensitive)
-            algo::to_lower(leaf);
+            algo::to_lower(s);
 
-        if (pattern_match(ptn, leaf))
+        if (pattern_match(ptn, s))
         {
             compo.base = leaf;
             result += make_path(compo);
@@ -116,12 +114,20 @@ glob_recursive_impl(
         {
             path_components compo;
             compo.dir = dir;
-            compo.base = pattern;
+            compo.base = ptn;
 
-            const std::string& ph = make_path(compo);
+            const std::string& new_dir = make_path(compo);
+            fs::path ph(new_dir, fs::no_check);
+            ph = fs::complete(ph, work);
 
-            if (fs::is_directory(fs::complete(fs::path(ph,fs::no_check), work)))
-                return glob_recursive_impl(work, ph, rest_ptn);
+#if BOOST_VERSION < 103400
+            if (fs::exists(ph) && fs::is_directory(ph))
+#else
+            if (fs::is_directory(ph))
+#endif
+            {
+                return glob_recursive_impl(work, new_dir, rest_ptn);
+            }
             else
                 return string_list();
         }
@@ -154,6 +160,15 @@ glob_recursive(const std::string& work, const std::string& pattern)
     {
         return glob_recursive_impl(
             work_ph, pattern.substr(0, 3), pattern.substr(3));
+    }
+#if defined(BOOST_WINDOWS)
+    else if ((pattern[0] == '/') || (pattern[0] == '\\'))
+#else
+    else if (pattern[0] == '/')
+#endif
+    {
+        return glob_recursive_impl(
+            work_ph, pattern.substr(0, 1), pattern.substr(1));
     }
     else
         return glob_recursive_impl(work_ph, "", pattern);
