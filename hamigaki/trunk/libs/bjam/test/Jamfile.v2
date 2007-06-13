@@ -24,6 +24,7 @@ test-suite bjam :
     [ run expand_variable_test.cpp ]
     [ run expression_test.cpp ]
     [ run get_variable_values_test.cpp ]
+    [ run glob_test.cpp : $(HAMIGAKI_ROOT) ]
     [ run keyword_p_test.cpp ]
     [ run module_test.cpp ]
     [ run non_punct_p_test.cpp ]

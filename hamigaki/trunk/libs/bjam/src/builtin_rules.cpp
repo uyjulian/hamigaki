@@ -9,6 +9,7 @@
 
 #define HAMIGAKI_BJAM_SOURCE
 #define NOMINMAX
+#include <hamigaki/bjam/util/glob.hpp>
 #include <hamigaki/bjam/bjam_context.hpp>
 #include <hamigaki/bjam/builtin_rules.hpp>
 #include <hamigaki/bjam/bjam_exceptions.hpp>
@@ -75,6 +76,47 @@ HAMIGAKI_BJAM_DECL string_list exit(context& ctx)
     throw exit_exception(os.str(), code);
 
     BOOST_UNREACHABLE_RETURN(string_list())
+}
+
+HAMIGAKI_BJAM_DECL string_list glob(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    const string_list& dirs = args[0];
+    const string_list& patterns = args[1];
+    const bool flag = !args[2].empty();
+
+    string_list result;
+
+    for (std::size_t i = 0; i < dirs.size(); ++i)
+    {
+        for (std::size_t j = 0; j < patterns.size(); ++j)
+        {
+            result += bjam::glob(
+                ctx.working_directory(), dirs[i], patterns[j], flag);
+        }
+    }
+
+    return result;
+}
+
+HAMIGAKI_BJAM_DECL string_list glob_recursive(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    const string_list& patterns = args[0];
+
+    string_list result;
+
+    for (std::size_t i = 0; i < patterns.size(); ++i)
+    {
+        result += bjam::glob_recursive(
+            ctx.working_directory(), patterns[i]);
+    }
+
+    return result;
 }
 
 HAMIGAKI_BJAM_DECL string_list rulenames(context& ctx)
@@ -209,6 +251,17 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     ctx.set_native_rule("EXIT", params, &builtins::exit);
     ctx.set_native_rule("Exit", params, &builtins::exit, false);
     ctx.set_native_rule("exit", params, &builtins::exit, false);
+
+    params.clear();
+    params.push_back(boost::assign::list_of("directories")("*"));
+    params.push_back(boost::assign::list_of("patterns")("*"));
+    params.push_back(boost::assign::list_of("case-insensitive")("?"));
+    ctx.set_native_rule("GLOB", params, &builtins::glob);
+    ctx.set_native_rule("Glob", params, &builtins::glob, false);
+
+    params.clear();
+    params.push_back(boost::assign::list_of("patterns")("*"));
+    ctx.set_native_rule("GLOB-RECURSIVELY", params, &builtins::glob_recursive);
 
     params.clear();
     params.push_back(boost::assign::list_of("module")("?"));

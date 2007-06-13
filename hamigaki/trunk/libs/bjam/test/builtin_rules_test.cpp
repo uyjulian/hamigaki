@@ -99,6 +99,25 @@ void exit_test()
     );
 }
 
+void glob_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+
+    args.push_back(boost::assign::list_of("."));
+    args.push_back(boost::assign::list_of("*.cpp"));
+    BOOST_CHECK(!ctx.invoke_rule("GLOB", args).empty());
+}
+
+void glob_recursive_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+
+    args.push_back(boost::assign::list_of("./*.cpp"));
+    BOOST_CHECK(!ctx.invoke_rule("GLOB-RECURSIVELY", args).empty());
+}
+
 void rulenames_test()
 {
     bjam::context ctx;
@@ -111,6 +130,8 @@ void rulenames_test()
             ("ECHO")
             ("EXIT")
             ("EXPORT")
+            ("GLOB")
+            ("GLOB-RECURSIVELY")
             ("IMPORT")
             ("IMPORT_MODULE")
             ("INSTANCE")
@@ -219,6 +240,8 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     ut::test_suite* test = BOOST_TEST_SUITE("builtin rules test");
     test->add(BOOST_TEST_CASE(&echo_test));
     test->add(BOOST_TEST_CASE(&exit_test));
+    test->add(BOOST_TEST_CASE(&glob_test));
+    test->add(BOOST_TEST_CASE(&glob_recursive_test));
     test->add(BOOST_TEST_CASE(&rulenames_test));
     test->add(BOOST_TEST_CASE(&varnames_test));
     test->add(BOOST_TEST_CASE(&import_test));

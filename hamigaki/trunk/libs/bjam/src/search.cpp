@@ -24,10 +24,10 @@ std::string search_target(context& ctx, const std::string& name)
     frame& f = ctx.current_frame();
     module& m = f.current_module();
 
-    path_components ph;
-    split_path(ph, name);
-    ph.grist.clear();
-    ph.member.clear();
+    path_components compo;
+    split_path(compo, name);
+    compo.grist.clear();
+    compo.member.clear();
 
     const string_list& locate = m.variables.get_values("LOCATE");
     const string_list& search_list = m.variables.get_values("SEARCH");
@@ -37,16 +37,16 @@ std::string search_target(context& ctx, const std::string& name)
 
     if (!locate.empty())
     {
-        ph.root = locate[0];
-        filename = make_path(ph);
+        compo.root = locate[0];
+        filename = make_path(compo);
         found = true;
     }
     else if (!search_list.empty())
     {
         for (std::size_t i = 0, size = search_list.size(); i < size; ++i)
         {
-            ph.root = locate[0];
-            filename = make_path(ph);
+            compo.root = locate[0];
+            filename = make_path(compo);
 
             if (fs::exists(fs::path(filename, fs::native)))
             {
@@ -58,8 +58,10 @@ std::string search_target(context& ctx, const std::string& name)
 
     if (!found)
     {
-        ph.root.clear();
-        filename = make_path(ph);
+        compo.root.clear();
+        fs::path ph(make_path(compo), fs::native);
+        fs::path work(ctx.working_directory(), fs::native);
+        filename = fs::complete(ph, work).native_file_string();
     }
 
     return filename;

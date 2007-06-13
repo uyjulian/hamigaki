@@ -13,11 +13,11 @@ import testing ;
 
 DEPENDS all : test ;
 
-rule bjam-test ( sources + : requirements * )
+rule bjam-test ( sources + : requirements * : args * )
 {
     return [
         run $(sources) <lib>../build/hamigaki_bjam
-        :
+        : $(args)
         :
         :
         <define>BOOST_ALL_NO_LIB=1
@@ -41,6 +41,7 @@ test-suite bjam :
     [ bjam-test expand_variable_test.cpp : ]
     [ bjam-test expression_test.cpp : ]
     [ bjam-test get_variable_values_test.cpp : ]
+    [ bjam-test glob_test.cpp : : $(HAMIGAKI_ROOT) ]
     [ bjam-test keyword_p_test.cpp : ]
     [ bjam-test module_test.cpp : ]
     [ bjam-test non_punct_p_test.cpp : ]
