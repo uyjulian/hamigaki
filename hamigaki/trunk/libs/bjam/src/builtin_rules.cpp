@@ -17,6 +17,8 @@
 #include <hamigaki/iterator/ostream_iterator.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/iterator/filter_iterator.hpp>
+#include <boost/next_prior.hpp>
+#include <boost/regex.hpp>
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
@@ -114,6 +116,34 @@ HAMIGAKI_BJAM_DECL string_list glob_recursive(context& ctx)
     {
         result += bjam::glob_recursive(
             ctx.working_directory(), patterns[i]);
+    }
+
+    return result;
+}
+
+HAMIGAKI_BJAM_DECL string_list match(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    const string_list& regexps = args[0];
+    const string_list& list = args[1];
+
+    string_list result;
+
+    for (std::size_t j = 0; j < regexps.size(); ++j)
+    {
+        // Note: bjam's regex is not the same as "extended" and "egrep"
+        boost::regex rex(regexps[j], boost::regex_constants::extended);
+        for (std::size_t i = 0; i < list.size(); ++i)
+        {
+            boost::smatch what;
+            if (regex_match(list[i], what, rex))
+            {
+                result.insert(
+                    result.end(), boost::next(what.begin()), what.end());
+            }
+        }
     }
 
     return result;
@@ -262,6 +292,10 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     params.clear();
     params.push_back(boost::assign::list_of("patterns")("*"));
     ctx.set_native_rule("GLOB-RECURSIVELY", params, &builtins::glob_recursive);
+
+    params.clear();
+    ctx.set_native_rule("MATCH", params, &builtins::match);
+    ctx.set_native_rule("Match", params, &builtins::match, false);
 
     params.clear();
     params.push_back(boost::assign::list_of("module")("?"));

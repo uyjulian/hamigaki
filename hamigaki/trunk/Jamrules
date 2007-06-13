@@ -79,6 +79,11 @@ rule find-boost-iostreams-lib ( toolset variant : properties * )
     return [ find-boost-lib iostreams $(toolset) $(variant) : $(properties) ] ;
 }
 
+rule find-boost-regex-lib ( toolset variant : properties * )
+{
+    return [ find-boost-lib regex $(toolset) $(variant) : $(properties) ] ;
+}
+
 rule find-boost-zlib-lib ( toolset variant : properties * )
 {
     if $(ZLIB_SOURCE)

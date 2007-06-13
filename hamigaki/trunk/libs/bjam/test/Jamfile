@@ -30,6 +30,7 @@ rule bjam-test ( sources + : requirements * : args * )
         <vc-7_1><*><linkflags>-INCREMENTAL:NO
         find-boost-unit_test_framework-lib
         find-boost-filesystem-lib
+        find-boost-regex-lib
         $(requirements)
     ] ;
 }

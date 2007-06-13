@@ -118,6 +118,22 @@ void glob_recursive_test()
     BOOST_CHECK(!ctx.invoke_rule("GLOB-RECURSIVELY", args).empty());
 }
 
+void match_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+    bjam::string_list result;
+    bjam::string_list expect;
+
+    expect = boost::assign::list_of("abc")("123")("def")("");
+
+    args.push_back(boost::assign::list_of("^([a-z]+)([0-9]*)$"));
+    args.push_back(boost::assign::list_of("abc123")("def"));
+    result = ctx.invoke_rule("MATCH", args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+}
+
 void rulenames_test()
 {
     bjam::context ctx;
@@ -135,6 +151,7 @@ void rulenames_test()
             ("IMPORT")
             ("IMPORT_MODULE")
             ("INSTANCE")
+            ("MATCH")
             ("RULENAMES")
             ("VARNAMES")
         ;
@@ -242,6 +259,7 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&exit_test));
     test->add(BOOST_TEST_CASE(&glob_test));
     test->add(BOOST_TEST_CASE(&glob_recursive_test));
+    test->add(BOOST_TEST_CASE(&match_test));
     test->add(BOOST_TEST_CASE(&rulenames_test));
     test->add(BOOST_TEST_CASE(&varnames_test));
     test->add(BOOST_TEST_CASE(&import_test));

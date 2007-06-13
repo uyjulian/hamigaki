@@ -42,6 +42,7 @@ dll hamigaki_bjam
     :
         <library-path>$(BOOST_LIBPATH)
         find-boost-filesystem-lib
+        find-boost-regex-lib
         [ common-names ]
         <define>HAMIGAKI_BJAM_DYN_LINK=1
         <runtime-link>dynamic

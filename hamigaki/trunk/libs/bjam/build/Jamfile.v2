@@ -12,10 +12,12 @@ project hamigaki/bjam
       <link>shared:<define>HAMIGAKI_BJAM_DYN_LINK
       <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
       <library>/boost/filesystem//boost_filesystem
+      <library>/boost/regex//boost_regex
     : usage-requirements
       <link>shared:<define>HAMIGAKI_BJAM_DYN_LINK
       <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
       <library>/boost/filesystem//boost_filesystem
+      <library>/boost/regex//boost_regex
     : source-location ../src
     ;
 
