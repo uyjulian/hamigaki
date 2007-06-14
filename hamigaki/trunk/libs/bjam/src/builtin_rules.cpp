@@ -43,7 +43,23 @@ struct is_exported
     }
 };
 
+inline void set_target_flags(context& ctx, unsigned flag)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+    const string_list& targets = args[0];
+
+    for (std::size_t i = 0; i < targets.size(); ++i)
+        ctx.get_target(targets[i]).flags |= flag;
+}
+
 } // namespace
+
+HAMIGAKI_BJAM_DECL string_list always(context& ctx)
+{
+    set_target_flags(ctx, target::force_update);
+    return string_list();
+}
 
 HAMIGAKI_BJAM_DECL string_list echo(context& ctx)
 {
@@ -123,6 +139,12 @@ HAMIGAKI_BJAM_DECL string_list glob_recursive(context& ctx)
     return result;
 }
 
+HAMIGAKI_BJAM_DECL string_list leaves(context& ctx)
+{
+    set_target_flags(ctx, target::leaves);
+    return string_list();
+}
+
 HAMIGAKI_BJAM_DECL string_list match(context& ctx)
 {
     frame& f = ctx.current_frame();
@@ -151,7 +173,49 @@ HAMIGAKI_BJAM_DECL string_list match(context& ctx)
     return result;
 }
 
-HAMIGAKI_BJAM_DECL string_list rulenames(context& ctx)
+HAMIGAKI_BJAM_DECL string_list no_care(context& ctx)
+{
+    set_target_flags(ctx, target::no_care);
+    return string_list();
+}
+
+HAMIGAKI_BJAM_DECL string_list not_file(context& ctx)
+{
+    set_target_flags(ctx, target::not_file);
+    return string_list();
+}
+
+HAMIGAKI_BJAM_DECL string_list no_update(context& ctx)
+{
+    set_target_flags(ctx, target::no_update);
+    return string_list();
+}
+
+HAMIGAKI_BJAM_DECL string_list temporary(context& ctx)
+{
+    set_target_flags(ctx, target::temporary);
+    return string_list();
+}
+
+HAMIGAKI_BJAM_DECL string_list is_file(context& ctx)
+{
+    set_target_flags(ctx, target::is_file);
+    return string_list();
+}
+
+HAMIGAKI_BJAM_DECL string_list fail_expected(context& ctx)
+{
+    set_target_flags(ctx, target::fail_expected);
+    return string_list();
+}
+
+HAMIGAKI_BJAM_DECL string_list rm_old(context& ctx)
+{
+    set_target_flags(ctx, target::rm_old);
+    return string_list();
+}
+
+HAMIGAKI_BJAM_DECL string_list rule_names(context& ctx)
 {
     frame& f = ctx.current_frame();
     const list_of_list& args = f.arguments();
@@ -172,7 +236,7 @@ HAMIGAKI_BJAM_DECL string_list rulenames(context& ctx)
     );
 }
 
-HAMIGAKI_BJAM_DECL string_list varnames(context& ctx)
+HAMIGAKI_BJAM_DECL string_list var_names(context& ctx)
 {
     frame& f = ctx.current_frame();
     const list_of_list& args = f.arguments();
@@ -326,6 +390,12 @@ HAMIGAKI_BJAM_DECL string_list calc(context& ctx)
 HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
 {
     list_of_list params;
+
+    params.clear();
+    ctx.set_native_rule("ALWAYS", params, &builtins::always);
+    ctx.set_native_rule("Always", params, &builtins::always, false);
+
+    params.clear();
     ctx.set_native_rule("ECHO", params, &builtins::echo);
     ctx.set_native_rule("Echo", params, &builtins::echo, false);
     ctx.set_native_rule("echo", params, &builtins::echo, false);
@@ -348,13 +418,44 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     ctx.set_native_rule("GLOB-RECURSIVELY", params, &builtins::glob_recursive);
 
     params.clear();
+    ctx.set_native_rule("LEAVES", params, &builtins::leaves);
+    ctx.set_native_rule("Leaves", params, &builtins::leaves, false);
+
+    params.clear();
     ctx.set_native_rule("MATCH", params, &builtins::match);
     ctx.set_native_rule("Match", params, &builtins::match, false);
 
     params.clear();
+    ctx.set_native_rule("NOCARE", params, &builtins::no_care);
+    ctx.set_native_rule("NoCare", params, &builtins::no_care, false);
+
+    params.clear();
+    ctx.set_native_rule("NOTFILE", params, &builtins::not_file);
+    ctx.set_native_rule("NotFile", params, &builtins::not_file, false);
+    ctx.set_native_rule("NOTIME", params, &builtins::not_file, false);
+
+    params.clear();
+    ctx.set_native_rule("NOUPDATE", params, &builtins::no_update);
+    ctx.set_native_rule("NoUpdate", params, &builtins::no_update, false);
+
+    params.clear();
+    ctx.set_native_rule("TEMPORARY", params, &builtins::temporary);
+    ctx.set_native_rule("Temporary", params, &builtins::temporary, false);
+
+    params.clear();
+    params.push_back(boost::assign::list_of("targets")("*"));
+    ctx.set_native_rule("ISFILE", params, &builtins::is_file);
+
+    params.clear();
+    ctx.set_native_rule("FAIL_EXPECTED", params, &builtins::fail_expected);
+
+    params.clear();
+    ctx.set_native_rule("RMOLD", params, &builtins::rm_old);
+
+    params.clear();
     params.push_back(boost::assign::list_of("module")("?"));
-    ctx.set_native_rule("RULENAMES", params, &builtins::rulenames);
-    ctx.set_native_rule("VARNAMES", params, &builtins::varnames);
+    ctx.set_native_rule("RULENAMES", params, &builtins::rule_names);
+    ctx.set_native_rule("VARNAMES", params, &builtins::var_names);
 
     params.clear();
     params.push_back(boost::assign::list_of("source_module")("?"));

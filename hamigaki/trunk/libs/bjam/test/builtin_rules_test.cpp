@@ -69,6 +69,16 @@ private:
     int code_;
 };
 
+void always_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+
+    args.push_back(boost::assign::list_of("t1"));
+    BOOST_CHECK(ctx.invoke_rule("ALWAYS", args).empty());
+    BOOST_CHECK(ctx.get_target("t1").flags & bjam::target::force_update);
+}
+
 void exit_test()
 {
     bjam::context ctx;
@@ -118,6 +128,16 @@ void glob_recursive_test()
     BOOST_CHECK(!ctx.invoke_rule("GLOB-RECURSIVELY", args).empty());
 }
 
+void leaves_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+
+    args.push_back(boost::assign::list_of("t1"));
+    BOOST_CHECK(ctx.invoke_rule("LEAVES", args).empty());
+    BOOST_CHECK(ctx.get_target("t1").flags & bjam::target::leaves);
+}
+
 void match_test()
 {
     bjam::context ctx;
@@ -134,7 +154,77 @@ void match_test()
         result.begin(), result.end(), expect.begin(), expect.end());
 }
 
-void rulenames_test()
+void no_care_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+
+    args.push_back(boost::assign::list_of("t1"));
+    BOOST_CHECK(ctx.invoke_rule("NOCARE", args).empty());
+    BOOST_CHECK(ctx.get_target("t1").flags & bjam::target::no_care);
+}
+
+void not_file_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+
+    args.push_back(boost::assign::list_of("t1"));
+    BOOST_CHECK(ctx.invoke_rule("NOTFILE", args).empty());
+    BOOST_CHECK(ctx.get_target("t1").flags & bjam::target::not_file);
+}
+
+void no_update_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+
+    args.push_back(boost::assign::list_of("t1"));
+    BOOST_CHECK(ctx.invoke_rule("NOUPDATE", args).empty());
+    BOOST_CHECK(ctx.get_target("t1").flags & bjam::target::no_update);
+}
+
+void temporary_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+
+    args.push_back(boost::assign::list_of("t1"));
+    BOOST_CHECK(ctx.invoke_rule("TEMPORARY", args).empty());
+    BOOST_CHECK(ctx.get_target("t1").flags & bjam::target::temporary);
+}
+
+void is_file_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+
+    args.push_back(boost::assign::list_of("t1"));
+    BOOST_CHECK(ctx.invoke_rule("ISFILE", args).empty());
+    BOOST_CHECK(ctx.get_target("t1").flags & bjam::target::is_file);
+}
+
+void fail_expected_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+
+    args.push_back(boost::assign::list_of("t1"));
+    BOOST_CHECK(ctx.invoke_rule("FAIL_EXPECTED", args).empty());
+    BOOST_CHECK(ctx.get_target("t1").flags & bjam::target::fail_expected);
+}
+
+void rm_old_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+
+    args.push_back(boost::assign::list_of("t1"));
+    BOOST_CHECK(ctx.invoke_rule("RMOLD", args).empty());
+    BOOST_CHECK(ctx.get_target("t1").flags & bjam::target::rm_old);
+}
+
+void rule_names_test()
 {
     bjam::context ctx;
     bjam::list_of_list args;
@@ -143,20 +233,29 @@ void rulenames_test()
 
     expect =
         boost::assign::list_of
+            ("ALWAYS")
             ("CALC")
             ("ECHO")
             ("EXIT")
             ("EXPORT")
+            ("FAIL_EXPECTED")
             ("GLOB")
             ("GLOB-RECURSIVELY")
             ("IMPORT")
             ("IMPORT_MODULE")
             ("INSTANCE")
+            ("ISFILE")
+            ("LEAVES")
             ("MATCH")
+            ("NOCARE")
             ("NORMALIZE_PATH")
+            ("NOTFILE")
+            ("NOUPDATE")
             ("PWD")
+            ("RMOLD")
             ("RULENAMES")
             ("SORT")
+            ("TEMPORARY")
             ("VARNAMES")
         ;
     result = ctx.invoke_rule("RULENAMES", args);
@@ -164,7 +263,7 @@ void rulenames_test()
         result.begin(), result.end(), expect.begin(), expect.end());
 }
 
-void varnames_test()
+void var_names_test()
 {
     bjam::context ctx;
     bjam::list_of_list args;
@@ -318,13 +417,22 @@ void calc_test()
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("builtin rules test");
+    test->add(BOOST_TEST_CASE(&always_test));
     test->add(BOOST_TEST_CASE(&echo_test));
     test->add(BOOST_TEST_CASE(&exit_test));
     test->add(BOOST_TEST_CASE(&glob_test));
     test->add(BOOST_TEST_CASE(&glob_recursive_test));
+    test->add(BOOST_TEST_CASE(&leaves_test));
     test->add(BOOST_TEST_CASE(&match_test));
-    test->add(BOOST_TEST_CASE(&rulenames_test));
-    test->add(BOOST_TEST_CASE(&varnames_test));
+    test->add(BOOST_TEST_CASE(&no_care_test));
+    test->add(BOOST_TEST_CASE(&not_file_test));
+    test->add(BOOST_TEST_CASE(&no_update_test));
+    test->add(BOOST_TEST_CASE(&temporary_test));
+    test->add(BOOST_TEST_CASE(&is_file_test));
+    test->add(BOOST_TEST_CASE(&fail_expected_test));
+    test->add(BOOST_TEST_CASE(&rm_old_test));
+    test->add(BOOST_TEST_CASE(&rule_names_test));
+    test->add(BOOST_TEST_CASE(&var_names_test));
     test->add(BOOST_TEST_CASE(&import_test));
     test->add(BOOST_TEST_CASE(&export_test));
     test->add(BOOST_TEST_CASE(&pwd_test));

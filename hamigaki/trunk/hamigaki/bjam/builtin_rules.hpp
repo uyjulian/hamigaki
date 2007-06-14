@@ -24,15 +24,26 @@ class context;
 namespace builtins
 {
 
+HAMIGAKI_BJAM_DECL string_list always(context& ctx);
+
 HAMIGAKI_BJAM_DECL string_list echo(context& ctx);
 HAMIGAKI_BJAM_DECL string_list exit(context& ctx);
 HAMIGAKI_BJAM_DECL string_list glob(context& ctx);
 HAMIGAKI_BJAM_DECL string_list glob_recursive(context& ctx);
 
-HAMIGAKI_BJAM_DECL string_list glob_match(context& ctx);
+HAMIGAKI_BJAM_DECL string_list leaves(context& ctx);
+HAMIGAKI_BJAM_DECL string_list match(context& ctx);
+HAMIGAKI_BJAM_DECL string_list no_care(context& ctx);
+HAMIGAKI_BJAM_DECL string_list not_file(context& ctx);
+HAMIGAKI_BJAM_DECL string_list no_update(context& ctx);
+HAMIGAKI_BJAM_DECL string_list temporary(context& ctx);
+HAMIGAKI_BJAM_DECL string_list is_file(context& ctx);
 
-HAMIGAKI_BJAM_DECL string_list rulenames(context& ctx);
-HAMIGAKI_BJAM_DECL string_list varnames(context& ctx);
+HAMIGAKI_BJAM_DECL string_list fail_expected(context& ctx);
+HAMIGAKI_BJAM_DECL string_list rm_old(context& ctx);
+
+HAMIGAKI_BJAM_DECL string_list rule_names(context& ctx);
+HAMIGAKI_BJAM_DECL string_list var_names(context& ctx);
 
 HAMIGAKI_BJAM_DECL string_list import(context& ctx);
 HAMIGAKI_BJAM_DECL string_list export_(context& ctx);
