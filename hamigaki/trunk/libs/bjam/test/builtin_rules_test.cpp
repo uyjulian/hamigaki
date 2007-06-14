@@ -152,6 +152,7 @@ void rulenames_test()
             ("IMPORT_MODULE")
             ("INSTANCE")
             ("MATCH")
+            ("NORMALIZE_PATH")
             ("PWD")
             ("RULENAMES")
             ("SORT")
@@ -281,6 +282,18 @@ void sort_test()
         result.begin(), result.end(), expect.begin(), expect.end());
 }
 
+void normalize_path_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+    bjam::string_list result;
+
+    result = ctx.invoke_rule("NORMALIZE_PATH", args);
+    BOOST_CHECK_EQUAL(result.size(), 1u);
+    if (!result.empty())
+        BOOST_CHECK_EQUAL(result[0], ".");
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("builtin rules test");
@@ -297,5 +310,6 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&import_module_test));
     test->add(BOOST_TEST_CASE(&instance_test));
     test->add(BOOST_TEST_CASE(&sort_test));
+    test->add(BOOST_TEST_CASE(&normalize_path_test));
     return test;
 }

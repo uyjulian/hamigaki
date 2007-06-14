@@ -11,7 +11,9 @@
 #define NOMINMAX
 #include <hamigaki/bjam/util/path.hpp>
 #include <hamigaki/detail/random.hpp>
+#include <hamigaki/iterator/ostream_iterator.hpp>
 #include <boost/format.hpp>
+#include <sstream>
 
 #if defined(BOOST_WINDOWS)
     #include <boost/scoped_array.hpp>
@@ -220,6 +222,50 @@ HAMIGAKI_BJAM_DECL std::string tmp_file_path()
     s += path_delimiter;
     s += tmp_filename();
     return s;
+}
+
+HAMIGAKI_BJAM_DECL std::string normalize_path(const string_list& parts)
+{
+    bool rooted = !parts.empty() && (parts[0][0] == '/');
+
+    std::vector<std::string> tmp;
+    for (std::size_t i = 0, size = parts.size(); i < size; ++i)
+    {
+        const std::string& part = parts[i];
+        if (part.empty() || (part == "."))
+            continue;
+        else if (part == "..")
+        {
+            if (tmp.empty())
+                tmp.push_back("..");
+            else
+                tmp.pop_back();
+        }
+        else if (part[0] == '/')
+        {
+            if (part.size() > 1)
+                tmp.push_back(part.substr(1));
+        }
+        else
+            tmp.push_back(part);
+    }
+
+    std::ostringstream os;
+
+    if (rooted)
+        os << '/';
+
+    std::copy(
+        tmp.begin(), tmp.end(),
+        hamigaki::ostream_iterator<std::string>(os, "/")
+    );
+
+    std::string result = os.str();
+
+    if (result.empty())
+        result = ".";
+
+    return result;
 }
 
 } } // End namespaces bjam, hamigaki.

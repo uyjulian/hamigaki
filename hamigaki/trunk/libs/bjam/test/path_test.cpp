@@ -8,6 +8,7 @@
 // See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
 
 #include <hamigaki/bjam/util/path.hpp>
+#include <boost/assign/list_of.hpp>
 #include <boost/test/unit_test.hpp>
 
 namespace bjam = hamigaki::bjam;
@@ -129,10 +130,27 @@ void make_path_test()
 #endif
 }
 
+void normalize_path_test()
+{
+    bjam::string_list parts;
+
+    BOOST_CHECK_EQUAL(bjam::normalize_path(parts), std::string("."));
+
+    parts = boost::assign::list_of("/");
+    BOOST_CHECK_EQUAL(bjam::normalize_path(parts), std::string("/"));
+
+    parts = boost::assign::list_of("/")("tmp")("..")("usr")(".")("include");
+    BOOST_CHECK_EQUAL(bjam::normalize_path(parts), std::string("/usr/include"));
+
+    parts = boost::assign::list_of("usr")("..")("..")("src");
+    BOOST_CHECK_EQUAL(bjam::normalize_path(parts), std::string("../src"));
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("path utilities test");
     test->add(BOOST_TEST_CASE(&split_path_test));
     test->add(BOOST_TEST_CASE(&make_path_test));
+    test->add(BOOST_TEST_CASE(&normalize_path_test));
     return test;
 }

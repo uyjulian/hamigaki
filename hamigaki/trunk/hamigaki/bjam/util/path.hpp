@@ -11,7 +11,7 @@
 #define HAMIGAKI_BJAM_UTIL_PATH_HPP
 
 #include <hamigaki/bjam/bjam_config.hpp>
-#include <string>
+#include <hamigaki/bjam/util/list.hpp>
 
 #ifdef BOOST_HAS_ABI_HEADERS
     #include BOOST_ABI_PREFIX
@@ -35,6 +35,8 @@ HAMIGAKI_BJAM_DECL std::string make_path(const path_components& ph);
 HAMIGAKI_BJAM_DECL std::string tmp_directory();
 HAMIGAKI_BJAM_DECL std::string tmp_filename();
 HAMIGAKI_BJAM_DECL std::string tmp_file_path();
+
+HAMIGAKI_BJAM_DECL std::string normalize_path(const string_list& parts);
 
 } } // End namespaces bjam, hamigaki.
 

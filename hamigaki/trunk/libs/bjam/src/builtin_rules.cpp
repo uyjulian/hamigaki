@@ -10,6 +10,7 @@
 #define HAMIGAKI_BJAM_SOURCE
 #define NOMINMAX
 #include <hamigaki/bjam/util/glob.hpp>
+#include <hamigaki/bjam/util/path.hpp>
 #include <hamigaki/bjam/bjam_context.hpp>
 #include <hamigaki/bjam/builtin_rules.hpp>
 #include <hamigaki/bjam/bjam_exceptions.hpp>
@@ -283,6 +284,14 @@ HAMIGAKI_BJAM_DECL string_list sort(context& ctx)
     return sequence;
 }
 
+HAMIGAKI_BJAM_DECL string_list normalize_path(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    return string_list(bjam::normalize_path(args[0]));
+}
+
 } // namespace builtins
 
 HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
@@ -347,6 +356,10 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     params.clear();
     params.push_back(boost::assign::list_of("sequence")("*"));
     ctx.set_native_rule("SORT", params, &builtins::sort);
+
+    params.clear();
+    params.push_back(boost::assign::list_of("path_parts")("*"));
+    ctx.set_native_rule("NORMALIZE_PATH", params, &builtins::normalize_path);
 }
 
 } } // End namespaces bjam, hamigaki.
