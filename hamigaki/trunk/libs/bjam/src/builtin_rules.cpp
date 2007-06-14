@@ -243,6 +243,11 @@ HAMIGAKI_BJAM_DECL string_list export_(context& ctx)
     return string_list();
 }
 
+HAMIGAKI_BJAM_DECL string_list pwd(context& ctx)
+{
+    return string_list(ctx.working_directory());
+}
+
 HAMIGAKI_BJAM_DECL string_list import_module(context& ctx)
 {
     frame& f = ctx.current_frame();
@@ -265,6 +270,17 @@ HAMIGAKI_BJAM_DECL string_list instance(context& ctx)
     instance_module.class_module = args[1][0];
 
     return string_list();
+}
+
+HAMIGAKI_BJAM_DECL string_list sort(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    string_list sequence = args[0];
+    sequence.sort();
+
+    return sequence;
 }
 
 } // namespace builtins
@@ -316,6 +332,9 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     ctx.set_native_rule("EXPORT", params, &builtins::export_);
 
     params.clear();
+    ctx.set_native_rule("PWD", params, &builtins::pwd);
+
+    params.clear();
     params.push_back(boost::assign::list_of("modules_to_import")("+"));
     params.push_back(boost::assign::list_of("target_module")("?"));
     ctx.set_native_rule("IMPORT_MODULE", params, &builtins::import_module);
@@ -324,6 +343,10 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     params.push_back(boost::assign::list_of("instance_module"));
     params.push_back(boost::assign::list_of("class_module"));
     ctx.set_native_rule("INSTANCE", params, &builtins::instance);
+
+    params.clear();
+    params.push_back(boost::assign::list_of("sequence")("*"));
+    ctx.set_native_rule("SORT", params, &builtins::sort);
 }
 
 } } // End namespaces bjam, hamigaki.

@@ -37,9 +37,12 @@ HAMIGAKI_BJAM_DECL string_list varnames(context& ctx);
 HAMIGAKI_BJAM_DECL string_list import(context& ctx);
 HAMIGAKI_BJAM_DECL string_list export_(context& ctx);
 
+HAMIGAKI_BJAM_DECL string_list pwd(context& ctx);
+
 HAMIGAKI_BJAM_DECL string_list import_module(context& ctx);
 
 HAMIGAKI_BJAM_DECL string_list instance(context& ctx);
+HAMIGAKI_BJAM_DECL string_list sort(context& ctx);
 
 } // namespace builtins
 

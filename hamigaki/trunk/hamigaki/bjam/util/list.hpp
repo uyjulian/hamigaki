@@ -291,6 +291,21 @@ public:
             return boost::optional<std::string>();
     }
 
+    void sort()
+    {
+        if (impl_type* p = pimpl_.get())
+        {
+            if (pimpl_.unique())
+                std::sort(p->begin(), p->end());
+            else
+            {
+                boost::shared_ptr<impl_type> tmp(new impl_type(*p));
+                std::sort(tmp->begin(), tmp->end());
+                pimpl_.swap(tmp);
+            }
+        }
+    }
+
 private:
     boost::shared_ptr<impl_type> pimpl_;
 };

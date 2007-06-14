@@ -152,7 +152,9 @@ void rulenames_test()
             ("IMPORT_MODULE")
             ("INSTANCE")
             ("MATCH")
+            ("PWD")
             ("RULENAMES")
+            ("SORT")
             ("VARNAMES")
         ;
     result = ctx.invoke_rule("RULENAMES", args);
@@ -222,6 +224,18 @@ void export_test()
     BOOST_CHECK(std::find(rules.begin(), rules.end(), "echo") != rules.end());
 }
 
+void pwd_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+    bjam::string_list result;
+
+    result = ctx.invoke_rule("PWD", args);
+    BOOST_CHECK_EQUAL(result.size(), 1u);
+    if (!result.empty())
+        BOOST_CHECK_EQUAL(result[0], ctx.working_directory());
+}
+
 void import_module_test()
 {
     bjam::context ctx;
@@ -252,6 +266,21 @@ void instance_test()
     BOOST_CHECK_EQUAL(ctx.get_module(std::string("obj")).class_module, expect);
 }
 
+void sort_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+    bjam::string_list result;
+    bjam::string_list expect;
+
+    expect = boost::assign::list_of("car")("cat")("dog")("fox");
+
+    args.push_back(boost::assign::list_of("dog")("cat")("fox")("car"));
+    result = ctx.invoke_rule("SORT", args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("builtin rules test");
@@ -264,7 +293,9 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&varnames_test));
     test->add(BOOST_TEST_CASE(&import_test));
     test->add(BOOST_TEST_CASE(&export_test));
+    test->add(BOOST_TEST_CASE(&pwd_test));
     test->add(BOOST_TEST_CASE(&import_module_test));
     test->add(BOOST_TEST_CASE(&instance_test));
+    test->add(BOOST_TEST_CASE(&sort_test));
     return test;
 }
