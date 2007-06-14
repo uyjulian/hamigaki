@@ -22,6 +22,7 @@
 #include <boost/regex.hpp>
 #include <cstdlib>
 #include <iostream>
+#include <locale>
 #include <sstream>
 
 namespace hamigaki { namespace bjam {
@@ -292,6 +293,34 @@ HAMIGAKI_BJAM_DECL string_list normalize_path(context& ctx)
     return string_list(bjam::normalize_path(args[0]));
 }
 
+HAMIGAKI_BJAM_DECL string_list calc(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    const string_list& arg1 = args[0];
+
+    if (arg1.size() < 3u)
+        return string_list();
+
+    long lhs = arg1[0].empty() ? 0 : std::atoi(arg1[0].c_str()); // FIXME
+    char op = arg1[1][0];
+    long rhs = arg1[2].empty() ? 0 : std::atoi(arg1[2].c_str()); // FIXME
+
+    long value;
+    if (op == '+')
+        value = lhs + rhs;
+    else if (op == '-')
+        value = lhs - rhs;
+    else
+        return string_list();
+
+    std::ostringstream os;
+    os.imbue(std::locale::classic());
+    os << value;
+    return string_list(os.str());
+}
+
 } // namespace builtins
 
 HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
@@ -360,6 +389,10 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     params.clear();
     params.push_back(boost::assign::list_of("path_parts")("*"));
     ctx.set_native_rule("NORMALIZE_PATH", params, &builtins::normalize_path);
+
+    params.clear();
+    params.push_back(boost::assign::list_of("args")("*"));
+    ctx.set_native_rule("CALC", params, &builtins::calc);
 }
 
 } } // End namespaces bjam, hamigaki.

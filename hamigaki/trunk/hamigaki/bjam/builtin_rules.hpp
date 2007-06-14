@@ -43,6 +43,8 @@ HAMIGAKI_BJAM_DECL string_list import_module(context& ctx);
 
 HAMIGAKI_BJAM_DECL string_list instance(context& ctx);
 HAMIGAKI_BJAM_DECL string_list sort(context& ctx);
+HAMIGAKI_BJAM_DECL string_list normalize_path(context& ctx);
+HAMIGAKI_BJAM_DECL string_list calc(context& ctx);
 
 } // namespace builtins
 

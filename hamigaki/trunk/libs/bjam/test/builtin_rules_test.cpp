@@ -143,6 +143,7 @@ void rulenames_test()
 
     expect =
         boost::assign::list_of
+            ("CALC")
             ("ECHO")
             ("EXIT")
             ("EXPORT")
@@ -294,6 +295,26 @@ void normalize_path_test()
         BOOST_CHECK_EQUAL(result[0], ".");
 }
 
+void calc_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+    bjam::string_list result;
+
+    args.push_back(boost::assign::list_of("1")("+")("2"));
+    result = ctx.invoke_rule("CALC", args);
+    BOOST_CHECK_EQUAL(result.size(), 1u);
+    if (!result.empty())
+        BOOST_CHECK_EQUAL(result[0], "3");
+
+    args.clear();
+    args.push_back(boost::assign::list_of("10")("-")("3"));
+    result = ctx.invoke_rule("CALC", args);
+    BOOST_CHECK_EQUAL(result.size(), 1u);
+    if (!result.empty())
+        BOOST_CHECK_EQUAL(result[0], "7");
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("builtin rules test");
@@ -311,5 +332,6 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&instance_test));
     test->add(BOOST_TEST_CASE(&sort_test));
     test->add(BOOST_TEST_CASE(&normalize_path_test));
+    test->add(BOOST_TEST_CASE(&calc_test));
     return test;
 }
