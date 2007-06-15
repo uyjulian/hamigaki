@@ -20,6 +20,29 @@
 namespace bjam = hamigaki::bjam;
 namespace ut = boost::unit_test;
 
+void always_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+
+    args.push_back(boost::assign::list_of("t1"));
+    BOOST_CHECK(ctx.invoke_rule("ALWAYS", args).empty());
+    BOOST_CHECK(ctx.get_target("t1").flags & bjam::target::force_update);
+}
+
+void depends_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+
+    args.push_back(boost::assign::list_of("t1"));
+    args.push_back(boost::assign::list_of("t2"));
+    BOOST_CHECK(ctx.invoke_rule("DEPENDS", args).empty());
+
+    std::set<std::string>& table = ctx.get_target("t1").depended_targets;
+    BOOST_CHECK(table.find("t2") != table.end());
+}
+
 bjam::string_list capture_echo(
     bjam::context& ctx, const bjam::list_of_list& args, std::stringbuf& buf)
 {
@@ -50,7 +73,6 @@ void echo_test()
     BOOST_CHECK_EQUAL(buf.str(), std::string("a b\n"));
 }
 
-
 class exit_checker
 {
 public:
@@ -68,16 +90,6 @@ private:
     std::string msg_;
     int code_;
 };
-
-void always_test()
-{
-    bjam::context ctx;
-    bjam::list_of_list args;
-
-    args.push_back(boost::assign::list_of("t1"));
-    BOOST_CHECK(ctx.invoke_rule("ALWAYS", args).empty());
-    BOOST_CHECK(ctx.get_target("t1").flags & bjam::target::force_update);
-}
 
 void exit_test()
 {
@@ -126,6 +138,32 @@ void glob_recursive_test()
 
     args.push_back(boost::assign::list_of("./*.cpp"));
     BOOST_CHECK(!ctx.invoke_rule("GLOB-RECURSIVELY", args).empty());
+}
+
+void includes_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+
+    args.push_back(boost::assign::list_of("t1"));
+    args.push_back(boost::assign::list_of("t2"));
+    BOOST_CHECK(ctx.invoke_rule("INCLUDES", args).empty());
+
+    std::set<std::string>& table = ctx.get_target("t1").included_targets;
+    BOOST_CHECK(table.find("t2") != table.end());
+}
+
+void rebuilds_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+
+    args.push_back(boost::assign::list_of("t1"));
+    args.push_back(boost::assign::list_of("t2"));
+    BOOST_CHECK(ctx.invoke_rule("REBUILDS", args).empty());
+
+    std::set<std::string>& table = ctx.get_target("t1").rebuilt_targets;
+    BOOST_CHECK(table.find("t2") != table.end());
 }
 
 void leaves_test()
@@ -235,6 +273,7 @@ void rule_names_test()
         boost::assign::list_of
             ("ALWAYS")
             ("CALC")
+            ("DEPENDS")
             ("ECHO")
             ("EXIT")
             ("EXPORT")
@@ -243,6 +282,7 @@ void rule_names_test()
             ("GLOB-RECURSIVELY")
             ("IMPORT")
             ("IMPORT_MODULE")
+            ("INCLUDES")
             ("INSTANCE")
             ("ISFILE")
             ("LEAVES")
@@ -252,6 +292,7 @@ void rule_names_test()
             ("NOTFILE")
             ("NOUPDATE")
             ("PWD")
+            ("REBUILDS")
             ("RMOLD")
             ("RULENAMES")
             ("SORT")
@@ -418,10 +459,13 @@ ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("builtin rules test");
     test->add(BOOST_TEST_CASE(&always_test));
+    test->add(BOOST_TEST_CASE(&depends_test));
     test->add(BOOST_TEST_CASE(&echo_test));
     test->add(BOOST_TEST_CASE(&exit_test));
     test->add(BOOST_TEST_CASE(&glob_test));
     test->add(BOOST_TEST_CASE(&glob_recursive_test));
+    test->add(BOOST_TEST_CASE(&includes_test));
+    test->add(BOOST_TEST_CASE(&rebuilds_test));
     test->add(BOOST_TEST_CASE(&leaves_test));
     test->add(BOOST_TEST_CASE(&match_test));
     test->add(BOOST_TEST_CASE(&no_care_test));

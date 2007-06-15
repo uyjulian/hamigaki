@@ -61,6 +61,23 @@ HAMIGAKI_BJAM_DECL string_list always(context& ctx)
     return string_list();
 }
 
+HAMIGAKI_BJAM_DECL string_list depends(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    const string_list& targets = args[0];
+    const string_list& sources = args[1];
+
+    for (std::size_t i = 0, size = targets.size(); i < size; ++i)
+    {
+        target& t = ctx.get_target(targets[i]);
+        t.depended_targets.insert(sources.begin(), sources.end());
+    }
+
+    return string_list();
+}
+
 HAMIGAKI_BJAM_DECL string_list echo(context& ctx)
 {
     frame& f = ctx.current_frame();
@@ -137,6 +154,40 @@ HAMIGAKI_BJAM_DECL string_list glob_recursive(context& ctx)
     }
 
     return result;
+}
+
+HAMIGAKI_BJAM_DECL string_list includes(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    const string_list& targets = args[0];
+    const string_list& sources = args[1];
+
+    for (std::size_t i = 0, size = targets.size(); i < size; ++i)
+    {
+        target& t = ctx.get_target(targets[i]);
+        t.included_targets.insert(sources.begin(), sources.end());
+    }
+
+    return string_list();
+}
+
+HAMIGAKI_BJAM_DECL string_list rebuilds(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    const string_list& targets = args[0];
+    const string_list& sources = args[1];
+
+    for (std::size_t i = 0, size = targets.size(); i < size; ++i)
+    {
+        target& t = ctx.get_target(targets[i]);
+        t.rebuilt_targets.insert(sources.begin(), sources.end());
+    }
+
+    return string_list();
 }
 
 HAMIGAKI_BJAM_DECL string_list leaves(context& ctx)
@@ -396,6 +447,10 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     ctx.set_native_rule("Always", params, &builtins::always, false);
 
     params.clear();
+    ctx.set_native_rule("DEPENDS", params, &builtins::depends);
+    ctx.set_native_rule("Depends", params, &builtins::depends, false);
+
+    params.clear();
     ctx.set_native_rule("ECHO", params, &builtins::echo);
     ctx.set_native_rule("Echo", params, &builtins::echo, false);
     ctx.set_native_rule("echo", params, &builtins::echo, false);
@@ -416,6 +471,15 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     params.clear();
     params.push_back(boost::assign::list_of("patterns")("*"));
     ctx.set_native_rule("GLOB-RECURSIVELY", params, &builtins::glob_recursive);
+
+    params.clear();
+    ctx.set_native_rule("INCLUDES", params, &builtins::includes);
+    ctx.set_native_rule("Includes", params, &builtins::includes, false);
+
+    params.clear();
+    params.push_back(boost::assign::list_of("targets")("*"));
+    params.push_back(boost::assign::list_of("targets-to-rebuild")("*"));
+    ctx.set_native_rule("REBUILDS", params, &builtins::rebuilds);
 
     params.clear();
     ctx.set_native_rule("LEAVES", params, &builtins::leaves);

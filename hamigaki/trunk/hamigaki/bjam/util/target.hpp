@@ -30,6 +30,7 @@ struct target
     variable_table variables;
     std::set<std::string> depended_targets;
     std::set<std::string> included_targets;
+    std::set<std::string> rebuilt_targets;
     unsigned flags;
 
     target() : flags(0)

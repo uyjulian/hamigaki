@@ -25,12 +25,13 @@ namespace builtins
 {
 
 HAMIGAKI_BJAM_DECL string_list always(context& ctx);
-
+HAMIGAKI_BJAM_DECL string_list depends(context& ctx);
 HAMIGAKI_BJAM_DECL string_list echo(context& ctx);
 HAMIGAKI_BJAM_DECL string_list exit(context& ctx);
 HAMIGAKI_BJAM_DECL string_list glob(context& ctx);
 HAMIGAKI_BJAM_DECL string_list glob_recursive(context& ctx);
-
+HAMIGAKI_BJAM_DECL string_list includes(context& ctx);
+HAMIGAKI_BJAM_DECL string_list rebuilds(context& ctx);
 HAMIGAKI_BJAM_DECL string_list leaves(context& ctx);
 HAMIGAKI_BJAM_DECL string_list match(context& ctx);
 HAMIGAKI_BJAM_DECL string_list no_care(context& ctx);
