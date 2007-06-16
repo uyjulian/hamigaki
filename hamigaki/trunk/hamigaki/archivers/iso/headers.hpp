@@ -105,8 +105,8 @@ private:
         }
 
         boost::uint16_t mask =
-            ~static_cast<boost::uint16_t>(
-                filesystem::file_permissions::type_mask);
+            static_cast<boost::uint16_t>(
+                ~filesystem::file_permissions::type_mask);
         attributes->permissions = type | (attributes->permissions & mask);
     }
 };
