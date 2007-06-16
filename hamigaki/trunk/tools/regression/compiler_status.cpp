@@ -189,6 +189,26 @@ namespace
 //  platform_desc  -----------------------------------------------------------//
 //  from locate_root/status/bin/config_info.test/xxx/.../config_info.output
 
+  bool find_platform_desc( fs::path & dot_output_path )
+  {
+    if (boost_build_v2)
+    {
+      return find_file( locate_root / "bin.v2/status/config_info.test",
+        "config_info.output", dot_output_path );
+    }
+    else
+    {
+      return ( find_file( locate_root / "bin/hamigaki/status/config_info.test",
+        "config_info.output", dot_output_path, "gcc" )
+        || find_file( locate_root / "bin/hamigaki/status/config_info.test",
+        "config_info.output", dot_output_path )
+        || find_file( locate_root / "status/bin/config_info.test",
+        "config_info.output", dot_output_path, "gcc" )
+        || find_file( locate_root / "status/bin/config_info.test",
+        "config_info.output", dot_output_path ) );
+    }
+  }
+
   string platform_desc()
   {
     string result;
@@ -196,14 +216,7 @@ namespace
 
     // the gcc config_info "Detected Platform" sometimes reports "cygwin", so
     // prefer any of the other compilers.
-    if ( find_file( locate_root / "bin/hamigaki/status/config_info.test",
-      "config_info.output", dot_output_path, "gcc" )
-      || find_file( locate_root / "bin/hamigaki/status/config_info.test",
-      "config_info.output", dot_output_path )
-      || find_file( locate_root / "status/bin/config_info.test",
-      "config_info.output", dot_output_path, "gcc" )
-      || find_file( locate_root / "status/bin/config_info.test",
-      "config_info.output", dot_output_path ) )
+    if ( find_platform_desc( dot_output_path ) )
     {
       fs::ifstream file( dot_output_path );
       if ( file )
@@ -225,14 +238,28 @@ namespace
 //  version_desc  ------------------------------------------------------------//
 //  from locate-root/status/bin/config_info.test/xxx/.../config_info.output
 
+  bool find_version_desc(
+    const string & compiler_name, fs::path & dot_output_path )
+  {
+    if (boost_build_v2)
+    {
+      return find_file( locate_root / "bin.v2/status/config_info.test"
+        / compiler_name, "config_info.output", dot_output_path );
+    }
+    else
+    {
+      return ( find_file( locate_root / "bin/hamigaki/status/config_info.test"
+        / compiler_name, "config_info.output", dot_output_path )
+        || find_file( locate_root / "status/bin/config_info.test"
+        / compiler_name, "config_info.output", dot_output_path ) );
+    }
+  }
+
   string version_desc( const string & compiler_name )
   {
     string result;
     fs::path dot_output_path;
-    if ( find_file( locate_root / "bin/hamigaki/status/config_info.test"
-      / compiler_name, "config_info.output", dot_output_path )
-      || find_file( locate_root / "status/bin/config_info.test"
-      / compiler_name, "config_info.output", dot_output_path ) )
+    if ( find_version_desc( compiler_name, dot_output_path ) )
     {
       fs::ifstream file( dot_output_path );
       if ( file )
