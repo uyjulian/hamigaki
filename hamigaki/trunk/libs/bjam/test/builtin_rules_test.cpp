@@ -262,6 +262,34 @@ void rm_old_test()
     BOOST_CHECK(ctx.get_target("t1").flags & bjam::target::rm_old);
 }
 
+void subst_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+    bjam::string_list result;
+    bjam::string_list expect;
+
+    expect = boost::assign::list_of
+        ("abc")
+        ("abc-123")
+        ("abc-123")
+        ("123-abc")
+    ;
+
+    args.push_back(
+        boost::assign::list_of
+            ("abc123")
+            ("^([a-z]+)([0-9]*)$")
+            ("$1")
+            ("$1-$2")
+            ("\\1-\\2")
+            ("\\2-$1")
+    );
+    result = ctx.invoke_rule("SUBST", args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+}
+
 void rule_names_test()
 {
     bjam::context ctx;
@@ -296,6 +324,7 @@ void rule_names_test()
             ("RMOLD")
             ("RULENAMES")
             ("SORT")
+            ("SUBST")
             ("TEMPORARY")
             ("VARNAMES")
         ;
@@ -475,6 +504,7 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&is_file_test));
     test->add(BOOST_TEST_CASE(&fail_expected_test));
     test->add(BOOST_TEST_CASE(&rm_old_test));
+    test->add(BOOST_TEST_CASE(&subst_test));
     test->add(BOOST_TEST_CASE(&rule_names_test));
     test->add(BOOST_TEST_CASE(&var_names_test));
     test->add(BOOST_TEST_CASE(&import_test));

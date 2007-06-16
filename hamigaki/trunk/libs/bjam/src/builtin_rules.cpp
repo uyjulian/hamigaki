@@ -266,6 +266,30 @@ HAMIGAKI_BJAM_DECL string_list rm_old(context& ctx)
     return string_list();
 }
 
+HAMIGAKI_BJAM_DECL string_list subst(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+    const string_list& arg0 = args[0];
+
+    const std::string& str = arg0[0];
+    const std::string& pattern = arg0[1];
+
+    // Note: bjam's regex is not the same as "extended" and "egrep"
+    boost::regex rex(pattern, boost::regex_constants::extended);
+
+    string_list result;
+
+    boost::smatch what;
+    if (regex_match(str, what, rex))
+    {
+        for (std::size_t i = 2, size = arg0.size(); i < size; ++i)
+            result += what.format(arg0[i]);
+    }
+
+    return result;
+}
+
 HAMIGAKI_BJAM_DECL string_list rule_names(context& ctx)
 {
     frame& f = ctx.current_frame();
@@ -515,6 +539,12 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
 
     params.clear();
     ctx.set_native_rule("RMOLD", params, &builtins::rm_old);
+
+    params.clear();
+    params.push_back(
+        boost::assign::list_of("string")("pattern")("replacements")("+"));
+    ctx.set_native_rule("SUBST", params, &builtins::subst);
+    ctx.set_native_rule("subst", params, &builtins::subst, false);
 
     params.clear();
     params.push_back(boost::assign::list_of("module")("?"));
