@@ -41,11 +41,11 @@ void glob_test()
 
 
 #if defined(BOOST_WINDOWS)
-    expect = "../build\\Jamfile.v2";
+    expect = "./.\\Jamfile.v2";
 #else
-    expect = "../build/Jamfile.v2";
+    expect = "././Jamfile.v2";
 #endif
-    result = bjam::glob(work.native_directory_string(), "../build", "J*.v2");
+    result = bjam::glob(work.native_directory_string(), "./.", "J*.v2");
     BOOST_CHECK(std::find(result.begin(),result.end(),expect) != result.end());
 }
 
@@ -67,11 +67,11 @@ void glob_recursive_test()
     BOOST_CHECK(std::find(result.begin(),result.end(),expect) != result.end());
 
 
-    pattern = "../../*/build/J*.v2";
+    pattern = "././J*.v2";
 #if defined(BOOST_WINDOWS)
-    expect = "..\\..\\bjam\\build\\Jamfile.v2";
+    expect = ".\\.\\Jamfile.v2";
 #else
-    expect = "../../bjam/build/Jamfile.v2";
+    expect = "././Jamfile.v2";
 #endif
     result = bjam::glob_recursive(work.native_directory_string(), pattern);
     BOOST_CHECK(std::find(result.begin(),result.end(),expect) != result.end());

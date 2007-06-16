@@ -127,7 +127,7 @@ void glob_test()
     bjam::list_of_list args;
 
     args.push_back(boost::assign::list_of("."));
-    args.push_back(boost::assign::list_of("*.cpp"));
+    args.push_back(boost::assign::list_of("*.v2"));
     BOOST_CHECK(!ctx.invoke_rule("GLOB", args).empty());
 }
 
@@ -136,7 +136,7 @@ void glob_recursive_test()
     bjam::context ctx;
     bjam::list_of_list args;
 
-    args.push_back(boost::assign::list_of("./*.cpp"));
+    args.push_back(boost::assign::list_of("./*.v2"));
     BOOST_CHECK(!ctx.invoke_rule("GLOB-RECURSIVELY", args).empty());
 }
 

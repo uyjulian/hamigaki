@@ -9,11 +9,17 @@
 
 #include <hamigaki/bjam/grammars/bjam_grammar_gen.hpp>
 #include <hamigaki/bjam/bjam_context.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <boost/assign/list_of.hpp>
+#include <boost/filesystem/path.hpp>
 #include <boost/test/unit_test.hpp>
 
 namespace bjam = hamigaki::bjam;
+namespace algo = boost::algorithm;
+namespace fs = boost::filesystem;
 namespace ut = boost::unit_test;
+
+std::string hamigaki_root;
 
 bjam::string_list eval(bjam::context& ctx, const std::string& src)
 {
@@ -447,11 +453,24 @@ void include_test()
 {
     bjam::context ctx;
 
-    BOOST_CHECK(eval(ctx, "include include_test.jam ;").empty());
+    fs::path ph(hamigaki_root, fs::native);
+    ph /= "libs/bjam/test/include_test.jam";
+
+    std::string src;
+    src += "include ";
+    src += algo::replace_all_copy(ph.native_file_string(), "\\", "\\\\");
+    src += " ;";
+
+    BOOST_CHECK(eval(ctx, src).empty());
 }
 
-ut::test_suite* init_unit_test_suite(int, char* [])
+ut::test_suite* init_unit_test_suite(int argc, char* argv[])
 {
+    if (argc != 2)
+        return 0;
+
+    hamigaki_root = argv[1];
+
     ut::test_suite* test = BOOST_TEST_SUITE("bjam_grammar test");
     test->add(BOOST_TEST_CASE(&empty_test));
     test->add(BOOST_TEST_CASE(&set_test));

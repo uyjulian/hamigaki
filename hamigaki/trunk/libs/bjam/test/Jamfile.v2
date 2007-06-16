@@ -19,7 +19,7 @@ project
 
 test-suite bjam :
     [ run arg_p_test.cpp ]
-    [ run bjam_test.cpp ]
+    [ run bjam_test.cpp : $(HAMIGAKI_ROOT) ]
     [ run builtin_rules_test.cpp ]
     [ run expand_variable_test.cpp ]
     [ run expression_test.cpp ]

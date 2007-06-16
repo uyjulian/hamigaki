@@ -37,7 +37,7 @@ rule bjam-test ( sources + : requirements * : args * )
 
 test-suite bjam :
     [ bjam-test arg_p_test.cpp : ]
-    [ bjam-test bjam_test.cpp : ]
+    [ bjam-test bjam_test.cpp : : $(HAMIGAKI_ROOT) ]
     [ bjam-test builtin_rules_test.cpp : ]
     [ bjam-test expand_variable_test.cpp : ]
     [ bjam-test expression_test.cpp : ]
