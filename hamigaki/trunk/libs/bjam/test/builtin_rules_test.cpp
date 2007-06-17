@@ -327,6 +327,9 @@ void rule_names_test()
             ("SUBST")
             ("TEMPORARY")
             ("VARNAMES")
+#if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
+            ("W32_GETREG")
+#endif
         ;
     result = ctx.invoke_rule("RULENAMES", args);
     BOOST_CHECK_EQUAL_COLLECTIONS(
@@ -484,6 +487,91 @@ void calc_test()
         BOOST_CHECK_EQUAL(result[0], "7");
 }
 
+#if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
+#include <windows.h>
+void w32_getreg_test()
+{
+    char win_dir[MAX_PATH];
+    ::GetWindowsDirectoryA(win_dir, sizeof(win_dir));
+
+    // should use SHGetSpecialFolderPath()
+    std::string prog_dir(win_dir, 0, 3);
+    prog_dir += "Program Files";
+
+    ::OSVERSIONINFOA info;
+    std::memset(&info, 0, sizeof(info));
+    info.dwOSVersionInfoSize = sizeof(info);
+    ::GetVersionExA(&info);
+    int build_num = static_cast<int>(info.dwBuildNumber);
+
+
+    bjam::context ctx;
+    bjam::list_of_list args;
+    bjam::string_list result;
+
+    args.push_back(boost::assign::list_of
+        ("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion")
+        ("ProgramFilesDir")
+    );
+    result = ctx.invoke_rule("W32_GETREG", args);
+    BOOST_CHECK_EQUAL(result.size(), 1u);
+    if (!result.empty())
+        BOOST_CHECK_EQUAL(result[0], prog_dir);
+
+
+    // Note:
+    // Cygwin remove many environment strings.
+    // So REG_EXPAND_SZ does not work in many cases.
+#if !defined(__CYGWIN__)
+    args.clear();
+    args.push_back(boost::assign::list_of
+        ("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion")
+        ("ProgramFilesPath")
+    );
+    result = ctx.invoke_rule("W32_GETREG", args);
+    BOOST_CHECK_EQUAL(result.size(), 1u);
+    if (!result.empty())
+        BOOST_CHECK_EQUAL(result[0], prog_dir);
+#endif
+
+
+    args.clear();
+    args.push_back(boost::assign::list_of
+        ("HKEY_CLASSES_ROOT\\.exe")
+    );
+    result = ctx.invoke_rule("W32_GETREG", args);
+    BOOST_CHECK_EQUAL(result.size(), 1u);
+    if (!result.empty())
+        BOOST_CHECK_EQUAL(result[0], "exefile");
+
+
+    args.clear();
+    args.push_back(boost::assign::list_of
+        ("HKCU\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon")
+        ("BuildNumber")
+    );
+    result = ctx.invoke_rule("W32_GETREG", args);
+    BOOST_CHECK_EQUAL(result.size(), 1u);
+    if (!result.empty())
+        BOOST_CHECK_EQUAL(std::atoi(result[0].c_str()), build_num);
+
+
+    args.clear();
+    args.push_back(boost::assign::list_of
+        ("HKLM\\SYSTEM\\CurrentControlSet\\Services\\PlugPlay")
+        ("RequiredPrivileges")
+    );
+    result = ctx.invoke_rule("W32_GETREG", args);
+    BOOST_CHECK(result.size() >= 2);
+    BOOST_CHECK(
+        std::find(
+            result.begin(), result.end(),
+            "SeLoadDriverPrivilege"
+        ) != result.end()
+    );
+}
+#endif
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("builtin rules test");
@@ -515,5 +603,8 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&sort_test));
     test->add(BOOST_TEST_CASE(&normalize_path_test));
     test->add(BOOST_TEST_CASE(&calc_test));
+#if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
+    test->add(BOOST_TEST_CASE(&w32_getreg_test));
+#endif
     return test;
 }

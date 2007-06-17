@@ -25,6 +25,10 @@
 #include <locale>
 #include <sstream>
 
+#if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
+    #include <hamigaki/bjam/util/win32/registry.hpp>
+#endif
+
 namespace hamigaki { namespace bjam {
 
 namespace builtins
@@ -270,10 +274,10 @@ HAMIGAKI_BJAM_DECL string_list subst(context& ctx)
 {
     frame& f = ctx.current_frame();
     const list_of_list& args = f.arguments();
-    const string_list& arg0 = args[0];
+    const string_list& arg1 = args[0];
 
-    const std::string& str = arg0[0];
-    const std::string& pattern = arg0[1];
+    const std::string& str = arg1[0];
+    const std::string& pattern = arg1[1];
 
     // Note: bjam's regex is not the same as "extended" and "egrep"
     boost::regex rex(pattern, boost::regex_constants::extended);
@@ -283,8 +287,8 @@ HAMIGAKI_BJAM_DECL string_list subst(context& ctx)
     boost::smatch what;
     if (regex_match(str, what, rex))
     {
-        for (std::size_t i = 2, size = arg0.size(); i < size; ++i)
-            result += what.format(arg0[i]);
+        for (std::size_t i = 2, size = arg1.size(); i < size; ++i)
+            result += what.format(arg1[i]);
     }
 
     return result;
@@ -460,6 +464,22 @@ HAMIGAKI_BJAM_DECL string_list calc(context& ctx)
     return string_list(os.str());
 }
 
+#if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
+HAMIGAKI_BJAM_DECL string_list w32_getreg(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    const string_list& arg1 = args[0];
+
+    boost::optional<std::string> name;
+    if (arg1.size() >= 2)
+        name = arg1[1];
+
+    return win32::registry_values(arg1[0], name);
+}
+#endif
+
 } // namespace builtins
 
 HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
@@ -588,6 +608,12 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     params.clear();
     params.push_back(boost::assign::list_of("args")("*"));
     ctx.set_native_rule("CALC", params, &builtins::calc);
+
+#if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
+    params.clear();
+    params.push_back(boost::assign::list_of("key_path")("data")("?"));
+    ctx.set_native_rule("W32_GETREG", params, &builtins::w32_getreg);
+#endif
 }
 
 } } // End namespaces bjam, hamigaki.

@@ -59,6 +59,10 @@ HAMIGAKI_BJAM_DECL string_list sort(context& ctx);
 HAMIGAKI_BJAM_DECL string_list normalize_path(context& ctx);
 HAMIGAKI_BJAM_DECL string_list calc(context& ctx);
 
+#if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
+HAMIGAKI_BJAM_DECL string_list w32_getreg(context& ctx);
+#endif
+
 } // namespace builtins
 
 } } // End namespaces bjam, hamigaki.

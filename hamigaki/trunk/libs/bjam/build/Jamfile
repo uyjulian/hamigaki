@@ -23,6 +23,12 @@ SOURCES =
     variable_expansion
     ;
 
+if $(OS) in NT CYGWIN
+{
+    SOURCES += registry ;
+    OPTS += <find-library>advapi32 ;
+}
+
 lib hamigaki_bjam
     :
         ../src/$(SOURCES).cpp
@@ -50,6 +56,7 @@ dll hamigaki_bjam
         <include>$(BOOST_INCLUDE)  <sysinclude>$(BOOST_INCLUDE)
         <vc-8_0><*><cflags>-wd4996
         <vc-8_0><*><cflags>-wd4819
+        $(OPTS)
     :
         debug release
     ;

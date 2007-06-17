@@ -7,6 +7,8 @@
 
 # See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
 
+import os ;
+
 project hamigaki/bjam
     : requirements
       <link>shared:<define>HAMIGAKI_BJAM_DYN_LINK
@@ -35,7 +37,19 @@ SOURCES =
     variable_expansion
     ;
 
+if [ os.name ] in NT CYGWIN
+{
+    SOURCES += registry ;
+}
+
 lib hamigaki_bjam
     :
     $(SOURCES).cpp
+    :
+    <os>NT:<find-static-library>advapi32
+    <os>CYGWIN:<find-static-library>advapi32
+    :
+    :
+    <os>NT:<find-static-library>advapi32
+    <os>CYGWIN:<find-static-library>advapi32
     ;
