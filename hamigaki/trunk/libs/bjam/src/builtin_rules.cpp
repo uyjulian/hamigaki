@@ -11,6 +11,7 @@
 #define NOMINMAX
 #include <hamigaki/bjam/util/glob.hpp>
 #include <hamigaki/bjam/util/path.hpp>
+#include <hamigaki/bjam/util/shell.hpp>
 #include <hamigaki/bjam/bjam_context.hpp>
 #include <hamigaki/bjam/builtin_rules.hpp>
 #include <hamigaki/bjam/bjam_exceptions.hpp>
@@ -480,6 +481,27 @@ HAMIGAKI_BJAM_DECL string_list w32_getreg(context& ctx)
 }
 #endif
 
+HAMIGAKI_BJAM_DECL string_list shell(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    const std::string& cmd = args[0][0];
+    const string_list& arg2 = args[1];
+
+    bool need_status = false;
+    bool need_capture = true;
+    for (std::size_t i = 0, size = arg2.size(); i < size; ++i)
+    {
+        if (arg2[i] == "exit-status")
+            need_status = true;
+        else if (arg2[i] == "no-output")
+            need_capture = false;
+    }
+
+    return bjam::shell(cmd, need_status, need_capture);
+}
+
 } // namespace builtins
 
 HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
@@ -614,6 +636,12 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     params.push_back(boost::assign::list_of("key_path")("data")("?"));
     ctx.set_native_rule("W32_GETREG", params, &builtins::w32_getreg);
 #endif
+
+    params.clear();
+    params.push_back(boost::assign::list_of("command"));
+    params.push_back(boost::assign::list_of("*"));
+    ctx.set_native_rule("SHELL", params, &builtins::shell);
+    ctx.set_native_rule("COMMAND", params, &builtins::shell);
 }
 
 } } // End namespaces bjam, hamigaki.

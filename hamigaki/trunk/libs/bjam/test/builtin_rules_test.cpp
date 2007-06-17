@@ -301,6 +301,7 @@ void rule_names_test()
         boost::assign::list_of
             ("ALWAYS")
             ("CALC")
+            ("COMMAND")
             ("DEPENDS")
             ("ECHO")
             ("EXIT")
@@ -323,6 +324,7 @@ void rule_names_test()
             ("REBUILDS")
             ("RMOLD")
             ("RULENAMES")
+            ("SHELL")
             ("SORT")
             ("SUBST")
             ("TEMPORARY")
@@ -572,6 +574,25 @@ void w32_getreg_test()
 }
 #endif
 
+void shell_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+    bjam::string_list result;
+
+    args.push_back(boost::assign::list_of("echo hello"));
+    result = ctx.invoke_rule("SHELL", args);
+    BOOST_CHECK_EQUAL(result.size(), 1u);
+    if (!result.empty())
+    {
+#if defined(BOOST_WINDOWS) && !defined(__CYGWIN__)
+        BOOST_CHECK_EQUAL(result[0], "hello\r\n");
+#else
+        BOOST_CHECK_EQUAL(result[0], "hello\n");
+#endif
+    }
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("builtin rules test");
@@ -606,5 +627,6 @@ ut::test_suite* init_unit_test_suite(int, char* [])
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
     test->add(BOOST_TEST_CASE(&w32_getreg_test));
 #endif
+    test->add(BOOST_TEST_CASE(&shell_test));
     return test;
 }

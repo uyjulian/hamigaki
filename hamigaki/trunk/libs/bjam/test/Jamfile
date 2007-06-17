@@ -16,7 +16,10 @@ DEPENDS all : test ;
 rule bjam-test ( sources + : requirements * : args * )
 {
     return [
-        run $(sources) <lib>../build/hamigaki_bjam
+        run
+        $(sources)
+        <lib>../build/hamigaki_bjam
+        <lib>../../process/build/hamigaki_process
         : $(args)
         :
         :

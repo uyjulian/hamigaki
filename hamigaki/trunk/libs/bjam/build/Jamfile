@@ -20,6 +20,7 @@ SOURCES =
     pattern
     predefined_variables
     search
+    shell
     variable_expansion
     ;
 
@@ -45,6 +46,7 @@ lib hamigaki_bjam
 dll hamigaki_bjam
     :
         ../src/$(SOURCES).cpp
+        <lib>../../process/build/hamigaki_process
     :
         <library-path>$(BOOST_LIBPATH)
         find-boost-filesystem-lib
