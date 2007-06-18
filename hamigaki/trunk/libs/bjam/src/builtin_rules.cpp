@@ -411,6 +411,30 @@ HAMIGAKI_BJAM_DECL string_list export_(context& ctx)
     return string_list();
 }
 
+HAMIGAKI_BJAM_DECL string_list caller_module(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+    const string_list& arg1 = args[0];
+
+    int level = 0;
+    if (!arg1.empty())
+        level = std::atoi(arg1[0].c_str());
+
+    // skip root and current
+    level += 2;
+    if (level < 0)
+        return string_list();
+
+    const boost::optional<std::string>& name =
+        ctx.caller_module_name(static_cast<std::size_t>(level));
+
+    if (name)
+        return string_list(*name);
+    else
+        return string_list();
+}
+
 HAMIGAKI_BJAM_DECL string_list pwd(context& ctx)
 {
     return string_list(ctx.working_directory());
@@ -633,6 +657,10 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     params.push_back(boost::assign::list_of("module")("?"));
     params.push_back(boost::assign::list_of("rules")("*"));
     ctx.set_native_rule("EXPORT", params, &builtins::export_);
+
+    params.clear();
+    params.push_back(boost::assign::list_of("levels")("?"));
+    ctx.set_native_rule("CALLER_MODULE", params, &builtins::caller_module);
 
     params.clear();
     ctx.set_native_rule("PWD", params, &builtins::pwd);

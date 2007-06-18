@@ -49,6 +49,7 @@ HAMIGAKI_BJAM_DECL string_list var_names(context& ctx);
 HAMIGAKI_BJAM_DECL string_list delete_module(context& ctx);
 HAMIGAKI_BJAM_DECL string_list import(context& ctx);
 HAMIGAKI_BJAM_DECL string_list export_(context& ctx);
+HAMIGAKI_BJAM_DECL string_list caller_module(context& ctx);
 
 HAMIGAKI_BJAM_DECL string_list pwd(context& ctx);
 

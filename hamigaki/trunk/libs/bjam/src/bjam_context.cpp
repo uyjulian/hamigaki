@@ -25,6 +25,17 @@ context::context()
     set_builtin_rules(*this);
 }
 
+boost::optional<std::string>
+context::caller_module_name(std::size_t level) const
+{
+    const std::size_t size = frames_.size();
+    if (level >= (size-1))
+        return boost::optional<std::string>();
+
+    std::size_t index = (size-1) - level;
+    return frames_[index].module_name();
+}
+
 module& context::get_module(const boost::optional<std::string>& name)
 {
     if (name)

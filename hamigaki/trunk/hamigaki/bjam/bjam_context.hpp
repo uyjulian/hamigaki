@@ -53,6 +53,8 @@ public:
         frames_.pop_back();
     }
 
+    boost::optional<std::string> caller_module_name(std::size_t level) const;
+
     module& get_module(const boost::optional<std::string>& name);
     const module& get_module(const boost::optional<std::string>& name) const;
 
@@ -68,7 +70,7 @@ public:
         return targets_[name];
     }
 
-    string_list targets_to_update() const
+    const string_list& targets_to_update() const
     {
         return targets_to_update_;
     }

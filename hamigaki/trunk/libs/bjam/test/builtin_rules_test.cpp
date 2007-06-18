@@ -327,6 +327,7 @@ void rule_names_test()
         boost::assign::list_of
             ("ALWAYS")
             ("CALC")
+            ("CALLER_MODULE")
             ("COMMAND")
             ("DELETE_MODULE")
             ("DEPENDS")
@@ -438,6 +439,43 @@ void export_test()
 
     rules = ctx.invoke_rule("RULENAMES", args);
     BOOST_CHECK(std::find(rules.begin(), rules.end(), "echo") != rules.end());
+}
+
+void caller_module_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+    bjam::string_list result;
+
+    BOOST_CHECK(ctx.invoke_rule("CALLER_MODULE", args).empty());
+
+
+    bjam::module& m1 = ctx.get_module(std::string("m1"));
+    bjam::module& m2 = ctx.get_module(std::string("m2"));
+    bjam::module& m3 = ctx.get_module(std::string("m3"));
+
+    ctx.push_frame(bjam::frame(m1, std::string("m1")));
+    ctx.push_frame(bjam::frame(m2, std::string("m2")));
+    ctx.push_frame(bjam::frame(m3, std::string("m3")));
+
+
+    result = ctx.invoke_rule("CALLER_MODULE", args);
+    BOOST_CHECK_EQUAL(result.size(), 1u);
+    if (!result.empty())
+        BOOST_CHECK_EQUAL(result[0], "m2");
+
+    args.push_back(boost::assign::list_of("1"));
+    result = ctx.invoke_rule("CALLER_MODULE", args);
+    BOOST_CHECK_EQUAL(result.size(), 1u);
+    if (!result.empty())
+        BOOST_CHECK_EQUAL(result[0], "m1");
+
+    args.clear();
+    args.push_back(boost::assign::list_of("-1"));
+    result = ctx.invoke_rule("CALLER_MODULE", args);
+    BOOST_CHECK_EQUAL(result.size(), 1u);
+    if (!result.empty())
+        BOOST_CHECK_EQUAL(result[0], "m3");
 }
 
 void pwd_test()
@@ -660,6 +698,7 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&delete_module_test));
     test->add(BOOST_TEST_CASE(&import_test));
     test->add(BOOST_TEST_CASE(&export_test));
+    test->add(BOOST_TEST_CASE(&caller_module_test));
     test->add(BOOST_TEST_CASE(&pwd_test));
     test->add(BOOST_TEST_CASE(&import_module_test));
     test->add(BOOST_TEST_CASE(&instance_test));
