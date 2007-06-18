@@ -262,6 +262,31 @@ void rm_old_test()
     BOOST_CHECK(ctx.get_target("t1").flags & bjam::target::rm_old);
 }
 
+void update_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+    bjam::string_list result;
+    bjam::string_list expect;
+
+    expect = boost::assign::list_of("t1")("t2");
+    args.push_back(expect);
+    BOOST_CHECK(ctx.invoke_rule("UPDATE", args).empty());
+    result = ctx.targets_to_update();
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+    args.clear();
+    args.push_back(boost::assign::list_of("t3"));
+    result = ctx.invoke_rule("UPDATE", args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+    result = ctx.targets_to_update();
+    expect = boost::assign::list_of("t3");
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+}
+
 void subst_test()
 {
     bjam::context ctx;
@@ -328,6 +353,7 @@ void rule_names_test()
             ("SORT")
             ("SUBST")
             ("TEMPORARY")
+            ("UPDATE")
             ("VARNAMES")
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
             ("W32_GETREG")
@@ -613,6 +639,7 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&is_file_test));
     test->add(BOOST_TEST_CASE(&fail_expected_test));
     test->add(BOOST_TEST_CASE(&rm_old_test));
+    test->add(BOOST_TEST_CASE(&update_test));
     test->add(BOOST_TEST_CASE(&subst_test));
     test->add(BOOST_TEST_CASE(&rule_names_test));
     test->add(BOOST_TEST_CASE(&var_names_test));

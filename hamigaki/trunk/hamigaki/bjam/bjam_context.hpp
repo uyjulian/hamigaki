@@ -68,6 +68,16 @@ public:
         return targets_[name];
     }
 
+    string_list targets_to_update() const
+    {
+        return targets_to_update_;
+    }
+
+    void targets_to_update(const string_list& x)
+    {
+        targets_to_update_ = x;
+    }
+
     void set_native_rule(
         const std::string& name, const list_of_list& params,
         const boost::function1<string_list,context&>& func,
@@ -90,6 +100,7 @@ private:
     module root_module_;
     std::map<std::string,module> modules_;
     std::map<std::string,target> targets_;
+    string_list targets_to_update_;
     std::vector<frame> frames_;
     std::string working_directory_;
 

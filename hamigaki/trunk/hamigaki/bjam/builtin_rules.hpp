@@ -42,7 +42,7 @@ HAMIGAKI_BJAM_DECL string_list is_file(context& ctx);
 
 HAMIGAKI_BJAM_DECL string_list fail_expected(context& ctx);
 HAMIGAKI_BJAM_DECL string_list rm_old(context& ctx);
-
+HAMIGAKI_BJAM_DECL string_list update(context& ctx);
 HAMIGAKI_BJAM_DECL string_list subst(context& ctx);
 HAMIGAKI_BJAM_DECL string_list rule_names(context& ctx);
 HAMIGAKI_BJAM_DECL string_list var_names(context& ctx);

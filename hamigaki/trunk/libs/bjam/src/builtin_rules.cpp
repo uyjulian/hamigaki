@@ -271,6 +271,16 @@ HAMIGAKI_BJAM_DECL string_list rm_old(context& ctx)
     return string_list();
 }
 
+HAMIGAKI_BJAM_DECL string_list update(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    string_list old = ctx.targets_to_update();
+    ctx.targets_to_update(args[0]);
+    return old;
+}
+
 HAMIGAKI_BJAM_DECL string_list subst(context& ctx)
 {
     frame& f = ctx.current_frame();
@@ -581,6 +591,11 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
 
     params.clear();
     ctx.set_native_rule("RMOLD", params, &builtins::rm_old);
+
+    params.clear();
+    params.push_back(
+        boost::assign::list_of("targets")("*"));
+    ctx.set_native_rule("UPDATE", params, &builtins::update);
 
     params.clear();
     params.push_back(
