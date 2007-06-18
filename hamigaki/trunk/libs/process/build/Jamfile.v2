@@ -9,12 +9,8 @@
 
 project hamigaki/process
     : requirements
-      <library>/boost/iostreams//boost_iostreams
-      <link>shared:<define>BOOST_IOSTREAMS_DYN_LINK=1
       <link>shared:<define>HAMIGAKI_PROCESS_DYN_LINK=1
     : usage-requirements
-      <library>/boost/iostreams//boost_iostreams
-      <link>shared:<define>BOOST_IOSTREAMS_DYN_LINK=1
       <link>shared:<define>HAMIGAKI_PROCESS_DYN_LINK=1
     : source-location ../src
     ;
