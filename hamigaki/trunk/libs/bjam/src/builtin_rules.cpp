@@ -347,6 +347,18 @@ HAMIGAKI_BJAM_DECL string_list var_names(context& ctx)
     );
 }
 
+HAMIGAKI_BJAM_DECL string_list delete_module(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    module& m = ctx.get_module(args[0].try_front());
+    m.rules.clear();
+    m.variables.clear();
+
+    return string_list();
+}
+
 HAMIGAKI_BJAM_DECL string_list import(context& ctx)
 {
     frame& f = ctx.current_frame();
@@ -607,6 +619,7 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     params.push_back(boost::assign::list_of("module")("?"));
     ctx.set_native_rule("RULENAMES", params, &builtins::rule_names);
     ctx.set_native_rule("VARNAMES", params, &builtins::var_names);
+    ctx.set_native_rule("DELETE_MODULE", params, &builtins::delete_module);
 
     params.clear();
     params.push_back(boost::assign::list_of("source_module")("?"));

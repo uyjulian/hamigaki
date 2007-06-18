@@ -12,6 +12,7 @@
 #include <hamigaki/bjam/builtin_rules.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/io/ios_state.hpp>
+#include <boost/range/empty.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/none.hpp>
 #include <cstdlib>
@@ -327,6 +328,7 @@ void rule_names_test()
             ("ALWAYS")
             ("CALC")
             ("COMMAND")
+            ("DELETE_MODULE")
             ("DEPENDS")
             ("ECHO")
             ("EXIT")
@@ -385,6 +387,18 @@ void var_names_test()
     result = ctx.invoke_rule("VARNAMES", args);
     BOOST_CHECK_EQUAL_COLLECTIONS(
         result.begin(), result.end(), expect.begin(), expect.end());
+}
+
+void delete_module_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+
+    BOOST_CHECK(ctx.invoke_rule("DELETE_MODULE", args).empty());
+
+    bjam::module& m = ctx.get_module(boost::none);
+    BOOST_CHECK(boost::empty(m.rules.entries()));
+    BOOST_CHECK(boost::empty(m.variables.entries()));
 }
 
 void import_test()
@@ -643,6 +657,7 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&subst_test));
     test->add(BOOST_TEST_CASE(&rule_names_test));
     test->add(BOOST_TEST_CASE(&var_names_test));
+    test->add(BOOST_TEST_CASE(&delete_module_test));
     test->add(BOOST_TEST_CASE(&import_test));
     test->add(BOOST_TEST_CASE(&export_test));
     test->add(BOOST_TEST_CASE(&pwd_test));

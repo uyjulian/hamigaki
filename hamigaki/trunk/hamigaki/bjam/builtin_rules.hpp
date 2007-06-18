@@ -46,7 +46,7 @@ HAMIGAKI_BJAM_DECL string_list update(context& ctx);
 HAMIGAKI_BJAM_DECL string_list subst(context& ctx);
 HAMIGAKI_BJAM_DECL string_list rule_names(context& ctx);
 HAMIGAKI_BJAM_DECL string_list var_names(context& ctx);
-
+HAMIGAKI_BJAM_DECL string_list delete_module(context& ctx);
 HAMIGAKI_BJAM_DECL string_list import(context& ctx);
 HAMIGAKI_BJAM_DECL string_list export_(context& ctx);
 

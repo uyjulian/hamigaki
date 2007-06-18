@@ -37,6 +37,11 @@ public:
         table_[name] = def;
     }
 
+    void clear()
+    {
+        table_.clear();
+    }
+
     std::pair<iterator,iterator> entries() const
     {
         return std::make_pair(table_.begin(), table_.end());
