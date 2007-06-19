@@ -21,7 +21,7 @@ class context;
 
 struct rule_definition
 {
-    rule_definition() : exported(true)
+    rule_definition() : exported(true), line(1)
     {
     }
 
@@ -30,6 +30,8 @@ struct rule_definition
     boost::function1<string_list,context&> native;
     boost::optional<std::string> module_name;
     bool exported;
+    std::string filename;
+    int line;
 };
 
 typedef boost::shared_ptr<rule_definition> rule_def_ptr;

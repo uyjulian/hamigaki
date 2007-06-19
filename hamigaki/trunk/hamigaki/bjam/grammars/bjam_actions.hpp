@@ -16,6 +16,7 @@
 #include <hamigaki/bjam/util/pattern.hpp>
 #include <hamigaki/bjam/util/search.hpp>
 #include <hamigaki/bjam/bjam_context.hpp>
+#include <boost/spirit/iterator/position_iterator.hpp>
 #include <climits> // required for <boost/spirit/phoenix/operators.hpp>
 #include <boost/spirit/phoenix.hpp>
 #include <fstream>
@@ -55,6 +56,15 @@ struct force_front_impl
 const ::phoenix::functor<force_front_impl> force_front = force_front_impl();
 
 
+template<class Iterator>
+inline string_list evaluate_expr(
+    context& ctx, Iterator first, Iterator last,
+    const std::string& filename, int line)
+{
+    typedef bjam_expression_grammar_gen<Iterator> grammar_type;
+    return grammar_type::evaluate(first, last, ctx, filename, line);
+}
+
 struct eval_expr_impl
 {
     typedef string_list result_type;
@@ -62,8 +72,10 @@ struct eval_expr_impl
     template<class Iterator>
     string_list operator()(context& ctx, Iterator first, Iterator last) const
     {
-        typedef bjam_expression_grammar_gen<Iterator> grammar_type;
-        return grammar_type::evaluate(first, last, ctx);
+        const typename Iterator::position_t& pos = first.get_position();
+
+        return evaluate_expr(
+            ctx, first.base(), last.base(), pos.file, pos.line);
     }
 };
 
@@ -100,7 +112,7 @@ struct include_impl
         const char* first = str.c_str();
         const char* last = first + str.size();
 
-        grammar_type::parse_bjam_grammar(first, last, ctx);
+        grammar_type::parse_bjam_grammar(first, last, ctx, filename, 1);
     }
 };
 
@@ -168,6 +180,10 @@ struct rule_set_impl
         def->module_name = f.module_name();
         def->exported = exported;
 
+        const typename Iterator::position_t& pos = first.get_position();
+        def->filename = pos.file;
+        def->line = pos.line;
+
         table.set_rule_definition(name, def);
     }
 };
@@ -184,17 +200,22 @@ struct for_block_impl
         context& ctx, const std::string& name, const string_list& values,
         Iterator first, Iterator last, bool is_local) const
     {
-        typedef bjam_grammar_gen<Iterator> grammar_type;
+        typedef typename Iterator::base_type base_iterator;
+        typedef typename Iterator::position_t pos_type;
+        typedef bjam_grammar_gen<base_iterator> grammar_type;
         typedef string_list::const_iterator iter_type;
 
         frame& f = ctx.current_frame();
         variable_table& table = f.current_module().variables;
 
+        const pos_type& pos = first.get_position();
+
         scoped_swap_values guard(table, name, is_local);
         for (iter_type i = values.begin(); i != values.end(); ++i)
         {
             table.set_values(name, string_list(*i));
-            grammar_type::parse_bjam_grammar(first, last, ctx);
+            grammar_type::parse_bjam_grammar(
+                first.base(), last.base(), ctx, pos.file, pos.line);
         }
     }
 };
@@ -227,11 +248,26 @@ struct while_block_impl
         context& ctx, const std::string& expr,
         Iterator first, Iterator last) const
     {
-        typedef bjam_grammar_gen<Iterator> grammar_type;
+        typedef typename Iterator::base_type base_iterator;
+        typedef typename Iterator::position_t pos_type;
+        typedef bjam_grammar_gen<base_iterator> grammar_type;
+
+        frame& f = ctx.current_frame();
+        std::string expr_file = f.filename();
+        int expr_line = f.line();
+
+        const pos_type& block_pos = first.get_position();
 
         string_list result;
-        while (eval_expr_impl()(ctx, expr.c_str(), expr.c_str()+expr.size()))
-            result = grammar_type::parse_bjam_grammar(first, last, ctx).values;
+        while (evaluate_expr(
+            ctx, expr.c_str(), expr.c_str()+expr.size(), expr_file, expr_line))
+        {
+            result =
+                grammar_type::parse_bjam_grammar(
+                    first.base(), last.base(), ctx,
+                    block_pos.file, block_pos.line
+                ).values;
+        }
         return result;
     }
 };

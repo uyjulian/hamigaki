@@ -12,6 +12,8 @@
 #include <hamigaki/bjam/grammars/bjam_grammar_gen.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
+#include <locale>
+#include <sstream>
 
 namespace fs = boost::filesystem;
 
@@ -34,6 +36,40 @@ context::caller_module_name(std::size_t level) const
 
     std::size_t index = (size-1) - level;
     return frames_[index].module_name();
+}
+
+string_list context::back_trace(std::size_t level) const
+{
+    string_list result;
+    const std::size_t size = frames_.size();
+    for (std::size_t i = 0; i < level; ++i)
+    {
+        if (i >= size)
+            break;
+
+        std::size_t index = (size-1) - i;
+        const frame& f = frames_[index];
+
+        result.push_back(f.filename());
+
+        {
+            std::ostringstream os;
+            os.imbue(std::locale::classic());
+            os << f.line();
+            result.push_back(os.str());
+        }
+
+        if (f.module_name())
+            result.push_back(*f.module_name() + ".");
+        else
+            result.push_back(std::string());
+
+        if (f.rule_name())
+            result.push_back(*f.rule_name() + ".");
+        else
+            result.push_back("module scope");
+    }
+    return result;
 }
 
 module& context::get_module(const boost::optional<std::string>& name)
@@ -147,7 +183,11 @@ context::invoke_rule(const std::string& name, const list_of_list& args)
         const char* last = first + body->size();
 
         typedef bjam::bjam_grammar_gen<const char*> grammar_type;
-        return grammar_type::parse_bjam_grammar(first, last, *this).values;
+
+        return
+            grammar_type::parse_bjam_grammar(
+                first, last, *this, rule->filename, rule->line
+            ).values;
     }
 }
 

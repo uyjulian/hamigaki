@@ -351,7 +351,11 @@ struct bjam_grammar
 
             while_stmt
                 =   keyword_p("while")
-                    >> expr_nocalc [while_stmt.expr = arg1]
+                    >> eps_p [set_position(ctx, arg1)]
+                    >> expr_nocalc
+                    [
+                        while_stmt.expr = construct_<std::string>(arg1, arg2)
+                    ]
                     >> keyword_p("{")
                     >> block_nocalc
                     [
@@ -556,21 +560,28 @@ template<class IteratorT>
 HAMIGAKI_BJAM_GRAMMAR_GEN_INLINE
 parse_info<IteratorT>
 bjam_grammar_gen<IteratorT>::parse_bjam_grammar(
-    const IteratorT& first, const IteratorT& last, context& ctx)
+    const IteratorT& first, const IteratorT& last,
+    context& ctx, const std::string& filename, int line)
 {
     using namespace ::phoenix;
 
     bjam::bjam_grammar g(ctx);
     bjam::skip_parser skip;
 
-    IteratorT current = first;
+    typedef boost::spirit::position_iterator<
+        IteratorT,
+        boost::spirit::file_position_without_column
+    > iter_type;
+
+    iter_type beg(first, last, filename, line);
+    iter_type end;
 
     bjam::parse_info<IteratorT> result;
 
-    boost::spirit::parse_info<IteratorT> info =
-        boost::spirit::parse(current, last, g[var(result.values) = arg1], skip);
+    boost::spirit::parse_info<iter_type> info =
+        boost::spirit::parse(beg, end, g[var(result.values) = arg1], skip);
 
-    result.stop = info.stop;
+    result.stop = info.stop.base();
     result.hit = info.hit;
     result.full = info.full;
     result.length = info.length;

@@ -111,7 +111,8 @@ struct base_definition
             ;
 
         func0
-            =   arg [func0.values = arg1]
+            =   eps_p [set_position(ctx, arg1)]
+                >> arg [func0.values = arg1]
                 >> lol
                 [
                     func0.args = arg1,

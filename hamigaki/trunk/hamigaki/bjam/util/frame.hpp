@@ -62,11 +62,33 @@ public:
         return arguments_;
     }
 
+    const std::string& filename() const
+    {
+        return filename_;
+    }
+
+    void filename(const std::string& name)
+    {
+        filename_ = name;
+    }
+
+    int line() const
+    {
+        return line_;
+    }
+
+    void line(int n)
+    {
+        line_ = n;
+    }
+
 private:
     module* module_;
     boost::optional<std::string> module_name_;
     boost::optional<std::string> rule_name_;
     list_of_list arguments_;
+    std::string filename_;
+    int line_;
 };
 
 } } // End namespaces bjam, hamigaki.

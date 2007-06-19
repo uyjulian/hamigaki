@@ -326,6 +326,7 @@ void rule_names_test()
     expect =
         boost::assign::list_of
             ("ALWAYS")
+            ("BACKTRACE")
             ("CALC")
             ("CALLER_MODULE")
             ("COMMAND")

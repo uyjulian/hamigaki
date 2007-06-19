@@ -245,16 +245,24 @@ struct bjam_expression_grammar
 template<class IteratorT>
 HAMIGAKI_BJAM_EXPRGRAMMAR_GEN_INLINE
 string_list bjam_expression_grammar_gen<IteratorT>::evaluate(
-    const IteratorT& first, const IteratorT& last, context& ctx)
+    const IteratorT& first, const IteratorT& last,
+    context& ctx, const std::string& filename, int line)
 {
     using namespace ::phoenix;
 
     bjam::bjam_expression_grammar g(ctx);
     bjam::skip_parser skip;
 
-    IteratorT current = first;
+    typedef boost::spirit::position_iterator<
+        IteratorT,
+        boost::spirit::file_position_without_column
+    > iter_type;
+
+    iter_type beg(first, last, filename, line);
+    iter_type end;
+
     string_list result;
-    boost::spirit::parse(current, last, g [var(result) = arg1], skip);
+    boost::spirit::parse(beg, end, g [var(result) = arg1], skip);
     return result;
 }
 

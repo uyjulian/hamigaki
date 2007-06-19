@@ -19,6 +19,7 @@
 #include <hamigaki/iterator/ostream_iterator.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/iterator/filter_iterator.hpp>
+#include <boost/integer_traits.hpp>
 #include <boost/next_prior.hpp>
 #include <boost/regex.hpp>
 #include <cstdlib>
@@ -435,6 +436,22 @@ HAMIGAKI_BJAM_DECL string_list caller_module(context& ctx)
         return string_list();
 }
 
+HAMIGAKI_BJAM_DECL string_list back_trace(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+    const string_list& arg1 = args[0];
+
+    int level = boost::integer_traits<int>::const_max;
+    if (!arg1.empty())
+        level = std::atoi(arg1[0].c_str());
+
+    if (level <= 0)
+        return string_list();
+
+    return ctx.back_trace(static_cast<std::size_t>(level));
+}
+
 HAMIGAKI_BJAM_DECL string_list pwd(context& ctx)
 {
     return string_list(ctx.working_directory());
@@ -661,6 +678,7 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     params.clear();
     params.push_back(boost::assign::list_of("levels")("?"));
     ctx.set_native_rule("CALLER_MODULE", params, &builtins::caller_module);
+    ctx.set_native_rule("BACKTRACE", params, &builtins::back_trace);
 
     params.clear();
     ctx.set_native_rule("PWD", params, &builtins::pwd);

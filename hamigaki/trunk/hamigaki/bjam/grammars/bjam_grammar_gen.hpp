@@ -38,7 +38,16 @@ struct HAMIGAKI_BJAM_DECL bjam_grammar_gen
 
     static parse_info<IteratorT>
     parse_bjam_grammar(
-        const iterator_type& first, const iterator_type& last, context& ctx);
+        const iterator_type& first, const iterator_type& last,
+        context& ctx, const std::string& filename, int line);
+
+    static parse_info<IteratorT>
+    parse_bjam_grammar(
+        const iterator_type& first, const iterator_type& last, context& ctx)
+    {
+        typedef bjam_grammar_gen<IteratorT> self;
+        return self::parse_bjam_grammar(first, last, ctx, std::string(), 1);
+    }
 };
 
 } } // End namespaces bjam, hamigaki.

@@ -28,7 +28,15 @@ struct HAMIGAKI_BJAM_DECL bjam_expression_grammar_gen
     typedef IteratorT iterator_type;
 
     static string_list evaluate(
-        const iterator_type& first, const iterator_type& last, context& ctx);
+        const iterator_type& first, const iterator_type& last,
+        context& ctx, const std::string& filename, int line);
+
+    static string_list evaluate(
+        const iterator_type& first, const iterator_type& last, context& ctx)
+    {
+        typedef bjam_expression_grammar_gen<IteratorT> self;
+        return self::evaluate(first, last, ctx, std::string(), 1);
+    }
 };
 
 } } // End namespaces bjam, hamigaki.

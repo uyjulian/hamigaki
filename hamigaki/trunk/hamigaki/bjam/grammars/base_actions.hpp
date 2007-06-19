@@ -12,6 +12,7 @@
 
 #include <hamigaki/bjam/util/variable_expansion.hpp>
 #include <hamigaki/bjam/bjam_context.hpp>
+#include <boost/spirit/iterator/position_iterator.hpp>
 #include <climits> // required for <boost/spirit/phoenix/operators.hpp>
 #include <boost/spirit/phoenix.hpp>
 #include <boost/next_prior.hpp>
@@ -65,6 +66,24 @@ struct split_rule_name_impl
 const ::phoenix::functor<
     split_rule_name_impl
 > split_rule_name = split_rule_name_impl();
+
+
+struct set_position_impl
+{
+    typedef void result_type;
+
+    template<class Iterator>
+    void operator()(context& ctx, Iterator it) const
+    {
+        frame& f = ctx.current_frame();
+
+        const typename Iterator::position_t& pos = it.get_position();
+        f.filename(pos.file);
+        f.line(pos.line);
+    }
+};
+
+const ::phoenix::functor<set_position_impl> set_position = set_position_impl();
 
 
 struct invoke_rule_impl
