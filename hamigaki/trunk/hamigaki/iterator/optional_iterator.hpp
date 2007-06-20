@@ -26,14 +26,14 @@ class optional_iterator
 
 private:
     typedef optional_iterator<Iterator> self_type;
-    typedef typename self_type::iterator_adaptor_ base_type;
+    typedef typename self_type::iterator_adaptor_ adaptor_type;
 
 public:
     optional_iterator() : valid_(false)
     {
     }
 
-    optional_iterator(Iterator it) : base_type(it), valid_(true)
+    optional_iterator(Iterator it) : adaptor_type(it), valid_(true)
     {
     }
 
