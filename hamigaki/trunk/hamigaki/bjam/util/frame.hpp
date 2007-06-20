@@ -17,7 +17,7 @@ namespace hamigaki { namespace bjam {
 struct frame
 {
 public:
-    explicit frame(module& m) : module_(&m)
+    explicit frame(module& m) : module_(&m), line_(1)
     {
     }
 

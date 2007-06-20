@@ -54,7 +54,7 @@ public:
     }
 
     boost::optional<std::string> caller_module_name(std::size_t level) const;
-    string_list back_trace(std::size_t level) const;
+    string_list back_trace(std::size_t level, std::size_t skip=0) const;
 
     module& get_module(const boost::optional<std::string>& name);
     const module& get_module(const boost::optional<std::string>& name) const;

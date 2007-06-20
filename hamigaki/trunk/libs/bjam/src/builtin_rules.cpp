@@ -449,7 +449,7 @@ HAMIGAKI_BJAM_DECL string_list back_trace(context& ctx)
     if (level <= 0)
         return string_list();
 
-    return ctx.back_trace(static_cast<std::size_t>(level));
+    return ctx.back_trace(static_cast<std::size_t>(level), 1u);
 }
 
 HAMIGAKI_BJAM_DECL string_list pwd(context& ctx)

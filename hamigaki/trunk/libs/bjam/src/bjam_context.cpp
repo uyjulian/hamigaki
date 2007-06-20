@@ -38,7 +38,7 @@ context::caller_module_name(std::size_t level) const
     return frames_[index].module_name();
 }
 
-string_list context::back_trace(std::size_t level) const
+string_list context::back_trace(std::size_t level, std::size_t skip) const
 {
     string_list result;
     const std::size_t size = frames_.size();
@@ -46,6 +46,8 @@ string_list context::back_trace(std::size_t level) const
     {
         if (i >= size)
             break;
+        else if (i < skip)
+            continue;
 
         std::size_t index = (size-1) - i;
         const frame& f = frames_[index];
@@ -65,7 +67,7 @@ string_list context::back_trace(std::size_t level) const
             result.push_back(std::string());
 
         if (f.rule_name())
-            result.push_back(*f.rule_name() + ".");
+            result.push_back(*f.rule_name());
         else
             result.push_back("module scope");
     }
