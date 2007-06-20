@@ -37,6 +37,7 @@ test-suite iterator :
     [ iterator-test counting_output_iter_test.cpp : ]
     [ iterator-test first_iterator_test.cpp : ]
     [ iterator-test istream_line_iterator_test.cpp : ]
+    [ iterator-test line_counting_iterator_test.cpp : ]
     [ iterator-test ostream_iterator_test.cpp : ]
     [ iterator-test second_iterator_test.cpp : ]
     ;

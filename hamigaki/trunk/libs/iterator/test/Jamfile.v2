@@ -18,6 +18,7 @@ test-suite "iterator" :
     [ run counting_output_iter_test.cpp : ]
     [ run first_iterator_test.cpp : ]
     [ run istream_line_iterator_test.cpp : ]
+    [ run line_counting_iterator_test.cpp : ]
     [ run ostream_iterator_test.cpp : ]
     [ run second_iterator_test.cpp : ]
     ;
