@@ -479,6 +479,35 @@ void caller_module_test()
         BOOST_CHECK_EQUAL(result[0], "m3");
 }
 
+void back_trace_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+    bjam::string_list result;
+    bjam::string_list expect;
+
+    expect = boost::assign::list_of("")("1")("")("module scope");
+    result = ctx.invoke_rule("BACKTRACE", args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+
+    bjam::module& m1 = ctx.get_module(std::string("m1"));
+    bjam::frame f1(m1, std::string("m1"));
+    f1.filename("f1.jam");
+    f1.line(123);
+    f1.rule_name(std::string("r1"));
+    ctx.push_frame(f1);
+
+    expect = boost::assign::list_of
+        ("f1.jam")("123")("m1.")("r1")
+        ("")("1")("")("module scope")
+        ;
+    result = ctx.invoke_rule("BACKTRACE", args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+}
+
 void pwd_test()
 {
     bjam::context ctx;
@@ -700,6 +729,7 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&import_test));
     test->add(BOOST_TEST_CASE(&export_test));
     test->add(BOOST_TEST_CASE(&caller_module_test));
+    test->add(BOOST_TEST_CASE(&back_trace_test));
     test->add(BOOST_TEST_CASE(&pwd_test));
     test->add(BOOST_TEST_CASE(&import_module_test));
     test->add(BOOST_TEST_CASE(&instance_test));
