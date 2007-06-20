@@ -132,6 +132,12 @@ void line_counting_iterator_test()
 
     BOOST_CHECK_EQUAL(i.line(), 3);
     BOOST_REQUIRE(i == end);
+
+    --i;
+
+    BOOST_CHECK_EQUAL(i.line(), 2);
+    BOOST_REQUIRE(i != end);
+    BOOST_CHECK_EQUAL(*i, '\n');
 }
 
 ut::test_suite* init_unit_test_suite(int, char* [])
