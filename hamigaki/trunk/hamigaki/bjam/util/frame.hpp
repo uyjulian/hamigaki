@@ -11,6 +11,7 @@
 #define HAMIGAKI_BJAM_UTIL_FRAME_HPP
 
 #include <hamigaki/bjam/util/module.hpp>
+#include <boost/noncopyable.hpp>
 
 namespace hamigaki { namespace bjam {
 
@@ -72,6 +73,11 @@ public:
         filename_ = name;
     }
 
+    void swap_filename(std::string& name)
+    {
+        filename_.swap(name);
+    }
+
     int line() const
     {
         return line_;
@@ -89,6 +95,25 @@ private:
     list_of_list arguments_;
     std::string filename_;
     int line_;
+};
+
+class scoped_change_filename : private boost::noncopyable
+{
+public:
+    scoped_change_filename(frame& f, const std::string& name)
+        : frame_(f), name_(name)
+    {
+        frame_.swap_filename(name_);
+    }
+
+    ~scoped_change_filename()
+    {
+        frame_.swap_filename(name_);
+    }
+
+private:
+    frame& frame_;
+    std::string name_;
 };
 
 } } // End namespaces bjam, hamigaki.

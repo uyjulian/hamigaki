@@ -30,27 +30,32 @@ context::context()
 boost::optional<std::string>
 context::caller_module_name(std::size_t level) const
 {
-    const std::size_t size = frames_.size();
-    if (level >= (size-1))
-        return boost::optional<std::string>();
+    frame_stack::const_reverse_iterator pos = frames_.rbegin();
+    frame_stack::const_reverse_iterator end = frames_.rend();
+    while (pos != end)
+    {
+        if (level == 0)
+            return pos->module_name();
 
-    std::size_t index = (size-1) - level;
-    return frames_[index].module_name();
+        ++pos;
+        --level;
+    }
+    return boost::optional<std::string>();
 }
 
 string_list context::back_trace(std::size_t level, std::size_t skip) const
 {
     string_list result;
-    const std::size_t size = frames_.size();
-    for (std::size_t i = 0; i < level; ++i)
+    frame_stack::const_reverse_iterator pos = frames_.rbegin();
+    frame_stack::const_reverse_iterator end = frames_.rend();
+    for (std::size_t i = 0; i < level; ++i, ++pos)
     {
-        if (i >= size)
+        if (pos == end)
             break;
         else if (i < skip)
             continue;
 
-        std::size_t index = (size-1) - i;
-        const frame& f = frames_[index];
+        const frame& f = *pos;
 
         result.push_back(f.filename());
 
@@ -161,6 +166,8 @@ context::invoke_rule(const std::string& name, const list_of_list& args)
     frame f(old.current_module(), old.module_name());
     f.rule_name(name);
     f.arguments() = args;
+    f.filename(rule->filename);
+    f.line(rule->line);
 
     scoped_push_frame guard(*this, f);
     this->change_module(rule->module_name);
@@ -188,7 +195,7 @@ context::invoke_rule(const std::string& name, const list_of_list& args)
 
         return
             grammar_type::parse_bjam_grammar(
-                first, last, *this, rule->filename, rule->line
+                first, last, *this, rule->line
             ).values;
     }
 }

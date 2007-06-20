@@ -13,7 +13,7 @@
 #include <hamigaki/bjam/bjam_config.hpp>
 #include <hamigaki/bjam/util/frame.hpp>
 #include <hamigaki/bjam/util/target.hpp>
-#include <boost/noncopyable.hpp>
+#include <list>
 
 #ifdef BOOST_HAS_ABI_HEADERS
     #include BOOST_ABI_PREFIX
@@ -33,6 +33,9 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx);
 
 class HAMIGAKI_BJAM_DECL context : private boost::noncopyable
 {
+private:
+    typedef std::list<frame> frame_stack;
+
 public:
     typedef variable_table::iterator variable_iterator;
 
@@ -104,7 +107,7 @@ private:
     std::map<std::string,module> modules_;
     std::map<std::string,target> targets_;
     string_list targets_to_update_;
-    std::vector<frame> frames_;
+    frame_stack frames_;
     std::string working_directory_;
 
     rule_def_ptr get_imported_rule_definition(

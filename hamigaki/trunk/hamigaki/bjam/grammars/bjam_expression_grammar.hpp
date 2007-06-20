@@ -15,6 +15,7 @@
 #include <hamigaki/bjam/grammars/bjam_expression_actions.hpp>
 #include <hamigaki/bjam/grammars/bjam_expression_grammar_gen.hpp>
 #include <hamigaki/bjam/util/skip_parser.hpp>
+#include <hamigaki/iterator/line_counting_iterator.hpp>
 #include <hamigaki/spirit/phoenix/stl/clear.hpp>
 #include <boost/spirit/dynamic/if.hpp>
 
@@ -245,21 +246,17 @@ struct bjam_expression_grammar
 template<class IteratorT>
 HAMIGAKI_BJAM_EXPRGRAMMAR_GEN_INLINE
 string_list bjam_expression_grammar_gen<IteratorT>::evaluate(
-    const IteratorT& first, const IteratorT& last,
-    context& ctx, const std::string& filename, int line)
+    const IteratorT& first, const IteratorT& last, context& ctx, int line)
 {
     using namespace ::phoenix;
 
     bjam::bjam_expression_grammar g(ctx);
     bjam::skip_parser skip;
 
-    typedef boost::spirit::position_iterator<
-        IteratorT,
-        boost::spirit::file_position_without_column
-    > iter_type;
+    typedef hamigaki::line_counting_iterator<IteratorT> iter_type;
 
-    iter_type beg(first, last, filename, line);
-    iter_type end;
+    iter_type beg(first, line);
+    iter_type end(last);
 
     string_list result;
     boost::spirit::parse(beg, end, g [var(result) = arg1], skip);

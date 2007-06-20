@@ -19,6 +19,7 @@
 #include <hamigaki/bjam/util/eval_with_variables.hpp>
 #include <hamigaki/bjam/util/skip_parser.hpp>
 #include <hamigaki/bjam/util/string_parser.hpp>
+#include <hamigaki/iterator/line_counting_iterator.hpp>
 #include <boost/spirit/dynamic/if.hpp>
 
 #ifdef BOOST_HAS_ABI_HEADERS
@@ -560,21 +561,17 @@ template<class IteratorT>
 HAMIGAKI_BJAM_GRAMMAR_GEN_INLINE
 parse_info<IteratorT>
 bjam_grammar_gen<IteratorT>::parse_bjam_grammar(
-    const IteratorT& first, const IteratorT& last,
-    context& ctx, const std::string& filename, int line)
+    const IteratorT& first, const IteratorT& last, context& ctx, int line)
 {
     using namespace ::phoenix;
 
     bjam::bjam_grammar g(ctx);
     bjam::skip_parser skip;
 
-    typedef boost::spirit::position_iterator<
-        IteratorT,
-        boost::spirit::file_position_without_column
-    > iter_type;
+    typedef hamigaki::line_counting_iterator<IteratorT> iter_type;
 
-    iter_type beg(first, last, filename, line);
-    iter_type end;
+    iter_type beg(first, line);
+    iter_type end(last);
 
     bjam::parse_info<IteratorT> result;
 
