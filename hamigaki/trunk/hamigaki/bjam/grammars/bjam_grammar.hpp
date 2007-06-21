@@ -226,7 +226,8 @@ struct bjam_grammar
                 ;
 
             invoke_stmt
-                =   arg_p [invoke_stmt.values = var_expand(ctx, arg1)]
+                =   eps_p [set_position(ctx, arg1)]
+                    >> arg_p [invoke_stmt.values = var_expand(ctx, arg1)]
                     >> lol
                     [
                         invoke_stmt.args = arg1,
