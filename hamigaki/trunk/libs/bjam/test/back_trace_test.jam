@@ -1,0 +1,9 @@
+rule back_trace ( )
+{
+    module bt_test
+    {
+        result = [ BACKTRACE ] ;
+    }
+}
+
+back_trace ;

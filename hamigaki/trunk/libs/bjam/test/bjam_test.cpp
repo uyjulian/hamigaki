@@ -464,6 +464,33 @@ void include_test()
     BOOST_CHECK(eval(ctx, src).empty());
 }
 
+void back_trace_test()
+{
+    bjam::context ctx;
+
+    fs::path ph(hamigaki_root, fs::native);
+    ph /= "libs/bjam/test/back_trace_test.jam";
+    std::string filename = ph.native_file_string();
+
+    std::string src;
+    src += "include ";
+    src += algo::replace_all_copy(filename, "\\", "\\\\");
+    src += " ;";
+
+    BOOST_CHECK(eval(ctx, src).empty());
+
+    bjam::module& m = ctx.get_module(std::string("bt_test"));
+    const bjam::string_list& result = m.variables.get_values("result");
+
+    bjam::string_list expect = boost::assign::list_of
+        (filename)("5")("bt_test.")("back_trace")
+        (filename)("9")("")("module scope")
+        ;
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+}
+
 ut::test_suite* init_unit_test_suite(int argc, char* argv[])
 {
     if (argc != 2)
@@ -487,5 +514,6 @@ ut::test_suite* init_unit_test_suite(int argc, char* argv[])
     test->add(BOOST_TEST_CASE(&on_test));
     test->add(BOOST_TEST_CASE(&func_test));
     test->add(BOOST_TEST_CASE(&include_test));
+    test->add(BOOST_TEST_CASE(&back_trace_test));
     return test;
 }
