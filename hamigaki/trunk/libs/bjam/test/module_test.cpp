@@ -53,18 +53,19 @@ void import_module_test()
         result.begin(), result.end(), expect.begin(), expect.end());
 
 
-    result = eval(ctx,
-        "module m1 { "
-            "local rule r2 { "
-                "return b ; "
+    BOOST_CHECK_THROW(
+        eval(ctx,
+            "module m1 { "
+                "local rule r2 { "
+                    "return b ; "
+                "} "
             "} "
-        "} "
-        "module m2 { "
-            "m1.r2 ; "
-        "}"
+            "module m2 { "
+                "m1.r2 ; "
+            "}"
+        ),
+        bjam::rule_not_found
     );
-    // TODO: currently, any unknown rule returns an empty list
-    BOOST_CHECK(result.empty());
 }
 
 ut::test_suite* init_unit_test_suite(int, char* [])

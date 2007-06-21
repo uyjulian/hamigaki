@@ -34,8 +34,6 @@ struct rule_definition
     int line;
 };
 
-typedef boost::shared_ptr<rule_definition> rule_def_ptr;
-
 } } // End namespaces bjam, hamigaki.
 
 #endif // HAMIGAKI_BJAM_UTIL_RULE_DEFINITION_HPP

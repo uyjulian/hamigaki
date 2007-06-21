@@ -398,8 +398,7 @@ void class_test()
     BOOST_CHECK(eval(ctx, "class c4 : c3 { }").empty());
 
     bjam::module& m = ctx.get_module(std::string("class@c4"));
-    bjam::rule_def_ptr def = m.rules.get_rule_definition("c3.r");
-    BOOST_CHECK(def.get() != 0);
+    m.rules.get_rule_definition("c3.r");
 }
 
 void on_test()

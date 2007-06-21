@@ -96,7 +96,7 @@ struct include_impl
         {
             std::ifstream is(filename.c_str(), std::ios_base::binary);
             if (!is)
-                throw std::runtime_error("file not found"); // FIXME
+                throw cannot_open_file(filename);
 
             str.assign(
                 std::istreambuf_iterator<char>(is),
@@ -170,13 +170,13 @@ struct rule_set_impl
         frame& f = ctx.current_frame();
         rule_table& table = f.current_module().rules;
 
-        boost::shared_ptr<rule_definition> def(new rule_definition);
-        def->parameters = params;
-        def->body.reset(new std::string(first, last));
-        def->module_name = f.module_name();
-        def->exported = exported;
-        def->filename = f.filename();
-        def->line = first.line();
+        rule_definition def;
+        def.parameters = params;
+        def.body.reset(new std::string(first, last));
+        def.module_name = f.module_name();
+        def.exported = exported;
+        def.filename = f.filename();
+        def.line = first.line();
 
         table.set_rule_definition(name, def);
     }

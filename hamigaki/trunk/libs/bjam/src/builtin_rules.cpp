@@ -45,7 +45,7 @@ struct is_exported
 
     bool operator()(const value_type& x) const
     {
-        return x.second->exported;
+        return x.second.exported;
     }
 };
 
@@ -377,14 +377,12 @@ HAMIGAKI_BJAM_DECL string_list import(context& ctx)
 
     for (std::size_t i = 0, size = src_rules.size(); i < size; ++i)
     {
-        rule_def_ptr src = src_module.rules.get_rule_definition(src_rules[i]);
-        if (!src)
-            throw std::runtime_error("rule not found"); // FIXME
+        rule_definition def =
+            src_module.rules.get_rule_definition(src_rules[i]);
 
-        rule_def_ptr def(new rule_definition(*src));
         if (localize)
-            def->module_name = tgt_module_name;
-        def->exported = false;
+            def.module_name = tgt_module_name;
+        def.exported = false;
 
         tgt_module.rules.set_rule_definition(tgt_rules[i], def);
     }
@@ -402,9 +400,9 @@ HAMIGAKI_BJAM_DECL string_list export_(context& ctx)
 
     for (std::size_t i = 0, size = rules.size(); i < size; ++i)
     {
-        rule_def_ptr def = m.rules.get_rule_definition(rules[i]);
+        rule_definition* def = m.rules.get_rule_definition_ptr(rules[i]);
         if (!def)
-            throw std::runtime_error("rule not found"); // FIXME
+            throw rule_not_found(rules[i]);
 
         def->exported = true;
     }

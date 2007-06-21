@@ -11,6 +11,7 @@
 #define HAMIGAKI_BJAM_UTIL_RULE_TABLE_HPP
 
 #include <hamigaki/bjam/util/rule_definition.hpp>
+#include <hamigaki/bjam/bjam_exceptions.hpp>
 #include <map>
 
 namespace hamigaki { namespace bjam {
@@ -18,21 +19,44 @@ namespace hamigaki { namespace bjam {
 class rule_table
 {
 public:
-    typedef std::map<std::string,rule_def_ptr> table_type;
+    typedef std::map<std::string,rule_definition> table_type;
     typedef table_type::const_iterator iterator;
 
-    rule_def_ptr get_rule_definition(const std::string& name) const
+    rule_definition* get_rule_definition_ptr(const std::string& name)
     {
-        typedef table_type::const_iterator iter_type;
-
-        iter_type pos = table_.find(name);
-        if (pos != table_.end())
-            return pos->second;
-        else
-            return rule_def_ptr();
+        table_type::iterator pos = table_.find(name);
+        if (pos == table_.end())
+            return 0;
+        return &pos->second;
     }
 
-    void set_rule_definition(const std::string& name, const rule_def_ptr& def)
+    rule_definition& get_rule_definition(const std::string& name)
+    {
+        rule_definition* ptr = this->get_rule_definition_ptr(name);
+        if (ptr == 0)
+            throw rule_not_found(name);
+        return *ptr;
+    }
+
+    const rule_definition*
+    get_rule_definition_ptr(const std::string& name) const
+    {
+        table_type::const_iterator pos = table_.find(name);
+        if (pos == table_.end())
+            return 0;
+        return &pos->second;
+    }
+
+    const rule_definition& get_rule_definition(const std::string& name) const
+    {
+        const rule_definition* ptr = this->get_rule_definition_ptr(name);
+        if (ptr == 0)
+            throw rule_not_found(name);
+        return *ptr;
+    }
+
+    void set_rule_definition(
+        const std::string& name, const rule_definition& def)
     {
         table_[name] = def;
     }

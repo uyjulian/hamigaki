@@ -26,6 +26,7 @@ project hamigaki/bjam
 
 SOURCES =
     bjam_context
+    bjam_exceptions
     builtin_rules
     class
     glob

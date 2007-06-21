@@ -95,7 +95,7 @@ context::get_module(const boost::optional<std::string>& name) const
         typedef std::map<std::string,module>::const_iterator iter_type;
         iter_type i = modules_.find(*name);
         if (i == modules_.end())
-            throw std::runtime_error("module not found"); // FIXME
+            throw module_not_found(*name);
         return i->second;
     }
     else
@@ -120,74 +120,74 @@ void context::set_native_rule(
     const boost::function1<string_list,context&>& func,
     bool exported)
 {
-    rule_def_ptr def(new rule_definition);
+    rule_definition def;
 
-    def->parameters = params;
-    def->native = func;
-    def->exported = exported;
+    def.parameters = params;
+    def.native = func;
+    def.exported = exported;
 
     root_module_.rules.set_rule_definition(name, def);
 }
 
-rule_def_ptr context::get_rule_definition(const std::string& name) const
+const rule_definition&
+context::get_rule_definition(const std::string& name) const
 {
     const frame& f = frames_.back();
     const module& m = f.current_module();
 
-    if (rule_def_ptr p = m.rules.get_rule_definition(name))
-        return p;
+    typedef const rule_definition* ptr_type;
 
-    if (rule_def_ptr p = root_module_.rules.get_rule_definition(name))
-        return p;
+    if (ptr_type p = m.rules.get_rule_definition_ptr(name))
+        return *p;
+
+    if (ptr_type p = root_module_.rules.get_rule_definition_ptr(name))
+        return *p;
 
     std::string::size_type dot = name.find('.');
-    if (dot != std::string::npos)
-    {
-        std::string module_name(name, 0u, dot);
-        std::string rule_name(name, dot+1);
+    if (dot == std::string::npos)
+        throw rule_not_found(name);
 
-        return this->get_imported_rule_definition(module_name, rule_name);
-    }
+    std::string module_name(name, 0u, dot);
+    std::string rule_name(name, dot+1);
 
-    return rule_def_ptr();
+    ptr_type p = this->get_imported_rule_definition_ptr(module_name, rule_name);
+    if (!p)
+        throw rule_not_found(name);
+    return *p;
 }
 
 string_list
 context::invoke_rule(const std::string& name, const list_of_list& args)
 {
-    rule_def_ptr rule = this->get_rule_definition(name);
-
-    // TODO: may throw some exception
-    if (!rule)
-        return string_list();
+    const rule_definition& rule = this->get_rule_definition(name);
 
     frame& old = current_frame();
 
     frame f(old.current_module(), old.module_name());
     f.rule_name(name);
     f.arguments() = args;
-    f.filename(rule->filename);
-    f.line(rule->line);
+    f.filename(rule.filename);
+    f.line(rule.line);
 
     scoped_push_frame guard(*this, f);
-    this->change_module(rule->module_name);
+    this->change_module(rule.module_name);
 
     frame& cur_frame = current_frame();
     module& cur_module = cur_frame.current_module();
 
     variable_table local;
-    const list_of_list& params = rule->parameters;
+    const list_of_list& params = rule.parameters;
     for (std::size_t i = 0; i < params.size(); ++i)
         bjam::set_rule_argument(local, params[i], args[i]);
 
-    if (rule->native)
-        return rule->native(*this);
+    if (rule.native)
+        return rule.native(*this);
     else
     {
         scoped_push_local_variables using_local(cur_module.variables, local);
 
         // Note: make a copy for the re-definition of the rule
-        boost::shared_ptr<std::string> body = rule->body;
+        boost::shared_ptr<std::string> body = rule.body;
         const char* first = body->c_str();
         const char* last = first + body->size();
 
@@ -195,12 +195,12 @@ context::invoke_rule(const std::string& name, const list_of_list& args)
 
         return
             grammar_type::parse_bjam_grammar(
-                first, last, *this, rule->line
+                first, last, *this, rule.line
             ).values;
     }
 }
 
-rule_def_ptr context::get_imported_rule_definition(
+const rule_definition* context::get_imported_rule_definition_ptr(
     const std::string& module_name, const std::string& rule_name) const
 {
     const frame& f = frames_.back();
@@ -208,16 +208,15 @@ rule_def_ptr context::get_imported_rule_definition(
     const std::set<std::string>& table =
         f.current_module().imported_modules;
     if (table.find(module_name) == table.end())
-        return rule_def_ptr();
+        return 0;
 
     const module& m = this->get_module(module_name);
-    if (rule_def_ptr p = m.rules.get_rule_definition(rule_name))
-    {
-        if (p->exported)
-            return p;
-    }
 
-    return rule_def_ptr();
+    const rule_definition* ptr = m.rules.get_rule_definition_ptr(rule_name);
+    if (ptr && ptr->exported)
+        return ptr;
+    else
+        return 0;
 }
 
 } } // End namespaces bjam, hamigaki.

@@ -89,7 +89,7 @@ public:
         const boost::function1<string_list,context&>& func,
         bool exported = true);
 
-    rule_def_ptr get_rule_definition(const std::string& name) const;
+    const rule_definition& get_rule_definition(const std::string& name) const;
     string_list invoke_rule(const std::string& name, const list_of_list& args);
 
     std::string working_directory() const
@@ -110,7 +110,7 @@ private:
     frame_stack frames_;
     std::string working_directory_;
 
-    rule_def_ptr get_imported_rule_definition(
+    const rule_definition* get_imported_rule_definition_ptr(
         const std::string& module_name, const std::string& rule_name) const;
 };
 

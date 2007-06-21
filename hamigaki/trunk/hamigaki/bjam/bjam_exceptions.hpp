@@ -12,42 +12,77 @@
 
 #include <hamigaki/bjam/bjam_config.hpp>
 #include <boost/shared_array.hpp>
-#include <cstring>
+#include <boost/shared_ptr.hpp>
 #include <exception>
+#include <string>
 
 #ifdef BOOST_HAS_ABI_HEADERS
     #include BOOST_ABI_PREFIX
 #endif
 
+#ifdef BOOST_MSVC
+    #pragma warning(push)
+    #pragma warning(disable : 4251 4275)
+#endif
+
 namespace hamigaki { namespace bjam {
 
-class exit_exception : public std::exception
+class HAMIGAKI_BJAM_DECL exception_data
 {
 public:
-    exit_exception(const std::string& msg, int code) : code_(code)
-    {
-        try
-        {
-            msg_ptr_.reset(new char[msg.size()+1]);
-            std::memcpy(&msg_ptr_[0], msg.c_str(), msg.size()+1);
-        }
-        catch (...)
-        {
-            msg_ptr_.reset();
-        }
-    }
+    exception_data(const char* msg, const std::string& name);
+    ~exception_data();
+    const char* what() const;
+    const char* name() const;
 
-    ~exit_exception() throw() // virtual
-    {
-    }
+private:
+    struct impl;
+    boost::shared_ptr<impl> pimpl_;
+    const char* msg_;
+};
 
-    const char* what() const throw() // virtual
-    {
-        if (const char* p = msg_ptr_.get())
-            return p;
-        else
-            return "terminate by EXIT";
-    }
+class HAMIGAKI_BJAM_DECL cannot_open_file : public std::exception
+{
+public:
+    explicit cannot_open_file(const std::string& name);
+    ~cannot_open_file() throw(); // virtual
+    const char* what() const throw(); // virtual
+    const char* filename() const;
+
+private:
+    exception_data data_;
+};
+
+class HAMIGAKI_BJAM_DECL module_not_found : public std::exception
+{
+public:
+    explicit module_not_found(const std::string& name);
+    ~module_not_found() throw(); // virtual
+    const char* what() const throw(); // virtual
+    const char* module() const;
+
+private:
+    exception_data data_;
+};
+
+class HAMIGAKI_BJAM_DECL rule_not_found : public std::exception
+{
+public:
+    explicit rule_not_found(const std::string& name);
+    ~rule_not_found() throw(); // virtual
+    const char* what() const throw(); // virtual
+    const char* rule() const;
+
+private:
+    exception_data data_;
+};
+
+class HAMIGAKI_BJAM_DECL exit_exception : public std::exception
+{
+public:
+    exit_exception(const std::string& msg, int code);
+    ~exit_exception() throw(); // virtual
+    const char* what() const throw(); // virtual
 
     int code() const
     {
@@ -60,6 +95,10 @@ private:
 };
 
 } } // End namespaces bjam, hamigaki.
+
+#ifdef BOOST_MSVC
+    #pragma warning(pop)
+#endif
 
 #ifdef BOOST_HAS_ABI_HEADERS
     #include BOOST_ABI_SUFFIX

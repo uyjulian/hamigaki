@@ -28,15 +28,16 @@ void check_bases(const context& ctx, const string_list& bases)
 }
 
 bool is_localized_rule(
-    const context& ctx, const rule_def_ptr& def, const std::string& module_name)
+    const context& ctx,
+    const rule_definition& def, const std::string& module_name)
 {
-    if (!def->module_name)
+    if (!def.module_name)
         return false;
 
-    if (*def->module_name == module_name)
+    if (*def.module_name == module_name)
         return true;
 
-    const module& m = ctx.get_module(*def->module_name);
+    const module& m = ctx.get_module(*def.module_name);
 
     if (const std::string* p = m.class_module.get_ptr())
         return *p == module_name;
@@ -63,9 +64,9 @@ void import_bases(
             name += '.';
             name += beg->first;
 
-            rule_def_ptr def(new rule_definition(*beg->second));
+            rule_definition def = beg->second;
             if (is_localized_rule(ctx, def, base_mod_name))
-                def->module_name = module_name;
+                def.module_name = module_name;
 
             cls_module.rules.set_rule_definition(name, def);
         }
