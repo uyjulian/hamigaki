@@ -34,11 +34,13 @@ struct invoke_stmt_closure
         , string_list
         , boost::optional<std::string>
         , list_of_list
+        , int
     >
 {
     member1 values;
     member2 name;
     member3 args;
+    member4 caller_line;
 };
 
 struct assign_closure
@@ -138,10 +140,12 @@ struct while_stmt_closure
           while_stmt_closure
         , string_list
         , std::string
+        , int
     >
 {
     member1 values;
     member2 expr;
+    member3 expr_line;
 };
 
 struct rule_stmt_closure

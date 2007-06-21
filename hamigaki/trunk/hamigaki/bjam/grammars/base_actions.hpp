@@ -67,18 +67,33 @@ const ::phoenix::functor<
 > split_rule_name = split_rule_name_impl();
 
 
-struct set_position_impl
+struct get_line_impl
 {
-    typedef void result_type;
+    typedef int result_type;
 
     template<class Iterator>
-    void operator()(context& ctx, Iterator it) const
+    int operator()(Iterator it) const
     {
-        ctx.current_frame().line(it.line());
+        return it.line();
     }
 };
 
-const ::phoenix::functor<set_position_impl> set_position = set_position_impl();
+const ::phoenix::functor<get_line_impl> get_line = get_line_impl();
+
+
+struct set_caller_line_impl
+{
+    typedef void result_type;
+
+    void operator()(context& ctx, int line) const
+    {
+        ctx.current_frame().line(line);
+    }
+};
+
+const ::phoenix::functor<
+    set_caller_line_impl
+> set_caller_line = set_caller_line_impl();
 
 
 struct invoke_rule_impl

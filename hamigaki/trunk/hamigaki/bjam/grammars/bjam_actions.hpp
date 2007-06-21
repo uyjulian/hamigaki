@@ -238,14 +238,13 @@ struct while_block_impl
 
     template<class Iterator>
     string_list operator()(
-        context& ctx, const std::string& expr,
+        context& ctx, const std::string& expr, int expr_line,
         Iterator first, Iterator last) const
     {
         typedef typename Iterator::base_type base_iterator;
         typedef bjam_grammar_gen<base_iterator> grammar_type;
 
         frame& f = ctx.current_frame();
-        int expr_line = f.line();
         int block_line = first.line();
 
         string_list result;

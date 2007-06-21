@@ -483,8 +483,8 @@ void back_trace_test()
     const bjam::string_list& result = m.variables.get_values("result");
 
     bjam::string_list expect = boost::assign::list_of
-        (filename)("5")("bt_test.")("back_trace")
-        (filename)("9")("")("module scope")
+        (filename)("9")("bt_test.")("back_trace")
+        (filename)("17")("")("module scope")
         ;
 
     BOOST_CHECK_EQUAL_COLLECTIONS(

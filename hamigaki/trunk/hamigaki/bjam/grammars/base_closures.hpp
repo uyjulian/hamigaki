@@ -52,11 +52,13 @@ struct func0_closure
         , string_list
         , boost::optional<std::string>
         , list_of_list
+        , int
     >
 {
     member1 values;
     member2 name;
     member3 args;
+    member4 caller_line;
 };
 
 } } // End namespaces bjam, hamigaki.

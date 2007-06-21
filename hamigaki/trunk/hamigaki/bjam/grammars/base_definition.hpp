@@ -111,11 +111,12 @@ struct base_definition
             ;
 
         func0
-            =   eps_p [set_position(ctx, arg1)]
+            =   eps_p [func0.caller_line = get_line(arg1)]
                 >> arg [func0.values = arg1]
                 >> lol
                 [
                     func0.args = arg1,
+                    set_caller_line(ctx, func0.caller_line),
                     func0.name = split_rule_name(func0.values, func0.args),
                     func0.values = invoke_rule(ctx,func0.name, func0.args)
                 ]

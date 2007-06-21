@@ -226,7 +226,7 @@ struct bjam_grammar
                 ;
 
             invoke_stmt
-                =   eps_p [set_position(ctx, arg1)]
+                =   eps_p [invoke_stmt.caller_line = get_line(arg1)]
                     >> arg_p [invoke_stmt.values = var_expand(ctx, arg1)]
                     >> lol
                     [
@@ -238,6 +238,7 @@ struct bjam_grammar
                     ]
                     >> keyword_p(";")
                     [
+                        set_caller_line(ctx, invoke_stmt.caller_line),
                         invoke_stmt.values =
                             invoke_rule(ctx, invoke_stmt.name, invoke_stmt.args)
                     ]
@@ -353,7 +354,7 @@ struct bjam_grammar
 
             while_stmt
                 =   keyword_p("while")
-                    >> eps_p [set_position(ctx, arg1)]
+                    >> eps_p [while_stmt.expr_line = get_line(arg1)]
                     >> expr_nocalc
                     [
                         while_stmt.expr = construct_<std::string>(arg1, arg2)
@@ -362,7 +363,10 @@ struct bjam_grammar
                     >> block_nocalc
                     [
                         while_stmt.values =
-                            while_block(ctx, while_stmt.expr, arg1, arg2)
+                            while_block(
+                                ctx, while_stmt.expr, while_stmt.expr_line,
+                                arg1, arg2
+                            )
                     ]
                     >> keyword_p("}")
                 ;
