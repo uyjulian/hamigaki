@@ -10,6 +10,7 @@
 #ifndef HAMIGAKI_BJAM_UTIL_MODULE_HPP
 #define HAMIGAKI_BJAM_UTIL_MODULE_HPP
 
+#include <hamigaki/bjam/util/native_rule.hpp>
 #include <hamigaki/bjam/util/rule_table.hpp>
 #include <hamigaki/bjam/util/variable_table.hpp>
 #include <boost/optional.hpp>
@@ -23,6 +24,7 @@ struct module
     variable_table variables;
     boost::optional<std::string> class_module;
     std::set<std::string> imported_modules;
+    std::map<std::string,native_rule> native_rules;
 };
 
 } } // End namespaces bjam, hamigaki.

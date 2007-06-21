@@ -59,6 +59,8 @@ HAMIGAKI_BJAM_DECL string_list instance(context& ctx);
 HAMIGAKI_BJAM_DECL string_list sort(context& ctx);
 HAMIGAKI_BJAM_DECL string_list normalize_path(context& ctx);
 HAMIGAKI_BJAM_DECL string_list calc(context& ctx);
+HAMIGAKI_BJAM_DECL string_list native_rule(context& ctx);
+HAMIGAKI_BJAM_DECL string_list has_native_rule(context& ctx);
 
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
 HAMIGAKI_BJAM_DECL string_list w32_getreg(context& ctx);

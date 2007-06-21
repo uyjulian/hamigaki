@@ -338,6 +338,7 @@ void rule_names_test()
             ("FAIL_EXPECTED")
             ("GLOB")
             ("GLOB-RECURSIVELY")
+            ("HAS_NATIVE_RULE")
             ("IMPORT")
             ("IMPORT_MODULE")
             ("INCLUDES")
@@ -345,6 +346,7 @@ void rule_names_test()
             ("ISFILE")
             ("LEAVES")
             ("MATCH")
+            ("NATIVE_RULE")
             ("NOCARE")
             ("NORMALIZE_PATH")
             ("NOTFILE")
@@ -597,6 +599,34 @@ void calc_test()
         BOOST_CHECK_EQUAL(result[0], "7");
 }
 
+void native_rule_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+    bjam::string_list result;
+
+    args.push_back(boost::assign::list_of("m1"));
+    args.push_back(boost::assign::list_of(""));
+    BOOST_CHECK_THROW(
+        ctx.invoke_rule("NATIVE_RULE", args), bjam::rule_not_found);
+
+    // TODO: add the positive tests
+}
+
+void has_native_rule_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+    bjam::string_list result;
+
+    args.push_back(boost::assign::list_of("m1"));
+    args.push_back(boost::assign::list_of(""));
+    args.push_back(boost::assign::list_of("2"));
+    BOOST_CHECK(ctx.invoke_rule("HAS_NATIVE_RULE", args).empty());
+
+    // TODO: add the positive tests
+}
+
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
 #include <windows.h>
 void w32_getreg_test()
@@ -736,6 +766,8 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&sort_test));
     test->add(BOOST_TEST_CASE(&normalize_path_test));
     test->add(BOOST_TEST_CASE(&calc_test));
+    test->add(BOOST_TEST_CASE(&native_rule_test));
+    test->add(BOOST_TEST_CASE(&has_native_rule_test));
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
     test->add(BOOST_TEST_CASE(&w32_getreg_test));
 #endif

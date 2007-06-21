@@ -115,7 +115,7 @@ void context::change_module(const boost::optional<std::string>& name)
         f.change_module(root_module_, name);
 }
 
-void context::set_native_rule(
+void context::set_builtin_rule(
     const std::string& name, const list_of_list& params,
     const boost::function1<string_list,context&>& func,
     bool exported)

@@ -84,7 +84,7 @@ public:
         targets_to_update_ = x;
     }
 
-    void set_native_rule(
+    void set_builtin_rule(
         const std::string& name, const list_of_list& params,
         const boost::function1<string_list,context&>& func,
         bool exported = true);

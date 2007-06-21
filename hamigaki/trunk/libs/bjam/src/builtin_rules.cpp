@@ -526,6 +526,53 @@ HAMIGAKI_BJAM_DECL string_list calc(context& ctx)
     return string_list(os.str());
 }
 
+HAMIGAKI_BJAM_DECL string_list native_rule(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    module& m = ctx.get_module(args[0][0]);
+    const std::string& rule_name = args[1][0];
+
+    typedef std::map<std::string,bjam::native_rule> table_type;
+    typedef table_type::const_iterator iter_type;
+
+    const table_type& table = m.native_rules;
+    iter_type it = table.find(rule_name);
+    if (it == table.end())
+        throw rule_not_found(rule_name);
+
+    const bjam::native_rule& rule = it->second;
+
+    rule_definition def;
+    def.parameters = rule.parameters;
+    def.native = rule.native;
+    def.exported = true;
+    m.rules.set_rule_definition(rule_name, def);
+
+    return string_list();
+}
+
+HAMIGAKI_BJAM_DECL string_list has_native_rule(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    module& m = ctx.get_module(args[0][0]);
+    const std::string& rule_name = args[1][0];
+    int version = std::atoi(args[2][0].c_str());
+
+    typedef std::map<std::string,bjam::native_rule> table_type;
+    typedef table_type::const_iterator iter_type;
+
+    const table_type& table = m.native_rules;
+    iter_type it = table.find(rule_name);
+    if ((it != table.end()) && (it->second.version == version))
+        return string_list(std::string("true"));
+
+    return string_list();
+}
+
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
 HAMIGAKI_BJAM_DECL string_list w32_getreg(context& ctx)
 {
@@ -570,95 +617,95 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     list_of_list params;
 
     params.clear();
-    ctx.set_native_rule("ALWAYS", params, &builtins::always);
-    ctx.set_native_rule("Always", params, &builtins::always, false);
+    ctx.set_builtin_rule("ALWAYS", params, &builtins::always);
+    ctx.set_builtin_rule("Always", params, &builtins::always, false);
 
     params.clear();
-    ctx.set_native_rule("DEPENDS", params, &builtins::depends);
-    ctx.set_native_rule("Depends", params, &builtins::depends, false);
+    ctx.set_builtin_rule("DEPENDS", params, &builtins::depends);
+    ctx.set_builtin_rule("Depends", params, &builtins::depends, false);
 
     params.clear();
-    ctx.set_native_rule("ECHO", params, &builtins::echo);
-    ctx.set_native_rule("Echo", params, &builtins::echo, false);
-    ctx.set_native_rule("echo", params, &builtins::echo, false);
+    ctx.set_builtin_rule("ECHO", params, &builtins::echo);
+    ctx.set_builtin_rule("Echo", params, &builtins::echo, false);
+    ctx.set_builtin_rule("echo", params, &builtins::echo, false);
 
     params.push_back(boost::assign::list_of("messages")("*"));
     params.push_back(boost::assign::list_of("result-value")("?"));
-    ctx.set_native_rule("EXIT", params, &builtins::exit);
-    ctx.set_native_rule("Exit", params, &builtins::exit, false);
-    ctx.set_native_rule("exit", params, &builtins::exit, false);
+    ctx.set_builtin_rule("EXIT", params, &builtins::exit);
+    ctx.set_builtin_rule("Exit", params, &builtins::exit, false);
+    ctx.set_builtin_rule("exit", params, &builtins::exit, false);
 
     params.clear();
     params.push_back(boost::assign::list_of("directories")("*"));
     params.push_back(boost::assign::list_of("patterns")("*"));
     params.push_back(boost::assign::list_of("case-insensitive")("?"));
-    ctx.set_native_rule("GLOB", params, &builtins::glob);
-    ctx.set_native_rule("Glob", params, &builtins::glob, false);
+    ctx.set_builtin_rule("GLOB", params, &builtins::glob);
+    ctx.set_builtin_rule("Glob", params, &builtins::glob, false);
 
     params.clear();
     params.push_back(boost::assign::list_of("patterns")("*"));
-    ctx.set_native_rule("GLOB-RECURSIVELY", params, &builtins::glob_recursive);
+    ctx.set_builtin_rule("GLOB-RECURSIVELY", params, &builtins::glob_recursive);
 
     params.clear();
-    ctx.set_native_rule("INCLUDES", params, &builtins::includes);
-    ctx.set_native_rule("Includes", params, &builtins::includes, false);
+    ctx.set_builtin_rule("INCLUDES", params, &builtins::includes);
+    ctx.set_builtin_rule("Includes", params, &builtins::includes, false);
 
     params.clear();
     params.push_back(boost::assign::list_of("targets")("*"));
     params.push_back(boost::assign::list_of("targets-to-rebuild")("*"));
-    ctx.set_native_rule("REBUILDS", params, &builtins::rebuilds);
+    ctx.set_builtin_rule("REBUILDS", params, &builtins::rebuilds);
 
     params.clear();
-    ctx.set_native_rule("LEAVES", params, &builtins::leaves);
-    ctx.set_native_rule("Leaves", params, &builtins::leaves, false);
+    ctx.set_builtin_rule("LEAVES", params, &builtins::leaves);
+    ctx.set_builtin_rule("Leaves", params, &builtins::leaves, false);
 
     params.clear();
-    ctx.set_native_rule("MATCH", params, &builtins::match);
-    ctx.set_native_rule("Match", params, &builtins::match, false);
+    ctx.set_builtin_rule("MATCH", params, &builtins::match);
+    ctx.set_builtin_rule("Match", params, &builtins::match, false);
 
     params.clear();
-    ctx.set_native_rule("NOCARE", params, &builtins::no_care);
-    ctx.set_native_rule("NoCare", params, &builtins::no_care, false);
+    ctx.set_builtin_rule("NOCARE", params, &builtins::no_care);
+    ctx.set_builtin_rule("NoCare", params, &builtins::no_care, false);
 
     params.clear();
-    ctx.set_native_rule("NOTFILE", params, &builtins::not_file);
-    ctx.set_native_rule("NotFile", params, &builtins::not_file, false);
-    ctx.set_native_rule("NOTIME", params, &builtins::not_file, false);
+    ctx.set_builtin_rule("NOTFILE", params, &builtins::not_file);
+    ctx.set_builtin_rule("NotFile", params, &builtins::not_file, false);
+    ctx.set_builtin_rule("NOTIME", params, &builtins::not_file, false);
 
     params.clear();
-    ctx.set_native_rule("NOUPDATE", params, &builtins::no_update);
-    ctx.set_native_rule("NoUpdate", params, &builtins::no_update, false);
+    ctx.set_builtin_rule("NOUPDATE", params, &builtins::no_update);
+    ctx.set_builtin_rule("NoUpdate", params, &builtins::no_update, false);
 
     params.clear();
-    ctx.set_native_rule("TEMPORARY", params, &builtins::temporary);
-    ctx.set_native_rule("Temporary", params, &builtins::temporary, false);
+    ctx.set_builtin_rule("TEMPORARY", params, &builtins::temporary);
+    ctx.set_builtin_rule("Temporary", params, &builtins::temporary, false);
 
     params.clear();
     params.push_back(boost::assign::list_of("targets")("*"));
-    ctx.set_native_rule("ISFILE", params, &builtins::is_file);
+    ctx.set_builtin_rule("ISFILE", params, &builtins::is_file);
 
     params.clear();
-    ctx.set_native_rule("FAIL_EXPECTED", params, &builtins::fail_expected);
+    ctx.set_builtin_rule("FAIL_EXPECTED", params, &builtins::fail_expected);
 
     params.clear();
-    ctx.set_native_rule("RMOLD", params, &builtins::rm_old);
+    ctx.set_builtin_rule("RMOLD", params, &builtins::rm_old);
 
     params.clear();
     params.push_back(
         boost::assign::list_of("targets")("*"));
-    ctx.set_native_rule("UPDATE", params, &builtins::update);
+    ctx.set_builtin_rule("UPDATE", params, &builtins::update);
 
     params.clear();
     params.push_back(
         boost::assign::list_of("string")("pattern")("replacements")("+"));
-    ctx.set_native_rule("SUBST", params, &builtins::subst);
-    ctx.set_native_rule("subst", params, &builtins::subst, false);
+    ctx.set_builtin_rule("SUBST", params, &builtins::subst);
+    ctx.set_builtin_rule("subst", params, &builtins::subst, false);
 
     params.clear();
     params.push_back(boost::assign::list_of("module")("?"));
-    ctx.set_native_rule("RULENAMES", params, &builtins::rule_names);
-    ctx.set_native_rule("VARNAMES", params, &builtins::var_names);
-    ctx.set_native_rule("DELETE_MODULE", params, &builtins::delete_module);
+    ctx.set_builtin_rule("RULENAMES", params, &builtins::rule_names);
+    ctx.set_builtin_rule("VARNAMES", params, &builtins::var_names);
+    ctx.set_builtin_rule("DELETE_MODULE", params, &builtins::delete_module);
 
     params.clear();
     params.push_back(boost::assign::list_of("source_module")("?"));
@@ -666,54 +713,61 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     params.push_back(boost::assign::list_of("target_module")("?"));
     params.push_back(boost::assign::list_of("target_rules")("*"));
     params.push_back(boost::assign::list_of("localize")("?"));
-    ctx.set_native_rule("IMPORT", params, &builtins::import);
+    ctx.set_builtin_rule("IMPORT", params, &builtins::import);
 
     params.clear();
     params.push_back(boost::assign::list_of("module")("?"));
     params.push_back(boost::assign::list_of("rules")("*"));
-    ctx.set_native_rule("EXPORT", params, &builtins::export_);
+    ctx.set_builtin_rule("EXPORT", params, &builtins::export_);
 
     params.clear();
     params.push_back(boost::assign::list_of("levels")("?"));
-    ctx.set_native_rule("CALLER_MODULE", params, &builtins::caller_module);
-    ctx.set_native_rule("BACKTRACE", params, &builtins::back_trace);
+    ctx.set_builtin_rule("CALLER_MODULE", params, &builtins::caller_module);
+    ctx.set_builtin_rule("BACKTRACE", params, &builtins::back_trace);
 
     params.clear();
-    ctx.set_native_rule("PWD", params, &builtins::pwd);
+    ctx.set_builtin_rule("PWD", params, &builtins::pwd);
 
     params.clear();
     params.push_back(boost::assign::list_of("modules_to_import")("+"));
     params.push_back(boost::assign::list_of("target_module")("?"));
-    ctx.set_native_rule("IMPORT_MODULE", params, &builtins::import_module);
+    ctx.set_builtin_rule("IMPORT_MODULE", params, &builtins::import_module);
 
     params.clear();
     params.push_back(boost::assign::list_of("instance_module"));
     params.push_back(boost::assign::list_of("class_module"));
-    ctx.set_native_rule("INSTANCE", params, &builtins::instance);
+    ctx.set_builtin_rule("INSTANCE", params, &builtins::instance);
 
     params.clear();
     params.push_back(boost::assign::list_of("sequence")("*"));
-    ctx.set_native_rule("SORT", params, &builtins::sort);
+    ctx.set_builtin_rule("SORT", params, &builtins::sort);
 
     params.clear();
     params.push_back(boost::assign::list_of("path_parts")("*"));
-    ctx.set_native_rule("NORMALIZE_PATH", params, &builtins::normalize_path);
+    ctx.set_builtin_rule("NORMALIZE_PATH", params, &builtins::normalize_path);
 
     params.clear();
     params.push_back(boost::assign::list_of("args")("*"));
-    ctx.set_native_rule("CALC", params, &builtins::calc);
+    ctx.set_builtin_rule("CALC", params, &builtins::calc);
+
+    params.clear();
+    params.push_back(boost::assign::list_of("module"));
+    params.push_back(boost::assign::list_of("rule"));
+    ctx.set_builtin_rule("NATIVE_RULE", params, &builtins::native_rule);
+    params.push_back(boost::assign::list_of("version"));
+    ctx.set_builtin_rule("HAS_NATIVE_RULE", params, &builtins::has_native_rule);
 
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
     params.clear();
     params.push_back(boost::assign::list_of("key_path")("data")("?"));
-    ctx.set_native_rule("W32_GETREG", params, &builtins::w32_getreg);
+    ctx.set_builtin_rule("W32_GETREG", params, &builtins::w32_getreg);
 #endif
 
     params.clear();
     params.push_back(boost::assign::list_of("command"));
     params.push_back(boost::assign::list_of("*"));
-    ctx.set_native_rule("SHELL", params, &builtins::shell);
-    ctx.set_native_rule("COMMAND", params, &builtins::shell);
+    ctx.set_builtin_rule("SHELL", params, &builtins::shell);
+    ctx.set_builtin_rule("COMMAND", params, &builtins::shell);
 }
 
 } } // End namespaces bjam, hamigaki.
