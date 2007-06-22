@@ -107,7 +107,7 @@ private:
     {
         BOOST_ASSERT(line_ >= 0);
 
-        Iterator& p = base_reference();
+        Iterator& p = this->base_reference();
         if (*p == nl_)
             ++line_;
         ++p;
@@ -117,7 +117,7 @@ private:
     {
         BOOST_ASSERT(line_ >= 0);
 
-        Iterator& p = base_reference();
+        Iterator& p = this->base_reference();
         --p;
         if (*p == nl_)
             --line_;
