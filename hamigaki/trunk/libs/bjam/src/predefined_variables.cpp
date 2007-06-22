@@ -8,11 +8,14 @@
 // See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
 
 #define HAMIGAKI_BJAM_SOURCE
+#define NOMINMAX
 #include <hamigaki/bjam/bjam_context.hpp>
 #include <hamigaki/bjam/bjam_version.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/none.hpp>
 #include <ctime>
+
+#include <hamigaki/detail/environment.hpp>
 
 #if defined(__unix__)
     #include <sys/utsname.h>
@@ -93,6 +96,16 @@ HAMIGAKI_BJAM_DECL void set_predefined_variables(context& ctx)
         );
     }
 #endif
+
+    typedef std::map<std::string,std::string> table_type;
+    typedef table_type::const_iterator iter_type;
+
+    table_type env;
+    hamigaki::detail::get_environment_strings(env);
+
+    module& env_module = ctx.get_module(std::string(".ENVIRON"));
+    for (iter_type i = env.begin(), end = env.end(); i != end; ++i)
+        env_module.variables.set_values(i->first, string_list(i->second));
 
     m.variables.set_values(HAMIGAKI_BJAM_OSMAJOR, string_list("true"));
     m.variables.set_values("OS", string_list(HAMIGAKI_BJAM_OSMINOR));
