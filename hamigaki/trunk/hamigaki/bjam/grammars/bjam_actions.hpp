@@ -244,7 +244,6 @@ struct while_block_impl
         typedef typename Iterator::base_type base_iterator;
         typedef bjam_grammar_gen<base_iterator> grammar_type;
 
-        frame& f = ctx.current_frame();
         int block_line = first.line();
 
         string_list result;
