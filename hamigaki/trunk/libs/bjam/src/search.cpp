@@ -45,7 +45,7 @@ std::string search_target(context& ctx, const std::string& name)
     {
         for (std::size_t i = 0, size = search_list.size(); i < size; ++i)
         {
-            compo.root = locate[0];
+            compo.root = search_list[i];
             filename = make_path(compo);
 
             if (fs::exists(fs::path(filename, fs::native)))
