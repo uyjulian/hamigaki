@@ -42,6 +42,9 @@ string_list glob_impl(
     fs::path ph(dir, fs::native);
     ph = fs::complete(ph, work);
 
+    if (!is_directory(ph))
+        return result;
+
     path_components compo;
     compo.dir = dir;
 
