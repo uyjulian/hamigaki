@@ -9,6 +9,10 @@
 
 subproject libs/bjam/build ;
 
+MODULES =
+    regex
+    ;
+
 SOURCES =
     bjam_context
     bjam_exceptions
@@ -17,12 +21,14 @@ SOURCES =
     glob
     instantiate_bjam_exprgr
     instantiate_bjam_grammar
+    native_rules
     path
     pattern
     predefined_variables
     search
     shell
     variable_expansion
+    modules/$(MODULES)
     ;
 
 if $(OS) in NT CYGWIN

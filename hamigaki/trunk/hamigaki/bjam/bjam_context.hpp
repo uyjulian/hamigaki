@@ -30,6 +30,7 @@ class context;
 
 HAMIGAKI_BJAM_DECL void set_predefined_variables(context& ctx);
 HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx);
+HAMIGAKI_BJAM_DECL void set_native_rules(context& ctx);
 
 class HAMIGAKI_BJAM_DECL context : private boost::noncopyable
 {

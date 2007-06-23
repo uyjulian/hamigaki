@@ -25,6 +25,7 @@ context::context()
     frames_.push_back(frame(root_module_));
     set_predefined_variables(*this);
     set_builtin_rules(*this);
+    set_native_rules(*this);
 }
 
 boost::optional<std::string>
