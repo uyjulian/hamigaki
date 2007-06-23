@@ -57,7 +57,7 @@ inline bool is_rooted(const std::string& s)
     if (is_path_delimiter(s[0]))
         return true;
 #if defined(BOOST_WINDOWS)
-    else if ((s.size() >= 2) && (s[1] == ';'))
+    else if ((s.size() >= 2) && (s[1] == ':'))
         return true;
 #endif
     return false;

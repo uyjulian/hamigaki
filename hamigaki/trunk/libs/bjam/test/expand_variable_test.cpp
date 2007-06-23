@@ -181,6 +181,12 @@ void path_test()
         result.begin(), result.end(), expect.begin(), expect.end());
 
     result.clear();
+    expect = boost::assign::list_of("<g>/d/b.s(m)");
+    result = bjam::expand_variable("$(X:R=$(TMP))", table, args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+    result.clear();
     expect = boost::assign::list_of("C:/Windows/System32");
     result = bjam::expand_variable("$(SYS:T)", table, args);
     BOOST_CHECK_EQUAL_COLLECTIONS(
@@ -196,6 +202,17 @@ void path_test()
     result = bjam::expand_variable("$(TMP:W)", table, args);
     BOOST_CHECK_EQUAL_COLLECTIONS(
         result.begin(), result.end(), expect.begin(), expect.end());
+
+#if defined(BOOST_WINDOWS)
+    table.set_values("A", boost::assign::list_of("C:\\A\\a.txt"));
+    table.set_values("B", boost::assign::list_of("C:\\B\\dir"));
+
+    result.clear();
+    expect = boost::assign::list_of("C:\\A\\a.txt");
+    result = bjam::expand_variable("$(A:R=$(B))", table, args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+#endif
 }
 
 void args_test()
