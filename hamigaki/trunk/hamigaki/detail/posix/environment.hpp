@@ -1,4 +1,4 @@
-// environment.hpp: environment strings parser
+// environment.hpp: an utility for POSIX environment variables
 
 // Copyright Takeshi Mouri 2006, 2007.
 // Distributed under the Boost Software License, Version 1.0.
@@ -15,7 +15,7 @@
 
 namespace hamigaki { namespace detail { namespace posix {
 
-inline void get_environment_strings(std::map<std::string,std::string>& table)
+inline void get_environment_variables(std::map<std::string,std::string>& table)
 {
     for (char** p = environ; *p; ++p)
     {

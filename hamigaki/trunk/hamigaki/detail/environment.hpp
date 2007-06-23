@@ -1,4 +1,4 @@
-// environment.hpp: environment strings parser
+// environment.hpp: an utility for environment variables
 
 // Copyright Takeshi Mouri 2006, 2007.
 // Distributed under the Boost Software License, Version 1.0.
@@ -20,12 +20,12 @@
 
 namespace hamigaki { namespace detail {
 
-inline void get_environment_strings(std::map<std::string,std::string>& table)
+inline void get_environment_variables(std::map<std::string,std::string>& table)
 {
 #if defined(BOOST_WINDOWS)
-    ::hamigaki::detail::windows::get_environment_strings(table);
+    ::hamigaki::detail::windows::get_environment_variables(table);
 #elif defined(BOOST_HAS_UNISTD_H)
-    ::hamigaki::detail::posix::get_environment_strings(table);
+    ::hamigaki::detail::posix::get_environment_variables(table);
 #endif
 }
 

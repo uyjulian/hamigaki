@@ -13,6 +13,7 @@
 #include <hamigaki/bjam/bjam_version.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/none.hpp>
+#include <boost/tokenizer.hpp>
 #include <ctime>
 
 #include <hamigaki/detail/environment.hpp>
@@ -63,6 +64,32 @@ std::string convert_time(std::time_t t)
 #endif
 }
 
+string_list split_env_values(const std::string& name, const std::string& value)
+{
+    if (value.empty())
+        return string_list();
+
+    if ((value.size()>=2) && (*value.begin()=='"') && (*value.rbegin()=='"'))
+        return string_list(value.substr(1u, value.size()-2));
+
+    char delim = ' ';
+
+    if ((name == "PATH") || (name == "Path") || (name == "path"))
+    {
+#if defined(BOOST_WINDOWS) && !defined(__CYGWIN__)
+        delim = ';';
+#else
+        delim = ':';
+#endif
+    }
+
+    typedef boost::char_separator<char> sep_type;
+    sep_type sep(" ", "", boost::keep_empty_tokens);
+    boost::tokenizer<sep_type> tokens(value, sep);
+
+    return string_list(tokens.begin(), tokens.end());
+}
+
 } // namespace
 
 HAMIGAKI_BJAM_DECL void set_predefined_variables(context& ctx)
@@ -101,7 +128,10 @@ HAMIGAKI_BJAM_DECL void set_predefined_variables(context& ctx)
     typedef table_type::const_iterator iter_type;
 
     table_type env;
-    hamigaki::detail::get_environment_strings(env);
+    hamigaki::detail::get_environment_variables(env);
+
+    for (iter_type i = env.begin(), end = env.end(); i != end; ++i)
+        m.variables.set_values(i->first, split_env_values(i->first, i->second));
 
     module& env_module = ctx.get_module(std::string(".ENVIRON"));
     for (iter_type i = env.begin(), end = env.end(); i != end; ++i)

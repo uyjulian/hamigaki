@@ -1,4 +1,4 @@
-// environment.hpp: environment strings parser
+// environment.hpp: an utility for Windows environment variables
 
 // Copyright Takeshi Mouri 2006, 2007.
 // Distributed under the Boost Software License, Version 1.0.
@@ -16,7 +16,7 @@
 
 namespace hamigaki { namespace detail { namespace windows {
 
-inline void get_environment_strings(std::map<std::string,std::string>& table)
+inline void get_environment_variables(std::map<std::string,std::string>& table)
 {
     // Note: GetEnvironmentStringsA is macro for GetEnvironmentStrings
     boost::shared_ptr<void> env(
@@ -27,7 +27,10 @@ inline void get_environment_strings(std::map<std::string,std::string>& table)
     for (const char* s = static_cast<char*>(env.get()); *s; )
     {
         if (const char* delim = std::strchr(s, '='))
-            table[std::string(s, delim)] = delim+1;
+        {
+            if (delim != s)
+                table[std::string(s, delim)] = delim+1;
+        }
 
         s += std::strlen(s) + 1;
     }
