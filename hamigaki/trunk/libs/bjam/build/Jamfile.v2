@@ -26,6 +26,7 @@ project hamigaki/bjam
 
 MODULES =
     regex
+    sequence
     ;
 
 SOURCES =

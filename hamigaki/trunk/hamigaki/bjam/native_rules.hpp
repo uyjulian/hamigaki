@@ -11,5 +11,6 @@
 #define HAMIGAKI_BJAM_NATIVE_RULES_HPP
 
 #include <hamigaki/bjam/modules/regex.hpp>
+#include <hamigaki/bjam/modules/sequence.hpp>
 
 #endif // HAMIGAKI_BJAM_NATIVE_RULES_HPP
