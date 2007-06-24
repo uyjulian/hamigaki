@@ -19,6 +19,76 @@ namespace fs = boost::filesystem;
 
 namespace hamigaki { namespace bjam {
 
+namespace
+{
+
+const rule_definition* get_imported_rule_ptr_impl(
+    const context& ctx, const module& m, 
+    const std::string& module_name, const std::string& rule_name,
+    bool& is_instance)
+{
+    std::string class_name;
+
+    const std::set<std::string>& table = m.imported_modules;
+    if (table.find(module_name) == table.end())
+        return 0;
+
+    const module* mp = &ctx.get_module(module_name);
+    if (mp->class_module)
+    {
+        class_name = *mp->class_module;
+        mp = &ctx.get_module(class_name);
+    }
+
+    const rule_definition* ptr = mp->rules.get_rule_definition_ptr(rule_name);
+    if (ptr && ptr->exported)
+    {
+        if (!class_name.empty() &&
+            ptr->module_name && (*ptr->module_name == class_name) )
+        {
+            is_instance = true;
+        }
+        return ptr;
+    }
+    else
+        return 0;
+}
+
+const rule_definition*
+get_rule_definition_ptr_impl(
+    const context& ctx, const module& m, const std::string& name,
+    boost::optional<std::string>& rule_module_name)
+{
+    typedef const rule_definition* ptr_type;
+
+    if (ptr_type p = m.rules.get_rule_definition_ptr(name))
+    {
+        rule_module_name = p->module_name;
+        return p;
+    }
+
+    std::string::size_type dot = name.find('.');
+    if (dot == std::string::npos)
+        return 0;
+
+    std::string module_name(name, 0u, dot);
+    std::string rule_name(name, dot+1);
+
+    bool is_instance = false;
+    ptr_type p = get_imported_rule_ptr_impl(
+        ctx, m, module_name, rule_name, is_instance);
+    if (p)
+    {
+        if (is_instance)
+            rule_module_name = module_name;
+        else
+            rule_module_name = p->module_name;
+    }
+    return p;
+}
+
+} // namespace
+
 context::context()
     : working_directory_(fs::current_path().native_directory_string())
 {
@@ -130,31 +200,29 @@ void context::set_builtin_rule(
     root_module_.rules.set_rule_definition(name, def);
 }
 
-const rule_definition&
-context::get_rule_definition(const std::string& name) const
+rule_definition context::get_rule_definition(const std::string& name) const
 {
+    typedef const rule_definition* ptr_type;
+
     const frame& f = frames_.back();
     const module& m = f.current_module();
 
-    typedef const rule_definition* ptr_type;
+    boost::optional<std::string> module_name;
+    ptr_type p = get_rule_definition_ptr_impl(*this, m, name, module_name);
+    if (p)
+    {
+        rule_definition def(*p);
+        def.module_name = module_name;
+        return def;
+    }
 
-    if (ptr_type p = m.rules.get_rule_definition_ptr(name))
-        return *p;
-
-    if (ptr_type p = root_module_.rules.get_rule_definition_ptr(name))
-        return *p;
-
-    std::string::size_type dot = name.find('.');
-    if (dot == std::string::npos)
-        throw rule_not_found(name);
-
-    std::string module_name(name, 0u, dot);
-    std::string rule_name(name, dot+1);
-
-    ptr_type p = this->get_imported_rule_definition_ptr(module_name, rule_name);
+    p = get_rule_definition_ptr_impl(*this, root_module_, name, module_name);
     if (!p)
         throw rule_not_found(name);
-    return *p;
+
+    rule_definition def(*p);
+    def.module_name = module_name;
+    return def;
 }
 
 string_list
@@ -199,25 +267,6 @@ context::invoke_rule(const std::string& name, const list_of_list& args)
                 first, last, *this, rule.line
             ).values;
     }
-}
-
-const rule_definition* context::get_imported_rule_definition_ptr(
-    const std::string& module_name, const std::string& rule_name) const
-{
-    const frame& f = frames_.back();
-
-    const std::set<std::string>& table =
-        f.current_module().imported_modules;
-    if (table.find(module_name) == table.end())
-        return 0;
-
-    const module& m = this->get_module(module_name);
-
-    const rule_definition* ptr = m.rules.get_rule_definition_ptr(rule_name);
-    if (ptr && ptr->exported)
-        return ptr;
-    else
-        return 0;
 }
 
 } } // End namespaces bjam, hamigaki.

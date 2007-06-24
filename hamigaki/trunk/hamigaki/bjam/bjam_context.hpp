@@ -90,7 +90,7 @@ public:
         const boost::function1<string_list,context&>& func,
         bool exported = true);
 
-    const rule_definition& get_rule_definition(const std::string& name) const;
+    rule_definition get_rule_definition(const std::string& name) const;
     string_list invoke_rule(const std::string& name, const list_of_list& args);
 
     std::string working_directory() const
@@ -110,9 +110,6 @@ private:
     string_list targets_to_update_;
     frame_stack frames_;
     std::string working_directory_;
-
-    const rule_definition* get_imported_rule_definition_ptr(
-        const std::string& module_name, const std::string& rule_name) const;
 };
 
 class scoped_change_module : private boost::noncopyable
