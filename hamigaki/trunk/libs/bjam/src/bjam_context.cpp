@@ -119,12 +119,18 @@ string_list context::back_trace(std::size_t level, std::size_t skip) const
     string_list result;
     frame_stack::const_reverse_iterator pos = frames_.rbegin();
     frame_stack::const_reverse_iterator end = frames_.rend();
-    for (std::size_t i = 0; i < level; ++i, ++pos)
+
+    for (std::size_t i = 0; i < skip; ++i)
+    {
+        if (pos == end)
+            return result;
+        ++pos;
+    }
+
+    for (std::size_t i = 0; i < level; ++i)
     {
         if (pos == end)
             break;
-        else if (i < skip)
-            continue;
 
         const frame& f = *pos;
 
@@ -146,6 +152,8 @@ string_list context::back_trace(std::size_t level, std::size_t skip) const
             result.push_back(*f.rule_name());
         else
             result.push_back("module scope");
+
+        ++pos;
     }
     return result;
 }
