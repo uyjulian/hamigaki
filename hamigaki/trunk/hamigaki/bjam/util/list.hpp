@@ -306,6 +306,24 @@ public:
         }
     }
 
+    void unique()
+    {
+        if (impl_type* p = pimpl_.get())
+        {
+            if (pimpl_.unique())
+                p->erase(std::unique(p->begin(), p->end()), p->end());
+            else
+            {
+                boost::shared_ptr<impl_type> tmp(new impl_type);
+                std::unique_copy(
+                    tmp->begin(), tmp->end(),
+                    std::back_inserter(*tmp)
+                );
+                pimpl_.swap(tmp);
+            }
+        }
+    }
+
 private:
     boost::shared_ptr<impl_type> pimpl_;
 };
