@@ -11,12 +11,31 @@
 #include <hamigaki/bjam/util/search.hpp>
 #include <hamigaki/bjam/util/path.hpp>
 #include <hamigaki/bjam/bjam_context.hpp>
+#include <boost/assign/list_of.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 
 namespace fs = boost::filesystem;
 
 namespace hamigaki { namespace bjam {
+
+HAMIGAKI_BJAM_DECL
+void call_bind_rule(
+    context& ctx, const std::string& name, const std::string& filename)
+{
+    frame& f = ctx.current_frame();
+    module& m = f.current_module();
+
+    const string_list& bindrule = m.variables.get_values("BINDRULE");
+    if (!bindrule.empty())
+    {
+        const std::string& rule_name = bindrule[0];
+        list_of_list args;
+        args.push_back(boost::assign::list_of(name));
+        args.push_back(boost::assign::list_of(filename));
+        ctx.invoke_rule(rule_name, args);
+    }
+}
 
 HAMIGAKI_BJAM_DECL
 std::string search_target(context& ctx, const std::string& name)
@@ -63,6 +82,8 @@ std::string search_target(context& ctx, const std::string& name)
         fs::path work(ctx.working_directory(), fs::native);
         filename = fs::complete(ph, work).native_file_string();
     }
+
+    call_bind_rule(ctx, name, filename);
 
     return filename;
 }

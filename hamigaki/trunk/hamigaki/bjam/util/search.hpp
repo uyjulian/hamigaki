@@ -22,6 +22,10 @@ namespace hamigaki { namespace bjam {
 class context;
 
 HAMIGAKI_BJAM_DECL
+void call_bind_rule(
+    context& ctx, const std::string& name, const std::string& filename);
+
+HAMIGAKI_BJAM_DECL
 std::string search_target(context& ctx, const std::string& name);
 
 } } // End namespaces bjam, hamigaki.
