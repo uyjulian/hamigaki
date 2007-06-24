@@ -16,6 +16,7 @@ namespace hamigaki { namespace bjam {
 HAMIGAKI_BJAM_DECL void set_native_rules(context& ctx)
 {
     modules::set_path_rules(ctx);
+    modules::set_property_set_rules(ctx);
     modules::set_regex_rules(ctx);
     modules::set_sequence_rules(ctx);
     modules::set_set_rules(ctx);

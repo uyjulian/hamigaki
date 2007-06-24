@@ -26,6 +26,7 @@ project hamigaki/bjam
 
 MODULES =
     path
+    property_set
     regex
     sequence
     set
