@@ -12,6 +12,7 @@ subproject libs/bjam/build ;
 MODULES =
     regex
     sequence
+    set
     ;
 
 SOURCES =
