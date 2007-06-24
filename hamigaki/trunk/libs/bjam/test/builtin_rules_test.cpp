@@ -185,9 +185,17 @@ void match_test()
     bjam::string_list expect;
 
     expect = boost::assign::list_of("abc")("123")("def")("");
-
     args.push_back(boost::assign::list_of("^([a-z]+)([0-9]*)$"));
     args.push_back(boost::assign::list_of("abc123")("def"));
+    result = ctx.invoke_rule("MATCH", args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+
+    expect = boost::assign::list_of("name");
+    args.clear();
+    args.push_back(boost::assign::list_of("([^.]*)$"));
+    args.push_back(boost::assign::list_of("os.name"));
     result = ctx.invoke_rule("MATCH", args);
     BOOST_CHECK_EQUAL_COLLECTIONS(
         result.begin(), result.end(), expect.begin(), expect.end());

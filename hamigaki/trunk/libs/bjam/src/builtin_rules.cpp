@@ -219,7 +219,7 @@ HAMIGAKI_BJAM_DECL string_list match(context& ctx)
         for (std::size_t i = 0; i < list.size(); ++i)
         {
             boost::smatch what;
-            if (regex_match(list[i], what, rex))
+            if (regex_search(list[i], what, rex))
             {
                 result.insert(
                     result.end(), boost::next(what.begin()), what.end());
