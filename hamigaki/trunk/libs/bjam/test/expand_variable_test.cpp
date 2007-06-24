@@ -193,6 +193,18 @@ void path_test()
         result.begin(), result.end(), expect.begin(), expect.end());
 
     result.clear();
+    expect = boost::assign::list_of("@<g>@");
+    result = bjam::expand_variable("@$(:E=:G=g)@", table, args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+    result.clear();
+    expect = boost::assign::list_of("@b@");
+    result = bjam::expand_variable("@$(:E=:B=b)@", table, args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+    result.clear();
 #if defined(__CYGWIN__)
     // FIXME: Cygwin may not be installed to the default location
     expect = boost::assign::list_of("C:\\cygwin\\tmp");

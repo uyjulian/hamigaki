@@ -160,7 +160,7 @@ std::string parse_modifier_string(const std::string& s, std::size_t& pos)
     if (colon != std::string::npos)
     {
         pos = colon + 1;
-        return s.substr(start, pos - start);
+        return s.substr(start, colon - start);
     }
     else
     {
