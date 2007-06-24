@@ -10,6 +10,7 @@
 subproject libs/bjam/build ;
 
 MODULES =
+    path
     regex
     sequence
     set
@@ -24,11 +25,11 @@ SOURCES =
     instantiate_bjam_exprgr
     instantiate_bjam_grammar
     native_rules
-    path
     pattern
     predefined_variables
     search
     shell
+    util_path
     variable_expansion
     modules/$(MODULES)
     ;
