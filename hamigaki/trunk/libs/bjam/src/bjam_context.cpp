@@ -61,9 +61,22 @@ get_rule_definition_ptr_impl(
 {
     typedef const rule_definition* ptr_type;
 
-    if (ptr_type p = m.rules.get_rule_definition_ptr(name))
+    std::string class_name;
+    const module* mp = &m;
+    if (mp->class_module)
     {
-        rule_module_name = p->module_name;
+        class_name = *mp->class_module;
+        mp = &ctx.get_module(class_name);
+    }
+
+    if (ptr_type p = mp->rules.get_rule_definition_ptr(name))
+    {
+        if (class_name.empty() ||
+            !p->module_name ||
+            (*p->module_name != class_name) )
+        {
+            rule_module_name = p->module_name;
+        }
         return p;
     }
 
@@ -76,7 +89,7 @@ get_rule_definition_ptr_impl(
 
     bool is_instance = false;
     ptr_type p = get_imported_rule_ptr_impl(
-        ctx, m, module_name, rule_name, is_instance);
+        ctx, *mp, module_name, rule_name, is_instance);
     if (p)
     {
         if (is_instance)
@@ -215,7 +228,7 @@ rule_definition context::get_rule_definition(const std::string& name) const
     const frame& f = frames_.back();
     const module& m = f.current_module();
 
-    boost::optional<std::string> module_name;
+    boost::optional<std::string> module_name = f.module_name();
     ptr_type p = get_rule_definition_ptr_impl(*this, m, name, module_name);
     if (p)
     {
