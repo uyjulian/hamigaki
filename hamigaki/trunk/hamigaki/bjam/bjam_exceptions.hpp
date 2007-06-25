@@ -77,6 +77,18 @@ private:
     exception_data data_;
 };
 
+class HAMIGAKI_BJAM_DECL already_defined_class : public std::exception
+{
+public:
+    explicit already_defined_class(const std::string& name);
+    ~already_defined_class() throw(); // virtual
+    const char* what() const throw(); // virtual
+    const char* class_name() const;
+
+private:
+    exception_data data_;
+};
+
 class HAMIGAKI_BJAM_DECL exit_exception : public std::exception
 {
 public:

@@ -119,6 +119,26 @@ const char* rule_not_found::rule() const
 }
 
 
+already_defined_class::already_defined_class(const std::string& name)
+    : data_("the class is already defined", name)
+{
+}
+
+already_defined_class::~already_defined_class() throw()
+{
+}
+
+const char* already_defined_class::what() const throw()
+{
+    return data_.what();
+}
+
+const char* already_defined_class::class_name() const
+{
+    return data_.name();
+}
+
+
 exit_exception::exit_exception(const std::string& msg, int code)
     : code_(code)
 {
