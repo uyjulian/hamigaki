@@ -68,8 +68,14 @@ void import_bases(
             if (is_localized_rule(ctx, def, base_mod_name))
                 def.module_name = module_name;
 
+            cls_module.rules.set_rule_definition(beg->first, def);
             cls_module.rules.set_rule_definition(name, def);
         }
+
+        cls_module.imported_modules.insert(
+            m.imported_modules.begin(),
+            m.imported_modules.end()
+        );
     }
 }
 
