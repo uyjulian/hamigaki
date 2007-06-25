@@ -25,6 +25,7 @@ project hamigaki/bjam
     ;
 
 MODULES =
+    order
     path
     property_set
     regex
