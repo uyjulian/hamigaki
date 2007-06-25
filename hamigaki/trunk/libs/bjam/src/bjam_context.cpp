@@ -237,6 +237,7 @@ rule_definition context::get_rule_definition(const std::string& name) const
         return def;
     }
 
+    module_name = boost::optional<std::string>();
     p = get_rule_definition_ptr_impl(*this, root_module_, name, module_name);
     if (!p)
         throw rule_not_found(name);
