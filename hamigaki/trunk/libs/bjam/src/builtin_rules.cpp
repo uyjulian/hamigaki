@@ -531,12 +531,13 @@ HAMIGAKI_BJAM_DECL string_list native_rule(context& ctx)
     frame& f = ctx.current_frame();
     const list_of_list& args = f.arguments();
 
-    module& m = ctx.get_module(args[0][0]);
+    const std::string& module_name = args[0][0];
     const std::string& rule_name = args[1][0];
 
     typedef std::map<std::string,bjam::native_rule> table_type;
     typedef table_type::const_iterator iter_type;
 
+    module& m = ctx.get_module(module_name);
     const table_type& table = m.native_rules;
     iter_type it = table.find(rule_name);
     if (it == table.end())
@@ -547,6 +548,7 @@ HAMIGAKI_BJAM_DECL string_list native_rule(context& ctx)
     rule_definition def;
     def.parameters = rule.parameters;
     def.native = rule.native;
+    def.module_name = module_name;
     def.exported = true;
     m.rules.set_rule_definition(rule_name, def);
 
