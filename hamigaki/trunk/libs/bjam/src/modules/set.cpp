@@ -32,7 +32,7 @@ HAMIGAKI_BJAM_DECL string_list difference(context& ctx)
 
     for (std::size_t i = 0, size = b.size(); i < size; ++i)
     {
-        if (std::find(a.begin(), a.end(), b[i]) != a.end())
+        if (std::find(a.begin(), a.end(), b[i]) == a.end())
             result += b[i];
     }
 
