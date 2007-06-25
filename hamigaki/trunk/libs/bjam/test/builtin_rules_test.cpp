@@ -199,6 +199,17 @@ void match_test()
     result = ctx.invoke_rule("MATCH", args);
     BOOST_CHECK_EQUAL_COLLECTIONS(
         result.begin(), result.end(), expect.begin(), expect.end());
+
+
+    expect = boost::assign::list_of("Jamfile.v2")(".v2");
+    args.clear();
+    args.push_back(boost::assign::list_of(
+        "([Jj]amfile(.jam|.v2|)|user-config.jam|"
+        "site-config.jam|project-root.jam)"));
+    args.push_back(boost::assign::list_of("Jamfile.v2"));
+    result = ctx.invoke_rule("MATCH", args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
 }
 
 void no_care_test()

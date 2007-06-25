@@ -17,6 +17,7 @@
 #include <hamigaki/bjam/bjam_exceptions.hpp>
 #include <hamigaki/iterator/first_iterator.hpp>
 #include <hamigaki/iterator/ostream_iterator.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/iterator/filter_iterator.hpp>
 #include <boost/integer_traits.hpp>
@@ -214,8 +215,12 @@ HAMIGAKI_BJAM_DECL string_list match(context& ctx)
 
     for (std::size_t j = 0; j < regexps.size(); ++j)
     {
+        // FIXME: ad-hoc workaround
+        namespace algo = boost::algorithm;
+        std::string pattern = algo::replace_first_copy(regexps[j], "|)", ")?");
+
         // Note: bjam's regex is not the same as "extended" and "egrep"
-        boost::regex rex(regexps[j], boost::regex_constants::extended);
+        boost::regex rex(pattern, boost::regex_constants::extended);
         for (std::size_t i = 0; i < list.size(); ++i)
         {
             boost::smatch what;
