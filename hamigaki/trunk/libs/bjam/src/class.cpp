@@ -90,13 +90,14 @@ HAMIGAKI_BJAM_DECL
 std::string make_class(
     context& ctx, const std::string& name, const string_list& bases)
 {
-    const std::string& module_name = bjam::class_module_name(name);
-    if (ctx.is_defined_module(module_name))
-        throw std::runtime_error("the class is already defined"); // FIXME
-
     check_bases(ctx, bases);
 
+    const std::string& module_name = bjam::class_module_name(name);
+
     module& m = ctx.get_module(module_name);
+    if (!m.variables.get_values("__name__").empty())
+        throw already_defined_class(name);
+
     m.variables.set_values("__name__", string_list(name));
     m.variables.set_values("__bases__", bases);
 
