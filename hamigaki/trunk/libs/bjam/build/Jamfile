@@ -32,6 +32,7 @@ SOURCES =
     search
     shell
     util_path
+    util_regex
     variable_expansion
     modules/$(MODULES)
     ;

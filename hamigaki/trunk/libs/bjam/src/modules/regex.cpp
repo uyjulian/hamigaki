@@ -9,6 +9,7 @@
 
 #define HAMIGAKI_BJAM_SOURCE
 #include <hamigaki/bjam/modules/regex.hpp>
+#include <hamigaki/bjam/util/regex.hpp>
 #include <hamigaki/bjam/bjam_context.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/regex.hpp>
@@ -28,7 +29,7 @@ HAMIGAKI_BJAM_DECL string_list transform(context& ctx)
     const list_of_list& args = f.arguments();
 
     const string_list& list = args[0];
-    const std::string& pattern = args[1][0];
+    const std::string& pattern = bjam::convert_regex(args[1][0]);
     const string_list& arg3 = args[2];
 
     std::vector<int> indices;
@@ -43,12 +44,12 @@ HAMIGAKI_BJAM_DECL string_list transform(context& ctx)
 
     string_list result;
 
-    // Note: bjam's regex is not the same as "extended" and "egrep"
-    boost::regex rex(pattern, boost::regex_constants::extended);
+    // Note: bjam's regex is not the same as "egrep" and "ECMAScript"
+    boost::regex rex(pattern);
     for (std::size_t i = 0; i < list.size(); ++i)
     {
         boost::smatch what;
-        if (regex_match(list[i], what, rex))
+        if (regex_search(list[i], what, rex))
         {
             for (std::size_t j = 0; j < indices.size(); ++j)
             {

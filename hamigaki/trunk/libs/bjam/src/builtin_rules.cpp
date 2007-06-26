@@ -11,13 +11,13 @@
 #define NOMINMAX
 #include <hamigaki/bjam/util/glob.hpp>
 #include <hamigaki/bjam/util/path.hpp>
+#include <hamigaki/bjam/util/regex.hpp>
 #include <hamigaki/bjam/util/shell.hpp>
 #include <hamigaki/bjam/bjam_context.hpp>
 #include <hamigaki/bjam/builtin_rules.hpp>
 #include <hamigaki/bjam/bjam_exceptions.hpp>
 #include <hamigaki/iterator/first_iterator.hpp>
 #include <hamigaki/iterator/ostream_iterator.hpp>
-#include <boost/algorithm/string/replace.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/iterator/filter_iterator.hpp>
 #include <boost/integer_traits.hpp>
@@ -215,12 +215,10 @@ HAMIGAKI_BJAM_DECL string_list match(context& ctx)
 
     for (std::size_t j = 0; j < regexps.size(); ++j)
     {
-        // FIXME: ad-hoc workaround
-        namespace algo = boost::algorithm;
-        std::string pattern = algo::replace_first_copy(regexps[j], "|)", ")?");
+        const std::string& pattern = bjam::convert_regex(regexps[j]);
 
-        // Note: bjam's regex is not the same as "extended" and "egrep"
-        boost::regex rex(pattern, boost::regex_constants::extended);
+        // Note: bjam's regex is not the same as "egrep" and "ECMAScript"
+        boost::regex rex(pattern);
         for (std::size_t i = 0; i < list.size(); ++i)
         {
             boost::smatch what;
@@ -294,15 +292,15 @@ HAMIGAKI_BJAM_DECL string_list subst(context& ctx)
     const string_list& arg1 = args[0];
 
     const std::string& str = arg1[0];
-    const std::string& pattern = arg1[1];
+    const std::string& pattern = bjam::convert_regex(arg1[1]);
 
-    // Note: bjam's regex is not the same as "extended" and "egrep"
-    boost::regex rex(pattern, boost::regex_constants::extended);
+    // Note: bjam's regex is not the same as "egrep" and "ECMAScript"
+    boost::regex rex(pattern);
 
     string_list result;
 
     boost::smatch what;
-    if (regex_match(str, what, rex))
+    if (regex_search(str, what, rex))
     {
         for (std::size_t i = 2, size = arg1.size(); i < size; ++i)
             result += what.format(arg1[i]);
