@@ -144,6 +144,9 @@ void normalize_path_test()
 
     parts = boost::assign::list_of("usr")("..")("..")("src");
     BOOST_CHECK_EQUAL(bjam::normalize_path(parts), std::string("../src"));
+
+    parts = boost::assign::list_of("..")("..")("src");
+    BOOST_CHECK_EQUAL(bjam::normalize_path(parts), std::string("../../src"));
 }
 
 ut::test_suite* init_unit_test_suite(int, char* [])

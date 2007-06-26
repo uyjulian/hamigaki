@@ -1,4 +1,4 @@
-// path.cpp: path utilities
+// util_path.cpp: path utilities
 
 // Copyright Takeshi Mouri 2007.
 // Distributed under the Boost Software License, Version 1.0.
@@ -236,7 +236,7 @@ HAMIGAKI_BJAM_DECL std::string normalize_path(const string_list& parts)
             continue;
         else if (part == "..")
         {
-            if (tmp.empty())
+            if (tmp.empty() || (tmp.back() == ".."))
                 tmp.push_back("..");
             else
                 tmp.pop_back();
