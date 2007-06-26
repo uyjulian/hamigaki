@@ -178,7 +178,7 @@ struct rule_set_impl
         def.filename = f.filename();
         def.line = first.line();
 
-        table.set_rule_definition(name, def);
+        table.set_rule_body(name, def);
     }
 };
 
@@ -273,6 +273,40 @@ struct case_match_impl
 };
 
 const ::phoenix::functor<case_match_impl> case_match = case_match_impl();
+
+
+struct actions_set_impl
+{
+    typedef void result_type;
+
+    void operator()(
+        context& ctx, const std::string& name, const std::string& commands,
+        action_modifier::values modifiers, const string_list& binds) const
+    {
+        frame& f = ctx.current_frame();
+        rule_table& table = f.current_module().rules;
+
+        rule_definition def;
+        def.commands = commands;
+        def.modifiers = modifiers;
+        def.binds = binds;
+
+        table.set_rule_actions(name, def);
+
+        const boost::optional<std::string> module_name = f.module_name();
+        if (module_name)
+        {
+            std::string full_name = *module_name;
+            full_name += '.';
+            full_name += name;
+
+            module& root = ctx.get_module(boost::optional<std::string>());
+            root.rules.set_rule_actions(full_name, def);
+        }
+    }
+};
+
+const ::phoenix::functor<actions_set_impl> actions_set = actions_set_impl();
 
 } } // End namespaces bjam, hamigaki.
 

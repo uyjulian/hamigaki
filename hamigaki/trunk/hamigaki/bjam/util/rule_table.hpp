@@ -61,6 +61,37 @@ public:
         table_[name] = def;
     }
 
+    void set_rule_body(
+        const std::string& name, const rule_definition& def)
+    {
+        rule_definition& x = table_[name];
+        x.parameters = def.parameters;
+        x.body = def.body;
+        x.module_name = def.module_name;
+        x.exported = def.exported;
+        x.filename = def.filename;
+        x.line = def.line;
+    }
+
+    void set_native_rule(
+        const std::string& name, const rule_definition& def)
+    {
+        rule_definition& x = table_[name];
+        x.parameters = def.parameters;
+        x.native = def.native;
+        x.module_name = def.module_name;
+        x.exported = def.exported;
+    }
+
+    void set_rule_actions(
+        const std::string& name, const rule_definition& act)
+    {
+        rule_definition& x = table_[name];
+        x.commands = act.commands;
+        x.modifiers = act.modifiers;
+        x.binds = act.binds;
+    }
+
     void clear()
     {
         table_.clear();

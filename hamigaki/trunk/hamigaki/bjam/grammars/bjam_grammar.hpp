@@ -110,6 +110,16 @@ struct bjam_grammar
             typename on_stmt_closure::context_t
         > on_stmt_rule_t;
 
+        typedef boost::spirit::rule<
+            ScannerT,
+            typename actions_stmt_closure::context_t
+        > actions_stmt_rule_t;
+
+        typedef boost::spirit::rule<
+            ScannerT,
+            typename eflags_closure::context_t
+        > eflags_rule_t;
+
         using base_type::list;
         using base_type::lol;
         using base_type::arg;
@@ -137,7 +147,9 @@ struct bjam_grammar
         list_rule_t if_stmt;
         rule_stmt_rule_t rule_stmt;
         on_stmt_rule_t on_stmt;
-        rule_t eflags, eflag, bindlist;
+        actions_stmt_rule_t actions_stmt;
+        eflags_rule_t eflags;
+        list_rule_t bindlist;
 
         rule_t block_nocalc, rules_nocalc, assign_list_nocalc;
         rule_t arglist_nocalc, rule_nocalc;
@@ -213,10 +225,7 @@ struct bjam_grammar
                 |   if_stmt [rule.values = arg1]
                 |   rule_stmt
                 |   on_stmt [rule.values = arg1]
-                |   keyword_p("actions") >> eflags >> arg_p >> !bindlist
-                    >> eps_p(keyword_p("{"))
-                    >> lexeme_d[ '{' >> string_p ]
-                    >> keyword_p("}")
+                |   actions_stmt
                 ;
 
             include_stmt
@@ -426,20 +435,67 @@ struct bjam_grammar
                     ]
                 ;
 
-            eflags
-                = *eflag;
+            actions_stmt
+                =   keyword_p("actions")
+                    >> eflags [actions_stmt.modifiers = arg1]
+                    >> arg_p [actions_stmt.name = arg1]
+                    >> !bindlist [actions_stmt.binds = arg1]
+                    >> eps_p(keyword_p("{"))
+                    >> lexeme_d
+                    [
+                        '{'
+                        >> string_p
+                        [
+                            actions_set(
+                                ctx, actions_stmt.name, arg1,
+                                actions_stmt.modifiers,
+                                actions_stmt.binds
+                            )
+                        ]
+                    ]
+                    >> keyword_p("}")
+                ;
 
-            eflag
-                =   keyword_p("updated")
-                |   keyword_p("together")
-                |   keyword_p("ignore")
-                |   keyword_p("quietly")
-                |   keyword_p("piecemeal")
-                |   keyword_p("existing")
+            eflags
+                =   eps_p
+                    [
+                        eflags.values = static_cast<action_modifier::values>(0)
+                    ]
+                    >> *(   keyword_p("updated")
+                            [
+                                eflags.values =
+                                    eflags.values | action_modifier::updated
+                            ]
+                        |   keyword_p("together")
+                            [
+                                eflags.values =
+                                    eflags.values | action_modifier::together
+                            ]
+                        |   keyword_p("ignore")
+                            [
+                                eflags.values =
+                                    eflags.values | action_modifier::ignore
+                            ]
+                        |   keyword_p("quietly")
+                            [
+                                eflags.values =
+                                    eflags.values | action_modifier::quietly
+                            ]
+                        |   keyword_p("piecemeal")
+                            [
+                                eflags.values =
+                                    eflags.values | action_modifier::piecemeal
+                            ]
+                        |   keyword_p("existing")
+                            [
+                                eflags.values =
+                                    eflags.values | action_modifier::existing
+                            ]
+                        )
                 ;
 
             bindlist
-                =   keyword_p("bind") >> list
+                =   keyword_p("bind") >> list [ bindlist.values = arg1 ]
                 ;
 
 
@@ -540,7 +596,6 @@ struct bjam_grammar
             BOOST_SPIRIT_DEBUG_RULE(rule_stmt);
             BOOST_SPIRIT_DEBUG_RULE(on_stmt);
             BOOST_SPIRIT_DEBUG_RULE(eflags);
-            BOOST_SPIRIT_DEBUG_RULE(eflag);
             BOOST_SPIRIT_DEBUG_RULE(bindlist);
             BOOST_SPIRIT_DEBUG_RULE(block_nocalc);
             BOOST_SPIRIT_DEBUG_RULE(rules_nocalc);

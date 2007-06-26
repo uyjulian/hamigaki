@@ -218,7 +218,7 @@ void context::set_builtin_rule(
     def.native = func;
     def.exported = exported;
 
-    root_module_.rules.set_rule_definition(name, def);
+    root_module_.rules.set_native_rule(name, def);
 }
 
 rule_definition context::get_rule_definition(const std::string& name) const

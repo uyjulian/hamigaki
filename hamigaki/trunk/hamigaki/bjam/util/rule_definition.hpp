@@ -10,6 +10,7 @@
 #ifndef HAMIGAKI_BJAM_UTIL_RULE_DEFINITION_HPP
 #define HAMIGAKI_BJAM_UTIL_RULE_DEFINITION_HPP
 
+#include <hamigaki/bjam/util/action_modifiers.hpp>
 #include <hamigaki/bjam/util/list_of_list.hpp>
 #include <boost/function.hpp>
 #include <boost/optional.hpp>
@@ -21,7 +22,10 @@ class context;
 
 struct rule_definition
 {
-    rule_definition() : exported(true), line(1)
+    rule_definition()
+        : exported(true)
+        , modifiers(static_cast<action_modifier::values>(0))
+        , line(1)
     {
     }
 
@@ -30,6 +34,9 @@ struct rule_definition
     boost::function1<string_list,context&> native;
     boost::optional<std::string> module_name;
     bool exported;
+    std::string commands;
+    action_modifier::values modifiers;
+    string_list binds;
     std::string filename;
     int line;
 };

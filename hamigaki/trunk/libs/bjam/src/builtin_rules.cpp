@@ -553,7 +553,7 @@ HAMIGAKI_BJAM_DECL string_list native_rule(context& ctx)
     def.native = rule.native;
     def.module_name = module_name;
     def.exported = true;
-    m.rules.set_rule_definition(rule_name, def);
+    m.rules.set_native_rule(rule_name, def);
 
     return string_list();
 }

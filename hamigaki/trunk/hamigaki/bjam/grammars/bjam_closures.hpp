@@ -10,6 +10,7 @@
 #ifndef HAMIGAKI_BJAM_GRAMMARS_BJAM_CLOSURES_HPP
 #define HAMIGAKI_BJAM_GRAMMARS_BJAM_CLOSURES_HPP
 
+#include <hamigaki/bjam/util/action_modifiers.hpp>
 #include <hamigaki/bjam/util/list_of_list.hpp>
 #include <boost/spirit/core.hpp>
 #include <boost/spirit/attribute/closure.hpp>
@@ -170,6 +171,28 @@ struct on_stmt_closure
 {
     member1 values;
     member2 targets;
+};
+
+struct actions_stmt_closure
+    : boost::spirit::closure<
+          actions_stmt_closure
+        , std::string
+        , action_modifier::values
+        , string_list
+    >
+{
+    member1 name;
+    member2 modifiers;
+    member3 binds;
+};
+
+struct eflags_closure
+    : boost::spirit::closure<
+          eflags_closure
+        , action_modifier::values
+    >
+{
+    member1 values;
 };
 
 } } // End namespaces bjam, hamigaki.
