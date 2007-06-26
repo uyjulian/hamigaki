@@ -72,19 +72,19 @@ string_list split_env_values(const std::string& name, const std::string& value)
     if ((value.size()>=2) && (*value.begin()=='"') && (*value.rbegin()=='"'))
         return string_list(value.substr(1u, value.size()-2));
 
-    char delim = ' ';
+    const char* delim = " ";
 
     if ((name == "PATH") || (name == "Path") || (name == "path"))
     {
 #if defined(BOOST_WINDOWS) && !defined(__CYGWIN__)
-        delim = ';';
+        delim = ";";
 #else
-        delim = ':';
+        delim = ":";
 #endif
     }
 
     typedef boost::char_separator<char> sep_type;
-    sep_type sep(" ", "", boost::keep_empty_tokens);
+    sep_type sep(delim, "", boost::keep_empty_tokens);
     boost::tokenizer<sep_type> tokens(value, sep);
 
     return string_list(tokens.begin(), tokens.end());
