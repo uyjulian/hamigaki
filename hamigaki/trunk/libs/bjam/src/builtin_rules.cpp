@@ -19,6 +19,8 @@
 #include <hamigaki/iterator/first_iterator.hpp>
 #include <hamigaki/iterator/ostream_iterator.hpp>
 #include <boost/assign/list_of.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
 #include <boost/iterator/filter_iterator.hpp>
 #include <boost/integer_traits.hpp>
 #include <boost/next_prior.hpp>
@@ -31,6 +33,8 @@
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
     #include <hamigaki/bjam/util/win32/registry.hpp>
 #endif
+
+namespace fs = boost::filesystem;
 
 namespace hamigaki { namespace bjam {
 
@@ -578,6 +582,26 @@ HAMIGAKI_BJAM_DECL string_list has_native_rule(context& ctx)
     return string_list();
 }
 
+HAMIGAKI_BJAM_DECL string_list check_if_file(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    const std::string& file = args[0][0];
+
+    fs::path ph(file, fs::native);
+    fs::path work(ctx.working_directory(), fs::native);
+    ph = fs::complete(ph, work);
+#if BOOST_VERSION < 103400
+    if (fs::exists(ph) && !fs::is_directory(ph))
+#else
+    if (fs::is_regular(ph))
+#endif
+        return string_list(std::string("true"));
+    else
+        return string_list();
+}
+
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
 HAMIGAKI_BJAM_DECL string_list w32_getreg(context& ctx)
 {
@@ -761,6 +785,10 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     ctx.set_builtin_rule("NATIVE_RULE", params, &builtins::native_rule);
     params.push_back(boost::assign::list_of("version"));
     ctx.set_builtin_rule("HAS_NATIVE_RULE", params, &builtins::has_native_rule);
+
+    params.clear();
+    params.push_back(boost::assign::list_of("file"));
+    ctx.set_builtin_rule("CHECK_IF_FILE", params, &builtins::check_if_file);
 
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
     params.clear();

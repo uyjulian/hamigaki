@@ -62,6 +62,8 @@ HAMIGAKI_BJAM_DECL string_list calc(context& ctx);
 HAMIGAKI_BJAM_DECL string_list native_rule(context& ctx);
 HAMIGAKI_BJAM_DECL string_list has_native_rule(context& ctx);
 
+HAMIGAKI_BJAM_DECL string_list check_if_file(context& ctx);
+
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
 HAMIGAKI_BJAM_DECL string_list w32_getreg(context& ctx);
 #endif

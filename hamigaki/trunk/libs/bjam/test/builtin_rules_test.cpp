@@ -348,6 +348,7 @@ void rule_names_test()
             ("BACKTRACE")
             ("CALC")
             ("CALLER_MODULE")
+            ("CHECK_IF_FILE")
             ("COMMAND")
             ("DELETE_MODULE")
             ("DEPENDS")
@@ -646,6 +647,24 @@ void has_native_rule_test()
     // TODO: add the positive tests
 }
 
+void check_if_file_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+    bjam::string_list result;
+
+    args.push_back(boost::assign::list_of("."));
+    BOOST_CHECK(ctx.invoke_rule("CHECK_IF_FILE", args).empty());
+
+
+    args.clear();
+    args.push_back(boost::assign::list_of("Jamfile.v2"));
+    result = ctx.invoke_rule("CHECK_IF_FILE", args);
+    BOOST_CHECK_EQUAL(result.size(), 1u);
+    if (!result.empty())
+        BOOST_CHECK_EQUAL(result[0], "true");
+}
+
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
 #include <windows.h>
 void w32_getreg_test()
@@ -787,6 +806,7 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&calc_test));
     test->add(BOOST_TEST_CASE(&native_rule_test));
     test->add(BOOST_TEST_CASE(&has_native_rule_test));
+    test->add(BOOST_TEST_CASE(&check_if_file_test));
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
     test->add(BOOST_TEST_CASE(&w32_getreg_test));
 #endif
