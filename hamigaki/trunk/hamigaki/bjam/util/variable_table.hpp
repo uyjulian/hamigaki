@@ -158,57 +158,6 @@ private:
     variable_table& local_;
 };
 
-inline void set_rule_argument(
-    variable_table& table, const string_list& param, const string_list& arg)
-{
-    typedef string_list::const_iterator iter_type;
-
-    iter_type p = param.begin();
-    iter_type a = arg.begin();
-
-    while (p != param.end())
-    {
-        std::string name;
-        if ((*p != "?") && (*p != "*") && (*p != "+"))
-            name = *(p++);
-
-        std::string opt;
-        if (p != param.end())
-        {
-            if ((*p == "?") || (*p == "*") || (*p == "+"))
-                opt = *(p++);
-        }
-
-        string_list values;
-        if (opt == "?")
-        {
-            if (a != arg.end())
-                values.push_back(*(a++));
-        }
-        else if (opt == "*")
-        {
-            values = string_list(a, arg.end());
-            a = arg.end();
-        }
-        else
-        {
-            if (a == arg.end())
-                throw std::runtime_error("missing a rule argument"); // TODO
-
-            if (opt == "+")
-            {
-                values = string_list(a, arg.end());
-                a = arg.end();
-            }
-            else
-                values.push_back(*(a++));
-        }
-
-        if (!name.empty())
-            table.set_values(name, values);
-    }
-}
-
 } } // End namespaces bjam, hamigaki.
 
 #endif // HAMIGAKI_BJAM_UTIL_VARIABLE_TABLE_HPP
