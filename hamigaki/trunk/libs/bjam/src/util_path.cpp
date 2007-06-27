@@ -12,8 +12,9 @@
 #include <hamigaki/bjam/util/path.hpp>
 #include <hamigaki/detail/random.hpp>
 #include <hamigaki/iterator/ostream_iterator.hpp>
+#include <boost/algorithm/string/join.hpp>
 #include <boost/format.hpp>
-#include <sstream>
+#include <boost/tokenizer.hpp>
 
 #if defined(BOOST_WINDOWS)
     #include <boost/scoped_array.hpp>
@@ -22,6 +23,8 @@
 #else
     #include <cstdlib>
 #endif
+
+namespace algo = boost::algorithm;
 
 namespace hamigaki { namespace bjam {
 
@@ -226,13 +229,23 @@ HAMIGAKI_BJAM_DECL std::string tmp_file_path()
 
 HAMIGAKI_BJAM_DECL std::string normalize_path(const string_list& parts)
 {
-    bool rooted = !parts.empty() && (parts[0][0] == '/');
+    std::string result;
+    if (!parts.empty() && (parts[0][0] == '/'))
+        result += '/';
+
+    std::string cat = algo::join(parts, "/");
+
+    typedef boost::char_separator<char> sep_type;
+    typedef boost::tokenizer<sep_type> tokenizer;
+
+    sep_type sep("/");
+    tokenizer tokens(cat, sep);
 
     std::vector<std::string> tmp;
-    for (std::size_t i = 0, size = parts.size(); i < size; ++i)
+    for (tokenizer::iterator i = tokens.begin(); i != tokens.end(); ++i)
     {
-        const std::string& part = parts[i];
-        if (part.empty() || (part == "."))
+        const std::string& part = *i;
+        if (part == ".")
             continue;
         else if (part == "..")
         {
@@ -241,26 +254,11 @@ HAMIGAKI_BJAM_DECL std::string normalize_path(const string_list& parts)
             else
                 tmp.pop_back();
         }
-        else if (part[0] == '/')
-        {
-            if (part.size() > 1)
-                tmp.push_back(part.substr(1));
-        }
         else
             tmp.push_back(part);
     }
 
-    std::ostringstream os;
-
-    if (rooted)
-        os << '/';
-
-    std::copy(
-        tmp.begin(), tmp.end(),
-        hamigaki::ostream_iterator<std::string>(os, "/")
-    );
-
-    std::string result = os.str();
+    result += algo::join(tmp, "/");
 
     if (result.empty())
         result = ".";
