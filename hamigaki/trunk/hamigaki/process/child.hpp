@@ -39,6 +39,13 @@ public:
 
     explicit child(const std::string& path, const context& ctx = context());
 
+#if defined(BOOST_WINDOWS)
+    child(
+        const std::string& path, const std::string& cmd,
+        const context& ctx = context()
+    );
+#endif
+
     status wait();
     void terminate();
 

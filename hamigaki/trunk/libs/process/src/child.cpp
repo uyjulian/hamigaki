@@ -182,11 +182,15 @@ private:
     ::STARTUPINFOA* ptr_;
 };
 
-void make_command_line(
-    std::vector<char>& cmd, const std::vector<std::string>& args)
+std::string make_command_line(const std::vector<std::string>& args)
 {
+    std::string cmd;
+
     for (std::size_t i = 0; i < args.size(); ++i)
     {
+        if (i != 0)
+            cmd.push_back(' ');
+
         std::string arg = args[i];
         boost::algorithm::replace_all(arg, "\"", "\\\"");
         if (arg.find(' ') != std::string::npos)
@@ -195,15 +199,9 @@ void make_command_line(
             arg.push_back('"');
         }
         cmd.insert(cmd.end(), arg.begin(), arg.end());
-        cmd.push_back(' ');
     }
 
-    if (cmd.empty())
-        cmd.push_back('\0');
-    else
-        cmd.back() = '\0';
-
-    cmd.push_back('\0');
+    return cmd;
 }
 
 class file_descriptor : private boost::noncopyable
@@ -253,11 +251,10 @@ bool need_inheritance(::HANDLE h)
 class child::impl : private boost::noncopyable
 {
 public:
-    impl(const std::string& path,
-        const std::vector<std::string>& args, const context& ctx) : ctx_(ctx)
+    impl(const std::string& path, const std::string& cmd, const context& ctx)
+        : ctx_(ctx)
     {
-        std::vector<char> cmd;
-        hamigaki::process::make_command_line(cmd, args);
+        std::vector<char> cmd_buf(cmd.c_str(), cmd.c_str()+cmd.size()+1);
 
         // This variable must be defined before "attr"
         ::HANDLE handles[3];
@@ -395,7 +392,7 @@ public:
 
         ::PROCESS_INFORMATION proc_info;
         if (::CreateProcessA(
-            path.c_str(), &cmd[0], 0, 0, TRUE, flags,
+            path.c_str(), &cmd_buf[0], 0, 0, TRUE, flags,
             0, work_dir, start_info.get(), &proc_info) == FALSE)
         {
             throw std::runtime_error("CreateProcessA() failed");
@@ -711,17 +708,34 @@ child::child(
     const std::string& path, const std::vector<std::string>& args,
     const context& ctx
 )
-    : pimpl_(new impl(path, args, ctx))
 {
+#if defined(BOOST_WINDOWS)
+    pimpl_.reset(new impl(path, make_command_line(args), ctx));
+#else
+    pimpl_.reset(new impl(path, args, ctx));
+#endif
 }
 
 child::child(const std::string& path, const context& ctx)
 {
+#if defined(BOOST_WINDOWS)
+    pimpl_.reset(new impl(path, "", ctx));
+#else
     std::vector<std::string> args;
     args.push_back(path);
 
     pimpl_.reset(new impl(path, args, ctx));
+#endif
 }
+
+#if defined(BOOST_WINDOWS)
+child::child(
+    const std::string& path, const std::string& cmd, const context& ctx
+)
+    : pimpl_(new impl(path, cmd, ctx))
+{
+}
+#endif
 
 status child::wait()
 {

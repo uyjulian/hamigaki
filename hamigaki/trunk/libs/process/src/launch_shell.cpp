@@ -44,10 +44,10 @@ child launch_shell(const std::string& cmd, const context& ctx)
         sh += '\\';
     sh += "cmd.exe";
 
-    std::vector<std::string> args;
-    args.push_back("cmd");
-    args.push_back("/c");
-    args.push_back(cmd);
+    std::string cmd_line = "cmd /c ";
+    cmd_line += cmd;
+
+    return process::child(sh, cmd_line, ctx);
 #else // not defined(BOOST_WINDOWS)
     std::string sh("/bin/sh");
 
@@ -55,9 +55,9 @@ child launch_shell(const std::string& cmd, const context& ctx)
     args.push_back("sh");
     args.push_back("-c");
     args.push_back(cmd);
-#endif // not defined(BOOST_WINDOWS)
 
     return process::child(sh, args, ctx);
+#endif // not defined(BOOST_WINDOWS)
 }
 
 } } // End namespaces process, hamigaki.
