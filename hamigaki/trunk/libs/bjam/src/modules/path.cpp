@@ -32,6 +32,8 @@ HAMIGAKI_BJAM_DECL string_list exists(context& ctx)
     const std::string& location = args[0][0];
 
     fs::path ph(location, fs::native);
+    fs::path work(ctx.working_directory(), fs::native);
+    ph = fs::complete(ph, work);
     if (fs::exists(ph))
         return string_list(std::string("true"));
     else
