@@ -328,7 +328,7 @@ context::invoke_rule(const std::string& name, const list_of_list& args)
 
     if (rule.native)
         return rule.native(*this);
-    else
+    else if (rule.body.get() != 0)
     {
         scoped_push_local_variables using_local(cur_module.variables, local);
 
@@ -344,6 +344,8 @@ context::invoke_rule(const std::string& name, const list_of_list& args)
                 first, last, *this, rule.line
             ).values;
     }
+    else
+        return string_list();
 }
 
 } } // End namespaces bjam, hamigaki.
