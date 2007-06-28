@@ -26,7 +26,9 @@ HAMIGAKI_BJAM_DECL std::string convert_regex(const std::string& s)
         else if (c == '\\')
         {
             c = s[i];
-            if ((c == '<') || (c == '>') || (c == '(') || (c == ')'))
+            if ((c == '<') || (c == '>') || (c == '(') || (c == ')') ||
+                (c == '[') || (c == ']') || (c == '*') || (c == '+') ||
+                (c == '.') || (c == '\\') )
             {
                 ++i;
                 result += '\\';
@@ -34,6 +36,20 @@ HAMIGAKI_BJAM_DECL std::string convert_regex(const std::string& s)
             }
             else
                 result += "\\\\";
+        }
+        else if (c == '[')
+        {
+            result += '[';
+            while (i < size)
+            {
+                c = s[i++];
+                if (c == '\\')
+                    result += "\\\\";
+                else
+                    result += c;
+                if (c == ']')
+                    break;
+            }
         }
         else if (c == '|')
         {

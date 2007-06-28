@@ -210,6 +210,24 @@ void match_test()
     result = ctx.invoke_rule("MATCH", args);
     BOOST_CHECK_EQUAL_COLLECTIONS(
         result.begin(), result.end(), expect.begin(), expect.end());
+
+
+    expect = boost::assign::list_of("msvc");
+    args.clear();
+    args.push_back(boost::assign::list_of("^([^.]*)\\..*"));
+    args.push_back(boost::assign::list_of("msvc.compile.c++"));
+    result = ctx.invoke_rule("MATCH", args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+
+
+    expect = boost::assign::list_of("abc")("\\")("def");
+    args.clear();
+    args.push_back(boost::assign::list_of("^(.*)([/\\])(.*)"));
+    args.push_back(boost::assign::list_of("abc\\def"));
+    result = ctx.invoke_rule("MATCH", args);
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
 }
 
 void no_care_test()
