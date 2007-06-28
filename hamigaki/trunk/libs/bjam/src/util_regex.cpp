@@ -26,15 +26,11 @@ HAMIGAKI_BJAM_DECL std::string convert_regex(const std::string& s)
         else if (c == '\\')
         {
             c = s[i];
-            if (c == '<')
+            if ((c == '<') || (c == '>') || (c == '(') || (c == ')'))
             {
                 ++i;
-                result += "\\<";
-            }
-            else if (c == '>')
-            {
-                ++i;
-                result += "\\<";
+                result += '\\';
+                result += c;
             }
             else
                 result += "\\\\";
