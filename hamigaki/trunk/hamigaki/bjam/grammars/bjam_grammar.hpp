@@ -544,7 +544,7 @@ struct bjam_grammar
                 |   keyword_p("if") >> expr_nocalc
                     >> keyword_p("{") >> block_nocalc >> keyword_p("}")
                     >> !( keyword_p("else") >> rule_nocalc )
-                |   !keyword_p("local") >> keyword_p("rule_nocalc") >> arg_p
+                |   !keyword_p("local") >> keyword_p("rule") >> arg_p
                     >> !arglist_nocalc >> rule_nocalc
                 |   keyword_p("on") >> arg_nocalc >> rule_nocalc
                 |   keyword_p("actions") >> eflags_nocalc
