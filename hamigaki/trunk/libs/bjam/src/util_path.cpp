@@ -11,10 +11,15 @@
 #define NOMINMAX
 #include <hamigaki/bjam/util/path.hpp>
 #include <hamigaki/detail/random.hpp>
-#include <hamigaki/iterator/ostream_iterator.hpp>
-#include <boost/algorithm/string/join.hpp>
 #include <boost/format.hpp>
 #include <boost/tokenizer.hpp>
+
+#if BOOST_VERSION < 103400
+    #include <hamigaki/iterator/ostream_iterator.hpp>
+    #include <sstream>
+#else
+    #include <boost/algorithm/string/join.hpp>
+#endif
 
 #if defined(BOOST_WINDOWS)
     #include <boost/scoped_array.hpp>
@@ -23,8 +28,6 @@
 #else
     #include <cstdlib>
 #endif
-
-namespace algo = boost::algorithm;
 
 namespace hamigaki { namespace bjam {
 
@@ -233,7 +236,20 @@ HAMIGAKI_BJAM_DECL std::string normalize_path(const string_list& parts)
     if (!parts.empty() && (parts[0][0] == '/'))
         result += '/';
 
+#if BOOST_VERSION < 103400
+    std::string cat;
+    {
+        std::ostringstream os;
+        std::copy(
+            parts.begin(), parts.end(),
+            hamigaki::ostream_iterator<std::string>(os, "/")
+        );
+        cat = os.str();
+    }
+#else
+    namespace algo = boost::algorithm;
     std::string cat = algo::join(parts, "/");
+#endif
 
     typedef boost::char_separator<char> sep_type;
     typedef boost::tokenizer<sep_type> tokenizer;
@@ -258,7 +274,18 @@ HAMIGAKI_BJAM_DECL std::string normalize_path(const string_list& parts)
             tmp.push_back(part);
     }
 
+#if BOOST_VERSION < 103400
+    {
+        std::ostringstream os;
+        std::copy(
+            tmp.begin(), tmp.end(),
+            hamigaki::ostream_iterator<std::string>(os, "/")
+        );
+        result += os.str();
+    }
+#else
     result += algo::join(tmp, "/");
+#endif
 
     if (result.empty())
         result = ".";

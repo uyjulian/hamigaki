@@ -11,9 +11,14 @@
 #include <hamigaki/bjam/modules/property_set.hpp>
 #include <hamigaki/bjam/bjam_context.hpp>
 #include <boost/assign/list_of.hpp>
-#include <boost/algorithm/string/join.hpp>
 
-namespace algo = boost::algorithm;
+#if BOOST_VERSION < 103400
+    #include <hamigaki/iterator/ostream_iterator.hpp>
+    #include <sstream>
+#else
+    #include <boost/algorithm/string/join.hpp>
+#endif
+
 namespace assign = boost::assign;
 
 namespace hamigaki { namespace bjam {
@@ -33,7 +38,20 @@ HAMIGAKI_BJAM_DECL string_list create(context& ctx)
     raw.sort();
     raw.unique();
 
+#if BOOST_VERSION < 103400
+    std::string key;
+    {
+        std::ostringstream os;
+        std::copy(
+            raw.begin(), raw.end(),
+            hamigaki::ostream_iterator<std::string>(os, "/")
+        );
+        key = os.str();
+    }
+#else
+    namespace algo = boost::algorithm;
     const std::string& key = ".ps." + algo::join(raw, "-");
+#endif
 
     module& m = f.current_module();
     string_list values = m.variables.get_values(key);
