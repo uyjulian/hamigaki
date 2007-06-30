@@ -13,3 +13,4 @@ project
     ;
 
 exe bjam_check : bjam_check.cpp ;
+exe bjam_dump : bjam_dump.cpp ;

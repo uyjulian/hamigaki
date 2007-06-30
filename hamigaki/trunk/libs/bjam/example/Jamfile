@@ -29,5 +29,6 @@ template bjam
 
 
 exe bjam_check : bjam_check.cpp <template>bjam ;
+exe bjam_dump : bjam_dump.cpp <template>bjam ;
 
 }

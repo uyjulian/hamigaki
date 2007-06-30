@@ -40,6 +40,12 @@ private:
 public:
     typedef variable_table::iterator variable_iterator;
 
+    typedef std::map<std::string,module> module_table;
+    typedef module_table::const_iterator module_iterator;
+
+    typedef std::map<std::string,target> target_table;
+    typedef target_table::const_iterator target_iterator;
+
     context();
 
     frame& current_frame()
@@ -63,6 +69,11 @@ public:
     module& get_module(const boost::optional<std::string>& name);
     const module& get_module(const boost::optional<std::string>& name) const;
 
+    std::pair<module_iterator,module_iterator> module_entries() const
+    {
+        return std::make_pair(modules_.begin(), modules_.end());
+    }
+
     bool is_defined_module(const std::string& name) const
     {
         return modules_.find(name) != modules_.end();
@@ -73,6 +84,11 @@ public:
     target& get_target(const std::string& name)
     {
         return targets_[name];
+    }
+
+    std::pair<target_iterator,target_iterator> target_entries() const
+    {
+        return std::make_pair(targets_.begin(), targets_.end());
     }
 
     const string_list& targets_to_update() const
