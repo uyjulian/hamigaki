@@ -147,7 +147,7 @@ void dump_module(const std::string& name, const bjam::module& m)
             os << "<td>";
         else
             os << "<td rowspan=\"" << values.size() << "\">";
-        os << html_escape(i->first) << "</td>\n";
+        os << markup_link(i->first) << "</td>\n";
 
         if (values.empty())
             os << "<td></td>\n";
