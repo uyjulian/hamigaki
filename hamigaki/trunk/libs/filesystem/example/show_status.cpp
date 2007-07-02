@@ -91,12 +91,15 @@ int main(int argc, char* argv[])
             std::cout << "\t\t\tEncrypted\n";
         std::cout << "\n";
 
-        std::cout
-            << "Permissions:\t\t"
-            << std::oct << std::showbase
-            << s.permissions()
-            << std::dec << std::noshowbase
-            << "\n";
+        if (s.has_permissions())
+        {
+            std::cout
+                << "Permissions:\t\t"
+                << std::oct << std::showbase
+                << s.permissions()
+                << std::dec << std::noshowbase
+                << "\n";
+        }
 
         std::cout << "Size:\t\t\t" << s.file_size() << "\n";
 
