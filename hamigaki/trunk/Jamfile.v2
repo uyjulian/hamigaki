@@ -105,8 +105,9 @@ import regex ;
 import errors ;
 import "class" : new ;
 import common ;
+import hamigaki-version ;
 
-constant HAMIGAKI_VERSION : 0.40.0 ;
+constant HAMIGAKI_VERSION : [ hamigaki-version.version ] ;
 
 local version-tag = [ MATCH "^([^.]+)[.]([^.]+)[.]([^.]+)" : $(HAMIGAKI_VERSION) ] ;
 if $(version-tag[3]) = 0

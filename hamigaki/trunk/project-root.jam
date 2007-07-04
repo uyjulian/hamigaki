@@ -11,3 +11,10 @@ path-constant HAMIGAKI_ROOT : . ;
 path-constant BOOST_ROOT : [ modules.peek : BOOST_ROOT ] ;
 
 use-project /boost : $(BOOST_ROOT) ;
+
+
+module
+{
+    BOOST_BUILD_PATH += $(HAMIGAKI_ROOT)/tools/build ;
+    modules.poke .ENVIRON : BOOST_BUILD_PATH : $(BOOST_BUILD_PATH) ;
+}
