@@ -36,7 +36,7 @@ if ! $(NO_ASIO)
         asio_drivers
         ;
 
-    LIBRARIES += /site-config//asio ;
+    LIBRARIES += /asio//headers ;
 }
 
 if ! $(NO_DXSDK)
@@ -46,14 +46,7 @@ if ! $(NO_DXSDK)
         direct_sound_capture
         ;
 
-    lib dsound
-        :
-        /site-config//dxsdk
-        :
-        <name>dsound
-        ;
-
-    LIBRARIES += dsound ;
+    LIBRARIES += /directx//dsound ;
 }
 
 if ! $(NO_OGG) && ! $(NO_VORBIS)
@@ -64,8 +57,8 @@ if ! $(NO_OGG) && ! $(NO_VORBIS)
         ;
 
     LIBRARIES +=
-        /site-config//vorbisenc
-        /site-config//vorbisfile
+        /vorbis//vorbisenc
+        /vorbis//vorbisfile
         ;
 }
 
