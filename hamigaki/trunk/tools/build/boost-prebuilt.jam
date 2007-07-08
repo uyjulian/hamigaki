@@ -36,6 +36,13 @@ class boost-prebuilt-generator : searched-lib-generator
 
         local build-id = [ $(property-set).get <boost-build-id> ] ;
 
+        local properties = [ $(property-set).raw ] ;
+        local type = STATIC_LIB ;
+        if <link>shared in $(properties)
+        {
+            type = SHARED_LIB ;
+        }
+
         local lib_name ;
         if $(layout) = versioned
         {
@@ -44,7 +51,7 @@ class boost-prebuilt-generator : searched-lib-generator
             lib_name = [ common.format-name
                 <base> <toolset> <threading> <runtime> -$(version)
                 -$(build-id)
-                : $(name) : SEARCHED_LIB : $(property-set) ] ;
+                : $(name) : $(type) : $(property-set) ] ;
         }
         else
         {
@@ -53,7 +60,6 @@ class boost-prebuilt-generator : searched-lib-generator
                 : $(name) : $(type) : $(property-set) ] ;
         }
 
-        local properties = [ $(property-set).raw ] ;
         properties += <name>$(lib_name) ;
         property-set = [ property-set.create $(properties) ] ;
 
