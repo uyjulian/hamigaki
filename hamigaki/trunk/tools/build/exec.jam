@@ -1,0 +1,66 @@
+# simple testing tool
+
+# Copyright Takeshi Mouri 2007.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/ for library home page.
+
+import generators ;
+import testing ;
+import toolset ;
+import type ;
+
+type.register EXEC : exec : TEST ;
+
+rule exec ( target-name : sources * : args * : input-files * : requirements * : default-build * )
+{
+    # localize testing.make-test for "--dump-test"
+    import errors ;
+    import project ;
+    import sequence ;
+    import targets ;
+    IMPORT testing : make-test : $(__name__) : make-test : LOCALIZE ;
+
+    requirements += <testing.arg>$(args:J=" ") ;
+    requirements += [ testing.handle-input-files $(input-files) ] ;
+
+    local t = [ make-test exec : $(sources) : $(requirements) : $(target-name) ] ;
+
+    # EXEC targets are always explicit
+    local ptarget = [ $(t).project ] ;
+    $(ptarget).mark-target-as-explicit $(target-name) ;
+
+    return $(t) ;
+}
+
+generators.register-standard exec.exec-main : EXE : EXEC ;
+
+toolset.flags exec.exec-main ARGS <testing.arg> ;
+toolset.flags exec.exec-main INPUT_FILES <testing.input-file> ;
+toolset.flags exec.exec-main LAUNCHER <testing.launcher> ;
+
+rule exec-main ( target : source : properties * )
+{
+    DEPENDS $(target) : [ on $(target) return $(INPUT_FILES) ] ;
+
+    testing.run-path-setup $(target) : $(source) : $(properties) ;
+}
+
+PATH_SETUP = [ modules.peek testing : PATH_SETUP ] ;
+SET_STATUS = [ modules.peek testing : SET_STATUS ] ;
+RUN_OUTPUT_NL = [ modules.peek testing : RUN_OUTPUT_NL ] ;
+STATUS = [ modules.peek testing : STATUS ] ;
+
+actions exec-main bind INPUT_FILES
+{
+    $(PATH_SETUP)
+    $(LAUNCHER) "$(>)" $(ARGS) "$(INPUT_FILES)"
+    $(SET_STATUS)
+    $(RUN_OUTPUT_NL)
+    echo EXIT STATUS: $(STATUS)
+    exit $(STATUS)
+}
+
+IMPORT $(__name__) : exec : : exec ;
