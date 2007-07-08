@@ -15,7 +15,7 @@ local NO_ZLIB = [ modules.peek : NO_ZLIB ] ;
 
 project
     : requirements
-      <library>/boost/test//boost_unit_test_framework/<link>static
+      <library>/boost-lib//boost_unit_test_framework/<link>static
       <library>/hamigaki/iostreams//hamigaki_iostreams
     ;
 
@@ -25,7 +25,7 @@ rule test-with-bzip2 ( sources * : requirements * ) {
             :
             :
             :
-            <library>/boost/iostreams//boost_iostreams
+            <library>/boost-lib//boost_iostreams
             <link>shared:<define>BOOST_IOSTREAMS_DYN_LINK=1
             $(requirements)
     ] ;

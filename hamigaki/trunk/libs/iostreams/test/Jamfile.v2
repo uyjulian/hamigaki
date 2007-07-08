@@ -10,11 +10,11 @@
 using testing ;
 
 alias hamigaki_iostreams : /hamigaki/iostreams//hamigaki_iostreams ;
-alias boost_thread : /boost/thread//boost_thread ;
+alias boost_thread : /boost-lib//boost_thread ;
 
 project
     : requirements
-      <library>/boost/test//boost_unit_test_framework/<link>static
+      <library>/boost-lib//boost_unit_test_framework/<link>static
     ;
 
 test-suite "iostreams" :

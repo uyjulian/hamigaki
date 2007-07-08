@@ -13,14 +13,14 @@ project hamigaki/bjam
     : requirements
       <link>shared:<define>HAMIGAKI_BJAM_DYN_LINK
       <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
-      <library>/boost/filesystem//boost_filesystem
-      <library>/boost/regex//boost_regex
+      <library>/boost-lib//boost_filesystem
+      <library>/boost-lib//boost_regex
       <library>/hamigaki/process//hamigaki_process
     : usage-requirements
       <link>shared:<define>HAMIGAKI_BJAM_DYN_LINK
       <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
-      <library>/boost/filesystem//boost_filesystem
-      <library>/boost/regex//boost_regex
+      <library>/boost-lib//boost_filesystem
+      <library>/boost-lib//boost_regex
     : source-location ../src
     ;
 

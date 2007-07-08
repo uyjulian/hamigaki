@@ -25,8 +25,8 @@ project
       $(options)
     ;
 
-alias boost_filesystem : /boost/filesystem//boost_filesystem ;
-alias boost_iostreams : /boost/iostreams//boost_iostreams ;
+alias boost_filesystem : /boost-lib//boost_filesystem ;
+alias boost_iostreams : /boost-lib//boost_iostreams ;
 alias filesystems : /hamigaki/filesystem//hamigaki_filesystem ;
 alias iostreams : /hamigaki/iostreams//hamigaki_iostreams ;
 

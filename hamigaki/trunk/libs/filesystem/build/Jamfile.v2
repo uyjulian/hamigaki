@@ -11,11 +11,11 @@ project hamigaki/filesystem
     : requirements
       <link>shared:<define>HAMIGAKI_FILESYSTEM_DYN_LINK
       <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
-      <library>/boost/filesystem//boost_filesystem
+      <library>/boost-lib//boost_filesystem
     : usage-requirements
       <link>shared:<define>HAMIGAKI_FILESYSTEM_DYN_LINK
       <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
-      <library>/boost/filesystem//boost_filesystem
+      <library>/boost-lib//boost_filesystem
     : source-location ../src
     ;
 

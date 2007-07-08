@@ -11,7 +11,7 @@ project
     : requirements
       <hardcode-dll-paths>true
       <library>/hamigaki/audio//hamigaki_audio
-      <library>/boost/thread//boost_thread
+      <library>/boost-lib//boost_thread
     ;
 
 exe sound_player

@@ -10,11 +10,35 @@ import modules ;
 path-constant HAMIGAKI_ROOT : . ;
 path-constant BOOST_ROOT : [ modules.peek : BOOST_ROOT ] ;
 
-use-project /boost : $(BOOST_ROOT) ;
+if ! [ project.find /boost-lib : . ]
+{
+    use-project /boost : $(BOOST_ROOT) ;
+
+    project.push-current [ project.current ] ;
+    module boost-lib
+    {
+        __name__ = boost-lib ;
+
+        import project ;
+        project.initialize $(__name__) ;
+        project $(__name__) ;
+
+        alias headers : /boost//headers ;
+        alias boost_filesystem : /boost/filesystem//boost_filesystem ;
+        alias boost_iostreams : /boost/iostreams//boost_iostreams ;
+        alias boost_regex : /boost/regex//boost_regex ;
+        alias boost_thread : /boost/thread//boost_thread ;
+        alias boost_unit_test_framework : /boost/test//boost_unit_test_framework ;
+    }
+    project.pop-current ;
+}
 
 
 module
 {
-    BOOST_BUILD_PATH += $(HAMIGAKI_ROOT)/tools/build ;
-    modules.poke .ENVIRON : BOOST_BUILD_PATH : $(BOOST_BUILD_PATH) ;
+    if ! $(HAMIGAKI_ROOT)/tools/build in $(BOOST_BUILD_PATH)
+    {
+        BOOST_BUILD_PATH += $(HAMIGAKI_ROOT)/tools/build ;
+        modules.poke .ENVIRON : BOOST_BUILD_PATH : $(BOOST_BUILD_PATH) ;
+    }
 }

@@ -16,7 +16,7 @@ local NO_VORBIS = [ modules.peek : NO_VORBIS ] ;
 
 project
     : requirements
-      <library>/boost/test//boost_unit_test_framework/<link>static
+      <library>/boost-lib//boost_unit_test_framework/<link>static
       <library>/hamigaki/audio//hamigaki_audio
     ;
 

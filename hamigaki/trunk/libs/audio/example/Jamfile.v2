@@ -7,7 +7,7 @@
 
 # See http://hamigaki.sourceforge.jp/libs/audio for library home page.
 
-alias boost_thread : /boost/thread//boost_thread ;
+alias boost_thread : /boost-lib//boost_thread ;
 
 project
     : requirements
