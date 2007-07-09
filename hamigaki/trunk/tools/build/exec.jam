@@ -14,17 +14,12 @@ import type ;
 
 type.register EXEC : exec : TEST ;
 
-rule exec ( target-name : sources * : args * : input-files * : requirements * : default-build * )
+rule exec ( target-name : sources * : requirements * : default-build * )
 {
     # localize testing.make-test for "--dump-test"
-    import errors ;
     import project ;
-    import sequence ;
     import targets ;
     IMPORT testing : make-test : $(__name__) : make-test : LOCALIZE ;
-
-    requirements += <testing.arg>$(args:J=" ") ;
-    requirements += [ testing.handle-input-files $(input-files) ] ;
 
     local t = [ make-test exec : $(sources) : $(requirements) : $(target-name) ] ;
 
@@ -37,26 +32,23 @@ rule exec ( target-name : sources * : args * : input-files * : requirements * : 
 
 generators.register-standard exec.exec-main : EXE : EXEC ;
 
-toolset.flags exec.exec-main ARGS <testing.arg> ;
-toolset.flags exec.exec-main INPUT_FILES <testing.input-file> ;
-toolset.flags exec.exec-main LAUNCHER <testing.launcher> ;
-
 rule exec-main ( target : source : properties * )
 {
-    DEPENDS $(target) : [ on $(target) return $(INPUT_FILES) ] ;
-
     testing.run-path-setup $(target) : $(source) : $(properties) ;
 }
 
-PATH_SETUP = [ modules.peek testing : PATH_SETUP ] ;
+local argv = [ modules.peek : ARGV ] ;
+DEBUGGER = [ MATCH ^--debugger=(.*)$ : $(argv) ] ;
+ARGS = [ MATCH ^--args=(.*)$ : $(argv) ] ;
+
 SET_STATUS = [ modules.peek testing : SET_STATUS ] ;
 RUN_OUTPUT_NL = [ modules.peek testing : RUN_OUTPUT_NL ] ;
 STATUS = [ modules.peek testing : STATUS ] ;
 
-actions exec-main bind INPUT_FILES
+actions exec-main
 {
     $(PATH_SETUP)
-    $(LAUNCHER) "$(>)" $(ARGS) "$(INPUT_FILES)"
+    $(DEBUGGER) "$(>)" $(ARGS)
     $(SET_STATUS)
     $(RUN_OUTPUT_NL)
     echo EXIT STATUS: $(STATUS)
@@ -64,3 +56,22 @@ actions exec-main bind INPUT_FILES
 }
 
 IMPORT $(__name__) : exec : : exec ;
+
+
+rule register-exec-all ( )
+{
+    import "class" ;
+    import project ;
+
+    local proj = [ project.current ] ;
+    local targets = [ modules.peek $(proj) : self.alternatives ] ;
+
+    for t in $(targets)
+    {
+        if [ class.is-a $(t) : typed-target ] && [ $(t).type ] = EXE
+        {
+            local name = [ $(t).name ] ;
+            exec $(name)-run : $(name) ;
+        }
+    }
+}
