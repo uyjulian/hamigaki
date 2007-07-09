@@ -7,6 +7,8 @@
 
 # See http://hamigaki.sourceforge.jp/libs/filesystem for library home page.
 
+import exec ;
+
 project
     : requirements
       <hardcode-dll-paths>true
@@ -17,3 +19,5 @@ exe link : link.cpp ;
 exe read_link : read_link.cpp ;
 exe shortcut : shortcut.cpp ;
 exe show_status : show_status.cpp ;
+
+exec.register-exec-all ;

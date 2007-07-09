@@ -7,7 +7,11 @@
 
 # See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
 
+import exec ;
+
 alias boost_thread : /boost-lib//boost_thread ;
 
 exe background_copy_example : background_copy_example.cpp boost_thread : <threading>multi ;
 exe base64_encoder_example : base64_encoder_example.cpp ;
+
+exec.register-exec-all ;

@@ -7,6 +7,7 @@
 
 # See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
 
+import exec ;
 import modules ;
 
 local NO_BZIP2 = [ modules.peek : NO_BZIP2 ] ;
@@ -48,3 +49,5 @@ if ! $(NO_ZLIB)
     exe unzip : unzip.cpp boost_iostreams filesystems iostreams ;
     exe zip : zip.cpp boost_iostreams filesystems iostreams ;
 }
+
+exec.register-exec-all ;

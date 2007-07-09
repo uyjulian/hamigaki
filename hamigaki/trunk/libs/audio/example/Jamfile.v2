@@ -7,6 +7,8 @@
 
 # See http://hamigaki.sourceforge.jp/libs/audio for library home page.
 
+import exec ;
+
 alias boost_thread : /boost-lib//boost_thread ;
 
 project
@@ -28,6 +30,8 @@ exe raw_play : raw_play.cpp ;
 exe vorbis_encoder_example : vorbis_encoder_example.cpp ;
 exe vorbis_file_example : vorbis_file_example.cpp ;
 exe wav2aif : wav2aif.cpp ;
+
+exec.register-exec-all ;
 
 install dist-bin
     :

@@ -7,6 +7,8 @@
 
 # See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
 
+import exec ;
+
 project
     : requirements
       <library>/hamigaki/bjam//hamigaki_bjam
@@ -14,3 +16,5 @@ project
 
 exe bjam_check : bjam_check.cpp ;
 exe bjam_dump : bjam_dump.cpp ;
+
+exec.register-exec-all ;
