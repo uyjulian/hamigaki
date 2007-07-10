@@ -157,14 +157,6 @@ rule handle-static-runtime ( properties * )
     }
 }
 
-# workaround for Boost 1.33.1 or earlier
-local conditional-requirements = ;
-import feature ;
-if [ feature.valid <conditional> ]
-{
-    conditional-requirements += <conditional>@handle-static-runtime ;
-}
-
 
 project hamigaki
     : requirements
@@ -178,7 +170,7 @@ project hamigaki
       # Used to encode variant in target name. See the
       # 'tag' rule below.
       <tag>@$(__name__).tag
-      $(conditional-requirements)
+      <conditional>@handle-static-runtime
             
     : usage-requirements
       <include>.

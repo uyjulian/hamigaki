@@ -18,26 +18,6 @@ module
     }
 }
 
-# workaround for Boost 1.33.1 or earlier
-# copy from project.jam
-if ! push-current in [ RULENAMES project ]
-{
-    module project
-    {
-        rule push-current ( project )
-        {
-            .saved-current-project += $(.current-project) ;
-            .current-project = $(project) ;
-        }
-
-        rule pop-current ( )
-        {
-            .current-project = $(.saved-current-project[-1]) ;
-            .saved-current-project = $(.saved-current-project[1--2]) ;
-        }
-    }
-}
-
 if ! [ project.find /boost-lib : . ]
 {
     local rule make-project ( name )
