@@ -13,6 +13,7 @@
   <title>Hamigaki C++ ライブラリ</title>
 
   <xi:include href="license.xml"/>
+  <xi:include href="requirements.xml"/>
   <xi:include href="installation.xml"/>
 
   <chapter id="librarylist">
@@ -35,5 +36,7 @@
     <title>コンセプト</title>
     <xi:include href="concepts/concepts.xml"/>
   </chapter>
+
+  <xi:include href="bjam.xml"/>
 
 </boostbook>
