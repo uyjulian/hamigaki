@@ -37,6 +37,6 @@
     <xi:include href="concepts/concepts.xml"/>
   </chapter>
 
-  <xi:include href="bjam.xml"/>
+  <xi:include href="bbv2.xml"/>
 
 </boostbook>
