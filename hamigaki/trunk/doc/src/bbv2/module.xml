@@ -95,6 +95,7 @@ import os : name : os-name ;
 import os : * ;
 ]]></programlisting>
     </informalexample>
+    <para>なお、importによって読み込まれたモジュールには「__name__」という名前の変数が定義され、これにモジュールの名前が代入される。</para>
   </section>
   <section id="bbv2.module.variables">
     <title>モジュールと変数</title>
