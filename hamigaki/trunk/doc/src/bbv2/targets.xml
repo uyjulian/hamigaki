@@ -125,7 +125,7 @@ lib foo : : <file>/usr/local/lib/foo.a ;
 alias a&b : a b ;
 
 # ヘッダのみのライブラリheadersを宣言する
-alias headers : : <include>$(BOOST_ROOT) ;
+alias headers : : : : <include>$(BOOST_ROOT) ;
 ]]></programlisting>
     </informalexample>
   </section>
