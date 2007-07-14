@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE appendix PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
   "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
 <!--
   Hamigaki Library Document Source
@@ -9,57 +9,25 @@
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
 -->
-<appendix id="bbv2">
-  <title>Boost.Buildについて</title>
-  <para>ここではBoostライブラリやHamigakiライブラリのビルドに使われるBoost.Buildシステム バージョン2(以下、BBv2)について解説する。</para>
-  <section id="bbv2.lexical">
-    <title>字句</title>
-    <section id="bbv2.lexical.token">
-      <title>トークン</title>
-      <para>BBv2のトークンは全て空白(スペース、水平タブ、垂直タブ、復帰、改行、改ページ)で区切られる。C/C++のような区切り文字は存在しない。よって、</para>
-      <informalexample>
-        <programlisting><![CDATA[hello BBv2! ;
-[this_is_a_token] ;
-]]></programlisting>
-      </informalexample>
-      <para>は、「hello」、「BBv2!」、「;」、「[this_is_a_token]」、「;」の５つのトークンとして解釈される。</para>
-      <para>トークンに空白を含める場合は、ダブルクォーテーションで囲むか、「\」でエスケープ処理を施す。BBv2のエスケープ処理にはC/C++の「\n」のような特殊なパターンはなく、単に次の文字をただの文字として扱う。よって、</para>
-      <informalexample>
-        <programlisting><![CDATA["hello BBv2!" ;
-\"this\ is\ "a token\"" ;
-]]></programlisting>
-      </informalexample>
-      <para>は、「hello BBv2!」、「;」、「"this is a token"」、「;」の4つのトークンとして解釈される。</para>
-    </section>
-    <section id="bbv2.lexical.comment">
-      <title>コメント</title>
-      <para>「#」から改行までの文字列はコメントとして扱われ、BBv2に読み飛ばされる。ただし、「#」がトークンの一部である場合はコメントとみなされない。</para>
-      <informalexample>
-        <programlisting><![CDATA[#This is a comment.
-But_#it_is_not_a_commnt. ;
-]]></programlisting>
-      </informalexample>
-    </section>
-  </section>
-  <section id="bbv2.data">
-    <title>データ</title>
-    <section id="bbv2.data.type">
-      <title>データ型</title>
-      <para>BBv2で用いられるデータ型は文字列リストだけである。リストの要素は空白文字で区切られる。</para>
-      <informalexample>
-        <programlisting><![CDATA[foo
+<section id="bbv2.data">
+  <title>データ</title>
+  <section id="bbv2.data.type">
+    <title>データ型</title>
+    <para>BBv2で用いられるデータ型は文字列リストだけである。リストの要素は空白文字で区切られる。</para>
+    <informalexample>
+      <programlisting><![CDATA[foo
 foo bar
 1 2 3
 "if" ":" ";"
 ]]></programlisting>
-      </informalexample>
-      <para>上記の各行は全て有効な文字列リストである。</para>
-    </section>
-    <section id="bbv2.data.variables">
-      <title>変数</title>
-      <para>変数は宣言なしに使用できる。変数の名前には制限はない。BBv2のキーワードを変数名に使う場合はクォーティングかエスケープ処理を施す。</para>
-      <informalexample>
-        <programlisting><![CDATA[# 変数aに文字列「1」を代入
+    </informalexample>
+    <para>上記の各行は全て有効な文字列リストである。</para>
+  </section>
+  <section id="bbv2.data.variables">
+    <title>変数</title>
+    <para>変数は宣言なしに使用できる。変数の名前には制限はない。BBv2のキーワードを変数名に使う場合はクォーティングかエスケープ処理を施す。</para>
+    <informalexample>
+      <programlisting><![CDATA[# 変数aに文字列「1」を代入
 a = 1 ;
 
 # 変数bが空なら文字列「hoge」を代入
@@ -71,23 +39,23 @@ b += foo bar ;
 # 変数ifに文字列「else」を代入
 "if" = else ;
 ]]></programlisting>
-      </informalexample>
-      <para>代入文の前にlocalを付けると、スコープ内でのみ有効なローカル変数を定義できる。</para>
-      <informalexample>
-        <programlisting><![CDATA[# ローカル変数aに文字列「1」を代入
+    </informalexample>
+    <para>代入文の前にlocalを付けると、スコープ内でのみ有効なローカル変数を定義できる。</para>
+    <informalexample>
+      <programlisting><![CDATA[# ローカル変数aに文字列「1」を代入
 local a = 1 ;
 
 # ローカル変数には「?=」、「+=」は使えない
 #local b ?= hoge ;
 #local b += foo bar ; 
 ]]></programlisting>
-      </informalexample>
-    </section>
-    <section id="bbv2.data.variable-expansion">
-      <title>変数展開</title>
-      <para>トークン中の「$(<emphasis>変数名</emphasis>)」は対応する変数の値に展開される。変数の値が複数ある場合、変数値とと前後の文字列を連結した結果は直積になる。</para>
-      <informalexample>
-        <programlisting><![CDATA[A = a ;
+    </informalexample>
+  </section>
+  <section id="bbv2.data.variable-expansion">
+    <title>変数展開</title>
+    <para>トークン中の「$(<emphasis>変数名</emphasis>)」は対応する変数の値に展開される。変数の値が複数ある場合、変数値とと前後の文字列を連結した結果は直積になる。</para>
+    <informalexample>
+      <programlisting><![CDATA[A = a ;
 B = 1 2 ;
 C = x y z ;
 
@@ -95,106 +63,106 @@ D = _$(A)_ ; # D = _a_ ;
 E = a$(B) ; # E = a1 a2 ;
 F = $(B)$(C) ; # F = 1x 2x 1y 2y 1z 2z ;
 ]]></programlisting>
-      </informalexample>
-      <para>また次の表に示す修飾子を変数名の後ろに付けることで展開後の文字列を整形できる。</para>
-      <informaltable frame="all">
-        <tgroup cols="2">
-          <thead>
-            <row>
-              <entry>修飾子</entry>
-              <entry>効果</entry>
-            </row>
-          </thead>
-          <tbody>
-            <row>
-              <entry>[<emphasis>n</emphasis>]</entry>
-              <entry><emphasis>n</emphasis>番目の要素のみ選択される</entry>
-            </row>
-            <row>
-              <entry>[<emphasis>n</emphasis>-<emphasis>m</emphasis>]</entry>
-              <entry><emphasis>n</emphasis>番目から<emphasis>m</emphasis>番目の要素のみ選択される</entry>
-            </row>
-            <row>
-              <entry>[<emphasis>n</emphasis>-]</entry>
-              <entry><emphasis>n</emphasis>番目以降の要素のみ選択される</entry>
-            </row>
-            <row>
-              <entry>:U</entry>
-              <entry>大文字にする</entry>
-            </row>
-            <row>
-              <entry>:L</entry>
-              <entry>小文字にする</entry>
-            </row>
-            <row>
-              <entry>:G</entry>
-              <entry>グリスト部分を選択する</entry>
-            </row>
-            <row>
-              <entry>:D</entry>
-              <entry>ディレクトリ部分を選択する</entry>
-            </row>
-            <row>
-              <entry>:P</entry>
-              <entry>親ディレクトリ部分を選択する</entry>
-            </row>
-            <row>
-              <entry>:B</entry>
-              <entry>ベース名部分を選択する</entry>
-            </row>
-            <row>
-              <entry>:S</entry>
-              <entry>拡張子部分を選択する</entry>
-            </row>
-            <row>
-              <entry>:M</entry>
-              <entry>アーカイブメンバ部分を選択する</entry>
-            </row>
-            <row>
-              <entry>:T</entry>
-              <entry>「\」を「/」に置換する</entry>
-            </row>
-            <row>
-              <entry>:W</entry>
-              <entry>CygwinのパスをWindowsのパスに変換する (Cygwinのみ)</entry>
-            </row>
-            <row>
-              <entry>:G=<emphasis>grist</emphasis></entry>
-              <entry>グリスト部分を<emphasis>grist</emphasis>に置換する</entry>
-            </row>
-            <row>
-              <entry>:R=<emphasis>root</emphasis></entry>
-              <entry>パスが絶対パスでなければ、<emphasis>root</emphasis>を先頭に追加する</entry>
-            </row>
-            <row>
-              <entry>:D=<emphasis>dir</emphasis></entry>
-              <entry>ディレクトリ部分を<emphasis>dir</emphasis>に置換する</entry>
-            </row>
-            <row>
-              <entry>:B=<emphasis>base</emphasis></entry>
-              <entry>ベース名部分を<emphasis>base</emphasis>に置換する</entry>
-            </row>
-            <row>
-              <entry>:S=<emphasis>suf</emphasis></entry>
-              <entry>拡張子部分を<emphasis>suf</emphasis>に置換する</entry>
-            </row>
-            <row>
-              <entry>:M=<emphasis>mem</emphasis></entry>
-              <entry>アーカイブメンバ部分を<emphasis>mem</emphasis>に置換する</entry>
-            </row>
-            <row>
-              <entry>:E=<emphasis>value</emphasis></entry>
-              <entry>変数の値が空の場合、<emphasis>value</emphasis>に置換する</entry>
-            </row>
-            <row>
-              <entry>:J=<emphasis>joinval</emphasis></entry>
-              <entry>変数の各値を<emphasis>joinval</emphasis>で区切って連結した文字列に置換する</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
-      <informalexample>
-        <programlisting><![CDATA[X = a b c;
+    </informalexample>
+    <para>また次の表に示す修飾子を変数名の後ろに付けることで展開後の文字列を整形できる。</para>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>修飾子</entry>
+            <entry>効果</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>[<emphasis>n</emphasis>]</entry>
+            <entry><emphasis>n</emphasis>番目の要素のみ選択される</entry>
+          </row>
+          <row>
+            <entry>[<emphasis>n</emphasis>-<emphasis>m</emphasis>]</entry>
+            <entry><emphasis>n</emphasis>番目から<emphasis>m</emphasis>番目の要素のみ選択される</entry>
+          </row>
+          <row>
+            <entry>[<emphasis>n</emphasis>-]</entry>
+            <entry><emphasis>n</emphasis>番目以降の要素のみ選択される</entry>
+          </row>
+          <row>
+            <entry>:U</entry>
+            <entry>大文字にする</entry>
+          </row>
+          <row>
+            <entry>:L</entry>
+            <entry>小文字にする</entry>
+          </row>
+          <row>
+            <entry>:G</entry>
+            <entry>グリスト部分を選択する</entry>
+          </row>
+          <row>
+            <entry>:D</entry>
+            <entry>ディレクトリ部分を選択する</entry>
+          </row>
+          <row>
+            <entry>:P</entry>
+            <entry>親ディレクトリ部分を選択する</entry>
+          </row>
+          <row>
+            <entry>:B</entry>
+            <entry>ベース名部分を選択する</entry>
+          </row>
+          <row>
+            <entry>:S</entry>
+            <entry>拡張子部分を選択する</entry>
+          </row>
+          <row>
+            <entry>:M</entry>
+            <entry>アーカイブメンバ部分を選択する</entry>
+          </row>
+          <row>
+            <entry>:T</entry>
+            <entry>「\」を「/」に置換する</entry>
+          </row>
+          <row>
+            <entry>:W</entry>
+            <entry>CygwinのパスをWindowsのパスに変換する (Cygwinのみ)</entry>
+          </row>
+          <row>
+            <entry>:G=<emphasis>grist</emphasis></entry>
+            <entry>グリスト部分を<emphasis>grist</emphasis>に置換する</entry>
+          </row>
+          <row>
+            <entry>:R=<emphasis>root</emphasis></entry>
+            <entry>パスが絶対パスでなければ、<emphasis>root</emphasis>を先頭に追加する</entry>
+          </row>
+          <row>
+            <entry>:D=<emphasis>dir</emphasis></entry>
+            <entry>ディレクトリ部分を<emphasis>dir</emphasis>に置換する</entry>
+          </row>
+          <row>
+            <entry>:B=<emphasis>base</emphasis></entry>
+            <entry>ベース名部分を<emphasis>base</emphasis>に置換する</entry>
+          </row>
+          <row>
+            <entry>:S=<emphasis>suf</emphasis></entry>
+            <entry>拡張子部分を<emphasis>suf</emphasis>に置換する</entry>
+          </row>
+          <row>
+            <entry>:M=<emphasis>mem</emphasis></entry>
+            <entry>アーカイブメンバ部分を<emphasis>mem</emphasis>に置換する</entry>
+          </row>
+          <row>
+            <entry>:E=<emphasis>value</emphasis></entry>
+            <entry>変数の値が空の場合、<emphasis>value</emphasis>に置換する</entry>
+          </row>
+          <row>
+            <entry>:J=<emphasis>joinval</emphasis></entry>
+            <entry>変数の各値を<emphasis>joinval</emphasis>で区切って連結した文字列に置換する</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <informalexample>
+      <programlisting><![CDATA[X = a b c;
 A = X[2] ; # A = b
 B = X[1-2] ; # B = a b
 C = X[2-] ; # C = b c
@@ -228,227 +196,6 @@ W = $(ph:W) ; # W = C:\\Windows
 
 E = $(not_defined:E=default) ; # E = default
 ]]></programlisting>
-      </informalexample>
-    </section>
+    </informalexample>
   </section>
-  <section id="bbv2.rules">
-    <title>ルール</title>
-    <section id="bbv2.rules.definition">
-      <title>定義</title>
-      <para>モジュールは他のプログラミング言語の関数に相当する機能である。</para>
-      <informalexample>
-        <programlisting><![CDATA[# ルールrule_aを定義する
-rule rule_a
-{
-}
-]]></programlisting>
-      </informalexample>
-      <para>ルールの戻り値はreturn文で設定する。</para>
-      <informalexample>
-        <programlisting><![CDATA[#「a」、「b」、「c」のリストを返すルール
-rule rule_b
-{
-    return a b c ;
-}
-]]></programlisting>
-      </informalexample>
-      <para>ルール名に続く括弧内で仮引数を持たせることができる。</para>
-      <informalexample>
-        <programlisting><![CDATA[# 二つの文字列aとbを引数にとるルール
-rule rule_c ( a b )
-{
-}
-
-# 任意サイズのリストaと空でないリストbとオプションの文字列cを引数に取るルール
-rule rule_d ( a * : b + : c ? )
-{
-}
-]]></programlisting>
-      </informalexample>
-    </section>
-    <section id="bbv2.rules.invocation">
-      <title>呼び出し</title>
-      <para>ルール名に続き、定義にマッチした引数を並べるとルールを呼び出すことができる。</para>
-      <informalexample>
-        <programlisting><![CDATA[rule rule_c ( a b )
-{
-}
-
-rule_c 1 2 ; # a = 1 , b = 2
-
-rule rule_d ( a * : b + : c ? )
-{
-}
-
-rule_d 1 2 : 1 2 : 1 ; # a = 1 2 , b = 1 2 , c = 1
-rule_d : 1 ; # a = , b = 1 , c =
-]]></programlisting>
-      </informalexample>
-      <para>戻り値を利用したい場合は、ルール呼び出しを「[」と「]」で囲む。</para>
-      <informalexample>
-        <programlisting><![CDATA[rule rule_e ( a b )
-{
-    return $(a)-$(b) ;
-}
-
-X = [ rule_e x y ] ; # X = x-y
-]]></programlisting>
-      </informalexample>
-    </section>
-  </section>
-  <section id="bbv2.module">
-    <title>モジュール</title>
-    <section id="bbv2.module.module">
-      <title>モジュール</title>
-      <para>モジュールはC++の名前空間に相当する機能である。ただし、C++の名前空間と違い、モジュールは入れ子にすることができない。</para>
-      <informalexample>
-        <programlisting><![CDATA[# 最初はルートモジュール
-# モジュールfooに切り替える
-module foo
-{
-    # モジュールbarに切り替える
-    # モジュールfoo.barではない
-    module bar
-    {
-    }
-
-    # ルートモジュールに切り替える
-    module
-    {
-    }
-}
-]]></programlisting>
-      </informalexample>
-    </section>
-    <section id="bbv2.module.rules">
-      <title>モジュールとルール</title>
-      <para>通常、他のモジュールのルールは呼びさせないが、ルートモジュールのルールは任意のモジュールから呼び出すことができる。</para>
-      <informalexample>
-        <programlisting><![CDATA[rule rule_a ( ) { }
-
-module foo
-{
-    rule rule_b ( ) { }
-}
-
-module bar
-{
-    # これらはエラー
-    # rule_b ;
-    # foo.rule_b ;
-
-    # これはOK
-    rule_a ;
-}
-]]></programlisting>
-      </informalexample>
-      <para>ルートモジュール以外のルールを使用したい場合は、組み込みルールIMPORTを用いる。</para>
-      <informalexample>
-        <programlisting><![CDATA[# 各ルールの定義は上の例と同じ
-
-module bar
-{
-    # モジュールfooのrule_bをモジュールbarに同名でインポート
-    IMPORT foo : rule_b : bar : rule_b ;
-    rule_b ; # OK
-
-    # モジュールfooのrule_bをモジュールbarにfoo.rule_bという名前でインポート
-    IMPORT foo : rule_b : bar : foo.rule_b ;
-    foo.rule_b ; # OK
-}
-]]></programlisting>
-      </informalexample>
-    </section>
-    <section id="bbv2.module.file">
-      <title>モジュールファイル</title>
-      <para>通常、モジュールは「<emphasis>モジュール名</emphasis>.jam」という名前のファイルで定義される。このようなモジュールを使用するには、標準ルールimportを用いる。このルールで読み込まれたモジュール内のルールは、「<emphasis>モジュール名</emphasis>.<emphasis>ルール名</emphasis>」という名前でインポートされる。</para>
-      <informalexample>
-        <programlisting><![CDATA[# 標準モジュールerrorsをインポートする
-import errors ;
-
-# errorsモジュールのerrorルールを呼び出す
-errors.error Ooops! ;
-]]></programlisting>
-      </informalexample>
-      <para>importルールには、上記に加え別名でインポートするルールを指定できるオプションがある。</para>
-      <informalexample>
-        <programlisting><![CDATA[# os.nameをnameという名前でインポート
-import os : name ;
-
-# os.nameをos-nameという名前でインポート
-import os : name : os-name ;
-
-# osモジュール内のルールを全てそのままの名前でインポート
-import os : * ;
-]]></programlisting>
-      </informalexample>
-    </section>
-    <section id="bbv2.module.variables">
-      <title>モジュールと変数</title>
-      <para>他のモジュールの変数にアクセスするには、標準モジュールmodulesのpeek/pokeルールを用いる。</para>
-      <informalexample>
-        <programlisting><![CDATA[# モジュールfooの変数Xの値を現在のモジュールの変数Yに代入
-Y = [ modules.peek foo : X ] ;
-
-# モジュールbarの変数Zに文字列123を代入
-modules.poke bar : Z : 123 ;
-]]></programlisting>
-      </informalexample>
-      <para>ルートモジュールの変数にアクセスするにもpeek/pokeルールを用いなければならない。</para>
-      <informalexample>
-        <programlisting><![CDATA[# ルートモジュールの変数OSの値を現在のモジュールの変数osに代入
-os = [ modules.peek : OS ] ;
-]]></programlisting>
-      </informalexample>
-    </section>
-  </section>
-  <section id="bbv2.target">
-    <title>ターゲット</title>
-    <section id="bbv2.target.common">
-      <title>共通構文</title>
-      <para>通常、ビルドターゲットを宣言するルールは次の共通構文の形式を取る。</para>
-      <informalexample>
-        <programlisting><![CDATA[rule ]]><emphasis>ルール名</emphasis><![CDATA[ (
-    main-target-name :
-    sources + :
-    requirements * :
-    default-build * :
-    usage-requirements * )
-]]></programlisting>
-      </informalexample>
-      <para>引数の意味は次の通り。</para>
-      <informaltable frame="all">
-        <tgroup cols="2">
-          <thead>
-            <row>
-              <entry>引数</entry>
-              <entry>意味</entry>
-            </row>
-          </thead>
-          <tbody>
-            <row>
-              <entry>main-target-name</entry>
-              <entry>ターゲット名</entry>
-            </row>
-            <row>
-              <entry>sources</entry>
-              <entry>ソースファイル名、ソースターゲット名</entry>
-            </row>
-            <row>
-              <entry>requirements</entry>
-              <entry>ビルドに必要なプロパティ</entry>
-            </row>
-            <row>
-              <entry>default-build</entry>
-              <entry>コマンドラインや依存するターゲットのdefault-buildでの指定がない場合のみ使用されるプロパティ</entry>
-            </row>
-            <row>
-              <entry>usage-requirements</entry>
-              <entry>このターゲットに依存するターゲットのビルドに必要なプロパティ</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
-    </section>
-  </section>
-</appendix>
+</section>
