@@ -15,8 +15,8 @@
   <xi:include href="lexical.xml"/>
   <xi:include href="data.xml"/>
   <xi:include href="rules.xml"/>
-  <xi:include href="module.xml"/>
+  <xi:include href="modules.xml"/>
   <xi:include href="properties.xml"/>
   <xi:include href="projects.xml"/>
-  <xi:include href="target.xml"/>
+  <xi:include href="targets.xml"/>
 </appendix>

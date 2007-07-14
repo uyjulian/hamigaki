@@ -9,9 +9,9 @@
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
 -->
-<section id="bbv2.target">
+<section id="bbv2.targets">
   <title>ターゲット</title>
-  <section id="bbv2.target.id">
+  <section id="bbv2.targets.id">
     <title>ターゲットID</title>
     <para>ビルドターゲットを識別するため、「<emphasis>プロジェクトID</emphasis>//<emphasis>ターゲット名</emphasis>」</para>という形式の文字列を用いる。
     <informalexample>
@@ -41,7 +41,7 @@
       </informaltable>
     </informalexample>
   </section>
-  <section id="bbv2.target.common" xreflabel="共通構文">
+  <section id="bbv2.targets.common" xreflabel="共通構文">
     <title>共通構文</title>
     <para>通常、ビルドターゲットを宣言するルールは次の<firstterm>共通構文</firstterm>の形式を取る。</para>
     <informalexample>
@@ -87,9 +87,9 @@
       </tgroup>
     </informaltable>
   </section>
-  <section id="bbv2.target.exe">
+  <section id="bbv2.targets.exe">
     <title>exe</title>
-    <para>標準ルールexeは、実行ファイルターゲットを宣言するルールであり、<xref linkend="bbv2.target.common"/>の形式を取る。</para>
+    <para>標準ルールexeは、実行ファイルターゲットを宣言するルールであり、<xref linkend="bbv2.targets.common"/>の形式を取る。</para>
     <informalexample>
       <programlisting><![CDATA[# hello.cppから実行ファイルhelloを生成させる
 exe hello : hello.cpp ;
@@ -99,9 +99,9 @@ exe my_ls : my_ls.cpp /boost/filesystem//boost_filesystem ;
 ]]></programlisting>
     </informalexample>
   </section>
-  <section id="bbv2.target.lib">
+  <section id="bbv2.targets.lib">
     <title>lib</title>
-    <para>標準ルールlibは、ライブラリターゲットを宣言するルールであり、<xref linkend="bbv2.target.common"/>の形式を取る。</para>
+    <para>標準ルールlibは、ライブラリターゲットを宣言するルールであり、<xref linkend="bbv2.targets.common"/>の形式を取る。</para>
     <informalexample>
       <programlisting><![CDATA[# hello.cppからライブラリhelloを生成させる
 lib hello : hello.cpp ;
@@ -117,9 +117,9 @@ lib foo : : <file>/usr/local/lib/foo.a ;
 ]]></programlisting>
     </informalexample>
   </section>
-  <section id="bbv2.target.alias">
+  <section id="bbv2.targets.alias">
     <title>alias</title>
-    <para>標準ルールaliasは、ターゲットの別名を宣言するルールであり、<xref linkend="bbv2.target.common"/>の形式を取る。</para>
+    <para>標準ルールaliasは、ターゲットの別名を宣言するルールであり、<xref linkend="bbv2.targets.common"/>の形式を取る。</para>
     <informalexample>
       <programlisting><![CDATA[# ターゲットaとbを参照するターゲットa&bを宣言する
 alias a&b : a b ;

@@ -9,9 +9,9 @@
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
 -->
-<section id="bbv2.module">
+<section id="bbv2.modules">
   <title>モジュール</title>
-  <section id="bbv2.module.module">
+  <section id="bbv2.modules.module">
     <title>モジュール</title>
     <para>モジュールはC++の名前空間に相当する機能である。ただし、C++の名前空間と違い、モジュールは入れ子にすることができない。</para>
     <informalexample>
@@ -33,7 +33,7 @@ module foo
 ]]></programlisting>
     </informalexample>
   </section>
-  <section id="bbv2.module.rules">
+  <section id="bbv2.modules.rules">
     <title>モジュールとルール</title>
     <para>通常、他のモジュールのルールは呼びさせないが、ルートモジュールのルールは任意のモジュールから呼び出すことができる。</para>
     <informalexample>
@@ -72,7 +72,7 @@ module bar
 ]]></programlisting>
     </informalexample>
   </section>
-  <section id="bbv2.module.file">
+  <section id="bbv2.modules.file">
     <title>モジュールファイル</title>
     <para>通常、モジュールは「<emphasis>モジュール名</emphasis>.jam」という名前のファイルで定義される。このようなモジュールを使用するには、標準ルールimportを用いる。このルールで読み込まれたモジュール内のルールは、「<emphasis>モジュール名</emphasis>.<emphasis>ルール名</emphasis>」という名前でインポートされる。</para>
     <informalexample>
@@ -97,7 +97,7 @@ import os : * ;
     </informalexample>
     <para>なお、importによって読み込まれたモジュールには「__name__」という名前の変数が定義され、これにモジュールの名前が代入される。</para>
   </section>
-  <section id="bbv2.module.variables">
+  <section id="bbv2.modules.variables">
     <title>モジュールと変数</title>
     <para>他のモジュールの変数にアクセスするには、標準モジュールmodulesのpeek/pokeルールを用いる。</para>
     <informalexample>
