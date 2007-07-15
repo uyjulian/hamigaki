@@ -36,7 +36,7 @@
           <row>
             <entry>variant </entry>
             <entry>ビルド設定の典型的な組み合わせ</entry>
-            <entry><simplelist type='inline'>
+            <entry><simplelist type="inline">
               <member>debug</member>
               <member>release</member>
               <member>profile</member>
@@ -45,7 +45,7 @@
           <row>
             <entry>threading</entry>
             <entry>スレッド環境</entry>
-            <entry><simplelist type='inline'>
+            <entry><simplelist type="inline">
               <member>single</member>
               <member>multi</member>
             </simplelist></entry>
@@ -53,7 +53,7 @@
           <row>
             <entry>link</entry>
             <entry>生成されるライブラリのリンク方法</entry>
-            <entry><simplelist type='inline'>
+            <entry><simplelist type="inline">
               <member>shared</member>
               <member>static</member>
             </simplelist></entry>
@@ -61,7 +61,7 @@
           <row>
             <entry>runtime-link</entry>
             <entry>標準ライブラリのリンク方法</entry>
-            <entry><simplelist type='inline'>
+            <entry><simplelist type="inline">
               <member>shared</member>
               <member>static</member>
             </simplelist></entry>
