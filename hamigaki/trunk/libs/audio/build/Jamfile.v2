@@ -8,11 +8,138 @@
 # See http://hamigaki.sourceforge.jp/libs/audio for library home page.
 
 import modules ;
+import os ;
 
 local NO_ASIO = [ modules.peek : NO_ASIO ] ;
 local NO_DXSDK = [ modules.peek : NO_DXSDK ] ;
 local NO_OGG = [ modules.peek : NO_OGG ] ;
 local NO_VORBIS = [ modules.peek : NO_VORBIS ] ;
+
+local rule make-project ( name )
+{
+    modules.poke $(name) : __name__ : $(name) ;
+    module $(name)
+    {
+        import project ;
+        project.initialize $(__name__) ;
+        project $(__name__) ;
+    }
+}
+
+if ! $(NO_ASIO) && ! [ project.find /asio : . ]
+{
+    if [ modules.peek : HAVE_ASIO ]
+    {
+        project.push-current [ project.current ] ;
+        make-project asio ;
+        module asio
+        {
+            local inc = [ modules.peek : ASIO_INCLUDE ] ;
+            alias headers : : : : <include>$(inc) ;
+        }
+        project.pop-current ;
+    }
+    else
+    {
+        NO_ASIO = 1 ;
+        modules.poke : NO_ASIO : 1 ;
+    }
+}
+
+if ! $(NO_DXSDK) && ! [ project.find /directx : . ]
+{
+    if  [ modules.peek : HAVE_DXSDK ]
+    {
+        project.push-current [ project.current ] ;
+        make-project directx ;
+        module directx
+        {
+            import os ;
+
+            local inc = [ modules.peek : DXSDK_INCLUDE ] ;
+            local lib = [ modules.peek : DXSDK_LIBPATH ] ;
+
+            path-constant DXSDK_DIR : [ os.environ DXSDK_DIR ] ;
+            inc ?= $(DXSDK_DIR)/Include ;
+            lib ?= $(DXSDK_DIR)/Lib/x86 ;
+
+            alias sdk : : : : <include>$(inc) <library-path>$(lib) ;
+            lib dsound : sdk : <name>dsound ;
+        }
+        project.pop-current ;
+    }
+    else
+    {
+        NO_DXSDK = 1 ;
+        modules.poke : NO_DXSDK : 1 ;
+    }
+}
+
+if ! $(NO_OGG) && ! [ project.find /ogg : . ]
+{
+    if [ modules.peek : HAVE_OGG ]
+    {
+        project.push-current [ project.current ] ;
+        make-project ogg ;
+        module ogg
+        {
+            local ogg = [ modules.peek : OGG_BINARY ] ;
+            ogg ?= ogg ;
+
+            local inc = [ modules.peek : OGG_INCLUDE ] ;
+            local lib = [ modules.peek : OGG_LIBPATH ] ;
+
+            alias base : : : : <include>$(inc) <library-path>$(lib) ;
+            lib ogg : base : <define>HAMIGAKI_OGG_BINARY=$(ogg) <name>$(ogg) ;
+        }
+        project.pop-current ;
+    }
+    else
+    {
+        NO_OGG = 1 ;
+        modules.poke : NO_OGG : 1 ;
+    }
+}
+
+if ! $(NO_VORBIS) && ! [ project.find /vorbis : . ]
+{
+    if ! $(NO_OGG) && [ modules.peek : HAVE_VORBIS ]
+    {
+        project.push-current [ project.current ] ;
+        make-project vorbis ;
+        module vorbis
+        {
+            local vorbis = [ modules.peek : VORBIS_BINARY ] ;
+            vorbis ?= vorbis ;
+
+            local vorbisfile = [ modules.peek : VORBISFILE_BINARY ] ;
+            vorbisfile ?= vorbisfile ;
+
+            local vorbisenc = [ modules.peek : VORBISENC_BINARY ] ;
+            vorbisenc ?= vorbisenc ;
+
+            local inc = [ modules.peek : VORBIS_INCLUDE ] ;
+            local lib = [ modules.peek : VORBIS_LIBPATH ] ;
+
+            alias base : : : : <include>$(inc) <library-path>$(lib) ;
+
+            lib vorbis : /ogg//ogg base :
+                <define>HAMIGAKI_VORBIS_BINARY=$(vorbis) <name>$(vorbis) ;
+
+            lib vorbisfile : vorbis :
+                <define>HAMIGAKI_VORBISFILE_BINARY=$(vorbisfile) <name>$(vorbisfile) ;
+
+            lib vorbisenc : vorbis :
+                <define>HAMIGAKI_VORBISENC_BINARY=$(vorbisenc) <name>$(vorbisenc) ;
+        }
+        project.pop-current ;
+    }
+    else
+    {
+        NO_VORBIS = 1 ;
+        modules.poke : NO_VORBIS : 1 ;
+    }
+}
 
 project hamigaki/audio
     : requirements
