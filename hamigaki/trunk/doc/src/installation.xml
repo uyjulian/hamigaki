@@ -70,41 +70,41 @@
       <tgroup cols="2">
         <thead>
           <row>
-            <entry>ターゲット名</entry>
+            <entry>ターゲットID</entry>
             <entry>意味</entry>
           </row>
         </thead>
         <tbody>
           <row>
-            <entry>/boost-lib/headers</entry>
+            <entry>/boost-lib//headers</entry>
             <entry>Boostヘッダファイル</entry>
           </row>
           <row>
-            <entry>/boost-lib/boost_filesystem</entry>
+            <entry>/boost-lib//boost_filesystem</entry>
             <entry>Boost.Filesystemライブラリ</entry>
           </row>
           <row>
-            <entry>/boost-lib/boost_regex</entry>
+            <entry>/boost-lib//boost_regex</entry>
             <entry>Boost.Regexライブラリ</entry>
           </row>
           <row>
-            <entry>/boost-lib/boost_bzip2</entry>
+            <entry>/boost-lib//boost_bzip2</entry>
             <entry>bzip2ライブラリ</entry>
           </row>
           <row>
-            <entry>/boost-lib/boost_zlib</entry>
+            <entry>/boost-lib//boost_zlib</entry>
             <entry>zlibライブラリ</entry>
           </row>
           <row>
-            <entry>/boost-lib/boost_iostreams</entry>
+            <entry>/boost-lib//boost_iostreams</entry>
             <entry>Boost.Iostreamsライブラリ</entry>
           </row>
           <row>
-            <entry>/boost-lib/boost_thread</entry>
+            <entry>/boost-lib//boost_thread</entry>
             <entry>Boost.Threadライブラリ</entry>
           </row>
           <row>
-            <entry>/boost-lib/boost_unit_test_framework</entry>
+            <entry>/boost-lib//boost_unit_test_framework</entry>
             <entry>Boost.TestのUnit Test Frameworkライブラリ</entry>
           </row>
         </tbody>
