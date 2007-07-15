@@ -15,8 +15,10 @@
   <xi:include href="lexical.xml"/>
   <xi:include href="data.xml"/>
   <xi:include href="rules.xml"/>
+  <xi:include href="control.xml"/>
   <xi:include href="modules.xml"/>
   <xi:include href="properties.xml"/>
   <xi:include href="projects.xml"/>
   <xi:include href="targets.xml"/>
+  <xi:include href="builtins.xml"/>
 </appendix>
