@@ -13,7 +13,7 @@
   <title>ターゲット</title>
   <section id="bbv2.targets.id">
     <title>ターゲットID</title>
-    <para>ビルドターゲットを識別するため、「<emphasis>プロジェクトID</emphasis>//<emphasis>ターゲット名</emphasis>」</para>という形式の文字列を用いる。
+    <para>ビルドターゲットを識別するため、「<emphasis>プロジェクトID</emphasis>//<emphasis>ターゲット名</emphasis>」という形式の文字列を用いる。</para>
     <informalexample>
       <informaltable frame="all">
         <tgroup cols="2">
