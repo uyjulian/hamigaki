@@ -21,4 +21,5 @@
   <xi:include href="projects.xml"/>
   <xi:include href="targets.xml"/>
   <xi:include href="builtins.xml"/>
+  <xi:include href="reference/reference.xml"/>
 </appendix>
