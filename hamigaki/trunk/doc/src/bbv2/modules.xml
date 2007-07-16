@@ -95,11 +95,11 @@ import os : name : os-name ;
 import os : * ;
 ]]></programlisting>
     </informalexample>
-    <para>なお、importによって読み込まれたモジュールには「__name__」という名前の変数が定義され、これにモジュールの名前が代入される。</para>
+    <para>なお、importによって読み込まれたモジュールには「__name__」という名前の変数が定義され、これにはモジュールの名前が代入される。</para>
   </section>
   <section id="bbv2.modules.variables">
     <title>モジュールと変数</title>
-    <para>他のモジュールの変数にアクセスするには、標準モジュールmodulesのpeek/pokeルールを用いる。</para>
+    <para>他のモジュールの変数にアクセスするには、標準モジュールmodulesの<link linkend="bbv2.reference.modules.peek">peek</link>/<link linkend="bbv2.reference.modules.poke">poke</link>ルールを用いる。</para>
     <informalexample>
       <programlisting><![CDATA[# モジュールfooの変数Xの値を現在のモジュールの変数Yに代入
 Y = [ modules.peek foo : X ] ;
@@ -108,11 +108,18 @@ Y = [ modules.peek foo : X ] ;
 modules.poke bar : Z : 123 ;
 ]]></programlisting>
     </informalexample>
-    <para>ルートモジュールの変数にアクセスするにもpeek/pokeルールを用いなければならない。</para>
+    <para>ルートモジュールの変数にアクセスするにも<link linkend="bbv2.reference.modules.peek">peek</link>/<link linkend="bbv2.reference.modules.poke">poke</link>ルールを用いなければならない。</para>
     <informalexample>
       <programlisting><![CDATA[# ルートモジュールの変数OSの値を現在のモジュールの変数osに代入
 os = [ modules.peek : OS ] ;
 ]]></programlisting>
     </informalexample>
+  </section>
+  <section id="bbv2.modules.environ">
+    <title>.ENVIRONモジュール</title>
+    <para>OSの環境変数は.ENVIRONモジュールの変数にマップされる。よって、標準モジュールmodulesの<link linkend="bbv2.reference.modules.peek">peek</link>/<link linkend="bbv2.reference.modules.poke">poke</link>ルールを通してアクセスすることができる。</para>
+      <programlisting><![CDATA[# 変数homeに環境変数HOMEの値を代入
+home = [ modules.peek .ENVIRON : HOME ] ;
+]]></programlisting>
   </section>
 </section>
