@@ -12,8 +12,8 @@
 <section id="bbv2.reference.modules">
   <title>modulesモジュール</title>
   <synopsis><emphasis role="bold">module</emphasis> modules {
-  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.modules.peek">peek</link> ( module-name ? : variables + ) { }
-  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.modules.poke">poke</link> ( module-name ? : variables + : value * ) { }
+  <emphasis role="bold">rule</emphasis>&#32;<link linkend="bbv2.reference.modules.peek">peek</link> ( module-name ? : variables + ) { }
+  <emphasis role="bold">rule</emphasis>&#32;<link linkend="bbv2.reference.modules.poke">poke</link> ( module-name ? : variables + : value * ) { }
 }
 </synopsis>
   <refentry id="bbv2.reference.modules.peek">

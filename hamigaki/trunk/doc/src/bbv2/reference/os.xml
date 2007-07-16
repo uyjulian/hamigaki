@@ -12,8 +12,8 @@
 <section id="bbv2.reference.os">
   <title>osモジュール</title>
   <synopsis><emphasis role="bold">module</emphasis> os {
-  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.os.environ">environ</link> ( variable-names + ) { }
-  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.os.name">name</link> ( ) { }
+  <emphasis role="bold">rule</emphasis>&#32;<link linkend="bbv2.reference.os.environ">environ</link> ( variable-names + ) { }
+  <emphasis role="bold">rule</emphasis>&#32;<link linkend="bbv2.reference.os.name">name</link> ( ) { }
 }
 </synopsis>
   <refentry id="bbv2.reference.os.environ">

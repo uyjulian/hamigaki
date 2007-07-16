@@ -12,8 +12,8 @@
 <section id="bbv2.reference.path">
   <title>pathモジュール</title>
   <synopsis><emphasis role="bold">module</emphasis> path {
-  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.path.glob">glob</link> ( dirs * : patterns + : exclude-patterns * ) { }
-  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.path.glob-tree">glob-tree</link> ( roots * : patterns + : exclude-patterns * ) { }
+  <emphasis role="bold">rule</emphasis>&#32;<link linkend="bbv2.reference.path.glob">glob</link> ( dirs * : patterns + : exclude-patterns * ) { }
+  <emphasis role="bold">rule</emphasis>&#32;<link linkend="bbv2.reference.path.glob-tree">glob-tree</link> ( roots * : patterns + : exclude-patterns * ) { }
 }
 </synopsis>
   <refentry id="bbv2.reference.path.glob">
