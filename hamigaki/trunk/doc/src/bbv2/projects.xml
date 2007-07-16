@@ -158,6 +158,6 @@ path-constant ROOT : . ;
         </tbody>
       </tgroup>
     </informaltable>
-    <para>これらのファイルで、グローバル変数や<xref linkend="bbv2.projects.constants"/>を設定することでBBv2の動作をカスタマイズすることができる。</para>
+    <para>これらのファイルで、<xref linkend="bbv2.modules.globals"/>や<xref linkend="bbv2.projects.constants"/>を設定することでBBv2の動作をカスタマイズすることができる。</para>
   </section>
 </section>

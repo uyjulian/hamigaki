@@ -122,4 +122,9 @@ os = [ modules.peek : OS ] ;
 home = [ modules.peek .ENVIRON : HOME ] ;
 ]]></programlisting>
   </section>
+  <section id="bbv2.modules.globals" xreflabel="グローバル変数">
+    <title>グローバル変数</title>
+    <para>ルートモジュールの(ローカルでない)変数は特に<firstterm>グローバル変数</firstterm>と呼ぶことがある。bjamの<option>-s</option>オプションで設定できる変数はこれである。</para>
+    <para>また、旧バージョンとの互換性のため.ENVIRONモジュールと同じようにOSの環境変数がマップされる。</para>
+  </section>
 </section>
