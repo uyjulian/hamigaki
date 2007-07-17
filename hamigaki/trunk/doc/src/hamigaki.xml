@@ -26,6 +26,7 @@
   <xi:include href="../../libs/binary/doc/binary.xml"/>
   <xi:include href="../../libs/coroutine/doc/coroutine.xml"/>
   <xi:include href="../../libs/filesystem/doc/filesystem.xml"/>
+  <xi:include href="../../libs/integer/doc/integer.xml"/>
   <xi:include href="../../libs/iostreams/doc/iostreams.xml"/>
   <xi:include href="../../libs/iterator/doc/iterator.xml"/>
   <xi:include href="../../libs/thread/doc/thread.xml"/>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Integer Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/integer for library home page.
+-->
+<header name="hamigaki/integer/rounding.hpp">
+  <namespace name="hamigaki">
+    <function name="round_to_even">
+      <template>
+        <template-type-parameter name="T" />
+      </template>
+      <type>T</type>
+      <parameter name="x">
+        <paramtype>T</paramtype>
+      </parameter>
+      <returns><simpara><code>x</code>が偶数なら<code>x</code>、奇数なら<code>x+1</code></simpara></returns>
+    </function>
+    <function name="round_to_odd">
+      <template>
+        <template-type-parameter name="T" />
+      </template>
+      <type>T</type>
+      <parameter name="x">
+        <paramtype>T</paramtype>
+      </parameter>
+      <returns><simpara><code>x</code>が奇数なら<code>x</code>、偶数なら<code>x+1</code></simpara></returns>
+    </function>
+  </namespace>
+</header>
