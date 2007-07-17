@@ -19,6 +19,7 @@
 #include <utility> // for make_pair
 #include <ctime>
 #include <cctype>   // for tolower
+#include <vector>
 
 using std::string;
 namespace xml = boost::tiny_xml;
