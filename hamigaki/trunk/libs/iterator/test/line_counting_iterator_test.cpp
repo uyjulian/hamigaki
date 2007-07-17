@@ -15,20 +15,30 @@
 
 namespace ut = boost::unit_test;
 
+struct fwd_iter
+    : boost::iterator_adaptor<
+        fwd_iter
+      , const char*
+      , boost::use_default
+      , std::forward_iterator_tag
+    >
+{
+};
+
 void category_test()
 {
     typedef hamigaki::line_counting_iterator<const char*> iter_type1;
 
     BOOST_MPL_ASSERT_NOT((
         boost::is_convertible<
-            typename boost::iterator_category<iter_type1>::type,
+            boost::iterator_category<iter_type1>::type,
             std::random_access_iterator_tag
         >
     ));
 
     BOOST_MPL_ASSERT((
         boost::is_convertible<
-            typename boost::iterator_category<iter_type1>::type,
+            boost::iterator_category<iter_type1>::type,
             std::bidirectional_iterator_tag
         >
     ));
@@ -40,41 +50,31 @@ void category_test()
 
     BOOST_MPL_ASSERT_NOT((
         boost::is_convertible<
-            typename boost::iterator_category<iter_type2>::type,
+            boost::iterator_category<iter_type2>::type,
             std::random_access_iterator_tag
         >
     ));
 
     BOOST_MPL_ASSERT((
         boost::is_convertible<
-            typename boost::iterator_category<iter_type2>::type,
+            boost::iterator_category<iter_type2>::type,
             std::bidirectional_iterator_tag
         >
     ));
 
 
-    struct fwd_iter
-        : boost::iterator_adaptor<
-            fwd_iter
-          , const char*
-          , boost::use_default
-          , std::forward_iterator_tag
-        >
-    {
-    };
-
     typedef hamigaki::line_counting_iterator<fwd_iter> iter_type3;
 
     BOOST_MPL_ASSERT_NOT((
         boost::is_convertible<
-            typename boost::iterator_category<iter_type3>::type,
+            boost::iterator_category<iter_type3>::type,
             std::bidirectional_iterator_tag
         >
     ));
 
     BOOST_MPL_ASSERT((
         boost::is_convertible<
-            typename boost::iterator_category<iter_type3>::type,
+            boost::iterator_category<iter_type3>::type,
             std::forward_iterator_tag
         >
     ));
@@ -86,14 +86,14 @@ void category_test()
 
     BOOST_MPL_ASSERT_NOT((
         boost::is_convertible<
-            typename boost::iterator_category<iter_type4>::type,
+            boost::iterator_category<iter_type4>::type,
             std::forward_iterator_tag
         >
     ));
 
     BOOST_MPL_ASSERT((
         boost::is_convertible<
-            typename boost::iterator_category<iter_type4>::type,
+            boost::iterator_category<iter_type4>::type,
             std::input_iterator_tag
         >
     ));
