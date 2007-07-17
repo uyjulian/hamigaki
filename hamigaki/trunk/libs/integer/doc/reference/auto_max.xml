@@ -48,7 +48,7 @@
           </tgroup>
         </informaltable>
       </description>
-      <returns><simpara><code>t</code>と<code>u</code>のうち小さい方の値を返す。</simpara></returns>
+      <returns><simpara><code>t</code>と<code>u</code>のうち大きい方の値を返す。</simpara></returns>
     </function>
   </namespace>
 </header>
