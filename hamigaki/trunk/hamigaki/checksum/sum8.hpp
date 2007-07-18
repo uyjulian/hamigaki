@@ -54,7 +54,7 @@ public:
             );
     }
 
-    value_type checksum()
+    value_type checksum() const
     {
         return static_cast<unsigned char>(sum_);
     }

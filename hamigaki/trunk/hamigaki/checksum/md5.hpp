@@ -283,21 +283,23 @@ public:
         process_block(beg, beg+byte_count);
     }
 
-    value_type checksum()
+    value_type checksum() const
     {
-        boost::uint64_t total = bit_;
+        md5 tmp(*this);
+
+        boost::uint64_t total = tmp.bit_;
 
         std::size_t pad_size =
             static_cast<std::size_t>((511 + 448 - bit_) % 512 + 1);
 
-        process_bit(true);
+        tmp.process_bit(true);
         while (--pad_size)
-            process_bit(false);
+            tmp.process_bit(false);
 
         for (int i = 0; i < 64; i += 8)
-            process_byte(static_cast<unsigned char>(total >> i));
+            tmp.process_byte(static_cast<unsigned char>(total >> i));
 
-        return impl_.output();
+        return tmp.impl_.output();
     }
 
     void operator()(unsigned char byte)
@@ -305,7 +307,7 @@ public:
         process_byte(byte);
     }
 
-    value_type operator()()
+    value_type operator()() const
     {
         return checksum();
     }
