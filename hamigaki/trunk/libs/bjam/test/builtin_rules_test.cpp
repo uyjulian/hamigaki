@@ -754,17 +754,11 @@ void w32_getreg_test()
 
     args.clear();
     args.push_back(boost::assign::list_of
-        ("HKLM\\SYSTEM\\CurrentControlSet\\Services\\PlugPlay")
-        ("RequiredPrivileges")
+        ("HKLM\\HARDWARE\\DESCRIPTION\\System")
+        ("SystemBiosVersion")
     );
     result = ctx.invoke_rule("W32_GETREG", args);
     BOOST_CHECK(result.size() >= 2);
-    BOOST_CHECK(
-        std::find(
-            result.begin(), result.end(),
-            "SeLoadDriverPrivilege"
-        ) != result.end()
-    );
 }
 #endif
 
