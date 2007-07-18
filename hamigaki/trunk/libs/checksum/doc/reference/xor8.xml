@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Checksum Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/checksum for library home page.
+-->
+<header name="hamigaki/checksum/xor8.hpp">
+  <namespace name="hamigaki">
+    <namespace name="checksum">
+      <class name="xor8">
+        <purpose>
+          <simpara>バイト列の各要素の排他的論理和を8ビットで計算する。</simpara>
+        </purpose>
+
+        <typedef name="value_type">
+          <type>boost::uint8_t</type>
+        </typedef>
+
+        <constructor/>
+
+        <method-group name="modifiers">
+          <method name="reset">
+            <type>void</type>
+            <parameter name="new_sum">
+              <paramtype>value_type</paramtype>
+              <default>0</default>
+            </parameter>
+            <effects>合計値を<code>new_sum</code>でリセットする。</effects>
+          </method>
+
+          <method name="process_byte">
+            <type>void</type>
+            <parameter name="byte">
+              <paramtype>unsigned char</paramtype>
+            </parameter>
+            <effects>合計値を符号なし整数<code>byte</code>との排他的論理和で更新する。</effects>
+          </method>
+
+          <method name="process_block">
+            <type>void</type>
+            <parameter name="bytes_begin">
+              <paramtype>const void*</paramtype>
+            </parameter>
+            <parameter name="bytes_end">
+              <paramtype>const void*</paramtype>
+            </parameter>
+            <effects>合計値を<code>[bytes_begin, bytes_end)</code>の範囲の各バイト値の排他的論理和との排他的論理和で更新する。</effects>
+          </method>
+
+          <method name="process_block">
+            <type>void</type>
+            <parameter name="buffer">
+              <paramtype>const void*</paramtype>
+            </parameter>
+            <parameter name="byte_count">
+              <paramtype>std::size_t</paramtype>
+            </parameter>
+            <effects>合計値を<code>[buffer, static_cast&lt;const char*&gt;(buffer)+byte_count)</code>の各バイト値の排他的論理和との排他的論理和で更新する。</effects>
+          </method>
+
+          <method name="operator()">
+            <type>void</type>
+            <parameter name="byte">
+              <paramtype>unsigned char</paramtype>
+            </parameter>
+            <effects><programlisting><![CDATA[process_byte(byte);]]></programlisting></effects>
+          </method>
+        </method-group>
+
+        <method-group name="queries">
+          <method name="checksum" cv="const">
+            <type>value_type</type>
+            <returns><simpara>合計値の下位8ビット</simpara></returns>
+          </method>
+
+          <method name="operator()" cv="const">
+            <type>value_type</type>
+            <effects><programlisting><![CDATA[return checksum();]]></programlisting></effects>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>
