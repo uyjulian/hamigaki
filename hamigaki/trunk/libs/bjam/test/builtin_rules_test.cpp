@@ -758,7 +758,7 @@ void w32_getreg_test()
         ("SystemBiosVersion")
     );
     result = ctx.invoke_rule("W32_GETREG", args);
-    BOOST_CHECK(result.size() >= 2);
+    BOOST_CHECK(result.size() >= 1);
 }
 #endif
 
