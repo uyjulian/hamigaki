@@ -47,6 +47,69 @@ namespace xml = boost::tiny_xml;
 
 using std::string;
 
+#if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
+#include <windows.h>
+
+string guess_charset()
+{
+  ::UINT cp = ::GetACP();
+  if ( cp == 932 )
+    return "Shift_JIS";
+  else
+    return "";
+}
+#else
+#include <cctype>
+
+string get_lc_message()
+{
+  if ( const char* p = std::getenv("LC_ALL") )
+    return p;
+  else if ( const char* p = std::getenv("LC_MESSAGES") )
+    return p;
+  else if ( const char* p = std::getenv("LANG") )
+    return p;
+  else
+    return "";
+}
+
+string get_codeset_from_locale( const string& loc )
+{
+  string::size_type pos = loc.find( '.' );
+  if ( pos != string::npos )
+    return loc.substr( pos+1 );
+  else
+    return "";
+}
+
+string to_lower( const string& s )
+{
+  using namespace std;
+  string tmp;
+  tmp.reserve( s.size() );
+  for ( string::size_type i = 0; i < s.size(); ++i )
+    tmp.push_back( tolower( s[i] ) );
+  return tmp;
+}
+
+string guess_charset()
+{
+  string lang = get_lc_message();
+
+  if ( !lang.empty() )
+  {
+    string codeset ( to_lower( get_codeset_from_locale( lang ) ) );
+
+    if ( codeset == "utf8" )
+      return "UTF-8";
+    else if ( codeset == "eucjp" )
+      return "euc-jp";
+    else
+      return "";
+  }
+}
+#endif
+
 const string pass_msg( "Pass" );
 const string warn_msg( "<i>Warn</i>" );
 const string fail_msg( "<font color=\"#FF0000\"><i>Fail</i></font>" );
@@ -976,10 +1039,20 @@ int cpp_main( int argc, char * argv[] ) // note name!
 
   if ( !no_links )
   {
+    string meta;
+    string charset = guess_charset();
+    if ( !charset.empty() )
+    {
+      meta = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=";
+      meta += charset;
+      meta += "\">";
+    }
+
     links_file
       << "<html>\n"
          "<head>\n"
-         "<title>Hamigaki Compiler Status Error Log</title>\n"
+      << meta
+      << "<title>Hamigaki Compiler Status Error Log</title>\n"
          "</head>\n"
          "<body bgcolor=\"#ffffff\" text=\"#000000\">\n"
          "<table border=\"0\">\n"
