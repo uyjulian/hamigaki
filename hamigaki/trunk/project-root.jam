@@ -8,6 +8,7 @@
 import modules ;
 
 path-constant HAMIGAKI_ROOT : . ;
+modules.poke : HAMIGAKI_ROOT : $(HAMIGAKI_ROOT) ;
 
 module
 {
