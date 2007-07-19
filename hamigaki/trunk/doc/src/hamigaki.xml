@@ -30,6 +30,7 @@
   <xi:include href="../../libs/integer/doc/integer.xml"/>
   <xi:include href="../../libs/iostreams/doc/iostreams.xml"/>
   <xi:include href="../../libs/iterator/doc/iterator.xml"/>
+  <xi:include href="../../libs/process/doc/process.xml"/>
   <xi:include href="../../libs/thread/doc/thread.xml"/>
   <xi:include href="../../libs/type_traits/doc/type_traits.xml"/>
   <xi:include href="../../libs/uuid/doc/uuid.xml"/>

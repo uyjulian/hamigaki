@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Process Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/process for library home page.
+-->
+<header name="hamigaki/process/child.hpp">
+  <namespace name="hamigaki">
+    <namespace name="process">
+      <class name="child">
+        <purpose>
+          <simpara>子プロセスを生成し、通信するためのクラス。</simpara>
+        </purpose>
+
+        <constructor>
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+          <parameter name="args">
+            <paramtype>const std::vector&lt;std::string&gt;&amp;</paramtype>
+          </parameter>
+          <parameter name="env">
+            <paramtype>const <classname>environment</classname>&amp;</paramtype>
+          </parameter>
+          <parameter name="ctx">
+            <paramtype>const <classname>context</classname>&amp;</paramtype>
+            <default>context()</default>
+          </parameter>
+          <effects>パス<code>path</code>で示される実行ファイルを引数<code>args</code>、環境変数<code>env</code>で実行する。標準入出力と作業ディレクトリは<code>ctx</code>に従う。</effects>
+        </constructor>
+
+        <constructor>
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+          <parameter name="args">
+            <paramtype>const std::vector&lt;std::string&gt;&amp;</paramtype>
+          </parameter>
+          <parameter name="ctx">
+            <paramtype>const <classname>context</classname>&amp;</paramtype>
+            <default>context()</default>
+          </parameter>
+          <effects>パス<code>path</code>で示される実行ファイルを引数<code>args</code>で実行する。標準入出力と作業ディレクトリは<code>ctx</code>に従う。</effects>
+          <notes>POSIX環境では、このコンストラクタの呼び出し中に環境変数を変更してはならない。</notes>
+        </constructor>
+
+        <constructor>
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+          <parameter name="env">
+            <paramtype>const <classname>environment</classname>&amp;</paramtype>
+          </parameter>
+          <parameter name="ctx">
+            <paramtype>const <classname>context</classname>&amp;</paramtype>
+            <default>context()</default>
+          </parameter>
+          <effects>パス<code>path</code>で示される実行ファイルを環境変数<code>env</code>で実行する。標準入出力と作業ディレクトリは<code>ctx</code>に従う。</effects>
+        </constructor>
+
+        <constructor>
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+          <parameter name="ctx">
+            <paramtype>const <classname>context</classname>&amp;</paramtype>
+            <default>context()</default>
+          </parameter>
+          <effects>パス<code>path</code>で示される実行ファイルを実行する。標準入出力と作業ディレクトリは<code>ctx</code>に従う。</effects>
+          <notes>POSIX環境では、このコンストラクタの呼び出し中に環境変数を変更してはならない。</notes>
+        </constructor>
+
+        <method-group name="modifiers">
+          <method name="wait">
+            <type>status</type>
+            <effects>子プロセスの終了を待ち、終了状態を返す</effects>
+          </method>
+
+          <method name="terminate">
+            <type>void</type>
+            <effects>子プロセスを強制終了させる</effects>
+            <notes>この関数は子プロセスに終了を促すだけで、実際に終了するまで待つことはない。</notes>
+          </method>
+        </method-group>
+
+        <method-group name="queries">
+          <method name="get" cv="const">
+            <type>const char*</type>
+            <parameter name="name">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+            <returns><code>name</code>のエントリがあればその値、なければ0</returns>
+          </method>
+
+          <method name="stdin_sink">
+            <type><classname>pipe_sink</classname></type>
+            <returns>子プロセスの標準入力に接続されたパイプ</returns>
+          </method>
+
+          <method name="stdout_source">
+            <type><classname>pipe_source</classname></type>
+            <returns>子プロセスの標準出力に接続されたパイプ</returns>
+          </method>
+
+          <method name="stderr_source">
+            <type><classname>pipe_source</classname></type>
+            <returns>子プロセスの標準エラー出力に接続されたパイプ</returns>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

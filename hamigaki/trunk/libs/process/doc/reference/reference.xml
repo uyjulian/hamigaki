@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE library-reference PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Process Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/process for library home page.
+-->
+<library-reference xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>リファレンス</title>
+  <xi:include href="child.xml"/>
+  <xi:include href="context.xml"/>
+  <xi:include href="environment.xml"/>
+  <xi:include href="pipe_device.xml"/>
+  <xi:include href="shell.xml"/>
+  <xi:include href="status.xml"/>
+  <xi:include href="stream_behavior.xml"/>
+</library-reference>

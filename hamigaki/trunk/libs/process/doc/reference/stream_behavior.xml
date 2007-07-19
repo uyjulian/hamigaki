@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Process Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/process for library home page.
+-->
+<header name="hamigaki/process/stream_behavior.hpp">
+  <namespace name="hamigaki">
+    <namespace name="process">
+      <class name="stream_behavior">
+        <purpose>
+          <simpara>標準入出力の振る舞いを定義する。</simpara>
+        </purpose>
+
+        <typedef name="type">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <static-constant name="capture">
+          <type>type</type>
+          <default><emphasis>implementation defined</emphasis></default>
+          <purpose>パイプで捕捉する</purpose>
+        </static-constant>
+
+        <static-constant name="close">
+          <type>type</type>
+          <default><emphasis>implementation defined</emphasis></default>
+          <purpose>閉じる</purpose>
+        </static-constant>
+
+        <static-constant name="inherit">
+          <type>type</type>
+          <default><emphasis>implementation defined</emphasis></default>
+          <purpose>親プロセスから継承する</purpose>
+        </static-constant>
+
+        <static-constant name="redirect_to_stdout">
+          <type>type</type>
+          <default><emphasis>implementation defined</emphasis></default>
+          <purpose>標準出力にリダイレクトする</purpose>
+        </static-constant>
+
+        <static-constant name="silence">
+          <type>type</type>
+          <default><emphasis>implementation defined</emphasis></default>
+          <purpose>ヌルデバイスに接続する</purpose>
+        </static-constant>
+
+        <constructor>
+          <postconditions><code>get_type() == inherit</code></postconditions>
+        </constructor>
+
+        <constructor>
+          <parameter name="t">
+            <paramtype>type</paramtype>
+          </parameter>
+          <postconditions><code>get_type() == t</code></postconditions>
+        </constructor>
+
+        <method-group name="query">
+          <method name="get_type" cv="const">
+            <type>type</type>
+            <returns>コンストラクタで設定された振る舞いのタイプ</returns>
+          </method>
+        </method-group>
+
+        <free-function-group name="creations">
+          <function name="capture_stream">
+            <type><classname>stream_behavior</classname></type>
+            <returns><code>stream_behavior(stream_behavior::capture)</code></returns>
+          </function>
+
+          <function name="close_stream">
+            <type><classname>stream_behavior</classname></type>
+            <returns><code>stream_behavior(stream_behavior::close)</code></returns>
+          </function>
+
+          <function name="inherit_stream">
+            <type><classname>stream_behavior</classname></type>
+            <returns><code>stream_behavior(stream_behavior::inherit)</code></returns>
+          </function>
+
+          <function name="redirect_stream_to_stdout">
+            <type><classname>stream_behavior</classname></type>
+            <returns><code>stream_behavior(stream_behavior::redirect_to_stdout)</code></returns>
+          </function>
+
+          <function name="silence_stream">
+            <type><classname>stream_behavior</classname></type>
+            <returns><code>stream_behavior(stream_behavior::silence_stream)</code></returns>
+          </function>
+        </free-function-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>
