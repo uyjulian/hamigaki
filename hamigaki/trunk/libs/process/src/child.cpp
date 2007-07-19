@@ -11,6 +11,7 @@
 #define NOMINMAX
 #include <boost/config.hpp>
 #include <hamigaki/process/child.hpp>
+#include <hamigaki/process/environment.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
@@ -251,10 +252,17 @@ bool need_inheritance(::HANDLE h)
 class child::impl : private boost::noncopyable
 {
 public:
-    impl(const std::string& path, const std::string& cmd, const context& ctx)
+    impl(
+        const std::string& path, const std::string& cmd,
+        environment* env_ptr, const context& ctx
+    )
         : ctx_(ctx)
     {
         std::vector<char> cmd_buf(cmd.c_str(), cmd.c_str()+cmd.size()+1);
+
+        void* env = 0;
+        if (env_ptr)
+            env = env_ptr->data();
 
         // This variable must be defined before "attr"
         ::HANDLE handles[3];
@@ -393,7 +401,7 @@ public:
         ::PROCESS_INFORMATION proc_info;
         if (::CreateProcessA(
             path.c_str(), &cmd_buf[0], 0, 0, TRUE, flags,
-            0, work_dir, start_info.get(), &proc_info) == FALSE)
+            env, work_dir, start_info.get(), &proc_info) == FALSE)
         {
             throw std::runtime_error("CreateProcessA() failed");
         }
@@ -493,8 +501,8 @@ private:
 class child::impl : private boost::noncopyable
 {
 public:
-    impl(const std::string& path,
-        const std::vector<std::string>& args, const context& ctx) : ctx_(ctx)
+    impl(const std::string& path, const std::vector<std::string>& args,
+        environment* env_ptr, const context& ctx) : ctx_(ctx)
     {
         boost::scoped_array<char*> argv(new char*[args.size()+1]);
 
@@ -513,6 +521,22 @@ public:
             p += static_cast<std::ptrdiff_t>(arg.size() + 1);
         }
         argv[args.size()] = 0;
+
+        boost::scoped_array<char*> env;
+        if (env_ptr)
+        {
+            env.reset(new char*[env_ptr->size()+1]);
+            char* p = env_ptr->data();
+            std::size_t i = 0;
+            while (*p)
+            {
+                BOOST_ASSERT(i < env_ptr->size());
+                env[i++] = p;
+                p += (std::strlen(p) + 1);
+            }
+            BOOST_ASSERT(i == env_ptr->size());
+            env[i] = 0;
+        }
 
         file_descriptor peer_stdin;
         file_descriptor peer_stdout;
@@ -581,7 +605,9 @@ public:
 
         const char* ph = path.c_str();
         char* const* a = (char* const*)argv.get();
-        char* const* e = (char* const*)environ; // TODO
+        char* const* e = (char* const*)env.get();
+        if (!e)
+            e = (char* const*)environ;
 
         const std::string dir_buf = ctx_.work_directory();
         const char* work_dir =
@@ -706,25 +732,55 @@ private:
 
 child::child(
     const std::string& path, const std::vector<std::string>& args,
+    const environment& env, const context& ctx
+)
+{
+    environment tmp_env(env);
+
+#if defined(BOOST_WINDOWS)
+    pimpl_.reset(new impl(path, make_command_line(args), &tmp_env, ctx));
+#else
+    pimpl_.reset(new impl(path, args, &tmp_env, ctx));
+#endif
+}
+
+child::child(
+    const std::string& path, const std::vector<std::string>& args,
     const context& ctx
 )
 {
 #if defined(BOOST_WINDOWS)
-    pimpl_.reset(new impl(path, make_command_line(args), ctx));
+    pimpl_.reset(new impl(path, make_command_line(args), 0, ctx));
 #else
-    pimpl_.reset(new impl(path, args, ctx));
+    pimpl_.reset(new impl(path, args, 0, ctx));
+#endif
+}
+
+child::child(
+    const std::string& path, const environment& env, const context& ctx
+)
+{
+    environment tmp_env(env);
+
+#if defined(BOOST_WINDOWS)
+    pimpl_.reset(new impl(path, "", &tmp_env, ctx));
+#else
+    std::vector<std::string> args;
+    args.push_back(path);
+
+    pimpl_.reset(new impl(path, args, &tmp_env, ctx));
 #endif
 }
 
 child::child(const std::string& path, const context& ctx)
 {
 #if defined(BOOST_WINDOWS)
-    pimpl_.reset(new impl(path, "", ctx));
+    pimpl_.reset(new impl(path, "", 0, ctx));
 #else
     std::vector<std::string> args;
     args.push_back(path);
 
-    pimpl_.reset(new impl(path, args, ctx));
+    pimpl_.reset(new impl(path, args, 0, ctx));
 #endif
 }
 
@@ -732,7 +788,7 @@ child::child(const std::string& path, const context& ctx)
 child::child(
     const std::string& path, const std::string& cmd, const context& ctx
 )
-    : pimpl_(new impl(path, cmd, ctx))
+    : pimpl_(new impl(path, cmd, 0, ctx))
 {
 }
 #endif

@@ -29,11 +29,23 @@
 
 namespace hamigaki { namespace process {
 
+class environment;
+
 class HAMIGAKI_PROCESS_DECL child
 {
 public:
     child(
         const std::string& path, const std::vector<std::string>& args,
+        const environment& env, const context& ipc = context()
+    );
+
+    child(
+        const std::string& path, const std::vector<std::string>& args,
+        const context& ipc = context()
+    );
+
+    child(
+        const std::string& path, const environment& env,
         const context& ipc = context()
     );
 

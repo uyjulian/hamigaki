@@ -17,5 +17,6 @@ project
 
 test-suite "process" :
     [ run child_test.cpp : ]
+    [ run environment_test.cpp : ]
     [ run shell_test.cpp : ]
     ;
