@@ -1046,7 +1046,7 @@ int cpp_main( int argc, char * argv[] ) // note name!
     {
       meta = "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=";
       meta += charset;
-      meta += "\">";
+      meta += "\">\n";
     }
 
     links_file
