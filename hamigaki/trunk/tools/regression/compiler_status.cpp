@@ -102,11 +102,12 @@ string guess_charset()
 
     if ( codeset == "utf8" )
       return "UTF-8";
+    else if ( codeset == "utf-8" )
+      return "UTF-8";
     else if ( codeset == "eucjp" )
-      return "euc-jp";
-    else
-      return "";
+      return "EUC-JP";
   }
+  return "";
 }
 #endif
 
