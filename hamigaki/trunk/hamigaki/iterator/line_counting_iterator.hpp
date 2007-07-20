@@ -50,7 +50,7 @@ struct default_newline<char>
 template<>
 struct default_newline<wchar_t>
 {
-    static const char value = L'\n';
+    static const wchar_t value = L'\n';
 };
 
 } // namespace impl
