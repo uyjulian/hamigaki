@@ -24,6 +24,7 @@
   <xi:include href="../../libs/archivers/doc/archivers.xml"/>
   <xi:include href="../../libs/audio/doc/audio.xml"/>
   <xi:include href="../../libs/binary/doc/binary.xml"/>
+  <xi:include href="../../libs/bjam/doc/bjam.xml"/>
   <xi:include href="../../libs/checksum/doc/checksum.xml"/>
   <xi:include href="../../libs/coroutine/doc/coroutine.xml"/>
   <xi:include href="../../libs/filesystem/doc/filesystem.xml"/>

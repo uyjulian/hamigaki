@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Bjam Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
+-->
+<header name="hamigaki/bjam/util/rule_table.hpp">
+  <namespace name="hamigaki">
+    <namespace name="bjam">
+      <class name="rule_table">
+        <method-group name="queries">
+          <method name="get_rule_definition_ptr">
+            <type><classname>rule_definition</classname>*</type>
+            <parameter name="name">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="get_rule_definition_ptr" cv="const">
+            <type>const <classname>rule_definition</classname>*</type>
+            <parameter name="name">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="get_rule_definition">
+            <type><classname>rule_definition</classname>&amp;</type>
+            <parameter name="name">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="get_rule_definition" cv="const">
+            <type>const <classname>rule_definition</classname>&amp;</type>
+            <parameter name="name">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="entries" cv="const">
+            <type>std::pair&lt;iterator,iterator&gt;</type>
+          </method>
+        </method-group>
+
+        <method-group name="modifiers">
+          <method name="set_rule_definition">
+            <type>void</type>
+            <parameter name="name">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+            <parameter name="def">
+              <paramtype>const <classname>rule_definition</classname>&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="set_rule_body">
+            <type>void</type>
+            <parameter name="name">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+            <parameter name="def">
+              <paramtype>const <classname>rule_definition</classname>&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="set_native_rule">
+            <type>void</type>
+            <parameter name="name">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+            <parameter name="def">
+              <paramtype>const <classname>rule_definition</classname>&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="set_rule_actions">
+            <type>void</type>
+            <parameter name="name">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+            <parameter name="act">
+              <paramtype>const <classname>rule_definition</classname>&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="clear">
+            <type>void</type>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>
