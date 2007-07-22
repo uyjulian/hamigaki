@@ -11,6 +11,7 @@ import os ;
 
 project hamigaki/bjam
     : requirements
+      <toolset>gcc-mingw:<link>static
       <link>shared:<define>HAMIGAKI_BJAM_DYN_LINK
       <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
       <library>/boost-lib//boost_filesystem
