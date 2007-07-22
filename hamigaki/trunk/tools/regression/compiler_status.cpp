@@ -47,6 +47,9 @@ namespace xml = boost::tiny_xml;
 
 using std::string;
 
+#define BOOST_NO_CPP_MAIN_SUCCESS_MESSAGE
+#include <boost/test/included/prg_exec_monitor.hpp>
+
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
 #include <windows.h>
 
@@ -908,9 +911,6 @@ const fs::path find_bin_path(const string& relative)
 } // unnamed namespace
 
 //  main  --------------------------------------------------------------------//
-
-#define BOOST_NO_CPP_MAIN_SUCCESS_MESSAGE
-#include <boost/test/included/prg_exec_monitor.hpp>
 
 int cpp_main( int argc, char * argv[] ) // note name!
 {
