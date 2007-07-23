@@ -15,7 +15,7 @@
   <itemizedlist>
     <listitem>Microsoft Windows 2000以降またはPOSIX準拠のオペレーティングシステム</listitem>
     <listitem>ANSI/ISO C++準拠のコンパイラ</listitem>
-    <listitem><ulink url="http://www.boost.org/">Boost C++ ライブラリ</ulink> バージョン 1.33.1以降</listitem>
+    <listitem><ulink url="http://www.boost.org/">Boost C++ ライブラリ</ulink> バージョン 1.34以降</listitem>
   </itemizedlist>
   <para>加えて、ライブラリによってはシステムヘッダファイルや他の外部ライブラリが必要になることがある。</para>
   <para>Hamigakiライブラリは以下の環境でテストされている。</para>

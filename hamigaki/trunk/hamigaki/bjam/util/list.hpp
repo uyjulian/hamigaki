@@ -349,7 +349,6 @@ inline std::ostream& operator<<(std::ostream& os, const string_list& x)
 
 } } // End namespaces bjam, hamigaki.
 
-#if BOOST_VERSION >= 103400
 namespace phoenix {
 
 struct logical_not_op;
@@ -380,6 +379,5 @@ struct unary_operator<logical_not_op,const hamigaki::bjam::string_list>
 };
 
 } // End namespace phoenix.
-#endif
 
 #endif // HAMIGAKI_BJAM_UTIL_LIST_HPP

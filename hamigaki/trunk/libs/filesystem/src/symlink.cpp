@@ -394,22 +394,8 @@ boost::filesystem::path symlink_target(const boost::filesystem::path& p)
     boost::filesystem::path tp;
     if (!f.get_reparse_point(tp))
     {
-#if BOOST_VERSION < 103400
-        if (int ec = f.native_error())
-        {
-            throw hamigaki::filesystem::filesystem_path_error(
-                "hamigaki::filesystem::symlink_target", p, ec);
-        }
-        else
-        {
-            throw hamigaki::filesystem::filesystem_path_error(
-                "hamigaki::filesystem::symlink_target", p,
-                "invalid reparse point data");
-        }
-#else
         throw hamigaki::filesystem::filesystem_path_error(
             "hamigaki::filesystem::symlink_target", p, f.native_error());
-#endif
     }
     return tp;
 #else // else defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
@@ -557,15 +543,9 @@ boost::filesystem::path symlink_target(const boost::filesystem::path& p)
 
     if (!S_ISLNK(st.st_mode))
     {
-#if BOOST_VERSION < 103400
-        throw hamigaki::filesystem::filesystem_path_error(
-            "hamigaki::filesystem::symlink_target", p,
-            "the path is not a symbolic link");
-#else
         throw hamigaki::filesystem::filesystem_path_error(
             "hamigaki::filesystem::symlink_target "
             "the path is not a symbolic link", p, EINVAL);
-#endif
     }
 
     std::vector<char> buf(st.st_size);
@@ -578,15 +558,9 @@ boost::filesystem::path symlink_target(const boost::filesystem::path& p)
     else if (static_cast<std::size_t>(len) != buf.size())
     {
         // Note: calling readlink() after lstat() has a race condition
-#if BOOST_VERSION < 103400
-        throw hamigaki::filesystem::filesystem_path_error(
-            "hamigaki::filesystem::symlink_target", p,
-            "symbolic link size mismatch");
-#else
         throw hamigaki::filesystem::filesystem_path_error(
             "hamigaki::filesystem::symlink_target "
             "symbolic link size mismatch", p, 0);
-#endif
     }
 
     return boost::filesystem::path(

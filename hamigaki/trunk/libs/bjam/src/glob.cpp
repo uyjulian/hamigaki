@@ -57,15 +57,9 @@ string_list glob_impl(
 
     for (; it != end; ++it)
     {
-#if BOOST_VERSION < 103400
-        if (dir_only && !is_directory(*it))
-            continue;
-        std::string leaf = it->leaf();
-#else
         if (dir_only && !is_directory(it->status()))
             continue;
         std::string leaf = it->path().leaf();
-#endif
         std::string s = leaf;
         if (case_insensitive)
             algo::to_lower(s);
@@ -123,11 +117,7 @@ glob_recursive_impl(
             fs::path ph(new_dir, fs::no_check);
             ph = fs::complete(ph, work);
 
-#if BOOST_VERSION < 103400
-            if (fs::exists(ph) && fs::is_directory(ph))
-#else
             if (fs::is_directory(ph))
-#endif
             {
                 return glob_recursive_impl(work, new_dir, rest_ptn);
             }

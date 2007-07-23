@@ -17,10 +17,6 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/version.hpp>
 
-#if BOOST_VERSION < 103400
-    #include <boost/filesystem/exception.hpp>
-#endif
-
 #ifdef BOOST_HAS_ABI_HEADERS
     #include BOOST_ABI_PREFIX
 #endif
@@ -31,11 +27,7 @@
 
 namespace hamigaki { namespace filesystem {
 
-#if BOOST_VERSION < 103400
-    typedef ::boost::filesystem::filesystem_error filesystem_path_error;
-#else
-    typedef ::boost::filesystem::filesystem_path_error filesystem_path_error;
-#endif
+typedef ::boost::filesystem::filesystem_path_error filesystem_path_error;
 
 // status functions
 

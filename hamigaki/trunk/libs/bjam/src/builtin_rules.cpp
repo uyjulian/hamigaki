@@ -592,11 +592,7 @@ HAMIGAKI_BJAM_DECL string_list check_if_file(context& ctx)
     fs::path ph(file, fs::native);
     fs::path work(ctx.working_directory(), fs::native);
     ph = fs::complete(ph, work);
-#if BOOST_VERSION < 103400
-    if (fs::exists(ph) && !fs::is_directory(ph))
-#else
     if (fs::is_regular(ph))
-#endif
         return string_list(std::string("true"));
     else
         return string_list();

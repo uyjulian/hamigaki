@@ -66,15 +66,9 @@ inline std::vector<std::string> glob_impl(
     pattern_match ptn_match(algo::to_lower_copy(pattern));
     for (; it != end; ++it)
     {
-#if BOOST_VERSION < 103400
-        if (dir_only && !is_directory(*it))
-            continue;
-        std::string leaf = it->leaf();
-#else
         if (dir_only && !is_directory(it->status()))
             continue;
         std::string leaf = it->path().leaf();
-#endif
         if (ptn_match(algo::to_lower_copy(leaf)))
             result.push_back(prefix + leaf);
     }
