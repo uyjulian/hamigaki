@@ -10,8 +10,7 @@
 #ifndef HAMIGAKI_SYSTEM_WINDOWS_ERROR_HPP
 #define HAMIGAKI_SYSTEM_WINDOWS_ERROR_HPP
 
-#include <exception>
-#include <string>
+#include <hamigaki/system/system_error.hpp>
 #include <stdarg.h>
 
 extern "C"
@@ -35,98 +34,47 @@ void* __stdcall LocalFree(void* hMem);
 
 namespace hamigaki { namespace system {
 
-inline std::string get_windows_error_message(unsigned long code)
+struct windows_error_traits
 {
-    std::string tmp;
+    typedef unsigned long value_type;
 
-    char* ptr;
-    unsigned long len = ::FormatMessageA(
-        0x00001300, // ALLOCATE_BUFFER, IGNORE_INSERTS, FROM_SYSTEM
-        0, code,
-        0x400, // MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT)
-        reinterpret_cast<char*>(&ptr), 0, 0
-    );
-    if (len == 0)
-        return tmp;
+    static std::string message(unsigned long code)
+    {
+        std::string tmp;
 
-    char* end = ptr + len;
-    if (end[-1] == '\n')
-    {
-        --end;
-        if ((end != ptr) && end[-1] == '\r')
-            --end;
-    }
+        char* ptr;
+        unsigned long len = ::FormatMessageA(
+            0x00001300, // ALLOCATE_BUFFER, IGNORE_INSERTS, FROM_SYSTEM
+            0, code,
+            0x400, // MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT)
+            reinterpret_cast<char*>(&ptr), 0, 0
+        );
+        if (len == 0)
+            return tmp;
 
-    try
-    {
-        tmp.assign(ptr, end);
-    }
-    catch (...)
-    {
-        ::LocalFree(ptr);
-        throw;
-    }
-    ::LocalFree(ptr);
-    return tmp;
-}
-
-class windows_error : public std::exception
-{
-public:
-    windows_error() : code_(0)
-    {
-    }
-
-    windows_error(unsigned long code, const char* msg)
-        : code_(code), msg_(msg)
-    {
-    }
-
-    windows_error(const windows_error& e) : code_(e.code_), msg_(e.msg_)
-    {
-    }
-
-    ~windows_error() throw() // virtual
-    {
-    }
-
-    windows_error& operator=(const windows_error& e)
-    {
-        code_ = e.code_;
-        msg_ = e.msg_;
-        what_.clear();
-    }
-
-    const char* what() const throw() // virtual
-    {
-        if (what_.empty())
+        char* end = ptr + len;
+        if (end[-1] == '\n')
         {
-            try
-            {
-                std::string tmp(msg_);
-                if (!tmp.empty())
-                    tmp += ": ";
-                tmp += get_windows_error_message(code_);
-                what_.swap(tmp);
-            }
-            catch (...)
-            {
-                return msg_;
-            }
+            --end;
+            if ((end != ptr) && end[-1] == '\r')
+                --end;
         }
-        return what_.c_str();
-    }
 
-    unsigned long code() const
-    {
-        return code_;
+        try
+        {
+            tmp.assign(ptr, end);
+        }
+        catch (...)
+        {
+            ::LocalFree(ptr);
+            throw;
+        }
+        ::LocalFree(ptr);
+        return tmp;
     }
-
-private:
-    unsigned long code_;
-    const char* msg_;
-    mutable std::string what_;
 };
+
+typedef system_error<windows_error_traits> windows_error;
 
 } } // End namespaces system, hamigaki.
 

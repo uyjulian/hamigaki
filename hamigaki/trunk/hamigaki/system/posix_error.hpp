@@ -10,9 +10,8 @@
 #ifndef HAMIGAKI_SYSTEM_POSIX_ERROR_HPP
 #define HAMIGAKI_SYSTEM_POSIX_ERROR_HPP
 
-#include <exception>
+#include <hamigaki/system/system_error.hpp>
 #include <new>
-#include <string>
 #include <errno.h>
 #include <string.h>
 
@@ -36,113 +35,62 @@
 
 namespace hamigaki { namespace system {
 
-inline std::string get_posix_error_message(int code)
+struct posix_error_traits
 {
-    std::string tmp;
+    typedef int value_type;
+
+    static std::string message(int code)
+    {
+        std::string tmp;
 #if defined(HAMIGAKI_SYSTEM_USE_GNU_STRERROR_R)
-    char buf[256];
-    tmp = ::strerror_r(code, buf, sizeof(buf));
+        char buf[256];
+        tmp = ::strerror_r(code, buf, sizeof(buf));
 #elif defined(HAMIGAKI_SYSTEM_USE_STRERROR_R)
-    char buf[1];
-    int res = ::strerror_r(code, buf, sizeof(buf));
+        char buf[64];
+        int res = ::strerror_r(code, buf, sizeof(buf));
 #if defined(__GLIBC__)
-    if (res == -1)
-        res = errno;
+        if (res == -1)
+            res = errno;
 #endif
-    if (res == 0)
-        tmp = buf;
-    else if (res == ERANGE)
-    {
-        std::size_t size = sizeof(buf) << 1;
-        while (char* p = new(std::nothrow) char[size])
+        if (res == 0)
+            tmp = buf;
+        else if (res == ERANGE)
         {
-            res = ::strerror_r(code, p, size);
-#if defined(__GLIBC__)
-            if (res == -1)
-                res = errno;
-#endif
-            if (res == 0)
+            std::size_t size = sizeof(buf) << 1;
+            while (char* p = new(std::nothrow) char[size])
             {
-                try
+                res = ::strerror_r(code, p, size);
+#if defined(__GLIBC__)
+                if (res == -1)
+                    res = errno;
+#endif
+                if (res == 0)
                 {
-                    tmp = p;
+                    try
+                    {
+                        tmp = p;
+                    }
+                    catch (...)
+                    {
+                        delete[] p;
+                        throw;
+                    }
                 }
-                catch (...)
-                {
-                    delete[] p;
-                    throw;
-                }
+                delete[] p;
+                if (res == ERANGE)
+                    size <<= 1;
+                else
+                    break;
             }
-            delete[] p;
-            if (res == ERANGE)
-                size <<= 1;
-            else
-                break;
         }
-    }
 #else
-    tmp = std::strerror(code);
+        tmp = std::strerror(code);
 #endif
-    return tmp;
-}
-
-class posix_error : public std::exception
-{
-public:
-    posix_error() : code_(0)
-    {
+        return tmp;
     }
-
-    posix_error(unsigned long code, const char* msg)
-        : code_(code), msg_(msg)
-    {
-    }
-
-    posix_error(const posix_error& e) : code_(e.code_), msg_(e.msg_)
-    {
-    }
-
-    ~posix_error() throw() // virtual
-    {
-    }
-
-    posix_error& operator=(const posix_error& e)
-    {
-        code_ = e.code_;
-        msg_ = e.msg_;
-        what_.clear();
-    }
-
-    const char* what() const throw() // virtual
-    {
-        if (what_.empty())
-        {
-            try
-            {
-                std::string tmp(msg_);
-                if (!tmp.empty())
-                    tmp += ": ";
-                tmp += get_posix_error_message(code_);
-                what_.swap(tmp);
-            }
-            catch (...)
-            {
-                return msg_;
-            }
-        }
-        return what_.c_str();
-    }
-
-    unsigned long code() const
-    {
-        return code_;
-    }
-
-private:
-    unsigned long code_;
-    const char* msg_;
-    mutable std::string what_;
 };
+
+typedef system_error<posix_error_traits> posix_error;
 
 } } // End namespaces system, hamigaki.
 
