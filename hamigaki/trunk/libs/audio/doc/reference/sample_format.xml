@@ -36,7 +36,7 @@
         <enumvalue name="float_le64" />
         <enumvalue name="float_be64" />
         <purpose><simpara>PCMデータのエンコーディング方式。</simpara></purpose>
-        <para>
+        <description>
           <informaltable frame="all">
             <tgroup cols="2">
               <thead>
@@ -81,7 +81,7 @@
               </tbody>
             </tgroup>
           </informaltable>
-        </para>
+        </description>
       </enum>
 
       <function name="sample_bits">

@@ -19,7 +19,7 @@
       <enumvalue name="default_" />
       <enumvalue name="native" />
       <purpose><simpara>エンディアンの種類</simpara></purpose>
-      <para>
+      <description>
         <informaltable frame="all">
           <tgroup cols="2">
             <thead>
@@ -48,7 +48,7 @@
             </tbody>
           </tgroup>
         </informaltable>
-      </para>
+      </description>
     </enum>
 
     <struct name="integer_encoding_traits">
