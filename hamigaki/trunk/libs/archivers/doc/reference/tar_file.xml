@@ -37,7 +37,7 @@
         </typedef>
 
         <typedef name="header_type">
-          <type>tar::header</type>
+          <type><classname>tar::header</classname></type>
         </typedef>
 
         <constructor specifiers="explicit">
@@ -109,7 +109,7 @@
         </typedef>
 
         <typedef name="header_type">
-          <type>tar::header</type>
+          <type><classname>tar::header</classname></type>
         </typedef>
 
         <constructor>
@@ -138,7 +138,7 @@
           <method name="create_entry">
             <type>void</type>
             <parameter name="head">
-              <paramtype>const tar::header&amp;</paramtype>
+              <paramtype>const <classname>tar::header</classname>&amp;</paramtype>
             </parameter>
             <effects><simpara>新しいエントリを作成し、書き込みの対象とする</simpara></effects>
           </method>

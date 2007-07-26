@@ -37,7 +37,7 @@
         </typedef>
 
         <typedef name="header_type">
-          <type>iso::header</type>
+          <type><classname>iso::header</classname></type>
         </typedef>
 
         <constructor specifiers="explicit">
@@ -130,7 +130,7 @@
         </typedef>
 
         <typedef name="header_type">
-          <type>iso::header</type>
+          <type><classname>iso::header</classname></type>
         </typedef>
 
         <constructor>

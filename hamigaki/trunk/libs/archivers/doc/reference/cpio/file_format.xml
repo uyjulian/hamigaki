@@ -21,7 +21,7 @@
           <enumvalue name="svr4_chksum" />
           <enumvalue name="binary" />
           <purpose><simpara>cpioファイルのフォーマット</simpara></purpose>
-          <para>
+          <description>
             <informaltable frame="all">
               <tgroup cols="2">
                 <thead>
@@ -50,7 +50,7 @@
                 </tbody>
               </tgroup>
             </informaltable>
-          </para>
+          </description>
         </enum>
       </namespace>
     </namespace>

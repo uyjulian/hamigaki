@@ -20,7 +20,7 @@
           <enumvalue name="rrip_1991a" />
           <enumvalue name="ieee_p1282" />
           <purpose><simpara>Rock Ridge 拡張の種類</simpara></purpose>
-          <para>
+          <description>
             <informaltable frame="all">
               <tgroup cols="2">
                 <thead>
@@ -45,7 +45,7 @@
                 </tbody>
               </tgroup>
             </informaltable>
-          </para>
+          </description>
         </enum>
       </namespace>
     </namespace>

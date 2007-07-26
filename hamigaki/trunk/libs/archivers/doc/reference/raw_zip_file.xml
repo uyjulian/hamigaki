@@ -37,7 +37,7 @@
         </typedef>
 
         <typedef name="header_type">
-          <type>zip::header</type>
+          <type><classname>zip::header</classname></type>
         </typedef>
 
         <constructor specifiers="explicit">

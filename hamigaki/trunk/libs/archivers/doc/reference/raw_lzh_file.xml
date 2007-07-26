@@ -37,7 +37,7 @@
         </typedef>
 
         <typedef name="header_type">
-          <type>lha::header</type>
+          <type><classname>lha::header</classname></type>
         </typedef>
 
         <constructor specifiers="explicit">
