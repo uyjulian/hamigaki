@@ -53,15 +53,14 @@ namespace
     ::WNDCLASSEXA wc;
     std::memset(&wc, 0, sizeof(wc));
     wc.cbSize = sizeof(wc);
-    wc.style = CS_HREDRAW | CS_VREDRAW;
+    wc.style = CS_CLASSDC;
     wc.lpfnWndProc = &window_proc;
     wc.cbClsExtra = 0;
     wc.cbWndExtra = sizeof(::LONG_PTR);
     wc.hInstance = hInstance;
     wc.hIcon = ::LoadIcon(0, IDI_APPLICATION);
     wc.hCursor = ::LoadCursor(0, IDC_ARROW);
-    wc.hbrBackground =
-        reinterpret_cast< ::HBRUSH>(static_cast< ::INT_PTR>(COLOR_WINDOW+1));
+    wc.hbrBackground = 0;
     wc.lpszMenuName = 0;
     wc.lpszClassName = "MainWindow";
     wc.hIconSm = 0;
@@ -101,4 +100,15 @@ void connect_d3d_device(::HWND hwnd)
 
     if (pimpl)
         pimpl->connect_d3d_device();
+}
+
+void render(::HWND hwnd)
+{
+    main_window* pimpl =
+        reinterpret_cast<main_window*>(
+            GetWindowLongPtr(hwnd, GWLP_USERDATA)
+        );
+
+    if (pimpl)
+        pimpl->render();
 }

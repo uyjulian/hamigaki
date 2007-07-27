@@ -20,6 +20,7 @@ public:
     explicit main_window(::HWND handle);
 
     void connect_d3d_device();
+    void render();
 
 private:
     class impl;

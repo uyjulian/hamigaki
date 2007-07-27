@@ -34,6 +34,15 @@ public:
             D3DCREATE_HARDWARE_VERTEXPROCESSING, params);
     }
 
+    void render()
+    {
+        device_.clear_target(D3DCOLOR_XRGB(0,0,255));
+        {
+            scoped_scene scene(device_);
+        }
+        device_.present();
+    }
+
 private:
     ::HWND handle_;
     direct3d9 d3d_;
@@ -47,4 +56,9 @@ main_window::main_window(::HWND handle) : pimpl_(new impl(handle))
 void main_window::connect_d3d_device()
 {
     pimpl_->connect_d3d_device();
+}
+
+void main_window::render()
+{
+    pimpl_->render();
 }
