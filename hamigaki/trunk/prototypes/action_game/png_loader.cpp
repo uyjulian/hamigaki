@@ -26,13 +26,15 @@ create_png_texture(direct3d_device9& device, const std::string& filename)
 
     direct3d_texture9::scoped_lock locking(texture, 0);
 
-    typedef gil::abgr8_pixel_t pixel_t;
+    typedef gil::bgra8_pixel_t pixel_t;
     typedef gil::type_from_x_iterator<pixel_t*>::view_t view_t;
 
-    view_t view = gil::interleaved_view(
+    view_t out = gil::interleaved_view(
         dim.x, dim.y,
         static_cast<pixel_t*>(locking.address()), locking.pitch()
     );
 
-    gil::png_read_view(filename, view);
+    gil::png_read_and_convert_view(filename, out);
+
+    return texture;
 }

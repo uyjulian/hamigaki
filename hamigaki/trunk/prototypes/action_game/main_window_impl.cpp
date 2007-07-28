@@ -9,6 +9,8 @@
 
 #include "main_window_impl.hpp"
 #include "direct3d9.hpp"
+#include "png_loader.hpp"
+#include "sprite.hpp"
 
 class main_window::impl
 {
@@ -32,6 +34,9 @@ public:
         device_ = d3d_.create_device(
             D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, handle_,
             D3DCREATE_HARDWARE_VERTEXPROCESSING, params);
+
+        chara_texture_ =
+            create_png_texture(device_, "chara.png");
     }
 
     void render()
@@ -39,6 +44,11 @@ public:
         device_.clear_target(D3DCOLOR_XRGB(0,0,255));
         {
             scoped_scene scene(device_);
+            device_.set_render_state(D3DRS_ALPHABLENDENABLE, TRUE);
+            device_.set_render_state(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+            device_.set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+            draw_sprite(device_, 100.0f, 100.0f, 0.0f, chara_texture_);
+            device_.set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
         }
         device_.present();
     }
@@ -47,6 +57,7 @@ private:
     ::HWND handle_;
     direct3d9 d3d_;
     direct3d_device9 device_;
+    direct3d_texture9 chara_texture_;
 };
 
 main_window::main_window(::HWND handle) : pimpl_(new impl(handle))

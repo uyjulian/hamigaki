@@ -69,6 +69,33 @@ public:
         return direct3d_texture9(tmp);
     }
 
+    void set_texture(const direct3d_texture9& texture, unsigned long sampler)
+    {
+        texture.set_to_device(pimpl_.get(), sampler);
+    }
+
+    void set_vertex_format(unsigned long fmt)
+    {
+        ::HRESULT res = pimpl_->SetFVF(fmt);
+        if (FAILED(res))
+            throw directx9_error(res, "IDirect3DDevice9::SetFVF()");
+    }
+
+    void set_render_state(::D3DRENDERSTATETYPE type, unsigned long value)
+    {
+        ::HRESULT res = pimpl_->SetRenderState(type, value);
+        if (FAILED(res))
+            throw directx9_error(res, "IDirect3DDevice9::SetRenderState()");
+    }
+
+    void draw_primitive(::D3DPRIMITIVETYPE type,
+        unsigned count, const void* data, unsigned stride)
+    {
+        ::HRESULT res = pimpl_->DrawPrimitiveUP(type, count, data, stride);
+        if (FAILED(res))
+            throw directx9_error(res, "IDirect3DDevice9::DrawPrimitiveUP()");
+    }
+
 private:
     boost::shared_ptr< ::IDirect3DDevice9> pimpl_;
 };

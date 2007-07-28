@@ -14,6 +14,6 @@
 #include <string>
 
 direct3d_texture9
-create_png_texture(direct3d_device9& device, const std::string& filename)
+create_png_texture(direct3d_device9& device, const std::string& filename);
 
 #endif // PNG_LOADER_HPP

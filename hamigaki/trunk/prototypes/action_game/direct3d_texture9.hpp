@@ -88,6 +88,22 @@ public:
             throw directx9_error(res, "IDirect3DTexture9::UnlockRect()");
     }
 
+    void set_to_device(::IDirect3DDevice9* device, unsigned long sampler) const
+    {
+        ::HRESULT res = device->SetTexture(sampler, pimpl_.get());
+        if (FAILED(res))
+            throw directx9_error(res, "IDirect3DDevice9::SetTexture()");
+    }
+
+    ::D3DSURFACE_DESC description(unsigned level)
+    {
+        ::D3DSURFACE_DESC tmp;
+        ::HRESULT res = pimpl_->GetLevelDesc(level, &tmp);
+        if (FAILED(res))
+            throw directx9_error(res, "IDirect3DTexture9::GetLevelDesc()");
+        return tmp;
+    }
+
 private:
     boost::shared_ptr< ::IDirect3DTexture9> pimpl_;
 };

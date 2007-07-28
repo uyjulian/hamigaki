@@ -8,7 +8,6 @@
 # See http://hamigaki.sourceforge.jp/ for library home page.
 
 import exec ;
-import os ;
 
 rule user-interface-gui ( properties * )
 {
@@ -22,24 +21,6 @@ rule user-interface-gui ( properties * )
     }
 }
 
-local png-inc = [ modules.peek : PNG_INCLUDE ] ;
-local png-lib = [ modules.peek : PNG_LIBPATH ] ;
-local png-name = png ;
-if [ os.name ] = NT
-{
-    png-name = libpng ;
-}
-
-lib png
-    :
-    :
-    <name>$(png-name)
-    <library-path>$(png-lib)
-    :
-    :
-    <include>$(png-inc)
-    ;
-
 exe action_game
     :
     action_game.cpp
@@ -47,8 +28,7 @@ exe action_game
     main_window_impl.cpp
     png_loader.cpp
     /directx//sdk
-    /boost-lib//boost_zlib
-    png
+    /hamigaki/png//hamigaki_png
     :
     <find-static-library>user32
     <find-static-library>d3d9
