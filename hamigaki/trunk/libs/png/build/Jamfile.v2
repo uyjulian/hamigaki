@@ -78,6 +78,8 @@ if $(png-source)
 }
 else if ! $(no-png)
 {
+    import os ;
+
     local png-inc = [ modules.peek : PNG_INCLUDE ] ;
     local png-lib = [ modules.peek : PNG_LIBPATH ] ;
     local png-name = [ modules.peek : PNG_BINARY ] ;
@@ -96,9 +98,11 @@ else if ! $(no-png)
         :
         <name>$(png-name)
         <library-path>$(png-lib)
+        <library>/boost-lib//boost_zlib
         :
         :
         <include>$(png-inc)
         <library-path>$(png-lib)
+        <link>shared:<dll-path>$(png-lib)
         ;
 }
