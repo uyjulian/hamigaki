@@ -33,7 +33,9 @@ exe action_game
     <find-static-library>user32
     <find-static-library>d3d9
     <find-static-library>dxerr9
+    <find-static-library>dinput
     <conditional>@user-interface-gui
+    <define>DIRECTINPUT_VERSION=0x0500
     ;
 
 exec.register-exec-all ;
