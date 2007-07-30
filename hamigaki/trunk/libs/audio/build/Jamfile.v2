@@ -79,72 +79,6 @@ if ! $(NO_DXSDK) && ! [ project.find /directx : . ]
     }
 }
 
-if ! $(NO_OGG) && ! [ project.find /ogg : . ]
-{
-    if [ modules.peek : HAVE_OGG ]
-    {
-        project.push-current [ project.current ] ;
-        make-project ogg ;
-        module ogg
-        {
-            local ogg = [ modules.peek : OGG_BINARY ] ;
-            ogg ?= ogg ;
-
-            local inc = [ modules.peek : OGG_INCLUDE ] ;
-            local lib = [ modules.peek : OGG_LIBPATH ] ;
-
-            alias base : : : : <include>$(inc) <library-path>$(lib) ;
-            lib ogg : base : <define>HAMIGAKI_OGG_BINARY=$(ogg) <name>$(ogg) ;
-        }
-        project.pop-current ;
-    }
-    else
-    {
-        NO_OGG = 1 ;
-        modules.poke : NO_OGG : 1 ;
-    }
-}
-
-if ! $(NO_VORBIS) && ! [ project.find /vorbis : . ]
-{
-    if ! $(NO_OGG) && [ modules.peek : HAVE_VORBIS ]
-    {
-        project.push-current [ project.current ] ;
-        make-project vorbis ;
-        module vorbis
-        {
-            local vorbis = [ modules.peek : VORBIS_BINARY ] ;
-            vorbis ?= vorbis ;
-
-            local vorbisfile = [ modules.peek : VORBISFILE_BINARY ] ;
-            vorbisfile ?= vorbisfile ;
-
-            local vorbisenc = [ modules.peek : VORBISENC_BINARY ] ;
-            vorbisenc ?= vorbisenc ;
-
-            local inc = [ modules.peek : VORBIS_INCLUDE ] ;
-            local lib = [ modules.peek : VORBIS_LIBPATH ] ;
-
-            alias base : : : : <include>$(inc) <library-path>$(lib) ;
-
-            lib vorbis : /ogg//ogg base :
-                <define>HAMIGAKI_VORBIS_BINARY=$(vorbis) <name>$(vorbis) ;
-
-            lib vorbisfile : vorbis :
-                <define>HAMIGAKI_VORBISFILE_BINARY=$(vorbisfile) <name>$(vorbisfile) ;
-
-            lib vorbisenc : vorbis :
-                <define>HAMIGAKI_VORBISENC_BINARY=$(vorbisenc) <name>$(vorbisenc) ;
-        }
-        project.pop-current ;
-    }
-    else
-    {
-        NO_VORBIS = 1 ;
-        modules.poke : NO_VORBIS : 1 ;
-    }
-}
-
 project hamigaki/audio
     : requirements
       <link>shared:<define>HAMIGAKI_AUDIO_DYN_LINK=1
@@ -188,8 +122,8 @@ if ! $(NO_OGG) && ! $(NO_VORBIS)
         ;
 
     LIBRARIES +=
-        /vorbis//vorbisenc
-        /vorbis//vorbisfile
+        /hamigaki/vorbis//hamigaki_vorbisenc
+        /hamigaki/vorbis//hamigaki_vorbisfile
         ;
 }
 
