@@ -37,7 +37,7 @@ else if $(vorbis-source)
         synthesis window
         ;
 
-    obj vorbisenc : vorbisenc.c ;
+    obj vorbisenc : vorbisenc.c : <library>/hamigaki/ogg//hamigaki_ogg ;
 
     lib hamigaki_vorbis
         :
