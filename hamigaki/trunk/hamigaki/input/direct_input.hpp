@@ -146,6 +146,9 @@ public:
     device_info_range(
         direct_input::device_type::values type, unsigned long flags);
 
+    std::pair<device_info_iterator,device_info_iterator>
+    device_info_range(direct_input::device_type::values type);
+
     direct_input_joystick create_joystick_device(const uuid& driver_guid);
 
 private:

@@ -182,6 +182,12 @@ direct_input_manager::device_info_range(
     return pimpl_->device_info_range(type, flags);
 }
 
+std::pair<direct_input::device_info_iterator,direct_input::device_info_iterator>
+direct_input_manager::device_info_range(direct_input::device_type::values type)
+{
+    return pimpl_->device_info_range(type, DIEDFL_ALLDEVICES);
+}
+
 direct_input_joystick
 direct_input_manager::create_joystick_device(const uuid& driver_guid)
 {

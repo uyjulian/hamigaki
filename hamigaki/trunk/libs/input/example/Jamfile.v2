@@ -1,0 +1,20 @@
+# Hamigaki Input Library Example Jamfile
+
+# Copyright Takeshi Mouri 2007.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/libs/input for library home page.
+
+import exec ;
+
+project
+    : requirements
+      <hardcode-dll-paths>true
+      <library>/hamigaki/input//hamigaki_input
+    ;
+
+exe di_joy_button : di_joy_button.cpp ;
+
+exec.register-exec-all ;
