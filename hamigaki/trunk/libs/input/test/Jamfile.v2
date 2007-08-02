@@ -23,6 +23,7 @@ if ! $(NO_DXSDK)
 {
     tests +=
         [ run di_enum_test.cpp : : : <test-info>always_show_run_output ]
+        [ run di_joy_enum_test.cpp : : : <test-info>always_show_run_output ]
         ;
 }
 
