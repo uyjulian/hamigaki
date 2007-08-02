@@ -76,7 +76,7 @@ public:
     }
 
     std::pair<device_info_iterator,device_info_iterator>
-    device_info_range(
+    devices(
         direct_input::device_type::values type, unsigned long flags)
     {
         return std::pair<device_info_iterator,device_info_iterator>(
@@ -122,7 +122,7 @@ private:
     ::IDirectInput2A* pimpl_;
 
     static int __stdcall enum_devices_callback(
-        const ::DIDEVICEINSTANCE* lpddi, void* pvRef)
+        const ::DIDEVICEINSTANCEA* lpddi, void* pvRef)
     {
         try
         {
@@ -135,9 +135,9 @@ private:
             info.type = lpddi->dwDevType;
             info.instance_name = lpddi->tszInstanceName;
             info.product_name = lpddi->tszProductName;
-            info.ff_info.driver_guid = lpddi->guidFFDriver;
-            info.ff_info.usage_page = lpddi->wUsagePage;
-            info.ff_info.usage = lpddi->wUsage;
+            info.ff_driver_guid = lpddi->guidFFDriver;
+            info.usage_page = lpddi->wUsagePage;
+            info.usage = lpddi->wUsage;
 
             self.yield(info);
 
@@ -176,16 +176,16 @@ direct_input_manager::~direct_input_manager()
 }
 
 std::pair<direct_input::device_info_iterator,direct_input::device_info_iterator>
-direct_input_manager::device_info_range(
+direct_input_manager::devices(
     direct_input::device_type::values type, unsigned long flags)
 {
-    return pimpl_->device_info_range(type, flags);
+    return pimpl_->devices(type, flags);
 }
 
 std::pair<direct_input::device_info_iterator,direct_input::device_info_iterator>
-direct_input_manager::device_info_range(direct_input::device_type::values type)
+direct_input_manager::devices(direct_input::device_type::values type)
 {
-    return pimpl_->device_info_range(type, DIEDFL_ALLDEVICES);
+    return pimpl_->devices(type, DIEDFL_ALLDEVICES);
 }
 
 direct_input_joystick
@@ -228,6 +228,93 @@ public:
         {
             throw direct_input_error(
                 res, "IDirectInputDevice2A::SetCooperativeLevel()");
+        }
+    }
+
+    std::pair<object_info_iterator,object_info_iterator>
+    objects(unsigned long flags)
+    {
+        return std::pair<object_info_iterator,object_info_iterator>(
+            object_info_iterator(
+                boost::bind(&impl::enum_objects, this, _1, flags)
+            ),
+            object_info_iterator()
+        );
+    }
+
+    std::pair<long,long> get_range(unsigned long type)
+    {
+        ::DIPROPRANGE data;
+        std::memset(&data, 0, sizeof(data));
+        data.diph.dwSize = sizeof(data);
+        data.diph.dwHeaderSize = sizeof(::DIPROPHEADER);
+        data.diph.dwObj = type;
+        data.diph.dwHow = DIPH_BYID;
+
+        ::HRESULT res = pimpl_->GetProperty(DIPROP_RANGE, &data.diph);
+        if (FAILED(res))
+        {
+            throw direct_input_error(
+                res, "IDirectInputDevice2A::GetProperty()");
+        }
+
+        return std::make_pair(data.lMin, data.lMax);
+    }
+
+    void set_range(unsigned long type, long min_val, long max_val)
+    {
+        ::DIPROPRANGE data;
+        std::memset(&data, 0, sizeof(data));
+        data.diph.dwSize = sizeof(data);
+        data.diph.dwHeaderSize = sizeof(::DIPROPHEADER);
+        data.diph.dwObj = type;
+        data.diph.dwHow = DIPH_BYID;
+        data.lMin = min_val;
+        data.lMax = max_val;
+
+        ::HRESULT res = pimpl_->SetProperty(DIPROP_RANGE, &data.diph);
+        if (FAILED(res))
+        {
+            throw direct_input_error(
+                res, "IDirectInputDevice2A::SetProperty()");
+        }
+    }
+
+    unsigned long get_dword_property(const ::GUID& guid, unsigned long type)
+    {
+        ::DIPROPDWORD data;
+        std::memset(&data, 0, sizeof(data));
+        data.diph.dwSize = sizeof(data);
+        data.diph.dwHeaderSize = sizeof(::DIPROPHEADER);
+        data.diph.dwObj = type;
+        data.diph.dwHow = DIPH_BYID;
+
+        ::HRESULT res = pimpl_->GetProperty(guid, &data.diph);
+        if (FAILED(res))
+        {
+            throw direct_input_error(
+                res, "IDirectInputDevice2A::GetProperty()");
+        }
+
+        return data.dwData;
+    }
+
+    void set_dword_property(
+        const ::GUID& guid, unsigned long type, unsigned long val)
+    {
+        ::DIPROPDWORD data;
+        std::memset(&data, 0, sizeof(data));
+        data.diph.dwSize = sizeof(data);
+        data.diph.dwHeaderSize = sizeof(::DIPROPHEADER);
+        data.diph.dwObj = type;
+        data.diph.dwHow = DIPH_BYID;
+        data.dwData = val;
+
+        ::HRESULT res = pimpl_->SetProperty(guid, &data.diph);
+        if (FAILED(res))
+        {
+            throw direct_input_error(
+                res, "IDirectInputDevice2A::SetProperty()");
         }
     }
 
@@ -305,6 +392,57 @@ public:
 
 private:
     boost::shared_ptr< ::IDirectInputDevice2A> pimpl_;
+
+    static int __stdcall enum_objects_callback(
+        const ::DIDEVICEOBJECTINSTANCEA* lpddoi, void* pvRef)
+    {
+        try
+        {
+            object_info_iterator::self& self =
+                *reinterpret_cast<object_info_iterator::self*>(pvRef);
+
+            direct_input::object_info info;
+
+            info.type_guid = uuid(lpddoi->guidType);
+            info.offset = lpddoi->dwOfs;
+            info.type = lpddoi->dwType;
+            info.flags = lpddoi->dwFlags;
+            info.name = lpddoi->tszName;
+            info.max_force = lpddoi->dwFFMaxForce;
+            info.force_resolution = lpddoi->dwFFForceResolution;
+            info.collection_number = lpddoi->wCollectionNumber;
+            info.designator_index = lpddoi->wDesignatorIndex;
+            info.usage_page = lpddoi->wUsagePage;
+            info.usage = lpddoi->wUsage;
+            info.dimension = lpddoi->dwDimension;
+            info.exponent = lpddoi->wExponent;
+
+            self.yield(info);
+
+            return TRUE;
+        }
+        catch (...)
+        {
+        }
+
+        return FALSE;
+    }
+
+    direct_input::object_info enum_objects(
+        object_info_iterator::self& self, unsigned long flags
+    )
+    {
+        ::HRESULT res =
+            pimpl_->EnumObjects(&impl::enum_objects_callback, &self, flags);
+        if (FAILED(res))
+        {
+            throw direct_input_error(
+                res, "IDirectInputDevice2A::EnumObjects()");
+        }
+
+        self.exit();
+        HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(direct_input::object_info())
+    }
 };
 
 direct_input_joystick::direct_input_joystick(::IDirectInputDevice2A* p)
@@ -322,6 +460,40 @@ void
 direct_input_joystick::set_cooperative_level(void* hwnd, unsigned long level)
 {
     pimpl_->set_cooperative_level(static_cast< ::HWND>(hwnd), level);
+}
+
+std::pair<direct_input::object_info_iterator,direct_input::object_info_iterator>
+direct_input_joystick::objects(
+    direct_input::object_type::values flags)
+{
+    return pimpl_->objects(flags);
+}
+
+std::pair<direct_input::object_info_iterator,direct_input::object_info_iterator>
+direct_input_joystick::objects()
+{
+    return pimpl_->objects(DIDFT_ALL);
+}
+
+std::pair<long,long> direct_input_joystick::get_range(unsigned long type)
+{
+    return pimpl_->get_range(type);
+}
+
+void
+direct_input_joystick::set_range(unsigned long type, long min_val, long max_val)
+{
+    pimpl_->set_range(type, min_val, max_val);
+}
+
+unsigned long direct_input_joystick::get_deadzone(unsigned long type)
+{
+    return pimpl_->get_dword_property(DIPROP_DEADZONE, type);
+}
+
+void direct_input_joystick::set_deadzone(unsigned long type, unsigned long val)
+{
+    pimpl_->set_dword_property(DIPROP_DEADZONE, type, val);
 }
 
 void direct_input_joystick::acquire()

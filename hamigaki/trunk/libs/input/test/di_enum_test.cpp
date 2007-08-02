@@ -32,22 +32,22 @@ void enumerate_test()
     typedef di::device_info_iterator iter_type;
     typedef std::pair<iter_type,iter_type> pair_type;
 
-    pair_type r1(dinput.device_info_range(di::device_type::mouse));
+    pair_type r1(dinput.devices(di::device_type::mouse));
     std::cout << "The installed DirectInput mice:\n";
     std::for_each(r1.first, r1.second, print_instance_name());
     std::cout << std::endl;
 
-    pair_type r2(dinput.device_info_range(di::device_type::keyboard));
+    pair_type r2(dinput.devices(di::device_type::keyboard));
     std::cout << "The installed DirectInput keyboards:\n";
     std::for_each(r2.first, r2.second, print_instance_name());
     std::cout << std::endl;
 
-    pair_type r3(dinput.device_info_range(di::device_type::joystick));
+    pair_type r3(dinput.devices(di::device_type::joystick));
     std::cout << "The installed DirectInput joysticks:\n";
     std::for_each(r3.first, r3.second, print_instance_name());
     std::cout << std::endl;
 
-    pair_type r4(dinput.device_info_range(di::device_type::other));
+    pair_type r4(dinput.devices(di::device_type::other));
     std::cout << "The installed DirectInput other devices:\n";
     std::for_each(r4.first, r4.second, print_instance_name());
     std::cout << std::endl;

@@ -59,6 +59,46 @@ struct device_type
     };
 };
 
+
+struct object_type
+{
+    typedef unsigned long values;
+
+    static const values all             = 0x00000000ul;
+
+    static const values rel_axis        = 0x00000001ul;
+    static const values abs_axis        = 0x00000002ul;
+    static const values axis            = 0x00000003ul;
+
+    static const values push_button     = 0x00000004ul;
+    static const values toggle_button   = 0x00000008ul;
+    static const values button          = 0x0000000Cul;
+
+    static const values pov             = 0x00000010ul;
+
+    static const values collection      = 0x00000040ul;
+    static const values no_data         = 0x00000080ul;
+
+    static const values any_instance    = 0x00FFFF00ul;
+
+    static const values ff_actuator     = 0x01000000ul;
+    static const values ff_effect_triger= 0x02000000ul;
+
+    static const values no_collection   = 0x00FFFF00ul;
+};
+
+template<unsigned short N>
+struct instance_number
+{
+    static const unsigned long value = N << 8;
+};
+
+template<unsigned short N>
+struct collection_number
+{
+    static const unsigned long value = N << 8;
+};
+
 struct vector3
 {
     long x;
@@ -84,13 +124,6 @@ struct joystick_state
     long slider_forces[2];
 };
 
-struct force_feedback_info
-{
-    uuid driver_guid;
-    unsigned short usage_page;
-    unsigned short usage;
-};
-
 struct device_info
 {
     uuid instance_guid;
@@ -98,10 +131,31 @@ struct device_info
     unsigned long type;
     std::string instance_name;
     std::string product_name;
-    force_feedback_info ff_info;
+    uuid ff_driver_guid;
+    unsigned short usage_page;
+    unsigned short usage;
 };
 
 typedef hamigaki::coroutines::generator<device_info> device_info_iterator;
+
+struct object_info
+{
+    uuid type_guid;
+    unsigned long offset;
+    unsigned long type;
+    unsigned long flags;
+    std::string name;
+    unsigned long max_force;
+    unsigned long force_resolution;
+    unsigned short collection_number;
+    unsigned short designator_index;
+    unsigned short usage_page;
+    unsigned short usage;
+    unsigned long dimension;
+    unsigned short exponent;
+};
+
+typedef hamigaki::coroutines::generator<object_info> object_info_iterator;
 
 } // namespace direct_input
 
@@ -120,10 +174,23 @@ typedef hamigaki::system::system_error<
 class HAMIGAKI_INPUT_DECL direct_input_joystick
 {
 public:
+    typedef direct_input::object_info_iterator object_info_iterator;
+
     explicit direct_input_joystick(::IDirectInputDevice2A* p);
     ~direct_input_joystick();
 
     void set_cooperative_level(void* hwnd, unsigned long level);
+
+    std::pair<object_info_iterator,object_info_iterator>
+    objects(direct_input::object_type::values flags);
+
+    std::pair<object_info_iterator,object_info_iterator> objects();
+
+    std::pair<long,long> get_range(unsigned long type);
+    void set_range(unsigned long type, long min_val, long max_val);
+
+    unsigned long get_deadzone(unsigned long type);
+    void set_deadzone(unsigned long type, unsigned long val);
 
     void acquire();
     void unacquire();
@@ -143,11 +210,11 @@ public:
     ~direct_input_manager();
 
     std::pair<device_info_iterator,device_info_iterator>
-    device_info_range(
+    devices(
         direct_input::device_type::values type, unsigned long flags);
 
     std::pair<device_info_iterator,device_info_iterator>
-    device_info_range(direct_input::device_type::values type);
+    devices(direct_input::device_type::values type);
 
     direct_input_joystick create_joystick_device(const uuid& driver_guid);
 

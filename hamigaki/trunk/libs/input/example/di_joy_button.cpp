@@ -20,7 +20,7 @@ di::device_info find_joystick(input::direct_input_manager& dinput)
     typedef di::device_info_iterator iter_type;
     typedef std::pair<iter_type,iter_type> pair_type;
 
-    pair_type r(dinput.device_info_range(di::device_type::joystick));
+    pair_type r(dinput.devices(di::device_type::joystick));
     if (r.first == r.second)
         throw std::runtime_error("Error: joystick not found");
 
