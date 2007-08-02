@@ -15,6 +15,7 @@ project
       <library>/hamigaki/input//hamigaki_input
     ;
 
+exe di_joy_axis : di_joy_axis.cpp ;
 exe di_joy_button : di_joy_button.cpp ;
 
 exec.register-exec-all ;
