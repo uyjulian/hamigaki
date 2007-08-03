@@ -60,43 +60,78 @@ struct device_type
 };
 
 
-struct object_type
+class object_type
 {
-    typedef unsigned long values;
+public:
+    static const boost::uint16_t all            = 0x0000;
 
-    static const values all             = 0x00000000ul;
+    static const boost::uint16_t rel_axis       = 0x0001;
+    static const boost::uint16_t abs_axis       = 0x0002;
+    static const boost::uint16_t axis           = 0x0003;
 
-    static const values rel_axis        = 0x00000001ul;
-    static const values abs_axis        = 0x00000002ul;
-    static const values axis            = 0x00000003ul;
+    static const boost::uint16_t push_button    = 0x0004;
+    static const boost::uint16_t toggle_button  = 0x0008;
+    static const boost::uint16_t button         = 0x000C;
 
-    static const values push_button     = 0x00000004ul;
-    static const values toggle_button   = 0x00000008ul;
-    static const values button          = 0x0000000Cul;
+    static const boost::uint16_t pov            = 0x0010;
 
-    static const values pov             = 0x00000010ul;
+    static const boost::uint16_t collection     = 0x0040;
+    static const boost::uint16_t no_data        = 0x0080;
 
-    static const values collection      = 0x00000040ul;
-    static const values no_data         = 0x00000080ul;
+    static const boost::uint16_t actuator       = 0x0100;
+    static const boost::uint16_t effect_triger  = 0x0200;
 
-    static const values any_instance    = 0x00FFFF00ul;
+    explicit object_type(boost::uint16_t t=all, boost::uint16_t n=0xFFFF)
+        : type_(t), sequence_(n)
+    {
+    }
 
-    static const values ff_actuator     = 0x01000000ul;
-    static const values ff_effect_triger= 0x02000000ul;
+    boost::uint16_t type() const
+    {
+        return type_;
+    }
 
-    static const values no_collection   = 0x00FFFF00ul;
-};
+    void type(boost::uint16_t t)
+    {
+        type_ = t;
+    }
 
-template<unsigned short N>
-struct instance_number
-{
-    static const unsigned long value = N << 8;
-};
+    boost::uint16_t sequence() const
+    {
+        return sequence_;
+    }
 
-template<unsigned short N>
-struct collection_number
-{
-    static const unsigned long value = N << 8;
+    void sequence(boost::uint16_t n)
+    {
+        sequence_ = n;
+    }
+
+    unsigned long to_dword() const
+    {
+        unsigned long tmp = static_cast<unsigned long>(sequence_) << 8;
+
+        tmp |= static_cast<unsigned long>(type_ & 0xFF00) << 16;
+        tmp |= static_cast<unsigned long>(type_ & 0xFF);
+
+        return tmp;
+    }
+
+    static object_type from_dword(unsigned long flags)
+    {
+        boost::uint16_t t =
+            static_cast<boost::uint16_t>(
+                ((flags >> 16) & 0xFF00) | (flags & 0xFF)
+            );
+
+        boost::uint16_t n =
+            static_cast<boost::uint16_t>((flags >> 8) & 0xFFFF);
+
+        return object_type(t, n);
+    }
+
+private:
+    boost::uint16_t type_;
+    boost::uint16_t sequence_;
 };
 
 struct vector3
@@ -124,6 +159,55 @@ struct joystick_state
     long slider_forces[2];
 };
 
+struct joystick_offset
+{
+    static const unsigned long x = 0ul;
+    static const unsigned long y = 4ul;
+    static const unsigned long z = 8ul;
+    static const unsigned long rx = 12ul;
+    static const unsigned long ry = 16ul;
+    static const unsigned long rz = 20ul;
+    static const unsigned long slider0 = 24ul;
+    static const unsigned long slider1 = 28ul;
+
+    static const unsigned long pov0 = 32ul;
+    static const unsigned long pov1 = 36ul;
+    static const unsigned long pov2 = 40ul;
+    static const unsigned long pov3 = 44ul;
+
+    static const unsigned long vx = 176ul;
+    static const unsigned long vy = 180ul;
+    static const unsigned long vz = 184ul;
+    static const unsigned long vrx = 188ul;
+    static const unsigned long vry = 192ul;
+    static const unsigned long vrz = 196ul;
+    static const unsigned long vslider0 = 200ul;
+    static const unsigned long vslider1 = 204ul;
+
+    static const unsigned long ax = 208ul;
+    static const unsigned long ay = 212ul;
+    static const unsigned long az = 216ul;
+    static const unsigned long arx = 220ul;
+    static const unsigned long ary = 224ul;
+    static const unsigned long arz = 228ul;
+    static const unsigned long aslider0 = 232ul;
+    static const unsigned long aslider1 = 236ul;
+
+    static const unsigned long fx = 240ul;
+    static const unsigned long fy = 244ul;
+    static const unsigned long fz = 248ul;
+    static const unsigned long frx = 252ul;
+    static const unsigned long fry = 256ul;
+    static const unsigned long frz = 260ul;
+    static const unsigned long fslider0 = 264ul;
+    static const unsigned long fslider1 = 268ul;
+
+    static unsigned long button(unsigned long n)
+    {
+        return 44u + n;
+    }
+};
+
 struct device_info
 {
     uuid instance_guid;
@@ -142,7 +226,7 @@ struct object_info
 {
     uuid type_guid;
     unsigned long offset;
-    unsigned long type;
+    object_type type;
     unsigned long flags;
     std::string name;
     unsigned long max_force;
@@ -182,15 +266,20 @@ public:
     void set_cooperative_level(void* hwnd, unsigned long level);
 
     std::pair<object_info_iterator,object_info_iterator>
-    objects(direct_input::object_type::values flags);
+    objects(const direct_input::object_type& type);
 
     std::pair<object_info_iterator,object_info_iterator> objects();
 
-    std::pair<long,long> get_range(unsigned long type);
-    void set_range(unsigned long type, long min_val, long max_val);
+    std::pair<long,long> get_range(unsigned long offset);
+    std::pair<long,long> get_range(const direct_input::object_type& type);
+    void set_range(unsigned long offset, long min_val, long max_val);
+    void set_range(
+        const direct_input::object_type& type, long min_val, long max_val);
 
-    unsigned long get_deadzone(unsigned long type);
-    void set_deadzone(unsigned long type, unsigned long val);
+    unsigned long get_deadzone(unsigned long offset);
+    unsigned long get_deadzone(const direct_input::object_type& type);
+    void set_deadzone(unsigned long offset, unsigned long val);
+    void set_deadzone(const direct_input::object_type& type, unsigned long val);
 
     void acquire();
     void unacquire();

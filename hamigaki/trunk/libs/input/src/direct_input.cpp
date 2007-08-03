@@ -242,14 +242,14 @@ public:
         );
     }
 
-    std::pair<long,long> get_range(unsigned long type)
+    std::pair<long,long> get_range(unsigned long how, unsigned long key)
     {
         ::DIPROPRANGE data;
         std::memset(&data, 0, sizeof(data));
         data.diph.dwSize = sizeof(data);
         data.diph.dwHeaderSize = sizeof(::DIPROPHEADER);
-        data.diph.dwObj = type;
-        data.diph.dwHow = DIPH_BYID;
+        data.diph.dwObj = key;
+        data.diph.dwHow = how;
 
         ::HRESULT res = pimpl_->GetProperty(DIPROP_RANGE, &data.diph);
         if (FAILED(res))
@@ -261,14 +261,15 @@ public:
         return std::make_pair(data.lMin, data.lMax);
     }
 
-    void set_range(unsigned long type, long min_val, long max_val)
+    void set_range(
+        unsigned long how, unsigned long key, long min_val, long max_val)
     {
         ::DIPROPRANGE data;
         std::memset(&data, 0, sizeof(data));
         data.diph.dwSize = sizeof(data);
         data.diph.dwHeaderSize = sizeof(::DIPROPHEADER);
-        data.diph.dwObj = type;
-        data.diph.dwHow = DIPH_BYID;
+        data.diph.dwObj = key;
+        data.diph.dwHow = how;
         data.lMin = min_val;
         data.lMax = max_val;
 
@@ -280,14 +281,15 @@ public:
         }
     }
 
-    unsigned long get_dword_property(const ::GUID& guid, unsigned long type)
+    unsigned long get_dword_property(
+        const ::GUID& guid, unsigned long how, unsigned long key)
     {
         ::DIPROPDWORD data;
         std::memset(&data, 0, sizeof(data));
         data.diph.dwSize = sizeof(data);
         data.diph.dwHeaderSize = sizeof(::DIPROPHEADER);
-        data.diph.dwObj = type;
-        data.diph.dwHow = DIPH_BYID;
+        data.diph.dwObj = key;
+        data.diph.dwHow = how;
 
         ::HRESULT res = pimpl_->GetProperty(guid, &data.diph);
         if (FAILED(res))
@@ -299,15 +301,15 @@ public:
         return data.dwData;
     }
 
-    void set_dword_property(
-        const ::GUID& guid, unsigned long type, unsigned long val)
+    void set_dword_property(const ::GUID& guid,
+        unsigned long how, unsigned long key, unsigned long val)
     {
         ::DIPROPDWORD data;
         std::memset(&data, 0, sizeof(data));
         data.diph.dwSize = sizeof(data);
         data.diph.dwHeaderSize = sizeof(::DIPROPHEADER);
-        data.diph.dwObj = type;
-        data.diph.dwHow = DIPH_BYID;
+        data.diph.dwObj = key;
+        data.diph.dwHow = how;
         data.dwData = val;
 
         ::HRESULT res = pimpl_->SetProperty(guid, &data.diph);
@@ -405,7 +407,7 @@ private:
 
             info.type_guid = uuid(lpddoi->guidType);
             info.offset = lpddoi->dwOfs;
-            info.type = lpddoi->dwType;
+            info.type = direct_input::object_type::from_dword(lpddoi->dwType);
             info.flags = lpddoi->dwFlags;
             info.name = lpddoi->tszName;
             info.max_force = lpddoi->dwFFMaxForce;
@@ -463,10 +465,9 @@ direct_input_joystick::set_cooperative_level(void* hwnd, unsigned long level)
 }
 
 std::pair<direct_input::object_info_iterator,direct_input::object_info_iterator>
-direct_input_joystick::objects(
-    direct_input::object_type::values flags)
+direct_input_joystick::objects(const direct_input::object_type& type)
 {
-    return pimpl_->objects(flags);
+    return pimpl_->objects(type.to_dword());
 }
 
 std::pair<direct_input::object_info_iterator,direct_input::object_info_iterator>
@@ -475,25 +476,54 @@ direct_input_joystick::objects()
     return pimpl_->objects(DIDFT_ALL);
 }
 
-std::pair<long,long> direct_input_joystick::get_range(unsigned long type)
+std::pair<long,long> direct_input_joystick::get_range(unsigned long offset)
 {
-    return pimpl_->get_range(type);
+    return pimpl_->get_range(DIPH_BYOFFSET, offset);
+}
+
+std::pair<long,long>
+direct_input_joystick::get_range(const direct_input::object_type& type)
+{
+    return pimpl_->get_range(DIPH_BYID, type.to_dword());
 }
 
 void
-direct_input_joystick::set_range(unsigned long type, long min_val, long max_val)
+direct_input_joystick::set_range(
+    unsigned long offset, long min_val, long max_val)
 {
-    pimpl_->set_range(type, min_val, max_val);
+    pimpl_->set_range(DIPH_BYOFFSET, offset, min_val, max_val);
 }
 
-unsigned long direct_input_joystick::get_deadzone(unsigned long type)
+void
+direct_input_joystick::set_range(
+    const direct_input::object_type& type, long min_val, long max_val)
 {
-    return pimpl_->get_dword_property(DIPROP_DEADZONE, type);
+    pimpl_->set_range(DIPH_BYID, type.to_dword(), min_val, max_val);
 }
 
-void direct_input_joystick::set_deadzone(unsigned long type, unsigned long val)
+unsigned long direct_input_joystick::get_deadzone(unsigned long offset)
 {
-    pimpl_->set_dword_property(DIPROP_DEADZONE, type, val);
+    return pimpl_->get_dword_property(DIPROP_DEADZONE, DIPH_BYOFFSET, offset);
+}
+
+unsigned long
+direct_input_joystick::get_deadzone(const direct_input::object_type& type)
+{
+    return pimpl_->get_dword_property(
+        DIPROP_DEADZONE, DIPH_BYID, type.to_dword());
+}
+
+void
+direct_input_joystick::set_deadzone(unsigned long offset, unsigned long val)
+{
+    pimpl_->set_dword_property(DIPROP_DEADZONE, DIPH_BYOFFSET, offset, val);
+}
+
+void direct_input_joystick::set_deadzone(
+    const direct_input::object_type& type, unsigned long val)
+{
+    pimpl_->set_dword_property(
+        DIPROP_DEADZONE, DIPH_BYID, type.to_dword(), val);
 }
 
 void direct_input_joystick::acquire()
