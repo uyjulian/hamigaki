@@ -102,6 +102,17 @@ void connect_d3d_device(::HWND hwnd)
         pimpl->connect_d3d_device();
 }
 
+void process_input(::HWND hwnd)
+{
+    main_window* pimpl =
+        reinterpret_cast<main_window*>(
+            GetWindowLongPtr(hwnd, GWLP_USERDATA)
+        );
+
+    if (pimpl)
+        pimpl->process_input();
+}
+
 void render(::HWND hwnd)
 {
     main_window* pimpl =

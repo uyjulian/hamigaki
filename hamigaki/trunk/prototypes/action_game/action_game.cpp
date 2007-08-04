@@ -38,7 +38,11 @@ int WINAPI WinMain(
                 ::DispatchMessageA(&msg);
             }
             else
+            {
+                // FIXME: The frame rates is dependent on the refresh rates.
+                process_input(hwnd);
                 render(hwnd);
+            }
         }
 
         ::UnregisterClassA(MAKEINTATOM(cls), hInstance);

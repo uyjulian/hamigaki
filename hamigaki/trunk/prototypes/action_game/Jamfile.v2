@@ -28,14 +28,13 @@ exe action_game
     main_window_impl.cpp
     png_loader.cpp
     /directx//sdk
+    /hamigaki/input//hamigaki_input
     /hamigaki/png//hamigaki_png
     :
     <find-static-library>user32
     <find-static-library>d3d9
     <find-static-library>dxerr9
-    <find-static-library>dinput
     <conditional>@user-interface-gui
-    <define>DIRECTINPUT_VERSION=0x0500
     ;
 
 exec.register-exec-all ;
