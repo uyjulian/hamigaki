@@ -35,6 +35,150 @@ const unsigned long nonexclusive_level = DISCL_NONEXCLUSIVE;
 const unsigned long foreground_level = DISCL_FOREGROUND;
 const unsigned long background_level = DISCL_BACKGROUND;
 
+const unsigned long ff_actuator = DIDOI_FFACTUATOR;
+const unsigned long ff_effect_trigger = DIDOI_FFEFFECTTRIGGER;
+const unsigned long polled = DIDOI_POLLED;
+const unsigned long aspect_position = DIDOI_ASPECTPOSITION;
+const unsigned long aspect_velocity = DIDOI_ASPECTVELOCITY;
+const unsigned long aspect_accel = DIDOI_ASPECTACCEL;
+const unsigned long aspect_force = DIDOI_ASPECTFORCE;
+
+namespace
+{
+
+object_info convert_obj_info(const ::DIDEVICEOBJECTINSTANCEA& ddoi)
+{
+    object_info info;
+
+    info.type_guid = uuid(ddoi.guidType);
+    info.offset = ddoi.dwOfs;
+    info.type = object_type::from_dword(ddoi.dwType);
+    info.flags = ddoi.dwFlags;
+    info.name = ddoi.tszName;
+    info.max_force = ddoi.dwFFMaxForce;
+    info.force_resolution = ddoi.dwFFForceResolution;
+    info.collection_number = ddoi.wCollectionNumber;
+    info.designator_index = ddoi.wDesignatorIndex;
+    info.usage_page = ddoi.wUsagePage;
+    info.usage = ddoi.wUsage;
+    info.dimension = ddoi.dwDimension;
+    info.exponent = ddoi.wExponent;
+
+    return info;
+}
+
+unsigned long get_dword_property(
+    ::IDirectInputDevice2A* pimpl, unsigned long how, unsigned long key,
+    const ::GUID& guid)
+{
+    ::DIPROPDWORD data;
+    std::memset(&data, 0, sizeof(data));
+    data.diph.dwSize = sizeof(data);
+    data.diph.dwHeaderSize = sizeof(::DIPROPHEADER);
+    data.diph.dwObj = key;
+    data.diph.dwHow = how;
+
+    ::HRESULT res = pimpl->GetProperty(guid, &data.diph);
+    if (FAILED(res))
+        throw direct_input_error(res, "IDirectInputDevice2A::GetProperty()");
+
+    return data.dwData;
+}
+
+void set_dword_property(
+    ::IDirectInputDevice2A* pimpl, unsigned long how, unsigned long key,
+    const ::GUID& guid, unsigned long val)
+{
+    ::DIPROPDWORD data;
+    std::memset(&data, 0, sizeof(data));
+    data.diph.dwSize = sizeof(data);
+    data.diph.dwHeaderSize = sizeof(::DIPROPHEADER);
+    data.diph.dwObj = key;
+    data.diph.dwHow = how;
+    data.dwData = val;
+
+    ::HRESULT res = pimpl->SetProperty(guid, &data.diph);
+    if (FAILED(res))
+        throw direct_input_error(res, "IDirectInputDevice2A::SetProperty()");
+}
+
+} // namespace
+
+device_object::device_object(
+    const boost::shared_ptr< ::IDirectInputDevice2A>& p,
+    unsigned long how, unsigned long key
+)
+    : pimpl_(p), how_(how), key_(key)
+{
+}
+
+device_object::~device_object()
+{
+}
+
+object_info device_object::info() const
+{
+    ::DIDEVICEOBJECTINSTANCEA tmp;
+
+    ::HRESULT res = pimpl_->GetObjectInfo(&tmp, key_, how_);
+    if (FAILED(res))
+        throw direct_input_error(res, "IDirectInputDevice2A::GetObjectInfo()");
+
+    return convert_obj_info(tmp);
+}
+
+std::pair<long,long> device_object::range()
+{
+    ::DIPROPRANGE data;
+    std::memset(&data, 0, sizeof(data));
+    data.diph.dwSize = sizeof(data);
+    data.diph.dwHeaderSize = sizeof(::DIPROPHEADER);
+    data.diph.dwObj = key_;
+    data.diph.dwHow = how_;
+
+    ::HRESULT res = pimpl_->GetProperty(DIPROP_RANGE, &data.diph);
+    if (FAILED(res))
+        throw direct_input_error(res, "IDirectInputDevice2A::GetProperty()");
+
+    return std::make_pair(data.lMin, data.lMax);
+}
+
+void device_object::range(long min_val, long max_val)
+{
+    ::DIPROPRANGE data;
+    std::memset(&data, 0, sizeof(data));
+    data.diph.dwSize = sizeof(data);
+    data.diph.dwHeaderSize = sizeof(::DIPROPHEADER);
+    data.diph.dwObj = key_;
+    data.diph.dwHow = how_;
+    data.lMin = min_val;
+    data.lMax = max_val;
+
+    ::HRESULT res = pimpl_->SetProperty(DIPROP_RANGE, &data.diph);
+    if (FAILED(res))
+        throw direct_input_error(res, "IDirectInputDevice2A::SetProperty()");
+}
+
+unsigned long device_object::deadzone()
+{
+    return get_dword_property(pimpl_.get(), how_, key_, DIPROP_DEADZONE);
+}
+
+void device_object::deadzone(unsigned long val)
+{
+    set_dword_property(pimpl_.get(), how_, key_, DIPROP_DEADZONE, val);
+}
+
+unsigned long device_object::saturation()
+{
+    return get_dword_property(pimpl_.get(), how_, key_, DIPROP_SATURATION);
+}
+
+void device_object::saturation(unsigned long val)
+{
+    set_dword_property(pimpl_.get(), how_, key_, DIPROP_SATURATION, val);
+}
+
 } // namespace direct_input
 
 std::string direct_input_error_traits::message(long code)
@@ -242,82 +386,24 @@ public:
         );
     }
 
-    std::pair<long,long> get_range(unsigned long how, unsigned long key)
+    direct_input::device_object object(unsigned long how, unsigned long key)
     {
-        ::DIPROPRANGE data;
-        std::memset(&data, 0, sizeof(data));
-        data.diph.dwSize = sizeof(data);
-        data.diph.dwHeaderSize = sizeof(::DIPROPHEADER);
-        data.diph.dwObj = key;
-        data.diph.dwHow = how;
-
-        ::HRESULT res = pimpl_->GetProperty(DIPROP_RANGE, &data.diph);
-        if (FAILED(res))
-        {
-            throw direct_input_error(
-                res, "IDirectInputDevice2A::GetProperty()");
-        }
-
-        return std::make_pair(data.lMin, data.lMax);
+        return direct_input::device_object(pimpl_, how, key);
     }
 
-    void set_range(
-        unsigned long how, unsigned long key, long min_val, long max_val)
+    bool auto_center()
     {
-        ::DIPROPRANGE data;
-        std::memset(&data, 0, sizeof(data));
-        data.diph.dwSize = sizeof(data);
-        data.diph.dwHeaderSize = sizeof(::DIPROPHEADER);
-        data.diph.dwObj = key;
-        data.diph.dwHow = how;
-        data.lMin = min_val;
-        data.lMax = max_val;
-
-        ::HRESULT res = pimpl_->SetProperty(DIPROP_RANGE, &data.diph);
-        if (FAILED(res))
-        {
-            throw direct_input_error(
-                res, "IDirectInputDevice2A::SetProperty()");
-        }
+        unsigned long dw =
+            direct_input::get_dword_property(
+                pimpl_.get(), DIPH_DEVICE, 0, DIPROP_AUTOCENTER);
+        return dw != DIPROPAUTOCENTER_OFF;
     }
 
-    unsigned long get_dword_property(
-        const ::GUID& guid, unsigned long how, unsigned long key)
+    void auto_center(bool val)
     {
-        ::DIPROPDWORD data;
-        std::memset(&data, 0, sizeof(data));
-        data.diph.dwSize = sizeof(data);
-        data.diph.dwHeaderSize = sizeof(::DIPROPHEADER);
-        data.diph.dwObj = key;
-        data.diph.dwHow = how;
-
-        ::HRESULT res = pimpl_->GetProperty(guid, &data.diph);
-        if (FAILED(res))
-        {
-            throw direct_input_error(
-                res, "IDirectInputDevice2A::GetProperty()");
-        }
-
-        return data.dwData;
-    }
-
-    void set_dword_property(const ::GUID& guid,
-        unsigned long how, unsigned long key, unsigned long val)
-    {
-        ::DIPROPDWORD data;
-        std::memset(&data, 0, sizeof(data));
-        data.diph.dwSize = sizeof(data);
-        data.diph.dwHeaderSize = sizeof(::DIPROPHEADER);
-        data.diph.dwObj = key;
-        data.diph.dwHow = how;
-        data.dwData = val;
-
-        ::HRESULT res = pimpl_->SetProperty(guid, &data.diph);
-        if (FAILED(res))
-        {
-            throw direct_input_error(
-                res, "IDirectInputDevice2A::SetProperty()");
-        }
+        unsigned long dw = val ? DIPROPAUTOCENTER_ON : DIPROPAUTOCENTER_OFF;
+        direct_input::set_dword_property(
+            pimpl_.get(), DIPH_DEVICE, 0, DIPROP_AUTOCENTER, dw);
     }
 
     void acquire()
@@ -403,23 +489,7 @@ private:
             object_info_iterator::self& self =
                 *reinterpret_cast<object_info_iterator::self*>(pvRef);
 
-            direct_input::object_info info;
-
-            info.type_guid = uuid(lpddoi->guidType);
-            info.offset = lpddoi->dwOfs;
-            info.type = direct_input::object_type::from_dword(lpddoi->dwType);
-            info.flags = lpddoi->dwFlags;
-            info.name = lpddoi->tszName;
-            info.max_force = lpddoi->dwFFMaxForce;
-            info.force_resolution = lpddoi->dwFFForceResolution;
-            info.collection_number = lpddoi->wCollectionNumber;
-            info.designator_index = lpddoi->wDesignatorIndex;
-            info.usage_page = lpddoi->wUsagePage;
-            info.usage = lpddoi->wUsage;
-            info.dimension = lpddoi->dwDimension;
-            info.exponent = lpddoi->wExponent;
-
-            self.yield(info);
+            self.yield(direct_input::convert_obj_info(*lpddoi));
 
             return TRUE;
         }
@@ -476,54 +546,25 @@ direct_input_joystick::objects()
     return pimpl_->objects(DIDFT_ALL);
 }
 
-std::pair<long,long> direct_input_joystick::get_range(unsigned long offset)
+direct_input::device_object direct_input_joystick::object(unsigned long offset)
 {
-    return pimpl_->get_range(DIPH_BYOFFSET, offset);
+    return pimpl_->object(DIPH_BYOFFSET, offset);
 }
 
-std::pair<long,long>
-direct_input_joystick::get_range(const direct_input::object_type& type)
+direct_input::device_object
+direct_input_joystick::object(const direct_input::object_type& type)
 {
-    return pimpl_->get_range(DIPH_BYID, type.to_dword());
+    return pimpl_->object(DIPH_BYID, type.to_dword());
 }
 
-void
-direct_input_joystick::set_range(
-    unsigned long offset, long min_val, long max_val)
+bool direct_input_joystick::auto_center()
 {
-    pimpl_->set_range(DIPH_BYOFFSET, offset, min_val, max_val);
+    return pimpl_->auto_center();
 }
 
-void
-direct_input_joystick::set_range(
-    const direct_input::object_type& type, long min_val, long max_val)
+void direct_input_joystick::auto_center(bool val)
 {
-    pimpl_->set_range(DIPH_BYID, type.to_dword(), min_val, max_val);
-}
-
-unsigned long direct_input_joystick::get_deadzone(unsigned long offset)
-{
-    return pimpl_->get_dword_property(DIPROP_DEADZONE, DIPH_BYOFFSET, offset);
-}
-
-unsigned long
-direct_input_joystick::get_deadzone(const direct_input::object_type& type)
-{
-    return pimpl_->get_dword_property(
-        DIPROP_DEADZONE, DIPH_BYID, type.to_dword());
-}
-
-void
-direct_input_joystick::set_deadzone(unsigned long offset, unsigned long val)
-{
-    pimpl_->set_dword_property(DIPROP_DEADZONE, DIPH_BYOFFSET, offset, val);
-}
-
-void direct_input_joystick::set_deadzone(
-    const direct_input::object_type& type, unsigned long val)
-{
-    pimpl_->set_dword_property(
-        DIPROP_DEADZONE, DIPH_BYID, type.to_dword(), val);
+    pimpl_->auto_center(val);
 }
 
 void direct_input_joystick::acquire()

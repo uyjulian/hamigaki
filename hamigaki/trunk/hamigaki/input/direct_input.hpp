@@ -48,6 +48,14 @@ HAMIGAKI_INPUT_DECL extern const unsigned long nonexclusive_level;
 HAMIGAKI_INPUT_DECL extern const unsigned long foreground_level;
 HAMIGAKI_INPUT_DECL extern const unsigned long background_level;
 
+HAMIGAKI_INPUT_DECL extern const unsigned long ff_actuator;
+HAMIGAKI_INPUT_DECL extern const unsigned long ff_effect_trigger;
+HAMIGAKI_INPUT_DECL extern const unsigned long polled;
+HAMIGAKI_INPUT_DECL extern const unsigned long aspect_position;
+HAMIGAKI_INPUT_DECL extern const unsigned long aspect_velocity;
+HAMIGAKI_INPUT_DECL extern const unsigned long aspect_accel;
+HAMIGAKI_INPUT_DECL extern const unsigned long aspect_force;
+
 struct device_type
 {
     enum values
@@ -241,6 +249,32 @@ struct object_info
 
 typedef hamigaki::coroutines::generator<object_info> object_info_iterator;
 
+struct HAMIGAKI_INPUT_DECL device_object
+{
+public:
+    device_object(
+        const boost::shared_ptr< ::IDirectInputDevice2A>& p,
+        unsigned long how, unsigned long key);
+
+    ~device_object();
+
+    object_info info() const;
+
+    std::pair<long,long> range();
+    void range(long min_val, long max_val);
+
+    unsigned long deadzone();
+    void deadzone(unsigned long val);
+
+    unsigned long saturation();
+    void saturation(unsigned long val);
+
+private:
+    boost::shared_ptr< ::IDirectInputDevice2A> pimpl_;
+    unsigned long how_;
+    unsigned long key_;
+};
+
 } // namespace direct_input
 
 struct HAMIGAKI_INPUT_DECL direct_input_error_traits
@@ -270,16 +304,11 @@ public:
 
     std::pair<object_info_iterator,object_info_iterator> objects();
 
-    std::pair<long,long> get_range(unsigned long offset);
-    std::pair<long,long> get_range(const direct_input::object_type& type);
-    void set_range(unsigned long offset, long min_val, long max_val);
-    void set_range(
-        const direct_input::object_type& type, long min_val, long max_val);
+    direct_input::device_object object(unsigned long offset);
+    direct_input::device_object object(const direct_input::object_type& type);
 
-    unsigned long get_deadzone(unsigned long offset);
-    unsigned long get_deadzone(const direct_input::object_type& type);
-    void set_deadzone(unsigned long offset, unsigned long val);
-    void set_deadzone(const direct_input::object_type& type, unsigned long val);
+    bool auto_center();
+    void auto_center(bool val);
 
     void acquire();
     void unacquire();
