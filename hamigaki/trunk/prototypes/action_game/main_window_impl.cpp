@@ -47,7 +47,7 @@ public:
     explicit impl(::HWND handle)
         : handle_(handle)
         , joystick_(create_joystick(handle_))
-        , x_(0), y_(0)
+        , x_(0.0f), y_(0.0f)
     {
         unsigned long level = di::exclusive_level|di::foreground_level;
         joystick_.set_cooperative_level(handle_, level);
@@ -86,17 +86,31 @@ public:
         di::joystick_state state;
         joystick_.get_state(state);
 
-        x_ += state.position.x;
-        if (x_ < 0)
-            x_ = 0;
-        else if (x_ > 640-32)
-            x_ = 640-32;
+        float dx = static_cast<float>(state.position.x);
+        float dy = static_cast<float>(state.position.y);
 
-        y_ += state.position.y;
-        if (y_ < 0)
-            y_ = 0;
-        else if (y_ > 480-32)
-            y_ = 480-32;
+        float r = std::sqrt(dx*dx + dy*dy);
+        if (r > 2.0f)
+        {
+            dx /= (r/2.0f);
+            dy /= (r/2.0f);
+        }
+
+        // FIXME
+        float x_max = static_cast<float>(640-32);
+        float y_max = static_cast<float>(480-32);
+
+        x_ += dx;
+        if (x_ < 0.0f)
+            x_ = 0.0f;
+        else if (x_ > x_max)
+            x_ = x_max;
+
+        y_ += dy;
+        if (y_ < 0.0f)
+            y_ = 0.0f;
+        else if (y_ > y_max)
+            y_ = y_max;
     }
 
     void render()
@@ -109,10 +123,7 @@ public:
             device_.set_render_state(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
             device_.set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
-            draw_sprite(
-                device_,
-                static_cast<float>(x_), static_cast<float>(y_), 0.0f,
-                chara_texture_);
+            draw_sprite(device_, x_, y_, 0.0f, chara_texture_);
 
             device_.set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
         }
@@ -125,8 +136,8 @@ private:
     direct3d9 d3d_;
     direct3d_device9 device_;
     direct3d_texture9 chara_texture_;
-    long x_;
-    long y_;
+    float x_;
+    float y_;
 };
 
 main_window::main_window(::HWND handle) : pimpl_(new impl(handle))
