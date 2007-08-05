@@ -12,6 +12,7 @@
 #include "png_loader.hpp"
 #include "sprite.hpp"
 #include <hamigaki/input/direct_input.hpp>
+#include <cmath>
 #include <stdexcept>
 
 namespace input = hamigaki::input;
@@ -19,6 +20,9 @@ namespace di = input::direct_input;
 
 namespace
 {
+
+const long axis_range = 1000;
+const float max_speed = 2.0f;
 
 di::device_info find_joystick(input::direct_input_manager& dinput)
 {
@@ -53,11 +57,11 @@ public:
         joystick_.set_cooperative_level(handle_, level);
 
         di::device_object x_axis = joystick_.object(di::joystick_offset::x);
-        x_axis.range(-2, 2);
+        x_axis.range(-axis_range, axis_range);
         x_axis.deadzone(2000);
 
         di::device_object y_axis = joystick_.object(di::joystick_offset::y);
-        y_axis.range(-2, 2);
+        y_axis.range(-axis_range, axis_range);
         y_axis.deadzone(2000);
     }
 
@@ -86,15 +90,19 @@ public:
         di::joystick_state state;
         joystick_.get_state(state);
 
-        float dx = static_cast<float>(state.position.x);
-        float dy = static_cast<float>(state.position.y);
+        float a = static_cast<float>(axis_range);
+        float dx = static_cast<float>(state.position.x)/a;
+        float dy = static_cast<float>(state.position.y)/a;
 
         float r = std::sqrt(dx*dx + dy*dy);
-        if (r > 2.0f)
+        if (r > 1.0f)
         {
-            dx /= (r/2.0f);
-            dy /= (r/2.0f);
+            dx /= r;
+            dy /= r;
         }
+
+        dx *= max_speed;
+        dy *= max_speed;
 
         // FIXME
         float x_max = static_cast<float>(640-32);
