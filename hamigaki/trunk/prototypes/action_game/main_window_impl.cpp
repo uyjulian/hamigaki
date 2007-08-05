@@ -51,7 +51,7 @@ public:
     explicit impl(::HWND handle)
         : handle_(handle)
         , joystick_(create_joystick(handle_))
-        , x_(0.0f), y_(0.0f)
+        , x_(0.0f), y_(0.0f), active_(false)
     {
         unsigned long level = di::exclusive_level|di::foreground_level;
         joystick_.set_cooperative_level(handle_, level);
@@ -87,6 +87,9 @@ public:
 
     void process_input()
     {
+        if (!active_)
+            return;
+
         di::joystick_state state;
         joystick_.get_state(state);
 
@@ -138,6 +141,11 @@ public:
         device_.present();
     }
 
+    void active(bool val)
+    {
+        active_ = val;
+    }
+
 private:
     ::HWND handle_;
     input::direct_input_joystick joystick_;
@@ -146,6 +154,7 @@ private:
     direct3d_texture9 chara_texture_;
     float x_;
     float y_;
+    bool active_;
 };
 
 main_window::main_window(::HWND handle) : pimpl_(new impl(handle))
@@ -165,4 +174,9 @@ void main_window::process_input()
 void main_window::render()
 {
     pimpl_->render();
+}
+
+void main_window::active(bool val)
+{
+    pimpl_->active(val);
 }

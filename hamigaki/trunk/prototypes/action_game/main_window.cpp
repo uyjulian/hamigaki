@@ -38,6 +38,10 @@ namespace
             delete pimpl;
             ::PostQuitMessage(0);
         }
+        else if (uMsg == WM_ACTIVATEAPP)
+        {
+            pimpl->active(wParam != FALSE);
+        }
     }
     catch (const std::exception& e)
     {

@@ -22,6 +22,7 @@ public:
     void connect_d3d_device();
     void process_input();
     void render();
+    void active(bool val);
 
 private:
     class impl;
