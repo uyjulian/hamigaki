@@ -5,7 +5,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 
-// See http://hamigaki.sourceforge.jp/libs/system for library home page.
+// See http://hamigaki.sourceforge.jp/ for library home page.
 
 #ifndef DIRECT3D_TEXTURE9_HPP
 #define DIRECT3D_TEXTURE9_HPP
