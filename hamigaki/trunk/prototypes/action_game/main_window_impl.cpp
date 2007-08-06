@@ -8,6 +8,7 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "main_window_impl.hpp"
+#include "draw.hpp"
 #include "direct3d9.hpp"
 #include "png_loader.hpp"
 #include "sprite.hpp"
@@ -51,7 +52,8 @@ public:
     explicit impl(::HWND handle)
         : handle_(handle)
         , joystick_(create_joystick(handle_))
-        , x_(0.0f), y_(0.0f), active_(false)
+        , active_(false)
+        , x_(32.0f), y_(416.0f), vx_(0.0f), vy_(0.0f)
     {
         unsigned long level = di::exclusive_level|di::foreground_level;
         joystick_.set_cooperative_level(handle_, level);
@@ -93,6 +95,8 @@ public:
         di::joystick_state state;
         joystick_.get_state(state);
 
+        bool push_jump = (state.buttons[0] & 0x80) != 0;
+
         float a = static_cast<float>(axis_range);
         float dx = static_cast<float>(state.position.x)/a;
         float dy = static_cast<float>(state.position.y)/a;
@@ -107,9 +111,8 @@ public:
         dx *= max_speed;
         dy *= max_speed;
 
-        // FIXME
-        float x_max = static_cast<float>(640-32);
-        float y_max = static_cast<float>(480-32);
+        float x_max = 608.0f;
+        float y_max = 416.0f;
 
         x_ += dx;
         if (x_ < 0.0f)
@@ -117,7 +120,19 @@ public:
         else if (x_ > x_max)
             x_ = x_max;
 
-        y_ += dy;
+        if (y_ < y_max)
+        {
+            if (push_jump && (vy_ < 0.0))
+                vy_ -= 0.2f;
+            vy_ += 0.3f;
+
+            if (vy_ > 5.0f)
+                vy_ = 5.0f;
+        }
+        else if (push_jump)
+            vy_ = -4.0f;
+
+        y_ += vy_ * 2.0f;
         if (y_ < 0.0f)
             y_ = 0.0f;
         else if (y_ > y_max)
@@ -137,6 +152,10 @@ public:
             draw_sprite(device_, x_, y_, 0.0f, chara_texture_);
 
             device_.set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
+
+            draw_rectangle(
+                device_, 0.0f, 448.0f, 0.0f,
+                640.0f, 32.0f, D3DCOLOR_XRGB(0xAA,0x55,0x33));
         }
         device_.present();
     }
@@ -152,9 +171,11 @@ private:
     direct3d9 d3d_;
     direct3d_device9 device_;
     direct3d_texture9 chara_texture_;
+    bool active_;
     float x_;
     float y_;
-    bool active_;
+    float vx_;
+    float vy_;
 };
 
 main_window::main_window(::HWND handle) : pimpl_(new impl(handle))
