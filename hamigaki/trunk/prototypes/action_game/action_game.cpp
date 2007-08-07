@@ -39,7 +39,6 @@ int WINAPI WinMain(
             }
             else
             {
-                // FIXME: The frame rates is dependent on the refresh rates.
                 process_input(hwnd);
                 render(hwnd);
             }

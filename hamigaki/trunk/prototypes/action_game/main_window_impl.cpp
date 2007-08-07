@@ -52,7 +52,7 @@ public:
     explicit impl(::HWND handle)
         : handle_(handle)
         , joystick_(create_joystick(handle_))
-        , active_(false)
+        , active_(false), last_time_(::GetTickCount()), frames_(0)
         , x_(32.0f), y_(416.0f), vx_(0.0f), vy_(0.0f)
     {
         unsigned long level = di::exclusive_level|di::foreground_level;
@@ -95,6 +95,61 @@ public:
         di::joystick_state state;
         joystick_.get_state(state);
 
+        const unsigned long table[] = { 16, 17, 17 };
+        unsigned long now = ::GetTickCount();
+        unsigned long elapsed = now - last_time_;
+        while (elapsed >= table[frames_ % 3])
+        {
+            elapsed -= table[frames_ % 3];
+            if (++frames_ == 60)
+                frames_ = 0;
+            this->process_input_impl(state);
+        }
+        last_time_ = now - elapsed;
+    }
+
+    void render()
+    {
+        device_.clear_target(D3DCOLOR_XRGB(0,0,255));
+        {
+            scoped_scene scene(device_);
+
+            device_.set_render_state(D3DRS_ALPHABLENDENABLE, TRUE);
+            device_.set_render_state(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+            device_.set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+
+            draw_sprite(device_, x_, y_, 0.0f, chara_texture_);
+
+            device_.set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
+
+            draw_rectangle(
+                device_, 0.0f, 448.0f, 0.0f,
+                640.0f, 32.0f, D3DCOLOR_XRGB(0xAA,0x55,0x33));
+        }
+        device_.present();
+    }
+
+    void active(bool val)
+    {
+        active_ = val;
+    }
+
+private:
+    ::HWND handle_;
+    input::direct_input_joystick joystick_;
+    direct3d9 d3d_;
+    direct3d_device9 device_;
+    direct3d_texture9 chara_texture_;
+    bool active_;
+    unsigned long last_time_;
+    unsigned frames_;
+    float x_;
+    float y_;
+    float vx_;
+    float vy_;
+
+    void process_input_impl(const di::joystick_state& state)
+    {
         bool push_jump = (state.buttons[0] & 0x80) != 0;
 
         float a = static_cast<float>(axis_range);
@@ -138,44 +193,6 @@ public:
         else if (y_ > y_max)
             y_ = y_max;
     }
-
-    void render()
-    {
-        device_.clear_target(D3DCOLOR_XRGB(0,0,255));
-        {
-            scoped_scene scene(device_);
-
-            device_.set_render_state(D3DRS_ALPHABLENDENABLE, TRUE);
-            device_.set_render_state(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-            device_.set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-
-            draw_sprite(device_, x_, y_, 0.0f, chara_texture_);
-
-            device_.set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
-
-            draw_rectangle(
-                device_, 0.0f, 448.0f, 0.0f,
-                640.0f, 32.0f, D3DCOLOR_XRGB(0xAA,0x55,0x33));
-        }
-        device_.present();
-    }
-
-    void active(bool val)
-    {
-        active_ = val;
-    }
-
-private:
-    ::HWND handle_;
-    input::direct_input_joystick joystick_;
-    direct3d9 d3d_;
-    direct3d_device9 device_;
-    direct3d_texture9 chara_texture_;
-    bool active_;
-    float x_;
-    float y_;
-    float vx_;
-    float vy_;
 };
 
 main_window::main_window(::HWND handle) : pimpl_(new impl(handle))
