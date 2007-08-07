@@ -54,6 +54,7 @@ public:
         , joystick_(create_joystick(handle_))
         , active_(false), last_time_(::GetTickCount()), frames_(0)
         , x_(32.0f), y_(416.0f), vx_(0.0f), vy_(0.0f)
+        , jump_button_pressed_(false)
     {
         unsigned long level = di::exclusive_level|di::foreground_level;
         joystick_.set_cooperative_level(handle_, level);
@@ -147,10 +148,12 @@ private:
     float y_;
     float vx_;
     float vy_;
+    bool jump_button_pressed_;
 
     void process_input_impl(const di::joystick_state& state)
     {
-        bool push_jump = (state.buttons[0] & 0x80) != 0;
+        bool jump_button_pressed = (state.buttons[0] & 0x80) != 0;
+        bool jump_button_down = !jump_button_pressed_ && jump_button_pressed;
 
         float a = static_cast<float>(axis_range);
         float dx = static_cast<float>(state.position.x)/a;
@@ -177,14 +180,14 @@ private:
 
         if (y_ < y_max)
         {
-            if (push_jump && (vy_ < 0.0))
+            if (jump_button_pressed && (vy_ < 0.0))
                 vy_ -= 0.2f;
             vy_ += 0.3f;
 
             if (vy_ > 5.0f)
                 vy_ = 5.0f;
         }
-        else if (push_jump)
+        else if (jump_button_down)
             vy_ = -4.0f;
 
         y_ += vy_ * 2.0f;
@@ -192,6 +195,8 @@ private:
             y_ = 0.0f;
         else if (y_ > y_max)
             y_ = y_max;
+
+        jump_button_pressed_ = jump_button_pressed;
     }
 };
 
