@@ -23,7 +23,6 @@ namespace
 {
 
 const long axis_range = 1000;
-const float max_speed = 2.0f;
 
 di::device_info find_joystick(input::direct_input_manager& dinput)
 {
@@ -155,6 +154,8 @@ private:
         bool jump_button_pressed = (state.buttons[0] & 0x80) != 0;
         bool jump_button_down = !jump_button_pressed_ && jump_button_pressed;
 
+        bool dash_button_pressed = (state.buttons[2] & 0x80) != 0;
+
         float a = static_cast<float>(axis_range);
         float dx = static_cast<float>(state.position.x)/a;
         float dy = static_cast<float>(state.position.y)/a;
@@ -166,13 +167,37 @@ private:
             dy /= r;
         }
 
-        dx *= max_speed;
-        dy *= max_speed;
-
         float x_max = 608.0f;
         float y_max = 416.0f;
 
-        x_ += dx;
+        if (y_ == y_max)
+        {
+            if (dx != 0.0f)
+            {
+                vx_ += dx/2.0f;
+                if (dash_button_pressed)
+                {
+                    if (vx_ < -5.0f)
+                        vx_ = -5.0f;
+                    else if (vx_ > 5.0f)
+                        vx_ = 5.0f;
+                }
+                else
+                {
+                    if (vx_ < -3.0f)
+                        vx_ = -3.0f;
+                    else if (vx_ > 3.0f)
+                        vx_ = 3.0f;
+                }
+            }
+            else
+            {
+                // FIXME:
+                vx_ = 0.0f;
+            }
+        }
+
+        x_ += vx_;
         if (x_ < 0.0f)
             x_ = 0.0f;
         else if (x_ > x_max)
@@ -180,6 +205,7 @@ private:
 
         if (y_ < y_max)
         {
+            // FIXME: The button should keep being pushed.
             if (jump_button_pressed && (vy_ < 0.0))
                 vy_ -= 0.2f;
             vy_ += 0.3f;
@@ -188,7 +214,11 @@ private:
                 vy_ = 5.0f;
         }
         else if (jump_button_down)
+        {
             vy_ = -4.0f;
+            if (std::abs(vx_) > 2.0f)
+                vy_ += -0.5f;
+        }
 
         y_ += vy_ * 2.0f;
         if (y_ < 0.0f)
