@@ -170,30 +170,40 @@ private:
         float x_max = 608.0f;
         float y_max = 416.0f;
 
-        if (y_ == y_max)
+        bool on_ground = (y_ == y_max);
+
+        if (dx != 0.0f)
         {
-            if (dx != 0.0f)
+            vx_ += dx/4.0f;
+            if (dash_button_pressed && on_ground)
             {
-                vx_ += dx/2.0f;
-                if (dash_button_pressed)
-                {
-                    if (vx_ < -5.0f)
-                        vx_ = -5.0f;
-                    else if (vx_ > 5.0f)
-                        vx_ = 5.0f;
-                }
-                else
-                {
-                    if (vx_ < -3.0f)
-                        vx_ = -3.0f;
-                    else if (vx_ > 3.0f)
-                        vx_ = 3.0f;
-                }
+                if (vx_ < -5.0f)
+                    vx_ = -5.0f;
+                else if (vx_ > 5.0f)
+                    vx_ = 5.0f;
             }
             else
             {
-                // FIXME:
-                vx_ = 0.0f;
+                if (vx_ < -3.0f)
+                    vx_ = -3.0f;
+                else if (vx_ > 3.0f)
+                    vx_ = 3.0f;
+            }
+        }
+        else
+        {
+            // FIXME:
+            if (vx_ < -0.0f)
+            {
+                vx_ += 0.2f;
+                if (vx_ > 0.0f)
+                    vx_ = 0.0f;
+            }
+            else if (vx_ > 0.0f)
+            {
+                vx_ -= 0.2f;
+                if (vx_ < 0.0f)
+                    vx_ = 0.0f;
             }
         }
 
@@ -203,11 +213,11 @@ private:
         else if (x_ > x_max)
             x_ = x_max;
 
-        if (y_ < y_max)
+        if (!on_ground)
         {
             // FIXME: The button should keep being pushed.
             if (jump_button_pressed && (vy_ < 0.0))
-                vy_ -= 0.2f;
+                vy_ -= 0.175f;
             vy_ += 0.3f;
 
             if (vy_ > 5.0f)
