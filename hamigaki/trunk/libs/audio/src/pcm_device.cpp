@@ -22,6 +22,12 @@
     #include "detail/wave_format_ex.hpp"
     #include <windows.h>
     #include <mmsystem.h>
+#elif defined(__APPLE__)
+    #include <hamigaki/integer/auto_min.hpp>
+    #include <boost/scoped_array.hpp>
+    #include <AudioUnit/AudioUnit.h>
+    #include <CoreServices/CoreServices.h>
+    #include <pthread.h>
 #else
     #include <sys/ioctl.h>
     #include <sys/soundcard.h>
@@ -415,7 +421,513 @@ private:
     }
 };
 
-#else // not defined(BOOST_WINDOWS)
+#elif defined(__APPLE__) // not defined(BOOST_WINDOWS) and defined(__APPLE__)
+namespace
+{
+
+const std::size_t buffer_count = 4;
+
+::Component find_default_audio_output()
+{
+    ::ComponentDescription desc;
+    desc.componentType = kAudioUnitType_Output;
+    desc.componentSubType = kAudioUnitSubType_DefaultOutput;
+    desc.componentManufacturer = kAudioUnitManufacturer_Apple;
+    desc.componentFlags = 0;
+    desc.componentFlagsMask = 0;
+
+    ::Component c = ::FindNextComponent(0, &desc);
+    if (c == 0)
+        throw BOOST_IOSTREAMS_FAILURE("audio device not found");
+    return c;
+}
+
+inline bool is_float(sample_format_type type)
+{
+    const std::streamsize table[] =
+    {
+        false, false, false, false, false, false, false, false,
+        false, false, false, false, false, false, false, false,
+        true,  true,  true,  true
+    };
+    BOOST_STATIC_ASSERT(sizeof(table)/sizeof(table[0]) == 20);
+    BOOST_ASSERT(static_cast<int>(type) < 20);
+
+    return table[type];
+}
+
+inline bool is_big_endian(sample_format_type type)
+{
+    const std::streamsize table[] =
+    {
+        false, false, false, true,  false, true,  false, true,
+        false, true,  false, true,  false, true,  false, true,
+        false, true,  false, true
+    };
+    BOOST_STATIC_ASSERT(sizeof(table)/sizeof(table[0]) == 20);
+    BOOST_ASSERT(static_cast<int>(type) < 20);
+
+    return table[type];
+}
+
+inline bool is_signed_int(sample_format_type type)
+{
+    const std::streamsize table[] =
+    {
+        false, true,  true,  true,  true,  true,  true,  true,
+        true,  true,  true,  true,  true,  true,  true,  true,
+        false, false, false, false 
+    };
+    BOOST_STATIC_ASSERT(sizeof(table)/sizeof(table[0]) == 20);
+    BOOST_ASSERT(static_cast<int>(type) < 20);
+
+    return table[type];
+}
+
+inline bool is_packed(sample_format_type type)
+{
+    const std::streamsize table[] =
+    {
+        true,  true,  true,  true,  true,  true,  true,  true,
+        false, false, false, false, false, false, false, false,
+        true,  true,  true,  true
+    };
+    BOOST_STATIC_ASSERT(sizeof(table)/sizeof(table[0]) == 20);
+    BOOST_ASSERT(static_cast<int>(type) < 20);
+
+    return table[type];
+}
+
+::AudioStreamBasicDescription make_au_format(const pcm_format& f)
+{
+    ::AudioStreamBasicDescription fmt;
+    fmt.mSampleRate = f.rate;
+    fmt.mFormatID = kAudioFormatLinearPCM;
+
+    fmt.mFormatFlags = 0;
+    if (is_float(f.type))
+        fmt.mFormatFlags |= kLinearPCMFormatFlagIsFloat;
+    if (is_big_endian(f.type))
+        fmt.mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
+    if (is_signed_int(f.type))
+        fmt.mFormatFlags |= kLinearPCMFormatFlagIsSignedInteger;
+    if (is_packed(f.type))
+        fmt.mFormatFlags |= kLinearPCMFormatFlagIsPacked;
+    if (fmt.mFormatFlags == 0)
+        fmt.mFormatFlags = kLinearPCMFormatFlagsAreAllClear;
+
+    fmt.mBytesPerPacket = f.block_size();
+    fmt.mFramesPerPacket = 1;
+    fmt.mBytesPerFrame = fmt.mBytesPerPacket / fmt.mFramesPerPacket;
+    fmt.mChannelsPerFrame = f.channels;
+    fmt.mBitsPerChannel = f.bits();
+    fmt.mReserved = 0;
+
+    return fmt;
+}
+
+::UInt32 get_device_buffer_size(::AudioDeviceID dev)
+{
+    ::UInt32 data;
+    ::UInt32 size = sizeof(data);
+
+    ::OSStatus err = ::AudioDeviceGetProperty(
+        dev, 0, 0, kAudioDevicePropertyBufferSize, &size, &data);
+
+    if (err != 0)
+    {
+        throw BOOST_IOSTREAMS_FAILURE(
+            "cannot get the buffer size of the device");
+    }
+
+    return data;
+}
+
+class audio_unit : private boost::noncopyable
+{
+public:
+    explicit audio_unit(::Component c)
+    {
+        ::OSStatus err = ::OpenAComponent(c, &handle_);
+        if (err != 0)
+            throw BOOST_IOSTREAMS_FAILURE("cannot open AudioUnit");
+    }
+
+    ~audio_unit()
+    {
+        ::CloseComponent(handle_);
+    }
+
+    void initialize()
+    {
+        ::OSStatus err = ::AudioUnitInitialize(handle_);
+        if (err != 0)
+            throw BOOST_IOSTREAMS_FAILURE("cannot initialize AudioUnit");
+    }
+
+    void uninitialize()
+    {
+        ::AudioUnitUninitialize(handle_);
+    }
+
+    void start()
+    {
+        ::OSStatus err = ::AudioOutputUnitStart(handle_);
+        if (err != 0)
+            throw BOOST_IOSTREAMS_FAILURE("cannot start AudioUnit");
+    }
+
+    void stop()
+    {
+        ::AudioOutputUnitStop(handle_);
+    }
+
+    ::AudioDeviceID device_id() const
+    {
+        return get_proprty< ::AudioDeviceID>(
+            kAudioOutputUnitProperty_CurrentDevice);
+    }
+
+    void input_format(const ::AudioStreamBasicDescription& fmt)
+    {
+        set_proprty(
+            kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, fmt);
+    }
+
+    void set_render_callback(::AURenderCallback proc, void* ctx)
+    {
+        ::AURenderCallbackStruct data;
+        data.inputProc = proc;
+        data.inputProcRefCon = ctx;
+
+        set_proprty(
+            kAudioUnitProperty_SetRenderCallback,
+            kAudioUnitScope_Input, 0, data);
+    }
+
+private:
+    ::AudioUnit handle_;
+
+    template<class T>
+    T get_proprty(
+        ::AudioUnitPropertyID id, ::AudioUnitScope scope,
+        ::AudioUnitElement elem) const
+    {
+        T data;
+        ::UInt32 size = sizeof(T);
+
+        ::OSStatus err =
+            ::AudioUnitGetProperty(handle_, id, scope, elem, &data, &size);
+        if (err != 0)
+            throw BOOST_IOSTREAMS_FAILURE("failed AudioUnitGetProperty()");
+
+        return data;
+    }
+
+    template<class T>
+    T get_proprty(::AudioUnitPropertyID id) const
+    {
+        return get_proprty<T>(id, kAudioUnitScope_Global, 0);
+    }
+
+    template<class T>
+    void set_proprty(
+        ::AudioUnitPropertyID id, ::AudioUnitScope scope,
+        ::AudioUnitElement elem, const T& data) const
+    {
+        ::OSStatus err =
+            ::AudioUnitSetProperty(handle_, id, scope, elem, &data, sizeof(T));
+        if (err != 0)
+            throw BOOST_IOSTREAMS_FAILURE("failed AudioUnitSetProperty()");
+    }
+
+    template<class T>
+    void set_proprty(::AudioUnitPropertyID id, const T& data) const
+    {
+        set_proprty(id, kAudioUnitScope_Global, 0, data);
+    }
+};
+
+class condition;
+class mutex : private boost::noncopyable
+{
+    friend class condition;
+
+public:
+    class scoped_lock
+    {
+    public:
+        explicit scoped_lock(mutex& m) : mutex_(m)
+        {
+            mutex_.lock();
+        }
+
+        ~scoped_lock()
+        {
+            mutex_.unlock();
+        }
+
+    private:
+        mutex& mutex_;
+    };
+
+    mutex()
+    {
+        ::pthread_mutex_init(&handle_, 0);
+    }
+
+    ~mutex()
+    {
+        ::pthread_mutex_destroy(&handle_);
+    }
+
+    void lock()
+    {
+        ::pthread_mutex_lock(&handle_);
+    }
+
+    void unlock()
+    {
+        ::pthread_mutex_unlock(&handle_);
+    }
+
+private:
+    ::pthread_mutex_t handle_;
+};
+
+class condition : private boost::noncopyable
+{
+public:
+    condition()
+    {
+        ::pthread_cond_init(&handle_, 0);
+    }
+
+    ~condition()
+    {
+        ::pthread_cond_destroy(&handle_);
+    }
+
+    void notify_one()
+    {
+        ::pthread_cond_signal(&handle_);
+    }
+
+    void wait(mutex& m)
+    {
+        ::pthread_cond_wait(&handle_, &m.handle_);
+    }
+
+private:
+    ::pthread_cond_t handle_;
+};
+
+class buffer_list
+{
+public:
+    explicit buffer_list(std::size_t buffer_size)
+        : buffer_size_(buffer_size)
+        , read_index_(0)
+        , write_index_(0), write_offset_(0)
+        , buffer_(new char[buffer_size_*buffer_count])
+    {
+        for (std::size_t i = 0, off = 0; i < buffer_count; ++i)
+        {
+            buffers_[i] = &buffer_[off];
+            off += buffer_size_;
+        }
+    }
+
+    std::streamsize write(const char* s, std::streamsize n)
+    {
+        mutex::scoped_lock lock(mutex_);
+        if (write_offset_ == 0)
+        {
+            while (filled_[write_index_])
+                cond_.wait(mutex_);
+        }
+
+        std::streamsize amt = hamigaki::auto_min(buffer_size_-write_offset_, n);
+        std::memcpy(buffers_[read_index_] + write_offset_, s, amt);
+
+        write_offset_ += amt;
+        if (write_offset_ == buffer_size_)
+        {
+            write_offset_ = 0;
+            write_index_ = (write_index_ + 1) % buffer_count;
+        }
+
+        return amt;
+    }
+
+    void flush()
+    {
+        mutex::scoped_lock lock(mutex_);
+        if (write_offset_ == 0)
+            return;
+
+        std::size_t rest = buffer_size_-write_offset_;
+        std::memset(buffers_[read_index_] + write_offset_, 0, rest);
+
+        write_offset_ = 0;
+        write_index_ = (write_index_ + 1) % buffer_count;
+    }
+
+    void read(char* s)
+    {
+        mutex::scoped_lock lock(mutex_);
+        if (filled_[read_index_])
+        {
+            std::memcpy(s, buffers_[read_index_], buffer_size_);
+            filled_[read_index_] = false;
+            cond_.notify_one();
+            read_index_ = (read_index_ + 1) % buffer_count;
+        }
+        else
+            std::memset(s, 0, buffer_size_);
+    }
+
+private:
+    mutex mutex_;
+    condition cond_;
+    std::size_t buffer_size_;
+    std::size_t read_index_;
+    std::size_t write_index_;
+    std::size_t write_offset_;
+    bool filled_[buffer_count];
+    boost::scoped_array<char> buffer_;
+    char* buffers_[buffer_count];
+};
+
+} // namespace
+
+class pcm_sink::impl
+{
+public:
+    impl(const pcm_format& f, std::size_t /*buffer_size*/)
+        : output_((find_default_audio_output()))
+        , format_(f)
+        , buffer_size_(get_device_buffer_size(output_.device_id()))
+        , queue_(buffer_size_)
+    {
+        output_.set_render_callback(&impl::render_callback, this);
+        output_.initialize();
+        try
+        {
+            output_.input_format(make_au_format(f));
+        }
+        catch (...)
+        {
+            output_.uninitialize();
+            throw;
+        }
+    }
+
+    ~impl()
+    {
+        if (running_)
+            output_.stop();
+        output_.uninitialize();
+    }
+
+    std::streamsize write(const char* s, std::streamsize n)
+    {
+        if (!running_)
+        {
+            output_.start();
+            running_ = true;
+        }
+
+        std::streamsize total = 0;
+        while (total != n)
+        {
+            std::streamsize amt = queue_.write(s+total, n-total);
+            total += amt;
+        }
+        return total;
+    }
+
+    void close()
+    {
+        output_.stop();
+        running_ = false;
+    }
+
+    bool flush()
+    {
+        queue_.flush();
+        if (!running_)
+        {
+            output_.start();
+            running_ = true;
+        }
+        return true;
+    }
+
+    pcm_format format() const
+    {
+        return format_;
+    }
+
+private:
+    audio_unit output_;
+    pcm_format format_;
+    std::size_t buffer_size_;
+    buffer_list queue_;
+    bool running_;
+
+    ::OSStatus render_callback_impl(
+        ::AudioUnitRenderActionFlags* ioActionFlags,
+        const ::AudioTimeStamp* inTimeStamp,
+        ::UInt32 inBusNumber,
+        ::UInt32 inNumberFrames,
+        ::AudioBufferList* ioData)
+    {
+        BOOST_ASSERT(inNumberFrames == buffer_size_/format_.block_size());
+        queue_.read(static_cast<char*>(ioData->mBuffers[0].mData));
+        return noErr;
+    }
+
+    static ::OSStatus render_callback(
+        void* inRefCon,
+        ::AudioUnitRenderActionFlags* ioActionFlags,
+        const ::AudioTimeStamp* inTimeStamp,
+        ::UInt32 inBusNumber,
+        ::UInt32 inNumberFrames,
+        ::AudioBufferList* ioData)
+    {
+        return static_cast<impl*>(inRefCon)->render_callback_impl(
+            ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, ioData);
+    }
+};
+
+class pcm_source::impl
+{
+public:
+    impl(const pcm_format& f, std::size_t /*buffer_size*/)
+        : format_(f)
+    {
+    }
+
+    std::streamsize read(char* s, std::streamsize n)
+    {
+        return (n > 0) ? n : -1;
+    }
+
+    void close()
+    {
+    }
+
+    pcm_format format() const
+    {
+        return format_;
+    }
+
+private:
+    pcm_format format_;
+};
+
+#else // not defined(BOOST_WINDOWS) and not defined(__APPLE__)
 namespace
 {
 
@@ -560,7 +1072,7 @@ public:
 private:
     pcm_format format_;
 };
-#endif // not defined(BOOST_WINDOWS)
+#endif // not defined(BOOST_WINDOWS) and not defined(__APPLE__)
 
 pcm_sink::pcm_sink(const pcm_format& f)
     : pimpl_(new impl(f, f.optimal_buffer_size()))
