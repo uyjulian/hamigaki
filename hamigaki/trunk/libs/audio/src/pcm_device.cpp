@@ -24,7 +24,7 @@
     #include <mmsystem.h>
 #elif defined(__APPLE__)
     #include <hamigaki/integer/auto_min.hpp>
-    #include <boost/scoped_array.hpp>
+    #include "detail/circular_buffer.hpp"
     #include <AudioUnit/AudioUnit.h>
     #include <CoreServices/CoreServices.h>
     #include <pthread.h>
@@ -722,40 +722,23 @@ private:
     ::pthread_cond_t handle_;
 };
 
-class buffer_list
+class au_queue
 {
 public:
-    explicit buffer_list(std::size_t buffer_size)
-        : buffer_size_(buffer_size)
-        , read_index_(0)
-        , write_index_(0), write_offset_(0)
-        , buffer_(new char[buffer_size_*buffer_count])
+    explicit au_queue(std::size_t buffer_size)
+        : buffer_(buffer_size)
     {
-        for (std::size_t i = 0, off = 0; i < buffer_count; ++i)
-        {
-            buffers_[i] = &buffer_[off];
-            off += buffer_size_;
-        }
     }
 
     std::streamsize write(const char* s, std::streamsize n)
     {
         mutex::scoped_lock lock(mutex_);
-        if (write_offset_ == 0)
-        {
-            while (filled_[write_index_])
-                cond_.wait(mutex_);
-        }
+        while (buffer_.full())
+            cond_.wait(mutex_);
 
-        std::streamsize amt = hamigaki::auto_min(buffer_size_-write_offset_, n);
-        std::memcpy(buffers_[read_index_] + write_offset_, s, amt);
-
-        write_offset_ += amt;
-        if (write_offset_ == buffer_size_)
-        {
-            write_offset_ = 0;
-            write_index_ = (write_index_ + 1) % buffer_count;
-        }
+        std::streamsize amt = hamigaki::auto_min(
+            buffer_.capacity()-buffer_.size(), n);
+        buffer_.insert(buffer_.end(), s, s+amt);
 
         return amt;
     }
@@ -763,40 +746,39 @@ public:
     void flush()
     {
         mutex::scoped_lock lock(mutex_);
-        if (write_offset_ == 0)
-            return;
-
-        std::size_t rest = buffer_size_-write_offset_;
-        std::memset(buffers_[read_index_] + write_offset_, 0, rest);
-
-        write_offset_ = 0;
-        write_index_ = (write_index_ + 1) % buffer_count;
+        while (!buffer_.empty())
+            cond_.wait(mutex_);
     }
 
-    void read(char* s)
+    std::streamsize read(char* s, std::streamsize n)
     {
         mutex::scoped_lock lock(mutex_);
-        if (filled_[read_index_])
+
+        std::streamsize amt = hamigaki::auto_min(buffer_.size(), n);
+        if (amt != 0)
         {
-            std::memcpy(s, buffers_[read_index_], buffer_size_);
-            filled_[read_index_] = false;
+            typedef detail::circular_buffer<char>::array_range array_range;
+
+            const array_range& a1 = buffer_.array_one();
+            std::streamsize amt1 = hamigaki::auto_min(a1.second, amt);
+            std::memcpy(s, a1.first, amt1);
+
+            if (amt1 != amt)
+            {
+                const array_range& a2 = buffer_.array_two();
+                std::memcpy(s+amt1, a2.first, amt-amt1);
+            }
+
+            buffer_.rresize(buffer_.size()-amt);
             cond_.notify_one();
-            read_index_ = (read_index_ + 1) % buffer_count;
         }
-        else
-            std::memset(s, 0, buffer_size_);
+        return amt;
     }
 
 private:
     mutex mutex_;
     condition cond_;
-    std::size_t buffer_size_;
-    std::size_t read_index_;
-    std::size_t write_index_;
-    std::size_t write_offset_;
-    bool filled_[buffer_count];
-    boost::scoped_array<char> buffer_;
-    char* buffers_[buffer_count];
+    detail::circular_buffer<char> buffer_;
 };
 
 } // namespace
@@ -804,11 +786,10 @@ private:
 class pcm_sink::impl
 {
 public:
-    impl(const pcm_format& f, std::size_t /*buffer_size*/)
+    impl(const pcm_format& f, std::size_t buffer_size)
         : output_((find_default_audio_output()))
         , format_(f)
-        , buffer_size_(get_device_buffer_size(output_.device_id()))
-        , queue_(buffer_size_)
+        , queue_(buffer_size)
     {
         output_.set_render_callback(&impl::render_callback, this);
         output_.initialize();
@@ -849,6 +830,7 @@ public:
 
     void close()
     {
+        queue_.flush();
         output_.stop();
         running_ = false;
     }
@@ -856,11 +838,6 @@ public:
     bool flush()
     {
         queue_.flush();
-        if (!running_)
-        {
-            output_.start();
-            running_ = true;
-        }
         return true;
     }
 
@@ -872,8 +849,7 @@ public:
 private:
     audio_unit output_;
     pcm_format format_;
-    std::size_t buffer_size_;
-    buffer_list queue_;
+    au_queue queue_;
     bool running_;
 
     ::OSStatus render_callback_impl(
@@ -883,8 +859,13 @@ private:
         ::UInt32 inNumberFrames,
         ::AudioBufferList* ioData)
     {
-        BOOST_ASSERT(inNumberFrames == buffer_size_/format_.block_size());
-        queue_.read(static_cast<char*>(ioData->mBuffers[0].mData));
+        std::streamsize n = ioData->mBuffers[0].mDataByteSize;
+        char* s = static_cast<char*>(ioData->mBuffers[0].mData);
+
+        std::streamsize amt = queue_.read(s, n);
+        if (amt != n)
+            std::memset(s+amt, 0, n-amt);
+
         return noErr;
     }
 
