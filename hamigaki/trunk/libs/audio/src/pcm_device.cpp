@@ -765,7 +765,7 @@ public:
         buf.mData = static_cast<char*>(data_.addrss());
     }
 
-    ::AudioBufferList* address() const
+    ::AudioBufferList* address()
     {
         return &list_;
     }
