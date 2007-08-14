@@ -87,6 +87,7 @@ public:
         BOOST_ASSERT(new_size <= size_);
 
         pos_ += (size_-new_size);
+        pos_ %= capacity_;
         size_ = new_size;
     }
 
