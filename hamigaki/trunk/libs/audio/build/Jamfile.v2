@@ -134,6 +134,7 @@ lib hamigaki_audio
     :
     <toolset>gcc,<os>NT:<find-static-library>ole32
     <toolset>gcc,<os>NT:<find-static-library>winmm
+    <toolset>darwin:<framework>/System/Library/Frameworks/AudioToolbox.framework
     <toolset>darwin:<framework>/System/Library/Frameworks/AudioUnit.framework
     <toolset>darwin:<framework>/System/Library/Frameworks/CoreAudio.framework
     <toolset>darwin:<framework>/System/Library/Frameworks/CoreServices.framework
@@ -141,6 +142,7 @@ lib hamigaki_audio
     :
     <toolset>gcc,<os>NT:<find-static-library>ole32
     <toolset>gcc,<os>NT:<find-static-library>winmm
+    <toolset>darwin:<framework>/System/Library/Frameworks/AudioToolbox.framework
     <toolset>darwin:<framework>/System/Library/Frameworks/AudioUnit.framework
     <toolset>darwin:<framework>/System/Library/Frameworks/CoreAudio.framework
     <toolset>darwin:<framework>/System/Library/Frameworks/CoreServices.framework
