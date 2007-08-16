@@ -28,6 +28,8 @@ exe action_game
     main_window_impl.cpp
     png_loader.cpp
     /directx//sdk
+    /boost/thread//boost_thread
+    /hamigaki/audio//hamigaki_audio
     /hamigaki/input//hamigaki_input
     /hamigaki/png//hamigaki_png
     :

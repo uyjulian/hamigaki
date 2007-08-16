@@ -12,12 +12,20 @@
 #include "direct3d9.hpp"
 #include "png_loader.hpp"
 #include "sprite.hpp"
+#include <hamigaki/audio/background_player.hpp>
+#include <hamigaki/audio/direct_sound.hpp>
+#include <hamigaki/audio/vorbis_file.hpp>
+#include <hamigaki/audio/wide_adaptor.hpp>
 #include <hamigaki/input/direct_input.hpp>
+#include <hamigaki/iostreams/repeat.hpp>
 #include <cmath>
 #include <stdexcept>
 
+namespace audio = hamigaki::audio;
+namespace ds = audio::direct_sound;
 namespace input = hamigaki::input;
 namespace di = input::direct_input;
+namespace io_ex = hamigaki::iostreams;
 
 namespace
 {
@@ -55,6 +63,8 @@ public:
         , x_(32.0f), y_(416.0f), vx_(0.0f), vy_(0.0f)
         , jump_button_pressed_(false)
     {
+        play_bgm();
+
         unsigned long level = di::exclusive_level|di::foreground_level;
         joystick_.set_cooperative_level(handle_, level);
 
@@ -136,6 +146,8 @@ public:
 
 private:
     ::HWND handle_;
+    audio::direct_sound_device dsound_;
+    audio::background_player bgm_;
     input::direct_input_joystick joystick_;
     direct3d9 d3d_;
     direct3d_device9 device_;
@@ -148,6 +160,26 @@ private:
     float vx_;
     float vy_;
     bool jump_button_pressed_;
+
+    void play_bgm()
+    {
+        audio::vorbis_file_source vf("bgm.ogg");
+
+        const audio::vorbis_info& info = vf.info();
+        audio::pcm_format fmt;
+        fmt.type = audio::int_le16;
+        fmt.channels = info.channels;
+        fmt.rate = info.rate;
+
+        dsound_.set_cooperative_level(handle_, ds::priority_level);
+        dsound_.format(fmt);
+
+        bgm_.open(
+            io_ex::repeat(vf, -1),
+            audio::widen<float>(dsound_.create_buffer(fmt))
+        );
+        bgm_.play();
+    }
 
     void process_input_impl(const di::joystick_state& state)
     {
