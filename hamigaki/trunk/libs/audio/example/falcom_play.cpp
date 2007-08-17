@@ -37,16 +37,21 @@ int main(int argc, char* argv[])
 {
     try
     {
-        if ((argc != 2) && (argc != 3))
+        if ((argc != 2) && (argc != 3) && (argc != 4))
         {
             std::cerr
-                << "Usage: falcom_play (input file) [loop count]"
-                << std::endl;
+                << "Usage: falcom_play (input file) [loop count] [epilogue]\n"
+                << "Options:\n"
+                << "  loop count    -1 -> infinity, 0 -> no loop (default=-1)\n"
+                << "  epilogue      play the epilogue (0 or 1, default=1)\n"
+                << std::flush;
 
             return 1;
         }
 
-        int loop_count = (argc == 3 ) ? boost::lexical_cast<int>(argv[2]) : -1;
+        int loop_count = (argc >= 3) ? boost::lexical_cast<int>(argv[2]) : -1;
+        bool play_epilogue =
+            (argc == 4) ? boost::lexical_cast<int>(argv[3]) != 0 : true;
 
         audio::vorbis_file_source vf(argv[1]);
 
@@ -65,6 +70,7 @@ int main(int argc, char* argv[])
         int loop_length =
             vorbis_comment_int_value(vf.comments(), "LOOPLENGTH");
         std::streamsize len = loop_length != -1 ? block_size*loop_length : -1;
+        std::streamsize epi_len = play_epilogue ? -1 : 0;
 
         audio::pcm_sink pcm(fmt);
         if (offset == -1)
@@ -75,7 +81,7 @@ int main(int argc, char* argv[])
             io::copy(
                 io_ex::lazy_restrict(vf, 0, offset+len)
                 + io_ex::lazy_restrict(vf, offset, len) * loop_count
-                + io_ex::lazy_restrict(vf, offset+len),
+                + io_ex::lazy_restrict(vf, offset+len, epi_len),
                 audio::widen<float>(pcm),
                 vf.optimal_buffer_size()
             );
