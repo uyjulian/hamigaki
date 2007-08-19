@@ -27,15 +27,14 @@ exe action_game
     main_window.cpp
     main_window_impl.cpp
     png_loader.cpp
-    /directx//sdk
+    /directx//d3d9
+    /directx//dxerr9
     /boost/thread//boost_thread
     /hamigaki/audio//hamigaki_audio
     /hamigaki/input//hamigaki_input
     /hamigaki/png//hamigaki_png
     :
     <find-static-library>user32
-    <find-static-library>d3d9
-    <find-static-library>dxerr9
     <conditional>@user-interface-gui
     ;
 

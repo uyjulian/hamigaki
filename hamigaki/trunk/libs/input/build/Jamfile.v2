@@ -7,9 +7,8 @@
 
 # See http://hamigaki.sourceforge.jp/libs/input for library home page.
 
+import directx ;
 import modules ;
-
-local NO_DXSDK = [ modules.peek : NO_DXSDK ] ;
 
 project hamigaki/input
     : requirements
@@ -23,19 +22,20 @@ local SOURCES = ;
 local LIBRARIES = ;
 local REQUIREMENTS = ;
 
-if ! $(NO_DXSDK)
+if [ directx.configured ]
 {
     SOURCES +=
         direct_input
         direct_input_formats
         ;
 
-    LIBRARIES += /directx//sdk ;
+    LIBRARIES +=
+    	/directx//dinput
+    	/directx//dxerr9
+    	;
 
     REQUIREMENTS +=
         <define>DIRECTINPUT_VERSION=0x0500
-        <find-static-library>dinput
-        <find-static-library>dxerr9
         ;
 }
 

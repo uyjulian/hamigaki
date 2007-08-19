@@ -191,3 +191,32 @@ if ! [ project.find /boost-lib : . ]
         project.pop-current ;
     }
 }
+
+# for DirectX
+
+import directx ;
+
+local NO_DXSDK = [ modules.peek : NO_DXSDK ] ;
+local HAVE_DXSDK = [ modules.peek : HAVE_DXSDK ] ;
+
+if ! $(NO_DXSDK) && ! [ directx.configured ]
+{
+	import os ;
+
+	if [ os.name ] = NT && [ os.environ DXSDK_DIR ]
+	{
+		HAVE_DXSDK = 1 ;
+	}
+
+	if	$(HAVE_DXSDK)
+	{
+		local inc = [ modules.peek : DXSDK_INCLUDE ] ;
+		local lib = [ modules.peek : DXSDK_LIBPATH ] ;
+
+		using directx : $(inc) : $(lib) ;
+	}
+	else
+	{
+		modules.poke : NO_DXSDK : 1 ;
+	}
+}
