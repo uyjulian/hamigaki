@@ -274,22 +274,7 @@ public:
 
     void close()
     {
-        if (!base_.is_open())
-            return;
-
-        bool nothrow = false;
-        boost::iostreams::detail::
-            external_closer<Source> close_src(src_, BOOST_IOS::in, nothrow);
-
-        try
-        {
-            base_.close();
-        }
-        catch (...)
-        {
-            nothrow = true;
-            throw;
-        }
+        base_.close();
     }
 
     boost::iostreams::stream_offset total()
