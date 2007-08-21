@@ -86,6 +86,7 @@ int main(int argc, char* argv[])
                 vf.optimal_buffer_size()
             );
         }
+        return 0;
     }
     catch (const std::exception& e)
     {
