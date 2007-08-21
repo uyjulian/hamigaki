@@ -12,6 +12,7 @@
 #include "direct3d9.hpp"
 #include "png_loader.hpp"
 #include "sprite.hpp"
+#include "stage_map.hpp"
 #include <hamigaki/audio/vorbis/comment.hpp>
 #include <hamigaki/audio/background_player.hpp>
 #include <hamigaki/audio/direct_sound.hpp>
@@ -88,6 +89,8 @@ public:
         di::device_object y_axis = joystick_.object(di::joystick_offset::y);
         y_axis.range(-axis_range, axis_range);
         y_axis.deadzone(2000);
+
+        load_map_from_text(map_, "map.txt");
     }
 
     ~impl()
@@ -112,11 +115,8 @@ public:
 
     void process_input()
     {
-        if (!active_)
-            return;
-
-        di::joystick_state state;
-        joystick_.get_state(state);
+        di::joystick_state state = {};
+        update_input_state(state);
 
         const unsigned long table[] = { 16, 17, 17 };
         unsigned long now = ::GetTickCount();
@@ -145,9 +145,15 @@ public:
 
             device_.set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
 
-            draw_rectangle(
-                device_, 0.0f, 448.0f, 0.0f,
-                640.0f, 32.0f, D3DCOLOR_XRGB(0xAA,0x55,0x33));
+            for (std::size_t y = 0; y < 15; ++y)
+            {
+                for (std::size_t x = 0; x < 20; ++x)
+                {
+                    char c = map_(x, y);
+                    if (c == '=')
+                        draw_block(x, y);
+                }
+            }
         }
         device_.present();
     }
@@ -174,6 +180,7 @@ private:
     float vx_;
     float vy_;
     bool jump_button_pressed_;
+    stage_map map_;
 
     void play_bgm()
     {
@@ -214,6 +221,26 @@ private:
             );
         }
         bgm_.play();
+    }
+
+    void update_input_state(di::joystick_state& state)
+    {
+        if (!active_)
+            return;
+
+        try
+        {
+            joystick_.get_state(state);
+        }
+        catch (const input::direct_input_error& e)
+        {
+            if (e.code() == E_ACCESSDENIED)
+            {
+                active_ = false;
+                return;
+            }
+            throw;
+        }
     }
 
     void process_input_impl(const di::joystick_state& state)
@@ -274,11 +301,64 @@ private:
             }
         }
 
-        x_ += vx_;
-        if (x_ < 0.0f)
-            x_ = 0.0f;
-        else if (x_ > x_max)
-            x_ = x_max;
+        if (vx_ < 0.0f)
+        {
+            std::size_t old_x = static_cast<std::size_t>(x_ / 32.0f);
+
+            x_ += vx_;
+            if (x_ < 0.0f)
+                x_ = 0.0f;
+
+            std::size_t new_x = static_cast<std::size_t>(x_ / 32.0f);
+            std::size_t y1 = static_cast<std::size_t>(y_ / 32.0f);
+            std::size_t y2 = static_cast<std::size_t>(std::ceil(y_ / 32.0f));
+            while (new_x != old_x)
+            {
+                char c = map_(old_x-1, y1);
+                if (c != ' ')
+                {
+                    x_ = static_cast<float>(old_x * 32);
+                    break;
+                }
+
+                c = map_(old_x, y2);
+                if (c != ' ')
+                {
+                    x_ = static_cast<float>(old_x * 32);
+                    break;
+                }
+
+                --old_x;
+            }
+        }
+        else if (vx_ > 0.0f)
+        {
+            std::size_t old_x = static_cast<std::size_t>(std::ceil(x_ / 32.0f));
+
+            x_ += vx_;
+            if (x_ > x_max)
+                x_ = x_max;
+
+            std::size_t new_x = static_cast<std::size_t>(std::ceil(x_ / 32.0f));
+            std::size_t y1 = static_cast<std::size_t>(y_ / 32.0f);
+            std::size_t y2 = static_cast<std::size_t>(std::ceil(y_ / 32.0f));
+            while (new_x != old_x)
+            {
+                char c = map_(old_x+1, y1);
+                if (c != ' ')
+                {
+                    x_ = static_cast<float>(old_x * 32);
+                    break;
+                }
+                c = map_(old_x+1, y2);
+                if (c != ' ')
+                {
+                    x_ = static_cast<float>(old_x * 32);
+                    break;
+                }
+                ++old_x;
+            }
+        }
 
         if (!on_ground)
         {
@@ -304,6 +384,13 @@ private:
             y_ = y_max;
 
         jump_button_pressed_ = jump_button_pressed;
+    }
+
+    void draw_block(std::size_t x, std::size_t y)
+    {
+        draw_rectangle(
+            device_, static_cast<float>(x*32), static_cast<float>(y*32), 0.0f,
+            32.0f, 32.0f, D3DCOLOR_XRGB(0xAA,0x55,0x33));
     }
 };
 
