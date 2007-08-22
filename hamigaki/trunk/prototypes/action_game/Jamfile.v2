@@ -39,3 +39,13 @@ exe action_game
     ;
 
 exec.register-exec-all ;
+
+install dist-bin
+    :
+    action_game
+    :
+    <install-type>EXE
+    <location>../../dist/bin
+    ;
+
+explicit dist-bin ;
