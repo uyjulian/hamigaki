@@ -137,12 +137,6 @@ public:
         {
             scoped_scene scene(device_);
 
-            device_.set_render_state(D3DRS_ALPHABLENDENABLE, TRUE);
-            device_.set_render_state(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-            device_.set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-
-            draw_sprite(device_, x_, y_, 0.0f, chara_texture_);
-
             device_.set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
 
             for (std::size_t y = 0; y < 15; ++y)
@@ -154,6 +148,12 @@ public:
                         draw_block(x, y);
                 }
             }
+
+            device_.set_render_state(D3DRS_ALPHABLENDENABLE, TRUE);
+            device_.set_render_state(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+            device_.set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+
+            draw_sprite(device_, x_, y_, 0.0f, chara_texture_);
         }
         device_.present();
     }
@@ -245,6 +245,15 @@ private:
 
     void process_input_impl(const di::joystick_state& state)
     {
+        if ((state.buttons[6] & 0x80) != 0)
+        {
+            x_ = 32.0f;
+            y_ = 416.0f;
+            vx_ = 0.0f;
+            vy_ = 0.0f;
+            jump_button_pressed_ = false;
+        }
+
         bool jump_button_pressed = (state.buttons[0] & 0x80) != 0;
         bool jump_button_down = !jump_button_pressed_ && jump_button_pressed;
 
@@ -262,9 +271,22 @@ private:
         }
 
         float x_max = 608.0f;
-        float y_max = 416.0f;
+        float y_max = 480.0f;
 
-        bool on_ground = (y_ == y_max);
+        bool on_ground = false;
+        if (y_ >= 0.0f)
+        {
+            std::size_t y = static_cast<std::size_t>(y_ / 32.0f);
+            std::size_t x1 = static_cast<std::size_t>(x_ / 32.0f);
+            std::size_t x2 = static_cast<std::size_t>(std::ceil(x_ / 32.0f));
+            if (y_ == static_cast<float>(y*32))
+            {
+                if (map_(x1, y+1) != ' ')
+                    on_ground = true;
+                if (map_(x2, y+1) != ' ')
+                    on_ground = true;
+            }
+        }
 
         if (dx != 0.0f)
         {
@@ -321,7 +343,7 @@ private:
                     break;
                 }
 
-                c = map_(old_x, y2);
+                c = map_(old_x-1, y2);
                 if (c != ' ')
                 {
                     x_ = static_cast<float>(old_x * 32);
@@ -377,11 +399,67 @@ private:
                 vy_ += -0.5f;
         }
 
-        y_ += vy_ * 2.0f;
-        if (y_ < 0.0f)
-            y_ = 0.0f;
-        else if (y_ > y_max)
-            y_ = y_max;
+        if (vy_ < 0.0f)
+        {
+            std::size_t old_y = static_cast<std::size_t>(y_ / 32.0f);
+
+            y_ += vy_ * 2.0f;
+
+            if (y_ >= 0.0f)
+            {
+                std::size_t new_y = static_cast<std::size_t>(y_ / 32.0f);
+                std::size_t x1 = static_cast<std::size_t>(x_ / 32.0f);
+                std::size_t x2 = static_cast<std::size_t>(std::ceil(x_/32.0f));
+                while (new_y != old_y)
+                {
+                    char c = map_(x1, old_y-1);
+                    if (c != ' ')
+                    {
+                        y_ = static_cast<float>(old_y * 32);
+                        vy_ = -vy_ * 0.5f;
+                        break;
+                    }
+
+                    c = map_(x2, old_y-1);
+                    if (c != ' ')
+                    {
+                        y_ = static_cast<float>(old_y * 32);
+                        vy_ = -vy_ * 0.5f;
+                        break;
+                    }
+
+                    --old_y;
+                }
+            }
+        }
+        else if (vy_ > 0.0f)
+        {
+            std::size_t old_y = static_cast<std::size_t>(std::ceil(y_ / 32.0f));
+
+            y_ += vy_ * 2.0f;
+            if (y_ > y_max)
+                y_ = y_max;
+
+            std::size_t new_y = static_cast<std::size_t>(std::ceil(y_ / 32.0f));
+            std::size_t x1 = static_cast<std::size_t>(x_ / 32.0f);
+            std::size_t x2 = static_cast<std::size_t>(std::ceil(x_ / 32.0f));
+            while (new_y != old_y)
+            {
+                char c = map_(x1, old_y+1);
+                if (c != ' ')
+                {
+                    y_ = static_cast<float>(old_y * 32);
+                    break;
+                }
+                c = map_(x2, old_y+1);
+                if (c != ' ')
+                {
+                    y_ = static_cast<float>(old_y * 32);
+                    break;
+                }
+                ++old_y;
+            }
+        }
 
         jump_button_pressed_ = jump_button_pressed;
     }
