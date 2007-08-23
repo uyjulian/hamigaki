@@ -10,6 +10,7 @@
 #include "main_window_impl.hpp"
 #include "draw.hpp"
 #include "direct3d9.hpp"
+#include "player_routine.hpp"
 #include "png_loader.hpp"
 #include "sprite.hpp"
 #include "stage_map.hpp"
@@ -30,6 +31,7 @@ namespace audio = hamigaki::audio;
 namespace ds = audio::direct_sound;
 namespace input = hamigaki::input;
 namespace di = input::direct_input;
+namespace coro = hamigaki::coroutines;
 namespace io_ex = hamigaki::iostreams;
 
 namespace
@@ -74,8 +76,7 @@ public:
         , vf_("bgm.ogg")
         , joystick_(create_joystick(handle_))
         , active_(false), last_time_(::GetTickCount()), frames_(0)
-        , x_(32.0f), y_(416.0f), vx_(0.0f), vy_(0.0f)
-        , jump_button_pressed_(false)
+        , x_(32.0f), y_(416.0f)
     {
         play_bgm();
 
@@ -91,6 +92,8 @@ public:
         y_axis.deadzone(2000);
 
         load_map_from_text(map_, "map.txt");
+
+        player_routine_ = routine_type(&player_routine);
     }
 
     ~impl()
@@ -177,10 +180,8 @@ private:
     unsigned frames_;
     float x_;
     float y_;
-    float vx_;
-    float vy_;
-    bool jump_button_pressed_;
     stage_map map_;
+    routine_type player_routine_;
 
     void play_bgm()
     {
@@ -249,219 +250,36 @@ private:
         {
             x_ = 32.0f;
             y_ = 416.0f;
-            vx_ = 0.0f;
-            vy_ = 0.0f;
-            jump_button_pressed_ = false;
         }
 
-        bool jump_button_pressed = (state.buttons[0] & 0x80) != 0;
-        bool jump_button_down = !jump_button_pressed_ && jump_button_pressed;
-
-        bool dash_button_pressed = (state.buttons[2] & 0x80) != 0;
+        rect r;
+        r.x = x_;
+        r.y = y_;
+        r.lx = 32.0f;
+        r.ly = 32.0f;
 
         float a = static_cast<float>(axis_range);
         float dx = static_cast<float>(state.position.x)/a;
         float dy = static_cast<float>(state.position.y)/a;
 
-        float r = std::sqrt(dx*dx + dy*dy);
-        if (r > 1.0f)
+        float radius = std::sqrt(dx*dx + dy*dy);
+        if (radius > 1.0f)
         {
-            dx /= r;
-            dy /= r;
+            dx /= radius;
+            dy /= radius;
         }
 
-        float x_max = 608.0f;
-        float y_max = 480.0f;
+        input_command cmd;
+        cmd.x = dx;
+        cmd.y = dy;
+        cmd.jump = (state.buttons[0] & 0x80) != 0;
+        cmd.dash = (state.buttons[2] & 0x80) != 0;
+        cmd.reset = (state.buttons[6] & 0x80) != 0;
 
-        bool on_ground = false;
-        if (y_ >= 0.0f)
-        {
-            std::size_t y = static_cast<std::size_t>(y_ / 32.0f);
-            std::size_t x1 = static_cast<std::size_t>(x_ / 32.0f);
-            std::size_t x2 = static_cast<std::size_t>(std::ceil(x_ / 32.0f));
-            if (y_ == static_cast<float>(y*32))
-            {
-                if (map_(x1, y+1) != ' ')
-                    on_ground = true;
-                if (map_(x2, y+1) != ' ')
-                    on_ground = true;
-            }
-        }
+        r = player_routine_(r, cmd, &map_);
 
-        if (dx != 0.0f)
-        {
-            vx_ += dx/4.0f;
-            if (dash_button_pressed && on_ground)
-            {
-                if (vx_ < -5.0f)
-                    vx_ = -5.0f;
-                else if (vx_ > 5.0f)
-                    vx_ = 5.0f;
-            }
-            else
-            {
-                if (vx_ < -3.0f)
-                    vx_ = -3.0f;
-                else if (vx_ > 3.0f)
-                    vx_ = 3.0f;
-            }
-        }
-        else
-        {
-            // FIXME:
-            if (vx_ < -0.0f)
-            {
-                vx_ += 0.2f;
-                if (vx_ > 0.0f)
-                    vx_ = 0.0f;
-            }
-            else if (vx_ > 0.0f)
-            {
-                vx_ -= 0.2f;
-                if (vx_ < 0.0f)
-                    vx_ = 0.0f;
-            }
-        }
-
-        if (vx_ < 0.0f)
-        {
-            std::size_t old_x = static_cast<std::size_t>(x_ / 32.0f);
-
-            x_ += vx_;
-            if (x_ < 0.0f)
-                x_ = 0.0f;
-
-            std::size_t new_x = static_cast<std::size_t>(x_ / 32.0f);
-            std::size_t y1 = static_cast<std::size_t>(y_ / 32.0f);
-            std::size_t y2 = static_cast<std::size_t>(std::ceil(y_ / 32.0f));
-            while (new_x != old_x)
-            {
-                char c = map_(old_x-1, y1);
-                if (c != ' ')
-                {
-                    x_ = static_cast<float>(old_x * 32);
-                    break;
-                }
-
-                c = map_(old_x-1, y2);
-                if (c != ' ')
-                {
-                    x_ = static_cast<float>(old_x * 32);
-                    break;
-                }
-
-                --old_x;
-            }
-        }
-        else if (vx_ > 0.0f)
-        {
-            std::size_t old_x = static_cast<std::size_t>(std::ceil(x_ / 32.0f));
-
-            x_ += vx_;
-            if (x_ > x_max)
-                x_ = x_max;
-
-            std::size_t new_x = static_cast<std::size_t>(std::ceil(x_ / 32.0f));
-            std::size_t y1 = static_cast<std::size_t>(y_ / 32.0f);
-            std::size_t y2 = static_cast<std::size_t>(std::ceil(y_ / 32.0f));
-            while (new_x != old_x)
-            {
-                char c = map_(old_x+1, y1);
-                if (c != ' ')
-                {
-                    x_ = static_cast<float>(old_x * 32);
-                    break;
-                }
-                c = map_(old_x+1, y2);
-                if (c != ' ')
-                {
-                    x_ = static_cast<float>(old_x * 32);
-                    break;
-                }
-                ++old_x;
-            }
-        }
-
-        if (!on_ground)
-        {
-            // FIXME: The button should keep being pushed.
-            if (jump_button_pressed && (vy_ < 0.0))
-                vy_ -= 0.175f;
-            vy_ += 0.3f;
-
-            if (vy_ > 5.0f)
-                vy_ = 5.0f;
-        }
-        else if (jump_button_down)
-        {
-            vy_ = -4.0f;
-            if (std::abs(vx_) > 2.0f)
-                vy_ += -0.5f;
-        }
-
-        if (vy_ < 0.0f)
-        {
-            std::size_t old_y = static_cast<std::size_t>(y_ / 32.0f);
-
-            y_ += vy_ * 2.0f;
-
-            if (y_ >= 0.0f)
-            {
-                std::size_t new_y = static_cast<std::size_t>(y_ / 32.0f);
-                std::size_t x1 = static_cast<std::size_t>(x_ / 32.0f);
-                std::size_t x2 = static_cast<std::size_t>(std::ceil(x_/32.0f));
-                while (new_y != old_y)
-                {
-                    char c = map_(x1, old_y-1);
-                    if (c != ' ')
-                    {
-                        y_ = static_cast<float>(old_y * 32);
-                        vy_ = -vy_ * 0.5f;
-                        break;
-                    }
-
-                    c = map_(x2, old_y-1);
-                    if (c != ' ')
-                    {
-                        y_ = static_cast<float>(old_y * 32);
-                        vy_ = -vy_ * 0.5f;
-                        break;
-                    }
-
-                    --old_y;
-                }
-            }
-        }
-        else if (vy_ > 0.0f)
-        {
-            std::size_t old_y = static_cast<std::size_t>(std::ceil(y_ / 32.0f));
-
-            y_ += vy_ * 2.0f;
-            if (y_ > y_max)
-                y_ = y_max;
-
-            std::size_t new_y = static_cast<std::size_t>(std::ceil(y_ / 32.0f));
-            std::size_t x1 = static_cast<std::size_t>(x_ / 32.0f);
-            std::size_t x2 = static_cast<std::size_t>(std::ceil(x_ / 32.0f));
-            while (new_y != old_y)
-            {
-                char c = map_(x1, old_y+1);
-                if (c != ' ')
-                {
-                    y_ = static_cast<float>(old_y * 32);
-                    break;
-                }
-                c = map_(x2, old_y+1);
-                if (c != ' ')
-                {
-                    y_ = static_cast<float>(old_y * 32);
-                    break;
-                }
-                ++old_y;
-            }
-        }
-
-        jump_button_pressed_ = jump_button_pressed;
+        x_ = r.x;
+        y_ = r.y;
     }
 
     void draw_block(std::size_t x, std::size_t y)
