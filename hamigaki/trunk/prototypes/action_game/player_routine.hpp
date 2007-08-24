@@ -1,4 +1,4 @@
-// player_rountine.hpp: the routine for player character
+// player_routine.hpp: the routine for player character
 
 // Copyright Takeshi Mouri 2007.
 // Distributed under the Boost Software License, Version 1.0.

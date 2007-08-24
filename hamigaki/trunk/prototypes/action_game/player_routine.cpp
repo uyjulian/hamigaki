@@ -1,4 +1,4 @@
-// player_rountine.cpp: the routine for going straight
+// player_routine.cpp: the routine for going straight
 
 // Copyright Takeshi Mouri 2007.
 // Distributed under the Boost Software License, Version 1.0.
