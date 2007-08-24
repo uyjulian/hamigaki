@@ -28,6 +28,7 @@ exe action_game
     main_window_impl.cpp
     player_routine.cpp
     png_loader.cpp
+    straight_routine.cpp
     /directx//d3d9
     /directx//dxerr9
     /boost/thread//boost_thread

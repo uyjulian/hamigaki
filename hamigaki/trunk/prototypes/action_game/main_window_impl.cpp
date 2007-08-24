@@ -14,6 +14,7 @@
 #include "png_loader.hpp"
 #include "sprite.hpp"
 #include "stage_map.hpp"
+#include "straight_routine.hpp"
 #include <hamigaki/audio/vorbis/comment.hpp>
 #include <hamigaki/audio/background_player.hpp>
 #include <hamigaki/audio/direct_sound.hpp>
@@ -76,7 +77,6 @@ public:
         , vf_("bgm.ogg")
         , joystick_(create_joystick(handle_))
         , active_(false), last_time_(::GetTickCount()), frames_(0)
-        , x_(32.0f), y_(416.0f)
     {
         play_bgm();
 
@@ -94,6 +94,7 @@ public:
         load_map_from_text(map_, "map.txt");
 
         player_routine_ = routine_type(&player_routine);
+        enemy_routine_ = routine_type(&straight_routine);
     }
 
     ~impl()
@@ -116,7 +117,15 @@ public:
             create_png_texture(device_, "chara.png");
 
         const ::D3DSURFACE_DESC& desc = chara_texture_.description(0);
-        y_ = 448.0f - static_cast<float>(desc.Height);
+        player_rect_.x = 32.0f;
+        player_rect_.y = 448.0f - static_cast<float>(desc.Height);
+        player_rect_.lx = static_cast<float>(desc.Width);
+        player_rect_.ly = static_cast<float>(desc.Height);
+
+        enemy_rect_.x = 608.0f;
+        enemy_rect_.y = 288.0f;
+        enemy_rect_.lx = static_cast<float>(desc.Width);
+        enemy_rect_.ly = static_cast<float>(desc.Height);
     }
 
     void process_input()
@@ -159,7 +168,11 @@ public:
             device_.set_render_state(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
             device_.set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
-            draw_sprite(device_, x_, y_, 0.0f, chara_texture_);
+            draw_sprite(device_,
+                enemy_rect_.x, enemy_rect_.y, 0.0f, chara_texture_);
+
+            draw_sprite(device_,
+                player_rect_.x, player_rect_.y, 0.0f, chara_texture_);
         }
         device_.present();
     }
@@ -181,10 +194,11 @@ private:
     bool active_;
     unsigned long last_time_;
     unsigned frames_;
-    float x_;
-    float y_;
+    rect player_rect_;
+    rect enemy_rect_;
     stage_map map_;
     routine_type player_routine_;
+    routine_type enemy_routine_;
 
     void play_bgm()
     {
@@ -252,17 +266,11 @@ private:
         if ((state.buttons[6] & 0x80) != 0)
         {
             const ::D3DSURFACE_DESC& desc = chara_texture_.description(0);
-            x_ = 32.0f;
-            y_ = 448.0f - static_cast<float>(desc.Height);
+            player_rect_.x = 32.0f;
+            player_rect_.y = 448.0f - static_cast<float>(desc.Height);
         }
 
         const ::D3DSURFACE_DESC& desc = chara_texture_.description(0);
-
-        rect r;
-        r.x = x_;
-        r.y = y_;
-        r.lx = static_cast<float>(desc.Width);
-        r.ly = static_cast<float>(desc.Height);
 
         float a = static_cast<float>(axis_range);
         float dx = static_cast<float>(state.position.x)/a;
@@ -282,10 +290,8 @@ private:
         cmd.dash = (state.buttons[2] & 0x80) != 0;
         cmd.reset = (state.buttons[6] & 0x80) != 0;
 
-        r = player_routine_(r, cmd, &map_);
-
-        x_ = r.x;
-        y_ = r.y;
+        player_rect_ = player_routine_(player_rect_, cmd, &map_);
+        enemy_rect_ = enemy_routine_(enemy_rect_, cmd, &map_);
     }
 
     void draw_block(std::size_t x, std::size_t y)

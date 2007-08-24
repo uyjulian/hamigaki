@@ -1,4 +1,4 @@
-// player_rountine.hpp: the routine for player character
+// straight_routine.hpp: the routine for player character
 
 // Copyright Takeshi Mouri 2007.
 // Distributed under the Boost Software License, Version 1.0.
@@ -7,12 +7,12 @@
 
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
-#ifndef PLAYER_ROUTINE_HPP
-#define PLAYER_ROUTINE_HPP
+#ifndef STRAIGHT_ROUTINE_HPP
+#define STRAIGHT_ROUTINE_HPP
 
 #include "routine_base.hpp"
 
-rect player_routine(
+rect straight_routine(
     routine_type::self& self, rect r, input_command cmd, const stage_map* map);
 
-#endif // PLAYER_ROUTINE_HPP
+#endif // STRAIGHT_ROUTINE_HPP
