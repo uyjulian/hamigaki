@@ -17,13 +17,21 @@
 class stage_map
 {
 public:
-    char operator()(std::size_t x, std::size_t y) const
+    char operator()(int x, int y) const
     {
-        if (y >= data_.size())
+        if (x < 0)
+            return '=';
+        else if (y < 0)
             return ' ';
 
-        const std::string& line = data_[y];
-        return (x < line.size()) ? line[x] : ' ';
+        std::size_t ux = static_cast<std::size_t>(x);
+        std::size_t uy = static_cast<std::size_t>(y);
+
+        if (uy >= data_.size())
+            return ' ';
+
+        const std::string& line = data_[uy];
+        return (ux < line.size()) ? line[ux] : ' ';
     }
 
     void push_back(const std::string& line)
