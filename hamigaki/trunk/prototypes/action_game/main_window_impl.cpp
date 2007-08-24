@@ -114,6 +114,9 @@ public:
 
         chara_texture_ =
             create_png_texture(device_, "chara.png");
+
+        const ::D3DSURFACE_DESC& desc = chara_texture_.description(0);
+        y_ = 448.0f - static_cast<float>(desc.Height);
     }
 
     void process_input()
@@ -248,15 +251,18 @@ private:
     {
         if ((state.buttons[6] & 0x80) != 0)
         {
+            const ::D3DSURFACE_DESC& desc = chara_texture_.description(0);
             x_ = 32.0f;
-            y_ = 416.0f;
+            y_ = 448.0f - static_cast<float>(desc.Height);
         }
+
+        const ::D3DSURFACE_DESC& desc = chara_texture_.description(0);
 
         rect r;
         r.x = x_;
         r.y = y_;
-        r.lx = 32.0f;
-        r.ly = 32.0f;
+        r.lx = static_cast<float>(desc.Width);
+        r.ly = static_cast<float>(desc.Height);
 
         float a = static_cast<float>(axis_range);
         float dx = static_cast<float>(state.position.x)/a;

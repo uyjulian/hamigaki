@@ -136,7 +136,7 @@ rect player_routine(
             int old_x = r.right_block();
 
             r.x += vx;
-            r.x = (std::min)(r.x, 608.0f); // FIXME
+            r.x = (std::min)(r.x, 640.0f - r.lx); // FIXME
 
             int new_x = r.right_block();
             int y1 = r.top_block();
