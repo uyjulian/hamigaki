@@ -12,7 +12,7 @@ path-global BOOST_LIBPATH : $(BOOST_LIBPATH) ;
 path-global HAMIGAKI_ROOT : $(HAMIGAKI_ROOT) ;
 
 # This version number is NOT for Boost
-BOOST_VERSION ?= 0.40.0 ;
+BOOST_VERSION ?= 0.40.1 ;
 
 rule find-boost-lib ( name toolset variant : properties * )
 {

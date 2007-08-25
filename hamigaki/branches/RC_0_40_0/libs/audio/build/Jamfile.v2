@@ -59,9 +59,13 @@ if ! $(NO_DXSDK) && ! [ project.find /directx : . ]
             local inc = [ modules.peek : DXSDK_INCLUDE ] ;
             local lib = [ modules.peek : DXSDK_LIBPATH ] ;
 
-            path-constant DXSDK_DIR : [ os.environ DXSDK_DIR ] ;
-            inc ?= $(DXSDK_DIR)/Include ;
-            lib ?= $(DXSDK_DIR)/Lib/x86 ;
+            local dxsdk-dir = [ os.environ DXSDK_DIR ] ;
+            if $(dxsdk-dir)
+            {
+                path-constant DXSDK_DIR : $(dxsdk-dir) ;
+                inc ?= $(DXSDK_DIR)/Include ;
+                lib ?= $(DXSDK_DIR)/Lib/x86 ;
+            }
 
             alias sdk : : : : <include>$(inc) <library-path>$(lib) ;
             lib dsound : sdk : <name>dsound ;
@@ -196,8 +200,16 @@ lib hamigaki_audio
     :
     <toolset>gcc,<os>NT:<find-static-library>ole32
     <toolset>gcc,<os>NT:<find-static-library>winmm
+    <toolset>darwin:<framework>/System/Library/Frameworks/AudioToolbox.framework
+    <toolset>darwin:<framework>/System/Library/Frameworks/AudioUnit.framework
+    <toolset>darwin:<framework>/System/Library/Frameworks/CoreAudio.framework
+    <toolset>darwin:<framework>/System/Library/Frameworks/CoreServices.framework
     :
     :
     <toolset>gcc,<os>NT:<find-static-library>ole32
     <toolset>gcc,<os>NT:<find-static-library>winmm
+    <toolset>darwin:<framework>/System/Library/Frameworks/AudioToolbox.framework
+    <toolset>darwin:<framework>/System/Library/Frameworks/AudioUnit.framework
+    <toolset>darwin:<framework>/System/Library/Frameworks/CoreAudio.framework
+    <toolset>darwin:<framework>/System/Library/Frameworks/CoreServices.framework
     ;

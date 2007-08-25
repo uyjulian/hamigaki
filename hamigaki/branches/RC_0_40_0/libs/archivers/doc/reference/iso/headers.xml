@@ -71,7 +71,7 @@
           </data-member>
 
           <data-member name="recorded_time">
-            <type>binary_date_time</type>
+            <type><classname>binary_date_time</classname></type>
           </data-member>
 
           <data-member name="flags">
@@ -83,39 +83,39 @@
           </data-member>
 
           <data-member name="attributes">
-            <type>boost::optional&lt;posix::file_attributes&gt;</type>
+            <type>boost::optional&lt;<classname>posix::file_attributes</classname>&gt;</type>
           </data-member>
 
           <data-member name="device_number">
-            <type>boost::optional&lt;filesystem::device_number&gt;</type>
+            <type>boost::optional&lt;<classname>filesystem::device_number</classname>&gt;</type>
           </data-member>
 
           <data-member name="creation_time">
-            <type>date_time</type>
+            <type><classname>date_time</classname></type>
           </data-member>
 
           <data-member name="last_write_time">
-            <type>date_time</type>
+            <type><classname>date_time</classname></type>
           </data-member>
 
           <data-member name="last_access_time">
-            <type>date_time</type>
+            <type><classname>date_time</classname></type>
           </data-member>
 
           <data-member name="last_change_time">
-            <type>date_time</type>
+            <type><classname>date_time</classname></type>
           </data-member>
 
           <data-member name="last_backup_time">
-            <type>date_time</type>
+            <type><classname>date_time</classname></type>
           </data-member>
 
           <data-member name="expiration_time">
-            <type>date_time</type>
+            <type><classname>date_time</classname></type>
           </data-member>
 
           <data-member name="effective_time">
-            <type>date_time</type>
+            <type><classname>date_time</classname></type>
           </data-member>
 
           <description>
@@ -241,19 +241,19 @@
           </data-member>
 
           <data-member name="creation_time">
-            <type>date_time</type>
+            <type><classname>date_time</classname></type>
           </data-member>
 
           <data-member name="modification_time">
-            <type>date_time</type>
+            <type><classname>date_time</classname></type>
           </data-member>
 
           <data-member name="expiration_time">
-            <type>date_time</type>
+            <type><classname>date_time</classname></type>
           </data-member>
 
           <data-member name="effective_time">
-            <type>date_time</type>
+            <type><classname>date_time</classname></type>
           </data-member>
 
           <description>

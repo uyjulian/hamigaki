@@ -138,7 +138,12 @@ public:
         to.data_ptr_->mutex_.unlock();
 
         while (from.data_ptr_->suspended_)
+        {
             from.data_ptr_->cond_.wait(from.data_ptr_->mutex_);
+#if defined(__APPLE__)
+            pthread_testcancel();
+#endif
+        }
 
         pthread_cleanup_pop(1);
     }
@@ -169,6 +174,12 @@ public:
         HAMIGAKI_COROUTINE_DEBUG(int ret =)
             ::pthread_cancel(handle_);
         BOOST_ASSERT(ret == 0);
+
+#if defined(__APPLE__)
+        data_ptr_->mutex_.lock();
+        data_ptr_->cond_.notify_one();
+        data_ptr_->mutex_.unlock();
+#endif
 
         HAMIGAKI_COROUTINE_DEBUG(ret =)
             ::pthread_join(handle_, 0);

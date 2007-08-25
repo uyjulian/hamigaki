@@ -50,7 +50,6 @@ vorbis_file_base::vorbis_file_base()
 
 vorbis_file_base::~vorbis_file_base()
 {
-    close();
     delete static_cast<OggVorbis_File*>(file_ptr_);
 }
 
@@ -153,6 +152,11 @@ vorbis_info vorbis_file_base::info() const
     info.bitrate_lower = ptr->bitrate_lower;
 
     return info;
+}
+
+bool vorbis_file_base::is_open() const
+{
+    return is_open_;
 }
 
 } // namespace detail

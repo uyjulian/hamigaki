@@ -155,12 +155,38 @@ if ! [ project.find /boost-lib : . ]
         make-project boost-lib ;
         module boost-lib
         {
+            import modules ;
+            import os ;
+
             alias headers : /boost//headers ;
             alias boost_filesystem : /boost/filesystem//boost_filesystem ;
             alias boost_iostreams : /boost/iostreams//boost_iostreams ;
             alias boost_regex : /boost/regex//boost_regex ;
             alias boost_thread : /boost/thread//boost_thread ;
             alias boost_unit_test_framework : /boost/test//boost_unit_test_framework ;
+
+            rule create-ios-libaray ( name )
+            {
+                local NAME = $(name:U) ;
+
+                local no-compression = [ modules.peek : NO_COMPRESSION ] ;
+                local no-$(name) = [ modules.peek : NO_$(NAME) ] ;
+                local $(name)-source = [ modules.peek : $(NAME)_SOURCE ] ;
+
+                if [ os.name ] = NT && ! $($(name)-source) && ! $($(name)-include)
+                {
+                    no-$(name) = 1 ;
+                    modules.poke : NO_$(NAME) : 1 ;
+                }
+
+                if ! $(no-compression) && ! $(no-$(name))
+                {
+                    alias boost_$(name) : /boost/iostreams//boost_$(name) ;
+                }
+            }
+
+            create-ios-libaray bzip2 ;
+            create-ios-libaray zlib ;
         }
         project.pop-current ;
     }

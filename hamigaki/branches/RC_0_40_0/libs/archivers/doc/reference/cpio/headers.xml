@@ -44,7 +44,7 @@
           </method-group>
 
           <data-member name="format">
-            <type>file_format</type>
+            <type><enumname>file_format</enumname></type>
           </data-member>
 
           <data-member name="parent_device">

@@ -18,7 +18,7 @@
 HAMIGAKI_ROOT = $(.boost-build-file:D) ;
 if --v2 in $(ARGV) || ! [ CHECK_IF_FILE $(BOOST_ROOT)/tools/build/v1/bootstrap.jam ]
 {
-    JAMFILE = Jamfile.v2 ;
+    JAMFILE = Jamfile.v2 Jamfile ;
     boost-build $(BOOST_ROOT)/tools/build/v2 ;
 }
 else

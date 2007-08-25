@@ -42,6 +42,20 @@
     #include <unistd.h>
 #endif
 
+#if defined(__APPLE__)
+    #if defined(__DYNAMIC__)
+        #include <crt_externs.h>
+        #if !defined(environ)
+            #define environ (*_NSGetEnviron())
+        #endif
+    #else
+        extern "C"
+        {
+            extern char** environ;
+        }
+    #endif
+#endif
+
 namespace hamigaki { namespace process {
 
 #if defined(BOOST_WINDOWS)
@@ -606,8 +620,6 @@ public:
         const char* ph = path.c_str();
         char* const* a = (char* const*)argv.get();
         char* const* e = (char* const*)env.get();
-        if (!e)
-            e = (char* const*)environ;
 
         const std::string dir_buf = ctx_.work_directory();
         const char* work_dir =
@@ -648,7 +660,7 @@ public:
             if ((work_dir != 0) && (::chdir(work_dir) == -1))
                 ::_exit(127);
 
-            if (::execve(ph, a, e) == -1)
+            if (::execve(ph, a, e ? e : (char* const*)environ) == -1)
                 ::_exit(127);
         }
         else if (handle_ == static_cast< ::pid_t>(-1))

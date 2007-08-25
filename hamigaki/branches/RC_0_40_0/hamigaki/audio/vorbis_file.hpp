@@ -106,6 +106,8 @@ public:
     const char* vendor() const;
     vorbis_info info() const;
 
+    bool is_open() const;
+
 private:
     void* file_ptr_;
     bool is_open_;
@@ -264,21 +266,15 @@ public:
         facade_type::block_size(base_.info().channels);
     }
 
+    ~vorbis_file_source_impl()
+    {
+        if (base_.is_open())
+            close();
+    }
+
     void close()
     {
-        bool nothrow = false;
-        boost::iostreams::detail::
-            external_closer<Source> close_src(src_, BOOST_IOS::in, nothrow);
-
-        try
-        {
-            base_.close();
-        }
-        catch (...)
-        {
-            nothrow = true;
-            throw;
-        }
+        base_.close();
     }
 
     boost::iostreams::stream_offset total()

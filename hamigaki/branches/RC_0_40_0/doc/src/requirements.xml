@@ -33,5 +33,9 @@
     <title>Fedora 7 (x86)</title>
     <listitem>GNU C++ 4.1.2</listitem>
   </itemizedlist>
+  <itemizedlist>
+    <title>Mac OS X 10.4 (x86/ppc)</title>
+    <listitem>GNU C++ 4.0.1</listitem>
+  </itemizedlist>
   <para>詳細な対応状況は、<ulink url="http://hamigaki.sourceforge.jp/status/">退行テストのログ</ulink>を参照せよ。</para>
 </chapter>

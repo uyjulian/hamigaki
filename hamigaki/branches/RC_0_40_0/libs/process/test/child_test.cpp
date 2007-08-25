@@ -17,6 +17,23 @@ namespace proc = hamigaki::process;
 namespace io = boost::iostreams;
 namespace ut = boost::unit_test;
 
+#if !defined(BOOST_WINDOWS)
+std::string find_exe(const char* s)
+{
+    std::string ph;
+    ph = "/usr/bin/";
+    ph += s;
+
+    if (::access(ph.c_str(), X_OK) == 0)
+        return ph;
+
+    ph = "/bin/";
+    ph += s;
+
+    return ph;
+}
+#endif
+
 void sort_test()
 {
     proc::context ctx;
@@ -27,7 +44,7 @@ void sort_test()
 #if defined(BOOST_WINDOWS)
     proc::child c("C:\\WINDOWS\\system32\\sort.exe", ctx);
 #else
-    proc::child c("/bin/sort", ctx);
+    proc::child c(find_exe("sort"), ctx);
 #endif
 
     proc::pipe_sink& sink = c.stdin_sink();
@@ -49,7 +66,7 @@ void terminate_test()
 #if defined(BOOST_WINDOWS)
     proc::child c("C:\\WINDOWS\\system32\\sort.exe");
 #else
-    proc::child c("/bin/sort");
+    proc::child c(find_exe("sort"));
 #endif
 }
 
@@ -72,7 +89,7 @@ void env_test()
 
     proc::child c("C:\\WINDOWS\\system32\\cmd.exe", args, env, ctx);
 #else
-    proc::child c("/bin/env", env, ctx);
+    proc::child c(find_exe("env"), env, ctx);
 #endif
 
     std::string dst;

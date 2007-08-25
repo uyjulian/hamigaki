@@ -54,7 +54,7 @@ inline bool binary_write(Sink& sink, const T& x, const std::nothrow_t&)
 {
     char data[binary_size<T>::value];
     std::memset(data, 0, sizeof(data));
-    hamigaki::binary_write(data, x);
+    hamigaki::binary_write<E>(data, x);
 
     return iostreams::blocking_write(sink, data, std::nothrow);
 }

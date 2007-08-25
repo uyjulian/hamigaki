@@ -13,6 +13,7 @@ project
     : requirements
       <library>/boost-lib//boost_unit_test_framework/<link>static
       <toolset>gcc-cygwin:<threading>multi
+      <toolset>darwin:<threading>multi
     ;
 
 test-suite "coroutine" :
