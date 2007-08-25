@@ -1,0 +1,48 @@
+# bjam_win tool Jamfile
+
+# Copyright Takeshi Mouri 2007.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/ for library home page.
+
+project
+    : requirements
+      <hardcode-dll-paths>true
+      <library>/hamigaki/process//hamigaki_process
+      <library>/boost/filesystem//boost_filesystem
+      <library>/boost/regex//boost_regex
+      <library>/boost/thread//boost_thread
+      <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
+    ;
+
+exe bjam_win
+    :
+    bjam_win.cpp
+    bjam_parser.cpp
+    list_box.cpp
+    main_window.cpp
+    main_window_impl.cpp
+    bjam_win.rc
+    :
+    <define>NOMINMAX=1
+    <find-static-library>comctl32
+    <find-static-library>comdlg32
+    <find-static-library>gdi32
+    <find-static-library>shell32
+    <find-static-library>user32
+    <threading>multi
+    <toolset>gcc:<linkflags>-mwindows
+    <user-interface>gui
+    ;
+
+install dist-bin
+    :
+    bjam_win
+    :
+    <install-type>EXE
+    <location>../../dist/bin
+    ;
+
+explicit dist-bin ;

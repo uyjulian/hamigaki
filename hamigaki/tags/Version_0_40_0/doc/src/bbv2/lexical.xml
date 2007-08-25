@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<section id="bbv2.lexical">
+  <title>字句</title>
+  <section id="bbv2.lexical.token">
+    <title>トークン</title>
+    <para>BBv2のトークンは全て空白(スペース、水平タブ、垂直タブ、復帰、改行、改ページ)で区切られる。C/C++のような区切り文字は存在しない。よって、</para>
+    <informalexample>
+      <programlisting><![CDATA[hello BBv2! ;
+[this_is_a_token] ;
+]]></programlisting>
+    </informalexample>
+    <para>は、「hello」、「BBv2!」、「;」、「[this_is_a_token]」、「;」の５つのトークンとして解釈される。</para>
+    <para>トークンに空白を含める場合は、ダブルクォーテーションで囲むか、「\」でエスケープ処理を施す。BBv2のエスケープ処理にはC/C++の「\n」のような特殊なパターンはなく、単に次の文字をただの文字として扱う。よって、</para>
+    <informalexample>
+      <programlisting><![CDATA["hello BBv2!" ;
+\"this\ is\ "a token\"" ;
+]]></programlisting>
+    </informalexample>
+    <para>は、「hello BBv2!」、「;」、「"this is a token"」、「;」の4つのトークンとして解釈される。</para>
+  </section>
+  <section id="bbv2.lexical.comment">
+    <title>コメント</title>
+    <para>「#」から改行までの文字列はコメントとして扱われ、BBv2に読み飛ばされる。ただし、「#」がトークンの一部である場合はコメントとみなされない。</para>
+    <informalexample>
+      <programlisting><![CDATA[#This is a comment.
+But_#it_is_not_a_commnt. ;
+]]></programlisting>
+    </informalexample>
+  </section>
+</section>

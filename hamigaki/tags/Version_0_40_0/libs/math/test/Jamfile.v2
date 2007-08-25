@@ -1,0 +1,20 @@
+# Hamigaki Math Library Test Jamfile
+
+# Copyright Takeshi Mouri 2007.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/libs/math for library home page.
+
+using testing ;
+
+project
+    : requirements
+      <library>/boost-lib//boost_unit_test_framework/<link>static
+    ;
+
+test-suite "math" :
+    [ run is_nan_test.cpp : ]
+    [ run sign_bit_test.cpp : ]
+    ;

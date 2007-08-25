@@ -1,0 +1,114 @@
+# Hamigaki Audio Library Jamfile
+
+# Copyright Takeshi Mouri 2006, 2007.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+
+# Original Copyright
+# ============================================================================>
+# Boost.Iostreams Library Build Jamfile
+
+# (C) Copyright Jonathan Turkanis 2004
+# Distributed under the Boost Software License, Version 1.0. (See accompanying 
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt.)
+
+# See http://www.boost.org/libs/iostreams for documentation.
+# <============================================================================
+
+subproject libs/audio/build ;
+
+import ./asio ;
+import ./dxsdk ;
+import ./ogg ;
+import ./vorbis ;
+import ./vorbisfile ;
+import ./vorbisenc ;
+
+lib hamigaki_audio
+    :
+        <template>asio
+        <template>dxsdk
+        <template>ogg
+        <template>vorbis
+        <template>vorbisfile
+        <template>vorbisenc
+        ../src/pcm_device.cpp
+    :
+        [ cond $(OGG_SOURCE) : <lib>hamigaki_ogg : ]
+        [ cond $(VORBIS_SOURCE) : <lib>hamigaki_vorbis : ]
+        [ cond $(VORBIS_SOURCE) : <lib>hamigaki_vorbisfile : ]
+        [ cond $(VORBIS_SOURCE) : <lib>hamigaki_vorbisenc : ]
+        [ common-names ]
+        <include>$(HAMIGAKI_ROOT)  <sysinclude>$(HAMIGAKI_ROOT)
+        <include>$(BOOST_INCLUDE)  <sysinclude>$(BOOST_INCLUDE)
+        <vc-8_0><*><cflags>-wd4996
+        <vc-8_0><*><cflags>-wd4819
+    :
+        debug release
+    ;
+
+dll hamigaki_audio
+    :
+        <template>asio
+        <template>dxsdk
+        <template>ogg
+        <template>vorbis
+        <template>vorbisfile
+        <template>vorbisenc
+        ../src/pcm_device.cpp
+    :
+        [ cond $(OGG_SOURCE) : <lib>hamigaki_ogg : ]
+        [ cond $(VORBIS_SOURCE) : <lib>hamigaki_vorbis : ]
+        [ cond $(VORBIS_SOURCE) : <lib>hamigaki_vorbisfile : ]
+        [ cond $(VORBIS_SOURCE) : <lib>hamigaki_vorbisenc : ]
+        [ common-names ]
+        <define>HAMIGAKI_AUDIO_DYN_LINK=1
+        <runtime-link>dynamic
+        <include>$(HAMIGAKI_ROOT)  <sysinclude>$(HAMIGAKI_ROOT)
+        <include>$(BOOST_INCLUDE)  <sysinclude>$(BOOST_INCLUDE)
+        <vc-8_0><*><cflags>-wd4996
+        <vc-8_0><*><cflags>-wd4819
+        <mingw><*><find-library>winmm
+    :
+        debug release
+    ;
+
+install audio lib
+    : <lib>hamigaki_audio <dll>hamigaki_audio
+      [ cond $(OGG_SOURCE) : <lib>hamigaki_ogg <dll>hamigaki_ogg : ] 
+      [ cond $(VORBIS_SOURCE)
+        :
+        <lib>hamigaki_vorbis
+        <dll>hamigaki_vorbis
+        <lib>hamigaki_vorbisfile
+        <dll>hamigaki_vorbisfile
+        <lib>hamigaki_vorbisenc
+        <dll>hamigaki_vorbisenc
+        :
+      ]
+    ;
+
+stage stage/lib
+    : <lib>hamigaki_audio <dll>hamigaki_audio
+      [ cond $(OGG_SOURCE) : <lib>hamigaki_ogg <dll>hamigaki_ogg : ] 
+      [ cond $(VORBIS_SOURCE)
+        :
+        <lib>hamigaki_vorbis
+        <dll>hamigaki_vorbis
+        <lib>hamigaki_vorbisfile
+        <dll>hamigaki_vorbisfile
+        <lib>hamigaki_vorbisenc
+        <dll>hamigaki_vorbisenc
+        :
+      ]
+    : # copy to a path rooted at HAMIGAKI_ROOT:
+      <locate>$(HAMIGAKI_ROOT)
+      [ common-names ]
+      <target>stage
+      <target>all
+    : # build variants
+      debug release
+    ;

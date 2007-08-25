@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Coroutine Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/coroutine for library home page.
+-->
+<header name="hamigaki/coroutine/generator.hpp">
+  <namespace name="hamigaki">
+    <namespace name="coroutines">
+      <class name="generator">
+        <template>
+          <template-type-parameter name="T"/>
+        </template>
+
+        <typedef name="coroutine_type">
+          <type><classname alt="shared_coroutineN">shared_coroutine0</classname>&lt;T&gt;</type>
+        </typedef>
+
+        <typedef name="self">
+          <type><classname>selfN</classname>&lt;R, T1, T2, ..., TN&gt;</type>
+        </typedef>
+
+        <typedef name="value_type">
+          <type>T</type>
+        </typedef>
+
+        <typedef name="reference">
+          <type>const T&amp;</type>
+        </typedef>
+
+        <typedef name="pointer">
+          <type>const T*</type>
+        </typedef>
+
+        <typedef name="difference_type">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <typedef name="iterator_category">
+          <type>std::input_iterator_tag</type>
+        </typedef>
+
+        <constructor/>
+
+        <constructor specifiers="explicit">
+          <template>
+            <template-type-parameter name="Functor"/>
+          </template>
+
+          <parameter name="f">
+            <paramtype>Functor</paramtype>
+          </parameter>
+
+          <effects><para><programlisting><![CDATA[coro = coroutine_type(f);
+value = coro(std::nothrow);]]></programlisting></para></effects>
+        </constructor>
+
+        <method-group name="operators">
+          <method name="operator==">
+            <type>bool</type>
+            <parameter name="rhs">
+              <paramtype>const generator&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="operator!=">
+            <type>bool</type>
+            <parameter name="rhs">
+              <paramtype>const generator&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="operator*" cv="const">
+            <type>const T&amp;</type>
+            <returns><simpara><code>value</code></simpara></returns>
+          </method>
+
+          <method name="operator->" cv="const">
+            <type>const T*</type>
+            <returns><simpara><code>&amp;value</code></simpara></returns>
+          </method>
+
+          <method name="operator++">
+            <type>generator&amp;</type>
+            <effects><simpara><code>value = coro(std::nothrow)</code></simpara></effects>
+            <returns><simpara><code>*this</code></simpara></returns>
+          </method>
+        </method-group>
+
+        <data-member name="coro" specifiers="private:">
+          <type>coroutine_type</type>
+        </data-member>
+
+        <data-member name="value" specifiers="private:">
+          <type>T</type>
+        </data-member>
+      </class>
+    </namespace>
+  </namespace>
+</header>

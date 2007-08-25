@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE chapter PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<chapter id="installation">
+  <title>インストール</title>
+  <para>いくつかのHamigakiライブラリはライブラリのビルドを必要とする。ビルドにはBoost.BuildのVersion 1もしくはVersion 2を使用することができる。</para>
+  <formalpara>
+    <title>Boost.Build Version 2 を使用する場合</title>
+    <para>Boost.Build Version 2 (以下、BBv2) の動作には次のいずれかの環境変数(またはbjamの-sオプションによるグローバル変数)を設定する必要がある。</para>
+    <informaltable frame="all">
+      <tgroup cols="3">
+        <thead>
+          <row>
+            <entry>変数</entry>
+            <entry>意味</entry>
+            <entry>規定値</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>BOOST_BUILD_PATH</entry>
+            <entry>BBv2のインストールされたディレクトリ</entry>
+            <entry>/usr/share/boost-build (UNIXのみ)</entry>
+          </row>
+          <row>
+            <entry>BOOST_ROOT</entry>
+            <entry>Boost C++ Librariesの配布パッケージの展開されたディレクトリ</entry>
+            <entry>-</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>ただし、Boostのプロジェクトを参照してソースからビルドする場合は必ずBOOST_ROOT変数を設定しなければならない。
+    </para>
+    <para>また、ビルド済みBoostライブラリを使用する場合は、site-config.jamまたはuser-config.jamで次のグローバル変数を定義する。</para>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>変数</entry>
+            <entry>意味</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>NO_BOOST_STD_LIB_NAME</entry>
+            <entry>真(1)に設定するとBoostのライブラリ名にコンパイラ名とBoostのバージョンを含めない (オプション)</entry>
+          </row>
+          <row>
+            <entry>BOOST_INCLUDE</entry>
+            <entry>Boostのヘッダファイルのあるディレクトリ</entry>
+          </row>
+          <row>
+            <entry>BOOST_LIBPATH</entry>
+            <entry>Boostのライブラリファイルのあるディレクトリ</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>ツールセット毎にソースからのビルドとビルド済みライブラリを使い分けたい等の細かい制御が必要な場合は、site-config.jamまたはuser-config.jamで次のbjamターゲットを定義する。</para>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>ターゲットID</entry>
+            <entry>意味</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>/boost-lib//headers</entry>
+            <entry>Boostヘッダファイル</entry>
+          </row>
+          <row>
+            <entry>/boost-lib//boost_filesystem</entry>
+            <entry>Boost.Filesystemライブラリ</entry>
+          </row>
+          <row>
+            <entry>/boost-lib//boost_regex</entry>
+            <entry>Boost.Regexライブラリ</entry>
+          </row>
+          <row>
+            <entry>/boost-lib//boost_bzip2</entry>
+            <entry>bzip2ライブラリ</entry>
+          </row>
+          <row>
+            <entry>/boost-lib//boost_zlib</entry>
+            <entry>zlibライブラリ</entry>
+          </row>
+          <row>
+            <entry>/boost-lib//boost_iostreams</entry>
+            <entry>Boost.Iostreamsライブラリ</entry>
+          </row>
+          <row>
+            <entry>/boost-lib//boost_thread</entry>
+            <entry>Boost.Threadライブラリ</entry>
+          </row>
+          <row>
+            <entry>/boost-lib//boost_unit_test_framework</entry>
+            <entry>Boost.TestのUnit Test Frameworkライブラリ</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>なお、ビルド済みBoostライブラリを参照するには、付属のboost-prebuiltモジュールを使用するとよい。</para>
+    <programlisting><![CDATA[#BOOST_BUILD_PATHにディレクトリを追加する
+module
+{
+    BOOST_BUILD_PATH += C:/Hamigaki/tools/build ;
+    modules.poke .ENVIRON : BOOST_BUILD_PATH : $(BOOST_BUILD_PATH) ;
+}
+
+module boost-lib
+{
+    # モジュールの名前を設定する
+    __name__ = boost-lib ;
+
+    # モジュールをプロジェクトにする
+    import project ;
+    project.initialize $(__name__) ;
+    project $(__name__) ;
+
+    import boost-prebuilt ;
+
+    alias headers : : : : <include>C:/Boost/include/boost-1_34 ;
+    boost-prebuilt boost_filesystem : <search>C:/Boost/lib ;
+
+    # --layout=systemオプション付きでビルドしている場合
+    # boost-prebuilt boost_filesystem : <search>C:/Boost/lib <boost-layout>system ;
+}
+]]></programlisting>
+  </formalpara>
+  <formalpara>
+    <title>Boost.Build Version 1 を使用する場合</title>
+    <para>Boost.Build Version 1 でビルドする際は次の変数を設定することにより、ビルドをカスタマイズすることができる。</para>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>変数</entry>
+            <entry>意味</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>BOOST_ROOT</entry>
+            <entry>Boost C++ Librariesの配布パッケージの展開されたディレクトリ</entry>
+          </row>
+          <row>
+            <entry>NO_BOOST_STD_LIB_NAME</entry>
+            <entry>Boostのライブラリ名にコンパイラ名とBoostのバージョンを含めない (オプション)</entry>
+          </row>
+          <row>
+            <entry>BOOST_INCLUDE</entry>
+            <entry>Boostのヘッダファイルのあるディレクトリ</entry>
+          </row>
+          <row>
+            <entry>BOOST_LIBPATH</entry>
+            <entry>Boostのライブラリファイルのあるディレクトリ</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>BOOST_ROOTはBoost.Buildのjamファイルを参照するためだけに用いられる。</para>
+    <para>NO_BOOST_STD_LIB_NAMEは、Boostを--layout=systemオプションでインストールした場合、1に設定する。</para>
+    <para>Boostがコンパイラ既定のディレクトリへインストールされている場合、BOOST_INCLUDEとBOOST_LIBPATHの設定は必要ない。</para>
+    <para>ライブラリ固有の変数に関しては、各ライブラリのドキュメントを参照すること。</para>
+  </formalpara>
+</chapter>

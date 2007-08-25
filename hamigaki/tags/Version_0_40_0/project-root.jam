@@ -1,0 +1,167 @@
+# Hamigaki Library root settings
+#
+# Copyright Takeshi Mouri 2006, 2007.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+import modules ;
+
+path-constant HAMIGAKI_ROOT : . ;
+modules.poke : HAMIGAKI_ROOT : $(HAMIGAKI_ROOT) ;
+
+module
+{
+    if ! $(HAMIGAKI_ROOT)/tools/build in $(BOOST_BUILD_PATH)
+    {
+        BOOST_BUILD_PATH += $(HAMIGAKI_ROOT)/tools/build ;
+        modules.poke .ENVIRON : BOOST_BUILD_PATH : $(BOOST_BUILD_PATH) ;
+    }
+}
+
+if ! [ project.find /boost-lib : . ]
+{
+    local rule make-project ( name )
+    {
+        modules.poke $(name) : __name__ : $(name) ;
+        module $(name)
+        {
+            import project ;
+            project.initialize $(__name__) ;
+            project $(__name__) ;
+        }
+    }
+
+    if [ modules.peek : BOOST_LIBPATH ]
+    {
+        project.push-current [ project.current ] ;
+        make-project boost-lib ;
+        module boost-lib
+        {
+            import boost-prebuilt ;
+            import modules ;
+            import os ;
+
+            local boost-include = [ modules.peek : BOOST_INCLUDE ] ;
+            if ! $(boost-include)
+            {
+                boost-include = [ modules.peek : BOOST_ROOT ] ;
+            }
+            local boost-libpath = [ modules.peek : BOOST_LIBPATH ] ;
+
+            alias headers : : : : <include>$(boost-include) ;
+
+            local requirements = <search>$(boost-libpath) ;
+            if $(NO_BOOST_STD_LIB_NAME)
+            {
+                requirements += <boost-layout>system ;
+            }
+
+            boost-prebuilt boost_filesystem : $(requirements) ;
+            boost-prebuilt boost_regex : $(requirements) ;
+
+            rule create-ios-libaray ( name )
+            {
+                local NAME = $(name:U) ;
+
+                local no-compression = [ modules.peek : NO_COMPRESSION ] ;
+                local no-$(name) = [ modules.peek : NO_$(NAME) ] ;
+                local $(name)-source = [ modules.peek : $(NAME)_SOURCE ] ;
+                local $(name)-include = [ modules.peek : $(NAME)_INCLUDE ] ;
+                local $(name)-binary = [ modules.peek : $(NAME)_BINARY ] ;
+                local $(name)-libpath = [ modules.peek : $(NAME)_LIBPATH ] ;
+
+                if [ os.name ] = NT && ! $($(name)-source) && ! $($(name)-include)
+                {
+                    no-$(name) = 1 ;
+                    modules.poke : NO_$(NAME) : 1 ;
+                }
+
+                if $(no-compression) || $(no-$(name))
+                {
+                    return ;
+                }
+                else
+                {
+                    $(name)-include ?= $($(name)-source) ;
+                    if ($(name)-source)
+                    {
+                        boost-prebuilt boost_$(name) : $(requirements) ;
+                    }
+                    else
+                    {
+                        lib boost_$(name)
+                            :
+                            :
+                            <name>$(bzip-binary)
+                            <search>$($(name)-libpath)
+                            :
+                            :
+                            <include>$(bzip-include)
+                            ;
+                    }
+                    return <library>boost_$(name) ;
+                }
+            }
+
+            local ios-libs = ;
+
+            local bz2 = [ create-ios-libaray bzip2 ] ;
+            if $(bz2)
+            {
+                ios-libs += $(bz2) ;
+            }
+
+            local z = [ create-ios-libaray zlib ] ;
+            if $(z)
+            {
+                ios-libs += $(z) ;
+            }
+
+            boost-prebuilt boost_iostreams
+                :
+                $(requirements)
+                $(ios-libs)
+                ;
+
+            boost-prebuilt boost_thread
+                :
+                $(requirements)
+                :
+                :
+                <link>shared:<define>BOOST_THREAD_BUILD_DLL=1
+                <link>static:<define>BOOST_THREAD_BUILD_LIB=1
+                ;
+
+            boost-prebuilt boost_unit_test_framework
+                :
+                $(requirements)
+                <link>static
+                :
+                :
+                <define>BOOST_TEST_NO_AUTO_LINK=1
+                <link>shared:<define>BOOST_TEST_DYN_LINK=1
+                <link>shared,<toolset>msvc:<cxxflags>-wd4275
+                ;
+        }
+        project.pop-current ;
+    }
+    else
+    {
+        path-constant BOOST_ROOT : [ modules.peek : BOOST_ROOT ] ;
+        use-project /boost : $(BOOST_ROOT) ;
+
+        project.push-current [ project.current ] ;
+        make-project boost-lib ;
+        module boost-lib
+        {
+            alias headers : /boost//headers ;
+            alias boost_filesystem : /boost/filesystem//boost_filesystem ;
+            alias boost_iostreams : /boost/iostreams//boost_iostreams ;
+            alias boost_regex : /boost/regex//boost_regex ;
+            alias boost_thread : /boost/thread//boost_thread ;
+            alias boost_unit_test_framework : /boost/test//boost_unit_test_framework ;
+        }
+        project.pop-current ;
+    }
+}

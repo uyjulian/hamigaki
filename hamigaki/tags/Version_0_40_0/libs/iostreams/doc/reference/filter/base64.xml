@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Iostreams Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
+-->
+<header name="hamigaki/iostreams/filter/base64.hpp">
+  <namespace name="hamigaki">
+    <namespace name="iostreams">
+      <class name="base64_encoder">
+        <typedef name="char_type">
+          <type>char</type>
+        </typedef>
+
+        <typedef name="category">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="write">
+            <template>
+              <template-type-parameter name="Sink"/>
+            </template>
+
+            <type>std::streamsize</type>
+
+            <parameter name="sink">
+              <paramtype>Sink&amp;</paramtype>
+            </parameter>
+
+            <parameter name="s">
+              <paramtype>const char*</paramtype>
+            </parameter>
+
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+
+          <method name="close">
+            <template>
+              <template-type-parameter name="Sink"/>
+            </template>
+
+            <type>void</type>
+
+            <parameter name="sink">
+              <paramtype>Sink&amp;</paramtype>
+            </parameter>
+          </method>
+        </method-group>
+      </class>
+
+      <class name="base64_decoder">
+        <typedef name="char_type">
+          <type>char</type>
+        </typedef>
+
+        <typedef name="category">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="read">
+            <template>
+              <template-type-parameter name="Source"/>
+            </template>
+
+            <type>std::streamsize</type>
+
+            <parameter name="src">
+              <paramtype>Source&amp;</paramtype>
+            </parameter>
+
+            <parameter name="s">
+              <paramtype>char*</paramtype>
+            </parameter>
+
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+
+          <method name="close">
+            <template>
+              <template-type-parameter name="Source"/>
+            </template>
+
+            <type>void</type>
+
+            <parameter name="src">
+              <paramtype>Source&amp;</paramtype>
+            </parameter>
+          </method>
+        </method-group>
+      </class>
+
+      <class name="urlsafe_base64_encoder">
+        <typedef name="char_type">
+          <type>char</type>
+        </typedef>
+
+        <typedef name="category">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="write">
+            <template>
+              <template-type-parameter name="Sink"/>
+            </template>
+
+            <type>std::streamsize</type>
+
+            <parameter name="sink">
+              <paramtype>Sink&amp;</paramtype>
+            </parameter>
+
+            <parameter name="s">
+              <paramtype>const char*</paramtype>
+            </parameter>
+
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+
+          <method name="close">
+            <template>
+              <template-type-parameter name="Sink"/>
+            </template>
+
+            <type>void</type>
+
+            <parameter name="sink">
+              <paramtype>Sink&amp;</paramtype>
+            </parameter>
+          </method>
+        </method-group>
+      </class>
+
+      <class name="urlsafe_base64_decoder">
+        <typedef name="char_type">
+          <type>char</type>
+        </typedef>
+
+        <typedef name="category">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="read">
+            <template>
+              <template-type-parameter name="Source"/>
+            </template>
+
+            <type>std::streamsize</type>
+
+            <parameter name="src">
+              <paramtype>Source&amp;</paramtype>
+            </parameter>
+
+            <parameter name="s">
+              <paramtype>char*</paramtype>
+            </parameter>
+
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+
+          <method name="close">
+            <template>
+              <template-type-parameter name="Source"/>
+            </template>
+
+            <type>void</type>
+
+            <parameter name="src">
+              <paramtype>Source&amp;</paramtype>
+            </parameter>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Iostreams Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
+-->
+<header name="hamigaki/iostreams/tiny_restrict.hpp">
+  <namespace name="hamigaki">
+    <namespace name="iostreams">
+      <class name="tiny_restriction">
+        <template>
+          <template-type-parameter name="Device"/>
+        </template>
+
+        <purpose><para><code>tiny_restriction</code>は<code>boost::iostreams::restriction</code>の退化した変種であり、単に読み書きの文字数を制限する。</para></purpose>
+
+        <description><para>意味上は、オフセット=0の<code>boost::iostreams::restriction</code>に相当するが、オフセット移動に用いられるget()/seek()操作を必要としない。get()操作はstd::char_traitsの文字型に対する特殊化を要求するため、floatなどの標準で特殊化されない文字型を使用する場合に役に立つ。</para></description>
+
+        <typedef name="char_type">
+          <type>boost::iostreams::char_type_of&lt;Device&gt;::type</type>
+        </typedef>
+
+        <constructor>
+          <parameter name="dev">
+            <paramtype>const Device&amp;</paramtype>
+          </parameter>
+          <parameter name="len">
+            <paramtype>boost::iostreams::stream_offset</paramtype>
+            <default>-1</default>
+          </parameter>
+        </constructor>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="read">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>char_type*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+
+          <method name="write">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>const char_type*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+        </method-group>
+
+        <free-function-group name="creation">
+          <function name="tiny_restrict">
+            <type>tiny_restriction&lt;Device&gt;</type>
+            <template>
+              <template-type-parameter name="Device"/>
+            </template>
+            <parameter name="dev">
+              <paramtype>const Device&amp;</paramtype>
+            </parameter>
+            <parameter name="len">
+              <paramtype>boost::iostreams::stream_offset</paramtype>
+              <default>-1</default>
+            </parameter>
+            <returns><simpara><code><classname>tiny_restriction</classname>&lt;Device&gt;(dev, len)</code></simpara></returns>
+          </function>
+        </free-function-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

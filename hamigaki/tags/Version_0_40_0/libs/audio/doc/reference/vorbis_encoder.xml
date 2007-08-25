@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Audio Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+-->
+<header name="hamigaki/audio/vorbis_encoder.hpp">
+  <namespace name="hamigaki">
+    <namespace name="audio">
+
+      <struct name="vorbis_encode_params">
+        <data-member name="max_bitrate">
+          <type>long</type>
+        </data-member>
+        <data-member name="nominal_bitrate">
+          <type>long</type>
+        </data-member>
+        <data-member name="min_bitrate">
+          <type>long</type>
+        </data-member>
+      </struct>
+
+      <class name="basic_vorbis_file_sink">
+        <template>
+          <template-type-parameter name="Sink"/>
+        </template>
+
+        <purpose><para>Ogg Vorbisファイルへの書き込み専用アクセスを提供するSourceモデル</para></purpose>
+
+        <description>
+          <para>受け取ったSinkへPCMデータをOgg Vorbisエンコードして書き出すことができる。</para>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Sink</conceptname></member>
+              <member><conceptname>ClosableDevice</conceptname></member>
+              <member><conceptname>OptimallyBuffered</conceptname></member>
+          </simplelist></para>
+        </description>
+
+        <typedef name="char_type">
+          <type>float</type>
+        </typedef>
+
+        <typedef name="category">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <constructor>
+          <parameter name="sink">
+            <paramtype>const Sink&amp;</paramtype>
+          </parameter>
+          <parameter name="channels">
+            <paramtype>long</paramtype>
+          </parameter>
+          <parameter name="rate">
+            <paramtype>long</paramtype>
+          </parameter>
+          <parameter name="quality">
+            <paramtype>float</paramtype>
+            <default>0.1f</default>
+          </parameter>
+        </constructor>
+
+        <constructor>
+          <parameter name="sink">
+            <paramtype>const Sink&amp;</paramtype>
+          </parameter>
+          <parameter name="channels">
+            <paramtype>long</paramtype>
+          </parameter>
+          <parameter name="rate">
+            <paramtype>long</paramtype>
+          </parameter>
+          <parameter name="params">
+            <paramtype>const <classname>vorbis_encode_params</classname>&amp;</paramtype>
+          </parameter>
+        </constructor>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="optimal_buffer_size" cv="const">
+            <type>std::streamsize</type>
+            <returns><simpara>200ミリ秒分のバッファサイズ</simpara></returns>
+          </method>
+
+          <method name="write">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>const float*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+
+          <method name="close">
+            <type>void</type>
+          </method>
+        </method-group>
+
+        <method-group name="queries">
+          <method name="channels" cv="const">
+            <type>long</type>
+            <returns><simpara>チャンネル数。</simpara></returns>
+          </method>
+
+          <method name="rate" cv="const">
+            <type>long</type>
+            <returns><simpara>サンプリング周波数。</simpara></returns>
+          </method>
+        </method-group>
+
+        <free-function-group name="creation">
+          <function name="make_vorbis_file_sink">
+            <type>basic_vorbis_file_sink&lt;Sink&gt;</type>
+            <template>
+              <template-type-parameter name="Sink"/>
+            </template>
+            <parameter name="sink">
+              <paramtype>const Sink&amp;</paramtype>
+            </parameter>
+            <parameter name="channels">
+              <paramtype>long</paramtype>
+            </parameter>
+            <parameter name="rate">
+              <paramtype>long</paramtype>
+            </parameter>
+            <parameter name="quality">
+              <paramtype>float</paramtype>
+              <default>0.1f</default>
+            </parameter>
+            <returns><simpara><code><classname>basic_vorbis_file_sink</classname>&lt;Sink&gt;(sink, channels, rate, quality)</code></simpara></returns>
+          </function>
+
+          <function name="make_vorbis_file_sink">
+            <type>basic_vorbis_file_sink&lt;Sink&gt;</type>
+            <template>
+              <template-type-parameter name="Sink"/>
+            </template>
+            <parameter name="sink">
+              <paramtype>const Sink&amp;</paramtype>
+            </parameter>
+            <parameter name="channels">
+              <paramtype>long</paramtype>
+            </parameter>
+            <parameter name="rate">
+              <paramtype>long</paramtype>
+            </parameter>
+            <parameter name="params">
+              <paramtype>const <classname>vorbis_encode_params</classname>&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code><classname>basic_vorbis_file_sink</classname>&lt;Sink&gt;(sink, channels, rate, params)</code></simpara></returns>
+          </function>
+        </free-function-group>
+      </class>
+
+      <class name="vorbis_file_sink">
+        <inherit access="public">
+          <type><classname>basic_vorbis_file_sink</classname>&lt;<classname>hamigaki::iostreams::file_sink</classname>&gt;</type>
+          <purpose>Exposition only</purpose>
+        </inherit>
+
+        <constructor>
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+          <parameter name="channels">
+            <paramtype>long</paramtype>
+          </parameter>
+          <parameter name="rate">
+            <paramtype>long</paramtype>
+          </parameter>
+          <parameter name="quality">
+            <paramtype>float</paramtype>
+            <default>0.1f</default>
+          </parameter>
+        </constructor>
+
+        <constructor>
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+          <parameter name="channels">
+            <paramtype>long</paramtype>
+          </parameter>
+          <parameter name="rate">
+            <paramtype>long</paramtype>
+          </parameter>
+          <parameter name="params">
+            <paramtype>const <classname>vorbis_encode_params</classname>&amp;</paramtype>
+          </parameter>
+        </constructor>
+      </class>
+    </namespace>
+  </namespace>
+</header>

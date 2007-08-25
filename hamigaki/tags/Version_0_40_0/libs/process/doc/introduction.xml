@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Process Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/process for library home page.
+-->
+<section id="process.introduction">
+  <title>紹介</title>
+  <para>Hamigaki.ProcessライブラリはGoogle Summer of Code 2006において製作されたBoost.Processライブラリのインタフェースを参考に独自の実装を行ったものである。</para>
+  <para>実装する機能は最低限に留め、マルチスレッド環境での利用に重点を置いて実装されている。</para>
+</section>

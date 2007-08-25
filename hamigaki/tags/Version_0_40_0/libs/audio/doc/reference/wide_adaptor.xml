@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Audio Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+-->
+<header name="hamigaki/audio/wide_adaptor.hpp">
+  <namespace name="hamigaki">
+    <namespace name="audio">
+      <class name="wide_adaptor">
+        <template>
+          <template-type-parameter name="CharT"/>
+          <template-type-parameter name="Device"/>
+        </template>
+
+        <purpose><para>クラステンプレート<code>wide_adaptor</code>はDeviceを受け取り、その文字型をCharTに変換したDeviceを形成する。</para></purpose>
+
+        <description>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Source</conceptname>(<code>Device</code>が<conceptname>Source</conceptname>である場合)</member>
+              <member><conceptname>Sink</conceptname>(<code>Device</code>が<conceptname>Sink</conceptname>である場合)</member>
+              <member><conceptname>ClosableDevice</conceptname></member>
+              <member><conceptname>OptimallyBuffered</conceptname></member>
+          </simplelist></para>
+        </description>
+
+        <typedef name="char_type">
+          <type>CharT</type>
+        </typedef>
+
+        <typedef name="category">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <constructor specifiers="explicit">
+          <parameter name="dev">
+            <paramtype>const Device&amp;</paramtype>
+          </parameter>
+        </constructor>
+
+        <constructor>
+          <parameter name="dev">
+            <paramtype>const Device&amp;</paramtype>
+          </parameter>
+          <parameter name="buffer_size">
+            <paramtype>std::streamsize</paramtype>
+          </parameter>
+        </constructor>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="read">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>CharT*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+
+          <method name="write">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>const CharT*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+
+          <method name="close">
+            <type>void</type>
+          </method>
+
+          <method name="optimal_buffer_size" cv="const">
+            <type>std::streamsize</type>
+          </method>
+        </method-group>
+
+        <free-function-group name="creation">
+          <function name="widen">
+            <type>wide_adaptor&lt;CharT, Device&gt;</type>
+            <template>
+              <template-type-parameter name="CharT"/>
+              <template-type-parameter name="Device"/>
+            </template>
+            <parameter name="dev">
+              <paramtype>const Device&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code><classname>wide_adaptor</classname>&lt;CharT, Device&gt;(dev)</code></simpara></returns>
+          </function>
+        </free-function-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

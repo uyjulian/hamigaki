@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<concept name="MutliCharacterInputFilter" category="Iostreams">
+  <param name="F" role="filter-type"/>
+  <param name="D" role="device-type"/>
+
+  <models const="no" testable="yes" concept="Source">
+    <type name="D"/>
+  </models>
+
+  <associated-type name="char_type">
+    <get-member-type name="type">
+      <apply-template name="boost::iostreams::char_type_of">
+        <type name="F"/>
+      </apply-template>
+    </get-member-type>
+    <description><simpara>デバイスの文字型</simpara></description>
+  </associated-type>
+
+  <associated-type name="category">
+    <get-member-type name="iterator_category">
+      <apply-template name="boost::iostreams::category_of">
+        <type name="F"/>
+      </apply-template>
+    </get-member-type>
+    <description><simpara>デバイスのカテゴリ</simpara></description>
+  </associated-type>
+
+  <refines const="no" concept="Filter"/>
+
+  <notation variables="f">
+    <sample-value>
+      <type name="F"/>
+    </sample-value>
+  </notation>
+
+  <notation variables="d">
+    <sample-value>
+      <type name="D"/>
+    </sample-value>
+  </notation>
+
+  <notation variables="s">
+    <sample-value>
+      <pointer-to><type name="char_type"/></pointer-to>
+    </sample-value>
+  </notation>
+
+  <notation variables="n">
+    <sample-value>
+      <type name="std::streamsize"/>
+    </sample-value>
+  </notation>
+
+  <valid-type-expression name="Category tag">
+    <description/>
+    <type name="category"/>
+    <return-type>
+      <derived-from testable="yes">
+        <type name="boost::iostreams::filter_tag"/>
+      </derived-from>
+      <derived-from testable="yes">
+        <type name="boost::iostreams::input_tag"/>
+      </derived-from>
+      <derived-from testable="yes">
+        <type name="boost::iostreams::multichar_tag"/>
+      </derived-from>
+    </return-type>
+  </valid-type-expression>
+
+  <valid-expression name="Read">
+    <apply-method name="read">
+      <sample-value><reference-to><type name="F"/></reference-to></sample-value>
+      <sample-value><reference-to><type name="D"/></reference-to></sample-value>
+      <sample-value><pointer-to><type name="char_type"/></pointer-to></sample-value>
+      <sample-value><type name="std::streamsize"/></sample-value>
+    </apply-method>
+    <return-type><require-same-type><type name="std::streamsize"/></require-same-type></return-type>
+    <semantics><code>src</code>から文字列を読み取り、<code>f</code>でフィルタした結果を範囲<code>[s, s+n)</code>に書き出す。</semantics>
+  </valid-expression>
+</concept>

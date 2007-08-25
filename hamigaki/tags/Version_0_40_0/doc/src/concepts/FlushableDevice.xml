@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<concept name="FlushableDevice" category="Iostreams">
+  <param name="F" role="device-type"/>
+
+  <associated-type name="category">
+    <get-member-type name="type">
+      <apply-template name="boost::iostreams::category_of">
+        <type name="F"/>
+      </apply-template>
+    </get-member-type>
+    <description><simpara>デバイスのカテゴリ</simpara></description>
+  </associated-type>
+
+  <refines const="no" concept="Device"/>
+
+  <notation variables="f">
+    <sample-value>
+      <type name="F"/>
+    </sample-value>
+  </notation>
+
+  <valid-type-expression name="Category tag">
+    <description/>
+    <type name="category"/>
+    <return-type>
+      <derived-from testable="yes">
+        <type name="boost::iostreams::device_tag"/>
+      </derived-from>
+      <derived-from testable="yes">
+        <type name="boost::iostreams::flushable_tag"/>
+      </derived-from>
+    </return-type>
+  </valid-type-expression>
+
+  <valid-expression name="Flush">
+    <apply-method name="flush">
+      <sample-value><reference-to><type name="F"/></reference-to></sample-value>
+    </apply-method>
+    <return-type><require-same-type><type name="void"/></require-same-type></return-type>
+    <semantics><code>f</code>の内部でバッファリングされている文字列をダウンストリームへ出力する。</semantics>
+  </valid-expression>
+</concept>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Bjam Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
+-->
+<header name="hamigaki/bjam/util/target.hpp">
+  <namespace name="hamigaki">
+    <namespace name="bjam">
+      <struct name="target">
+        <static-constant name="temporary">
+          <type>unsigned</type>
+          <default>0x0001</default>
+        </static-constant>
+
+        <static-constant name="no_care">
+          <type>unsigned</type>
+          <default>0x0002</default>
+        </static-constant>
+
+        <static-constant name="not_file">
+          <type>unsigned</type>
+          <default>0x0004</default>
+        </static-constant>
+
+        <static-constant name="force_update">
+          <type>unsigned</type>
+          <default>0x0008</default>
+        </static-constant>
+
+        <static-constant name="leaves">
+          <type>unsigned</type>
+          <default>0x0010</default>
+        </static-constant>
+
+        <static-constant name="no_update">
+          <type>unsigned</type>
+          <default>0x0020</default>
+        </static-constant>
+
+        <static-constant name="rm_old">
+          <type>unsigned</type>
+          <default>0x0040</default>
+        </static-constant>
+
+        <static-constant name="fail_expected">
+          <type>unsigned</type>
+          <default>0x0080</default>
+        </static-constant>
+
+        <static-constant name="is_file">
+          <type>unsigned</type>
+          <default>0x0100</default>
+        </static-constant>
+
+        <data-member name="variables">
+          <type><classname>variable_table</classname></type>
+        </data-member>
+
+        <data-member name="depended_targets">
+          <type>std::set&lt;std::string&gt;</type>
+        </data-member>
+
+        <data-member name="included_targets">
+          <type>std::set&lt;std::string&gt;</type>
+        </data-member>
+
+        <data-member name="rebuilt_targets">
+          <type>std::set&lt;std::string&gt;</type>
+        </data-member>
+
+        <data-member name="flags">
+          <type>unsigned</type>
+        </data-member>
+      </struct>
+    </namespace>
+  </namespace>
+</header>

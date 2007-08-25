@@ -1,0 +1,96 @@
+# Hamigaki Audio Library ogg Jamfile
+
+# Copyright Takeshi Mouri 2006, 2007.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+
+# Original Copyright
+# ============================================================================>
+# Boost.Iostreams Library zlib Jamfile
+
+# (C) Copyright Jonathan Turkanis 2004
+# Distributed under the Boost Software License, Version 1.0. (See accompanying 
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt.)
+
+# See http://www.boost.org/libs/iostreams for documentation.
+# <============================================================================
+
+rule ogg_config
+{
+    if $(NT) && ! $(OGG_SOURCE) && ! $(OGG_INCLUDE)
+    {
+         ECHO ****************************************************** ;
+         ECHO Building Hamigaki.Audio with ogg support disabled. ;
+         ECHO To enable ogg, consult the Hamigaki.Audio documentation ;
+         ECHO ****************************************************** ;
+         NO_OGG = 1 ;
+    }
+
+    if ! $(NO_OGG)
+    {
+        local SOURCES = bitwise framing ;
+        OGG_INCLUDE ?= $(OGG_SOURCE)/include ;
+
+        if ! $(OGG_SOURCE) && ! $(OGG_BINARY)
+        {
+            OGG_BINARY = "ogg" ;
+        }
+
+        if $(OGG_SOURCE)
+        {
+            template ogg_common
+                : # sources
+                  $(OGG_SOURCE)/src/$(SOURCES).c
+                : # build requirements
+                  [ common-names ]
+                  <include>$(OGG_INCLUDE) <sysinclude>$(OGG_INCLUDE)
+                  <vc-8_0><*><cflags>-wd4996
+                  <vc-8_0><*><cflags>-wd4819
+                : # build variants
+                  debug release
+            ;
+
+            lib hamigaki_ogg
+                : # sources
+                  <template>ogg_common
+                : # build requirements
+                : # build variants
+                ;
+
+            dll hamigaki_ogg
+                : # sources
+                  <template>ogg_common
+                : # build requirements
+                  <runtime-link>dynamic
+                  <vc-7_1><*><linkflags>"-DEF:$(OGG_SOURCE)/win32/ogg.def"
+                  <vc-8_0><*><linkflags>"-DEF:$(OGG_SOURCE)/win32/ogg.def"
+                : # build variants
+                ;
+
+            install ogg lib
+                : <lib>hamigaki_ogg
+                ;
+        }
+    }
+}
+
+ogg_config ;
+
+template ogg
+    : # sources
+      [ cond $(OGG_SOURCE) : <lib>hamigaki_ogg : ]
+    : # build requirements
+      [
+        unless $(NO_OGG)
+        :
+        <include>$(OGG_INCLUDE) <sysinclude>$(OGG_INCLUDE)
+      ]
+      [ unless $(NO_OGG) OR $(OGG_SOURCE)
+        : <define>BOOST_OGG_BINARY=$(OGG_BINARY) ]
+      [ cond $(OGG_LIBPATH) : <library-path>$(OGG_LIBPATH) : ]
+      [ unless $(OGG_SOURCE) : <find-library>$(OGG_BINARY) : ]
+    : # build variants
+   ;

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Iostreams Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
+-->
+<header name="hamigaki/iostreams/background_copy.hpp">
+  <namespace name="hamigaki">
+    <namespace name="iostreams">
+
+      <class name="basic_background_copy">
+        <template>
+          <template-type-parameter name="ExceptionStorage">
+            <default>hamigaki::thread::exception_storage</default>
+          </template-type-parameter>
+        </template>
+
+        <purpose><para><code>basic_background_copy</code>は<code>boost::iostreams::copy()</code>に相当する操作を別スレッドで行うためのインタフェースを提供する。</para></purpose>
+
+        <description><para><code>basic_background_copy</code>は次に示す２つの状態をとる。
+          <variablelist>
+            <varlistentry>
+              <term>コピー中(copying)</term>
+              <listitem>コピー操作のためスレッドが動作している</listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>停止中(stopping)</term>
+              <listitem>コピーが完了したか中断された</listitem>
+            </varlistentry>
+          </variablelist>
+        </para><para><note>多くの場合、Source/Sinkはコピーコンストラクタおよびコピー代入演算子によって複製されると、複製元と複製先でデバイスの状態を共有する。<code>basic_background_copy</code>の状態がコピー中である間、このような共有情報を複製元のデバイスを通して変更してはならない。</note></para></description>
+
+        <constructor>
+          <template>
+            <template-type-parameter name="Source"/>
+            <template-type-parameter name="Sink"/>
+          </template>
+          <parameter name="src">
+            <paramtype>const Source&amp;</paramtype>
+          </parameter>
+          <parameter name="sink">
+            <paramtype>const Sink&amp;</paramtype>
+          </parameter>
+          <parameter name="buffer_size">
+            <paramtype>std::streamsize</paramtype>
+            <default>boost::iostreams::default_device_buffer_size</default>
+          </parameter>
+          <effects><simpara><code>src</code>から読み込んだデータを<code>dest</code>に書き出すスレッドを起動する。</simpara></effects>
+          <postconditions>状態=コピー中</postconditions>
+        </constructor>
+
+        <destructor>
+          <effects><simpara><code>stop()</code>を呼び出す。</simpara></effects>
+        </destructor>
+
+        <method-group name="modifiers">
+          <method name="stop">
+            <type>void</type>
+            <effects><simpara><code>copy()</code>により作成されたスレッドをキャンセルし、その終了を待つ。</simpara></effects>
+            <notes><simpara>この関数はスレッドの終了を待つため、ブロックする。</simpara></notes>
+            <postconditions>状態=停止中</postconditions>
+          </method>
+        </method-group>
+
+        <method-group name="queries">
+          <method name="done">
+            <type>bool</type>
+            <requires>状態=コピー中または停止中</requires>
+            <returns><simpara>コピーが完了したかどうか</simpara></returns>
+            <notes><simpara>この関数は、コピーが完了している場合はスレッドの終了を待つ。</simpara></notes>
+            <postconditions><code>true</code>を返した場合、状態=停止中。それ以外の場合、状態=コピー中</postconditions>
+          </method>
+
+          <method name="total">
+            <type>std::streamsize</type>
+            <returns><simpara>コピーした文字の数</simpara></returns>
+          </method>
+        </method-group>
+
+      </class>
+
+      <typedef name="background_copy">
+        <type>basic_background_copy&lt;&gt;</type>
+      </typedef>
+
+    </namespace>
+  </namespace>
+</header>

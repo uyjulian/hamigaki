@@ -1,0 +1,23 @@
+# Hamigaki Filesystem Library Example Jamfile
+
+# Copyright Takeshi Mouri 2007.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/libs/filesystem for library home page.
+
+import exec ;
+
+project
+    : requirements
+      <hardcode-dll-paths>true
+      <library>/hamigaki/filesystem//hamigaki_filesystem
+    ;
+
+exe link : link.cpp ;
+exe read_link : read_link.cpp ;
+exe shortcut : shortcut.cpp ;
+exe show_status : show_status.cpp ;
+
+exec.register-exec-all ;

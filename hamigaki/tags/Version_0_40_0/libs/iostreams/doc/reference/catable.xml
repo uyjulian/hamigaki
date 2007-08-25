@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Iostreams Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
+-->
+<header name="hamigaki/iostreams/catable.hpp">
+  <macro name="HAMIGAKI_IOSTREAMS_CATABLE" kind="functionlike">
+    <macro-parameter name="source"/>
+    <macro-parameter name="arity"/>
+    <purpose><para><code>source</code>を連結可能(Concatenatable)にする。連結可能とは、型<code>source</code>のオブジェクト<code>src1</code>と他のSourceオブジェクト<code>src2</code>に対し、式<code>src1 + src2</code>が<code>concatenate(src1,src2)</code>と同値であることとする。</para></purpose>
+    <description><para><code>source</code>は連結可能にするSource型、<code>arity</code>は<code>source</code>がテンプレートでない場合は0、テンプレートである場合はテンプレート引数の数。</para></description>
+  </macro>
+</header>

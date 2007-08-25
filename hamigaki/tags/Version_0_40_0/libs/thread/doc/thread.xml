@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE library PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Thread Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/thread for library home page.
+-->
+<library name="Thread" dirname="thread" xmlns:XI="http://www.w3.org/2001/XInclude" id="thread">
+
+  <libraryinfo>
+    <author role="first-last">
+      <firstname>Takeshi</firstname>
+      <surname>Mouri</surname>
+    </author>
+
+    <copyright>
+      <year>2006</year>
+      <year>2007</year>
+      <holder>Takeshi Mouri</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Distributed under the Boost Software License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)</para>
+    </legalnotice>
+
+    <librarypurpose>
+      Boost.Threadの機能を拡張する
+    </librarypurpose> 
+
+    <librarycategory name="category:concurrent"/>
+
+  </libraryinfo>
+
+  <title>Hamigaki.Thread</title>
+
+  <!-- xi:include href="../libs/thread/doc/introduction.xml" -->
+  <XI:include href="introduction.xml"/>
+  <!-- xi:include href="../libs/thread/doc/reference/reference.xml" -->
+  <XI:include href="reference/reference.xml"/>
+  <!-- xi:include href="../libs/thread/doc/rationale.xml" -->
+<!--
+  <XI:include href="rationale.xml"/>
+-->
+  <!-- xi:include href="../libs/thread/doc/acknowledgements.xml" -->
+<!--
+  <XI:include href="acknowledgements.xml"/>
+-->
+
+</library>
