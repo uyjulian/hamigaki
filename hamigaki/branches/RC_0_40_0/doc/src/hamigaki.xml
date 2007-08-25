@@ -15,6 +15,7 @@
   <xi:include href="license.xml"/>
   <xi:include href="requirements.xml"/>
   <xi:include href="installation.xml"/>
+  <xi:include href="version_history.xml"/>
 
   <chapter id="librarylist">
     <title>ライブラリ一覧</title>
