@@ -7,15 +7,25 @@
 
 # See http://hamigaki.sourceforge.jp/libs/filesystem for library home page.
 
+import boost-version ;
+
+local requirements = ;
+if [ boost-version.version ] >= 1.35.0
+{
+    requirements += <library>/boost-lib//boost_system ;
+}
+
 project hamigaki/filesystem
     : requirements
       <link>shared:<define>HAMIGAKI_FILESYSTEM_DYN_LINK
       <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
       <library>/boost-lib//boost_filesystem
+      $(requirements)
     : usage-requirements
       <link>shared:<define>HAMIGAKI_FILESYSTEM_DYN_LINK
       <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
       <library>/boost-lib//boost_filesystem
+      $(requirements)
     : source-location ../src
     ;
 

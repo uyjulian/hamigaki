@@ -39,6 +39,7 @@ if ! [ project.find /boost-lib : . ]
         module boost-lib
         {
             import boost-prebuilt ;
+            import boost-version ;
             import modules ;
             import os ;
 
@@ -124,6 +125,11 @@ if ! [ project.find /boost-lib : . ]
                 $(ios-libs)
                 ;
 
+            if [ boost-version.version ] >= 1.35.0
+            {
+                boost-prebuilt boost_system : $(requirements) ;
+            }
+
             boost-prebuilt boost_thread
                 :
                 $(requirements)
@@ -155,6 +161,7 @@ if ! [ project.find /boost-lib : . ]
         make-project boost-lib ;
         module boost-lib
         {
+            import boost-version ;
             import modules ;
             import os ;
 
@@ -164,6 +171,11 @@ if ! [ project.find /boost-lib : . ]
             alias boost_regex : /boost/regex//boost_regex ;
             alias boost_thread : /boost/thread//boost_thread ;
             alias boost_unit_test_framework : /boost/test//boost_unit_test_framework ;
+
+            if [ boost-version.version ] >= 1.35.0
+            {
+                alias boost_system : /boost/system//boost_system ;
+            }
 
             rule create-ios-libaray ( name )
             {

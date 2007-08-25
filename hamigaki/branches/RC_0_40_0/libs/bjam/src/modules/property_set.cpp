@@ -16,6 +16,9 @@
     #include <hamigaki/iterator/ostream_iterator.hpp>
     #include <sstream>
 #else
+    #if BOOST_VERSION >= 103500
+        #include <boost/range/as_literal.hpp>
+    #endif
     #include <boost/algorithm/string/join.hpp>
 #endif
 
