@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Audio Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+-->
+<header name="hamigaki/audio/aiff_file.hpp">
+  <namespace name="hamigaki">
+    <namespace name="audio">
+
+      <class name="basic_aiff_file_source">
+        <template>
+          <template-type-parameter name="SeekableSource"/>
+        </template>
+
+        <purpose><para>AIFFファイルへの読み込み専用アクセスを提供するSourceモデル</para></purpose>
+
+        <description>
+          <para>SeekableSourceを受け取り、AIFFファイルとしてフォーマットを解釈した結果を読み出すことができる。</para>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>SeekableSource</conceptname></member>
+              <member><conceptname>ClosableDevice</conceptname></member>
+              <member><conceptname>OptimallyBuffered</conceptname></member>
+              <member><conceptname>PcmFormatRetrievable</conceptname></member>
+          </simplelist></para>
+        </description>
+
+        <typedef name="char_type">
+          <type>char</type>
+        </typedef>
+
+        <typedef name="category">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <constructor specifiers="explicit">
+          <parameter name="src">
+            <paramtype>const SeekableSource&amp;</paramtype>
+          </parameter>
+        </constructor>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="optimal_buffer_size" cv="const">
+            <type>std::streamsize</type>
+            <returns><simpara>200ミリ秒分のバッファサイズ</simpara></returns>
+          </method>
+
+          <method name="read">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>const char*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+
+          <method name="close">
+            <type>void</type>
+          </method>
+
+          <method name="seek">
+            <type>std::streampos</type>
+            <parameter name="off">
+              <paramtype>boost::iostreams::stream_offset</paramtype>
+            </parameter>
+            <parameter name="way">
+              <paramtype>std::ios_base::seekdir</paramtype>
+            </parameter>
+          </method>
+        </method-group>
+
+        <method-group name="queries">
+          <method name="format" cv="const">
+            <type><classname>pcm_format</classname></type>
+            <returns><simpara>フォーマット情報</simpara></returns>
+          </method>
+
+          <method name="total" cv="const">
+            <type>boost::iostreams::stream_offset</type>
+            <returns><simpara>合計バイト数</simpara></returns>
+          </method>
+        </method-group>
+
+        <free-function-group name="creation">
+          <function name="make_aiff_file_source">
+            <type>basic_aiff_file_source&lt;SeekableSource&gt;</type>
+            <template>
+              <template-type-parameter name="SeekableSource"/>
+            </template>
+            <parameter name="src">
+              <paramtype>const SeekableSource&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code><classname>basic_aiff_file_source</classname>&lt;SeekableSource&gt;(src)</code></simpara></returns>
+          </function>
+        </free-function-group>
+      </class>
+
+      <class name="aiff_file_source">
+        <inherit access="public">
+          <type><classname>basic_aiff_file_source</classname>&lt;<classname>hamigaki::iostreams::file_source</classname>&gt;</type>
+          <purpose>Exposition only</purpose>
+        </inherit>
+
+        <constructor specifiers="explicit">
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+        </constructor>
+      </class>
+
+      <class name="basic_aiff_file_sink">
+        <template>
+          <template-type-parameter name="SeekableSink"/>
+        </template>
+
+        <purpose><para>AIFFファイルへの書き込み専用アクセスを提供するSinkモデル</para></purpose>
+
+        <description>
+          <para>受け取ったSeekableSinkへPCMデータをAIFFファイルとして書き出すことができる。</para>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Sink</conceptname></member>
+              <member><conceptname>ClosableDevice</conceptname></member>
+              <member><conceptname>OptimallyBuffered</conceptname></member>
+              <member><conceptname>PcmFormatRetrievable</conceptname></member>
+          </simplelist></para>
+        </description>
+
+        <typedef name="char_type">
+          <type>char</type>
+        </typedef>
+
+        <typedef name="category">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <constructor>
+          <parameter name="sink">
+            <paramtype>const SeekableSink&amp;</paramtype>
+          </parameter>
+          <parameter name="fmt">
+            <paramtype>const <classname>pcm_format</classname>&amp;</paramtype>
+          </parameter>
+        </constructor>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="optimal_buffer_size" cv="const">
+            <type>std::streamsize</type>
+            <returns><simpara>200ミリ秒分のバッファサイズ</simpara></returns>
+          </method>
+
+          <method name="write">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>const char_type*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+
+          <method name="close">
+            <type>void</type>
+          </method>
+        </method-group>
+
+        <method-group name="queries">
+          <method name="format" cv="const">
+            <type><classname>pcm_format</classname></type>
+            <returns><simpara>フォーマット情報</simpara></returns>
+          </method>
+        </method-group>
+
+        <free-function-group name="creation">
+          <function name="make_aiff_file_sink">
+            <type>basic_aiff_file_sink&lt;SeekableSink&gt;</type>
+            <template>
+              <template-type-parameter name="SeekableSink"/>
+            </template>
+            <parameter name="sink">
+              <paramtype>const SeekableSink&amp;</paramtype>
+            </parameter>
+            <parameter name="fmt">
+              <paramtype>const <classname>pcm_format</classname>&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code><classname>basic_aiff_file_sink</classname>&lt;SeekableSink&gt;(sink, fmt)</code></simpara></returns>
+          </function>
+        </free-function-group>
+      </class>
+
+      <class name="aiff_file_sink">
+        <inherit access="public">
+          <type><classname>basic_aiff_file_sink</classname>&lt;<classname>hamigaki::iostreams::file_sink</classname>&gt;</type>
+          <purpose>Exposition only</purpose>
+        </inherit>
+
+        <constructor>
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+          <parameter name="fmt">
+            <paramtype>const <classname>pcm_format</classname>&amp;</paramtype>
+          </parameter>
+        </constructor>
+      </class>
+    </namespace>
+  </namespace>
+</header>

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Bjam Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
+-->
+<header name="hamigaki/bjam/util/frame.hpp">
+  <namespace name="hamigaki">
+    <namespace name="bjam">
+      <class name="frame">
+        <constructor>
+          <parameter name="m">
+            <paramtype><classname>module</classname>&amp;</paramtype>
+          </parameter>
+        </constructor>
+
+        <constructor>
+          <parameter name="m">
+            <paramtype><classname>module</classname>&amp;</paramtype>
+          </parameter>
+          <parameter name="name">
+            <paramtype>const boost::optional&lt;std::string&gt;&amp;</paramtype>
+          </parameter>
+        </constructor>
+
+        <method-group name="module functions">
+          <method name="change_module">
+            <type>void</type>
+            <parameter name="m">
+              <paramtype><classname>module</classname>&amp;</paramtype>
+            </parameter>
+            <parameter name="name">
+              <paramtype>const boost::optional&lt;std::string&gt;&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="current_module">
+            <type><classname>module</classname>&amp;</type>
+          </method>
+
+          <method name="current_module" cv="const">
+            <type>const <classname>module</classname>&amp;</type>
+          </method>
+
+          <method name="module_name" cv="const">
+            <type>const boost::optional&lt;std::string&gt;&amp;</type>
+          </method>
+        </method-group>
+
+        <method-group name="rule functions">
+          <method name="rule_name" cv="const">
+            <type>const boost::optional&lt;std::string&gt;&amp;</type>
+          </method>
+
+          <method name="rule_name">
+            <type>void</type>
+            <parameter name="name">
+              <paramtype>const boost::optional&lt;std::string&gt;&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="arguments">
+            <type><classname>list_of_list</classname>&amp;</type>
+          </method>
+        </method-group>
+
+        <method-group name="position functions">
+          <method name="filename" cv="const">
+            <type>const std::string&amp;</type>
+          </method>
+
+          <method name="filename">
+            <type>void</type>
+            <parameter name="name">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="swap_filename">
+            <type>void</type>
+            <parameter name="name">
+              <paramtype>std::string&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="line" cv="const">
+            <type>int</type>
+          </method>
+
+          <method name="line">
+            <type>void</type>
+            <parameter name="n">
+              <paramtype>int</paramtype>
+            </parameter>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

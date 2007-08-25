@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Integer Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/integer for library home page.
+-->
+<section id="integer.introduction">
+  <title>紹介</title>
+  <para>Hamigaki.Integerライブラリは整数に対する以下の演算を提供する。</para>
+  <itemizedlist>
+    <listitem>異なる整数型に対する最大値/最小値</listitem>
+    <listitem>奇数または偶数への丸め</listitem>
+  </itemizedlist>
+</section>

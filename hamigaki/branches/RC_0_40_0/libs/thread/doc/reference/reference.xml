@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE library-reference PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Thread Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/thread for library home page.
+-->
+<library-reference xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>リファレンス</title>
+  <xi:include href="exception_storage.xml"/>
+  <xi:include href="utc_time.xml"/>
+</library-reference>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Bjam Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
+-->
+<header name="hamigaki/bjam/grammars/bjam_grammar_gen.hpp">
+  <namespace name="hamigaki">
+    <namespace name="bjam">
+      <struct name="parse_info">
+        <template>
+          <template-type-parameter name="IteratorT"/>
+          <default>const char*</default>
+        </template>
+
+        <data-member name="stop">
+          <type>IteratorT</type>
+        </data-member>
+
+        <data-member name="hit">
+          <type>bool</type>
+        </data-member>
+
+        <data-member name="full">
+          <type>bool</type>
+        </data-member>
+
+        <data-member name="length">
+          <type>std::size_t</type>
+        </data-member>
+
+        <data-member name="values">
+          <type>string_list</type>
+        </data-member>
+      </struct>
+
+      <struct name="bjam_grammar_gen">
+        <template>
+          <template-type-parameter name="IteratorT"/>
+        </template>
+
+        <typedef name="iterator_type">
+          <type>IteratorT</type>
+        </typedef>
+
+        <method name="parse_bjam_grammar" specifiers="static">
+          <type><classname>parse_info</classname>&lt;IteratorT&gt;</type>
+          <parameter name="first">
+            <paramtype>const iterator_type&amp;</paramtype>
+          </parameter>
+          <parameter name="last">
+            <paramtype>const iterator_type&amp;</paramtype>
+          </parameter>
+          <parameter name="ctx">
+            <paramtype>const <classname>context</classname>&amp;</paramtype>
+          </parameter>
+          <parameter name="line">
+            <paramtype>int</paramtype>
+            <default>1</default>
+          </parameter>
+        </method>
+      </struct>
+    </namespace>
+  </namespace>
+</header>

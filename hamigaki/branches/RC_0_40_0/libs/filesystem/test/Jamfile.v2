@@ -1,0 +1,22 @@
+# Hamigaki Filesystem Library Test Jamfile
+
+# Copyright Takeshi Mouri 2007.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/libs/filesystem for library home page.
+
+using testing ;
+
+project
+    : requirements
+      <library>/boost-lib//boost_unit_test_framework/<link>static
+      <library>/hamigaki/filesystem//hamigaki_filesystem
+    ;
+
+test-suite "filesystem" :
+    [ run file_time_test.cpp : ]
+    [ run remove_all_test.cpp : ]
+    [ run status_test.cpp : ]
+    ;

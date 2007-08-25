@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Audio Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+-->
+<header name="hamigaki/audio/asio.hpp">
+  <namespace name="hamigaki">
+    <namespace name="audio">
+      <struct name="asio_buffer_info">
+        <data-member name="min_size">
+          <type>long</type>
+        </data-member>
+        <data-member name="max_size">
+          <type>long</type>
+        </data-member>
+        <data-member name="preferred_size">
+          <type>long</type>
+        </data-member>
+        <data-member name="granularity">
+          <type>long</type>
+        </data-member>
+      </struct>
+
+      <class name="asio_source">
+        <description>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Source</conceptname></member>
+              <member><conceptname>ClosableDevice</conceptname></member>
+              <member><conceptname>SampleFormatRetrievable</conceptname></member>
+          </simplelist></para>
+        </description>
+
+        <typedef name="char_type">
+          <type>char</type>
+        </typedef>
+
+        <typedef name="category">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="read">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>char*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+          <method name="close">
+            <type>void</type>
+          </method>
+        </method-group>
+
+        <method-group name="queries">
+          <method name="sample_format" cv="const">
+            <type><enumname>sample_format_type</enumname></type>
+            <returns><simpara>PCMデータのエンコーディング方式</simpara></returns>
+          </method>
+        </method-group>
+      </class>
+
+      <class name="asio_sink">
+        <description>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Sink</conceptname></member>
+              <member><conceptname>ClosableDevice</conceptname></member>
+              <member><conceptname>SampleFormatRetrievable</conceptname></member>
+          </simplelist></para>
+        </description>
+
+        <typedef name="char_type">
+          <type>char</type>
+        </typedef>
+
+        <typedef name="category">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="write">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>const char*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+          <method name="close">
+            <type>void</type>
+          </method>
+        </method-group>
+
+        <method-group name="queries">
+          <method name="sample_format" cv="const">
+            <type><enumname>sample_format_type</enumname></type>
+            <returns><simpara>PCMデータのエンコーディング方式</simpara></returns>
+          </method>
+        </method-group>
+      </class>
+
+      <class name="asio_device">
+        <constructor specifiers="explicit">
+          <parameter name="clsid">
+            <paramtype>const <classname>uuid</classname>&amp;</paramtype>
+          </parameter>
+          <parameter name="hwnd">
+            <paramtype>void*</paramtype>
+            <default>0</default>
+          </parameter>
+          <effects><code>clsid</code>で識別されるASIOデバイスをオープンする。</effects>
+        </constructor>
+
+        <method-group name="modifier">
+          <method name="create_buffer">
+            <type>void</type>
+            <parameter name="in_channels">
+              <paramtype>long</paramtype>
+            </parameter>
+            <parameter name="out_channels">
+              <paramtype>long</paramtype>
+            </parameter>
+            <effects><simpara>入力チャンネル数=<code>in_channels</code>、出力チャンネル数=<code>out_channels</code>でASIOバッファを作成する。</simpara></effects>
+          </method>
+
+          <method name="rate">
+            <type>void</type>
+            <parameter name="r">
+              <paramtype>double</paramtype>
+            </parameter>
+            <effects><simpara>サンプリング周波数を<code>r</code>Hzに設定する。</simpara></effects>
+          </method>
+
+          <method name="buffer_size">
+            <type>std::void</type>
+            <parameter name="n">
+              <paramtype>streamsize</paramtype>
+            </parameter>
+            <effects><simpara>バッファサイズを<code>n</code>サンプル分に設定する。</simpara></effects>
+          </method>
+        </method-group>
+
+        <method-group name="queries">
+          <method name="rate">
+            <type>double</type>
+            <returns><simpara>サンプリング周波数。</simpara></returns>
+          </method>
+
+          <method name="get_source">
+            <type>asio_source</type>
+            <parameter name="idx">
+              <paramtype>std::size_t</paramtype>
+            </parameter>
+            <returns><simpara><code>idx</code>チャンネル目の<classname>asio_source</classname>。</simpara></returns>
+          </method>
+
+          <method name="get_sink">
+            <type>asio_sink</type>
+            <parameter name="idx">
+              <paramtype>std::size_t</paramtype>
+            </parameter>
+            <returns><simpara><code>idx</code>チャンネル目の<classname>asio_sink</classname>。</simpara></returns>
+          </method>
+
+          <method name="source_channels" cv="const">
+            <type>std::size_t</type>
+            <returns><simpara>入力チャンネルの数。</simpara></returns>
+          </method>
+
+          <method name="sink_channels" cv="const">
+            <type>std::size_t</type>
+            <returns><simpara>出力チャンネルの数。</simpara></returns>
+          </method>
+
+          <method name="buffer_size" cv="const">
+            <type>std::streamsize</type>
+            <returns><simpara>バッファサイズ。単位はサンプル。</simpara></returns>
+          </method>
+
+          <method name="buffer_info" cv="const">
+            <type><classname>asio_buffer_info</classname></type>
+            <returns><simpara>バッファ情報。</simpara></returns>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

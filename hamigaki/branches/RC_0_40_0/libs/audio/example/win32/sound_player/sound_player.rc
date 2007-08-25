@@ -1,0 +1,25 @@
+// sound_player.rc: the resource script for sound_player
+
+// Copyright Takeshi Mouri 2007.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
+
+// See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+
+#include <windows.h>
+#include "menus.h"
+
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+
+IDR_MENU MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Open...",            ID_FILE_LOAD
+        MENUITEM SEPARATOR
+        MENUITEM "&Properties...",      ID_FILE_PROP,   GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",               ID_FILE_EXIT
+    END
+END

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE library-reference PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Uuid Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/uuid for library home page.
+-->
+<library-reference>
+  <title>リファレンス</title>
+  <header name="hamigaki/uuid.hpp">
+    <namespace name="hamigaki">
+      <class name="uuid">
+        <constructor>
+          <effects>「00000000-0000-0000-0000-000000000000」で<code>uuid</code>を初期化する。</effects>
+        </constructor>
+
+        <constructor specifiers="explicit">
+          <parameter name="s">
+            <paramtype>const char*</paramtype>
+          </parameter>
+          <effects><code>s</code>をパースした結果で<code>uuid</code>を初期化する。</effects>
+        </constructor>
+
+        <constructor specifiers="explicit">
+          <parameter name="s">
+            <paramtype>const wchar_t*</paramtype>
+          </parameter>
+          <effects><code>s</code>をパースした結果で<code>uuid</code>を初期化する。</effects>
+        </constructor>
+
+        <constructor>
+          <parameter name="id">
+            <paramtype>const GUID&amp;</paramtype>
+          </parameter>
+          <effects><code>id</code>で<code>uuid</code>を初期化する。</effects>
+          <notes><simpara>このコンストラクタはWindows環境でのみ提供される。</simpara></notes>
+        </constructor>
+
+        <method-group name="queries">
+          <method name="is_null" cv="const">
+            <type>bool</type>
+            <returns><simpara>「00000000-0000-0000-0000-000000000000」なら<code>true</code></simpara></returns>
+          </method>
+        </method-group>
+
+        <method-group name="uuid operations">
+          <method name="to_string" cv="const">
+            <type>std::string</type>
+            <returns><simpara>UUIDの内容を示す「xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx」形式の文字列</simpara></returns>
+          </method>
+
+          <method name="to_wstring" cv="const">
+            <type>std::wstring</type>
+            <returns><simpara>UUIDの内容を示す「xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx」形式の文字列</simpara></returns>
+          </method>
+
+          <method name="to_guid_string" cv="const">
+            <type>std::string</type>
+            <returns><simpara>UUIDの内容を示す「{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}」形式の文字列</simpara></returns>
+          </method>
+
+          <method name="to_guid_wstring" cv="const">
+            <type>std::wstring</type>
+            <returns><simpara>UUIDの内容を示す「{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}」形式の文字列</simpara></returns>
+          </method>
+
+          <method name="copy" cv="const">
+            <type>const GUID&amp;</type>
+            <parameter name="id">
+              <paramtype>GUID&amp;</paramtype>
+            </parameter>
+            <effects><simpara><code>id</code>にUUIDの内容をコピーする。</simpara></effects>
+            <returns><simpara><code>id</code></simpara></returns>
+            <notes><simpara>この関数はWindows環境でのみ提供される。</simpara></notes>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </header>
+</library-reference>

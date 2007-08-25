@@ -1,0 +1,34 @@
+# Hamigaki Iostreams Library Test Jamfile
+
+# Copyright Takeshi Mouri 2007.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
+
+using testing ;
+
+alias hamigaki_iostreams : /hamigaki/iostreams//hamigaki_iostreams ;
+alias boost_thread : /boost-lib//boost_thread ;
+
+project
+    : requirements
+      <library>/boost-lib//boost_unit_test_framework/<link>static
+    ;
+
+test-suite "iostreams" :
+    [ run background_copy_test.cpp boost_thread : : : <threading>multi ]
+    [ run base64_test.cpp : ]
+    [ run concatenate_test.cpp : ]
+    [ run file_test.cpp : ]
+    [ run file_descriptor_test.cpp hamigaki_iostreams ]
+    [ run huffman_test.cpp : ]
+    [ run lazy_restrict_test.cpp : ]
+    [ run lzhuf_test.cpp : ]
+    [ run lzss_test.cpp : ]
+    [ run modified_lzss_test.cpp : ]
+    [ run repeat_test.cpp : ]
+    [ run tmp_file_test.cpp hamigaki_iostreams ]
+    [ run urlsafe_base64_test.cpp : ]
+    ;

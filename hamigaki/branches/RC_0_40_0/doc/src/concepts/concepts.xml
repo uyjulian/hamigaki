@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE library-reference PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<library-reference xmlns:xi="http://www.w3.org/2001/XInclude" id="concepts.reference">
+  <sectioninfo>
+    <copyright>
+      <year>2006</year>
+      <holder>Takeshi Mouri</holder>
+    </copyright>
+
+    <copyright>
+      <year>2002</year>
+      <year>2003</year>
+      <holder>Trustees of Indiana University.</holder>
+    </copyright>
+
+    <copyright>
+      <year>2001</year>
+      <year>2002</year>
+      <holder>University of Notre Dame.</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>This product includes software developed at the University
+      of Notre Dame and the Pervasive Technology Labs at Indiana
+      University. For technical information contact Andrew Lumsdaine
+      at the Pervasive Technology Labs at Indiana University.  For
+      administrative and license questions contact the Advanced
+      Research and Technology Institute at 351 West 10th Street.
+      Indianapolis, Indiana 46202, phone 317-278-4100, fax
+      317-274-5902.</para>
+
+      <para>Permission to copy, use, modify, sell and distribute this
+      software is granted provided this copyright notice appears in
+      all copies. This software is provided "as is" without express or
+      implied warranty, and with no claim as to its suitability for
+      any purpose.</para>
+    </legalnotice>
+  </sectioninfo>
+
+  <title>リファレンス</title>
+  <xi:include href="Archiver.xml"/>
+  <xi:include href="ClosableDevice.xml"/>
+  <xi:include href="ClosableInputFilter.xml"/>
+  <xi:include href="ClosableOutputFilter.xml"/>
+  <xi:include href="Device.xml"/>
+  <xi:include href="ExceptionStorage.xml"/>
+  <xi:include href="Extractor.xml"/>
+  <xi:include href="Filter.xml"/>
+  <xi:include href="FlushableDevice.xml"/>
+  <xi:include href="MutliCharacterInputFilter.xml"/>
+  <xi:include href="MutliCharacterOutputFilter.xml"/>
+  <xi:include href="OptimallyBuffered.xml"/>
+  <xi:include href="PcmFormatRetrievable.xml"/>
+  <xi:include href="SampleFormatRetrievable.xml"/>
+  <xi:include href="SeekableDevice.xml"/>
+  <xi:include href="SeekableSink.xml"/>
+  <xi:include href="SeekableSource.xml"/>
+  <xi:include href="Sink.xml"/>
+  <xi:include href="Source.xml"/>
+</library-reference>

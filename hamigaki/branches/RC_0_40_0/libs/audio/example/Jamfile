@@ -1,0 +1,185 @@
+# Hamigaki Audio Library Example Jamfile
+
+# Copyright Takeshi Mouri 2006, 2007.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+
+subproject libs/audio/example ;
+
+import ../build/asio ;
+import ../build/dxsdk ;
+import ../build/ogg ;
+import ../build/vorbis ;
+import ../build/vorbisfile ;
+import ../build/vorbisenc ;
+
+{
+
+template audio
+    : # sources
+      <lib>../build/hamigaki_audio
+    : # build requirements
+      <define>BOOST_ALL_NO_LIB=1
+      <cw-8_3><*><define>BOOST_THREAD_USE_LIB=1
+      <include>$(HAMIGAKI_ROOT)  <sysinclude>$(HAMIGAKI_ROOT)
+      <include>$(BOOST_INCLUDE)  <sysinclude>$(BOOST_INCLUDE)
+      <library-path>$(BOOST_LIBPATH)
+      <vc-8_0><*><cflags>-wd4996
+      <vc-8_0><*><cflags>-wd4819
+      <mingw><*><find-library>winmm
+    : # build variants
+    ;
+
+template ogg
+    : # sources
+      <lib>../build/hamigaki_ogg
+    : # build requirements
+    : # build variants
+    ;
+
+template vorbis
+    : # sources
+      <lib>../build/hamigaki_vorbis
+    : # build requirements
+    : # build variants
+    ;
+
+template vorbisfile
+    : # sources
+      <lib>../build/hamigaki_vorbisfile
+    : # build requirements
+    : # build variants
+    ;
+
+template vorbisenc
+    : # sources
+      <lib>../build/hamigaki_vorbisenc
+    : # build requirements
+    : # build variants
+    ;
+
+
+exe aiff_play
+    :
+        aiff_play.cpp
+        <template>audio
+    :
+    ;
+
+exe asio_example
+    :
+        asio_example.cpp
+        <template>audio
+        <template>asio
+    :
+        <gcc><*><find-library>ole32
+        <threading>multi
+        find-boost-thread-lib
+    ;
+
+exe asio_ogg_play
+    :
+        asio_ogg_play.cpp
+        <template>audio
+        <template>asio
+        <template>vorbisfile
+        <template>vorbis
+        <template>ogg
+    :
+        <gcc><*><find-library>ole32
+    ;
+
+exe ds_capture
+    :
+        ds_capture.cpp
+        <template>audio
+        <template>dxsdk
+    :
+        <threading>multi
+        find-boost-thread-lib
+    ;
+
+exe falcom_play
+    :
+        falcom_play.cpp
+        <template>audio
+        <template>vorbisfile
+        <template>vorbis
+        <template>ogg
+    :
+    ;
+
+exe frog_round
+    :
+        frog_round.cpp
+        <template>audio
+        <template>dxsdk
+    :
+        <threading>multi
+        find-boost-thread-lib
+    ;
+
+exe ogg_play
+    :
+        ogg_play.cpp
+        <template>audio
+        <template>vorbisfile
+        <template>vorbis
+        <template>ogg
+    :
+    ;
+
+exe pcm_play
+    :
+        pcm_play.cpp
+        <template>audio
+    :
+    ;
+
+exe pcm_record
+    :
+        pcm_record.cpp
+        <template>audio
+    :
+        <threading>multi
+        find-boost-thread-lib
+    ;
+
+exe raw_play
+    :
+        raw_play.cpp
+        <template>audio
+    :
+    ;
+
+exe vorbis_encoder_example
+    :
+        vorbis_encoder_example.cpp
+        <template>audio
+        <template>vorbisenc
+        <template>vorbis
+        <template>ogg
+    :
+    ;
+
+exe vorbis_file_example
+    :
+        vorbis_file_example.cpp
+        <template>audio
+        <template>vorbisfile
+        <template>vorbis
+        <template>ogg
+    :
+    ;
+
+exe wav2aif
+    :
+        wav2aif.cpp
+        <template>audio
+    :
+    ;
+
+}

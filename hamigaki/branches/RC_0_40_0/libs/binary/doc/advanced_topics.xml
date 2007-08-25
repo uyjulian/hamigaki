@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Binary Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/binary for library home page.
+-->
+<section id="binary.advanced_topics">
+  <title>高度なトピック</title>
+  <using-namespace name="hamigaki"/>
+
+  <section id="binary.advanced_topics.custom_member">
+    <title>カスタムメンバ</title>
+
+    <para>次の構造体は、Microsoft Windowsのddsファイルで用いられる<code>DDPIXELFORMAT</code>構造体である。</para>
+
+    <programlisting><![CDATA[typedef struct _DDPIXELFORMAT
+{
+    DWORD dwSize;
+    DWORD dwFlags;
+    DWORD dwFourCC;
+    union
+    {
+        DWORD dwRGBBitCount;
+        DWORD dwYUVBitCount;
+        DWORD dwZBufferBitDepth;
+        DWORD dwAlphaBitDepth;
+        DWORD dwLuminanceBitCount;
+        DWORD dwBumpBitCount;
+    };
+    union
+    {
+        DWORD dwRBitMask;
+        DWORD dwYBitMask;
+        DWORD dwStencilBitDepth;
+        DWORD dwLuminanceBitMask;
+        DWORD dwBumpDuBitMask;
+    };
+    union
+    {
+        DWORD dwGBitMask;
+        DWORD dwUBitMask;
+        DWORD dwZBitMask;
+        DWORD dwBumpDvBitMask;
+    };
+    union
+    {
+        DWORD dwBBitMask;
+        DWORD dwVBitMask;
+        DWORD dwStencilBitMask;
+        DWORD dwBumpLuminanceBitMask;
+    };
+    union
+    {
+        DWORD dwRGBAlphaBitMask;
+        DWORD dwYUVAlphaBitMask;
+        DWORD dwLuminanceAlphaBitMask;
+        DWORD dwRGBZBitMask;
+        DWORD dwYUVZBitMask;
+    };
+} DDPIXELFORMAT;
+]]></programlisting>
+
+    <para><code>DDPIXELFORMAT</code>構造体では、タグ名のない共用体が使われているため、<code>dwRGBBitCount</code>などのメンバポインタを取得できない。</para>
+
+    <para>このような場合は、<classname>member</classname>の代わりに次のようなカスタムメンバを用意することで対処できる。</para>
+
+    <programlisting><![CDATA[struct dd_pixel_format_u1
+{
+    typedef ::DDPIXELFORMAT struct_type;
+    typedef ::DWORD member_type;
+
+    static const hamigaki::endianness endian = hamigaki::little;
+
+    // binary_read()用
+    ::DWORD& operator()(::DDPIXELFORMAT& x) const
+    {
+        return x.dwRGBBitCount;
+    }
+
+    // binary_write()用
+    ::DWORD operator()(const ::DDPIXELFORMAT& x) const
+    { 
+        return x.dwRGBBitCount;
+    }
+};
+
+namespace hamigaki
+{
+
+template<> struct member_size< ::dd_pixel_format_u1> : boost::mpl::size_t<4> {};
+
+} // namespace hamigaki
+]]></programlisting>
+
+    <para>ここで、<code>struct_type</code>は構造体の型、<code>member_type</code>はフィールドの型、<code>endian</code>は出力時のエンディアンである。２つの関数呼出し演算子は、入出力の際にメンバへアクセスするために用いられる。</para>
+
+    <para>また、カスタムメンバにはメタ関数<classname>member_size</classname>の特殊化を用意しなければいけない。<classname>member_size</classname>は、<classname>member</classname>やカスタムメンバを引数として、そのメンバのバイナリサイズを<code>boost::mpl::size_t</code>で返すメタ関数である。</para>
+
+    <para>こうして用意したカスタムメンバは<classname>member</classname>や<classname>padding</classname>と同様に<classname>struct_traits</classname>で<code>members</code>の要素として用いることができる。</para>
+  </section>
+</section>

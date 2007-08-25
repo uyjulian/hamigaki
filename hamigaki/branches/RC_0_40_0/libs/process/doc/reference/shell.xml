@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Process Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/process for library home page.
+-->
+<header name="hamigaki/process/shell.hpp">
+  <namespace name="hamigaki">
+    <namespace name="process">
+      <overloaded-function name="launch_shell">
+        <signature>
+          <type><classname>child</classname></type>
+          <parameter name="cmd">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+          <parameter name="ctx">
+            <paramtype>const <classname>context</classname>&amp;</paramtype>
+          </parameter>
+        </signature>
+        <signature>
+          <type><classname>child</classname></type>
+          <parameter name="cmd">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+        </signature>
+        <effects>OS標準のコマンドシェルにコマンド文字列<code>cmd</code>を与えてプロセスを起動する。<code>ctx</code>は<classname>child</classname>のコンストラクタに渡される。</effects>
+        <returns>生成した子プロセス</returns>
+      </overloaded-function>
+
+      <function name="shell_expand">
+        <type>std::string</type>
+        <parameter name="cmd">
+          <paramtype>const std::string&amp;</paramtype>
+        </parameter>
+        <effects>OS標準のコマンドシェルにコマンド文字列<code>cmd</code>を与えてプロセスを起動する。標準出力はパイプで捕捉され、標準入力と標準エラー出力は現在のプロセスから継承される。</effects>
+        <returns>子プロセスの標準出力に出力された文字列。ただし、改行は空白文字に置換される。</returns>
+      </function>
+    </namespace>
+  </namespace>
+</header>

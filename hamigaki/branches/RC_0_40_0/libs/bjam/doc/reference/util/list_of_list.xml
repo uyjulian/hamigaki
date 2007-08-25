@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Bjam Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
+-->
+<header name="hamigaki/bjam/util/list_of_list.hpp">
+  <namespace name="hamigaki">
+    <namespace name="bjam">
+      <class name="list_of_list">
+        <purpose>
+          <simpara><classname>string_list</classname>のリスト</simpara>
+        </purpose>
+
+        <typedef name="value_type">
+          <type><classname>string_list</classname></type>
+        </typedef>
+
+        <typedef name="const_reference">
+          <type>const value_type&amp;</type>
+        </typedef>
+
+        <typedef name="const_pointer">
+          <type>const value_type*</type>
+        </typedef>
+
+        <typedef name="size_type">
+          <type>std::size_t</type>
+        </typedef>
+
+        <constructor/>
+
+        <method-group name="capacity">
+          <method name="size" cv="const">
+            <type>size_type</type>
+          </method>
+
+          <method name="empty" cv="const">
+            <type>bool</type>
+          </method>
+        </method-group>
+
+        <method-group name="element access">
+          <method name="operator[]" cv="const">
+            <type>const value_type&amp;</type>
+            <parameter name="n">
+              <paramtype>size_type</paramtype>
+            </parameter>
+          </method>
+        </method-group>
+
+        <method-group name="modifiers">
+          <method name="push_back">
+            <type>void</type>
+            <parameter name="x">
+              <paramtype>const value_type&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="swap">
+            <type>void</type>
+            <parameter name="rhs">
+              <paramtype><classname>list_of_list</classname>&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="clear">
+            <type>void</type>
+          </method>
+        </method-group>
+
+        <method-group name="additional member functions">
+          <method name="operator+=">
+            <type><classname>list_of_list</classname>&amp;</type>
+            <parameter name="x">
+              <paramtype>const value_type&amp;</paramtype>
+            </parameter>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

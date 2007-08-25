@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<concept name="SeekableDevice" category="Iostreams">
+  <param name="D" role="device-type"/>
+
+  <associated-type name="category">
+    <get-member-type name="type">
+      <apply-template name="boost::iostreams::category_of">
+        <type name="D"/>
+      </apply-template>
+    </get-member-type>
+    <description><simpara>デバイスのカテゴリ</simpara></description>
+  </associated-type>
+
+  <refines const="no" concept="SeekableSource"/>
+  <refines const="no" concept="SeekableSink"/>
+
+  <valid-type-expression name="Category tag">
+    <description/>
+    <type name="category"/>
+    <return-type>
+      <derived-from testable="yes">
+        <type name="boost::iostreams::device_tag"/>
+      </derived-from>
+      <derived-from testable="yes">
+        <type name="boost::iostreams::seekable"/>
+      </derived-from>
+    </return-type>
+  </valid-type-expression>
+</concept>

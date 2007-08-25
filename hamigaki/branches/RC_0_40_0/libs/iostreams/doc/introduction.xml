@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Iostreams Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
+-->
+<section id="iostreams.introduction">
+  <title>紹介</title>
+  <para>Hamigaki.IostreamsライブラリはBoost.Iostreamsライブラリの拡張である。Hamigaki.Iostreamsライブラリは以下の機能を提供する。</para>
+  <itemizedlist>
+    <listitem>マルチスレッドを用いたバックグラウンドでのcopy操作</listitem>
+    <listitem>ソースの連結、ループ化</listitem>
+    <listitem>雑多なデバイス</listitem>
+  </itemizedlist>
+</section>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Checksum Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/checksum for library home page.
+-->
+<header name="hamigaki/checksum/sha1.hpp">
+  <namespace name="hamigaki">
+    <namespace name="checksum">
+      <class name="sha1">
+        <purpose>
+          <simpara>RFC 3174で規定されるSHA-1ハッシュアルゴリズムに従い、チェックサムを計算する。</simpara>
+        </purpose>
+
+        <typedef name="value_type">
+          <type>boost::array&lt;boost::uint8_t,20&gt;</type>
+        </typedef>
+
+        <constructor/>
+
+        <method-group name="modifiers">
+          <method name="reset">
+            <type>void</type>
+            <effects>SHA-1コンテキストを初期状態に戻す。</effects>
+          </method>
+
+          <method name="process_bit">
+            <type>void</type>
+            <parameter name="bit">
+              <paramtype>bool</paramtype>
+            </parameter>
+            <effects><code>bit</code>で示される1ビットでSHA-1コンテキストを更新する。</effects>
+          </method>
+
+          <method name="process_bits">
+            <type>void</type>
+            <parameter name="bits">
+              <paramtype>unsigned char</paramtype>
+            </parameter>
+            <parameter name="bit_count">
+              <paramtype>std::size_t</paramtype>
+            </parameter>
+            <effects>符号なし整数<code>bits</code>の下位<code>bit_count</code>ビットを上位ビットから順に使用してSHA-1コンテキストを更新する。</effects>
+          </method>
+
+          <method name="process_byte">
+            <type>void</type>
+            <parameter name="byte">
+              <paramtype>unsigned char</paramtype>
+            </parameter>
+            <effects>符号なし整数<code>byte</code>を上位ビットから順に使用してSHA-1コンテキストを更新する。</effects>
+          </method>
+
+          <method name="process_block">
+            <type>void</type>
+            <parameter name="bytes_begin">
+              <paramtype>const void*</paramtype>
+            </parameter>
+            <parameter name="bytes_end">
+              <paramtype>const void*</paramtype>
+            </parameter>
+            <effects><code>[bytes_begin, bytes_end)</code>の範囲を使用してSHA-1コンテキストを更新する。</effects>
+          </method>
+
+          <method name="process_block">
+            <type>void</type>
+            <parameter name="buffer">
+              <paramtype>const void*</paramtype>
+            </parameter>
+            <parameter name="byte_count">
+              <paramtype>std::size_t</paramtype>
+            </parameter>
+            <effects><code>[buffer, static_cast&lt;const char*&gt;(buffer)+byte_count)</code>の範囲を使用してSHA-1コンテキストを更新する。</effects>
+          </method>
+
+          <method name="operator()">
+            <type>void</type>
+            <parameter name="byte">
+              <paramtype>unsigned char</paramtype>
+            </parameter>
+            <effects><programlisting><![CDATA[process_byte(byte);]]></programlisting></effects>
+          </method>
+        </method-group>
+
+        <method-group name="queries">
+          <method name="checksum" cv="const">
+            <type>value_type</type>
+            <returns><simpara>SHA-1チェックサム</simpara></returns>
+          </method>
+
+          <method name="operator()" cv="const">
+            <type>value_type</type>
+            <effects><programlisting><![CDATA[return checksum();]]></programlisting></effects>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

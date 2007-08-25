@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<header name="hamigaki/archivers/tar/headers.hpp">
+  <namespace name="hamigaki">
+    <namespace name="archivers">
+      <namespace name="tar">
+        <struct name="header">
+          <method-group name="queries">
+            <method name="is_regular" cv="const">
+              <type>bool</type>
+              <returns><simpara>通常のファイルであれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
+            </method>
+
+            <method name="is_directory" cv="const">
+              <type>bool</type>
+              <returns><simpara>ディレクトリであれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
+            </method>
+
+            <method name="is_symlink" cv="const">
+              <type>bool</type>
+              <returns><simpara>シンボリックリンクであれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
+            </method>
+          </method-group>
+
+          <method-group name="modifiers">
+            <method name="type">
+              <type>void</type>
+              <parameter name="v">
+                <paramtype><enumname>filesystem::file_type</enumname></paramtype>
+              </parameter>
+              <effects><simpara>ファイル種別を<code>v</code>に設定する</simpara></effects>
+            </method>
+          </method-group>
+
+          <data-member name="path">
+            <type>boost::filesystem::path</type>
+          </data-member>
+
+          <data-member name="permissions">
+            <type>boost::uint16_t</type>
+          </data-member>
+
+          <data-member name="uid">
+            <type>boost::intmax_t</type>
+          </data-member>
+
+          <data-member name="gid">
+            <type>boost::intmax_t</type>
+          </data-member>
+
+          <data-member name="file_size">
+            <type>boost::uintmax_t</type>
+          </data-member>
+
+          <data-member name="modified_time">
+            <type>boost::optional&lt;<classname>filesystem::timestamp</classname>&gt;</type>
+          </data-member>
+
+          <data-member name="access_time">
+            <type>boost::optional&lt;<classname>filesystem::timestamp</classname>&gt;</type>
+          </data-member>
+
+          <data-member name="change_time">
+            <type>boost::optional&lt;<classname>filesystem::timestamp</classname>&gt;</type>
+          </data-member>
+
+          <data-member name="type_flag">
+            <type>char</type>
+          </data-member>
+
+          <data-member name="link_path">
+            <type>boost::filesystem::path</type>
+          </data-member>
+
+          <data-member name="format">
+            <type><enumname>file_format</enumname></type>
+          </data-member>
+
+          <data-member name="user_name">
+            <type>std::string</type>
+          </data-member>
+
+          <data-member name="group_name">
+            <type>std::string</type>
+          </data-member>
+
+          <data-member name="dev_major">
+            <type>boost::uint16_t</type>
+          </data-member>
+
+          <data-member name="dev_minor">
+            <type>boost::uint16_t</type>
+          </data-member>
+
+          <data-member name="comment">
+            <type>std::string</type>
+          </data-member>
+
+          <description>
+            <para>
+              <informaltable frame="all">
+                <tgroup cols="3">
+                  <thead>
+                    <row>
+                      <entry>メンバ変数</entry>
+                      <entry>意味</entry>
+                      <entry>規定値</entry>
+                    </row>
+                  </thead>
+                  <tbody>
+                    <row>
+                      <entry>path</entry>
+                      <entry>ファイルのパス名</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>permissions</entry>
+                      <entry>ファイル許可属性 (ファイル種別は無視される)</entry>
+                      <entry>0644</entry>
+                    </row>
+                    <row>
+                      <entry>uid</entry>
+                      <entry>ユーザーID</entry>
+                      <entry>0</entry>
+                    </row>
+                    <row>
+                      <entry>gid</entry>
+                      <entry>グループID</entry>
+                      <entry>0</entry>
+                    </row>
+                    <row>
+                      <entry>file_size</entry>
+                      <entry>ファイルサイズ</entry>
+                      <entry>0</entry>
+                    </row>
+                    <row>
+                      <entry>modified_time</entry>
+                      <entry>最終更新時間</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>access_time</entry>
+                      <entry>最終アクセス時間</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>change_time</entry>
+                      <entry>最終状態変更時間</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>type_flag</entry>
+                      <entry>ファイルの種類 (<classname>type_flag</classname>構造体内の定数のいずれか)</entry>
+                      <entry><code>type_flag::regular</code></entry>
+                    </row>
+                    <row>
+                      <entry>link_path</entry>
+                      <entry>リンク先のパス名</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>format</entry>
+                      <entry>tar ファイルのフォーマット</entry>
+                      <entry>gnu</entry>
+                    </row>
+                    <row>
+                      <entry>user_name</entry>
+                      <entry>ユーザー名</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>group_name</entry>
+                      <entry>グループ名</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>dev_major</entry>
+                      <entry>デバイスメジャー番号</entry>
+                      <entry>0</entry>
+                    </row>
+                    <row>
+                      <entry>dev_minor</entry>
+                      <entry>デバイスマイナー番号</entry>
+                      <entry>0</entry>
+                    </row>
+                    <row>
+                      <entry>comment</entry>
+                      <entry>コメント文字列</entry>
+                      <entry></entry>
+                    </row>
+                  </tbody>
+                </tgroup>
+              </informaltable>
+            </para>
+          </description>
+        </struct>
+      </namespace>
+    </namespace>
+  </namespace>
+</header>

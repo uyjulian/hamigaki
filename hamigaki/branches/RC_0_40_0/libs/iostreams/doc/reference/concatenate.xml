@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Iostreams Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
+-->
+<header name="hamigaki/iostreams/concatenate.hpp">
+  <namespace name="hamigaki">
+    <namespace name="iostreams">
+
+      <class name="concatenation">
+        <template>
+          <template-type-parameter name="Source1"/>
+          <template-type-parameter name="Source2"/>
+        </template>
+
+        <purpose><para>クラステンプレート<code>concatenation</code>は２つのSourceを受け取り、それらを直列に連結したSourceを形成する。</para></purpose>
+
+        <description><para><classname>concatenation</classname>はClosableである。</para></description>
+
+        <typedef name="char_type">
+          <type>boost::iostreams::char_type_of&lt;Source1&gt;::type</type>
+        </typedef>
+
+        <constructor>
+          <parameter name="src1">
+            <paramtype>const Source1&amp;</paramtype>
+          </parameter>
+          <parameter name="src2">
+            <paramtype>const Source2&amp;</paramtype>
+          </parameter>
+        </constructor>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="read">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>char_type*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+
+          <method name="close">
+            <type>void</type>
+          </method>
+        </method-group>
+
+        <free-function-group name="creation">
+          <function name="concatenate">
+            <type>concatenation&lt;Source1, Source2&gt;</type>
+            <template>
+              <template-type-parameter name="Source1"/>
+              <template-type-parameter name="Source2"/>
+            </template>
+            <parameter name="src1">
+              <paramtype>const Source1&amp;</paramtype>
+            </parameter>
+            <parameter name="src2">
+              <paramtype>const Source2&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code><classname>concatenation</classname>&lt;Source1, Source2&gt;(src1, src2)</code></simpara></returns>
+          </function>
+        </free-function-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

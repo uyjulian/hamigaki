@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Bjam Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
+-->
+<header name="hamigaki/bjam/util/list.hpp">
+  <namespace name="hamigaki">
+    <namespace name="bjam">
+      <class name="string_list">
+        <purpose>
+          <simpara>CopyOnWrite方式に基づく文字列リストクラス。</simpara>
+        </purpose>
+
+        <typedef name="reference">
+          <type>std::string&amp;</type>
+        </typedef>
+
+        <typedef name="const_reference">
+          <type>const std::string&amp;</type>
+        </typedef>
+
+        <typedef name="iterator">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <typedef name="const_iterator">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <typedef name="size_type">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <typedef name="difference_type">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <typedef name="value_type">
+          <type>std::string</type>
+        </typedef>
+
+        <typedef name="allocator_type">
+          <type>std::allocator&lt;std::string&gt;</type>
+        </typedef>
+
+        <typedef name="pointer">
+          <type>std::string*</type>
+        </typedef>
+
+        <typedef name="const_pointer">
+          <type>const std::string*</type>
+        </typedef>
+
+        <typedef name="reverse_iterator">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <typedef name="const_reverse_iterator">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <constructor/>
+
+        <constructor specifiers="explicit">
+          <parameter name="s">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+        </constructor>
+
+        <constructor>
+          <template>
+            <template-type-parameter name="InputIterator"/>
+          </template>
+          <parameter name="first">
+            <paramtype>Iterator</paramtype>
+          </parameter>
+          <parameter name="last">
+            <paramtype>Iterator</paramtype>
+          </parameter>
+        </constructor>
+
+        <method-group name="iterators">
+          <overloaded-method name="begin">
+            <signature>
+              <type>iterator</type>
+            </signature>
+            <signature cv="const">
+              <type>const_iterator</type>
+            </signature>
+          </overloaded-method>
+
+          <overloaded-method name="end">
+            <signature>
+              <type>iterator</type>
+            </signature>
+            <signature cv="const">
+              <type>const_iterator</type>
+            </signature>
+          </overloaded-method>
+
+          <overloaded-method name="rbegin">
+            <signature>
+              <type>reverse_iterator</type>
+            </signature>
+            <signature cv="const">
+              <type>const_reverse_iterator</type>
+            </signature>
+          </overloaded-method>
+
+          <overloaded-method name="rend">
+            <signature>
+              <type>reverse_iterator</type>
+            </signature>
+            <signature cv="const">
+              <type>const_reverse_iterator</type>
+            </signature>
+          </overloaded-method>
+        </method-group>
+
+        <method-group name="capacity">
+          <method name="size" cv="const">
+            <type>size_type</type>
+          </method>
+
+          <method name="empty" cv="const">
+            <type>bool</type>
+          </method>
+        </method-group>
+
+        <method-group name="element access">
+          <method name="operator[]" cv="const">
+            <type>const std::string&amp;</type>
+            <parameter name="n">
+              <paramtype>size_type</paramtype>
+            </parameter>
+          </method>
+        </method-group>
+
+        <method-group name="modifiers">
+          <method name="push_back">
+            <type>void</type>
+            <parameter name="s">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="insert">
+            <template>
+              <template-type-parameter name="InputIterator"/>
+            </template>
+            <type>void</type>
+            <parameter name="position">
+              <paramtype>iterator</paramtype>
+            </parameter>
+            <parameter name="first">
+              <paramtype>Iterator</paramtype>
+            </parameter>
+            <parameter name="last">
+              <paramtype>Iterator</paramtype>
+            </parameter>
+          </method>
+
+          <method name="swap">
+            <type>void</type>
+            <parameter name="rhs">
+              <paramtype><classname>string_list</classname>&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="clear">
+            <type>void</type>
+          </method>
+        </method-group>
+
+        <method-group name="additional member functions">
+          <method name="compare" cv="const">
+            <type>int</type>
+            <parameter name="rhs">
+              <paramtype>const <classname>string_list</classname>&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="operator safe_bool" cv="const">
+          </method>
+
+          <method name="operator!" cv="const">
+            <type>bool</type>
+          </method>
+
+          <method name="operator&lt;" cv="const">
+            <type>bool</type>
+            <parameter name="rhs">
+              <paramtype>const <classname>string_list</classname>&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="operator==" cv="const">
+            <type>bool</type>
+            <parameter name="rhs">
+              <paramtype>const <classname>string_list</classname>&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="operator+=">
+            <type><classname>string_list</classname>&amp;</type>
+            <parameter name="rhs">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="operator+=">
+            <type><classname>string_list</classname>&amp;</type>
+            <parameter name="rhs">
+              <paramtype>const <classname>string_list</classname>&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="try_front" cv="const">
+            <type>boost::optional&lt;std::string&gt;</type>
+          </method>
+
+          <method name="sort">
+            <type>void</type>
+          </method>
+
+          <method name="unique">
+            <type>void</type>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

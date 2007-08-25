@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE library PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Binary Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/binary for library home page.
+-->
+<library name="Binary" dirname="binary" xmlns:XI="http://www.w3.org/2001/XInclude" id="binary">
+
+  <libraryinfo>
+    <author role="first-last">
+      <firstname>Takeshi</firstname>
+      <surname>Mouri</surname>
+    </author>
+
+    <copyright>
+      <year>2006</year>
+      <year>2007</year>
+      <holder>Takeshi Mouri</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Distributed under the Boost Software License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)</para>
+    </legalnotice>
+
+    <librarypurpose>バイナリ入出力をサポートする</librarypurpose> 
+
+    <librarycategory name="category:io"/>
+
+  </libraryinfo>
+
+  <title>Hamigaki.Binary</title>
+
+  <!-- xi:include href="../libs/binary/doc/introduction.xml" -->
+  <XI:include href="introduction.xml"/>
+  <!-- xi:include href="../libs/binary/doc/tutorial.xml" -->
+  <XI:include href="tutorial.xml"/>
+  <!-- xi:include href="../libs/binary/doc/advanced_topics.xml" -->
+  <XI:include href="advanced_topics.xml"/>
+  <!-- xi:include href="../libs/binary/doc/reference/reference.xml" -->
+  <XI:include href="reference/reference.xml"/>
+
+</library>

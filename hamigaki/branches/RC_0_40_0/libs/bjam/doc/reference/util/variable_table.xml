@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Bjam Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
+-->
+<header name="hamigaki/bjam/util/variable_table.hpp">
+  <namespace name="hamigaki">
+    <namespace name="bjam">
+      <class name="variable_table">
+        <method-group name="queries">
+          <method name="get_values" cv="const">
+            <type>const <classname>string_list</classname>&amp;</type>
+            <parameter name="name">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="entries" cv="const">
+            <type>std::pair&lt;iterator,iterator&gt;</type>
+          </method>
+        </method-group>
+
+        <method-group name="modifiers">
+          <method name="set_values">
+            <type>void</type>
+            <parameter name="name">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+            <parameter name="values">
+              <paramtype>const <classname>string_list</classname>&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="append_values">
+            <type>void</type>
+            <parameter name="name">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+            <parameter name="values">
+              <paramtype>const <classname>string_list</classname>&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="set_default_values">
+            <type>void</type>
+            <parameter name="name">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+            <parameter name="values">
+              <paramtype>const <classname>string_list</classname>&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="swap_values">
+            <type>void</type>
+            <parameter name="name">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+            <parameter name="values">
+              <paramtype><classname>string_list</classname>&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="swap">
+            <type>void</type>
+            <parameter name="rhs">
+              <paramtype><classname>variable_table</classname>&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="clear">
+            <type>void</type>
+          </method>
+
+          <method name="push_local_variables">
+            <type>void</type>
+            <parameter name="local">
+              <paramtype><classname>variable_table</classname>&amp;</paramtype>
+            </parameter>
+          </method>
+
+          <method name="pop_local_variables">
+            <type>void</type>
+            <parameter name="local">
+              <paramtype><classname>variable_table</classname>&amp;</paramtype>
+            </parameter>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Audio Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+-->
+<header name="hamigaki/audio/vorbis/comment.hpp">
+  <namespace name="hamigaki">
+    <namespace name="audio">
+      <namespace name="vorbis">
+        <class name="comment_iterator">
+          <typedef name="value_type">
+            <type>std::pair&lt;const std::string,std::string&gt;</type>
+          </typedef>
+
+          <typedef name="reference">
+            <type>const value_type&amp;</type>
+          </typedef>
+
+          <typedef name="pointer">
+            <type>const value_type*</type>
+          </typedef>
+
+          <typedef name="difference_type">
+            <type><emphasis>implementation defined</emphasis></type>
+          </typedef>
+
+          <typedef name="iterator_category">
+            <type>std::random_access_iterator_tag</type>
+          </typedef>
+
+          <constructor>
+            <effects><simpara>不定値の<code>comment_iterator</code>を生成する。</simpara></effects>
+          </constructor>
+
+          <constructor>
+            <parameter name="ptr">
+              <paramtype>const char**</paramtype>
+            </parameter>
+            <effects><simpara><code>current = ptr</code></simpara></effects>
+          </constructor>
+
+          <method-group name="operators">
+            <method name="operator*" cv="const">
+              <type>reference</type>
+              <returns><simpara><code>*current</code>の文字列を名前と値の対にパースした結果</simpara></returns>
+            </method>
+
+            <method name="operator++">
+              <type>comment_iterator&amp;</type>
+              <effects><simpara><code>++current</code></simpara></effects>
+              <returns><simpara><code>*this</code></simpara></returns>
+            </method>
+
+            <method name="operator--">
+              <type>comment_iterator&amp;</type>
+              <effects><simpara><code>--current</code></simpara></effects>
+              <returns><simpara><code>*this</code></simpara></returns>
+            </method>
+          </method-group>
+
+          <data-member name="current" specifiers="private:">
+            <type>const char**</type>
+          </data-member>
+        </class>
+
+        <function name="comment_value">
+          <type>std::string</type>
+
+          <parameter name="comments">
+            <paramtype>const std::pair&lt;const char**, const char**&gt;&amp;</paramtype>
+          </parameter>
+
+          <parameter name="name">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+
+          <description><simpara>範囲[comments.first, comments.second)のコメント文字列シーケンスから名前<code>name</code>に一致するフィールドを検索する。</simpara></description>
+
+          <returns><simpara><code>name</code>に対応するフィールドの値。対応するフィールドが見つからない場合は<code>std::string()</code>。</simpara></returns>
+
+          <note><simpara>対応するフィールドが複数ある場合は、最初に見つかった値が返される。</simpara></note>
+        </function>
+      </namespace>
+    </namespace>
+  </namespace>
+</header>
