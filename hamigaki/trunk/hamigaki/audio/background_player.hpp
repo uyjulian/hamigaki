@@ -238,6 +238,14 @@ class basic_background_player
     : boost::noncopyable
     , ExceptionStorage // for Empty Base Optimization
 {
+private:
+    struct safe_bool_helper
+    {
+        void non_null() {};
+    };
+
+    typedef void (safe_bool_helper::*safe_bool)();
+
 public:
     basic_background_player(){}
 
@@ -285,6 +293,14 @@ public:
             stop();
         pimpl_.reset();
         ExceptionStorage::clear();
+    }
+
+    operator safe_bool() const
+    {
+        if (pimpl_.get() != 0)
+            return &safe_bool_helper::non_null;
+        else
+            return static_cast<safe_bool>(0);
     }
 
     bool operator!() const
