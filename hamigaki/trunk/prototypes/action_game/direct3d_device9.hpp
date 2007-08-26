@@ -74,6 +74,13 @@ public:
         texture.set_to_device(pimpl_.get(), sampler);
     }
 
+    void clear_texture(unsigned long sampler)
+    {
+        ::HRESULT res = pimpl_->SetTexture(sampler, 0);
+        if (FAILED(res))
+            throw directx9_error(res, "IDirect3DDevice9::SetTexture()");
+    }
+
     void set_vertex_format(unsigned long fmt)
     {
         ::HRESULT res = pimpl_->SetFVF(fmt);
