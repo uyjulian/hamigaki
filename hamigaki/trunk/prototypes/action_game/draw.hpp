@@ -31,6 +31,7 @@ inline void draw_rectangle(direct3d_device9& device,
     };
 
     device.set_vertex_format(D3DFVF_XYZRHW|D3DFVF_DIFFUSE);
+    device.clear_texture(0);
     device.draw_primitive(
         D3DPT_TRIANGLESTRIP, 2, vertices, sizeof(vertices[0]));
 }
