@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<concept name="ExceptionStorage" category="Thread">
+  <param name="T" role="exception-storage-type"/>
+
+  <notation variables="t">
+    <sample-value>
+      <type name="T"/>
+    </sample-value>
+  </notation>
+
+  <valid-expression name="Clear exception">
+    <apply-method name="clear">
+      <sample-value><reference-to><type name="T"/></reference-to></sample-value>
+    </apply-method>
+    <return-type><require-same-type><type name="void"/></require-same-type></return-type>
+    <semantics><code>t</code>に格納している例外を破棄する。</semantics>
+  </valid-expression>
+
+  <valid-expression name="Store exception">
+    <apply-method name="store">
+      <sample-value><reference-to><type name="T"/></reference-to></sample-value>
+    </apply-method>
+    <return-type><require-same-type><type name="void"/></require-same-type></return-type>
+    <precondition><code>std::uncaught_exception()</code></precondition>
+    <semantics>捕捉されていない例外を<code>t</code>に格納する。</semantics>
+  </valid-expression>
+
+  <valid-expression name="Re-throw exception">
+    <apply-method name="rethrow">
+      <sample-value><reference-to><type name="T"/></reference-to></sample-value>
+    </apply-method>
+    <return-type><require-same-type><type name="void"/></require-same-type></return-type>
+    <semantics><code>t</code>に格納されている例外を送出する。</semantics>
+  </valid-expression>
+</concept>

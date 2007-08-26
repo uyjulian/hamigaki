@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<concept name="Filter" category="Iostreams">
+  <param name="F" role="filter-type"/>
+
+  <associated-type name="char_type">
+    <get-member-type name="type">
+      <apply-template name="boost::iostreams::char_type_of">
+        <type name="F"/>
+      </apply-template>
+    </get-member-type>
+    <description><simpara>デバイスの文字型</simpara></description>
+  </associated-type>
+
+  <associated-type name="category">
+    <get-member-type name="iterator_category">
+      <apply-template name="boost::iostreams::category_of">
+        <type name="F"/>
+      </apply-template>
+    </get-member-type>
+    <description><simpara>デバイスのカテゴリ</simpara></description>
+  </associated-type>
+
+  <valid-type-expression name="Category tag">
+    <description/>
+    <type name="category"/>
+    <return-type>
+      <derived-from testable="yes">
+        <type name="boost::iostreams::filter_tag"/>
+      </derived-from>
+    </return-type>
+  </valid-type-expression>
+</concept>

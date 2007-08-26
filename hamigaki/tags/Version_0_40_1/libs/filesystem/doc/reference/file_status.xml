@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Filesystem Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/filesystem for library home page.
+-->
+<header name="hamigaki/filesystem/file_status.hpp">
+  <namespace name="hamigaki">
+    <namespace name="filesystem">
+      <class name="file_status">
+        <purpose><para>ファイルの状態情報を保持する</para></purpose>
+
+        <constructor specifiers="explicit">
+          <parameter name="v">
+            <paramtype><enumname>file_type</enumname></paramtype>
+            <default>status_unknown</default>
+          </parameter>
+
+          <effects><simpara><code>this->type(v)</code></simpara></effects>
+        </constructor>
+
+        <method-group name="queries">
+          <method name="type" cv="const">
+            <type><enumname>file_type</enumname></type>
+            <returns><simpara><code>file_status</code>が保持しているファイルの種類</simpara></returns>
+          </method>
+
+          <method name="has_attributes" cv="const">
+            <type>bool</type>
+            <returns><simpara><code>file_status</code>がファイル属性を保持していれば<code>true</code>。そうでなければ<code>false</code>。</simpara></returns>
+          </method>
+
+          <method name="attributes" cv="const">
+            <type><classname>file_attributes</classname>::value_type</type>
+            <requires><code>has_attributes() == true</code></requires>
+            <returns><simpara><code>file_status</code>が保持しているファイル属性</simpara></returns>
+          </method>
+
+          <method name="has_permissions" cv="const">
+            <type>bool</type>
+            <returns><simpara><code>file_status</code>がファイル許可属性を保持していれば<code>true</code>。そうでなければ<code>false</code>。</simpara></returns>
+          </method>
+
+          <method name="permissions" cv="const">
+            <type><classname>file_permissions</classname>::value_type</type>
+            <requires><code>has_permissions() == true</code></requires>
+            <returns><simpara><code>file_status</code>が保持しているファイル許可属性</simpara></returns>
+          </method>
+
+          <method name="file_size" cv="const">
+            <type>boost::uintmax_t</type>
+            <returns><simpara><code>file_status</code>が保持しているファイルサイズ</simpara></returns>
+          </method>
+
+          <method name="last_write_time" cv="const">
+            <type><classname>timestamp</classname></type>
+            <returns><simpara><code>file_status</code>が保持しているファイル最終更新時間</simpara></returns>
+          </method>
+
+          <method name="last_access_time" cv="const">
+            <type><classname>timestamp</classname></type>
+            <returns><simpara><code>file_status</code>が保持しているファイル最終アクセス時間</simpara></returns>
+          </method>
+
+          <method name="has_last_change_time" cv="const">
+            <type>bool</type>
+            <returns><simpara><code>file_status</code>がファイル最終状態変更時間を保持していれば<code>true</code>。そうでなければ<code>false</code>。</simpara></returns>
+          </method>
+
+          <method name="last_change_time" cv="const">
+            <type><classname>timestamp</classname></type>
+            <requires><code>has_last_change_time() == true</code></requires>
+            <returns><simpara><code>file_status</code>が保持しているファイル最終状態変更時間</simpara></returns>
+          </method>
+
+          <method name="has_creation_time" cv="const">
+            <type>bool</type>
+            <returns><simpara><code>file_status</code>がファイル作成時間を保持していれば<code>true</code>。そうでなければ<code>false</code>。</simpara></returns>
+          </method>
+
+          <method name="creation_time" cv="const">
+            <type><classname>timestamp</classname></type>
+            <requires><code>has_creation_time() == true</code></requires>
+            <returns><simpara><code>file_status</code>が保持しているファイル作成時間</simpara></returns>
+          </method>
+
+          <method name="has_uid" cv="const">
+            <type>bool</type>
+            <returns><simpara><code>file_status</code>がユーザーIDを保持していれば<code>true</code>。そうでなければ<code>false</code>。</simpara></returns>
+          </method>
+
+          <method name="uid" cv="const">
+            <type>boost::intmax_t</type>
+            <requires><code>has_uid() == true</code></requires>
+            <returns><simpara><code>file_status</code>が保持しているユーザーID</simpara></returns>
+          </method>
+
+          <method name="has_gid" cv="const">
+            <type>bool</type>
+            <returns><simpara><code>file_status</code>がグループIDを保持していれば<code>true</code>。そうでなければ<code>false</code>。</simpara></returns>
+          </method>
+
+          <method name="gid" cv="const">
+            <type>boost::intmax_t</type>
+            <requires><code>has_gid() == true</code></requires>
+            <returns><simpara><code>file_status</code>が保持しているグループID</simpara></returns>
+          </method>
+        </method-group>
+
+        <method-group name="modifiers">
+          <method name="type">
+            <type>void</type>
+            <parameter name="v">
+              <paramtype><enumname>file_type</enumname></paramtype>
+            </parameter>
+            <effects><simpara><code>file_status</code>が保持しているファイルの種類を<code>v</code>に変更する</simpara></effects>
+          </method>
+
+          <method name="attributes">
+            <type>void</type>
+            <parameter name="v">
+              <paramtype><classname>file_attributes</classname>::value_type</paramtype>
+            </parameter>
+            <effects><simpara><code>file_status</code>が保持しているファイル属性を<code>v</code>に変更する</simpara></effects>
+          </method>
+
+          <method name="permissions">
+            <type>void</type>
+            <parameter name="v">
+              <paramtype><classname>file_permissions</classname>::value_type</paramtype>
+            </parameter>
+            <effects><simpara><code>file_status</code>が保持しているファイル許可属性を<code>v</code>に変更する</simpara></effects>
+          </method>
+
+          <method name="file_size">
+            <type>void</type>
+            <parameter name="v">
+              <paramtype>boost::uintmax_t</paramtype>
+            </parameter>
+            <effects><simpara><code>file_status</code>が保持しているファイルサイズを<code>v</code>に変更する</simpara></effects>
+          </method>
+
+          <method name="last_write_time">
+            <type>void</type>
+            <parameter name="v">
+              <paramtype>const <classname>timestamp</classname>&amp;</paramtype>
+            </parameter>
+            <effects><simpara><code>file_status</code>が保持しているファイル最終更新時間を<code>v</code>に変更する</simpara></effects>
+          </method>
+
+          <method name="last_access_time">
+            <type>void</type>
+            <parameter name="v">
+              <paramtype>const <classname>timestamp</classname>&amp;</paramtype>
+            </parameter>
+            <effects><simpara><code>file_status</code>が保持しているファイル最終アクセス時間を<code>v</code>に変更する</simpara></effects>
+          </method>
+
+          <method name="last_change_time">
+            <type>void</type>
+            <parameter name="v">
+              <paramtype>const <classname>timestamp</classname>&amp;</paramtype>
+            </parameter>
+            <effects><simpara><code>file_status</code>が保持しているファイル最終状態変更時間を<code>v</code>に変更する</simpara></effects>
+          </method>
+
+          <method name="creation_time">
+            <type>void</type>
+            <parameter name="v">
+              <paramtype>const <classname>timestamp</classname>&amp;</paramtype>
+            </parameter>
+            <effects><simpara><code>file_status</code>が保持しているファイル作成時間を<code>v</code>に変更する</simpara></effects>
+          </method>
+
+          <method name="uid">
+            <type>void</type>
+            <parameter name="v">
+              <paramtype>boost::intmax_t</paramtype>
+            </parameter>
+            <effects><simpara><code>file_status</code>が保持しているユーザーIDを<code>v</code>に変更する</simpara></effects>
+          </method>
+
+          <method name="gid">
+            <type>void</type>
+            <parameter name="v">
+              <paramtype>boost::intmax_t</paramtype>
+            </parameter>
+            <effects><simpara><code>file_status</code>が保持しているグループIDを<code>v</code>に変更する</simpara></effects>
+          </method>
+        </method-group>
+
+        <free-function-group name="predicate functions">
+          <function name="status_known">
+            <type>bool</type>
+            <parameter name="s">
+              <paramtype>const <classname>file_status</classname>&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code>s.type() != status_unknown</code></simpara></returns>
+          </function>
+
+          <function name="exists">
+            <type>bool</type>
+            <parameter name="s">
+              <paramtype>const <classname>file_status</classname>&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code>status_known(s) &amp;&amp; s.type() != file_not_found</code></simpara></returns>
+          </function>
+
+          <function name="is_regular">
+            <type>bool</type>
+            <parameter name="s">
+              <paramtype>const <classname>file_status</classname>&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code>s.type() == regular_file</code></simpara></returns>
+          </function>
+
+          <function name="is_directory">
+            <type>bool</type>
+            <parameter name="s">
+              <paramtype>const <classname>file_status</classname>&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code>s.type() == directory_file</code></simpara></returns>
+          </function>
+
+          <function name="is_symlink">
+            <type>bool</type>
+            <parameter name="s">
+              <paramtype>const <classname>file_status</classname>&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code>s.type() == symlink_file</code></simpara></returns>
+          </function>
+
+          <function name="is_other">
+            <type>bool</type>
+            <parameter name="s">
+              <paramtype>const <classname>file_status</classname>&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code>exists(s) &amp;&amp; !is_regular(s) &amp;&amp; !is_directory(s) &amp;&amp; !is_symlink(s)</code></simpara></returns>
+          </function>
+        </free-function-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

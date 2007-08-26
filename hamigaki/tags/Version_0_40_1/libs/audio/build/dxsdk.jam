@@ -1,0 +1,65 @@
+# Hamigaki Audio Library DirectX SDK configuration Jamfile
+
+# Copyright Takeshi Mouri 2006, 2007.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+
+# Original Copyright
+# ============================================================================>
+# Boost.Iostreams Library zlib Jamfile
+
+# (C) Copyright Jonathan Turkanis 2004
+# Distributed under the Boost Software License, Version 1.0. (See accompanying 
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt.)
+
+# See http://www.boost.org/libs/iostreams for documentation.
+# <============================================================================
+
+rule dxsdk_config
+{
+    if ! $(NT) && ! $(HAVE_DXSDK)
+    {
+         NO_DXSDK = 1 ;
+    }
+
+    if $(NT) && ! $(HAVE_DXSDK)
+    {
+         ECHO ****************************************************** ;
+         ECHO Building Hamigaki.Audio with DirectX support disabled. ;
+         ECHO To enable DirectX, consult the Hamigaki.Audio documentation ;
+         ECHO ****************************************************** ;
+         NO_DXSDK = 1 ;
+    }
+}
+
+dxsdk_config ;
+
+template dxsdk
+    : # sources
+      [
+        cond $(HAVE_DXSDK)
+        :
+        ../src/direct_sound.cpp
+        ../src/direct_sound_capture.cpp
+        :
+      ]
+    : # build requirements
+      [
+        cond $(DXSDK_INCLUDE)
+        :
+        <include>$(DXSDK_INCLUDE) <sysinclude>$(DXSDK_INCLUDE)
+        :
+      ]
+      [ cond $(DXSDK_LIBPATH) : <library-path>$(DXSDK_LIBPATH) : ]
+      [
+        unless $(NO_DXSDK)
+        :
+        <define>HAMIGAKI_HAS_DXSDK=1
+        <mingw><*><find-library>dsound
+        <gcc><*><find-library>dsound
+      ]
+    : # build variants
+   ;

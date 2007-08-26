@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Audio Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+-->
+<header name="hamigaki/audio/background_player.hpp">
+  <namespace name="hamigaki">
+    <namespace name="audio">
+
+      <class name="basic_background_player">
+        <template>
+          <template-type-parameter name="ExceptionStorage">
+            <default>hamigaki::thread::exception_storage</default>
+          </template-type-parameter>
+        </template>
+
+        <purpose><para><code>basic_background_player</code>は<code>hamigaki::iostreams::background_copy</code>をオーディオ操作用に改良したものである。</para></purpose>
+
+        <description>
+          <para><code>basic_background_player</code>は次に示す３つの状態をとる。
+            <variablelist>
+              <varlistentry>
+                <term>空(empty)</term>
+                <listitem>再生対象となるSource/Sinkが設定されていない</listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>再生中(playing)</term>
+                <listitem>再生操作のためスレッドが動作している</listitem>
+              </varlistentry>
+              <varlistentry>
+                <term>停止中(stopping)</term>
+                <listitem>再生が完了したか中断された</listitem>
+              </varlistentry>
+            </variablelist>
+          </para>
+          <para><note>多くの場合、Source/Sinkはコピーコンストラクタおよびコピー代入演算子によって複製されると、複製元と複製先でデバイスの状態を共有する。このような共有情報を複製元のデバイスを通して変更してはならない。</note></para>
+        </description>
+
+        <constructor>
+          <postconditions>状態=空</postconditions>
+        </constructor>
+
+        <constructor>
+            <template>
+              <template-type-parameter name="Source"/>
+              <template-type-parameter name="Sink"/>
+            </template>
+            <parameter name="src">
+              <paramtype>const Source&amp;</paramtype>
+            </parameter>
+            <parameter name="sink">
+              <paramtype>const Sink&amp;</paramtype>
+            </parameter>
+            <parameter name="buffer_size">
+              <paramtype>std::streamsize</paramtype>
+              <default>boost::iostreams::default_device_buffer_size</default>
+            </parameter>
+            <effects><simpara><code>open(src, sink, buffer_size)</code></simpara></effects>
+            <postconditions>状態=停止中</postconditions>
+        </constructor>
+
+        <destructor>
+          <effects><simpara><code>stop()</code>を呼び出す。</simpara></effects>
+        </destructor>
+
+        <method-group name="modifiers">
+          <method name="open">
+            <type>void</type>
+            <template>
+              <template-type-parameter name="Source"/>
+              <template-type-parameter name="Sink"/>
+            </template>
+            <parameter name="src">
+              <paramtype>const Source&amp;</paramtype>
+            </parameter>
+            <parameter name="sink">
+              <paramtype>const Sink&amp;</paramtype>
+            </parameter>
+            <parameter name="buffer_size">
+              <paramtype>std::streamsize</paramtype>
+              <default>boost::iostreams::default_device_buffer_size</default>
+            </parameter>
+            <requires>状態=空</requires>
+            <effects><simpara><code>src</code>から読み込んだデータを<code>dest</code>に書き出すスレッドを起動する。</simpara></effects>
+            <postconditions>状態=停止中</postconditions>
+          </method>
+
+          <method name="close">
+            <type>void</type>
+            <requires>状態=停止中</requires>
+            <effects><simpara><code>basic_background_player</code>の保持するSource/Sinkの対を破棄する。</simpara></effects>
+            <notes><simpara>再生中の場合は、Source/Sinkの対を破棄する前に<code>stop()</code>が呼び出される。</simpara></notes>
+            <postconditions>状態=空</postconditions>
+          </method>
+
+          <method name="play">
+            <type>void</type>
+            <requires>状態=停止中</requires>
+            <effects><simpara>再生を開始する。</simpara></effects>
+            <postconditions>状態=再生中</postconditions>
+          </method>
+
+          <method name="stop">
+            <type>void</type>
+            <requires>状態=再生中または停止中</requires>
+            <effects><simpara><code>copy()</code>により作成されたスレッドをキャンセルし、その終了を待つ。</simpara></effects>
+            <notes><simpara>この関数はスレッドの終了を待つため、ブロックする。</simpara></notes>
+            <postconditions>状態=停止中</postconditions>
+          </method>
+
+          <method name="seek">
+            <type>std::streampos</type>
+            <parameter name="off">
+              <paramtype>boost::iostreams::stream_offset</paramtype>
+            </parameter>
+            <parameter name="way">
+              <paramtype>std::ios_base::seekdir</paramtype>
+            </parameter>
+            <requires>状態=停止中</requires>
+            <effects><simpara>入力デバイス<code>src</code>がInput-seekableならば、<code>boost::iostreams::seek(src, off, way, std::ios_base::in)</code>を呼び出す。</simpara></effects>
+            <returns><simpara>入力デバイス<code>src</code>がInput-seekableならば、入力ヘッドの位置。それ以外の場合は、-1。</simpara></returns>
+          </method>
+        </method-group>
+
+        <method-group name="queries">
+          <method name="operator!" cv="const">
+            <type>bool</type>
+            <returns><simpara>状態=空の場合<code>true</code></simpara></returns>
+          </method>
+
+          <method name="playing">
+            <type>bool</type>
+            <returns><simpara>再生中かどうか</simpara></returns>
+            <notes><simpara>この関数は、コピーが完了している場合はスレッドの終了を待つ。</simpara></notes>
+            <postconditions><code>true</code>を返した場合、状態=再生中。それ以外の場合、状態=停止中</postconditions>
+          </method>
+
+          <method name="tell">
+            <type>std::streampos</type>
+            <requires>状態=再生中または停止中</requires>
+            <returns><simpara>入力デバイス<code>src</code>がInput-seekableならば、入力ヘッドの位置。それ以外の場合は、-1。</simpara></returns>
+            <notes><simpara>コピーが完了あるいは中断された後も、次に<code>close()</code>を呼ぶまで値は保持される。</simpara></notes>
+          </method>
+        </method-group>
+
+      </class>
+
+      <typedef name="background_player">
+        <type>basic_background_player&lt;&gt;</type>
+      </typedef>
+
+    </namespace>
+  </namespace>
+</header>

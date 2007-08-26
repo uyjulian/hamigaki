@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<concept name="Source" category="Iostreams">
+  <param name="S" role="device-type"/>
+
+  <models-sentence>型<arg num="1"/>は<self/>のモデルでなければならない。</models-sentence>
+
+  <associated-type name="char_type">
+    <get-member-type name="type">
+      <apply-template name="boost::iostreams::char_type_of">
+        <type name="S"/>
+      </apply-template>
+    </get-member-type>
+    <description><simpara>デバイスの文字型</simpara></description>
+  </associated-type>
+
+  <associated-type name="category">
+    <get-member-type name="iterator_category">
+      <apply-template name="boost::iostreams::category_of">
+        <type name="S"/>
+      </apply-template>
+    </get-member-type>
+    <description><simpara>デバイスのカテゴリ</simpara></description>
+  </associated-type>
+
+  <refines const="no" concept="Device"/>
+
+  <notation variables="src">
+    <sample-value>
+      <type name="S"/>
+    </sample-value>
+  </notation>
+
+  <notation variables="s">
+    <sample-value>
+      <pointer-to><type name="char_type"/></pointer-to>
+    </sample-value>
+  </notation>
+
+  <notation variables="n">
+    <sample-value>
+      <type name="std::streamsize"/>
+    </sample-value>
+  </notation>
+
+  <valid-type-expression name="Category tag">
+    <description>
+      <simpara><code>category</code>は<code>boost::iostreams::direct_tag</code>から派生していてはならない。</simpara>
+    </description>
+    <type name="category"/>
+    <return-type>
+      <derived-from testable="yes">
+        <type name="boost::iostreams::device_tag"/>
+      </derived-from>
+      <derived-from testable="yes">
+        <type name="boost::iostreams::input_tag"/>
+      </derived-from>
+    </return-type>
+  </valid-type-expression>
+
+  <valid-expression name="Read">
+    <apply-method name="read">
+      <sample-value><reference-to><type name="S"/></reference-to></sample-value>
+      <sample-value><pointer-to><type name="char_type"/></pointer-to></sample-value>
+      <sample-value><type name="std::streamsize"/></sample-value>
+    </apply-method>
+    <return-type><require-same-type><type name="std::streamsize"/></require-same-type></return-type>
+    <semantics><code>src</code>から文字列を読み取り、範囲<code>[s, s+n)</code>に書き出す。</semantics>
+  </valid-expression>
+</concept>

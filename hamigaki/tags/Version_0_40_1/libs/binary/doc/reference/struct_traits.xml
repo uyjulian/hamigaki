@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Binary Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/binary for library home page.
+-->
+<header name="hamigaki/binary/struct_traits.hpp">
+  <namespace name="hamigaki">
+    <struct name="member_base">
+      <template>
+        <template-type-parameter name="Struct" />
+        <template-type-parameter name="Type" />
+        <template-nontype-parameter name="PtrToMember">
+          <type>Type Struct::*</type>
+        </template-nontype-parameter>
+      </template>
+
+      <typedef name="struct_type">
+         <type>Struct</type>
+      </typedef>
+
+      <typedef name="member_type">
+         <type>Type</type>
+      </typedef>
+
+      <method-group name="operators">
+        <method name="operator()" cv="const">
+          <type>Type&amp;</type>
+          <parameter name="x">
+            <paramtype>Struct&amp;</paramtype>
+          </parameter>
+          <returns><code>x.*PtrToMember</code></returns>
+        </method>
+
+        <method name="operator()" cv="const">
+          <type>const Type&amp;</type>
+          <parameter name="x">
+            <paramtype>const Struct&amp;</paramtype>
+          </parameter>
+          <returns><code>x.*PtrToMember</code></returns>
+        </method>
+      </method-group>
+
+      <purpose><simpara><classname>member</classname>の基底クラス。</simpara></purpose>
+    </struct>
+
+    <struct name="member">
+      <template>
+        <template-type-parameter name="Struct" />
+        <template-type-parameter name="Type" />
+        <template-nontype-parameter name="PtrToMember">
+          <type>Type Struct::*</type>
+        </template-nontype-parameter>
+        <template-nontype-parameter name="E">
+          <type>endianness</type>
+          <default><code>native</code></default>
+        </template-nontype-parameter>
+      </template>
+
+      <inherit access="public">
+        <type><classname>member_base</classname>&lt;Struct,Type,PtrToMember&gt;</type>
+      </inherit>
+
+      <static-constant name="endian">
+        <type>endianness</type>
+        <default>E</default>
+      </static-constant>
+
+      <purpose><simpara>構造体のバイナリ入出力とメンバ変数を対応付ける。</simpara></purpose>
+
+      <description>
+        <para>バイナリ入出力の際、<code>PtrToMember</code>の示すメンバ変数のエンディアンを<code>E</code>として扱うよう指示する。</para>
+      </description>
+    </struct>
+
+    <struct name="padding">
+      <template>
+        <template-nontype-parameter name="Size">
+          <type>std::size_t</type>
+        </template-nontype-parameter>
+      </template>
+
+      <typedef name="struct_type">
+         <type>void</type>
+      </typedef>
+
+      <typedef name="member_type">
+         <type>void</type>
+      </typedef>
+
+      <static-constant name="endian">
+        <type>endianness</type>
+        <default>native</default>
+      </static-constant>
+
+      <method-group name="operators">
+        <method name="operator()" cv="const">
+          <type>const Type&amp;</type>
+          <parameter name="x">
+            <paramtype>const Struct&amp;</paramtype>
+          </parameter>
+          <effects><simpara>なし</simpara></effects>
+        </method>
+      </method-group>
+
+      <purpose><simpara><classname>struct_traits</classname>でパディングを表現するのに使用する。</simpara></purpose>
+    </struct>
+
+    <struct name="struct_traits">
+      <template>
+        <template-type-parameter name="T" />
+      </template>
+
+      <typedef name="members">
+         <type><emphasis>implementation defined</emphasis></type>
+      </typedef>
+
+      <purpose><simpara>構造体のバイナリ入出力の方法を指定する。</simpara></purpose>
+
+      <description>
+        <para><code>members</code>は、型<code>T</code>のメンバ変数に対する<classname>member</classname>か<classname>padding</classname>の<code>Sequence</code>で、<code>Sequence</code>の順序に従って入出力を行うよう指定する。</para>
+        <para>ここでいう<code>Sequence</code>とは、Boost.MPLの<code>Sequence</code>のことであり、通常は<code>boost::mpl::single_view</code>や<code>boost::mpl::list</code>を使う。</para>
+      </description>
+    </struct>
+
+    <struct name="struct_size">
+      <template>
+        <template-type-parameter name="T" />
+      </template>
+
+      <inherit access="public">
+        <type>boost::mpl::size_t&lt;STRUCTSIZE(T)&gt;</type>
+      </inherit>
+
+      <purpose><simpara><code>T</code>型のオブジェクトをバイナリ出力するのに必要なバッファサイズを返すメタ関数</simpara></purpose>
+
+      <description><para><code>struct_size</code>は、<code>T</code>型のオブジェクトをバイナリ出力するのに必要なバッファサイズを返すメタ関数である。ここで、<code>STRUCTSIZE(T)</code>は、<code>T</code>型のオブジェクトをバイナリ出力した場合のバイト数を表すものとする。</para></description>
+    </struct>
+
+    <struct name="member_size">
+      <template>
+        <template-type-parameter name="T" />
+      </template>
+
+      <inherit access="public">
+        <type>boost::mpl::size_t&lt;MEMBERSIZE(T)&gt;</type>
+      </inherit>
+
+      <purpose><simpara>メンバのバイナリサイズを返すメタ関数。</simpara></purpose>
+
+      <description><para><code>member_size</code>は、型<code>T</code>の示すメンバをバイナリ出力するのに必要なバッファサイズを返すメタ関数である。ここで、<code>MEMBERSIZE(T)</code>は、、型<code>T</code>の示すメンバをバイナリ出力した場合のバイト数を表すものとする。</para></description>
+    </struct>
+  </namespace>
+</header>

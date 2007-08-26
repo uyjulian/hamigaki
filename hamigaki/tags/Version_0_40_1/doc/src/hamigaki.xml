@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE boostbook PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<boostbook xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>Hamigaki C++ ライブラリ</title>
+
+  <xi:include href="license.xml"/>
+  <xi:include href="requirements.xml"/>
+  <xi:include href="installation.xml"/>
+  <xi:include href="version_history.xml"/>
+
+  <chapter id="librarylist">
+    <title>ライブラリ一覧</title>
+    <librarylist/>
+  </chapter>
+
+  <xi:include href="../../libs/archivers/doc/archivers.xml"/>
+  <xi:include href="../../libs/audio/doc/audio.xml"/>
+  <xi:include href="../../libs/binary/doc/binary.xml"/>
+  <xi:include href="../../libs/bjam/doc/bjam.xml"/>
+  <xi:include href="../../libs/checksum/doc/checksum.xml"/>
+  <xi:include href="../../libs/coroutine/doc/coroutine.xml"/>
+  <xi:include href="../../libs/filesystem/doc/filesystem.xml"/>
+  <xi:include href="../../libs/integer/doc/integer.xml"/>
+  <xi:include href="../../libs/iostreams/doc/iostreams.xml"/>
+  <xi:include href="../../libs/iterator/doc/iterator.xml"/>
+  <xi:include href="../../libs/process/doc/process.xml"/>
+  <xi:include href="../../libs/thread/doc/thread.xml"/>
+  <xi:include href="../../libs/type_traits/doc/type_traits.xml"/>
+  <xi:include href="../../libs/uuid/doc/uuid.xml"/>
+
+  <chapter id="concepts">
+    <title>コンセプト</title>
+    <xi:include href="concepts/concepts.xml"/>
+  </chapter>
+
+  <xi:include href="bbv2/bbv2.xml"/>
+
+</boostbook>

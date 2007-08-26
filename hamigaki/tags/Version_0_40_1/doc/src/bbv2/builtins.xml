@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<section id="bbv2.builtins">
+  <title>組み込みルール</title>
+  <section id="bbv2.builtins.echo">
+    <title>ECHO</title>
+    <programlisting><![CDATA[rule ECHO ( args * )]]></programlisting>
+    <programlisting><![CDATA[rule Echo ( args * )]]></programlisting>
+    <programlisting><![CDATA[rule echo ( args * )]]></programlisting>
+    <para>argsの値をスペースで区切って標準出力に出力する。</para>
+  </section>
+  <section id="bbv2.builtins.exit">
+    <title>EXIT</title>
+    <programlisting><![CDATA[rule EXIT ( messages * : result-value ? )]]></programlisting>
+    <programlisting><![CDATA[rule Exit ( messages * : result-value ? )]]></programlisting>
+    <programlisting><![CDATA[rule exit ( messages * : result-value ? )]]></programlisting>
+    <para>messagesの値をスペースで区切って標準出力に出力した後にプログラムを終了する。result-valueが指定されていれば、その値がシステムへの返却値となる。</para>
+  </section>
+  <section id="bbv2.builtins.glob">
+    <title>GLOB</title>
+    <programlisting><![CDATA[rule GLOB ( directories * : patterns * : case-insensitive ? )]]></programlisting>
+    <programlisting><![CDATA[rule Glob ( directories * : patterns * : case-insensitive ? )]]></programlisting>
+    <para>directoriesで指定される各ディレクトリからpatternsにマッチするファイルを検索し、そのリストを返す。case-insensitiveが真ならば、ファイル名の大文字/小文字は区別されない。patternsはswich文と同じ<xref linkend="bbv2.control.pattern"/>に従う。</para>
+  </section>
+  <section id="bbv2.builtins.match">
+    <title>MATCH</title>
+    <programlisting><![CDATA[rule MATCH ( regexps * : list * )]]></programlisting>
+    <programlisting><![CDATA[rule Match ( regexps * : list * )]]></programlisting>
+    <para>正規表現regexpsとlistのマッチングを行い、マッチした部分式のリストを返す。MATCHで使用される正規表現はPOSIXの拡張正規表現に近いが、POSIX文字クラスが使えないなどの差異がある。マッチングは深さ優先探索一致で行われる。</para>
+  </section>
+</section>

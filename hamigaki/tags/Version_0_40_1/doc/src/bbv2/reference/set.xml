@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<section id="bbv2.reference.set">
+  <title>setモジュール</title>
+  <synopsis><emphasis role="bold">module</emphasis> set {
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.set.difference">difference</link> ( B * : A * ) { }
+}
+</synopsis>
+  <refentry id="bbv2.reference.set.difference">
+    <refmeta>
+      <refentrytitle>difference</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>set.difference</refname>
+      <refpurpose><simpara>差集合を求める</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> difference ( B * : A * )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <para><code>B</code>に含まれ、<code>A</code>に含まれない文字列のリストを返す。</para>
+    </refsection>
+  </refentry>
+</section>

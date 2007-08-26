@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Integer Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/integer for library home page.
+-->
+<header name="hamigaki/integer/auto_max.hpp">
+  <namespace name="hamigaki">
+    <function name="auto_max">
+      <template>
+        <template-type-parameter name="T" />
+        <template-type-parameter name="U" />
+      </template>
+      <type><emphasis>implementation-defined</emphasis></type>
+      <parameter name="t">
+        <paramtype>T</paramtype>
+      </parameter>
+      <parameter name="u">
+        <paramtype>U</paramtype>
+      </parameter>
+      <description>
+        <para><code>t</code>と<code>u</code>の最大値を求める。戻り値の型は<code>T</code>と<code>U</code>の型に応じて、次のように決定される。</para>
+        <informaltable frame="all">
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry><code>T</code></entry>
+                <entry>戻り値</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>符号付き整数</entry>
+                <entry><code>sizeof(T) &gt; sizeof(U)</code>なら<code>T</code>、そうでなければ<code>U</code></entry>
+              </row>
+              <row>
+                <entry>符号なし整数</entry>
+                <entry><code>sizeof(T) &lt; sizeof(U)</code>なら<code>U</code>、そうでなければ<code>T</code></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </description>
+      <returns><simpara><code>t</code>と<code>u</code>のうち大きい方の値を返す。</simpara></returns>
+    </function>
+  </namespace>
+</header>

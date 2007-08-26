@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<header name="hamigaki/archivers/cpio/headers.hpp">
+  <namespace name="hamigaki">
+    <namespace name="archivers">
+      <namespace name="cpio">
+        <struct name="header">
+          <method-group name="queries">
+            <method name="is_regular" cv="const">
+              <type>bool</type>
+              <returns><simpara>通常のファイルであれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
+            </method>
+
+            <method name="is_directory" cv="const">
+              <type>bool</type>
+              <returns><simpara>ディレクトリであれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
+            </method>
+
+            <method name="is_symlink" cv="const">
+              <type>bool</type>
+              <returns><simpara>シンボリックリンクであれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
+            </method>
+          </method-group>
+
+          <method-group name="modifiers">
+            <method name="type">
+              <type>void</type>
+              <parameter name="v">
+                <paramtype><enumname>filesystem::file_type</enumname></paramtype>
+              </parameter>
+              <effects><simpara>ファイル種別を<code>v</code>に設定する</simpara></effects>
+            </method>
+          </method-group>
+
+          <data-member name="format">
+            <type><enumname>file_format</enumname></type>
+          </data-member>
+
+          <data-member name="parent_device">
+            <type><classname>filesystem::device_number</classname></type>
+          </data-member>
+
+          <data-member name="file_id">
+            <type>boost::uint32_t</type>
+          </data-member>
+
+          <data-member name="permissions">
+            <type>boost::uint16_t</type>
+          </data-member>
+
+          <data-member name="uid">
+            <type>boost::uint32_t</type>
+          </data-member>
+
+          <data-member name="gid">
+            <type>boost::uint32_t</type>
+          </data-member>
+
+          <data-member name="links">
+            <type>boost::uint32_t</type>
+          </data-member>
+
+          <data-member name="device">
+            <type><classname>filesystem::device_number</classname></type>
+          </data-member>
+
+          <data-member name="modified_time">
+            <type>std::time_t</type>
+          </data-member>
+
+          <data-member name="path">
+            <type>boost::filesystem::path</type>
+          </data-member>
+
+          <data-member name="link_path">
+            <type>boost::filesystem::path</type>
+          </data-member>
+
+          <data-member name="file_size">
+            <type>boost::uint32_t</type>
+          </data-member>
+
+          <data-member name="checksum">
+            <type>boost::optional&lt;boost::uint16_t&gt;</type>
+          </data-member>
+
+          <description>
+            <para>
+              <informaltable frame="all">
+                <tgroup cols="3">
+                  <thead>
+                    <row>
+                      <entry>メンバ変数</entry>
+                      <entry>意味</entry>
+                      <entry>規定値</entry>
+                    </row>
+                  </thead>
+                  <tbody>
+                    <row>
+                      <entry>format</entry>
+                      <entry>cpio ファイルのフォーマット</entry>
+                      <entry>posix</entry>
+                    </row>
+                    <row>
+                      <entry>parent_device</entry>
+                      <entry>ファイルのコンテナとなるデバイス番号</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>file_id</entry>
+                      <entry>ファイルのID</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>permissions</entry>
+                      <entry>ファイル許可属性 (ファイル種別も必要)</entry>
+                      <entry>0100644</entry>
+                    </row>
+                    <row>
+                      <entry>uid</entry>
+                      <entry>ユーザーID</entry>
+                      <entry>0</entry>
+                    </row>
+                    <row>
+                      <entry>gid</entry>
+                      <entry>グループID</entry>
+                      <entry>0</entry>
+                    </row>
+                    <row>
+                      <entry>links</entry>
+                      <entry>ファイルの参照カウント</entry>
+                      <entry>1</entry>
+                    </row>
+                    <row>
+                      <entry>device</entry>
+                      <entry>ファイル自身のデバイス番号</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>modified_time</entry>
+                      <entry>最終更新時間</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>path</entry>
+                      <entry>ファイルのパス名</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>link_path</entry>
+                      <entry>リンク先のパス名</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>file_size</entry>
+                      <entry>ファイルサイズ</entry>
+                      <entry>0</entry>
+                    </row>
+                    <row>
+                      <entry>checksum</entry>
+                      <entry>sum16 チェックサム</entry>
+                      <entry></entry>
+                    </row>
+                  </tbody>
+                </tgroup>
+              </informaltable>
+            </para>
+          </description>
+        </struct>
+      </namespace>
+    </namespace>
+  </namespace>
+</header>

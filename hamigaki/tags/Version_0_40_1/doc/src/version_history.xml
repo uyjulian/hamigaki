@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE chapter PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<chapter id="version-history">
+  <title>バージョン履歴</title>
+  <formalpara>
+    <title>0.40.1</title>
+    <itemizedlist>
+      <title>全体</title>
+      <listitem>Mac OS X 10.4に対応</listitem>
+      <listitem>Boost 1.35に対応</listitem>
+      <listitem>環境変数DXSDK_DIRが定義されていない場合にビルドに失敗する問題を修正</listitem>
+      <listitem>ビルド済みのboost_bzip2とboost_zlibに対応</listitem>
+      <listitem>ドキュメントの細かい修正</listitem>
+    </itemizedlist>
+    <itemizedlist>
+      <title>Hamigaki.Audio</title>
+      <listitem>vorbis_file_sourceのデストラクタにおける多重クローズを修正</listitem>
+      <listitem>サンプルfalcom_playにエピローグパートを再生しないオプションを追加</listitem>
+    </itemizedlist>
+    <itemizedlist>
+      <title>Hamigaki.Iostreams</title>
+      <listitem>binary_write()でエンディアンの指定が無視される問題を修正</listitem>
+    </itemizedlist>
+  </formalpara>
+</chapter>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Audio Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+-->
+<section id="audio.acknowledgements">
+  <title>謝辞</title>
+  <para>Hamigaki.Audio は Jonathan Turkanis 氏の Boost.Iostreamsコンセプトに基づいている。</para>
+  <para>vorbis_file_source、pcm_sink は Cryolite 氏のアイデアに基づいている。</para>
+</section>

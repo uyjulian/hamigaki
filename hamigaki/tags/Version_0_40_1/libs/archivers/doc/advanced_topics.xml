@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<section id="archivers.advanced_topics">
+  <title>高度なトピック</title>
+  <using-namespace name="hamigaki::archivers"/>
+
+  <section id="archivers.advanced_topics.directory">
+    <title>ディレクトリ</title>
+
+    <para>アーカイブエントリがディレクトリであるかどうかは、ヘッダのメンバ関数<code>is_directory()</code>で調べることができる。</para>
+
+    <programlisting><![CDATA[#include <hamigaki/archivers/tar_file.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <boost/iostreams/copy.hpp>
+
+namespace ar = hamigaki::archivers;
+namespace fs = boost::filesystem;
+namespace io = boost::iostreams;
+
+void extract_entry(ar::tar_file_source& tar)
+{
+    const ar::tar::header& head = tar.header();
+
+    if (head.is_directory())
+        fs::create_directory(head.path);
+    else
+    {
+        fs::ofstream file(head.path, std::ios_base::binary);
+        io::copy(tar, file);
+    }
+}
+]]></programlisting>
+
+    <para>一方、アーカイブにディレクトリのエントリを作成するには、メンバ関数<code>type()</code>でファイル種別を<code>hamigaki::filesystem::directory_file</code>に設定したヘッダを使用する。</para>
+
+    <programlisting><![CDATA[#include <hamigaki/archivers/tar_file.hpp>
+
+namespace ar = hamigaki::archivers;
+namespace fs = boost::filesystem;
+
+void append_directory(ar::tar_file_sink& tar, const fs::path& ph)
+{
+    ar::tar::header head;
+    head.path = ph;
+    head.type(hamigaki::filesystem::directory_file);
+    tar.create_entry(head);
+}
+]]></programlisting>
+
+  </section>
+</section>

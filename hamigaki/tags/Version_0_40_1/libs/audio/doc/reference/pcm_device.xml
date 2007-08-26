@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Audio Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+-->
+<header name="hamigaki/audio/pcm_device.hpp">
+  <namespace name="hamigaki">
+    <namespace name="audio">
+      <class name="pcm_sink">
+        <description>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Sink</conceptname></member>
+              <member><conceptname>FlushableDevice</conceptname></member>
+              <member><conceptname>ClosableDevice</conceptname></member>
+              <member><conceptname>OptimallyBuffered</conceptname></member>
+              <member><conceptname>PcmFormatRetrievable</conceptname></member>
+          </simplelist></para>
+        </description>
+
+        <typedef name="char_type">
+          <type>char</type>
+        </typedef>
+
+        <typedef name="category">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <constructor>
+          <parameter name="f">
+            <paramtype>const <classname>pcm_format</classname>&amp;</paramtype>
+          </parameter>
+        </constructor>
+
+        <constructor>
+          <parameter name="f">
+            <paramtype>const <classname>pcm_format</classname>&amp;</paramtype>
+          </parameter>
+          <parameter name="buffer_size">
+            <paramtype>std::size_t</paramtype>
+          </parameter>
+        </constructor>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="optimal_buffer_size" cv="const">
+            <type>std::streamsize</type>
+            <returns><simpara>200ミリ秒分のバッファサイズ</simpara></returns>
+          </method>
+
+          <method name="write">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>const char*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+          <method name="flush">
+            <type>bool</type>
+          </method>
+          <method name="close">
+            <type>void</type>
+          </method>
+        </method-group>
+
+        <method-group name="queries">
+          <method name="format" cv="const">
+            <type><classname>pcm_format</classname></type>
+            <returns><simpara>フォーマット情報</simpara></returns>
+          </method>
+        </method-group>
+      </class>
+
+      <class name="pcm_source">
+        <description>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Source</conceptname></member>
+              <member><conceptname>FlushableDevice</conceptname></member>
+              <member><conceptname>ClosableDevice</conceptname></member>
+              <member><conceptname>OptimallyBuffered</conceptname></member>
+              <member><conceptname>PcmFormatRetrievable</conceptname></member>
+          </simplelist></para>
+        </description>
+
+        <typedef name="char_type">
+          <type>char</type>
+        </typedef>
+
+        <typedef name="category">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <constructor>
+          <parameter name="f">
+            <paramtype>const <classname>pcm_format</classname>&amp;</paramtype>
+          </parameter>
+        </constructor>
+
+        <constructor>
+          <parameter name="f">
+            <paramtype>const <classname>pcm_format</classname>&amp;</paramtype>
+          </parameter>
+          <parameter name="buffer_size">
+            <paramtype>std::size_t</paramtype>
+          </parameter>
+        </constructor>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="optimal_buffer_size" cv="const">
+            <type>std::streamsize</type>
+            <returns><simpara>200ミリ秒分のバッファサイズ</simpara></returns>
+          </method>
+
+          <method name="read">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>char*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+          <method name="flush">
+            <type>bool</type>
+          </method>
+          <method name="close">
+            <type>void</type>
+          </method>
+        </method-group>
+
+        <method-group name="queries">
+          <method name="format" cv="const">
+            <type><classname>pcm_format</classname></type>
+            <returns><simpara>フォーマット情報</simpara></returns>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

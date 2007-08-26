@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Audio Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+-->
+<header name="hamigaki/audio/amplify.hpp">
+  <namespace name="hamigaki">
+    <namespace name="audio">
+      <class name="amplifier">
+        <template>
+          <template-type-parameter name="Source"/>
+        </template>
+
+        <purpose><para>クラステンプレート<code>amplifier</code>はSourceを受け取り、その各要素を定数倍したSourceを形成する。</para></purpose>
+
+        <description>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Source</conceptname></member>
+              <member><conceptname>ClosableDevice</conceptname></member>
+              <member><conceptname>OptimallyBuffered</conceptname></member>
+          </simplelist></para>
+        </description>
+
+        <typedef name="char_type">
+          <type>typename boost::iostreams::char_type_of&lt;Source&gt;::type</type>
+        </typedef>
+
+        <typedef name="category">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <constructor>
+          <parameter name="src">
+            <paramtype>const Source&amp;</paramtype>
+          </parameter>
+          <parameter name="amp">
+            <paramtype>float</paramtype>
+          </parameter>
+        </constructor>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="read">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>CharT*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+
+          <method name="close">
+            <type>void</type>
+          </method>
+
+          <method name="optimal_buffer_size" cv="const">
+            <type>std::streamsize</type>
+          </method>
+        </method-group>
+
+        <free-function-group name="creation">
+          <function name="amplify">
+            <type>amplifier&lt;Source&gt;</type>
+            <template>
+              <template-type-parameter name="Source"/>
+            </template>
+            <parameter name="src">
+              <paramtype>const Source&amp;</paramtype>
+            </parameter>
+            <parameter name="amp">
+              <paramtype>float</paramtype>
+            </parameter>
+            <returns><simpara><code><classname>amplifier</classname>&lt;Source&gt;(src)</code></simpara></returns>
+          </function>
+        </free-function-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

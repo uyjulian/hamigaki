@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Iostreams Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
+-->
+<header name="hamigaki/iostreams/device/tmp_file.hpp">
+  <namespace name="hamigaki">
+    <namespace name="iostreams">
+      <class name="tmp_file">
+        <typedef name="char_type">
+          <type>char</type>
+        </typedef>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="read">
+            <type>std::streamsize</type>
+
+            <parameter name="s">
+              <paramtype>char*</paramtype>
+            </parameter>
+
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+
+          <method name="write">
+            <type>std::streamsize</type>
+
+            <parameter name="s">
+              <paramtype>const char*</paramtype>
+            </parameter>
+
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+
+          <method name="seek">
+            <type>std::streampos</type>
+
+            <parameter name="off">
+              <paramtype>boost::iostreams::stream_offset</paramtype>
+            </parameter>
+
+            <parameter name="way">
+              <paramtype>std::ios_base::seekdir</paramtype>
+            </parameter>
+          </method>
+
+          <method name="close">
+            <type>void</type>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

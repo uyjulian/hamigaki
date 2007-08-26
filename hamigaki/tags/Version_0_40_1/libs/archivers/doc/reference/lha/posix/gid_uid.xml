@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<header name="hamigaki/archivers/lha/posix/gid_uid.hpp">
+  <namespace name="hamigaki">
+    <namespace name="archivers">
+      <namespace name="lha">
+        <namespace name="posix">
+          <struct name="gid_uid">
+            <purpose><para>UNIX gid/uid拡張ヘッダ</para></purpose>
+
+            <data-member name="gid">
+              <type>boost::uint16_t</type>
+            </data-member>
+
+            <data-member name="uid">
+              <type>boost::uint16_t</type>
+            </data-member>
+
+            <description>
+              <para>
+                <informaltable frame="all">
+                  <tgroup cols="2">
+                    <thead>
+                      <row>
+                        <entry>メンバ変数</entry>
+                        <entry>意味</entry>
+                      </row>
+                    </thead>
+                    <tbody>
+                      <row>
+                        <entry>gid</entry>
+                        <entry>グループID</entry>
+                      </row>
+                      <row>
+                        <entry>uid</entry>
+                        <entry>ユーザーID</entry>
+                      </row>
+                    </tbody>
+                  </tgroup>
+                </informaltable>
+              </para>
+            </description>
+          </struct>
+        </namespace>
+      </namespace>
+    </namespace>
+  </namespace>
+</header>

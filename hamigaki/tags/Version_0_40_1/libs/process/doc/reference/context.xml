@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Process Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/process for library home page.
+-->
+<header name="hamigaki/process/context.hpp">
+  <namespace name="hamigaki">
+    <namespace name="process">
+      <class name="context">
+        <purpose>
+          <simpara>子プロセスに受け渡す情報を保持する。</simpara>
+        </purpose>
+
+        <method-group name="modifiers">
+          <method name="stdin_behavior">
+            <type>void</type>
+            <parameter name="b">
+              <paramtype>const <classname>stream_behavior</classname>&amp;</paramtype>
+            </parameter>
+            <effects>標準入力の振る舞いを<code>b</code>に設定する。</effects>
+          </method>
+
+          <method name="stdout_behavior">
+            <type>void</type>
+            <parameter name="b">
+              <paramtype>const <classname>stream_behavior</classname>&amp;</paramtype>
+            </parameter>
+            <effects>標準出力の振る舞いを<code>b</code>に設定する。</effects>
+          </method>
+
+          <method name="stderr_behavior">
+            <type>void</type>
+            <parameter name="b">
+              <paramtype>const <classname>stream_behavior</classname>&amp;</paramtype>
+            </parameter>
+            <effects>標準エラー出力の振る舞いを<code>b</code>に設定する。</effects>
+          </method>
+
+          <method name="work_directory">
+            <type>void</type>
+            <parameter name="dir">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+            <effects>作業ディレクトリを<code>dir</code>に設定する。</effects>
+          </method>
+        </method-group>
+
+        <method-group name="queries">
+          <method name="stdin_behavior" cv="const">
+            <type><classname>stream_behavior</classname></type>
+            <returns>標準入力の振る舞い</returns>
+          </method>
+
+          <method name="stdout_behavior" cv="const">
+            <type><classname>stream_behavior</classname></type>
+            <returns>標準出力の振る舞い</returns>
+          </method>
+
+          <method name="stderr_behavior" cv="const">
+            <type><classname>stream_behavior</classname></type>
+            <returns>標準エラー出力の振る舞い</returns>
+          </method>
+
+          <method name="work_directory" cv="const">
+            <type>std::string</type>
+            <returns>作業ディレクトリ(未設定時は空文字列)</returns>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

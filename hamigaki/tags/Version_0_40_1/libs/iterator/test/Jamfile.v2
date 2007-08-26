@@ -1,0 +1,24 @@
+# Hamigaki Iterator Library Test Jamfile
+
+# Copyright Takeshi Mouri 2007.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/libs/iterator for library home page.
+
+using testing ;
+
+project
+    : requirements
+      <library>/boost-lib//boost_unit_test_framework/<link>static
+    ;
+
+test-suite "iterator" :
+    [ run counting_output_iter_test.cpp : ]
+    [ run first_iterator_test.cpp : ]
+    [ run istream_line_iterator_test.cpp : ]
+    [ run line_counting_iterator_test.cpp : ]
+    [ run ostream_iterator_test.cpp : ]
+    [ run second_iterator_test.cpp : ]
+    ;
