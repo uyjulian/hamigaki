@@ -331,7 +331,7 @@ void last_write_time(
 
     ::DWORD code = ::GetLastError();
     throw hamigaki::filesystem::filesystem_path_error(
-        "hamigaki::filesystem::last_write_time", p, code);
+        "hamigaki::filesystem::last_write_time", p, make_error_code(code));
 }
 
 HAMIGAKI_FILESYSTEM_DECL
@@ -359,7 +359,7 @@ void last_access_time(
 
     ::DWORD code = ::GetLastError();
     throw hamigaki::filesystem::filesystem_path_error(
-        "hamigaki::filesystem::last_access_time", p, code);
+        "hamigaki::filesystem::last_access_time", p, make_error_code(code));
 }
 
 HAMIGAKI_FILESYSTEM_DECL
@@ -387,7 +387,7 @@ void creation_time(
 
     ::DWORD code = ::GetLastError();
     throw hamigaki::filesystem::filesystem_path_error(
-        "hamigaki::filesystem::creation_time", p, code);
+        "hamigaki::filesystem::creation_time", p, make_error_code(code));
 }
 
 HAMIGAKI_FILESYSTEM_DECL
@@ -523,7 +523,7 @@ void last_write_time(
 
     int code = errno;
     throw hamigaki::filesystem::filesystem_path_error(
-        "hamigaki::filesystem::last_write_time", p, code);
+        "hamigaki::filesystem::last_write_time", p, make_error_code(code));
 }
 
 HAMIGAKI_FILESYSTEM_DECL
@@ -544,7 +544,7 @@ void last_access_time(
 
     int code = errno;
     throw hamigaki::filesystem::filesystem_path_error(
-        "hamigaki::filesystem::last_access_time", p, code);
+        "hamigaki::filesystem::last_access_time", p, make_error_code(code));
 }
 
 HAMIGAKI_FILESYSTEM_DECL

@@ -39,6 +39,7 @@ if ! [ project.find /boost-lib : . ]
         module boost-lib
         {
             import boost-prebuilt ;
+            import boost-version ;
             import modules ;
             import os ;
 
@@ -124,6 +125,11 @@ if ! [ project.find /boost-lib : . ]
                 $(ios-libs)
                 ;
 
+            if [ boost-version.version ] >= 1.35.0
+            {
+                boost-prebuilt boost_system : $(requirements) ;
+            }
+
             boost-prebuilt boost_thread
                 :
                 $(requirements)
@@ -155,6 +161,7 @@ if ! [ project.find /boost-lib : . ]
         make-project boost-lib ;
         module boost-lib
         {
+            import boost-version ;
             import modules ;
             import os ;
 
@@ -164,6 +171,11 @@ if ! [ project.find /boost-lib : . ]
             alias boost_regex : /boost/regex//boost_regex ;
             alias boost_thread : /boost/thread//boost_thread ;
             alias boost_unit_test_framework : /boost/test//boost_unit_test_framework ;
+
+            if [ boost-version.version ] >= 1.35.0
+            {
+                alias boost_system : /boost/system//boost_system ;
+            }
 
             rule create-ios-libaray ( name )
             {
@@ -201,22 +213,22 @@ local HAVE_DXSDK = [ modules.peek : HAVE_DXSDK ] ;
 
 if ! $(NO_DXSDK) && ! [ directx.configured ]
 {
-	import os ;
+    import os ;
 
-	if [ os.name ] = NT && [ os.environ DXSDK_DIR ]
-	{
-		HAVE_DXSDK = 1 ;
-	}
+    if [ os.name ] = NT && [ os.environ DXSDK_DIR ]
+    {
+        HAVE_DXSDK = 1 ;
+    }
 
-	if	$(HAVE_DXSDK)
-	{
-		local inc = [ modules.peek : DXSDK_INCLUDE ] ;
-		local lib = [ modules.peek : DXSDK_LIBPATH ] ;
+    if  $(HAVE_DXSDK)
+    {
+        local inc = [ modules.peek : DXSDK_INCLUDE ] ;
+        local lib = [ modules.peek : DXSDK_LIBPATH ] ;
 
-		using directx : $(inc) : $(lib) ;
-	}
-	else
-	{
-		modules.poke : NO_DXSDK : 1 ;
-	}
+        using directx : $(inc) : $(lib) ;
+    }
+    else
+    {
+        modules.poke : NO_DXSDK : 1 ;
+    }
 }

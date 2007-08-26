@@ -14,6 +14,9 @@
 #include <boost/format.hpp>
 #include <boost/tokenizer.hpp>
 
+#if BOOST_VERSION >= 103500
+    #include <boost/range/as_literal.hpp>
+#endif
 #include <boost/algorithm/string/join.hpp>
 
 #if defined(BOOST_WINDOWS)

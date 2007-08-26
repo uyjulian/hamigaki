@@ -12,6 +12,9 @@
 #include <hamigaki/bjam/bjam_context.hpp>
 #include <boost/assign/list_of.hpp>
 
+#if BOOST_VERSION >= 103500
+    #include <boost/range/as_literal.hpp>
+#endif
 #include <boost/algorithm/string/join.hpp>
 
 namespace assign = boost::assign;

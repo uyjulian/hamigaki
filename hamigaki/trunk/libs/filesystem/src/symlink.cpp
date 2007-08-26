@@ -388,14 +388,16 @@ boost::filesystem::path symlink_target(const boost::filesystem::path& p)
     if (!f.is_valid())
     {
         throw hamigaki::filesystem::filesystem_path_error(
-            "hamigaki::filesystem::symlink_target", p, f.native_error());
+            "hamigaki::filesystem::symlink_target", p,
+            make_error_code(f.native_error()));
     }
 
     boost::filesystem::path tp;
     if (!f.get_reparse_point(tp))
     {
         throw hamigaki::filesystem::filesystem_path_error(
-            "hamigaki::filesystem::symlink_target", p, f.native_error());
+            "hamigaki::filesystem::symlink_target", p,
+            make_error_code(f.native_error()));
     }
     return tp;
 #else // else defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
@@ -538,14 +540,14 @@ boost::filesystem::path symlink_target(const boost::filesystem::path& p)
     if (::lstat(path_name.c_str(), &st) == -1)
     {
         throw hamigaki::filesystem::filesystem_path_error(
-            "hamigaki::filesystem::symlink_target", p, errno);
+            "hamigaki::filesystem::symlink_target", p, make_error_code(errno));
     }
 
     if (!S_ISLNK(st.st_mode))
     {
         throw hamigaki::filesystem::filesystem_path_error(
             "hamigaki::filesystem::symlink_target "
-            "the path is not a symbolic link", p, EINVAL);
+            "the path is not a symbolic link", p, make_error_code(EINVAL));
     }
 
     std::vector<char> buf(st.st_size);
@@ -553,14 +555,14 @@ boost::filesystem::path symlink_target(const boost::filesystem::path& p)
     if (len == -1)
     {
         throw hamigaki::filesystem::filesystem_path_error(
-            "hamigaki::filesystem::symlink_target", p, errno);
+            "hamigaki::filesystem::symlink_target", p, make_error_code(errno));
     }
     else if (static_cast<std::size_t>(len) != buf.size())
     {
         // Note: calling readlink() after lstat() has a race condition
         throw hamigaki::filesystem::filesystem_path_error(
             "hamigaki::filesystem::symlink_target "
-            "symbolic link size mismatch", p, 0);
+            "symbolic link size mismatch", p, make_error_code(0));
     }
 
     return boost::filesystem::path(

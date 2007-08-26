@@ -7,7 +7,14 @@
 
 # See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
 
+import boost-version ;
 import os ;
+
+local requirements = ;
+if [ boost-version.version ] >= 1.35.0
+{
+    requirements += <library>/boost-lib//boost_system ;
+}
 
 project hamigaki/bjam
     : requirements
@@ -17,11 +24,13 @@ project hamigaki/bjam
       <library>/boost-lib//boost_filesystem
       <library>/boost-lib//boost_regex
       <library>/hamigaki/process//hamigaki_process
+      $(requirements)
     : usage-requirements
       <link>shared:<define>HAMIGAKI_BJAM_DYN_LINK
       <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
       <library>/boost-lib//boost_filesystem
       <library>/boost-lib//boost_regex
+      $(requirements)
     : source-location ../src
     ;
 
