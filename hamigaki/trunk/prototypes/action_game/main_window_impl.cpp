@@ -12,28 +12,17 @@
 #include "direct3d9.hpp"
 #include "player_routine.hpp"
 #include "png_loader.hpp"
+#include "sound_engine.hpp"
 #include "sprite.hpp"
 #include "stage_map.hpp"
 #include "straight_routine.hpp"
-#include <hamigaki/audio/vorbis/comment.hpp>
-#include <hamigaki/audio/background_player.hpp>
-#include <hamigaki/audio/direct_sound.hpp>
-#include <hamigaki/audio/vorbis_file.hpp>
-#include <hamigaki/audio/wide_adaptor.hpp>
 #include <hamigaki/input/direct_input.hpp>
-#include <hamigaki/iostreams/concatenate.hpp>
-#include <hamigaki/iostreams/lazy_restrict.hpp>
-#include <hamigaki/iostreams/repeat.hpp>
-#include <boost/lexical_cast.hpp>
 #include <cmath>
 #include <stdexcept>
 
-namespace audio = hamigaki::audio;
-namespace ds = audio::direct_sound;
 namespace input = hamigaki::input;
 namespace di = input::direct_input;
 namespace coro = hamigaki::coroutines;
-namespace io_ex = hamigaki::iostreams;
 
 namespace
 {
@@ -59,14 +48,6 @@ input::direct_input_joystick create_joystick(::HWND handle)
     return dinput.create_joystick_device(info.instance_guid);
 }
 
-int vorbis_comment_int_value(
-    const std::pair<const char**,const char**>& comments,
-    const std::string& name)
-{
-    std::string value(audio::vorbis::comment_value(comments, name));
-    return value.empty() ? -1 : boost::lexical_cast<int>(value);
-}
-
 } // namespace
 
 class main_window::impl
@@ -74,11 +55,11 @@ class main_window::impl
 public:
     explicit impl(::HWND handle)
         : handle_(handle)
-        , vf_("bgm.ogg")
+        , sound_(handle_)
         , joystick_(create_joystick(handle_))
         , active_(false), last_time_(::GetTickCount()), frames_(0)
     {
-        play_bgm();
+        sound_.play_bgm("bgm.ogg");
 
         unsigned long level = di::exclusive_level|di::foreground_level;
         joystick_.set_cooperative_level(handle_, level);
@@ -184,9 +165,7 @@ public:
 
 private:
     ::HWND handle_;
-    audio::direct_sound_device dsound_;
-    audio::vorbis_file_source vf_;
-    audio::background_player bgm_;
+    sound_engine sound_;
     input::direct_input_joystick joystick_;
     direct3d9 d3d_;
     direct3d_device9 device_;
@@ -199,47 +178,6 @@ private:
     stage_map map_;
     routine_type player_routine_;
     routine_type enemy_routine_;
-
-    void play_bgm()
-    {
-        const audio::vorbis_info& info = vf_.info();
-        const int block_size = info.channels;
-
-        int loop_start =
-            vorbis_comment_int_value(vf_.comments(), "LOOPSTART");
-        std::streamsize offset = loop_start != -1 ? block_size*loop_start : -1;
-
-        int loop_length =
-            vorbis_comment_int_value(vf_.comments(), "LOOPLENGTH");
-        std::streamsize len = loop_length != -1 ? block_size*loop_length : -1;
-
-        audio::pcm_format fmt;
-        fmt.type = audio::int_le16;
-        fmt.channels = info.channels;
-        fmt.rate = info.rate;
-
-        dsound_.set_cooperative_level(handle_, ds::priority_level);
-        dsound_.format(fmt);
-
-        if (offset == -1)
-        {
-            bgm_.open(
-                io_ex::repeat(vf_, -1),
-                audio::widen<float>(dsound_.create_buffer(fmt))
-            );
-        }
-        else
-        {
-            using namespace io_ex::cat_operators;
-
-            bgm_.open(
-                io_ex::lazy_restrict(vf_, 0, offset+len) +
-                io_ex::lazy_restrict(vf_, offset, len) * -1,
-                audio::widen<float>(dsound_.create_buffer(fmt))
-            );
-        }
-        bgm_.play();
-    }
 
     void update_input_state(di::joystick_state& state)
     {
