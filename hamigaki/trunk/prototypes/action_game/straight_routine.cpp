@@ -57,16 +57,13 @@ rect straight_routine(
 {
     const float gravity = 0.6f;
 
-    float vx = -1.0f;
+    float vx = -1.2f;
     float vy = 0.0f;
 
     while (true)
     {
         bool on_ground = is_on_ground(*map, r);
 
-        float max_speed = 3.0f;
-
-        if (on_ground)
         {
             int old_x = r.left_block();
 
