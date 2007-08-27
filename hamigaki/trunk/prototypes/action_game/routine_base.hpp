@@ -20,25 +20,10 @@ struct rect
     float lx;
     float ly;
 
-    int left_block() const
-    {
-        return static_cast<int>(x / 32.0f);
-    }
-
-    int right_block() const
-    {
-        return static_cast<int>((x+lx-0.1f) / 32.0f);
-    }
-
-    int top_block() const
-    {
-        return static_cast<int>(y / 32.0f);
-    }
-
-    int bottom_block() const
-    {
-        return static_cast<int>((y+ly-0.1f) / 32.0f);
-    }
+    int left_block() const;
+    int right_block() const;
+    int top_block() const;
+    int bottom_block() const;
 };
 
 struct input_command
@@ -53,5 +38,20 @@ struct input_command
 typedef hamigaki::coroutines::shared_coroutine<
     rect(rect,input_command,const stage_map*)
 > routine_type;
+
+bool is_on_ground(const stage_map& map, const rect& r);
+bool find_vertical_blocks(const stage_map& map, int x, int y1, int y2);
+bool find_horizontal_blocks(const stage_map& map, int y, int x1, int x2);
+
+
+struct move_info
+{
+    float x;
+    float y;
+    float vx;
+    float vy;
+};
+
+move_info move(rect r, float vx, float vy, const stage_map& map);
 
 #endif // ROUTINE_BASE_HPP
