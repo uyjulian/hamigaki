@@ -12,7 +12,8 @@
 
 #include "routine_base.hpp"
 
-rect straight_routine(
-    routine_type::self& self, rect r, input_command cmd, const stage_map* map);
+acceleration straight_routine(
+    routine_type::self& self,
+    move_info mv, input_command cmd, const stage_map* map);
 
 #endif // STRAIGHT_ROUTINE_HPP

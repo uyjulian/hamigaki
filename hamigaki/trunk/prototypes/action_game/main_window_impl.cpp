@@ -98,15 +98,19 @@ public:
             create_png_texture(device_, "chara.png");
 
         const ::D3DSURFACE_DESC& desc = chara_texture_.description(0);
-        player_rect_.x = 32.0f;
-        player_rect_.y = 448.0f - static_cast<float>(desc.Height);
-        player_rect_.lx = static_cast<float>(desc.Width);
-        player_rect_.ly = static_cast<float>(desc.Height);
+        player_pos_.r.x = 32.0f;
+        player_pos_.r.y = 448.0f - static_cast<float>(desc.Height);
+        player_pos_.r.lx = static_cast<float>(desc.Width);
+        player_pos_.r.ly = static_cast<float>(desc.Height);
+        player_pos_.vx = 0.0f;
+        player_pos_.vy = 0.0f;
 
-        enemy_rect_.x = 608.0f;
-        enemy_rect_.y = 288.0f;
-        enemy_rect_.lx = static_cast<float>(desc.Width);
-        enemy_rect_.ly = static_cast<float>(desc.Height);
+        enemy_pos_.r.x = 608.0f;
+        enemy_pos_.r.y = 288.0f;
+        enemy_pos_.r.lx = static_cast<float>(desc.Width);
+        enemy_pos_.r.ly = static_cast<float>(desc.Height);
+        enemy_pos_.vx = 0.0f;
+        enemy_pos_.vy = 0.0f;
     }
 
     void process_input()
@@ -150,10 +154,10 @@ public:
             device_.set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
             draw_sprite(device_,
-                enemy_rect_.x, enemy_rect_.y, 0.0f, chara_texture_);
+                enemy_pos_.r.x, enemy_pos_.r.y, 0.0f, chara_texture_);
 
             draw_sprite(device_,
-                player_rect_.x, player_rect_.y, 0.0f, chara_texture_);
+                player_pos_.r.x, player_pos_.r.y, 0.0f, chara_texture_);
         }
         device_.present();
     }
@@ -173,8 +177,8 @@ private:
     bool active_;
     unsigned long last_time_;
     unsigned frames_;
-    rect player_rect_;
-    rect enemy_rect_;
+    move_info player_pos_;
+    move_info enemy_pos_;
     stage_map map_;
     routine_type player_routine_;
     routine_type enemy_routine_;
@@ -204,8 +208,10 @@ private:
         if ((state.buttons[6] & 0x80) != 0)
         {
             const ::D3DSURFACE_DESC& desc = chara_texture_.description(0);
-            player_rect_.x = 32.0f;
-            player_rect_.y = 448.0f - static_cast<float>(desc.Height);
+            player_pos_.r.x = 32.0f;
+            player_pos_.r.y = 448.0f - static_cast<float>(desc.Height);
+            player_pos_.vx = 0.0f;
+            player_pos_.vy = 0.0f;
         }
 
         const ::D3DSURFACE_DESC& desc = chara_texture_.description(0);
@@ -228,8 +234,8 @@ private:
         cmd.dash = (state.buttons[2] & 0x80) != 0;
         cmd.reset = (state.buttons[6] & 0x80) != 0;
 
-        player_rect_ = player_routine_(player_rect_, cmd, &map_);
-        enemy_rect_ = enemy_routine_(enemy_rect_, cmd, &map_);
+        player_pos_.move(player_routine_(player_pos_, cmd, &map_), map_);
+        enemy_pos_.move(enemy_routine_(enemy_pos_, cmd, &map_), map_);
     }
 
     void draw_block(std::size_t x, std::size_t y)

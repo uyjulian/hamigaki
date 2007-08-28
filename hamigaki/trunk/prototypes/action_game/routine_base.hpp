@@ -35,23 +35,28 @@ struct input_command
     bool reset;
 };
 
-typedef hamigaki::coroutines::shared_coroutine<
-    rect(rect,input_command,const stage_map*)
-> routine_type;
-
 bool is_on_ground(const stage_map& map, const rect& r);
 bool find_vertical_blocks(const stage_map& map, int x, int y1, int y2);
 bool find_horizontal_blocks(const stage_map& map, int y, int x1, int x2);
 
+struct acceleration
+{
+    float ax;
+    float ay;
+    float max_speed;
+};
 
 struct move_info
 {
-    float x;
-    float y;
+    rect r;
     float vx;
     float vy;
+
+    void move(const acceleration& a, const stage_map& map);
 };
 
-move_info move(rect r, float vx, float vy, const stage_map& map);
+typedef hamigaki::coroutines::shared_coroutine<
+    acceleration(move_info,input_command,const stage_map*)
+> routine_type;
 
 #endif // ROUTINE_BASE_HPP

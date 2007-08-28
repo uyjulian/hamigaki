@@ -10,6 +10,22 @@
 #include "routine_base.hpp"
 #include <cmath>
 
+namespace
+{
+
+float limit_abs(float x, float abs)
+{
+    if (std::abs(x) <= abs)
+        return x;
+
+    if (x < 0.0f)
+        return -abs;
+    else
+        return abs;
+}
+
+} // namespace
+
 int rect::left_block() const
 {
     return static_cast<int>(x) / 32;
@@ -68,11 +84,14 @@ bool find_horizontal_blocks(const stage_map& map, int y, int x1, int x2)
 }
 
 
-move_info move(rect r, float vx, float vy, const stage_map& map)
+void move_info::move(const acceleration& a, const stage_map& map)
 {
     const float gravity = 0.6f;
 
     bool on_ground = is_on_ground(map, r);
+
+    vx += a.ax;
+    vx = limit_abs(vx, a.max_speed);
 
     if (vx < 0.0f)
     {
@@ -116,6 +135,8 @@ move_info move(rect r, float vx, float vy, const stage_map& map)
             }
         }
     }
+
+    vy += a.ay;
 
     if (on_ground)
     {
@@ -169,12 +190,4 @@ move_info move(rect r, float vx, float vy, const stage_map& map)
             }
         }
     }
-
-    move_info result;
-    result.x = r.x;
-    result.y = r.y;
-    result.vx = vx;
-    result.vy = vy;
-
-    return result;
 }

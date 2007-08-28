@@ -9,25 +9,18 @@
 
 #include "straight_routine.hpp"
 #include <cmath>
-#include <math.h>
 
-rect straight_routine(
-    routine_type::self& self, rect r, input_command cmd, const stage_map* map)
+acceleration straight_routine(
+    routine_type::self& self,
+    move_info mv, input_command cmd, const stage_map* map)
 {
-    float vx = -1.2f;
-    float vy = 0.0f;
+    acceleration a;
+    a.ax = -1.2f;
+    a.ay = 0.0f;
+    a.max_speed = 1.2f;
 
     while (true)
-    {
-        const move_info& mv = move(r, vx, vy, *map);
-
-        r.x = mv.x;
-        r.y = mv.y;
-        vx = mv.vx;
-        vy = mv.vy;
-
-        boost::tie(r, cmd, map) = self.yield(r);
-    }
+        boost::tie(mv, cmd, map) = self.yield(a);
 
     HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(r)
 }
