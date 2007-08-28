@@ -77,6 +77,7 @@ public:
 
         player_routine_ = routine_type(&player_routine);
         enemy_routine_ = routine_type(&straight_routine);
+        enemy2_routine_ = routine_type(&straight_routine);
     }
 
     ~impl()
@@ -107,11 +108,18 @@ public:
         player_pos_.vy = 0.0f;
 
         enemy_pos_.r.x = 608.0f;
-        enemy_pos_.r.y = 288.0f;
+        enemy_pos_.r.y = 320.0f - static_cast<float>(desc.Height);
         enemy_pos_.r.lx = static_cast<float>(desc.Width);
         enemy_pos_.r.ly = static_cast<float>(desc.Height);
         enemy_pos_.vx = 0.0f;
         enemy_pos_.vy = 0.0f;
+
+        enemy2_pos_.r.x = 1024.0f;
+        enemy2_pos_.r.y = 320.0f - static_cast<float>(desc.Height);
+        enemy2_pos_.r.lx = static_cast<float>(desc.Width);
+        enemy2_pos_.r.ly = static_cast<float>(desc.Height);
+        enemy2_pos_.vx = 0.0f;
+        enemy2_pos_.vy = 0.0f;
     }
 
     void process_input()
@@ -158,6 +166,7 @@ public:
             device_.set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
             draw_sprite(enemy_pos_.r.x, enemy_pos_.r.y, chara_texture_);
+            draw_sprite(enemy2_pos_.r.x, enemy2_pos_.r.y, chara_texture_);
             draw_sprite(player_pos_.r.x, player_pos_.r.y, chara_texture_);
         }
         device_.present();
@@ -180,9 +189,11 @@ private:
     unsigned frames_;
     move_info player_pos_;
     move_info enemy_pos_;
+    move_info enemy2_pos_;
     stage_map map_;
     routine_type player_routine_;
     routine_type enemy_routine_;
+    routine_type enemy2_routine_;
     float scroll_x_;
 
     void update_input_state(di::joystick_state& state)
@@ -238,6 +249,7 @@ private:
 
         player_pos_.move(player_routine_(player_pos_, cmd, &map_), map_);
         enemy_pos_.move(enemy_routine_(enemy_pos_, cmd, &map_), map_);
+        enemy2_pos_.move(enemy2_routine_(enemy2_pos_, cmd, &map_), map_);
 
         float center = player_pos_.r.x + player_pos_.r.lx * 0.5f;
         float right_end = static_cast<float>(map_.width()*32);

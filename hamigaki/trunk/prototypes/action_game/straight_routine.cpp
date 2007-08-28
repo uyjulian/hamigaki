@@ -15,15 +15,24 @@ acceleration straight_routine(
     move_info mv, input_command cmd, const stage_map* map)
 {
     acceleration a;
-    a.ax = -1.2f;
     a.ay = 0.0f;
 
-    boost::tie(mv, cmd, map) = self.yield(a);
-
-    a.ax = 0.0f;
-
     while (true)
+    {
+        a.ax = -1.2f;
         boost::tie(mv, cmd, map) = self.yield(a);
+
+        a.ax = 0.0f;
+        while (mv.vx < 0.0f)
+            boost::tie(mv, cmd, map) = self.yield(a);
+
+        a.ax = 1.2f;
+        boost::tie(mv, cmd, map) = self.yield(a);
+
+        a.ax = 0.0f;
+        while (mv.vx > 0.0f)
+            boost::tie(mv, cmd, map) = self.yield(a);
+    }
 
     HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(r)
 }
