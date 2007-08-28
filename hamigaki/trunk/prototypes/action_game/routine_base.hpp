@@ -43,7 +43,6 @@ struct acceleration
 {
     float ax;
     float ay;
-    float max_speed;
 };
 
 struct move_info

@@ -91,7 +91,6 @@ void move_info::move(const acceleration& a, const stage_map& map)
     bool on_ground = is_on_ground(map, r);
 
     vx += a.ax;
-    vx = limit_abs(vx, a.max_speed);
 
     if (vx < 0.0f)
     {

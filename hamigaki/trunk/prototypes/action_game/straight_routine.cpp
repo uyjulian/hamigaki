@@ -17,7 +17,10 @@ acceleration straight_routine(
     acceleration a;
     a.ax = -1.2f;
     a.ay = 0.0f;
-    a.max_speed = 1.2f;
+
+    boost::tie(mv, cmd, map) = self.yield(a);
+
+    a.ax = 0.0f;
 
     while (true)
         boost::tie(mv, cmd, map) = self.yield(a);

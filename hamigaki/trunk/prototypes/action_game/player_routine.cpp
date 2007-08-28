@@ -34,13 +34,19 @@ acceleration player_routine(
 
         a.ax = 0.0f;
         a.ay = 0.0f;
-        a.max_speed = 3.0f;
 
+        float max_speed = 3.0f;
         if (on_ground && cmd.dash)
-            a.max_speed = 5.0f;
+            max_speed = 5.0f;
 
         if (cmd.x != 0.0f)
+        {
             a.ax = cmd.x * 0.25f;
+            if (mv.vx < 0.0f)
+                a.ax = (std::max)(a.ax, -max_speed-mv.vx);
+            else
+                a.ax = (std::min)(a.ax, max_speed-mv.vx);
+        }
         else
         {
             if (mv.vx < 0.0f)
