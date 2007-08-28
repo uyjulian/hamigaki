@@ -58,6 +58,7 @@ public:
         , sound_(handle_)
         , joystick_(create_joystick(handle_))
         , active_(false), last_time_(::GetTickCount()), frames_(0)
+        , scroll_x_(0.0f)
     {
         sound_.play_bgm("bgm.ogg");
 
@@ -133,15 +134,18 @@ public:
 
     void render()
     {
+        int x1 = static_cast<int>(scroll_x_) / 32;
+        int x2 = static_cast<int>(std::ceil((scroll_x_+640.0f) / 32.0f));
+
         device_.clear_target(D3DCOLOR_XRGB(0,0,255));
         {
             scoped_scene scene(device_);
 
             device_.set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
 
-            for (std::size_t y = 0; y < 15; ++y)
+            for (int y = 0; y < 15; ++y)
             {
-                for (std::size_t x = 0; x < 20; ++x)
+                for (int x = x1; x < x2; ++x)
                 {
                     char c = map_(x, y);
                     if (c == '=')
@@ -153,11 +157,8 @@ public:
             device_.set_render_state(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
             device_.set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
-            draw_sprite(device_,
-                enemy_pos_.r.x, enemy_pos_.r.y, 0.0f, chara_texture_);
-
-            draw_sprite(device_,
-                player_pos_.r.x, player_pos_.r.y, 0.0f, chara_texture_);
+            draw_sprite(enemy_pos_.r.x, enemy_pos_.r.y, chara_texture_);
+            draw_sprite(player_pos_.r.x, player_pos_.r.y, chara_texture_);
         }
         device_.present();
     }
@@ -182,6 +183,7 @@ private:
     stage_map map_;
     routine_type player_routine_;
     routine_type enemy_routine_;
+    float scroll_x_;
 
     void update_input_state(di::joystick_state& state)
     {
@@ -236,12 +238,27 @@ private:
 
         player_pos_.move(player_routine_(player_pos_, cmd, &map_), map_);
         enemy_pos_.move(enemy_routine_(enemy_pos_, cmd, &map_), map_);
+
+        float center = player_pos_.r.x + player_pos_.r.lx * 0.5f;
+        float right_end = static_cast<float>(map_.width()*32);
+
+        scroll_x_ = center - 320.0f;
+        if (scroll_x_ < 0.0f)
+            scroll_x_ = 0.0f;
+        else if (scroll_x_ + 640.0f > right_end)
+            scroll_x_ = right_end - 640.0f;
     }
 
-    void draw_block(std::size_t x, std::size_t y)
+    void draw_sprite(float x, float y, direct3d_texture9& texture)
+    {
+        ::draw_sprite(device_, x-scroll_x_, y, 0.0f, texture);
+    }
+
+    void draw_block(int x, int y)
     {
         draw_rectangle(
-            device_, static_cast<float>(x*32), static_cast<float>(y*32), 0.0f,
+            device_,
+            static_cast<float>(x*32)-scroll_x_, static_cast<float>(y*32), 0.0f,
             32.0f, 32.0f, D3DCOLOR_XRGB(0xAA,0x55,0x33));
     }
 };

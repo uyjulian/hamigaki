@@ -119,7 +119,7 @@ void move_info::move(const acceleration& a, const stage_map& map)
         int old_x = r.right_block();
 
         r.x += vx;
-        r.x = (std::min)(r.x, 640.0f - r.lx); // FIXME
+        r.x = (std::min)(r.x, static_cast<float>(map.width()*32) - r.lx);
 
         int new_x = r.right_block();
         int y1 = r.top_block();

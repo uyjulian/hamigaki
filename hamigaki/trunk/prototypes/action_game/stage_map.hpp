@@ -49,6 +49,11 @@ public:
         data_.swap(rhs.data_);
     }
 
+    int width() const
+    {
+        return static_cast<int>(data_[0].size());
+    }
+
 private:
     std::vector<std::string> data_;
 };
