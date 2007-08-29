@@ -59,6 +59,7 @@ public:
         , joystick_(create_joystick(handle_))
         , active_(false), last_time_(::GetTickCount()), frames_(0)
         , scroll_x_(0.0f)
+        , step_(0), back_(false)
     {
         sound_.play_bgm("bgm.ogg");
 
@@ -96,17 +97,18 @@ public:
             D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, handle_,
             D3DCREATE_HARDWARE_VERTEXPROCESSING, params);
 
-        chara_texture_ =
-            create_png_texture(device_, "chara.png");
+        man_texture_ = create_png_texture(device_, "man.png");
+        chara_texture_ = create_png_texture(device_, "chara.png");
 
-        const ::D3DSURFACE_DESC& desc = chara_texture_.description(0);
+        ::D3DSURFACE_DESC desc = man_texture_.description(0);
         player_pos_.r.x = 32.0f;
         player_pos_.r.y = 448.0f - static_cast<float>(desc.Height);
-        player_pos_.r.lx = static_cast<float>(desc.Width);
+        player_pos_.r.lx = static_cast<float>(desc.Width / 2u);
         player_pos_.r.ly = static_cast<float>(desc.Height);
         player_pos_.vx = 0.0f;
         player_pos_.vy = 0.0f;
 
+        desc = chara_texture_.description(0);
         enemy_pos_.r.x = 608.0f;
         enemy_pos_.r.y = 320.0f - static_cast<float>(desc.Height);
         enemy_pos_.r.lx = static_cast<float>(desc.Width);
@@ -167,7 +169,11 @@ public:
 
             draw_sprite(enemy_pos_.r.x, enemy_pos_.r.y, chara_texture_);
             draw_sprite(enemy2_pos_.r.x, enemy2_pos_.r.y, chara_texture_);
-            draw_sprite(player_pos_.r.x, player_pos_.r.y, chara_texture_);
+
+            draw_sprite(
+                player_pos_.r.x, player_pos_.r.y,
+                man_texture_, player_pos_.r.lx, player_pos_.r.ly,
+                (step_ % 30) / 15, back_);
         }
         device_.present();
     }
@@ -183,6 +189,7 @@ private:
     input::direct_input_joystick joystick_;
     direct3d9 d3d_;
     direct3d_device9 device_;
+    direct3d_texture9 man_texture_;
     direct3d_texture9 chara_texture_;
     bool active_;
     unsigned long last_time_;
@@ -195,6 +202,8 @@ private:
     routine_type enemy_routine_;
     routine_type enemy2_routine_;
     float scroll_x_;
+    int step_;
+    bool back_;
 
     void update_input_state(di::joystick_state& state)
     {
@@ -220,14 +229,11 @@ private:
     {
         if ((state.buttons[6] & 0x80) != 0)
         {
-            const ::D3DSURFACE_DESC& desc = chara_texture_.description(0);
             player_pos_.r.x = 32.0f;
-            player_pos_.r.y = 448.0f - static_cast<float>(desc.Height);
+            player_pos_.r.y = 448.0f - player_pos_.r.ly;
             player_pos_.vx = 0.0f;
             player_pos_.vy = 0.0f;
         }
-
-        const ::D3DSURFACE_DESC& desc = chara_texture_.description(0);
 
         float a = static_cast<float>(axis_range);
         float dx = static_cast<float>(state.position.x)/a;
@@ -251,6 +257,14 @@ private:
         enemy_pos_.move(enemy_routine_(enemy_pos_, cmd, &map_), map_);
         enemy2_pos_.move(enemy2_routine_(enemy2_pos_, cmd, &map_), map_);
 
+        if ((player_pos_.vx != 0.0f) && (player_pos_.vy == 0.0f))
+            ++step_;
+
+        if (player_pos_.vx >= 1.0f)
+            back_ = false;
+        else if (player_pos_.vx <= -1.0f)
+            back_ = true;
+
         float center = player_pos_.r.x + player_pos_.r.lx * 0.5f;
         float right_end = static_cast<float>(map_.width()*32);
 
@@ -264,6 +278,13 @@ private:
     void draw_sprite(float x, float y, direct3d_texture9& texture)
     {
         ::draw_sprite(device_, x-scroll_x_, y, 0.0f, texture);
+    }
+
+    void draw_sprite(
+        float x, float y,
+        direct3d_texture9& texture, float w, float h, int step, bool back)
+    {
+        ::draw_sprite(device_, x-scroll_x_, y, 0.0f, texture, w, h, step, back);
     }
 
     void draw_block(int x, int y)
