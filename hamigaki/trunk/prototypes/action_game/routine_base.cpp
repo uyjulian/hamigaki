@@ -49,9 +49,6 @@ int rect::bottom_block() const
 
 bool is_on_ground(const stage_map& map, const rect& r)
 {
-    if (r.y < 0.0f)
-        return false;
-
     int y = r.bottom_block() + 1;
     if ((r.y + r.ly) == static_cast<float>(y*32))
     {
@@ -90,7 +87,11 @@ void move_info::move(const acceleration& a, const stage_map& map)
 
     bool on_ground = is_on_ground(map, r);
 
-    vx += a.ax;
+    // FIXME
+    if (r.y < 480.0f)
+        vx += a.ax;
+    else
+        vx = 0.0f;
 
     if (vx < 0.0f)
     {
