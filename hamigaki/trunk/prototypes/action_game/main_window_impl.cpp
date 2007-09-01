@@ -14,6 +14,7 @@
 #include "png_loader.hpp"
 #include "sound_engine.hpp"
 #include "sprite.hpp"
+#include "sprite_info.hpp"
 #include "stage_map.hpp"
 #include "straight_routine.hpp"
 #include <hamigaki/input/direct_input.hpp>
@@ -75,6 +76,7 @@ public:
         y_axis.deadzone(2000);
 
         load_map_from_text(map_, "map.txt");
+        load_sprite_info_list_from_text(player_sprite_info_, "man.txt");
 
         player_routine_ = routine_type(&player_routine);
         enemy_routine_ = routine_type(&straight_routine);
@@ -204,6 +206,7 @@ private:
     float scroll_x_;
     int step_;
     bool back_;
+    sprite_info_list player_sprite_info_;
 
     void update_input_state(di::joystick_state& state)
     {

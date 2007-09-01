@@ -30,6 +30,7 @@ exe action_game
     png_loader.cpp
     routine_base.cpp
     sound_engine.cpp
+    sprite_info.cpp
     straight_routine.cpp
     /directx//d3d9
     /directx//dxerr9

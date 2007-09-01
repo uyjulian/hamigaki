@@ -1,0 +1,15 @@
+# man.txt: data about man.png
+
+# Copyright Takeshi Mouri 2007.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/ for library home page.
+
+man.png 32 64
+0 0.00 0.0 2  0 28 64
+1 0.25 0.0 2  0 28 64
+1 0.50 0.0 2  1 28 63
+2 0.75 0.0 2  2 28 62
+3 0.00 0.5 2 38 28 26
