@@ -58,6 +58,9 @@ load_sprite_info_list_from_text(sprite_info_list& list, const char* filename)
     std::string texture;
     int w, h;
     parser >> texture >> w >> h;
+    if (!parser)
+        throw_invalid_format(filename);
+
     tmp.texture(texture);
     tmp.width(w);
     tmp.height(h);
@@ -67,9 +70,14 @@ load_sprite_info_list_from_text(sprite_info_list& list, const char* filename)
         unsigned no;
         sprite_info info;
 
+        parser.str(line);
+        parser.clear();
         parser
-            >> no >> info.tu >> info.tv
+            >> no >> info.x >> info.y
             >> info.left >> info.top >> info.width >> info.height;
+
+        if (!parser)
+            throw_invalid_format(filename);
 
         tmp.push_back(no, info);
     }

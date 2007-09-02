@@ -60,7 +60,7 @@ public:
         , joystick_(create_joystick(handle_))
         , active_(false), last_time_(::GetTickCount()), frames_(0)
         , scroll_x_(0.0f)
-        , step_(0), back_(false)
+        , form_(0), step_(0), back_(false)
     {
         sound_.play_bgm("bgm.ogg");
 
@@ -102,11 +102,13 @@ public:
         man_texture_ = create_png_texture(device_, "man.png");
         chara_texture_ = create_png_texture(device_, "chara.png");
 
+        const sprite_info& info = player_sprite_info_.get_group(form_)[0];
+
         ::D3DSURFACE_DESC desc = man_texture_.description(0);
-        player_pos_.r.x = 32.0f;
-        player_pos_.r.y = 448.0f - static_cast<float>(desc.Height);
-        player_pos_.r.lx = static_cast<float>(desc.Width / 2u);
-        player_pos_.r.ly = static_cast<float>(desc.Height);
+        player_pos_.r.x = static_cast<float>(32 + info.left);
+        player_pos_.r.y = static_cast<float>(448 - desc.Height + info.top);
+        player_pos_.r.lx = static_cast<float>(info.width);
+        player_pos_.r.ly = static_cast<float>(info.height);
         player_pos_.vx = 0.0f;
         player_pos_.vy = 0.0f;
 
@@ -172,10 +174,18 @@ public:
             draw_sprite(enemy_pos_.r.x, enemy_pos_.r.y, chara_texture_);
             draw_sprite(enemy2_pos_.r.x, enemy2_pos_.r.y, chara_texture_);
 
+            const std::vector<sprite_info>& group =
+                player_sprite_info_.get_group(form_);
+
+            std::size_t pattern = (step_ % (15 * group.size())) / 15;
+            const sprite_info& info = group[pattern];
             draw_sprite(
-                player_pos_.r.x, player_pos_.r.y,
-                man_texture_, player_pos_.r.lx, player_pos_.r.ly,
-                (step_ % 30) / 15, back_);
+                player_pos_.r.x - info.left,
+                player_pos_.r.y - info.top,
+                man_texture_,
+                info.x, info.y,
+                player_sprite_info_.width(), player_sprite_info_.height(),
+                back_);
         }
         device_.present();
     }
@@ -204,6 +214,7 @@ private:
     routine_type enemy_routine_;
     routine_type enemy2_routine_;
     float scroll_x_;
+    std::size_t form_;
     int step_;
     bool back_;
     sprite_info_list player_sprite_info_;
@@ -236,6 +247,9 @@ private:
             player_pos_.r.y = 448.0f - player_pos_.r.ly;
             player_pos_.vx = 0.0f;
             player_pos_.vy = 0.0f;
+            form_ = 0;
+            step_ = 0;
+            back_ = false;
         }
 
         float a = static_cast<float>(axis_range);
@@ -260,7 +274,18 @@ private:
         enemy_pos_.move(enemy_routine_(enemy_pos_, cmd, &map_), map_);
         enemy2_pos_.move(enemy2_routine_(enemy2_pos_, cmd, &map_), map_);
 
-        if ((player_pos_.vx != 0.0f) && (player_pos_.vy == 0.0f))
+        std::size_t old_form = form_;
+
+        if (player_pos_.vy != 0.0f)
+            form_ = 2;
+        else if (player_pos_.vx == 0.0f)
+            form_ = 0;
+        else
+            form_ = 1;
+
+        if (old_form != form_)
+            step_ = 0;
+        else
             ++step_;
 
         if (player_pos_.vx >= 1.0f)
@@ -285,9 +310,10 @@ private:
 
     void draw_sprite(
         float x, float y,
-        direct3d_texture9& texture, float w, float h, int step, bool back)
+        direct3d_texture9& texture, int tx, int ty, int tw, int th, bool back)
     {
-        ::draw_sprite(device_, x-scroll_x_, y, 0.0f, texture, w, h, step, back);
+        ::draw_sprite(
+            device_, x-scroll_x_, y, 0.0f, texture, tx, ty, tw, th, back);
     }
 
     void draw_block(int x, int y)

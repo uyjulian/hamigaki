@@ -41,22 +41,23 @@ inline void draw_sprite(direct3d_device9& device,
 
 inline void draw_sprite(direct3d_device9& device,
     float x, float y, float z,
-    direct3d_texture9& texture, float width, float height, int step, bool back)
+    direct3d_texture9& texture, int tx, int ty, int tw, int th, bool back)
 {
     const ::D3DSURFACE_DESC& desc = texture.description(0);
-    float tu = width / static_cast<float>(desc.Width);
-    float tu1 = tu * static_cast<float>(step);
-    float tu2 = tu * static_cast<float>(step+1);
+    float tu1 = static_cast<float>(tx) / static_cast<float>(desc.Width);
+    float tu2 = static_cast<float>(tx+tw) / static_cast<float>(desc.Width);
+    float tv1 = static_cast<float>(ty) / static_cast<float>(desc.Height);
+    float tv2 = static_cast<float>(ty+th) / static_cast<float>(desc.Height);
 
     if (back)
         std::swap(tu1, tu2);
 
     const transformed_vertex vertices[] =
     {
-        { x,       y,        z, 1.0f, tu1,   0.0f },
-        { x+width, y,        z, 1.0f, tu2,   0.0f },
-        { x,       y+height, z, 1.0f, tu1,   1.0f },
-        { x+width, y+height, z, 1.0f, tu2,   1.0f }
+        { x,    y,    z, 1.0f, tu1, tv1 },
+        { x+tw, y,    z, 1.0f, tu2, tv1 },
+        { x,    y+th, z, 1.0f, tu1, tv2 },
+        { x+tw, y+th, z, 1.0f, tu2, tv2 }
     };
 
     device.set_vertex_format(D3DFVF_XYZRHW|D3DFVF_TEX1);

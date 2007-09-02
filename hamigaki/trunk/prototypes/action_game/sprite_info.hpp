@@ -15,8 +15,8 @@
 
 struct sprite_info
 {
-    float tu;
-    float tv;
+    int x;
+    int y;
 
     int left;
     int top;
