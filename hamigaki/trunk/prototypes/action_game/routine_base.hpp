@@ -10,8 +10,10 @@
 #ifndef ROUTINE_BASE_HPP
 #define ROUTINE_BASE_HPP
 
+#include "sprite_info.hpp"
 #include "stage_map.hpp"
 #include <hamigaki/coroutine/shared_coroutine.hpp>
+#include <utility>
 
 struct rect
 {
@@ -52,10 +54,13 @@ struct move_info
     float vy;
 
     void move(const acceleration& a, const stage_map& map);
+    void change_form(const sprite_info& old, const sprite_info& cur);
 };
 
+typedef std::pair<acceleration,std::size_t> routine_result;
+
 typedef hamigaki::coroutines::shared_coroutine<
-    acceleration(move_info,input_command,const stage_map*)
+    routine_result(move_info,input_command,const stage_map*)
 > routine_type;
 
 #endif // ROUTINE_BASE_HPP

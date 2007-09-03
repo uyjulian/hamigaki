@@ -12,7 +12,7 @@
 
 #include "routine_base.hpp"
 
-acceleration player_routine(
+routine_result player_routine(
     routine_type::self& self,
     move_info mv, input_command cmd, const stage_map* map);
 

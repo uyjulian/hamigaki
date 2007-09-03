@@ -10,12 +10,13 @@
 #include "player_routine.hpp"
 #include <cmath>
 
-acceleration player_routine(
+routine_result player_routine(
     routine_type::self& self,
     move_info mv, input_command cmd, const stage_map* map)
 {
     const float brake = 0.2f;
 
+    std::size_t form = 0;
     bool old_jump = false;
     bool jump_boost = false;
 
@@ -23,6 +24,7 @@ acceleration player_routine(
     {
         if (cmd.reset)
         {
+            form = 0;
             old_jump = false;
             jump_boost = false;
         }
@@ -46,6 +48,9 @@ acceleration player_routine(
                 a.ax = (std::max)(a.ax, -max_speed-mv.vx);
             else
                 a.ax = (std::min)(a.ax, max_speed-mv.vx);
+
+            if (on_ground)
+                form = 1;
         }
         else
         {
@@ -53,6 +58,9 @@ acceleration player_routine(
                 a.ax = (std::min)(brake, -mv.vx);
             else if (mv.vx > 0.0f)
                 a.ax = -(std::min)(brake, mv.vx);;
+
+            if (on_ground)
+                form = 0;
         }
 
         if (!on_ground)
@@ -61,6 +69,9 @@ acceleration player_routine(
                 a.ay = -0.35f;
             else
                 jump_boost = false;
+
+            if (form == 1)
+                form = 0;
         }
         else if (jump_start)
         {
@@ -68,14 +79,15 @@ acceleration player_routine(
             if (std::abs(mv.vx) > 4.0f)
                 a.ay -= 1.0f;
             jump_boost = true;
+            form = 2;
         }
         else
             jump_boost = false;
 
         old_jump = cmd.jump;
 
-        boost::tie(mv, cmd, map) = self.yield(a);
+        boost::tie(mv, cmd, map) = self.yield(std::make_pair(a,form));
     }
 
-    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(r)
+    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(std::make_pair(a,form))
 }

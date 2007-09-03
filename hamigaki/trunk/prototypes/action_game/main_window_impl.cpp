@@ -252,9 +252,9 @@ private:
             back_ = false;
         }
 
-        float a = static_cast<float>(axis_range);
-        float dx = static_cast<float>(state.position.x)/a;
-        float dy = static_cast<float>(state.position.y)/a;
+        float r = static_cast<float>(axis_range);
+        float dx = static_cast<float>(state.position.x)/r;
+        float dy = static_cast<float>(state.position.y)/r;
 
         float radius = std::sqrt(dx*dx + dy*dy);
         if (radius > 1.0f)
@@ -270,23 +270,28 @@ private:
         cmd.dash = (state.buttons[2] & 0x80) != 0;
         cmd.reset = (state.buttons[6] & 0x80) != 0;
 
-        player_pos_.move(player_routine_(player_pos_, cmd, &map_), map_);
-        enemy_pos_.move(enemy_routine_(enemy_pos_, cmd, &map_), map_);
-        enemy2_pos_.move(enemy2_routine_(enemy2_pos_, cmd, &map_), map_);
+        acceleration a;
+        std::size_t form;
+
+        boost::tie(a, form) = player_routine_(player_pos_, cmd, &map_);
 
         std::size_t old_form = form_;
-
-        if (player_pos_.vy != 0.0f)
-            form_ = 2;
-        else if (player_pos_.vx == 0.0f)
-            form_ = 0;
-        else
-            form_ = 1;
+        form_ = form;
 
         if (old_form != form_)
+        {
+            const sprite_info& old = player_sprite_info_.get_group(old_form)[0];
+            const sprite_info& cur = player_sprite_info_.get_group(form_)[0];
+            player_pos_.change_form(old, cur);
             step_ = 0;
+        }
         else
             ++step_;
+
+        player_pos_.move(a, map_);
+
+        enemy_pos_.move(enemy_routine_(enemy_pos_, cmd, &map_).first, map_);
+        enemy2_pos_.move(enemy2_routine_(enemy2_pos_, cmd, &map_).first, map_);
 
         if (player_pos_.vx >= 1.0f)
             back_ = false;

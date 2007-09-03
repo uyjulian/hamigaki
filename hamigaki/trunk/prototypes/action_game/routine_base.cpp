@@ -191,3 +191,14 @@ void move_info::move(const acceleration& a, const stage_map& map)
         }
     }
 }
+
+void move_info::change_form(const sprite_info& old, const sprite_info& cur)
+{
+    float x = r.x - static_cast<float>(old.left);
+    float y = r.y - static_cast<float>(old.top);
+
+    r.x = x + static_cast<float>(cur.left);
+    r.y = y + static_cast<float>(cur.top);
+    r.lx = static_cast<float>(cur.width);
+    r.ly = static_cast<float>(cur.height);
+}

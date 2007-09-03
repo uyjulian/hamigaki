@@ -10,29 +10,30 @@
 #include "straight_routine.hpp"
 #include <cmath>
 
-acceleration straight_routine(
+routine_result straight_routine(
     routine_type::self& self,
     move_info mv, input_command cmd, const stage_map* map)
 {
     acceleration a;
     a.ay = 0.0f;
+    std::size_t form = 0;
 
     while (true)
     {
         a.ax = -1.2f;
-        boost::tie(mv, cmd, map) = self.yield(a);
+        boost::tie(mv, cmd, map) = self.yield(std::make_pair(a, form));
 
         a.ax = 0.0f;
         while (mv.vx < 0.0f)
-            boost::tie(mv, cmd, map) = self.yield(a);
+            boost::tie(mv, cmd, map) = self.yield(std::make_pair(a, form));
 
         a.ax = 1.2f;
-        boost::tie(mv, cmd, map) = self.yield(a);
+        boost::tie(mv, cmd, map) = self.yield(std::make_pair(a, form));
 
         a.ax = 0.0f;
         while (mv.vx > 0.0f)
-            boost::tie(mv, cmd, map) = self.yield(a);
+            boost::tie(mv, cmd, map) = self.yield(std::make_pair(a, form));
     }
 
-    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(r)
+    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(std::make_pair(a, form))
 }
