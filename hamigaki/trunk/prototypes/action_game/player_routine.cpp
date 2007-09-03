@@ -38,8 +38,13 @@ routine_result player_routine(
         a.ay = 0.0f;
 
         float max_speed = 3.0f;
-        if (on_ground && cmd.dash)
-            max_speed = 5.0f;
+        if (cmd.dash)
+        {
+            if (on_ground)
+                max_speed = 8.0f;
+            else
+                max_speed = 5.0f;
+        }
 
         if (cmd.x != 0.0f)
         {
@@ -63,6 +68,11 @@ routine_result player_routine(
                 form = 0;
         }
 
+        if (on_ground && (cmd.x == 0.0f) && (cmd.y > 0.0f))
+            form = 3;
+        else if ((form == 3) && on_ground)
+            form = 0;
+
         if (!on_ground)
         {
             if (jump_boost && cmd.jump && (mv.vy < 0.0))
@@ -79,7 +89,8 @@ routine_result player_routine(
             if (std::abs(mv.vx) > 4.0f)
                 a.ay -= 1.0f;
             jump_boost = true;
-            form = 2;
+            if (form != 3)
+                form = 2;
         }
         else
             jump_boost = false;

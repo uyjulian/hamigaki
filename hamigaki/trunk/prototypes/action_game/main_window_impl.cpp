@@ -103,10 +103,11 @@ public:
         chara_texture_ = create_png_texture(device_, "chara.png");
 
         const sprite_info& info = player_sprite_info_.get_group(form_)[0];
+        int sprite_height = player_sprite_info_.height();
 
         ::D3DSURFACE_DESC desc = man_texture_.description(0);
         player_pos_.r.x = static_cast<float>(32 + info.left);
-        player_pos_.r.y = static_cast<float>(448 - desc.Height + info.top);
+        player_pos_.r.y = static_cast<float>(448 - sprite_height + info.top);
         player_pos_.r.lx = static_cast<float>(info.width);
         player_pos_.r.ly = static_cast<float>(info.height);
         player_pos_.vx = 0.0f;
@@ -243,8 +244,12 @@ private:
     {
         if ((state.buttons[6] & 0x80) != 0)
         {
-            player_pos_.r.x = 32.0f;
-            player_pos_.r.y = 448.0f - player_pos_.r.ly;
+            const sprite_info& info = player_sprite_info_.get_group(0)[0];
+            int sprite_height = player_sprite_info_.height();
+            player_pos_.r.x = static_cast<float>(32 + info.left);
+            player_pos_.r.y = static_cast<float>(448-sprite_height+info.top);
+            player_pos_.r.lx = static_cast<float>(info.width);
+            player_pos_.r.ly = static_cast<float>(info.height);
             player_pos_.vx = 0.0f;
             player_pos_.vy = 0.0f;
             form_ = 0;
