@@ -285,6 +285,10 @@ private:
 
         if (old_form != form_)
         {
+            // FIXME
+            if (form_ == 2)
+                sound_.play_se("jump.ogg");
+
             const sprite_info& old = player_sprite_info_.get_group(old_form)[0];
             const sprite_info& cur = player_sprite_info_.get_group(form_)[0];
             player_pos_.change_form(old, cur);

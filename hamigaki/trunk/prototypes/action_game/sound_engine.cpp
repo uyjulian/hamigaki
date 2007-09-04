@@ -13,6 +13,7 @@
 #include <hamigaki/audio/direct_sound.hpp>
 #include <hamigaki/audio/vorbis_file.hpp>
 #include <hamigaki/audio/wide_adaptor.hpp>
+#include <hamigaki/iostreams/background_copy.hpp>
 #include <hamigaki/iostreams/concatenate.hpp>
 #include <hamigaki/iostreams/lazy_restrict.hpp>
 #include <hamigaki/iostreams/repeat.hpp>
@@ -88,10 +89,32 @@ public:
         bgm_player_.play();
     }
 
+    void play_se(const std::string& filename)
+    {
+        se_player_.reset();
+        se_file_.reset(new audio::vorbis_file_source(filename));
+
+        const audio::vorbis_info& info = se_file_->info();
+
+        audio::pcm_format fmt;
+        fmt.type = audio::int_le16;
+        fmt.channels = info.channels;
+        fmt.rate = info.rate;
+
+        se_player_.reset(
+            new io_ex::background_copy(
+                *se_file_,
+                audio::widen<float>(dsound_.create_buffer(fmt))
+            )
+        );
+    }
+
 private:
     audio::direct_sound_device dsound_;
     std::auto_ptr<audio::vorbis_file_source> bgm_file_;
+    std::auto_ptr<audio::vorbis_file_source> se_file_;
     audio::background_player bgm_player_;
+    std::auto_ptr<io_ex::background_copy> se_player_;
 };
 
 sound_engine::sound_engine(void* handle) : pimpl_(new impl(handle))
@@ -105,4 +128,9 @@ sound_engine::~sound_engine()
 void sound_engine::play_bgm(const std::string& filename)
 {
     pimpl_->play_bgm(filename);
+}
+
+void sound_engine::play_se(const std::string& filename)
+{
+    pimpl_->play_se(filename);
 }
