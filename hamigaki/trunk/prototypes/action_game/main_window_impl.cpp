@@ -12,7 +12,6 @@
 #include "direct3d9.hpp"
 #include "player_routine.hpp"
 #include "png_loader.hpp"
-#include "sound_engine.hpp"
 #include "sprite.hpp"
 #include "sprite_info.hpp"
 #include "stage_map.hpp"
@@ -78,7 +77,7 @@ public:
         load_map_from_text(map_, "map.txt");
         load_sprite_info_list_from_text(player_sprite_info_, "man.txt");
 
-        player_routine_ = routine_type(&player_routine);
+        player_routine_ = routine_type(player_routine(map_, sound_));
         enemy_routine_ = routine_type(&straight_routine);
         enemy2_routine_ = routine_type(&straight_routine);
     }
@@ -278,17 +277,13 @@ private:
         acceleration a;
         std::size_t form;
 
-        boost::tie(a, form) = player_routine_(player_pos_, cmd, &map_);
+        boost::tie(a, form) = player_routine_(player_pos_, cmd);
 
         std::size_t old_form = form_;
         form_ = form;
 
         if (old_form != form_)
         {
-            // FIXME
-            if (form_ == 2)
-                sound_.play_se("jump.ogg");
-
             const sprite_info& old = player_sprite_info_.get_group(old_form)[0];
             const sprite_info& cur = player_sprite_info_.get_group(form_)[0];
             player_pos_.change_form(old, cur);
@@ -299,8 +294,8 @@ private:
 
         player_pos_.move(a, map_);
 
-        enemy_pos_.move(enemy_routine_(enemy_pos_, cmd, &map_).first, map_);
-        enemy2_pos_.move(enemy2_routine_(enemy2_pos_, cmd, &map_).first, map_);
+        enemy_pos_.move(enemy_routine_(enemy_pos_, cmd).first, map_);
+        enemy2_pos_.move(enemy2_routine_(enemy2_pos_, cmd).first, map_);
 
         if (player_pos_.vx >= 1.0f)
             back_ = false;

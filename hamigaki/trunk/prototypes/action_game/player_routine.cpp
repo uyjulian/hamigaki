@@ -10,9 +10,8 @@
 #include "player_routine.hpp"
 #include <cmath>
 
-routine_result player_routine(
-    routine_type::self& self,
-    move_info mv, input_command cmd, const stage_map* map)
+routine_result player_routine::operator()(
+    routine_type::self& self, move_info mv, input_command cmd) const
 {
     const float brake = 0.2f;
 
@@ -29,7 +28,7 @@ routine_result player_routine(
             jump_boost = false;
         }
 
-        bool on_ground = is_on_ground(*map, mv.r);
+        bool on_ground = is_on_ground(map_, mv.r);
         bool jump_start = !old_jump && cmd.jump;
 
         acceleration a;
@@ -91,13 +90,15 @@ routine_result player_routine(
             jump_boost = true;
             if (form != 3)
                 form = 2;
+
+            sound_.play_se("jump.ogg");
         }
         else
             jump_boost = false;
 
         old_jump = cmd.jump;
 
-        boost::tie(mv, cmd, map) = self.yield(std::make_pair(a,form));
+        boost::tie(mv, cmd) = self.yield(std::make_pair(a,form));
     }
 
     HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(std::make_pair(a,form))

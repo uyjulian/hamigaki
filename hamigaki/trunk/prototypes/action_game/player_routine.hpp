@@ -11,9 +11,22 @@
 #define PLAYER_ROUTINE_HPP
 
 #include "routine_base.hpp"
+#include "sound_engine.hpp"
 
-routine_result player_routine(
-    routine_type::self& self,
-    move_info mv, input_command cmd, const stage_map* map);
+class player_routine
+{
+public:
+    player_routine(const stage_map& map, sound_engine& sound)
+        : map_(map), sound_(sound)
+    {
+    }
+
+    routine_result operator()(
+        routine_type::self& self, move_info mv, input_command cmd) const;
+
+private:
+    const stage_map& map_;
+    sound_engine& sound_;
+};
 
 #endif // PLAYER_ROUTINE_HPP
