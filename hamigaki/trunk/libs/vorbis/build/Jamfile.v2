@@ -23,6 +23,7 @@ else if $(vorbis-source)
     project hamigaki/vorbis
         : requirements
           <include>$(vorbis-source)/include
+          <include>$(vorbis-source)/lib
           <toolset>msvc:<cflags>-wd4244
           <toolset>msvc:<cflags>-wd4305
           <toolset>msvc-8.0:<cflags>-wd4819
