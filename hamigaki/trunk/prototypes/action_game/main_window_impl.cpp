@@ -114,7 +114,7 @@ public:
 
         desc = chara_texture_.description(0);
         enemy_pos_.r.x = 608.0f;
-        enemy_pos_.r.y = 320.0f - static_cast<float>(desc.Height);
+        enemy_pos_.r.y = 288.0f - static_cast<float>(desc.Height);
         enemy_pos_.r.lx = static_cast<float>(desc.Width);
         enemy_pos_.r.ly = static_cast<float>(desc.Height);
         enemy_pos_.vx = 0.0f;
