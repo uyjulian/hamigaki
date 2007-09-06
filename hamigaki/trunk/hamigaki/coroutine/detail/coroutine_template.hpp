@@ -402,6 +402,7 @@ private:
         void operator()() const
         {
             coro_->startup(boost::is_same<R,void>());
+            coro_->cleanup();
         }
 
     private:
@@ -440,8 +441,6 @@ private:
         {
         }
         result_ = boost::none;
-        state_ = coro_detail::exited;
-        swap_context(callee_, caller_, detail::default_hint());
     }
 
     void startup(const boost::true_type&)
@@ -462,6 +461,10 @@ private:
         catch (...)
         {
         }
+    }
+
+    void cleanup()
+    {
         state_ = coro_detail::exited;
         swap_context(callee_, caller_, detail::default_hint());
     }
