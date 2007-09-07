@@ -424,6 +424,9 @@ private:
 
     void startup(const boost::false_type&)
     {
+        if (state_ == coro_detail::exiting)
+            return;
+
         self self(this);
         try
         {
@@ -445,6 +448,9 @@ private:
 
     void startup(const boost::true_type&)
     {
+        if (state_ == coro_detail::exiting)
+            return;
+
         self self(this);
         try
         {
