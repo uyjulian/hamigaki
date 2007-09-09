@@ -43,6 +43,13 @@ public:
     explicit impl(void* handle)
     {
         dsound_.set_cooperative_level(handle, ds::priority_level);
+
+        audio::pcm_format fmt;
+        fmt.type = audio::int_le16;
+        fmt.channels = 2;
+        fmt.rate = 44100;
+
+        dsound_.format(fmt);
     }
 
     void play_bgm(const std::string& filename)
@@ -67,13 +74,12 @@ public:
         fmt.channels = info.channels;
         fmt.rate = info.rate;
 
-        dsound_.format(fmt);
-
         if (offset == -1)
         {
             bgm_player_.open(
                 io_ex::repeat(*bgm_file_, -1),
-                audio::widen<float>(dsound_.create_buffer(fmt))
+                audio::widen<float>(dsound_.create_buffer(fmt, 4096)),
+                2048
             );
         }
         else
@@ -83,7 +89,8 @@ public:
             bgm_player_.open(
                 io_ex::lazy_restrict(*bgm_file_, 0, offset+len) +
                 io_ex::lazy_restrict(*bgm_file_, offset, len) * -1,
-                audio::widen<float>(dsound_.create_buffer(fmt))
+                audio::widen<float>(dsound_.create_buffer(fmt, 4096)),
+                2048
             );
         }
         bgm_player_.play();
@@ -104,7 +111,8 @@ public:
         se_player_.reset(
             new io_ex::background_copy(
                 *se_file_,
-                audio::widen<float>(dsound_.create_buffer(fmt))
+                audio::widen<float>(dsound_.create_buffer(fmt, 1024)),
+                512
             )
         );
     }
