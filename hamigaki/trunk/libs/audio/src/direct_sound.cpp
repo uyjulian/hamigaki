@@ -289,7 +289,8 @@ public:
     {
         try
         {
-            close();
+            if (is_open_)
+                stop();
         }
         catch (...)
         {
