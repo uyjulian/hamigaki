@@ -41,6 +41,7 @@ exe action_game
     :
     <find-static-library>user32
     <conditional>@user-interface-gui
+    <threading>multi
     ;
 
 exec.register-exec-all ;
