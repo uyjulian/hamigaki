@@ -48,6 +48,21 @@ input::direct_input_joystick create_joystick(::HWND handle)
     return dinput.create_joystick_device(info.instance_guid);
 }
 
+struct game_character
+{
+    move_info position;
+    routine_type routine;
+    std::size_t form;
+    int step;
+    bool back;
+    sprite_info_list* sprite_infos;
+    direct3d_texture9* texture;
+
+    game_character() : form(0), step(0), back(false)
+    {
+    }
+};
+
 } // namespace
 
 class main_window::impl
@@ -59,7 +74,6 @@ public:
         , joystick_(create_joystick(handle_))
         , active_(false), last_time_(::GetTickCount()), frames_(0)
         , scroll_x_(0.0f)
-        , form_(0), step_(0), back_(false)
     {
         sound_.play_bgm("bgm.ogg");
 
@@ -76,10 +90,19 @@ public:
 
         load_map_from_text(map_, "map.txt");
         load_sprite_info_list_from_text(player_sprite_info_, "man.txt");
+        load_sprite_info_list_from_text(ball_sprite_info_, "ball.txt");
 
-        player_routine_ = routine_type(player_routine(map_, sound_));
-        enemy_routine_ = routine_type(&straight_routine);
-        enemy2_routine_ = routine_type(&straight_routine);
+        player_.sprite_infos = &player_sprite_info_;
+        player_.texture = &man_texture_;
+
+        player_.routine = routine_type(player_routine(map_, sound_));
+
+        for (std::size_t i = 0; i < 2; ++i)
+        {
+            enemies_[i].routine = routine_type(&straight_routine);
+            enemies_[i].sprite_infos = &ball_sprite_info_;
+            enemies_[i].texture = &chara_texture_;
+        }
     }
 
     ~impl()
@@ -101,31 +124,32 @@ public:
         man_texture_ = create_png_texture(device_, "man.png");
         chara_texture_ = create_png_texture(device_, "chara.png");
 
-        const sprite_info& info = player_sprite_info_.get_group(form_)[0];
-        int sprite_height = player_sprite_info_.height();
+        const sprite_info& info =
+            player_.sprite_infos->get_group(player_.form)[0];
+        int sprite_height = player_.sprite_infos->height();
 
         ::D3DSURFACE_DESC desc = man_texture_.description(0);
-        player_pos_.r.x = static_cast<float>(32 + info.left);
-        player_pos_.r.y = static_cast<float>(448 - sprite_height + info.top);
-        player_pos_.r.lx = static_cast<float>(info.width);
-        player_pos_.r.ly = static_cast<float>(info.height);
-        player_pos_.vx = 0.0f;
-        player_pos_.vy = 0.0f;
+        player_.position.r.x = static_cast<float>(32 + info.left);
+        player_.position.r.y = static_cast<float>(448-sprite_height+info.top);
+        player_.position.r.lx = static_cast<float>(info.width);
+        player_.position.r.ly = static_cast<float>(info.height);
+        player_.position.vx = 0.0f;
+        player_.position.vy = 0.0f;
 
         desc = chara_texture_.description(0);
-        enemy_pos_.r.x = 608.0f;
-        enemy_pos_.r.y = 288.0f - static_cast<float>(desc.Height);
-        enemy_pos_.r.lx = static_cast<float>(desc.Width);
-        enemy_pos_.r.ly = static_cast<float>(desc.Height);
-        enemy_pos_.vx = 0.0f;
-        enemy_pos_.vy = 0.0f;
+        enemies_[0].position.r.x = 608.0f;
+        enemies_[0].position.r.y = 288.0f - static_cast<float>(desc.Height);
+        enemies_[0].position.r.lx = static_cast<float>(desc.Width);
+        enemies_[0].position.r.ly = static_cast<float>(desc.Height);
+        enemies_[0].position.vx = 0.0f;
+        enemies_[0].position.vy = 0.0f;
 
-        enemy2_pos_.r.x = 1024.0f;
-        enemy2_pos_.r.y = 320.0f - static_cast<float>(desc.Height);
-        enemy2_pos_.r.lx = static_cast<float>(desc.Width);
-        enemy2_pos_.r.ly = static_cast<float>(desc.Height);
-        enemy2_pos_.vx = 0.0f;
-        enemy2_pos_.vy = 0.0f;
+        enemies_[1].position.r.x = 1024.0f;
+        enemies_[1].position.r.y = 320.0f - static_cast<float>(desc.Height);
+        enemies_[1].position.r.lx = static_cast<float>(desc.Width);
+        enemies_[1].position.r.ly = static_cast<float>(desc.Height);
+        enemies_[1].position.vx = 0.0f;
+        enemies_[1].position.vy = 0.0f;
     }
 
     void process_input()
@@ -171,21 +195,10 @@ public:
             device_.set_render_state(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
             device_.set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
-            draw_sprite(enemy_pos_.r.x, enemy_pos_.r.y, chara_texture_);
-            draw_sprite(enemy2_pos_.r.x, enemy2_pos_.r.y, chara_texture_);
+            for (std::size_t i = 0; i < 2; ++i)
+                draw_character(enemies_[i]);
 
-            const std::vector<sprite_info>& group =
-                player_sprite_info_.get_group(form_);
-
-            std::size_t pattern = (step_ % (15 * group.size())) / 15;
-            const sprite_info& info = group[pattern];
-            draw_sprite(
-                player_pos_.r.x - info.left,
-                player_pos_.r.y - info.top,
-                man_texture_,
-                info.x, info.y,
-                player_sprite_info_.width(), player_sprite_info_.height(),
-                back_);
+            draw_character(player_);
         }
         device_.present();
     }
@@ -206,18 +219,12 @@ private:
     bool active_;
     unsigned long last_time_;
     unsigned frames_;
-    move_info player_pos_;
-    move_info enemy_pos_;
-    move_info enemy2_pos_;
     stage_map map_;
-    routine_type player_routine_;
-    routine_type enemy_routine_;
-    routine_type enemy2_routine_;
     float scroll_x_;
-    std::size_t form_;
-    int step_;
-    bool back_;
     sprite_info_list player_sprite_info_;
+    sprite_info_list ball_sprite_info_;
+    game_character player_;
+    game_character enemies_[2];
 
     void update_input_state(di::joystick_state& state)
     {
@@ -243,17 +250,18 @@ private:
     {
         if ((state.buttons[6] & 0x80) != 0)
         {
-            const sprite_info& info = player_sprite_info_.get_group(0)[0];
-            int sprite_height = player_sprite_info_.height();
-            player_pos_.r.x = static_cast<float>(32 + info.left);
-            player_pos_.r.y = static_cast<float>(448-sprite_height+info.top);
-            player_pos_.r.lx = static_cast<float>(info.width);
-            player_pos_.r.ly = static_cast<float>(info.height);
-            player_pos_.vx = 0.0f;
-            player_pos_.vy = 0.0f;
-            form_ = 0;
-            step_ = 0;
-            back_ = false;
+            const sprite_info& info = player_.sprite_infos->get_group(0)[0];
+            int sprite_height = player_.sprite_infos->height();
+            player_.position.r.x = static_cast<float>(32 + info.left);
+            player_.position.r.y =
+                static_cast<float>(448-sprite_height+info.top);
+            player_.position.r.lx = static_cast<float>(info.width);
+            player_.position.r.ly = static_cast<float>(info.height);
+            player_.position.vx = 0.0f;
+            player_.position.vy = 0.0f;
+            player_.form = 0;
+            player_.step = 0;
+            player_.back = false;
         }
 
         float r = static_cast<float>(axis_range);
@@ -277,32 +285,37 @@ private:
         acceleration a;
         std::size_t form;
 
-        boost::tie(a, form) = player_routine_(player_pos_, cmd);
+        boost::tie(a, form) = player_.routine(player_.position, cmd);
 
-        std::size_t old_form = form_;
-        form_ = form;
+        std::size_t old_form = player_.form;
+        player_.form = form;
 
-        if (old_form != form_)
+        if (old_form != player_.form)
         {
-            const sprite_info& old = player_sprite_info_.get_group(old_form)[0];
-            const sprite_info& cur = player_sprite_info_.get_group(form_)[0];
-            player_pos_.change_form(old, cur);
-            step_ = 0;
+            const sprite_info& old =
+                player_.sprite_infos->get_group(old_form)[0];
+            const sprite_info& cur =
+                player_.sprite_infos->get_group(player_.form)[0];
+            player_.position.change_form(old, cur);
+            player_.step = 0;
         }
         else
-            ++step_;
+            ++(player_.step);
 
-        player_pos_.move(a, map_);
+        player_.position.move(a, map_);
 
-        enemy_pos_.move(enemy_routine_(enemy_pos_, cmd).first, map_);
-        enemy2_pos_.move(enemy2_routine_(enemy2_pos_, cmd).first, map_);
+        for (std::size_t i = 0; i < 2; ++i)
+        {
+            move_info& pos = enemies_[i].position;
+            pos.move(enemies_[i].routine(pos, cmd).first, map_);
+        }
 
-        if (player_pos_.vx >= 1.0f)
-            back_ = false;
-        else if (player_pos_.vx <= -1.0f)
-            back_ = true;
+        if (player_.position.vx >= 1.0f)
+            player_.back = false;
+        else if (player_.position.vx <= -1.0f)
+            player_.back = true;
 
-        float center = player_pos_.r.x + player_pos_.r.lx * 0.5f;
+        float center = player_.position.r.x + player_.position.r.lx * 0.5f;
         float right_end = static_cast<float>(map_.width()*32);
 
         scroll_x_ = center - 320.0f;
@@ -323,6 +336,24 @@ private:
     {
         ::draw_sprite(
             device_, x-scroll_x_, y, 0.0f, texture, tx, ty, tw, th, back);
+    }
+
+    void draw_character(const game_character& chara)
+    {
+        const sprite_info_list& infos = *(chara.sprite_infos);
+        const std::vector<sprite_info>& group = infos.get_group(chara.form);
+
+        std::size_t pattern = (chara.step % (15 * group.size())) / 15;
+        const sprite_info& info = group[pattern];
+
+        draw_sprite(
+            chara.position.r.x - info.left,
+            chara.position.r.y - info.top,
+            *(chara.texture),
+            info.x, info.y,
+            infos.width(), infos.height(),
+            chara.back
+        );
     }
 
     void draw_block(int x, int y)
