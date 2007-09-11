@@ -12,6 +12,7 @@
 
 #include <fstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 class stage_map
@@ -52,6 +53,29 @@ public:
     int width() const
     {
         return static_cast<int>(data_[0].size());
+    }
+
+    int height() const
+    {
+        return static_cast<int>(data_.size());
+    }
+
+    std::pair<int,int> player_position() const
+    {
+        for (std::size_t i = 0; i < data_.size(); ++i)
+        {
+            const std::string& line = data_[i];
+            std::string::size_type pos = line.find('@');
+            if (pos != std::string::npos)
+            {
+                return std::make_pair(
+                    static_cast<int>(pos),
+                    static_cast<int>(data_.size() - 1 - i)
+                );
+            }
+        }
+
+        return std::pair<int,int>(1, 1);
     }
 
 private:

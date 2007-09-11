@@ -17,7 +17,9 @@
 #include "stage_map.hpp"
 #include "straight_routine.hpp"
 #include <hamigaki/input/direct_input.hpp>
+#include <boost/bind.hpp>
 #include <cmath>
+#include <list>
 #include <stdexcept>
 
 namespace input = hamigaki::input;
@@ -67,6 +69,10 @@ struct game_character
 
 class main_window::impl
 {
+private:
+    typedef std::list<game_character> chara_list;
+    typedef chara_list::iterator chara_iterator;
+
 public:
     explicit impl(::HWND handle)
         : handle_(handle)
@@ -97,11 +103,39 @@ public:
 
         player_.routine = routine_type(player_routine(map_, sound_));
 
-        for (std::size_t i = 0; i < 2; ++i)
+        int x, y;
+        boost::tie(x, y) = map_.player_position();
+
+        sprite_info info = player_.sprite_infos->get_group(player_.form)[0];
+        player_.position.r.x = static_cast<float>(x * 32 + info.left);
+        player_.position.r.y = static_cast<float>(y * 32);
+        player_.position.r.lx = static_cast<float>(info.width);
+        player_.position.r.ly = static_cast<float>(info.height);
+        player_.position.vx = 0.0f;
+        player_.position.vy = 0.0f;
+
+        for (int y = 0; y < map_.height(); ++y)
         {
-            enemies_[i].routine = routine_type(&straight_routine);
-            enemies_[i].sprite_infos = &ball_sprite_info_;
-            enemies_[i].texture = &chara_texture_;
+            for (int x = 0; x < map_.width(); ++x)
+            {
+                if (map_(x, y) == 'o')
+                {
+                    const sprite_info& info = ball_sprite_info_.get_group(0)[0];
+
+                    game_character enemy;
+                    enemy.routine = routine_type(&straight_routine);
+                    enemy.sprite_infos = &ball_sprite_info_;
+                    enemy.texture = &chara_texture_;
+                    enemy.position.r.x = static_cast<float>(x * 32 + info.left);
+                    enemy.position.r.y = static_cast<float>(y * 32);
+                    enemy.position.r.lx = static_cast<float>(info.width);
+                    enemy.position.r.ly = static_cast<float>(info.height);
+                    enemy.position.vx = 0.0f;
+                    enemy.position.vy = 0.0f;
+
+                    enemies_.push_back(enemy);
+                }
+            }
         }
     }
 
@@ -123,33 +157,6 @@ public:
 
         man_texture_ = create_png_texture(device_, "man.png");
         chara_texture_ = create_png_texture(device_, "chara.png");
-
-        const sprite_info& info =
-            player_.sprite_infos->get_group(player_.form)[0];
-        int sprite_height = player_.sprite_infos->height();
-
-        ::D3DSURFACE_DESC desc = man_texture_.description(0);
-        player_.position.r.x = static_cast<float>(32 + info.left);
-        player_.position.r.y = 32.0f;
-        player_.position.r.lx = static_cast<float>(info.width);
-        player_.position.r.ly = static_cast<float>(info.height);
-        player_.position.vx = 0.0f;
-        player_.position.vy = 0.0f;
-
-        desc = chara_texture_.description(0);
-        enemies_[0].position.r.x = 608.0f;
-        enemies_[0].position.r.y = 192.0f;
-        enemies_[0].position.r.lx = static_cast<float>(desc.Width);
-        enemies_[0].position.r.ly = static_cast<float>(desc.Height);
-        enemies_[0].position.vx = 0.0f;
-        enemies_[0].position.vy = 0.0f;
-
-        enemies_[1].position.r.x = 1024.0f;
-        enemies_[1].position.r.y = 160.0f;
-        enemies_[1].position.r.lx = static_cast<float>(desc.Width);
-        enemies_[1].position.r.ly = static_cast<float>(desc.Height);
-        enemies_[1].position.vx = 0.0f;
-        enemies_[1].position.vy = 0.0f;
     }
 
     void process_input()
@@ -195,8 +202,10 @@ public:
             device_.set_render_state(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
             device_.set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
-            for (std::size_t i = 0; i < 2; ++i)
-                draw_character(enemies_[i]);
+            std::for_each(
+                enemies_.begin(), enemies_.end(),
+                boost::bind(&impl::draw_character, this, _1)
+            );
 
             draw_character(player_);
         }
@@ -224,7 +233,7 @@ private:
     sprite_info_list player_sprite_info_;
     sprite_info_list ball_sprite_info_;
     game_character player_;
-    game_character enemies_[2];
+    chara_list enemies_;
 
     void update_input_state(di::joystick_state& state)
     {
@@ -250,10 +259,12 @@ private:
     {
         if ((state.buttons[6] & 0x80) != 0)
         {
+            int x, y;
+            boost::tie(x, y) = map_.player_position();
+
             const sprite_info& info = player_.sprite_infos->get_group(0)[0];
-            int sprite_height = player_.sprite_infos->height();
-            player_.position.r.x = static_cast<float>(32 + info.left);
-            player_.position.r.y = 32.0f;
+            player_.position.r.x = static_cast<float>(x * 32 + info.left);
+            player_.position.r.y = static_cast<float>(y * 32);
             player_.position.r.lx = static_cast<float>(info.width);
             player_.position.r.ly = static_cast<float>(info.height);
             player_.position.vx = 0.0f;
@@ -303,10 +314,10 @@ private:
 
         player_.position.move(a, map_);
 
-        for (std::size_t i = 0; i < 2; ++i)
+        for (chara_iterator i = enemies_.begin(); i != enemies_.end(); ++i)
         {
-            move_info& pos = enemies_[i].position;
-            pos.move(enemies_[i].routine(pos, cmd).first, map_);
+            move_info& pos = i->position;
+            pos.move(i->routine(pos, cmd).first, map_);
         }
 
         if (player_.position.vx >= 1.0f)
