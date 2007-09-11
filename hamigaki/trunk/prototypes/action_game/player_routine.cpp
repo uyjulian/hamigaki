@@ -67,15 +67,15 @@ routine_result player_routine::operator()(
                 form = 0;
         }
 
-        if (on_ground && (cmd.x == 0.0f) && (cmd.y > 0.0f))
+        if (on_ground && (cmd.x == 0.0f) && (cmd.y < 0.0f))
             form = 3;
         else if ((form == 3) && on_ground)
             form = 0;
 
         if (!on_ground)
         {
-            if (jump_boost && cmd.jump && (mv.vy < 0.0))
-                a.ay = -0.35f;
+            if (jump_boost && cmd.jump && (mv.vy > 0.0))
+                a.ay = 0.35f;
             else
                 jump_boost = false;
 
@@ -84,9 +84,9 @@ routine_result player_routine::operator()(
         }
         else if (jump_start)
         {
-            a.ay = -8.0f;
+            a.ay = 8.0f;
             if (std::abs(mv.vx) > 4.0f)
-                a.ay -= 1.0f;
+                a.ay += 1.0f;
             jump_boost = true;
             if (form != 3)
                 form = 2;

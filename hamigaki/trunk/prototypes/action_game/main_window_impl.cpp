@@ -130,7 +130,7 @@ public:
 
         ::D3DSURFACE_DESC desc = man_texture_.description(0);
         player_.position.r.x = static_cast<float>(32 + info.left);
-        player_.position.r.y = static_cast<float>(448-sprite_height+info.top);
+        player_.position.r.y = 32.0f;
         player_.position.r.lx = static_cast<float>(info.width);
         player_.position.r.ly = static_cast<float>(info.height);
         player_.position.vx = 0.0f;
@@ -138,14 +138,14 @@ public:
 
         desc = chara_texture_.description(0);
         enemies_[0].position.r.x = 608.0f;
-        enemies_[0].position.r.y = 288.0f - static_cast<float>(desc.Height);
+        enemies_[0].position.r.y = 192.0f;
         enemies_[0].position.r.lx = static_cast<float>(desc.Width);
         enemies_[0].position.r.ly = static_cast<float>(desc.Height);
         enemies_[0].position.vx = 0.0f;
         enemies_[0].position.vy = 0.0f;
 
         enemies_[1].position.r.x = 1024.0f;
-        enemies_[1].position.r.y = 320.0f - static_cast<float>(desc.Height);
+        enemies_[1].position.r.y = 160.0f;
         enemies_[1].position.r.lx = static_cast<float>(desc.Width);
         enemies_[1].position.r.ly = static_cast<float>(desc.Height);
         enemies_[1].position.vx = 0.0f;
@@ -253,8 +253,7 @@ private:
             const sprite_info& info = player_.sprite_infos->get_group(0)[0];
             int sprite_height = player_.sprite_infos->height();
             player_.position.r.x = static_cast<float>(32 + info.left);
-            player_.position.r.y =
-                static_cast<float>(448-sprite_height+info.top);
+            player_.position.r.y = 32.0f;
             player_.position.r.lx = static_cast<float>(info.width);
             player_.position.r.ly = static_cast<float>(info.height);
             player_.position.vx = 0.0f;
@@ -266,7 +265,7 @@ private:
 
         float r = static_cast<float>(axis_range);
         float dx = static_cast<float>(state.position.x)/r;
-        float dy = static_cast<float>(state.position.y)/r;
+        float dy = static_cast<float>(-state.position.y)/r;
 
         float radius = std::sqrt(dx*dx + dy*dy);
         if (radius > 1.0f)
@@ -325,19 +324,6 @@ private:
             scroll_x_ = right_end - 640.0f;
     }
 
-    void draw_sprite(float x, float y, direct3d_texture9& texture)
-    {
-        ::draw_sprite(device_, x-scroll_x_, y, 0.0f, texture);
-    }
-
-    void draw_sprite(
-        float x, float y,
-        direct3d_texture9& texture, int tx, int ty, int tw, int th, bool back)
-    {
-        ::draw_sprite(
-            device_, x-scroll_x_, y, 0.0f, texture, tx, ty, tw, th, back);
-    }
-
     void draw_character(const game_character& chara)
     {
         const sprite_info_list& infos = *(chara.sprite_infos);
@@ -346,9 +332,11 @@ private:
         std::size_t pattern = (chara.step % (15 * group.size())) / 15;
         const sprite_info& info = group[pattern];
 
-        draw_sprite(
-            chara.position.r.x - info.left,
-            chara.position.r.y - info.top,
+        ::draw_sprite(
+            device_,
+            chara.position.r.x - info.left - scroll_x_,
+            480.0f - chara.position.r.y - infos.height(),
+            0.0f,
             *(chara.texture),
             info.x, info.y,
             infos.width(), infos.height(),
@@ -360,7 +348,9 @@ private:
     {
         draw_rectangle(
             device_,
-            static_cast<float>(x*32)-scroll_x_, static_cast<float>(y*32), 0.0f,
+            static_cast<float>(x*32)-scroll_x_,
+            static_cast<float>(480-32 - y*32),
+            0.0f,
             32.0f, 32.0f, D3DCOLOR_XRGB(0xAA,0x55,0x33));
     }
 };

@@ -38,25 +38,25 @@ int rect::right_block() const
 
 int rect::top_block() const
 {
-    return static_cast<int>(y) / 32;
+    return static_cast<int>(std::ceil((y+ly) / 32.0f)) - 1;
 }
 
 int rect::bottom_block() const
 {
-    return static_cast<int>(std::ceil((y+ly) / 32.0f)) - 1;
+    return static_cast<int>(y) / 32;
 }
 
 
 bool is_on_ground(const stage_map& map, const rect& r)
 {
-    int y = r.bottom_block() + 1;
-    if ((r.y + r.ly) == static_cast<float>(y*32))
+    int y = r.bottom_block();
+    if (r.y == static_cast<float>(y*32))
     {
         int x1 = r.left_block();
         int x2 = r.right_block();
 
         for (int x = x1; x <= x2; ++x)
-            if (map(x, y) != ' ')
+            if (map(x, y-1) != ' ')
                 return true;
     }
     return false;
@@ -83,12 +83,12 @@ bool find_horizontal_blocks(const stage_map& map, int y, int x1, int x2)
 
 void move_info::move(const acceleration& a, const stage_map& map)
 {
-    const float gravity = 0.6f;
+    const float gravity = -0.6f;
 
     bool on_ground = is_on_ground(map, r);
 
     // FIXME
-    if (r.y < 480.0f)
+    if (r.y > -32.0f)
         vx += a.ax;
     else
         vx = 0.0f;
@@ -101,8 +101,8 @@ void move_info::move(const acceleration& a, const stage_map& map)
         r.x = (std::max)(r.x, 0.0f);
 
         int new_x = r.left_block();
-        int y1 = r.top_block();
-        int y2 = r.bottom_block();
+        int y1 = r.bottom_block();
+        int y2 = r.top_block();
 
         for (int x = old_x-1; x >= new_x; --x)
         {
@@ -122,8 +122,8 @@ void move_info::move(const acceleration& a, const stage_map& map)
         r.x = (std::min)(r.x, static_cast<float>(map.width()*32) - r.lx);
 
         int new_x = r.right_block();
-        int y1 = r.top_block();
-        int y2 = r.bottom_block();
+        int y1 = r.bottom_block();
+        int y2 = r.top_block();
 
         for (int x = old_x+1; x <= new_x; ++x)
         {
@@ -140,16 +140,16 @@ void move_info::move(const acceleration& a, const stage_map& map)
 
     if (on_ground)
     {
-        if (vy > 0.0f)
+        if (vy < 0.0f)
             vy = 0.0f;
     }
     else
     {
         vy += gravity;
-        vy = (std::min)(vy, 10.0f);
+        vy = (std::max)(vy, -10.0f);
     }
 
-    if (vy < 0.0f)
+    if (vy > 0.0f)
     {
         int old_y = r.top_block();
 
@@ -159,32 +159,32 @@ void move_info::move(const acceleration& a, const stage_map& map)
         int x1 = r.left_block();
         int x2 = r.right_block();
 
-        for (int y = old_y-1; y >= new_y; --y)
-        {
-            if (find_horizontal_blocks(map, y, x1, x2))
-            {
-                r.y = static_cast<float>((y+1) * 32);
-                vy = -vy * 0.5f;
-                break;
-            }
-        }
-    }
-    else if (vy > 0.0f)
-    {
-        int old_y = r.bottom_block();
-
-        r.y += vy;
-        r.y = (std::min)(r.y, 480.0f); // FIXME
-
-        int new_y = r.bottom_block();
-        int x1 = r.left_block();
-        int x2 = r.right_block();
-
         for (int y = old_y+1; y <= new_y; ++y)
         {
             if (find_horizontal_blocks(map, y, x1, x2))
             {
                 r.y = static_cast<float>(y * 32) - r.ly;
+                vy = -vy * 0.5f;
+                break;
+            }
+        }
+    }
+    else if (vy < 0.0f)
+    {
+        int old_y = r.bottom_block();
+
+        r.y += vy;
+        r.y = (std::max)(r.y, -64.0f); // FIXME
+
+        int new_y = r.bottom_block();
+        int x1 = r.left_block();
+        int x2 = r.right_block();
+
+        for (int y = old_y-1; y >= new_y; --y)
+        {
+            if (find_horizontal_blocks(map, y, x1, x2))
+            {
+                r.y = static_cast<float>((y+1) * 32);
                 vy = 0.0f;
                 break;
             }
@@ -195,10 +195,8 @@ void move_info::move(const acceleration& a, const stage_map& map)
 void move_info::change_form(const sprite_info& old, const sprite_info& cur)
 {
     float x = r.x - static_cast<float>(old.left);
-    float y = r.y - static_cast<float>(old.top);
 
     r.x = x + static_cast<float>(cur.left);
-    r.y = y + static_cast<float>(cur.top);
     r.lx = static_cast<float>(cur.width);
     r.ly = static_cast<float>(cur.height);
 }

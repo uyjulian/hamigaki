@@ -30,7 +30,7 @@ public:
         if (uy >= data_.size())
             return ' ';
 
-        const std::string& line = data_[uy];
+        const std::string& line = data_[data_.size()-1-uy];
         return (ux < line.size()) ? line[ux] : ' ';
     }
 
