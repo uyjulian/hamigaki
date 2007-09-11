@@ -784,6 +784,11 @@ private:
 public:
     shared_coroutine() {}
 
+    shared_coroutine(const shared_coroutine& x)
+    {
+        base_type::operator=(x);
+    }
+
     template<class Functor>
     shared_coroutine(Functor func, std::ptrdiff_t stack_size=-1)
         : base_type(func, stack_size)
