@@ -157,6 +157,8 @@ public:
 
         man_texture_ = create_png_texture(device_, "man.png");
         chara_texture_ = create_png_texture(device_, "chara.png");
+
+        last_time_ = ::GetTickCount();
     }
 
     void process_input()
@@ -247,10 +249,7 @@ private:
         catch (const input::direct_input_error& e)
         {
             if (e.code() == E_ACCESSDENIED)
-            {
-                active_ = false;
                 return;
-            }
             throw;
         }
     }
