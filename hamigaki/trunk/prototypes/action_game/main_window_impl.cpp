@@ -10,6 +10,7 @@
 #include "main_window_impl.hpp"
 #include "draw.hpp"
 #include "direct3d9.hpp"
+#include "joystick_config.hpp"
 #include "player_routine.hpp"
 #include "png_loader.hpp"
 #include "sprite.hpp"
@@ -82,6 +83,8 @@ public:
         , scroll_x_(0.0f)
     {
         sound_.play_bgm("bgm.ogg");
+
+        load_joystick_config(joy_cfg_, "joystick-config.txt");
 
         unsigned long level = di::exclusive_level|di::foreground_level;
         joystick_.set_cooperative_level(handle_, level);
@@ -222,6 +225,7 @@ public:
 private:
     ::HWND handle_;
     sound_engine sound_;
+    joystick_config joy_cfg_;
     input::direct_input_joystick joystick_;
     direct3d9 d3d_;
     direct3d_device9 device_;
@@ -256,7 +260,8 @@ private:
 
     void process_input_impl(const di::joystick_state& state)
     {
-        if ((state.buttons[6] & 0x80) != 0)
+        if ((joy_cfg_.reset != -1) &&
+            ((state.buttons[joy_cfg_.reset] & 0x80) != 0))
         {
             int x, y;
             boost::tie(x, y) = map_.player_position();
@@ -287,9 +292,16 @@ private:
         input_command cmd;
         cmd.x = dx;
         cmd.y = dy;
-        cmd.jump = (state.buttons[0] & 0x80) != 0;
-        cmd.dash = (state.buttons[2] & 0x80) != 0;
-        cmd.reset = (state.buttons[6] & 0x80) != 0;
+        cmd.jump = false;
+        cmd.dash = false;
+        cmd.reset = false;
+
+        if (joy_cfg_.jump != -1)
+            cmd.jump = (state.buttons[joy_cfg_.jump] & 0x80) != 0;
+        if (joy_cfg_.dash != -1)
+            cmd.dash = (state.buttons[joy_cfg_.dash] & 0x80) != 0;
+        if (joy_cfg_.reset != -1)
+            cmd.reset = (state.buttons[joy_cfg_.reset] & 0x80) != 0;
 
         acceleration a;
         std::size_t form;
