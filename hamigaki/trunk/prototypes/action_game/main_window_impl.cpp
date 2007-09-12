@@ -19,6 +19,7 @@
 #include "straight_routine.hpp"
 #include <hamigaki/input/direct_input.hpp>
 #include <boost/bind.hpp>
+#include <boost/optional.hpp>
 #include <cmath>
 #include <list>
 #include <stdexcept>
@@ -32,23 +33,50 @@ namespace
 
 const long axis_range = 1000;
 
-di::device_info find_joystick(input::direct_input_manager& dinput)
+bool find_joystick(
+    input::direct_input_manager& dinput, const hamigaki::uuid& guid)
 {
-    typedef di::device_info_iterator iter_type;
-    typedef std::pair<iter_type,iter_type> pair_type;
+    di::device_info_iterator beg, end;
+    boost::tie(beg,end) = dinput.devices(di::device_type::joystick);
 
-    pair_type r(dinput.devices(di::device_type::joystick));
-    if (r.first == r.second)
-        throw std::runtime_error("Error: joystick not found");
+    for ( ; beg != end; ++beg)
+    {
+        if (beg->instance_guid == guid)
+            return true;
+    }
 
-    return *r.first;
+    return false;
 }
 
-input::direct_input_joystick create_joystick(::HWND handle)
+boost::optional<input::direct_input_joystick>
+open_joystick(const char* cfg_path, joystick_config& cfg)
 {
+    joystick_config_list cfg_list;
+    load_joystick_config_list(cfg_list, cfg_path);
+
     input::direct_input_manager dinput(::GetModuleHandle(0));
-    const di::device_info& info = find_joystick(dinput);
-    return dinput.create_joystick_device(info.instance_guid);
+
+    typedef joystick_config_list::const_iterator cfg_iter_type;
+    for (cfg_iter_type it = cfg_list.begin(); it != cfg_list.end(); ++it)
+    {
+        const hamigaki::uuid& guid = it->first;
+
+        if (find_joystick(dinput, guid))
+        {
+            cfg = it->second;
+            return dinput.create_joystick_device(guid);
+        }
+    }
+
+    di::device_info_iterator beg, end;
+    boost::tie(beg,end) = dinput.devices(di::device_type::joystick);
+    if (beg != end)
+    {
+        append_joystick_config(cfg_path, beg->instance_guid, cfg);
+        return dinput.create_joystick_device(beg->instance_guid);
+    }
+
+    return boost::optional<input::direct_input_joystick>();
 }
 
 struct game_character
@@ -78,24 +106,24 @@ public:
     explicit impl(::HWND handle)
         : handle_(handle)
         , sound_(handle_)
-        , joystick_(create_joystick(handle_))
         , active_(false), last_time_(::GetTickCount()), frames_(0)
         , scroll_x_(0.0f)
     {
-        sound_.play_bgm("bgm.ogg");
+        joystick_ = open_joystick("joystick-config.txt", joy_cfg_);
 
-        load_joystick_config(joy_cfg_, "joystick-config.txt");
+        if (input::direct_input_joystick* joy = joystick_.get_ptr())
+        {
+            unsigned long level = di::exclusive_level|di::foreground_level;
+            joy->set_cooperative_level(handle_, level);
 
-        unsigned long level = di::exclusive_level|di::foreground_level;
-        joystick_.set_cooperative_level(handle_, level);
+            di::device_object x_axis = joy->object(di::joystick_offset::x);
+            x_axis.range(-axis_range, axis_range);
+            x_axis.deadzone(2000);
 
-        di::device_object x_axis = joystick_.object(di::joystick_offset::x);
-        x_axis.range(-axis_range, axis_range);
-        x_axis.deadzone(2000);
-
-        di::device_object y_axis = joystick_.object(di::joystick_offset::y);
-        y_axis.range(-axis_range, axis_range);
-        y_axis.deadzone(2000);
+            di::device_object y_axis = joy->object(di::joystick_offset::y);
+            y_axis.range(-axis_range, axis_range);
+            y_axis.deadzone(2000);
+        }
 
         load_map_from_text(map_, "map.txt");
         load_sprite_info_list_from_text(player_sprite_info_, "man.txt");
@@ -140,6 +168,8 @@ public:
                 }
             }
         }
+
+        sound_.play_bgm("bgm.ogg");
     }
 
     ~impl()
@@ -226,7 +256,7 @@ private:
     ::HWND handle_;
     sound_engine sound_;
     joystick_config joy_cfg_;
-    input::direct_input_joystick joystick_;
+    boost::optional<input::direct_input_joystick> joystick_;
     direct3d9 d3d_;
     direct3d_device9 device_;
     direct3d_texture9 man_texture_;
@@ -248,7 +278,8 @@ private:
 
         try
         {
-            joystick_.get_state(state);
+            if (input::direct_input_joystick* joy = joystick_.get_ptr())
+                joy->get_state(state);
         }
         catch (const input::direct_input_error& e)
         {
