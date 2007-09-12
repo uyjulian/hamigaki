@@ -98,7 +98,11 @@ void move_info::move(const acceleration& a, const stage_map& map)
         int old_x = r.left_block();
 
         r.x += vx;
-        r.x = (std::max)(r.x, 0.0f);
+        if (r.x < 0.0f)
+        {
+            r.x = 0.0f;
+            vx = 0.0f;
+        }
 
         int new_x = r.left_block();
         int y1 = r.bottom_block();
@@ -119,7 +123,12 @@ void move_info::move(const acceleration& a, const stage_map& map)
         int old_x = r.right_block();
 
         r.x += vx;
-        r.x = (std::min)(r.x, static_cast<float>(map.width()*32) - r.lx);
+        float max_x = static_cast<float>(map.width()*32) - r.lx;
+        if (r.x > max_x)
+        {
+            r.x = max_x;
+            vx = 0.0f;
+        }
 
         int new_x = r.right_block();
         int y1 = r.bottom_block();
