@@ -10,6 +10,7 @@
 #ifndef ROUTINE_BASE_HPP
 #define ROUTINE_BASE_HPP
 
+#include "input_engine.hpp"
 #include "sprite_info.hpp"
 #include "stage_map.hpp"
 #include <hamigaki/coroutine/shared_coroutine.hpp>
@@ -26,15 +27,6 @@ struct rect
     int right_block() const;
     int top_block() const;
     int bottom_block() const;
-};
-
-struct input_command
-{
-    float x;
-    float y;
-    bool jump;
-    bool dash;
-    bool reset;
 };
 
 bool is_on_ground(const stage_map& map, const rect& r);

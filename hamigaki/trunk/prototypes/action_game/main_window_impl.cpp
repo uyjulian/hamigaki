@@ -10,74 +10,21 @@
 #include "main_window_impl.hpp"
 #include "draw.hpp"
 #include "direct3d9.hpp"
-#include "joystick_config.hpp"
 #include "player_routine.hpp"
 #include "png_loader.hpp"
 #include "sprite.hpp"
 #include "sprite_info.hpp"
 #include "stage_map.hpp"
 #include "straight_routine.hpp"
-#include <hamigaki/input/direct_input.hpp>
 #include <boost/bind.hpp>
-#include <boost/optional.hpp>
 #include <cmath>
 #include <list>
 #include <stdexcept>
 
-namespace input = hamigaki::input;
-namespace di = input::direct_input;
 namespace coro = hamigaki::coroutines;
 
 namespace
 {
-
-const long axis_range = 1000;
-
-bool find_joystick(
-    input::direct_input_manager& dinput, const hamigaki::uuid& guid)
-{
-    di::device_info_iterator beg, end;
-    boost::tie(beg,end) = dinput.devices(di::device_type::joystick);
-
-    for ( ; beg != end; ++beg)
-    {
-        if (beg->instance_guid == guid)
-            return true;
-    }
-
-    return false;
-}
-
-boost::optional<input::direct_input_joystick>
-open_joystick(const char* cfg_path, joystick_config& cfg)
-{
-    joystick_config_list cfg_list;
-    load_joystick_config_list(cfg_list, cfg_path);
-
-    input::direct_input_manager dinput(::GetModuleHandle(0));
-
-    typedef joystick_config_list::const_iterator cfg_iter_type;
-    for (cfg_iter_type it = cfg_list.begin(); it != cfg_list.end(); ++it)
-    {
-        const hamigaki::uuid& guid = it->first;
-
-        if (find_joystick(dinput, guid))
-        {
-            cfg = it->second;
-            return dinput.create_joystick_device(guid);
-        }
-    }
-
-    di::device_info_iterator beg, end;
-    boost::tie(beg,end) = dinput.devices(di::device_type::joystick);
-    if (beg != end)
-    {
-        append_joystick_config(cfg_path, beg->instance_guid, cfg);
-        return dinput.create_joystick_device(beg->instance_guid);
-    }
-
-    return boost::optional<input::direct_input_joystick>();
-}
 
 struct game_character
 {
@@ -105,26 +52,10 @@ private:
 public:
     explicit impl(::HWND handle)
         : handle_(handle)
-        , sound_(handle_)
+        , sound_(handle_), input_(handle_)
         , active_(false), last_time_(::GetTickCount()), frames_(0)
         , scroll_x_(0.0f)
     {
-        joystick_ = open_joystick("joystick-config.txt", joy_cfg_);
-
-        if (input::direct_input_joystick* joy = joystick_.get_ptr())
-        {
-            unsigned long level = di::exclusive_level|di::foreground_level;
-            joy->set_cooperative_level(handle_, level);
-
-            di::device_object x_axis = joy->object(di::joystick_offset::x);
-            x_axis.range(-axis_range, axis_range);
-            x_axis.deadzone(2000);
-
-            di::device_object y_axis = joy->object(di::joystick_offset::y);
-            y_axis.range(-axis_range, axis_range);
-            y_axis.deadzone(2000);
-        }
-
         load_map_from_text(map_, "map.txt");
         load_sprite_info_list_from_text(player_sprite_info_, "man.txt");
         load_sprite_info_list_from_text(ball_sprite_info_, "ball.txt");
@@ -196,8 +127,9 @@ public:
 
     void process_input()
     {
-        di::joystick_state state = {};
-        update_input_state(state);
+        input_command cmd;
+        if (active_)
+            cmd  = input_();
 
         const unsigned long table[] = { 16, 17, 17 };
         unsigned long now = ::GetTickCount();
@@ -207,7 +139,7 @@ public:
             elapsed -= table[frames_ % 3];
             if (++frames_ == 60)
                 frames_ = 0;
-            this->process_input_impl(state);
+            this->process_input_impl(cmd);
         }
         last_time_ = now - elapsed;
     }
@@ -255,8 +187,7 @@ public:
 private:
     ::HWND handle_;
     sound_engine sound_;
-    joystick_config joy_cfg_;
-    boost::optional<input::direct_input_joystick> joystick_;
+    input_engine input_;
     direct3d9 d3d_;
     direct3d_device9 device_;
     direct3d_texture9 man_texture_;
@@ -271,28 +202,9 @@ private:
     game_character player_;
     chara_list enemies_;
 
-    void update_input_state(di::joystick_state& state)
+    void process_input_impl(const input_command& cmd)
     {
-        if (!active_)
-            return;
-
-        try
-        {
-            if (input::direct_input_joystick* joy = joystick_.get_ptr())
-                joy->get_state(state);
-        }
-        catch (const input::direct_input_error& e)
-        {
-            if (e.code() == E_ACCESSDENIED)
-                return;
-            throw;
-        }
-    }
-
-    void process_input_impl(const di::joystick_state& state)
-    {
-        if ((joy_cfg_.reset != -1) &&
-            ((state.buttons[joy_cfg_.reset] & 0x80) != 0))
+        if (cmd.reset)
         {
             int x, y;
             boost::tie(x, y) = map_.player_position();
@@ -308,31 +220,6 @@ private:
             player_.step = 0;
             player_.back = false;
         }
-
-        float r = static_cast<float>(axis_range);
-        float dx = static_cast<float>(state.position.x)/r;
-        float dy = static_cast<float>(-state.position.y)/r;
-
-        float radius = std::sqrt(dx*dx + dy*dy);
-        if (radius > 1.0f)
-        {
-            dx /= radius;
-            dy /= radius;
-        }
-
-        input_command cmd;
-        cmd.x = dx;
-        cmd.y = dy;
-        cmd.jump = false;
-        cmd.dash = false;
-        cmd.reset = false;
-
-        if (joy_cfg_.jump != -1)
-            cmd.jump = (state.buttons[joy_cfg_.jump] & 0x80) != 0;
-        if (joy_cfg_.dash != -1)
-            cmd.dash = (state.buttons[joy_cfg_.dash] & 0x80) != 0;
-        if (joy_cfg_.reset != -1)
-            cmd.reset = (state.buttons[joy_cfg_.reset] & 0x80) != 0;
 
         acceleration a;
         std::size_t form;
