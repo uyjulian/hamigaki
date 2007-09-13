@@ -24,6 +24,7 @@ namespace hamigaki { namespace input {
 namespace direct_input
 {
 
+extern const ::DIDATAFORMAT keyboard_data_format;
 extern const ::DIDATAFORMAT joystick_data_format;
 
 const unsigned long all_devices = DIEDFL_ALLDEVICES;
@@ -233,11 +234,8 @@ public:
         );
     }
 
-    ::IDirectInputDevice2A* create_joystick_device(const uuid& driver_guid)
+    ::IDirectInputDevice2A* create_device(const ::GUID& guid)
     {
-        ::GUID guid;
-        driver_guid.copy(guid);
-
         ::IDirectInputDeviceA* base = 0;
         ::HRESULT res = pimpl_->CreateDevice(guid, &base, 0);
         if (FAILED(res))
@@ -332,29 +330,40 @@ direct_input_manager::devices(direct_input::device_type::values type)
     return pimpl_->devices(type, DIEDFL_ALLDEVICES);
 }
 
-direct_input_joystick
-direct_input_manager::create_joystick_device(const uuid& driver_guid)
+direct_input_keyboard
+direct_input_manager::create_keyboard_device(const uuid& instance)
 {
-    return direct_input_joystick(pimpl_->create_joystick_device(driver_guid));
+    ::GUID guid;
+    instance.copy(guid);
+    return direct_input_keyboard(pimpl_->create_device(guid));
+}
+
+direct_input_keyboard direct_input_manager::create_keyboard_device()
+{
+    const ::GUID sys_keyboard_guid =
+    { 0x6F1D2B61,0xD5A0,0x11CF, {0xBF,0xC7,0x44,0x45,0x53,0x54,0x00,0x00} };
+
+    return direct_input_keyboard(pimpl_->create_device(sys_keyboard_guid));
+}
+
+direct_input_joystick
+direct_input_manager::create_joystick_device(const uuid& instance)
+{
+    ::GUID guid;
+    instance.copy(guid);
+    return direct_input_joystick(pimpl_->create_device(guid));
 }
 
 
-class direct_input_joystick::impl
+class direct_input::device_impl
 {
 public:
-    explicit impl(const boost::shared_ptr< ::IDirectInputDevice2A>& ptr)
+    explicit device_impl(const boost::shared_ptr< ::IDirectInputDevice2A>& ptr)
         : pimpl_(ptr)
     {
-        ::HRESULT res =
-            pimpl_->SetDataFormat(&direct_input::joystick_data_format);
-        if (FAILED(res))
-        {
-            throw direct_input_error(
-                res, "IDirectInputDevice2A::SetDataFormat()");
-        }
     }
 
-    ~impl()
+    ~device_impl()
     {
         try
         {
@@ -362,6 +371,16 @@ public:
         }
         catch (...)
         {
+        }
+    }
+
+    void set_data_format(const ::DIDATAFORMAT& fmt)
+    {
+        ::HRESULT res = pimpl_->SetDataFormat(&fmt);
+        if (FAILED(res))
+        {
+            throw direct_input_error(
+                res, "IDirectInputDevice2A::SetDataFormat()");
         }
     }
 
@@ -380,7 +399,7 @@ public:
     {
         return std::pair<object_info_iterator,object_info_iterator>(
             object_info_iterator(
-                boost::bind(&impl::enum_objects, this, _1, flags)
+                boost::bind(&device_impl::enum_objects, this, _1, flags)
             ),
             object_info_iterator()
         );
@@ -420,7 +439,7 @@ public:
             throw direct_input_error(res, "IDirectInputDevice2A::Unacquire()");
     }
 
-    void get_state(direct_input::joystick_state& state)
+    void get_state(void* buf, std::size_t size)
     {
         ::HRESULT res = pimpl_->Poll();
         if ((res == DIERR_INPUTLOST) || (res == DIERR_NOTACQUIRED))
@@ -431,51 +450,12 @@ public:
         if (FAILED(res))
             throw direct_input_error(res, "IDirectInputDevice2A::Poll()");
 
-        ::DIJOYSTATE2 tmp;
-        res = pimpl_->GetDeviceState(sizeof(tmp), &tmp);
+        res = pimpl_->GetDeviceState(size, buf);
         if (FAILED(res))
         {
             throw direct_input_error(
                 res, "IDirectInputDevice2A::GetDeviceState()");
         }
-
-        state.position.x = tmp.lX;
-        state.position.y = tmp.lY;
-        state.position.z = tmp.lZ;
-        state.rotation.x = tmp.lRx;
-        state.rotation.y = tmp.lRy;
-        state.rotation.z = tmp.lRz;
-        state.sliders[0] = tmp.rglSlider[0];
-        state.sliders[1] = tmp.rglSlider[1];
-        state.pov_directions[0] = tmp.rgdwPOV[0];
-        state.pov_directions[1] = tmp.rgdwPOV[1];
-        state.pov_directions[2] = tmp.rgdwPOV[2];
-        state.pov_directions[3] = tmp.rgdwPOV[3];
-        std::memcpy(state.buttons, tmp.rgbButtons, 128);
-        state.velocity.x = tmp.lVX;
-        state.velocity.y = tmp.lVY;
-        state.velocity.z = tmp.lVZ;
-        state.angular_velocity.x = tmp.lVRx;
-        state.angular_velocity.y = tmp.lVRy;
-        state.angular_velocity.z = tmp.lVRz;
-        state.slider_velocities[0] = tmp.rglVSlider[0];
-        state.slider_velocities[1] = tmp.rglVSlider[1];
-        state.acceleration.x = tmp.lAX;
-        state.acceleration.y = tmp.lAY;
-        state.acceleration.z = tmp.lAZ;
-        state.angular_acceleration.x = tmp.lARx;
-        state.angular_acceleration.y = tmp.lARy;
-        state.angular_acceleration.z = tmp.lARz;
-        state.slider_accelerations[0] = tmp.rglASlider[0];
-        state.slider_accelerations[1] = tmp.rglASlider[1];
-        state.force.x = tmp.lFX;
-        state.force.y = tmp.lFY;
-        state.force.z = tmp.lFZ;
-        state.torque.x = tmp.lFRx;
-        state.torque.y = tmp.lFRy;
-        state.torque.z = tmp.lFRz;
-        state.slider_forces[0] = tmp.rglFSlider[0];
-        state.slider_forces[1] = tmp.rglFSlider[1];
     }
 
 private:
@@ -505,7 +485,9 @@ private:
     )
     {
         ::HRESULT res =
-            pimpl_->EnumObjects(&impl::enum_objects_callback, &self, flags);
+            pimpl_->EnumObjects(
+                &device_impl::enum_objects_callback, &self, flags);
+
         if (FAILED(res))
         {
             throw direct_input_error(
@@ -517,11 +499,70 @@ private:
     }
 };
 
+
+direct_input_keyboard::direct_input_keyboard(::IDirectInputDevice2A* p)
+{
+    boost::shared_ptr< ::IDirectInputDevice2A> tmp(p, com_release());
+
+    pimpl_.reset(new direct_input::device_impl(tmp));
+    pimpl_->set_data_format(direct_input::keyboard_data_format);
+}
+
+direct_input_keyboard::~direct_input_keyboard()
+{
+}
+
+void
+direct_input_keyboard::set_cooperative_level(void* hwnd, unsigned long level)
+{
+    pimpl_->set_cooperative_level(static_cast< ::HWND>(hwnd), level);
+}
+
+std::pair<direct_input::object_info_iterator,direct_input::object_info_iterator>
+direct_input_keyboard::objects(const direct_input::object_type& type)
+{
+    return pimpl_->objects(type.to_dword());
+}
+
+std::pair<direct_input::object_info_iterator,direct_input::object_info_iterator>
+direct_input_keyboard::objects()
+{
+    return pimpl_->objects(DIDFT_ALL);
+}
+
+direct_input::device_object direct_input_keyboard::object(unsigned long offset)
+{
+    return pimpl_->object(DIPH_BYOFFSET, offset);
+}
+
+direct_input::device_object
+direct_input_keyboard::object(const direct_input::object_type& type)
+{
+    return pimpl_->object(DIPH_BYID, type.to_dword());
+}
+
+void direct_input_keyboard::acquire()
+{
+    pimpl_->acquire();
+}
+
+void direct_input_keyboard::unacquire()
+{
+    pimpl_->unacquire();
+}
+
+void direct_input_keyboard::get_state(direct_input::keyboard_state& state)
+{
+    pimpl_->get_state(state.elems, direct_input::keyboard_state::static_size);
+}
+
+
 direct_input_joystick::direct_input_joystick(::IDirectInputDevice2A* p)
 {
     boost::shared_ptr< ::IDirectInputDevice2A> tmp(p, com_release());
 
-    pimpl_.reset(new impl(tmp));
+    pimpl_.reset(new direct_input::device_impl(tmp));
+    pimpl_->set_data_format(direct_input::joystick_data_format);
 }
 
 direct_input_joystick::~direct_input_joystick()
@@ -579,7 +620,46 @@ void direct_input_joystick::unacquire()
 
 void direct_input_joystick::get_state(direct_input::joystick_state& state)
 {
-    pimpl_->get_state(state);
+    ::DIJOYSTATE2 tmp;
+    pimpl_->get_state(&tmp, sizeof(tmp));
+
+    state.position.x = tmp.lX;
+    state.position.y = tmp.lY;
+    state.position.z = tmp.lZ;
+    state.rotation.x = tmp.lRx;
+    state.rotation.y = tmp.lRy;
+    state.rotation.z = tmp.lRz;
+    state.sliders[0] = tmp.rglSlider[0];
+    state.sliders[1] = tmp.rglSlider[1];
+    state.pov_directions[0] = tmp.rgdwPOV[0];
+    state.pov_directions[1] = tmp.rgdwPOV[1];
+    state.pov_directions[2] = tmp.rgdwPOV[2];
+    state.pov_directions[3] = tmp.rgdwPOV[3];
+    std::memcpy(state.buttons, tmp.rgbButtons, 128);
+    state.velocity.x = tmp.lVX;
+    state.velocity.y = tmp.lVY;
+    state.velocity.z = tmp.lVZ;
+    state.angular_velocity.x = tmp.lVRx;
+    state.angular_velocity.y = tmp.lVRy;
+    state.angular_velocity.z = tmp.lVRz;
+    state.slider_velocities[0] = tmp.rglVSlider[0];
+    state.slider_velocities[1] = tmp.rglVSlider[1];
+    state.acceleration.x = tmp.lAX;
+    state.acceleration.y = tmp.lAY;
+    state.acceleration.z = tmp.lAZ;
+    state.angular_acceleration.x = tmp.lARx;
+    state.angular_acceleration.y = tmp.lARy;
+    state.angular_acceleration.z = tmp.lARz;
+    state.slider_accelerations[0] = tmp.rglASlider[0];
+    state.slider_accelerations[1] = tmp.rglASlider[1];
+    state.force.x = tmp.lFX;
+    state.force.y = tmp.lFY;
+    state.force.z = tmp.lFZ;
+    state.torque.x = tmp.lFRx;
+    state.torque.y = tmp.lFRy;
+    state.torque.z = tmp.lFRz;
+    state.slider_forces[0] = tmp.rglFSlider[0];
+    state.slider_forces[1] = tmp.rglFSlider[1];
 }
 
 } } // End namespaces input, hamigaki.

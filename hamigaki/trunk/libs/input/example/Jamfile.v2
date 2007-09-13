@@ -18,5 +18,6 @@ project
 exe di_joy_axis : di_joy_axis.cpp ;
 exe di_joy_button : di_joy_button.cpp ;
 exe di_joy_guid : di_joy_guid.cpp ;
+exe di_key_button : di_key_button.cpp ;
 
 exec.register-exec-all ;
