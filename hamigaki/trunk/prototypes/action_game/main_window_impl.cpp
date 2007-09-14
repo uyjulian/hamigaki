@@ -149,7 +149,7 @@ public:
         int x1 = static_cast<int>(scroll_x_) / 32;
         int x2 = static_cast<int>(std::ceil((scroll_x_+640.0f) / 32.0f));
 
-        device_.clear_target(D3DCOLOR_XRGB(0,0,255));
+        device_.clear_target(D3DCOLOR_XRGB(0x77,0x66,0xDD));
         {
             scoped_scene scene(device_);
 
