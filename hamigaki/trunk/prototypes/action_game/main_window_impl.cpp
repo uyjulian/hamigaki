@@ -39,6 +39,34 @@ struct game_character
     game_character() : form(0), step(0), back(false)
     {
     }
+
+    void move(const input_command& cmd, const stage_map& map)
+    {
+        acceleration a;
+        std::size_t f;
+
+        boost::tie(a, f) = routine(position, cmd);
+
+        std::size_t old_form = form;
+        form = f;
+
+        if (old_form != form)
+        {
+            const sprite_info& old = sprite_infos->get_group(old_form)[0];
+            const sprite_info& cur = sprite_infos->get_group(form)[0];
+            position.change_form(old, cur);
+            step = 0;
+        }
+        else
+            ++(step);
+
+        position.move(a, map);
+
+        if (position.vx >= 1.0f)
+            back = false;
+        else if (position.vx <= -1.0f)
+            back = true;
+    }
 };
 
 } // namespace
@@ -87,13 +115,14 @@ public:
                     game_character enemy;
                     enemy.routine = routine_type(&straight_routine);
                     enemy.sprite_infos = &ball_sprite_info_;
-                    enemy.texture = &chara_texture_;
+                    enemy.texture = &ball_texture_;
                     enemy.position.r.x = static_cast<float>(x * 32 + info.left);
                     enemy.position.r.y = static_cast<float>(y * 32);
                     enemy.position.r.lx = static_cast<float>(info.width);
                     enemy.position.r.ly = static_cast<float>(info.height);
                     enemy.position.vx = 0.0f;
                     enemy.position.vy = 0.0f;
+                    enemy.back = true;
 
                     enemies_.push_back(enemy);
                 }
@@ -120,7 +149,7 @@ public:
             D3DCREATE_HARDWARE_VERTEXPROCESSING, params);
 
         man_texture_ = create_png_texture(device_, "man.png");
-        chara_texture_ = create_png_texture(device_, "chara.png");
+        ball_texture_ = create_png_texture(device_, "ball.png");
 
         last_time_ = ::GetTickCount();
     }
@@ -191,7 +220,7 @@ private:
     direct3d9 d3d_;
     direct3d_device9 device_;
     direct3d_texture9 man_texture_;
-    direct3d_texture9 chara_texture_;
+    direct3d_texture9 ball_texture_;
     bool active_;
     unsigned long last_time_;
     unsigned frames_;
@@ -221,38 +250,12 @@ private:
             player_.back = false;
         }
 
-        acceleration a;
-        std::size_t form;
+        player_.move(cmd, map_);
 
-        boost::tie(a, form) = player_.routine(player_.position, cmd);
-
-        std::size_t old_form = player_.form;
-        player_.form = form;
-
-        if (old_form != player_.form)
-        {
-            const sprite_info& old =
-                player_.sprite_infos->get_group(old_form)[0];
-            const sprite_info& cur =
-                player_.sprite_infos->get_group(player_.form)[0];
-            player_.position.change_form(old, cur);
-            player_.step = 0;
-        }
-        else
-            ++(player_.step);
-
-        player_.position.move(a, map_);
-
-        for (chara_iterator i = enemies_.begin(); i != enemies_.end(); ++i)
-        {
-            move_info& pos = i->position;
-            pos.move(i->routine(pos, cmd).first, map_);
-        }
-
-        if (player_.position.vx >= 1.0f)
-            player_.back = false;
-        else if (player_.position.vx <= -1.0f)
-            player_.back = true;
+        std::for_each(
+            enemies_.begin(), enemies_.end(),
+            boost::bind(&game_character::move, _1, cmd, boost::cref(map_))
+        );
 
         float center = player_.position.r.x + player_.position.r.lx * 0.5f;
         float right_end = static_cast<float>(map_.width()*32);
