@@ -414,8 +414,8 @@ public:
     std::pair<long,long> range();
     void range(long min_val, long max_val);
 
-    unsigned long deadzone();
-    void deadzone(unsigned long val);
+    unsigned long dead_zone();
+    void dead_zone(unsigned long val);
 
     unsigned long saturation();
     void saturation(unsigned long val);

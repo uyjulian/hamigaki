@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 
         di::device_object x_axis = joy.object(di::joystick_offset::x);
         x_axis.range(-10000, 10000);
-        x_axis.deadzone(2000);
+        x_axis.dead_zone(2000);
 
         std::cout << "Press A button to stop..." << std::endl;
         di::joystick_state state;

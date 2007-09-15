@@ -160,12 +160,12 @@ void device_object::range(long min_val, long max_val)
         throw direct_input_error(res, "IDirectInputDevice2A::SetProperty()");
 }
 
-unsigned long device_object::deadzone()
+unsigned long device_object::dead_zone()
 {
     return get_dword_property(pimpl_.get(), how_, key_, DIPROP_DEADZONE);
 }
 
-void device_object::deadzone(unsigned long val)
+void device_object::dead_zone(unsigned long val)
 {
     set_dword_property(pimpl_.get(), how_, key_, DIPROP_DEADZONE, val);
 }

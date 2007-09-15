@@ -99,11 +99,11 @@ public:
 
             di::device_object x_axis = joy->object(di::joystick_offset::x);
             x_axis.range(-axis_range, axis_range);
-            x_axis.deadzone(dead_zone);
+            x_axis.dead_zone(dead_zone);
 
             di::device_object y_axis = joy->object(di::joystick_offset::y);
             y_axis.range(-axis_range, axis_range);
-            y_axis.deadzone(dead_zone);
+            y_axis.dead_zone(dead_zone);
         }
     }
 
