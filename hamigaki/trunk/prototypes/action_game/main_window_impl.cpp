@@ -276,6 +276,7 @@ private:
                 !(includes_point(r, x1, y2) || includes_point(r, x2, y2)) )
             {
                 enemies_.erase(i);
+                sound_.play_se("stomp.ogg");
             }
 
             i = next;
