@@ -89,46 +89,7 @@ public:
         load_sprite_info_list_from_text(player_sprite_info_, "man.txt");
         load_sprite_info_list_from_text(ball_sprite_info_, "ball.txt");
 
-        player_.sprite_infos = &player_sprite_info_;
-        player_.texture = &man_texture_;
-
-        player_.routine = routine_type(player_routine(map_, sound_));
-
-        int x, y;
-        boost::tie(x, y) = map_.player_position();
-
-        sprite_info info = player_.sprite_infos->get_group(player_.form)[0];
-        player_.position.r.x = static_cast<float>(x * 32 + info.left);
-        player_.position.r.y = static_cast<float>(y * 32);
-        player_.position.r.lx = static_cast<float>(info.width);
-        player_.position.r.ly = static_cast<float>(info.height);
-        player_.position.vx = 0.0f;
-        player_.position.vy = 0.0f;
-
-        for (int y = 0; y < map_.height(); ++y)
-        {
-            for (int x = 0; x < map_.width(); ++x)
-            {
-                if (map_(x, y) == 'o')
-                {
-                    const sprite_info& info = ball_sprite_info_.get_group(0)[0];
-
-                    game_character enemy;
-                    enemy.routine = routine_type(&straight_routine);
-                    enemy.sprite_infos = &ball_sprite_info_;
-                    enemy.texture = &ball_texture_;
-                    enemy.position.r.x = static_cast<float>(x * 32 + info.left);
-                    enemy.position.r.y = static_cast<float>(y * 32);
-                    enemy.position.r.lx = static_cast<float>(info.width);
-                    enemy.position.r.ly = static_cast<float>(info.height);
-                    enemy.position.vx = 0.0f;
-                    enemy.position.vy = 0.0f;
-                    enemy.back = true;
-
-                    enemies_.push_back(enemy);
-                }
-            }
-        }
+        reset_characters();
 
         sound_.play_bgm("bgm.ogg");
     }
@@ -149,8 +110,10 @@ public:
             D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, handle_,
             D3DCREATE_HARDWARE_VERTEXPROCESSING, params);
 
-        man_texture_ = create_png_texture(device_, "man.png");
-        ball_texture_ = create_png_texture(device_, "ball.png");
+        man_texture_ =
+            create_png_texture(device_, player_sprite_info_.texture());
+        ball_texture_ =
+            create_png_texture(device_, ball_sprite_info_.texture());
 
         last_time_ = ::GetTickCount();
     }
@@ -232,24 +195,55 @@ private:
     game_character player_;
     chara_list enemies_;
 
+    void reset_characters()
+    {
+        player_.sprite_infos = &player_sprite_info_;
+        player_.texture = &man_texture_;
+
+        player_.routine = routine_type(player_routine(map_, sound_));
+
+        int x, y;
+        boost::tie(x, y) = map_.player_position();
+
+        sprite_info info = player_.sprite_infos->get_group(player_.form)[0];
+        player_.position.r.x = static_cast<float>(x * 32 + info.left);
+        player_.position.r.y = static_cast<float>(y * 32);
+        player_.position.r.lx = static_cast<float>(info.width);
+        player_.position.r.ly = static_cast<float>(info.height);
+        player_.position.vx = 0.0f;
+        player_.position.vy = 0.0f;
+
+        enemies_.clear();
+        for (int y = 0; y < map_.height(); ++y)
+        {
+            for (int x = 0; x < map_.width(); ++x)
+            {
+                if (map_(x, y) == 'o')
+                {
+                    const sprite_info& info = ball_sprite_info_.get_group(0)[0];
+
+                    game_character enemy;
+                    enemy.routine = routine_type(&straight_routine);
+                    enemy.sprite_infos = &ball_sprite_info_;
+                    enemy.texture = &ball_texture_;
+                    enemy.position.r.x = static_cast<float>(x * 32 + info.left);
+                    enemy.position.r.y = static_cast<float>(y * 32);
+                    enemy.position.r.lx = static_cast<float>(info.width);
+                    enemy.position.r.ly = static_cast<float>(info.height);
+                    enemy.position.vx = 0.0f;
+                    enemy.position.vy = 0.0f;
+                    enemy.back = true;
+
+                    enemies_.push_back(enemy);
+                }
+            }
+        }
+    }
+
     void process_input_impl(const input_command& cmd)
     {
         if (cmd.reset)
-        {
-            int x, y;
-            boost::tie(x, y) = map_.player_position();
-
-            const sprite_info& info = player_.sprite_infos->get_group(0)[0];
-            player_.position.r.x = static_cast<float>(x * 32 + info.left);
-            player_.position.r.y = static_cast<float>(y * 32);
-            player_.position.r.lx = static_cast<float>(info.width);
-            player_.position.r.ly = static_cast<float>(info.height);
-            player_.position.vx = 0.0f;
-            player_.position.vy = 0.0f;
-            player_.form = 0;
-            player_.step = 0;
-            player_.back = false;
-        }
+            reset_characters();
 
         std::for_each(
             enemies_.begin(), enemies_.end(),
@@ -277,6 +271,7 @@ private:
             {
                 enemies_.erase(i);
                 sound_.play_se("stomp.ogg");
+                player_.position.vy = 8.0f;
             }
 
             i = next;
