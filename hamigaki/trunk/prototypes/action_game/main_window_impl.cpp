@@ -17,6 +17,7 @@
 #include "stage_map.hpp"
 #include "straight_routine.hpp"
 #include <boost/bind.hpp>
+#include <boost/next_prior.hpp>
 #include <cmath>
 #include <list>
 #include <stdexcept>
@@ -250,12 +251,35 @@ private:
             player_.back = false;
         }
 
-        player_.move(cmd, map_);
-
         std::for_each(
             enemies_.begin(), enemies_.end(),
             boost::bind(&game_character::move, _1, cmd, boost::cref(map_))
         );
+
+        player_.move(cmd, map_);
+
+        for (chara_iterator i = enemies_.begin(); i != enemies_.end(); )
+        {
+            chara_iterator next = boost::next(i);
+
+            rect r = i->position.r;
+            r.ly *= 0.5f;
+            r.y += r.ly;
+
+            const rect& r2 = player_.position.r;
+            float x1 = r2.x;
+            float y1 = r2.y;
+            float x2 = r2.x + r2.lx;
+            float y2 = r2.y + r2.ly;
+
+            if ( (includes_point(r, x1, y1) || includes_point(r, x2, y1)) &&
+                !(includes_point(r, x1, y2) || includes_point(r, x2, y2)) )
+            {
+                enemies_.erase(i);
+            }
+
+            i = next;
+        }
 
         float center = player_.position.r.x + player_.position.r.lx * 0.5f;
         float right_end = static_cast<float>(map_.width()*32);
