@@ -8,7 +8,6 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "vanish_routine.hpp"
-#include <cmath>
 
 routine_result vanish_routine::operator()(
     routine_type::self& self,
