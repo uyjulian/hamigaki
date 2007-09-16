@@ -289,6 +289,8 @@ private:
                 i->position.vy = 0.0f;
                 sound_.play_se("stomp.ogg");
                 player_.position.vy = 8.0f;
+                if (player_.form != 3)
+                    player_.change_form(2);
             }
 
             i = next;
