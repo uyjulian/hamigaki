@@ -29,6 +29,8 @@ class sprite_info_list
 public:
     typedef std::vector<sprite_info> group_type;
 
+    static const std::size_t nform = static_cast<std::size_t>(-1);
+
     std::string texture() const { return texture_; }
     void texture(const std::string& filename) { texture_ = filename; }
 

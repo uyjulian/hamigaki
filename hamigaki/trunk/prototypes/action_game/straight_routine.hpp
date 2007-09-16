@@ -1,4 +1,4 @@
-// straight_routine.hpp: the routine for player character
+// straight_routine.hpp: the routine for going straight
 
 // Copyright Takeshi Mouri 2007.
 // Distributed under the Boost Software License, Version 1.0.
@@ -13,6 +13,8 @@
 #include "routine_base.hpp"
 
 routine_result
-straight_routine(routine_type::self& self, move_info mv, input_command cmd);
+straight_routine(
+    routine_type::self& self, move_info mv,
+    std::size_t form, input_command cmd);
 
 #endif // STRAIGHT_ROUTINE_HPP

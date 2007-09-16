@@ -16,6 +16,7 @@
 #include "sprite_info.hpp"
 #include "stage_map.hpp"
 #include "straight_routine.hpp"
+#include "vanish_routine.hpp"
 #include <boost/bind.hpp>
 #include <boost/next_prior.hpp>
 #include <cmath>
@@ -41,23 +42,29 @@ struct game_character
     {
     }
 
+    void change_form(std::size_t f)
+    {
+        const sprite_info& old = sprite_infos->get_group(form)[0];
+        const sprite_info& cur = sprite_infos->get_group(f)[0];
+        position.change_form(old, cur);
+        form = f;
+        step = 0;
+    }
+
     void move(const input_command& cmd, const stage_map& map)
     {
         acceleration a;
         std::size_t f;
 
-        boost::tie(a, f) = routine(position, cmd);
+        boost::tie(a, f) = routine(position, form, cmd);
 
         std::size_t old_form = form;
         form = f;
 
-        if (old_form != form)
-        {
-            const sprite_info& old = sprite_infos->get_group(old_form)[0];
-            const sprite_info& cur = sprite_infos->get_group(form)[0];
-            position.change_form(old, cur);
-            step = 0;
-        }
+        if (form == sprite_info_list::nform)
+            return;
+        else if (old_form != form)
+            change_form(form);
         else
             ++(step);
 
@@ -256,6 +263,13 @@ private:
         {
             chara_iterator next = boost::next(i);
 
+            if (i->form == sprite_info_list::nform)
+            {
+                enemies_.erase(i);
+                i = next;
+                continue;
+            }
+
             rect r = i->position.r;
             r.ly *= 0.5f;
             r.y += r.ly;
@@ -269,7 +283,10 @@ private:
             if ( (includes_point(r, x1, y1) || includes_point(r, x2, y1)) &&
                 !(includes_point(r, x1, y2) || includes_point(r, x2, y2)) )
             {
-                enemies_.erase(i);
+                i->change_form(1);
+                i->routine = routine_type(vanish_routine(5));
+                i->position.vx = 0.0f;
+                i->position.vy = 0.0f;
                 sound_.play_se("stomp.ogg");
                 player_.position.vy = 8.0f;
             }

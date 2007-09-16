@@ -11,23 +11,16 @@
 #include <cmath>
 
 routine_result player_routine::operator()(
-    routine_type::self& self, move_info mv, input_command cmd) const
+    routine_type::self& self,
+    move_info mv, std::size_t form, input_command cmd) const
 {
     const float brake = 0.2f;
 
-    std::size_t form = 0;
     bool old_jump = false;
     bool jump_boost = false;
 
     while (true)
     {
-        if (cmd.reset)
-        {
-            form = 0;
-            old_jump = false;
-            jump_boost = false;
-        }
-
         bool on_ground = is_on_ground(map_, mv.r);
         bool jump_start = !old_jump && cmd.jump;
 
@@ -98,7 +91,7 @@ routine_result player_routine::operator()(
 
         old_jump = cmd.jump;
 
-        boost::tie(mv, cmd) = self.yield(std::make_pair(a,form));
+        boost::tie(mv,form,cmd) = self.yield(std::make_pair(a,form));
     }
 
     HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(std::make_pair(a,form))

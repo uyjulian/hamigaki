@@ -57,7 +57,7 @@ struct move_info
 typedef std::pair<acceleration,std::size_t> routine_result;
 
 typedef hamigaki::coroutines::shared_coroutine<
-    routine_result(move_info, input_command cmd)
+    routine_result(move_info, std::size_t, input_command)
 > routine_type;
 
 #endif // ROUTINE_BASE_HPP

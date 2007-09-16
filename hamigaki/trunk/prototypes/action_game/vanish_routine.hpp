@@ -1,4 +1,4 @@
-// player_routine.hpp: the routine for player character
+// vanish_routine.hpp: the routine for vanishing character
 
 // Copyright Takeshi Mouri 2007.
 // Distributed under the Boost Software License, Version 1.0.
@@ -7,17 +7,15 @@
 
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
-#ifndef PLAYER_ROUTINE_HPP
-#define PLAYER_ROUTINE_HPP
+#ifndef VANISH_ROUTINE_HPP
+#define VANISH_ROUTINE_HPP
 
 #include "routine_base.hpp"
-#include "sound_engine.hpp"
 
-class player_routine
+class vanish_routine
 {
 public:
-    player_routine(const stage_map& map, sound_engine& sound)
-        : map_(map), sound_(sound)
+    explicit vanish_routine(std::size_t frames) : frames_(frames)
     {
     }
 
@@ -26,8 +24,7 @@ public:
         std::size_t form, input_command cmd) const;
 
 private:
-    const stage_map& map_;
-    sound_engine& sound_;
+    std::size_t frames_;
 };
 
-#endif // PLAYER_ROUTINE_HPP
+#endif // VANISH_ROUTINE_HPP

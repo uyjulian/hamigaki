@@ -33,6 +33,7 @@ exe action_game
     sound_engine.cpp
     sprite_info.cpp
     straight_routine.cpp
+    vanish_routine.cpp
     /directx//d3d9
     /directx//dxerr9
     /boost/thread//boost_thread
