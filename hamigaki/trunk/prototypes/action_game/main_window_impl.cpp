@@ -169,6 +169,10 @@ public:
             device_.set_render_state(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
             device_.set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
+            device_.set_texture_stage_state(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+            device_.set_texture_stage_state(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+            device_.set_texture_stage_state(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
+
             std::for_each(
                 enemies_.begin(), enemies_.end(),
                 boost::bind(&impl::draw_character, this, _1)

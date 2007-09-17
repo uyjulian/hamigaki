@@ -15,11 +15,13 @@
 struct transformed_vertex
 {
     float x, y, z, rhw;
+    unsigned long color;
     float tu, vu;
 };
 
 inline void draw_sprite(direct3d_device9& device,
-    float x, float y, float z, direct3d_texture9& texture)
+    float x, float y, float z, direct3d_texture9& texture,
+    unsigned long color = 0xFFFFFFFFul)
 {
     const ::D3DSURFACE_DESC& desc = texture.description(0);
     float width = static_cast<float>(desc.Width);
@@ -27,13 +29,13 @@ inline void draw_sprite(direct3d_device9& device,
 
     const transformed_vertex vertices[] =
     {
-        { x,       y,        z, 1.0f, 0.0f, 0.0f },
-        { x+width, y,        z, 1.0f, 1.0f, 0.0f },
-        { x,       y+height, z, 1.0f, 0.0f, 1.0f },
-        { x+width, y+height, z, 1.0f, 1.0f, 1.0f }
+        { x,       y,        z, 1.0f, color, 0.0f, 0.0f },
+        { x+width, y,        z, 1.0f, color, 1.0f, 0.0f },
+        { x,       y+height, z, 1.0f, color, 0.0f, 1.0f },
+        { x+width, y+height, z, 1.0f, color, 1.0f, 1.0f }
     };
 
-    device.set_vertex_format(D3DFVF_XYZRHW|D3DFVF_TEX1);
+    device.set_vertex_format(D3DFVF_XYZRHW|D3DFVF_DIFFUSE|D3DFVF_TEX1);
     device.set_texture(texture, 0);
     device.draw_primitive(
         D3DPT_TRIANGLESTRIP, 2, vertices, sizeof(vertices[0]));
@@ -41,7 +43,8 @@ inline void draw_sprite(direct3d_device9& device,
 
 inline void draw_sprite(direct3d_device9& device,
     float x, float y, float z,
-    direct3d_texture9& texture, int tx, int ty, int tw, int th, bool back)
+    direct3d_texture9& texture, int tx, int ty, int tw, int th, bool back,
+    unsigned long color = 0xFFFFFFFFul)
 {
     const ::D3DSURFACE_DESC& desc = texture.description(0);
     float tu1 = static_cast<float>(tx) / static_cast<float>(desc.Width);
@@ -54,13 +57,13 @@ inline void draw_sprite(direct3d_device9& device,
 
     const transformed_vertex vertices[] =
     {
-        { x,    y,    z, 1.0f, tu1, tv1 },
-        { x+tw, y,    z, 1.0f, tu2, tv1 },
-        { x,    y+th, z, 1.0f, tu1, tv2 },
-        { x+tw, y+th, z, 1.0f, tu2, tv2 }
+        { x,    y,    z, 1.0f, color, tu1, tv1 },
+        { x+tw, y,    z, 1.0f, color, tu2, tv1 },
+        { x,    y+th, z, 1.0f, color, tu1, tv2 },
+        { x+tw, y+th, z, 1.0f, color, tu2, tv2 }
     };
 
-    device.set_vertex_format(D3DFVF_XYZRHW|D3DFVF_TEX1);
+    device.set_vertex_format(D3DFVF_XYZRHW|D3DFVF_DIFFUSE|D3DFVF_TEX1);
     device.set_texture(texture, 0);
     device.draw_primitive(
         D3DPT_TRIANGLESTRIP, 2, vertices, sizeof(vertices[0]));

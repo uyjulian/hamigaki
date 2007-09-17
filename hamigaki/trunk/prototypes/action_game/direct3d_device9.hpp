@@ -95,6 +95,18 @@ public:
             throw directx9_error(res, "IDirect3DDevice9::SetRenderState()");
     }
 
+    void set_texture_stage_state(
+        unsigned long stage,
+        ::D3DTEXTURESTAGESTATETYPE type, unsigned long value)
+    {
+        ::HRESULT res = pimpl_->SetTextureStageState(stage, type, value);
+        if (FAILED(res))
+        {
+            throw directx9_error(
+                res, "IDirect3DDevice9::SetTextureStageState()");
+        }
+    }
+
     void draw_primitive(::D3DPRIMITIVETYPE type,
         unsigned count, const void* data, unsigned stride)
     {
