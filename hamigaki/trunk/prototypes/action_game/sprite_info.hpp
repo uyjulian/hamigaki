@@ -24,7 +24,7 @@ struct sprite_info
     int height;
 };
 
-class sprite_info_list
+class sprite_info_set
 {
 public:
     typedef std::vector<sprite_info> group_type;
@@ -59,7 +59,7 @@ public:
         return list_[no];
     }
 
-    void swap(sprite_info_list& rhs)
+    void swap(sprite_info_set& rhs)
     {
         texture_.swap(rhs.texture_);
         std::swap(width_, rhs.width_);
@@ -75,6 +75,6 @@ private:
 };
 
 void
-load_sprite_info_list_from_text(sprite_info_list& list, const char* filename);
+load_sprite_info_set_from_text(sprite_info_set& infos, const char* filename);
 
 #endif // SPRITE_INFO_HPP

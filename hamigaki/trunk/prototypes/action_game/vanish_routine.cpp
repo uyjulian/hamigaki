@@ -20,5 +20,5 @@ routine_result vanish_routine::operator()(
     for (std::size_t i = 0; i < frames_; ++i)
         boost::tie(mv,form,cmd) = self.yield(std::make_pair(a, form));
 
-    return std::make_pair(a, sprite_info_list::nform);
+    return std::make_pair(a, sprite_info_set::nform);
 }

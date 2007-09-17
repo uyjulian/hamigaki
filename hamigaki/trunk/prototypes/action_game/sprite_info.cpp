@@ -36,7 +36,7 @@ void throw_invalid_format(const char* filename)
 } // namespace
 
 void
-load_sprite_info_list_from_text(sprite_info_list& list, const char* filename)
+load_sprite_info_set_from_text(sprite_info_set& infos, const char* filename)
 {
     std::ifstream is(filename);
     if (!is)
@@ -47,7 +47,7 @@ load_sprite_info_list_from_text(sprite_info_list& list, const char* filename)
         throw std::runtime_error(msg);
     }
 
-    sprite_info_list tmp;
+    sprite_info_set tmp;
     std::string line;
 
     if (!get_next_line(is, line))
@@ -82,5 +82,5 @@ load_sprite_info_list_from_text(sprite_info_list& list, const char* filename)
         tmp.push_back(no, info);
     }
 
-    list.swap(tmp);
+    infos.swap(tmp);
 }

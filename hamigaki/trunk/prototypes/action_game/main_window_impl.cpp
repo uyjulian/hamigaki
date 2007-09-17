@@ -35,7 +35,7 @@ struct game_character
     std::size_t form;
     int step;
     bool back;
-    sprite_info_list* sprite_infos;
+    sprite_info_set* sprite_infos;
     direct3d_texture9* texture;
 
     game_character() : form(0), step(0), back(false)
@@ -61,7 +61,7 @@ struct game_character
         std::size_t old_form = form;
         form = f;
 
-        if (form == sprite_info_list::nform)
+        if (form == sprite_info_set::nform)
             return;
         else if (old_form != form)
             change_form(form);
@@ -93,8 +93,8 @@ public:
         , scroll_x_(0.0f)
     {
         load_map_from_text(map_, "map.txt");
-        load_sprite_info_list_from_text(player_sprite_info_, "man.txt");
-        load_sprite_info_list_from_text(ball_sprite_info_, "ball.txt");
+        load_sprite_info_set_from_text(player_sprite_info_, "man.txt");
+        load_sprite_info_set_from_text(ball_sprite_info_, "ball.txt");
 
         reset_characters();
 
@@ -197,8 +197,8 @@ private:
     unsigned frames_;
     stage_map map_;
     float scroll_x_;
-    sprite_info_list player_sprite_info_;
-    sprite_info_list ball_sprite_info_;
+    sprite_info_set player_sprite_info_;
+    sprite_info_set ball_sprite_info_;
     game_character player_;
     chara_list enemies_;
 
@@ -263,7 +263,7 @@ private:
         {
             chara_iterator next = boost::next(i);
 
-            if (i->form == sprite_info_list::nform)
+            if (i->form == sprite_info_set::nform)
             {
                 enemies_.erase(i);
                 i = next;
@@ -308,7 +308,7 @@ private:
 
     void draw_character(const game_character& chara)
     {
-        const sprite_info_list& infos = *(chara.sprite_infos);
+        const sprite_info_set& infos = *(chara.sprite_infos);
         const std::vector<sprite_info>& group = infos.get_group(chara.form);
 
         std::size_t pattern = (chara.step % (15 * group.size())) / 15;
