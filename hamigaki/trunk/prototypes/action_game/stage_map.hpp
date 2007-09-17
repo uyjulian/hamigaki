@@ -82,7 +82,7 @@ private:
     std::vector<std::string> data_;
 };
 
-inline void load_map_from_text(stage_map& m, const char* filename)
+inline void load_map_from_text(const char* filename, stage_map& m)
 {
     std::ifstream is(filename);
     if (!is)

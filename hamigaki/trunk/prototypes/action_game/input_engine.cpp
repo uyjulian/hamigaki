@@ -50,7 +50,7 @@ open_joystick(
     const char* cfg_path, joystick_config& cfg)
 {
     joystick_config_list cfg_list;
-    load_joystick_config_list(cfg_list, cfg_path);
+    load_joystick_config_list(cfg_path, cfg_list);
 
     typedef joystick_config_list::const_iterator cfg_iter_type;
     for (cfg_iter_type it = cfg_list.begin(); it != cfg_list.end(); ++it)

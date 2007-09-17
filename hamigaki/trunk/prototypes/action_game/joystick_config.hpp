@@ -31,7 +31,7 @@ typedef std::pair<hamigaki::uuid,joystick_config> joystick_config_pair;
 typedef std::vector<joystick_config_pair> joystick_config_list;
 
 inline
-void load_joystick_config_list(joystick_config_list& ls, const char* filename)
+void load_joystick_config_list(const char* filename, joystick_config_list& ls)
 {
     std::ifstream is(filename);
     if (!is)

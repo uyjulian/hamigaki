@@ -92,9 +92,9 @@ public:
         , active_(false), last_time_(::GetTickCount()), frames_(0)
         , scroll_x_(0.0f)
     {
-        load_map_from_text(map_, "map.txt");
-        load_sprite_info_set_from_text(player_sprite_info_, "man.txt");
-        load_sprite_info_set_from_text(ball_sprite_info_, "ball.txt");
+        load_map_from_text("map.txt", map_);
+        load_sprite_info_set_from_text("man.txt", player_sprite_info_);
+        load_sprite_info_set_from_text("ball.txt", ball_sprite_info_);
 
         reset_characters();
 

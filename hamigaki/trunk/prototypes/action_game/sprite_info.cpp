@@ -36,7 +36,7 @@ void throw_invalid_format(const char* filename)
 } // namespace
 
 void
-load_sprite_info_set_from_text(sprite_info_set& infos, const char* filename)
+load_sprite_info_set_from_text(const char* filename, sprite_info_set& infos)
 {
     std::ifstream is(filename);
     if (!is)
