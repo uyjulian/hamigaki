@@ -10,6 +10,16 @@
 #include "player_routine.hpp"
 #include <cmath>
 
+namespace
+{
+
+bool is_breaking(float vx, float ax)
+{
+    return ((vx < 0.0f) && (ax > 0.0f)) || ((vx > 0.0f) && (ax < 0.0f));
+}
+
+} // namespace
+
 routine_result player_routine::operator()(
     routine_type::self& self,
     move_info mv, std::size_t form, input_command cmd) const
@@ -38,7 +48,16 @@ routine_result player_routine::operator()(
                 max_speed = 5.0f;
         }
 
-        if (cmd.x != 0.0f)
+        if (on_ground && is_breaking(mv.vx, cmd.x))
+        {
+            if (mv.vx < 0.0f)
+                a.ax = (std::min)(brake*2.0f, -mv.vx);
+            else if (mv.vx > 0.0f)
+                a.ax = -(std::min)(brake*2.0f, mv.vx);;
+
+            form = 4;
+        }
+        else if (cmd.x != 0.0f)
         {
             a.ax = cmd.x * 0.25f;
             if (mv.vx < 0.0f)
