@@ -24,6 +24,7 @@ rule user-interface-gui ( properties * )
 exe action_game
     :
     action_game.cpp
+    blink_effect.cpp
     input_engine.cpp
     main_window.cpp
     main_window_impl.cpp

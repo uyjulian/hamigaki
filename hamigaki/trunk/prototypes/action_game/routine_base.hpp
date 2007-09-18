@@ -34,6 +34,13 @@ inline bool includes_point(const rect& r, float x, float y)
     return (r.x <= x) && (r.x+r.lx > x) && (r.y <= y) && (r.y+r.ly > y);
 }
 
+inline bool intersects_rect(const rect& r1, const rect& r2)
+{
+    return
+        (r1.x < r2.x + r2.lx) && (r2.x < r1.x + r1.lx) &&
+        (r1.y < r2.y + r2.ly) && (r2.y < r1.y + r1.ly) ;
+}
+
 bool is_on_ground(const stage_map& map, const rect& r);
 bool find_vertical_blocks(const stage_map& map, int x, int y1, int y2);
 bool find_horizontal_blocks(const stage_map& map, int y, int x1, int x2);

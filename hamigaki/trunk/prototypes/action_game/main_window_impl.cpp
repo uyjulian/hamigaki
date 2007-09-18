@@ -8,6 +8,7 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "main_window_impl.hpp"
+#include "blink_effect.hpp"
 #include "draw.hpp"
 #include "direct3d9.hpp"
 #include "player_routine.hpp"
@@ -32,9 +33,11 @@ struct game_character
 {
     move_info position;
     routine_type routine;
+    effect_type effect;
     std::size_t form;
     int step;
     bool back;
+    unsigned long color;
     sprite_info_set* sprite_infos;
     direct3d_texture9* texture;
 
@@ -74,6 +77,16 @@ struct game_character
             back = false;
         else if (position.vx <= -1.0f)
             back = true;
+
+        color = 0xFFFFFFFFul;
+        if (!effect.empty())
+        {
+            boost::optional<unsigned long> res = effect(std::nothrow);
+            if (res)
+                color = *res;
+            else
+                effect = effect_type();
+        }
     }
 };
 
@@ -212,6 +225,7 @@ private:
         player_.texture = &man_texture_;
 
         player_.routine = routine_type(player_routine(map_, sound_));
+        player_.effect = effect_type();
 
         int x, y;
         boost::tie(x, y) = map_.player_position();
@@ -251,18 +265,8 @@ private:
         }
     }
 
-    void process_input_impl(const input_command& cmd)
+    void process_collisions()
     {
-        if (cmd.reset)
-            reset_characters();
-
-        std::for_each(
-            enemies_.begin(), enemies_.end(),
-            boost::bind(&game_character::move, _1, cmd, boost::cref(map_))
-        );
-
-        player_.move(cmd, map_);
-
         for (chara_iterator i = enemies_.begin(); i != enemies_.end(); )
         {
             chara_iterator next = boost::next(i);
@@ -296,9 +300,27 @@ private:
                 if (player_.form != 3)
                     player_.change_form(2);
             }
+            else if (intersects_rect(player_.position.r, i->position.r))
+                player_.effect = effect_type(&blink_effect);
 
             i = next;
         }
+    }
+
+    void process_input_impl(const input_command& cmd)
+    {
+        if (cmd.reset)
+            reset_characters();
+
+        std::for_each(
+            enemies_.begin(), enemies_.end(),
+            boost::bind(&game_character::move, _1, cmd, boost::cref(map_))
+        );
+
+        player_.move(cmd, map_);
+
+        if (player_.effect.empty())
+            process_collisions();
 
         float center = player_.position.r.x + player_.position.r.lx * 0.5f;
         float right_end = static_cast<float>(map_.width()*32);
@@ -326,7 +348,7 @@ private:
             *(chara.texture),
             info.x, info.y,
             infos.width(), infos.height(),
-            chara.back
+            chara.back, chara.color
         );
     }
 
