@@ -117,6 +117,12 @@ public:
         );
     }
 
+    void stop_se()
+    {
+        se_player_.reset();
+        se_file_.reset();
+    }
+
 private:
     audio::direct_sound_device dsound_;
     std::auto_ptr<audio::vorbis_file_source> bgm_file_;
@@ -141,4 +147,9 @@ void sound_engine::play_bgm(const std::string& filename)
 void sound_engine::play_se(const std::string& filename)
 {
     pimpl_->play_se(filename);
+}
+
+void sound_engine::stop_se()
+{
+    pimpl_->stop_se();
 }
