@@ -232,8 +232,11 @@ private:
                 if (player_.form != 3)
                     player_.change_form(2);
             }
-            else if (intersect_rects(player_.position.r, i->position.r))
+            else if (player_.effect.empty() &&
+                intersect_rects(player_.position.r, i->position.r))
+            {
                 player_.effect = effect_type(&blink_effect);
+            }
 
             i = next;
         }
@@ -251,8 +254,7 @@ private:
 
         player_.move(cmd, map_);
 
-        if (player_.effect.empty())
-            process_collisions();
+        process_collisions();
 
         float center = player_.position.r.x + player_.position.r.lx * 0.5f;
         float right_end = static_cast<float>(map_.width()*32);
