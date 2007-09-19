@@ -48,14 +48,18 @@ routine_result player_routine::operator()(
                 max_speed = 5.0f;
         }
 
-        if (on_ground && is_breaking(mv.vx, cmd.x))
+        if (on_ground && !jump_start && is_breaking(mv.vx, cmd.x))
         {
             if (mv.vx < 0.0f)
                 a.ax = (std::min)(brake*2.0f, -mv.vx);
             else if (mv.vx > 0.0f)
                 a.ax = -(std::min)(brake*2.0f, mv.vx);;
 
-            form = 4;
+            if (form != 4)
+            {
+                form = 4;
+                sound_.play_se("brake.ogg");
+            }
         }
         else if (cmd.x != 0.0f)
         {
@@ -66,7 +70,10 @@ routine_result player_routine::operator()(
                 a.ax = (std::min)(a.ax, max_speed-mv.vx);
 
             if (on_ground)
+            {
                 form = 1;
+                sound_.stop_se();
+            }
         }
         else
         {
@@ -76,7 +83,10 @@ routine_result player_routine::operator()(
                 a.ax = -(std::min)(brake, mv.vx);;
 
             if (on_ground)
+            {
                 form = 0;
+                sound_.stop_se();
+            }
         }
 
         if (on_ground && (cmd.x == 0.0f) && (cmd.y < 0.0f))
