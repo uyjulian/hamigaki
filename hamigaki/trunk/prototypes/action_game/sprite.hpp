@@ -27,6 +27,9 @@ inline void draw_sprite(direct3d_device9& device,
     float width = static_cast<float>(desc.Width);
     float height = static_cast<float>(desc.Height);;
 
+    x -= 0.5f;
+    y -= 0.5f;
+
     const transformed_vertex vertices[] =
     {
         { x,       y,        z, 1.0f, color, 0.0f, 0.0f },
@@ -54,6 +57,9 @@ inline void draw_sprite(direct3d_device9& device,
 
     if (back)
         std::swap(tu1, tu2);
+
+    x -= 0.5f;
+    y -= 0.5f;
 
     const transformed_vertex vertices[] =
     {

@@ -22,6 +22,9 @@ inline void draw_rectangle(direct3d_device9& device,
     float x, float y, float z,
     float width, float height, unsigned long color)
 {
+    x -= 0.5f;
+    y -= 0.5f;
+
     const transformed_lit_vertex vertices[] =
     {
         { x,       y,        z, 1.0f, color },
