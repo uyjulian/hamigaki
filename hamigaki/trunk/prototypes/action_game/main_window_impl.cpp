@@ -300,7 +300,7 @@ private:
                 if (player_.form != 3)
                     player_.change_form(2);
             }
-            else if (intersects_rect(player_.position.r, i->position.r))
+            else if (intersect_rects(player_.position.r, i->position.r))
                 player_.effect = effect_type(&blink_effect);
 
             i = next;

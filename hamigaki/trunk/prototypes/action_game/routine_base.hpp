@@ -34,7 +34,7 @@ inline bool includes_point(const rect& r, float x, float y)
     return (r.x <= x) && (r.x+r.lx > x) && (r.y <= y) && (r.y+r.ly > y);
 }
 
-inline bool intersects_rect(const rect& r1, const rect& r2)
+inline bool intersect_rects(const rect& r1, const rect& r2)
 {
     return
         (r1.x < r2.x + r2.lx) && (r2.x < r1.x + r1.lx) &&
