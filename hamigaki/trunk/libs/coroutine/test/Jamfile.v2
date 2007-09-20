@@ -22,6 +22,7 @@ test-suite "coroutine" :
     [ run coro_copy_test.cpp ]
     [ run coroutine_test.cpp : : : <test-info>always_show_run_output ]
     [ run processor_test.cpp : : : <test-info>always_show_run_output ]
+    [ run restart_test.cpp ]
     [ run yield_to_test.cpp : : : <test-info>always_show_run_output ]
     [ run yield_to_arg_test.cpp : : : <test-info>always_show_run_output ]
     [ run yield_to_res_test.cpp : : : <test-info>always_show_run_output ]

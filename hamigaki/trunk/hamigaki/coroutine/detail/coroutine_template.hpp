@@ -338,6 +338,13 @@ public:
         exit();
     }
 
+    boost::HAMIGAKI_COROUTINE_FUNCTION<
+        R,self& HAMIGAKI_COROUTINE_COMMA
+        HAMIGAKI_COROUTINE_TEMPLATE_ARGS> func() const
+    {
+        return func_;
+    }
+
     void exit()
     {
         if (state_ != coro_detail::exited)
@@ -522,6 +529,13 @@ public:
     HAMIGAKI_COROUTINE_BASE(Functor func, std::ptrdiff_t stack_size)
         : pimpl_(new data_type(func, stack_size))
     {
+    }
+
+    void restart(std::ptrdiff_t stack_size = -1)
+    {
+        BOOST_ASSERT(pimpl_.get());
+        Pointer tmp(new data_type(pimpl_->func(), stack_size));
+        pimpl_ = tmp;
     }
 
     R operator()(HAMIGAKI_COROUTINE_PARMS)
