@@ -24,6 +24,10 @@
 #include <cmath>
 #include <list>
 
+#if defined(HAMIGAKI_USE_KNOCK_BACK)
+    #include "knock_back_routine.hpp"
+#endif
+
 class main_window::impl
 {
 private:
@@ -157,6 +161,7 @@ private:
         player_.texture = &man_texture_;
 
         player_.routine = routine_type(player_routine(map_, sound_));
+        player_.tmp_routine = routine_type();
         player_.effect = effect_type();
 
         int x, y;
@@ -181,6 +186,7 @@ private:
 
                     game_character enemy;
                     enemy.routine = routine_type(&straight_routine);
+                    enemy.tmp_routine = routine_type();
                     enemy.sprite_infos = &ball_sprite_info_;
                     enemy.texture = &ball_texture_;
                     enemy.position.r.x = static_cast<float>(x * 32 + info.left);
@@ -232,10 +238,19 @@ private:
                 if (player_.form != 3)
                     player_.change_form(2);
             }
-            else if (player_.effect.empty() &&
+            else if (player_.effect.empty() && player_.tmp_routine.empty() &&
                 intersect_rects(player_.position.r, i->position.r))
             {
+#if !defined(HAMIGAKI_USE_KNOCK_BACK)
                 player_.effect = effect_type(&blink_effect);
+#else
+                float dx = -4.0f;
+                if (player_.position.r.x > i->position.r.x)
+                    dx = -dx;
+
+                player_.tmp_routine = routine_type(knock_back_routine(15, dx));
+                player_.form = 5;
+#endif
             }
 
             i = next;

@@ -19,6 +19,7 @@ struct game_character
 {
     move_info position;
     routine_type routine;
+    routine_type tmp_routine;
     effect_type effect;
     std::size_t form;
     int step;
@@ -46,6 +47,16 @@ struct game_character
         std::size_t f;
 
         boost::tie(a, f) = routine(position, form, cmd);
+        if (!tmp_routine.empty())
+        {
+            boost::optional<routine_result> res =
+                tmp_routine(std::nothrow, position, form, cmd);
+
+            if (res)
+                boost::tie(a, f) = *res;
+            else
+                tmp_routine = routine_type();
+        }
 
         std::size_t old_form = form;
         form = f;
