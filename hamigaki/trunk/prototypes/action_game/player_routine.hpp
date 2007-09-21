@@ -10,12 +10,31 @@
 #ifndef PLAYER_ROUTINE_HPP
 #define PLAYER_ROUTINE_HPP
 
+#include "four_char_code.hpp"
 #include "routine_base.hpp"
 #include "sound_engine.hpp"
 
 class player_routine
 {
 public:
+    static const boost::uint32_t normal_form =
+        static_four_char_code<'N','O','R','M'>::value;
+
+    static const boost::uint32_t walk_form =
+        static_four_char_code<'W','A','L','K'>::value;
+
+    static const boost::uint32_t jump_form =
+        static_four_char_code<'J','U','M','P'>::value;
+
+    static const boost::uint32_t duck_form =
+        static_four_char_code<'D','U','C','K'>::value;
+
+    static const boost::uint32_t brake_form =
+        static_four_char_code<'B','R','A','K'>::value;
+
+    static const boost::uint32_t knock_back_form =
+        static_four_char_code<'K','N','O','K'>::value;
+
     player_routine(const stage_map& map, sound_engine& sound)
         : map_(map), sound_(sound)
     {
@@ -23,7 +42,7 @@ public:
 
     routine_result operator()(
         routine_type::self& self, move_info mv,
-        std::size_t form, input_command cmd) const;
+        boost::uint32_t form, input_command cmd) const;
 
 private:
     const stage_map& map_;

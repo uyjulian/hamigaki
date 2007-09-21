@@ -8,10 +8,11 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "knock_back_routine.hpp"
+#include "four_char_code.hpp"
 
 routine_result knock_back_routine::operator()(
     routine_type::self& self,
-    move_info mv, std::size_t form, input_command cmd) const
+    move_info mv, boost::uint32_t form, input_command cmd) const
 {
     acceleration a;
 
@@ -26,5 +27,5 @@ routine_result knock_back_routine::operator()(
     for (std::size_t i = 0; i < frames_; ++i)
         boost::tie(mv,form,cmd) = self.yield(std::make_pair(a, form));
 
-    return std::make_pair(a, 0);
+    return std::make_pair(a, static_four_char_code<'N','O','R','M'>::value);
 }

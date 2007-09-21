@@ -182,9 +182,11 @@ private:
             {
                 if (map_(x, y) == 'o')
                 {
-                    const sprite_info& info = ball_sprite_info_.get_group(0)[0];
-
                     game_character enemy;
+
+                    const sprite_info& info =
+                        ball_sprite_info_.get_group(enemy.form)[0];
+
                     enemy.routine = routine_type(&straight_routine);
                     enemy.tmp_routine = routine_type();
                     enemy.sprite_infos = &ball_sprite_info_;
@@ -229,14 +231,14 @@ private:
             if ( (includes_point(r, x1, y1) || includes_point(r, x2, y1)) &&
                 !(includes_point(r, x1, y2) || includes_point(r, x2, y2)) )
             {
-                i->change_form(1);
+                i->change_form(static_four_char_code<'S','T','M','P'>::value);
                 i->routine = routine_type(vanish_routine(5));
                 i->position.vx = 0.0f;
                 i->position.vy = 0.0f;
                 sound_.play_se("stomp.ogg");
                 player_.position.vy = 8.0f;
-                if (player_.form != 3)
-                    player_.change_form(2);
+                if (player_.form != player_routine::duck_form)
+                    player_.change_form(player_routine::jump_form);
             }
             else if (player_.effect.empty() && player_.tmp_routine.empty() &&
                 intersect_rects(player_.position.r, i->position.r))
@@ -249,7 +251,7 @@ private:
                     dx = -dx;
 
                 player_.tmp_routine = routine_type(knock_back_routine(15, dx));
-                player_.form = 5;
+                player_.form = player_routine::knock_back_form;
 #endif
             }
 

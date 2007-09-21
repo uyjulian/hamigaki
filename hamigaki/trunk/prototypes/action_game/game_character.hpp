@@ -10,6 +10,7 @@
 #ifndef GAME_CHARACTER_HPP
 #define GAME_CHARACTER_HPP
 
+#include "four_char_code.hpp"
 #include "effect_base.hpp"
 #include "routine_base.hpp"
 
@@ -17,22 +18,25 @@ class direct3d_texture9;
 
 struct game_character
 {
+    static const boost::uint32_t normal_form =
+        static_four_char_code<'N','O','R','M'>::value;
+
     move_info position;
     routine_type routine;
     routine_type tmp_routine;
     effect_type effect;
-    std::size_t form;
+    boost::uint32_t form;
     int step;
     bool back;
     unsigned long color;
     sprite_info_set* sprite_infos;
     direct3d_texture9* texture;
 
-    game_character() : form(0), step(0), back(false)
+    game_character() : form(normal_form), step(0), back(false)
     {
     }
 
-    void change_form(std::size_t f)
+    void change_form(boost::uint32_t f)
     {
         const sprite_info& old = sprite_infos->get_group(form)[0];
         const sprite_info& cur = sprite_infos->get_group(f)[0];
@@ -44,7 +48,7 @@ struct game_character
     void move(const input_command& cmd, const stage_map& map)
     {
         acceleration a;
-        std::size_t f;
+        boost::uint32_t f;
 
         boost::tie(a, f) = routine(position, form, cmd);
         if (!tmp_routine.empty())
@@ -58,7 +62,7 @@ struct game_character
                 tmp_routine = routine_type();
         }
 
-        std::size_t old_form = form;
+        boost::uint32_t old_form = form;
         form = f;
 
         if (form == sprite_info_set::nform)

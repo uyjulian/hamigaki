@@ -40,7 +40,8 @@ namespace
         }
         else if (uMsg == WM_ACTIVATEAPP)
         {
-            pimpl->active(wParam != FALSE);
+            if (pimpl)
+                pimpl->active(wParam != FALSE);
         }
     }
     catch (const std::exception& e)

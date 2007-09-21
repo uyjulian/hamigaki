@@ -8,9 +8,10 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "sprite_info.hpp"
+#include "four_char_code.hpp"
 #include <fstream>
+#include <iomanip>
 #include <sstream>
-#include <stdexcept>
 
 namespace
 {
@@ -67,19 +68,19 @@ load_sprite_info_set_from_text(const char* filename, sprite_info_set& infos)
 
     while (get_next_line(is, line))
     {
-        unsigned no;
+        char fcc[5];
         sprite_info info;
 
         parser.str(line);
         parser.clear();
         parser
-            >> no >> info.x >> info.y
+            >> std::setw(5) >> fcc >> info.x >> info.y
             >> info.left >> info.top >> info.width >> info.height;
 
         if (!parser)
             throw_invalid_format(filename);
 
-        tmp.push_back(no, info);
+        tmp.push_back(four_char_code(fcc), info);
     }
 
     infos.swap(tmp);

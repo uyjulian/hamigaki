@@ -8,5 +8,5 @@
 # See http://hamigaki.sourceforge.jp/ for library home page.
 
 ball.png 32 32
-0  0  0 0  0 32 32
-1  0 32 0 25 32  7
+NORM  0  0 0  0 32 32
+STMP  0 32 0 25 32  7

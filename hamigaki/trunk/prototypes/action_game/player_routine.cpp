@@ -22,7 +22,7 @@ bool is_breaking(float vx, float ax)
 
 routine_result player_routine::operator()(
     routine_type::self& self,
-    move_info mv, std::size_t form, input_command cmd) const
+    move_info mv, boost::uint32_t form, input_command cmd) const
 {
     const float brake = 0.2f;
 
@@ -55,9 +55,9 @@ routine_result player_routine::operator()(
             else if (mv.vx > 0.0f)
                 a.ax = -(std::min)(brake*2.0f, mv.vx);;
 
-            if (form != 4)
+            if (form != brake_form)
             {
-                form = 4;
+                form = brake_form;
                 sound_.play_se("brake.ogg");
             }
         }
@@ -71,7 +71,7 @@ routine_result player_routine::operator()(
 
             if (on_ground)
             {
-                form = 1;
+                form = walk_form;
                 sound_.stop_se();
             }
         }
@@ -84,15 +84,15 @@ routine_result player_routine::operator()(
 
             if (on_ground)
             {
-                form = 0;
+                form = normal_form;
                 sound_.stop_se();
             }
         }
 
         if (on_ground && (cmd.x == 0.0f) && (cmd.y < 0.0f))
-            form = 3;
-        else if ((form == 3) && on_ground)
-            form = 0;
+            form = duck_form;
+        else if ((form == duck_form) && on_ground)
+            form = normal_form;
 
         if (!on_ground)
         {
@@ -101,8 +101,8 @@ routine_result player_routine::operator()(
             else
                 jump_boost = false;
 
-            if (form == 1)
-                form = 0;
+            if (form == walk_form)
+                form = normal_form;
         }
         else if (jump_start)
         {
@@ -110,8 +110,8 @@ routine_result player_routine::operator()(
             if (std::abs(mv.vx) > 4.0f)
                 a.ay += 1.0f;
             jump_boost = true;
-            if (form != 3)
-                form = 2;
+            if (form != duck_form)
+                form = jump_form;
 
             sound_.play_se("jump.ogg");
         }

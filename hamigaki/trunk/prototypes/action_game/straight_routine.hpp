@@ -15,6 +15,6 @@
 routine_result
 straight_routine(
     routine_type::self& self, move_info mv,
-    std::size_t form, input_command cmd);
+    boost::uint32_t form, input_command cmd);
 
 #endif // STRAIGHT_ROUTINE_HPP

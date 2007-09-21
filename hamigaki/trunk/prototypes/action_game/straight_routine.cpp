@@ -11,7 +11,8 @@
 #include <cmath>
 
 routine_result straight_routine(
-    routine_type::self& self, move_info mv, std::size_t form, input_command cmd)
+    routine_type::self& self,
+    move_info mv, boost::uint32_t form, input_command cmd)
 {
     acceleration a;
     a.ay = 0.0f;

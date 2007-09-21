@@ -61,10 +61,10 @@ struct move_info
     void change_form(const sprite_info& old, const sprite_info& cur);
 };
 
-typedef std::pair<acceleration,std::size_t> routine_result;
+typedef std::pair<acceleration,boost::uint32_t> routine_result;
 
 typedef hamigaki::coroutines::shared_coroutine<
-    routine_result(move_info, std::size_t, input_command)
+    routine_result(move_info, boost::uint32_t, input_command)
 > routine_type;
 
 #endif // ROUTINE_BASE_HPP

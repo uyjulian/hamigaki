@@ -11,7 +11,7 @@
 
 routine_result vanish_routine::operator()(
     routine_type::self& self,
-    move_info mv, std::size_t form, input_command cmd) const
+    move_info mv, boost::uint32_t form, input_command cmd) const
 {
     acceleration a;
     a.ax = 0.0f;
