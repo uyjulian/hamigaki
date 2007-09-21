@@ -10,22 +10,33 @@
 #include "knock_back_routine.hpp"
 #include "four_char_code.hpp"
 
+namespace
+{
+
+const boost::uint32_t normal_form =
+    static_four_char_code<'N','O','R','M'>::value;
+
+} // namespace
+
 routine_result knock_back_routine::operator()(
     routine_type::self& self,
-    move_info mv, boost::uint32_t form, input_command cmd) const
+    move_info mv, boost::uint32_t form, bool back, input_command cmd) const
 {
     acceleration a;
 
     a.ax = -mv.vx + dx_;
     a.ay = -mv.vy;
 
-    boost::tie(mv,form,cmd) = self.yield(std::make_pair(a, form));
+    boost::tie(mv,form,back,cmd) = self.yield(boost::make_tuple(a,form,back));
 
     a.ax = 0.0f;
     a.ay = 0.0f;
 
     for (std::size_t i = 0; i < frames_; ++i)
-        boost::tie(mv,form,cmd) = self.yield(std::make_pair(a, form));
+    {
+        boost::tie(mv,form,back,cmd) =
+            self.yield(boost::make_tuple(a,form,back));
+    }
 
-    return std::make_pair(a, static_four_char_code<'N','O','R','M'>::value);
+    return boost::make_tuple(a,normal_form,back);
 }

@@ -22,7 +22,7 @@ bool is_breaking(float vx, float ax)
 
 routine_result player_routine::operator()(
     routine_type::self& self,
-    move_info mv, boost::uint32_t form, input_command cmd) const
+    move_info mv, boost::uint32_t form, bool back, input_command cmd) const
 {
     const float brake = 0.2f;
 
@@ -33,6 +33,11 @@ routine_result player_routine::operator()(
     {
         bool on_ground = is_on_ground(map_, mv.r);
         bool jump_start = !old_jump && cmd.jump;
+
+        if (cmd.x < 0.0f)
+            back = true;
+        else if (cmd.x > 0.0f)
+            back = false;
 
         acceleration a;
 
@@ -120,7 +125,8 @@ routine_result player_routine::operator()(
 
         old_jump = cmd.jump;
 
-        boost::tie(mv,form,cmd) = self.yield(std::make_pair(a,form));
+        boost::tie(mv,form,back,cmd) =
+            self.yield(boost::make_tuple(a,form,back));
     }
 
     HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(std::make_pair(a,form))

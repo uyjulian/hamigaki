@@ -12,7 +12,7 @@
 
 routine_result straight_routine(
     routine_type::self& self,
-    move_info mv, boost::uint32_t form, input_command cmd)
+    move_info mv, boost::uint32_t form, bool back, input_command cmd)
 {
     acceleration a;
     a.ay = 0.0f;
@@ -20,19 +20,27 @@ routine_result straight_routine(
     while (true)
     {
         a.ax = -1.2f;
-        boost::tie(mv,form,cmd) = self.yield(std::make_pair(a, form));
+        boost::tie(mv,form,back,cmd)
+            = self.yield(boost::make_tuple(a,form,true));
 
         a.ax = 0.0f;
         while (mv.vx < 0.0f)
-            boost::tie(mv,form,cmd) = self.yield(std::make_pair(a, form));
+        {
+            boost::tie(mv,form,back,cmd) =
+                self.yield(boost::make_tuple(a,form,true));
+        }
 
         a.ax = 1.2f;
-        boost::tie(mv,form,cmd) = self.yield(std::make_pair(a, form));
+        boost::tie(mv,form,back,cmd)
+            = self.yield(boost::make_tuple(a,form,false));
 
         a.ax = 0.0f;
         while (mv.vx > 0.0f)
-            boost::tie(mv,form,cmd) = self.yield(std::make_pair(a, form));
+        {
+            boost::tie(mv,form,back,cmd) =
+                self.yield(boost::make_tuple(a,form,false));
+        }
     }
 
-    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(std::make_pair(a, form))
+    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(boost::make_tuple(a,form,false))
 }

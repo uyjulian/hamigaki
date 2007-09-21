@@ -21,7 +21,7 @@ public:
 
     routine_result operator()(
         routine_type::self& self, move_info mv,
-        boost::uint32_t form, input_command cmd) const;
+        boost::uint32_t form, bool back, input_command cmd) const;
 
 private:
     std::size_t frames_;

@@ -247,10 +247,10 @@ private:
                 player_.effect = effect_type(&blink_effect);
 #else
                 float dx = -4.0f;
-                if (player_.position.r.x > i->position.r.x)
+                if (player_.back)
                     dx = -dx;
 
-                player_.tmp_routine = routine_type(knock_back_routine(15, dx));
+                player_.tmp_routine = routine_type(knock_back_routine(10, dx));
                 player_.form = player_routine::knock_back_form;
 #endif
             }

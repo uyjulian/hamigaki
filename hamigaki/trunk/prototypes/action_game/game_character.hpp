@@ -49,15 +49,16 @@ struct game_character
     {
         acceleration a;
         boost::uint32_t f;
+        bool b;
 
-        boost::tie(a, f) = routine(position, form, cmd);
+        boost::tie(a, f, b) = routine(position, form, back, cmd);
         if (!tmp_routine.empty())
         {
             boost::optional<routine_result> res =
-                tmp_routine(std::nothrow, position, form, cmd);
+                tmp_routine(std::nothrow, position, form, back, cmd);
 
             if (res)
-                boost::tie(a, f) = *res;
+                boost::tie(a, f, b) = *res;
             else
                 tmp_routine = routine_type();
         }
@@ -74,10 +75,7 @@ struct game_character
 
         position.move(a, map);
 
-        if (position.vx >= 1.0f)
-            back = false;
-        else if (position.vx <= -1.0f)
-            back = true;
+        back = b;
 
         color = 0xFFFFFFFFul;
         if (!effect.empty())
