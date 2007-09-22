@@ -66,6 +66,8 @@ public:
             D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, handle_,
             D3DCREATE_HARDWARE_VERTEXPROCESSING, params);
 
+        map_texture_ = create_png_texture(device_, "map_chips.png");
+
         man_texture_ =
             create_png_texture(device_, player_sprite_info_.texture());
         ball_texture_ =
@@ -143,6 +145,7 @@ private:
     input_engine input_;
     direct3d9 d3d_;
     direct3d_device9 device_;
+    direct3d_texture9 map_texture_;
     direct3d_texture9 man_texture_;
     direct3d_texture9 ball_texture_;
     bool active_;
@@ -305,12 +308,14 @@ private:
 
     void draw_block(int x, int y)
     {
-        draw_rectangle(
+        ::draw_sprite(
             device_,
             static_cast<float>(x*32)-scroll_x_,
             static_cast<float>(480-32 - y*32),
             0.0f,
-            32.0f, 32.0f, D3DCOLOR_XRGB(0xAA,0x55,0x33));
+            map_texture_,
+            0, 0, 32, 32, false
+        );
     }
 };
 
