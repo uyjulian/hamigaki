@@ -41,7 +41,6 @@ public:
         , active_(false), last_time_(::GetTickCount()), frames_(0)
         , scroll_x_(0.0f)
     {
-        load_map_from_text("map.txt", map_);
         load_sprite_info_set_from_text("man.txt", player_sprite_info_);
         load_sprite_info_set_from_text("ball.txt", ball_sprite_info_);
 
@@ -160,6 +159,8 @@ private:
 
     void reset_characters()
     {
+        load_map_from_text("map.txt", map_);
+
         player_.sprite_infos = &player_sprite_info_;
         player_.texture = &man_texture_;
 
@@ -269,7 +270,7 @@ private:
 
         std::for_each(
             enemies_.begin(), enemies_.end(),
-            boost::bind(&game_character::move, _1, cmd, boost::cref(map_))
+            boost::bind(&game_character::move, _1, cmd, boost::ref(map_))
         );
 
         player_.move(cmd, map_);

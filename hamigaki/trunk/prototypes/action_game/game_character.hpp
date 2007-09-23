@@ -45,7 +45,7 @@ struct game_character
         step = 0;
     }
 
-    void move(const input_command& cmd, const stage_map& map)
+    void move(const input_command& cmd, stage_map& map)
     {
         acceleration a;
         boost::uint32_t f;

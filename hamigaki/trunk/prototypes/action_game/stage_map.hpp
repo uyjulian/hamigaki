@@ -78,6 +78,24 @@ public:
         return std::pair<int,int>(1, 1);
     }
 
+    void erase(int x, int y)
+    {
+        if (x < 0)
+            return;
+        else if (y < 0)
+            return;
+
+        std::size_t ux = static_cast<std::size_t>(x);
+        std::size_t uy = static_cast<std::size_t>(y);
+
+        if (uy >= data_.size())
+            return;
+
+        std::string& line = data_[data_.size()-1-uy];
+        if (ux < line.size())
+            line[ux] = ' ';
+    }
+
 private:
     std::vector<std::string> data_;
 };

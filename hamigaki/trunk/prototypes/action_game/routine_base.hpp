@@ -57,7 +57,7 @@ struct move_info
     float vx;
     float vy;
 
-    void move(const acceleration& a, const stage_map& map);
+    void move(const acceleration& a, stage_map& map);
     void change_form(const sprite_info& old, const sprite_info& cur);
 };
 
