@@ -81,7 +81,7 @@ bool find_horizontal_blocks(const stage_map& map, int y, int x1, int x2)
 }
 
 
-void move_info::move(const acceleration& a, stage_map& map)
+void move_info::move(const acceleration& a, const stage_map& map)
 {
     const float gravity = -0.6f;
 
@@ -159,32 +159,7 @@ void move_info::move(const acceleration& a, stage_map& map)
     }
 
     if (vy > 0.0f)
-    {
-        int old_y = r.top_block();
-
         r.y += vy;
-
-        int new_y = r.top_block();
-        int x1 = r.left_block();
-        int x2 = r.right_block();
-        int x = static_cast<int>(r.x+r.lx*0.5f)/32;
-
-        for (int y = old_y+1; y <= new_y; ++y)
-        {
-            if (map(x, y) == '=')
-            {
-                map.erase(x, y);
-                r.y = static_cast<float>(y * 32) - r.ly;
-                vy = -vy * 0.5f;
-                break;
-            }
-            else if (find_horizontal_blocks(map, y, x1, x2))
-            {
-                r.x = static_cast<float>(x * 32);
-                break;
-            }
-        }
-    }
     else if (vy < 0.0f)
     {
         int old_y = r.bottom_block();

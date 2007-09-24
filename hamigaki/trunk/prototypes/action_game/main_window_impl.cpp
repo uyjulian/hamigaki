@@ -178,6 +178,7 @@ private:
         player_.position.r.ly = static_cast<float>(info.height);
         player_.position.vx = 0.0f;
         player_.position.vy = 0.0f;
+        scroll_x_ = 0.0f;
 
         enemies_.clear();
         for (int y = 0; y < map_.height(); ++y)
@@ -204,6 +205,39 @@ private:
                     enemy.back = true;
 
                     enemies_.push_back(enemy);
+                }
+            }
+        }
+    }
+
+    void process_map_collisions()
+    {
+        if (player_.position.vy > 0.0f)
+        {
+            rect& r = player_.position.r;
+
+            rect old_rect = r;
+            old_rect.y -= player_.position.vy;
+
+            int old_y = old_rect.top_block();
+            int new_y = r.top_block();
+            int x1 = r.left_block();
+            int x2 = r.right_block();
+            int x = static_cast<int>(r.x+r.lx*0.5f)/32;
+
+            for (int y = old_y+1; y <= new_y; ++y)
+            {
+                if (map_(x, y) == '=')
+                {
+                    map_.erase(x, y);
+                    r.y = static_cast<float>(y * 32) - r.ly;
+                    player_.position.vy = -player_.position.vy * 0.5f;
+                    break;
+                }
+                else if (find_horizontal_blocks(map_, y, x1, x2))
+                {
+                    r.x = static_cast<float>(x * 32);
+                    break;
                 }
             }
         }
@@ -270,11 +304,12 @@ private:
 
         std::for_each(
             enemies_.begin(), enemies_.end(),
-            boost::bind(&game_character::move, _1, cmd, boost::ref(map_))
+            boost::bind(&game_character::move, _1, cmd, boost::cref(map_))
         );
 
         player_.move(cmd, map_);
 
+        process_map_collisions();
         process_collisions();
 
         float center = player_.position.r.x + player_.position.r.lx * 0.5f;
