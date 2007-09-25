@@ -43,6 +43,7 @@ public:
     {
         load_sprite_info_set_from_text("man.txt", player_sprite_info_);
         load_sprite_info_set_from_text("ball.txt", ball_sprite_info_);
+        load_sprite_info_set_from_text("fragment.txt", fragment_sprite_info_);
 
         reset_characters();
 
@@ -71,6 +72,8 @@ public:
             create_png_texture(device_, player_sprite_info_.texture());
         ball_texture_ =
             create_png_texture(device_, ball_sprite_info_.texture());
+        fragment_texture_ =
+            create_png_texture(device_, fragment_sprite_info_.texture());
 
         last_time_ = ::GetTickCount();
     }
@@ -129,6 +132,11 @@ public:
             );
 
             draw_character(player_);
+
+            std::for_each(
+                particles_.begin(), particles_.end(),
+                boost::bind(&impl::draw_character, this, _1)
+            );
         }
         device_.present();
     }
@@ -147,6 +155,7 @@ private:
     direct3d_texture9 map_texture_;
     direct3d_texture9 man_texture_;
     direct3d_texture9 ball_texture_;
+    direct3d_texture9 fragment_texture_;
     bool active_;
     unsigned long last_time_;
     unsigned frames_;
@@ -154,8 +163,10 @@ private:
     float scroll_x_;
     sprite_info_set player_sprite_info_;
     sprite_info_set ball_sprite_info_;
+    sprite_info_set fragment_sprite_info_;
     game_character player_;
     chara_list enemies_;
+    chara_list particles_;
 
     void reset_characters()
     {
@@ -208,6 +219,8 @@ private:
                 }
             }
         }
+
+        particles_.clear();
     }
 
     void process_map_collisions()
@@ -232,6 +245,31 @@ private:
                     map_.erase(x, y);
                     r.y = static_cast<float>(y * 32) - r.ly;
                     player_.position.vy = -player_.position.vy * 0.5f;
+
+                    float dx[] = { -4.0f, -4.0f, 20.0f, 20.0f };
+                    float dy[] = { 32.0f, 64.0f, 32.0f, 64.0f };
+                    float vx[] = { -2.0f, -2.0f,  2.0f,  2.0f };
+                    float vy[] = {  2.0f,  4.0f,  2.0f,  4.0f };
+
+                    for (std::size_t i = 0; i < 4; ++i)
+                    {
+                        game_character fr;
+
+                        fr.routine = routine_type(vanish_routine(30));
+                        fr.tmp_routine = routine_type();
+                        fr.sprite_infos = &fragment_sprite_info_;
+                        fr.texture = &fragment_texture_;
+                        fr.position.r.x = static_cast<float>(x*32) + dx[i];
+                        fr.position.r.y = static_cast<float>(y*32) + dy[i];
+                        fr.position.r.lx = 0.0f;
+                        fr.position.r.ly = 0.0f;
+                        fr.position.vx = vx[i];
+                        fr.position.vy = vy[i];
+                        fr.back = false;
+
+                        particles_.push_back(fr);
+                    }
+
                     break;
                 }
                 else if (find_horizontal_blocks(map_, y, x1, x2))
@@ -295,6 +333,19 @@ private:
 
             i = next;
         }
+
+        for (chara_iterator i = particles_.begin(); i != particles_.end(); )
+        {
+            chara_iterator next = boost::next(i);
+
+            if (i->form == sprite_info_set::nform)
+            {
+                particles_.erase(i);
+                i = next;
+                continue;
+            }
+            i = next;
+        }
     }
 
     void process_input_impl(const input_command& cmd)
@@ -308,6 +359,11 @@ private:
         );
 
         player_.move(cmd, map_);
+
+        std::for_each(
+            particles_.begin(), particles_.end(),
+            boost::bind(&game_character::move, _1, cmd, boost::cref(map_))
+        );
 
         process_map_collisions();
         process_collisions();

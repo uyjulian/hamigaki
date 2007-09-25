@@ -33,12 +33,18 @@ int rect::left_block() const
 
 int rect::right_block() const
 {
-    return static_cast<int>(std::ceil((x+lx) / 32.0f)) - 1;
+    if (lx == 0.0f)
+        return left_block();
+    else
+        return static_cast<int>(std::ceil((x+lx) / 32.0f)) - 1;
 }
 
 int rect::top_block() const
 {
-    return static_cast<int>(std::ceil((y+ly) / 32.0f)) - 1;
+    if (ly == 0.0f)
+        return bottom_block();
+    else
+        return static_cast<int>(std::ceil((y+ly) / 32.0f)) - 1;
 }
 
 int rect::bottom_block() const
@@ -49,6 +55,9 @@ int rect::bottom_block() const
 
 bool is_on_ground(const stage_map& map, const rect& r)
 {
+    if (r.lx == 0.0f)
+        return false;
+
     int y = r.bottom_block();
     if (r.y == static_cast<float>(y*32))
     {
@@ -167,17 +176,20 @@ void move_info::move(const acceleration& a, const stage_map& map)
         r.y += vy;
         r.y = (std::max)(r.y, -64.0f); // FIXME
 
-        int new_y = r.bottom_block();
-        int x1 = r.left_block();
-        int x2 = r.right_block();
-
-        for (int y = old_y-1; y >= new_y; --y)
+        if (r.lx != 0.0f)
         {
-            if (find_horizontal_blocks(map, y, x1, x2))
+            int new_y = r.bottom_block();
+            int x1 = r.left_block();
+            int x2 = r.right_block();
+
+            for (int y = old_y-1; y >= new_y; --y)
             {
-                r.y = static_cast<float>((y+1) * 32);
-                vy = 0.0f;
-                break;
+                if (find_horizontal_blocks(map, y, x1, x2))
+                {
+                    r.y = static_cast<float>((y+1) * 32);
+                    vy = 0.0f;
+                    break;
+                }
             }
         }
     }
