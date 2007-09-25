@@ -22,6 +22,7 @@ public:
     void play_bgm(const std::string& filename);
     void play_se(const std::string& filename);
     void stop_se();
+    std::string se_filename() const;
 
 private:
     class impl;

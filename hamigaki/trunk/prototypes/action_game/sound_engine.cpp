@@ -115,12 +115,20 @@ public:
                 512
             )
         );
+
+        se_filename_ = filename;
     }
 
     void stop_se()
     {
         se_player_.reset();
         se_file_.reset();
+        se_filename_.clear();
+    }
+
+    std::string se_filename() const
+    {
+        return se_filename_;
     }
 
 private:
@@ -129,6 +137,7 @@ private:
     std::auto_ptr<audio::vorbis_file_source> se_file_;
     audio::background_player bgm_player_;
     std::auto_ptr<io_ex::background_copy> se_player_;
+    std::string se_filename_;
 };
 
 sound_engine::sound_engine(void* handle) : pimpl_(new impl(handle))
@@ -152,4 +161,9 @@ void sound_engine::play_se(const std::string& filename)
 void sound_engine::stop_se()
 {
     pimpl_->stop_se();
+}
+
+std::string sound_engine::se_filename() const
+{
+    return pimpl_->se_filename();
 }
