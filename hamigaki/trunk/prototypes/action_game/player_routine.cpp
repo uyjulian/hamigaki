@@ -77,7 +77,8 @@ routine_result player_routine::operator()(
             if (on_ground)
             {
                 form = walk_form;
-                sound_.stop_se();
+                if (sound_.se_filename() == "brake.ogg")
+                    sound_.stop_se();
             }
         }
         else
@@ -90,7 +91,8 @@ routine_result player_routine::operator()(
             if (on_ground)
             {
                 form = normal_form;
-                sound_.stop_se();
+                if (sound_.se_filename() == "brake.ogg")
+                    sound_.stop_se();
             }
         }
 

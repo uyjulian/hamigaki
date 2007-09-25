@@ -270,6 +270,8 @@ private:
                         particles_.push_back(fr);
                     }
 
+                    sound_.play_se("break_block.ogg");
+
                     break;
                 }
                 else if (find_horizontal_blocks(map_, y, x1, x2))
@@ -329,6 +331,7 @@ private:
                 player_.tmp_routine = routine_type(knock_back_routine(10, dx));
                 player_.form = player_routine::knock_back_form;
 #endif
+                sound_.play_se("damage.ogg");
             }
 
             i = next;
