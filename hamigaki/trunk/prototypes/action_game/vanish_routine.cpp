@@ -11,17 +11,16 @@
 
 routine_result vanish_routine::operator()(
     routine_type::self& self,
-    move_info mv, boost::uint32_t form, bool back, input_command cmd) const
+    move_info mv, sprite_form form, input_command cmd) const
 {
     acceleration a;
     a.ax = 0.0f;
     a.ay = 0.0f;
 
     for (std::size_t i = 0; i < frames_; ++i)
-    {
-        boost::tie(mv,form,back,cmd) =
-            self.yield(boost::make_tuple(a,form,back));
-    }
+        boost::tie(mv,form,cmd) = self.yield(std::make_pair(a,form));
 
-    return boost::make_tuple(a,sprite_info_set::nform,back);
+    form.type = sprite_form::nform;
+
+    return std::make_pair(a,form);
 }

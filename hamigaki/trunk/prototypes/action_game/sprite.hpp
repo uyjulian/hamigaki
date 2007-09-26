@@ -11,6 +11,7 @@
 #define SPRITE_HPP
 
 #include "direct3d_device9.hpp"
+#include "sprite_form.hpp"
 
 struct transformed_vertex
 {
@@ -46,8 +47,8 @@ inline void draw_sprite(direct3d_device9& device,
 
 inline void draw_sprite(direct3d_device9& device,
     float x, float y, float z,
-    direct3d_texture9& texture, int tx, int ty, int tw, int th, bool back,
-    unsigned long color = 0xFFFFFFFFul)
+    direct3d_texture9& texture, int tx, int ty, int tw, int th,
+    boost::uint32_t options, unsigned long color = 0xFFFFFFFFul)
 {
     const ::D3DSURFACE_DESC& desc = texture.description(0);
     float tu1 = static_cast<float>(tx) / static_cast<float>(desc.Width);
@@ -55,8 +56,10 @@ inline void draw_sprite(direct3d_device9& device,
     float tv1 = static_cast<float>(ty) / static_cast<float>(desc.Height);
     float tv2 = static_cast<float>(ty+th) / static_cast<float>(desc.Height);
 
-    if (back)
+    if ((options & sprite_options::back) != 0)
         std::swap(tu1, tu2);
+    if ((options & sprite_options::upside_down) != 0)
+        std::swap(tv1, tv2);
 
     x -= 0.5f;
     y -= 0.5f;

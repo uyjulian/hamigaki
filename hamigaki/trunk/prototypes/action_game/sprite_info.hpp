@@ -33,8 +33,6 @@ public:
     typedef std::vector<sprite_info> group_type;
     typedef std::map<boost::uint32_t,group_type> table_type;
 
-    static const boost::uint32_t nform = static_cast<boost::uint32_t>(-1);
-
     std::string texture() const { return texture_; }
     void texture(const std::string& filename) { texture_ = filename; }
 

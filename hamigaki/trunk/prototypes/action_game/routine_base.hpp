@@ -11,23 +11,17 @@
 #define ROUTINE_BASE_HPP
 
 #include "input_engine.hpp"
+#include "physics_types.hpp"
+#include "sprite_form.hpp"
 #include "sprite_info.hpp"
 #include "stage_map.hpp"
 #include <hamigaki/coroutine/shared_coroutine.hpp>
 #include <utility>
 
-struct rect
-{
-    float x;
-    float y;
-    float lx;
-    float ly;
-
-    int left_block() const;
-    int right_block() const;
-    int top_block() const;
-    int bottom_block() const;
-};
+int left_block(const rect& r);
+int right_block(const rect& r);
+int top_block(const rect& r);
+int bottom_block(const rect& r);
 
 inline bool includes_point(const rect& r, float x, float y)
 {
@@ -45,12 +39,6 @@ bool is_on_ground(const stage_map& map, const rect& r);
 bool find_vertical_blocks(const stage_map& map, int x, int y1, int y2);
 bool find_horizontal_blocks(const stage_map& map, int y, int x1, int x2);
 
-struct acceleration
-{
-    float ax;
-    float ay;
-};
-
 struct move_info
 {
     rect r;
@@ -61,10 +49,10 @@ struct move_info
     void change_form(const sprite_info& old, const sprite_info& cur);
 };
 
-typedef boost::tuple<acceleration,boost::uint32_t,bool> routine_result;
+typedef std::pair<acceleration,sprite_form> routine_result;
 
 typedef hamigaki::coroutines::shared_coroutine<
-    routine_result(move_info, boost::uint32_t, bool, input_command)
+    routine_result(move_info, sprite_form, input_command)
 > routine_type;
 
 #endif // ROUTINE_BASE_HPP

@@ -26,30 +26,30 @@ float limit_abs(float x, float abs)
 
 } // namespace
 
-int rect::left_block() const
+int left_block(const rect& r)
 {
-    return static_cast<int>(x) / 32;
+    return static_cast<int>(r.x) / 32;
 }
 
-int rect::right_block() const
+int right_block(const rect& r)
 {
-    if (lx == 0.0f)
-        return left_block();
+    if (r.lx == 0.0f)
+        return left_block(r);
     else
-        return static_cast<int>(std::ceil((x+lx) / 32.0f)) - 1;
+        return static_cast<int>(std::ceil((r.x+r.lx) / 32.0f)) - 1;
 }
 
-int rect::top_block() const
+int top_block(const rect& r)
 {
-    if (ly == 0.0f)
-        return bottom_block();
+    if (r.ly == 0.0f)
+        return bottom_block(r);
     else
-        return static_cast<int>(std::ceil((y+ly) / 32.0f)) - 1;
+        return static_cast<int>(std::ceil((r.y+r.ly) / 32.0f)) - 1;
 }
 
-int rect::bottom_block() const
+int bottom_block(const rect& r)
 {
-    return static_cast<int>(y) / 32;
+    return static_cast<int>(r.y) / 32;
 }
 
 
@@ -58,11 +58,11 @@ bool is_on_ground(const stage_map& map, const rect& r)
     if (r.lx == 0.0f)
         return false;
 
-    int y = r.bottom_block();
+    int y = bottom_block(r);
     if (r.y == static_cast<float>(y*32))
     {
-        int x1 = r.left_block();
-        int x2 = r.right_block();
+        int x1 = left_block(r);
+        int x2 = right_block(r);
 
         for (int x = x1; x <= x2; ++x)
             if (map(x, y-1) == '=')
@@ -104,7 +104,7 @@ void move_info::move(const acceleration& a, const stage_map& map)
 
     if (vx < 0.0f)
     {
-        int old_x = r.left_block();
+        int old_x = left_block(r);
 
         r.x += vx;
         if (r.x < 0.0f)
@@ -113,9 +113,9 @@ void move_info::move(const acceleration& a, const stage_map& map)
             vx = 0.0f;
         }
 
-        int new_x = r.left_block();
-        int y1 = r.bottom_block();
-        int y2 = r.top_block();
+        int new_x = left_block(r);
+        int y1 = bottom_block(r);
+        int y2 = top_block(r);
 
         for (int x = old_x-1; x >= new_x; --x)
         {
@@ -129,7 +129,7 @@ void move_info::move(const acceleration& a, const stage_map& map)
     }
     else if (vx > 0.0f)
     {
-        int old_x = r.right_block();
+        int old_x = right_block(r);
 
         r.x += vx;
         float max_x = static_cast<float>(map.width()*32) - r.lx;
@@ -139,9 +139,9 @@ void move_info::move(const acceleration& a, const stage_map& map)
             vx = 0.0f;
         }
 
-        int new_x = r.right_block();
-        int y1 = r.bottom_block();
-        int y2 = r.top_block();
+        int new_x = right_block(r);
+        int y1 = bottom_block(r);
+        int y2 = top_block(r);
 
         for (int x = old_x+1; x <= new_x; ++x)
         {
@@ -171,16 +171,16 @@ void move_info::move(const acceleration& a, const stage_map& map)
         r.y += vy;
     else if (vy < 0.0f)
     {
-        int old_y = r.bottom_block();
+        int old_y = bottom_block(r);
 
         r.y += vy;
         r.y = (std::max)(r.y, -64.0f); // FIXME
 
         if (r.lx != 0.0f)
         {
-            int new_y = r.bottom_block();
-            int x1 = r.left_block();
-            int x2 = r.right_block();
+            int new_y = bottom_block(r);
+            int x1 = left_block(r);
+            int x2 = right_block(r);
 
             for (int y = old_y-1; y >= new_y; --y)
             {

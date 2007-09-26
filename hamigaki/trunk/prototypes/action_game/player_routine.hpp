@@ -17,9 +17,6 @@
 class player_routine
 {
 public:
-    static const boost::uint32_t normal_form =
-        static_four_char_code<'N','O','R','M'>::value;
-
     static const boost::uint32_t walk_form =
         static_four_char_code<'W','A','L','K'>::value;
 
@@ -42,7 +39,7 @@ public:
 
     routine_result operator()(
         routine_type::self& self, move_info mv,
-        boost::uint32_t form, bool back, input_command cmd) const;
+        sprite_form form, input_command cmd) const;
 
 private:
     const stage_map& map_;

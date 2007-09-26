@@ -182,7 +182,9 @@ private:
         int x, y;
         boost::tie(x, y) = map_.player_position();
 
-        sprite_info info = player_.sprite_infos->get_group(player_.form)[0];
+        sprite_info info =
+            player_.sprite_infos->get_group(player_.form.type)[0];
+
         player_.position.r.x = static_cast<float>(x * 32 + info.left);
         player_.position.r.y = static_cast<float>(y * 32);
         player_.position.r.lx = static_cast<float>(info.width);
@@ -201,7 +203,7 @@ private:
                     game_character enemy;
 
                     const sprite_info& info =
-                        ball_sprite_info_.get_group(enemy.form)[0];
+                        ball_sprite_info_.get_group(enemy.form.type)[0];
 
                     enemy.routine = routine_type(&straight_routine);
                     enemy.tmp_routine = routine_type();
@@ -213,7 +215,7 @@ private:
                     enemy.position.r.ly = static_cast<float>(info.height);
                     enemy.position.vx = 0.0f;
                     enemy.position.vy = 0.0f;
-                    enemy.back = true;
+                    enemy.form.options = sprite_options::back;
 
                     enemies_.push_back(enemy);
                 }
@@ -232,10 +234,10 @@ private:
             rect old_rect = r;
             old_rect.y -= player_.position.vy;
 
-            int old_y = old_rect.top_block();
-            int new_y = r.top_block();
-            int x1 = r.left_block();
-            int x2 = r.right_block();
+            int old_y = top_block(old_rect);
+            int new_y = top_block(r);
+            int x1 = left_block(r);
+            int x2 = right_block(r);
             int x = static_cast<int>(r.x+r.lx*0.5f)/32;
 
             for (int y = old_y+1; y <= new_y; ++y)
@@ -265,7 +267,6 @@ private:
                         fr.position.r.ly = 0.0f;
                         fr.position.vx = vx[i];
                         fr.position.vy = vy[i];
-                        fr.back = false;
 
                         particles_.push_back(fr);
                     }
@@ -289,7 +290,7 @@ private:
         {
             chara_iterator next = boost::next(i);
 
-            if (i->form == sprite_info_set::nform)
+            if (i->form.type == sprite_form::nform)
             {
                 enemies_.erase(i);
                 i = next;
@@ -315,7 +316,7 @@ private:
                 i->position.vy = 0.0f;
                 sound_.play_se("stomp.ogg");
                 player_.position.vy = 8.0f;
-                if (player_.form != player_routine::duck_form)
+                if (player_.form.type != player_routine::duck_form)
                     player_.change_form(player_routine::jump_form);
             }
             else if (player_.effect.empty() && player_.tmp_routine.empty() &&
@@ -325,11 +326,11 @@ private:
                 player_.effect = effect_type(&blink_effect);
 #else
                 float dx = -4.0f;
-                if (player_.back)
+                if ((player_.form.options & sprite_options::back) != 0)
                     dx = -dx;
 
                 player_.tmp_routine = routine_type(knock_back_routine(10, dx));
-                player_.form = player_routine::knock_back_form;
+                player_.form.type = player_routine::knock_back_form;
 #endif
                 sound_.play_se("damage.ogg");
             }
@@ -341,7 +342,7 @@ private:
         {
             chara_iterator next = boost::next(i);
 
-            if (i->form == sprite_info_set::nform)
+            if (i->form.type == sprite_form::nform)
             {
                 particles_.erase(i);
                 i = next;
@@ -384,7 +385,9 @@ private:
     void draw_character(const game_character& chara)
     {
         const sprite_info_set& infos = *(chara.sprite_infos);
-        const std::vector<sprite_info>& group = infos.get_group(chara.form);
+
+        const std::vector<sprite_info>& group =
+            infos.get_group(chara.form.type);
 
         std::size_t pattern = (chara.step % (15 * group.size())) / 15;
         const sprite_info& info = group[pattern];
@@ -397,7 +400,7 @@ private:
             *(chara.texture),
             info.x, info.y,
             infos.width(), infos.height(),
-            chara.back, chara.color
+            chara.form.options, chara.color
         );
     }
 
