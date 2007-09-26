@@ -225,6 +225,24 @@ private:
         particles_.clear();
     }
 
+    void process_hit_from_below(int x, int y)
+    {
+        for (chara_iterator i = enemies_.begin(); i != enemies_.end(); ++i)
+        {
+            const rect& r = i->position;
+            int center = static_cast<int>(r.x+r.lx*0.5f)/32;
+
+            if ((center == x) && (bottom_block(r) == y) && is_on_ground(map_,r))
+            {
+                i->routine = routine_type(vanish_routine(5));
+                i->position.y += 16.0f;
+                i->speed.vx = 0.0f;
+                i->speed.vy = 0.0f;
+                i->form.options |= sprite_options::upside_down;
+            }
+        }
+    }
+
     void process_map_collisions()
     {
         if (player_.speed.vy > 0.0f)
@@ -270,6 +288,8 @@ private:
 
                         particles_.push_back(fr);
                     }
+
+                    process_hit_from_below(x, y+1);
 
                     sound_.play_se("break_block.ogg");
 
