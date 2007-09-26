@@ -22,7 +22,7 @@ bool is_breaking(float vx, float ax)
 
 routine_result player_routine::operator()(
     routine_type::self& self,
-    move_info mv, sprite_form form, input_command cmd) const
+    rect r, velocity v, sprite_form form, input_command cmd) const
 {
     const float brake = 0.2f;
 
@@ -31,7 +31,7 @@ routine_result player_routine::operator()(
 
     while (true)
     {
-        bool on_ground = is_on_ground(map_, mv.r);
+        bool on_ground = is_on_ground(map_, r);
         bool jump_start = !old_jump && cmd.jump;
 
         if (cmd.x < 0.0f)
@@ -53,12 +53,12 @@ routine_result player_routine::operator()(
                 max_speed = 5.0f;
         }
 
-        if (on_ground && !jump_start && is_breaking(mv.vx, cmd.x))
+        if (on_ground && !jump_start && is_breaking(v.vx, cmd.x))
         {
-            if (mv.vx < 0.0f)
-                a.ax = (std::min)(brake*2.0f, -mv.vx);
-            else if (mv.vx > 0.0f)
-                a.ax = -(std::min)(brake*2.0f, mv.vx);;
+            if (v.vx < 0.0f)
+                a.ax = (std::min)(brake*2.0f, -v.vx);
+            else if (v.vx > 0.0f)
+                a.ax = -(std::min)(brake*2.0f, v.vx);;
 
             if (form.type != brake_form)
             {
@@ -69,10 +69,10 @@ routine_result player_routine::operator()(
         else if (cmd.x != 0.0f)
         {
             a.ax = cmd.x * 0.25f;
-            if (mv.vx < 0.0f)
-                a.ax = (std::max)(a.ax, -max_speed-mv.vx);
+            if (v.vx < 0.0f)
+                a.ax = (std::max)(a.ax, -max_speed-v.vx);
             else
-                a.ax = (std::min)(a.ax, max_speed-mv.vx);
+                a.ax = (std::min)(a.ax, max_speed-v.vx);
 
             if (on_ground)
             {
@@ -83,10 +83,10 @@ routine_result player_routine::operator()(
         }
         else
         {
-            if (mv.vx < 0.0f)
-                a.ax = (std::min)(brake, -mv.vx);
-            else if (mv.vx > 0.0f)
-                a.ax = -(std::min)(brake, mv.vx);;
+            if (v.vx < 0.0f)
+                a.ax = (std::min)(brake, -v.vx);
+            else if (v.vx > 0.0f)
+                a.ax = -(std::min)(brake, v.vx);;
 
             if (on_ground)
             {
@@ -103,7 +103,7 @@ routine_result player_routine::operator()(
 
         if (!on_ground)
         {
-            if (jump_boost && cmd.jump && (mv.vy > 0.0))
+            if (jump_boost && cmd.jump && (v.vy > 0.0))
                 a.ay = 0.35f;
             else
                 jump_boost = false;
@@ -114,7 +114,7 @@ routine_result player_routine::operator()(
         else if (jump_start)
         {
             a.ay = 8.0f;
-            if (std::abs(mv.vx) > 4.0f)
+            if (std::abs(v.vx) > 4.0f)
                 a.ay += 1.0f;
             jump_boost = true;
             if (form.type != duck_form)
@@ -127,7 +127,7 @@ routine_result player_routine::operator()(
 
         old_jump = cmd.jump;
 
-        boost::tie(mv,form,cmd) = self.yield(std::make_pair(a,form));
+        boost::tie(r,v,form,cmd) = self.yield(std::make_pair(a,form));
     }
 
     HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(std::make_pair(a,form))

@@ -12,7 +12,7 @@
 
 routine_result straight_routine(
     routine_type::self& self,
-    move_info mv, sprite_form form, input_command cmd)
+    rect r, velocity v, sprite_form form, input_command cmd)
 {
     acceleration a;
     a.ay = 0.0f;
@@ -21,19 +21,19 @@ routine_result straight_routine(
     {
         a.ax = -1.2f;
         form.options |= sprite_options::back;
-        boost::tie(mv,form,cmd) = self.yield(std::make_pair(a,form));
+        boost::tie(r,v,form,cmd) = self.yield(std::make_pair(a,form));
 
         a.ax = 0.0f;
-        while (mv.vx < 0.0f)
-            boost::tie(mv,form,cmd) = self.yield(std::make_pair(a,form));
+        while (v.vx < 0.0f)
+            boost::tie(r,v,form,cmd) = self.yield(std::make_pair(a,form));
 
         a.ax = 1.2f;
         form.options &= ~sprite_options::back;
-        boost::tie(mv,form,cmd) = self.yield(std::make_pair(a,form));
+        boost::tie(r,v,form,cmd) = self.yield(std::make_pair(a,form));
 
         a.ax = 0.0f;
-        while (mv.vx > 0.0f)
-            boost::tie(mv,form,cmd) = self.yield(std::make_pair(a,form));
+        while (v.vx > 0.0f)
+            boost::tie(r,v,form,cmd) = self.yield(std::make_pair(a,form));
     }
 
     HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(std::make_pair(a,form))

@@ -39,20 +39,13 @@ bool is_on_ground(const stage_map& map, const rect& r);
 bool find_vertical_blocks(const stage_map& map, int x, int y1, int y2);
 bool find_horizontal_blocks(const stage_map& map, int y, int x1, int x2);
 
-struct move_info
-{
-    rect r;
-    float vx;
-    float vy;
-
-    void move(const acceleration& a, const stage_map& map);
-    void change_form(const sprite_info& old, const sprite_info& cur);
-};
+void move(rect& r, velocity& v, const acceleration& a, const stage_map& map);
+void change_form(rect& r, const sprite_info& old, const sprite_info& cur);
 
 typedef std::pair<acceleration,sprite_form> routine_result;
 
 typedef hamigaki::coroutines::shared_coroutine<
-    routine_result(move_info, sprite_form, input_command)
+    routine_result(rect, velocity, sprite_form, input_command)
 > routine_type;
 
 #endif // ROUTINE_BASE_HPP

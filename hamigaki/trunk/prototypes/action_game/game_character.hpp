@@ -18,7 +18,8 @@ class direct3d_texture9;
 
 struct game_character
 {
-    move_info position;
+    rect position;
+    velocity speed;
     routine_type routine;
     routine_type tmp_routine;
     effect_type effect;
@@ -36,7 +37,7 @@ struct game_character
     {
         const sprite_info& old = sprite_infos->get_group(form.type)[0];
         const sprite_info& cur = sprite_infos->get_group(f)[0];
-        position.change_form(old, cur);
+        ::change_form(position, old, cur);
         form.type = f;
         step = 0;
     }
@@ -46,11 +47,11 @@ struct game_character
         acceleration a;
         sprite_form f;
 
-        boost::tie(a, f) = routine(position, form, cmd);
+        boost::tie(a, f) = routine(position, speed, form, cmd);
         if (!tmp_routine.empty())
         {
             boost::optional<routine_result> res =
-                tmp_routine(std::nothrow, position, form, cmd);
+                tmp_routine(std::nothrow, position, speed, form, cmd);
 
             if (res)
                 boost::tie(a, f) = *res;
@@ -68,7 +69,7 @@ struct game_character
         else
             ++(step);
 
-        position.move(a, map);
+        ::move(position, speed, a, map);
 
         color = 0xFFFFFFFFul;
         if (!effect.empty())

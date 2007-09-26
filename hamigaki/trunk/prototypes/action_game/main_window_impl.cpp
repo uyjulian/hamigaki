@@ -185,12 +185,12 @@ private:
         sprite_info info =
             player_.sprite_infos->get_group(player_.form.type)[0];
 
-        player_.position.r.x = static_cast<float>(x * 32 + info.left);
-        player_.position.r.y = static_cast<float>(y * 32);
-        player_.position.r.lx = static_cast<float>(info.width);
-        player_.position.r.ly = static_cast<float>(info.height);
-        player_.position.vx = 0.0f;
-        player_.position.vy = 0.0f;
+        player_.position.x = static_cast<float>(x * 32 + info.left);
+        player_.position.y = static_cast<float>(y * 32);
+        player_.position.lx = static_cast<float>(info.width);
+        player_.position.ly = static_cast<float>(info.height);
+        player_.speed.vx = 0.0f;
+        player_.speed.vy = 0.0f;
         scroll_x_ = 0.0f;
 
         enemies_.clear();
@@ -209,12 +209,12 @@ private:
                     enemy.tmp_routine = routine_type();
                     enemy.sprite_infos = &ball_sprite_info_;
                     enemy.texture = &ball_texture_;
-                    enemy.position.r.x = static_cast<float>(x * 32 + info.left);
-                    enemy.position.r.y = static_cast<float>(y * 32);
-                    enemy.position.r.lx = static_cast<float>(info.width);
-                    enemy.position.r.ly = static_cast<float>(info.height);
-                    enemy.position.vx = 0.0f;
-                    enemy.position.vy = 0.0f;
+                    enemy.position.x = static_cast<float>(x * 32 + info.left);
+                    enemy.position.y = static_cast<float>(y * 32);
+                    enemy.position.lx = static_cast<float>(info.width);
+                    enemy.position.ly = static_cast<float>(info.height);
+                    enemy.speed.vx = 0.0f;
+                    enemy.speed.vy = 0.0f;
                     enemy.form.options = sprite_options::back;
 
                     enemies_.push_back(enemy);
@@ -227,12 +227,12 @@ private:
 
     void process_map_collisions()
     {
-        if (player_.position.vy > 0.0f)
+        if (player_.speed.vy > 0.0f)
         {
-            rect& r = player_.position.r;
+            rect& r = player_.position;
 
             rect old_rect = r;
-            old_rect.y -= player_.position.vy;
+            old_rect.y -= player_.speed.vy;
 
             int old_y = top_block(old_rect);
             int new_y = top_block(r);
@@ -246,7 +246,7 @@ private:
                 {
                     map_.erase(x, y);
                     r.y = static_cast<float>(y * 32) - r.ly;
-                    player_.position.vy = -player_.position.vy * 0.5f;
+                    player_.speed.vy = -player_.speed.vy * 0.5f;
 
                     float dx[] = { -4.0f, -4.0f, 20.0f, 20.0f };
                     float dy[] = { 32.0f, 64.0f, 32.0f, 64.0f };
@@ -261,12 +261,12 @@ private:
                         fr.tmp_routine = routine_type();
                         fr.sprite_infos = &fragment_sprite_info_;
                         fr.texture = &fragment_texture_;
-                        fr.position.r.x = static_cast<float>(x*32) + dx[i];
-                        fr.position.r.y = static_cast<float>(y*32) + dy[i];
-                        fr.position.r.lx = 0.0f;
-                        fr.position.r.ly = 0.0f;
-                        fr.position.vx = vx[i];
-                        fr.position.vy = vy[i];
+                        fr.position.x = static_cast<float>(x*32) + dx[i];
+                        fr.position.y = static_cast<float>(y*32) + dy[i];
+                        fr.position.lx = 0.0f;
+                        fr.position.ly = 0.0f;
+                        fr.speed.vx = vx[i];
+                        fr.speed.vy = vy[i];
 
                         particles_.push_back(fr);
                     }
@@ -297,11 +297,11 @@ private:
                 continue;
             }
 
-            rect r = i->position.r;
+            rect r = i->position;
             r.ly *= 0.5f;
             r.y += r.ly;
 
-            const rect& r2 = player_.position.r;
+            const rect& r2 = player_.position;
             float x1 = r2.x;
             float y1 = r2.y;
             float x2 = r2.x + r2.lx;
@@ -312,15 +312,15 @@ private:
             {
                 i->change_form(static_four_char_code<'S','T','M','P'>::value);
                 i->routine = routine_type(vanish_routine(5));
-                i->position.vx = 0.0f;
-                i->position.vy = 0.0f;
+                i->speed.vx = 0.0f;
+                i->speed.vy = 0.0f;
                 sound_.play_se("stomp.ogg");
-                player_.position.vy = 8.0f;
+                player_.speed.vy = 8.0f;
                 if (player_.form.type != player_routine::duck_form)
                     player_.change_form(player_routine::jump_form);
             }
             else if (player_.effect.empty() && player_.tmp_routine.empty() &&
-                intersect_rects(player_.position.r, i->position.r))
+                intersect_rects(player_.position, i->position))
             {
 #if !defined(HAMIGAKI_USE_KNOCK_BACK)
                 player_.effect = effect_type(&blink_effect);
@@ -372,7 +372,7 @@ private:
         process_map_collisions();
         process_collisions();
 
-        float center = player_.position.r.x + player_.position.r.lx * 0.5f;
+        float center = player_.position.x + player_.position.lx * 0.5f;
         float right_end = static_cast<float>(map_.width()*32);
 
         scroll_x_ = center - 320.0f;
@@ -394,8 +394,8 @@ private:
 
         ::draw_sprite(
             device_,
-            chara.position.r.x - info.left - scroll_x_,
-            480.0f - chara.position.r.y - infos.height(),
+            chara.position.x - info.left - scroll_x_,
+            480.0f - chara.position.y - infos.height(),
             0.0f,
             *(chara.texture),
             info.x, info.y,

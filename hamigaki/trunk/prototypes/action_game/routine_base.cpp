@@ -90,7 +90,7 @@ bool find_horizontal_blocks(const stage_map& map, int y, int x1, int x2)
 }
 
 
-void move_info::move(const acceleration& a, const stage_map& map)
+void move(rect& r, velocity& v, const acceleration& a, const stage_map& map)
 {
     const float gravity = -0.6f;
 
@@ -98,19 +98,19 @@ void move_info::move(const acceleration& a, const stage_map& map)
 
     // FIXME
     if (r.y > -32.0f)
-        vx += a.ax;
+        v.vx += a.ax;
     else
-        vx = 0.0f;
+        v.vx = 0.0f;
 
-    if (vx < 0.0f)
+    if (v.vx < 0.0f)
     {
         int old_x = left_block(r);
 
-        r.x += vx;
+        r.x += v.vx;
         if (r.x < 0.0f)
         {
             r.x = 0.0f;
-            vx = 0.0f;
+            v.vx = 0.0f;
         }
 
         int new_x = left_block(r);
@@ -122,21 +122,21 @@ void move_info::move(const acceleration& a, const stage_map& map)
             if (find_vertical_blocks(map, x, y1, y2))
             {
                 r.x = static_cast<float>((x+1) * 32);
-                vx = 0.0f;
+                v.vx = 0.0f;
                 break;
             }
         }
     }
-    else if (vx > 0.0f)
+    else if (v.vx > 0.0f)
     {
         int old_x = right_block(r);
 
-        r.x += vx;
+        r.x += v.vx;
         float max_x = static_cast<float>(map.width()*32) - r.lx;
         if (r.x > max_x)
         {
             r.x = max_x;
-            vx = 0.0f;
+            v.vx = 0.0f;
         }
 
         int new_x = right_block(r);
@@ -148,32 +148,32 @@ void move_info::move(const acceleration& a, const stage_map& map)
             if (find_vertical_blocks(map, x, y1, y2))
             {
                 r.x = static_cast<float>(x * 32) - r.lx;
-                vx = 0.0f;
+                v.vx = 0.0f;
                 break;
             }
         }
     }
 
-    vy += a.ay;
+    v.vy += a.ay;
 
     if (on_ground)
     {
-        if (vy < 0.0f)
-            vy = 0.0f;
+        if (v.vy < 0.0f)
+            v.vy = 0.0f;
     }
     else
     {
-        vy += gravity;
-        vy = (std::max)(vy, -10.0f);
+        v.vy += gravity;
+        v.vy = (std::max)(v.vy, -10.0f);
     }
 
-    if (vy > 0.0f)
-        r.y += vy;
-    else if (vy < 0.0f)
+    if (v.vy > 0.0f)
+        r.y += v.vy;
+    else if (v.vy < 0.0f)
     {
         int old_y = bottom_block(r);
 
-        r.y += vy;
+        r.y += v.vy;
         r.y = (std::max)(r.y, -64.0f); // FIXME
 
         if (r.lx != 0.0f)
@@ -187,7 +187,7 @@ void move_info::move(const acceleration& a, const stage_map& map)
                 if (find_horizontal_blocks(map, y, x1, x2))
                 {
                     r.y = static_cast<float>((y+1) * 32);
-                    vy = 0.0f;
+                    v.vy = 0.0f;
                     break;
                 }
             }
@@ -195,7 +195,7 @@ void move_info::move(const acceleration& a, const stage_map& map)
     }
 }
 
-void move_info::change_form(const sprite_info& old, const sprite_info& cur)
+void change_form(rect& r, const sprite_info& old, const sprite_info& cur)
 {
     float x = r.x - static_cast<float>(old.left);
 

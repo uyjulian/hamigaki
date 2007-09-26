@@ -11,20 +11,20 @@
 
 routine_result knock_back_routine::operator()(
     routine_type::self& self,
-    move_info mv, sprite_form form, input_command cmd) const
+    rect r, velocity v, sprite_form form, input_command cmd) const
 {
     acceleration a;
 
-    a.ax = -mv.vx + dx_;
-    a.ay = -mv.vy;
+    a.ax = -v.vx + dx_;
+    a.ay = -v.vy;
 
-    boost::tie(mv,form,cmd) = self.yield(std::make_pair(a,form));
+    boost::tie(r,v,form,cmd) = self.yield(std::make_pair(a,form));
 
     a.ax = 0.0f;
     a.ay = 0.0f;
 
     for (std::size_t i = 0; i < frames_; ++i)
-        boost::tie(mv,form,cmd) = self.yield(std::make_pair(a,form));
+        boost::tie(r,v,form,cmd) = self.yield(std::make_pair(a,form));
 
     form.type = sprite_form::normal;
     return std::make_pair(a,form);

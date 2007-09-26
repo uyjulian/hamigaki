@@ -20,7 +20,7 @@ public:
     }
 
     routine_result operator()(
-        routine_type::self& self, move_info mv,
+        routine_type::self& self, rect r, velocity v,
         sprite_form form, input_command cmd) const;
 
 private:
