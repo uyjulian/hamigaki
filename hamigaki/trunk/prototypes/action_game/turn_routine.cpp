@@ -44,7 +44,7 @@ routine_result turn_routine::operator()(
         form.options |= sprite_options::back;
         boost::tie(r,v,form,cmd) = self.yield(a,form);
 
-        a.ax = -1.2f;
+        a.ax = -speed_;
         boost::tie(r,v,form,cmd) = self.yield(a,form);
 
         a.ax = 0.0f;
@@ -55,7 +55,7 @@ routine_result turn_routine::operator()(
         form.options &= ~sprite_options::back;
         boost::tie(r,v,form,cmd) = self.yield(a,form);
 
-        a.ax = 1.2f;
+        a.ax = speed_;
         boost::tie(r,v,form,cmd) = self.yield(a,form);
 
         a.ax = 0.0f;

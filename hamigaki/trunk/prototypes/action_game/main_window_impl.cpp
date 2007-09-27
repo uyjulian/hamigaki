@@ -206,7 +206,7 @@ private:
                     const sprite_info& info =
                         ball_sprite_info_.get_group(enemy.form.type)[0];
 
-                    enemy.routine = routine_type(&straight_routine);
+                    enemy.routine = routine_type(straight_routine());
                     enemy.tmp_routine = routine_type();
                     enemy.sprite_infos = &ball_sprite_info_;
                     enemy.texture = &ball_texture_;

@@ -15,7 +15,8 @@
 class turn_routine
 {
 public:
-    explicit turn_routine(const stage_map& map) : map_(map)
+    explicit turn_routine(const stage_map& map, float speed = 1.0f)
+        : map_(map), speed_(speed)
     {
     }
 
@@ -25,6 +26,7 @@ public:
 
 private:
     const stage_map& map_;
+    float speed_;
 };
 
 #endif // TURN_ROUTINE_HPP

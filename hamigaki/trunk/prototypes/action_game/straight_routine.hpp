@@ -12,9 +12,19 @@
 
 #include "routine_base.hpp"
 
-routine_result
-straight_routine(
-    routine_type::self& self, rect r, velocity v,
-    sprite_form form, input_command cmd);
+class straight_routine
+{
+public:
+    explicit straight_routine(float speed = 1.0f) : speed_(speed)
+    {
+    }
+
+    routine_result operator()(
+        routine_type::self& self, rect r, velocity v,
+        sprite_form form, input_command cmd) const;
+
+private:
+    float speed_;
+};
 
 #endif // STRAIGHT_ROUTINE_HPP
