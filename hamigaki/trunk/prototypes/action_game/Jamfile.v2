@@ -35,6 +35,7 @@ exe action_game
     sound_engine.cpp
     sprite_info.cpp
     straight_routine.cpp
+    turn_routine.cpp
     vanish_routine.cpp
     /directx//d3d9
     /directx//dxerr9

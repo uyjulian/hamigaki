@@ -18,6 +18,7 @@
 #include "sprite_info.hpp"
 #include "stage_map.hpp"
 #include "straight_routine.hpp"
+#include "turn_routine.hpp"
 #include "vanish_routine.hpp"
 #include <boost/bind.hpp>
 #include <boost/next_prior.hpp>
@@ -206,6 +207,27 @@ private:
                         ball_sprite_info_.get_group(enemy.form.type)[0];
 
                     enemy.routine = routine_type(&straight_routine);
+                    enemy.tmp_routine = routine_type();
+                    enemy.sprite_infos = &ball_sprite_info_;
+                    enemy.texture = &ball_texture_;
+                    enemy.position.x = static_cast<float>(x * 32 + info.left);
+                    enemy.position.y = static_cast<float>(y * 32);
+                    enemy.position.lx = static_cast<float>(info.width);
+                    enemy.position.ly = static_cast<float>(info.height);
+                    enemy.speed.vx = 0.0f;
+                    enemy.speed.vy = 0.0f;
+                    enemy.form.options = sprite_options::back;
+
+                    enemies_.push_back(enemy);
+                }
+                else if (map_(x, y) == 'a')
+                {
+                    game_character enemy;
+
+                    const sprite_info& info =
+                        ball_sprite_info_.get_group(enemy.form.type)[0];
+
+                    enemy.routine = routine_type(turn_routine(map_));
                     enemy.tmp_routine = routine_type();
                     enemy.sprite_infos = &ball_sprite_info_;
                     enemy.texture = &ball_texture_;
