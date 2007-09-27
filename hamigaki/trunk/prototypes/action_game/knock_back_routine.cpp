@@ -18,14 +18,14 @@ routine_result knock_back_routine::operator()(
     a.ax = -v.vx + dx_;
     a.ay = -v.vy;
 
-    boost::tie(r,v,form,cmd) = self.yield(std::make_pair(a,form));
+    boost::tie(r,v,form,cmd) = self.yield(a,form);
 
     a.ax = 0.0f;
     a.ay = 0.0f;
 
     for (std::size_t i = 0; i < frames_; ++i)
-        boost::tie(r,v,form,cmd) = self.yield(std::make_pair(a,form));
+        boost::tie(r,v,form,cmd) = self.yield(a,form);
 
     form.type = sprite_form::normal;
-    return std::make_pair(a,form);
+    return routine_result(a,form);
 }

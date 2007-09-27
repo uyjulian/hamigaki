@@ -21,20 +21,20 @@ routine_result straight_routine(
     {
         a.ax = -1.2f;
         form.options |= sprite_options::back;
-        boost::tie(r,v,form,cmd) = self.yield(std::make_pair(a,form));
+        boost::tie(r,v,form,cmd) = self.yield(a,form);
 
         a.ax = 0.0f;
         while (v.vx < 0.0f)
-            boost::tie(r,v,form,cmd) = self.yield(std::make_pair(a,form));
+            boost::tie(r,v,form,cmd) = self.yield(a,form);
 
         a.ax = 1.2f;
         form.options &= ~sprite_options::back;
-        boost::tie(r,v,form,cmd) = self.yield(std::make_pair(a,form));
+        boost::tie(r,v,form,cmd) = self.yield(a,form);
 
         a.ax = 0.0f;
         while (v.vx > 0.0f)
-            boost::tie(r,v,form,cmd) = self.yield(std::make_pair(a,form));
+            boost::tie(r,v,form,cmd) = self.yield(a,form);
     }
 
-    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(std::make_pair(a,form))
+    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(routine_result(a,form))
 }

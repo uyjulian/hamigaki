@@ -127,8 +127,8 @@ routine_result player_routine::operator()(
 
         old_jump = cmd.jump;
 
-        boost::tie(r,v,form,cmd) = self.yield(std::make_pair(a,form));
+        boost::tie(r,v,form,cmd) = self.yield(a,form);
     }
 
-    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(std::make_pair(a,form))
+    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(routine_result(a,form))
 }

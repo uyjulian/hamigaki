@@ -18,9 +18,9 @@ routine_result vanish_routine::operator()(
     a.ay = 0.0f;
 
     for (std::size_t i = 0; i < frames_; ++i)
-        boost::tie(r,v,form,cmd) = self.yield(std::make_pair(a,form));
+        boost::tie(r,v,form,cmd) = self.yield(a,form);
 
     form.type = sprite_form::nform;
 
-    return std::make_pair(a,form);
+    return routine_result(a,form);
 }
