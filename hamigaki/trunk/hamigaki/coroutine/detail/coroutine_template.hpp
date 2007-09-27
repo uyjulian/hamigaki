@@ -166,6 +166,21 @@ private:
             return coro_->arguments();
         }
 
+        #define HAMIGAKI_COROUTINE_YIELD_GEN(Z,N,D) \
+        template<BOOST_PP_ENUM_PARAMS(N,typename TT)> \
+        HAMIGAKI_COROUTINE_CORO_ARG_TYPE yield( \
+            BOOST_PP_ENUM_BINARY_PARAMS(N,TT,a) \
+        ) \
+        { \
+            return this->yield(R(BOOST_PP_ENUM_PARAMS(N,a))); \
+        }
+        /**/
+
+        BOOST_PP_REPEAT_FROM_TO(
+            2, BOOST_FUNCTION_MAX_ARGS, HAMIGAKI_COROUTINE_YIELD_GEN, _)
+
+        #undef HAMIGAKI_COROUTINE_YIELD_GEN
+
         template<class Coroutine>
         HAMIGAKI_COROUTINE_CORO_ARG_TYPE yield_to(Coroutine& c)
         {
