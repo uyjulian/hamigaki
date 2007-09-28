@@ -17,23 +17,30 @@ routine_result straight_routine::operator()(
     acceleration a;
     a.ay = 0.0f;
 
+    if ((form.options & sprite_options::back) != 0)
+        a.ax = -speed_;
+    else
+        a.ax = speed_;
+
     while (true)
     {
-        a.ax = -speed_;
-        form.options |= sprite_options::back;
         boost::tie(r,v,form,cmd) = self.yield(a,form);
 
-        a.ax = 0.0f;
-        while (v.vx < 0.0f)
-            boost::tie(r,v,form,cmd) = self.yield(a,form);
-
-        a.ax = speed_;
-        form.options &= ~sprite_options::back;
-        boost::tie(r,v,form,cmd) = self.yield(a,form);
-
-        a.ax = 0.0f;
-        while (v.vx > 0.0f)
-            boost::tie(r,v,form,cmd) = self.yield(a,form);
+        if (v.vx == 0.0f)
+        {
+            if ((form.options & sprite_options::back) != 0)
+            {
+                a.ax = speed_;
+                form.options &= ~sprite_options::back;
+            }
+            else
+            {
+                a.ax = -speed_;
+                form.options |= sprite_options::back;
+            }
+        }
+        else
+            a.ax = 0.0f;
     }
 
     HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(routine_result(a,form))
