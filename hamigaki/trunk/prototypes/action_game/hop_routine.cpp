@@ -16,6 +16,11 @@ routine_result hop_routine::operator()(
     acceleration a;
     a.ax = 0.0f;
 
+    if ((form.options & sprite_options::back) != 0)
+        a.ax = -vx_;
+    else
+        a.ax = vx_;
+
     while (true)
     {
         if (is_on_ground(map_, r))
