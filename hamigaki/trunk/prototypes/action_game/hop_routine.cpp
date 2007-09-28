@@ -8,18 +8,16 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "hop_routine.hpp"
+#include "routine_state.hpp"
 
 routine_result hop_routine::operator()(
     routine_type::self& self,
     rect r, velocity v, sprite_form form, input_command cmd) const
 {
     acceleration a;
-    a.ax = 0.0f;
+    routine_state stat(self,r,v,form,cmd,a);
 
-    if ((form.options & sprite_options::back) != 0)
-        a.ax = -vx_;
-    else
-        a.ax = vx_;
+    stat.accelerate(vx_);
 
     while (true)
     {
@@ -28,24 +26,13 @@ routine_result hop_routine::operator()(
         else
             a.ay = 0.3f;
 
-        boost::tie(r,v,form,cmd) = self.yield(a,form);
+        stat.yield();
 
         if (v.vx == 0.0f)
-        {
-            if ((form.options & sprite_options::back) != 0)
-            {
-                a.ax = vx_;
-                form.options &= ~sprite_options::back;
-            }
-            else
-            {
-                a.ax = -vx_;
-                form.options |= sprite_options::back;
-            }
-        }
+            stat.turn(vx_);
         else
             a.ax = 0.0f;
     }
 
-    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(routine_result(a,form))
+    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(routine_result())
 }

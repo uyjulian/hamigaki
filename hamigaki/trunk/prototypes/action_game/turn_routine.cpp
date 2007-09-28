@@ -8,7 +8,7 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "turn_routine.hpp"
-#include <cmath>
+#include "routine_state.hpp"
 
 namespace
 {
@@ -29,6 +29,15 @@ bool is_on_ground_right(const stage_map& map, const rect& r)
     return map(x, y) == '=';
 }
 
+bool is_on_ground_front(
+    const stage_map& map, const rect& r, const sprite_form& form)
+{
+    if ((form.options & sprite_options::back) != 0)
+        return is_on_ground_left(map, r);
+    else
+        return is_on_ground_right(map, r);
+}
+
 } // namespace
 
 routine_result turn_routine::operator()(
@@ -36,32 +45,29 @@ routine_result turn_routine::operator()(
     rect r, velocity v, sprite_form form, input_command cmd) const
 {
     acceleration a;
-    a.ay = 0.0f;
+    routine_state stat(self,r,v,form,cmd,a);
 
     while (true)
     {
-        a.ax = -v.vx;
-        form.options |= sprite_options::back;
-        boost::tie(r,v,form,cmd) = self.yield(a,form);
+        stat.stop();
+        stat.yield();
 
-        a.ax = -speed_;
-        boost::tie(r,v,form,cmd) = self.yield(a,form);
-
-        a.ax = 0.0f;
-        while ((v.vx < 0.0f) && is_on_ground_left(map_, r))
-            boost::tie(r,v,form,cmd) = self.yield(a,form);
-
-        a.ax = -v.vx;
-        form.options &= ~sprite_options::back;
-        boost::tie(r,v,form,cmd) = self.yield(a,form);
-
-        a.ax = speed_;
-        boost::tie(r,v,form,cmd) = self.yield(a,form);
+        stat.accelerate(speed_);
+        stat.yield();
 
         a.ax = 0.0f;
-        while ((v.vx > 0.0f) && is_on_ground_right(map_, r))
-            boost::tie(r,v,form,cmd) = self.yield(a,form);
+        while (v.vx != 0.0f)
+        {
+            if (!is_on_ground(map_, r))
+                ;
+            else if (!is_on_ground_front(map_, r, form))
+                break;
+
+            stat.yield();
+        }
+
+        stat.turn();
     }
 
-    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(routine_result(a,form))
+    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(routine_result())
 }

@@ -8,40 +8,29 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "straight_routine.hpp"
-#include <cmath>
+#include "routine_state.hpp"
 
 routine_result straight_routine::operator()(
     routine_type::self& self,
     rect r, velocity v, sprite_form form, input_command cmd) const
 {
     acceleration a;
-    a.ay = 0.0f;
-
-    if ((form.options & sprite_options::back) != 0)
-        a.ax = -speed_;
-    else
-        a.ax = speed_;
+    routine_state stat(self,r,v,form,cmd,a);
 
     while (true)
     {
-        boost::tie(r,v,form,cmd) = self.yield(a,form);
+        stat.stop();
+        stat.yield();
 
-        if (v.vx == 0.0f)
-        {
-            if ((form.options & sprite_options::back) != 0)
-            {
-                a.ax = speed_;
-                form.options &= ~sprite_options::back;
-            }
-            else
-            {
-                a.ax = -speed_;
-                form.options |= sprite_options::back;
-            }
-        }
-        else
-            a.ax = 0.0f;
+        stat.accelerate(speed_);
+        stat.yield();
+
+        a.ax = 0.0f;
+        while (v.vx != 0.0f)
+            stat.yield();
+
+        stat.turn();
     }
 
-    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(routine_result(a,form))
+    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(routine_result())
 }

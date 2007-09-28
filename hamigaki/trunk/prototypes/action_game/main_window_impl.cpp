@@ -418,11 +418,7 @@ private:
 #if !defined(HAMIGAKI_USE_KNOCK_BACK)
                 player_.effect = effect_type(&blink_effect);
 #else
-                float dx = -4.0f;
-                if ((player_.form.options & sprite_options::back) != 0)
-                    dx = -dx;
-
-                player_.tmp_routine = routine_type(knock_back_routine(10, dx));
+                player_.tmp_routine = routine_type(knock_back_routine(10,4.0f));
                 player_.form.type = player_routine::knock_back_form;
 #endif
                 sound_.play_se("damage.ogg");

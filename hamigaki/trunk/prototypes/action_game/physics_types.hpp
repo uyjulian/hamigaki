@@ -22,12 +22,16 @@ struct acceleration
 {
     float ax;
     float ay;
+
+    acceleration() : ax(0.0f), ay(0.0f) {}
 };
 
 struct velocity
 {
     float vx;
     float vy;
+
+    velocity() : vx(0.0f), vy(0.0f) {}
 };
 
 #endif // PHYSICS_TYPES_HPP

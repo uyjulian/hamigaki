@@ -8,24 +8,17 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "knock_back_routine.hpp"
+#include "routine_state.hpp"
 
 routine_result knock_back_routine::operator()(
     routine_type::self& self,
     rect r, velocity v, sprite_form form, input_command cmd) const
 {
     acceleration a;
-
-    a.ax = -v.vx + dx_;
-    a.ay = -v.vy;
-
-    boost::tie(r,v,form,cmd) = self.yield(a,form);
-
-    a.ax = 0.0f;
-    a.ay = 0.0f;
-
-    for (std::size_t i = 0; i < frames_; ++i)
-        boost::tie(r,v,form,cmd) = self.yield(a,form);
+    routine_state stat(self,r,v,form,cmd,a);
+    stat.go_backward(dx_);
+    stat.wait(frames_);
 
     form.type = sprite_form::normal;
-    return routine_result(a,form);
+    return routine_result(a, form);
 }
