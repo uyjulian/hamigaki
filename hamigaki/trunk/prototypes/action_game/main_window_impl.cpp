@@ -13,6 +13,7 @@
 #include "direct3d9.hpp"
 #include "game_character.hpp"
 #include "hop_routine.hpp"
+#include "hop_step_jump_routine.hpp"
 #include "player_routine.hpp"
 #include "png_loader.hpp"
 #include "sprite.hpp"
@@ -250,6 +251,28 @@ private:
                         ball_sprite_info_.get_group(enemy.form.type)[0];
 
                     enemy.routine = routine_type(hop_routine(map_, 2.0f));
+                    enemy.tmp_routine = routine_type();
+                    enemy.sprite_infos = &ball_sprite_info_;
+                    enemy.texture = &ball_texture_;
+                    enemy.position.x = static_cast<float>(x * 32 + info.left);
+                    enemy.position.y = static_cast<float>(y * 32);
+                    enemy.position.lx = static_cast<float>(info.width);
+                    enemy.position.ly = static_cast<float>(info.height);
+                    enemy.speed.vx = 0.0f;
+                    enemy.speed.vy = 0.0f;
+                    enemy.form.options = sprite_options::back;
+
+                    enemies_.push_back(enemy);
+                }
+                else if (map_(x, y) == 'w')
+                {
+                    game_character enemy;
+
+                    const sprite_info& info =
+                        ball_sprite_info_.get_group(enemy.form.type)[0];
+
+                    enemy.routine =
+                        routine_type(hop_step_jump_routine(map_, 2.0f));
                     enemy.tmp_routine = routine_type();
                     enemy.sprite_infos = &ball_sprite_info_;
                     enemy.texture = &ball_texture_;
