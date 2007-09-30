@@ -71,6 +71,25 @@ bool is_on_ground(const stage_map& map, const rect& r)
     return false;
 }
 
+bool is_in_blocks(const stage_map& map, const rect& r)
+{
+    if ((r.lx == 0.0f) || (r.ly == 0.0f))
+        return false;
+
+    int y1 = bottom_block(r);
+    int y2 = top_block(r);
+
+    int x1 = left_block(r);
+    int x2 = right_block(r);
+
+    for (int y = y1; y <= y2; ++y)
+        for (int x = x1; x <= x2; ++x)
+            if (map(x, y) == '=')
+                return true;
+
+    return false;
+}
+
 bool find_vertical_blocks(const stage_map& map, int x, int y1, int y2)
 {
     for (int y = y1; y <= y2; ++y)
@@ -102,7 +121,12 @@ void move(rect& r, velocity& v, const acceleration& a, const stage_map& map)
     else
         v.vx = 0.0f;
 
-    if (v.vx < 0.0f)
+    if (is_in_blocks(map, r))
+    {
+        v.vx = 0.0f;
+        r.x += 2.0f;
+    }
+    else if (v.vx < 0.0f)
     {
         int old_x = left_block(r);
 
