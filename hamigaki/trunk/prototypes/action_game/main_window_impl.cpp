@@ -312,8 +312,10 @@ private:
 
     void process_map_collisions()
     {
-        for (chara_iterator i = enemies_.begin(); i != enemies_.end(); ++i)
+        for (chara_iterator i = enemies_.begin(); i != enemies_.end(); )
         {
+            chara_iterator next = boost::next(i);
+
             rect& r = i->position;
 
             rect old_rect = r;
@@ -324,6 +326,13 @@ private:
             int x1 = left_block(r);
             int x2 = right_block(r);
             int x = static_cast<int>(r.x+r.lx*0.5f)/32;
+
+            if ((x2 < 0) || (x1 >= map_.width()) || (new_y < 0))
+            {
+                enemies_.erase(i);
+                i = next;
+                continue;
+            }
 
             for (int y = old_y+1; y <= new_y; ++y)
             {
@@ -339,6 +348,8 @@ private:
                     break;
                 }
             }
+
+            i = next;
         }
 
         if (player_.speed.vy > 0.0f)
@@ -475,6 +486,19 @@ private:
         );
 
         player_.move(cmd, map_);
+
+        if (player_.position.x < 0.0f)
+        {
+            player_.position.x = 0.0f;
+            player_.speed.vx = 0.0f;
+        }
+
+        float max_x = static_cast<float>(map_.width()*32) - player_.position.lx;
+        if (player_.position.x > max_x)
+        {
+            player_.position.x = max_x;
+            player_.speed.vx = 0.0f;
+        }
 
         std::for_each(
             particles_.begin(), particles_.end(),

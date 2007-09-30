@@ -107,11 +107,6 @@ void move(rect& r, velocity& v, const acceleration& a, const stage_map& map)
         int old_x = left_block(r);
 
         r.x += v.vx;
-        if (r.x < 0.0f)
-        {
-            r.x = 0.0f;
-            v.vx = 0.0f;
-        }
 
         int new_x = left_block(r);
         int y1 = bottom_block(r);
@@ -132,12 +127,6 @@ void move(rect& r, velocity& v, const acceleration& a, const stage_map& map)
         int old_x = right_block(r);
 
         r.x += v.vx;
-        float max_x = static_cast<float>(map.width()*32) - r.lx;
-        if (r.x > max_x)
-        {
-            r.x = max_x;
-            v.vx = 0.0f;
-        }
 
         int new_x = right_block(r);
         int y1 = bottom_block(r);
