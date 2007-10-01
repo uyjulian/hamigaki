@@ -10,7 +10,25 @@
 #include "hop_step_jump_routine.hpp"
 #include "routine_state.hpp"
 
-routine_result hop_step_jump_routine::operator()(
+namespace
+{
+
+class x_routine
+{
+public:
+    explicit x_routine(float vx) : vx_(vx)
+    {
+    }
+
+    routine_result operator()(
+        routine_type::self& self,
+        rect r, velocity v, sprite_form form, input_command cmd) const;
+
+private:
+    float vx_;
+};
+
+routine_result x_routine::operator()(
     routine_type::self& self,
     rect r, velocity v, sprite_form form, input_command cmd) const
 {
@@ -21,62 +39,74 @@ routine_result hop_step_jump_routine::operator()(
 
     while (true)
     {
-        a.ay = 0.0f;
+        stat.yield();
 
-        for (std::size_t i = 0; i < 20; ++i)
-        {
+        if (v.vx == 0.0f)
+            stat.turn(vx_);
+        else
+            a.ax = 0.0f;
+    }
+
+    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(routine_result())
+}
+
+class y_routine
+{
+public:
+    y_routine(const stage_map& map, float vy) : map_(map), vy_(vy)
+    {
+    }
+
+    routine_result operator()(
+        routine_type::self& self,
+        rect r, velocity v, sprite_form form, input_command cmd) const;
+
+private:
+    const stage_map& map_;
+    float vy_;
+};
+
+routine_result y_routine::operator()(
+    routine_type::self& self,
+    rect r, velocity v, sprite_form form, input_command cmd) const
+{
+    acceleration a;
+    routine_state stat(self,r,v,form,cmd,a);
+
+    while (true)
+    {
+        stat.wait(20);
+
+        while (!is_on_ground(map_, r))
             stat.yield();
 
-            if (v.vx == 0.0f)
-                stat.turn(vx_);
-            else
-                a.ax = 0.0f;
-        }
+        stat.jump(map_, vy_ / 4);
+        stat.jump(map_, vy_ / 4);
+        stat.jump(map_, vy_, 0.3f);
+    }
 
-        if (is_on_ground(map_, r))
-        {
-            a.ay = vy_ / 4;
+    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(routine_result())
+}
 
-            do
-            {
-                stat.yield();
-                a.ay = 0.0f;
+} // namespace
 
-                if (v.vx == 0.0f)
-                    stat.turn(vx_);
-                else
-                    a.ax = 0.0f;
+routine_result hop_step_jump_routine::operator()(
+    routine_type::self& self,
+    rect r, velocity v, sprite_form form, input_command cmd) const
+{
+    routine_type rx((x_routine(vx_)));
+    routine_type ry(y_routine(map_, vy_));
 
-            } while (!is_on_ground(map_, r));
+    while (true)
+    {
+        acceleration ax, ay;
+        boost::tie(ax,form) = rx(r,v,form,cmd);
+        boost::tie(ay,form) = ry(r,v,form,cmd);
 
-            a.ay = vy_ / 4;
-
-            do
-            {
-                stat.yield();
-                a.ay = 0.0f;
-
-                if (v.vx == 0.0f)
-                    stat.turn(vx_);
-                else
-                    a.ax = 0.0f;
-
-            } while (!is_on_ground(map_, r));
-
-            a.ay = vy_;
-
-            do
-            {
-                stat.yield();
-                a.ay = 0.3f;
-
-                if (v.vx == 0.0f)
-                    stat.turn(vx_);
-                else
-                    a.ax = 0.0f;
-
-            } while (!is_on_ground(map_, r));
-        }
+        acceleration a;
+        a.ax = ax.ax;
+        a.ay = ay.ay;
+        boost::tie(r,v,form,cmd) = self.yield(a,form);
     }
 
     HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(routine_result())
