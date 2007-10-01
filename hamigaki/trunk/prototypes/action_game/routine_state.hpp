@@ -83,6 +83,19 @@ public:
         a_.ax = -v_.vx;
     }
 
+    void jump(const stage_map& map, float vy, float ay = 0.0f)
+    {
+        a_.ay = vy;
+
+        do
+        {
+            yield();
+            a_.ay = ay;
+        } while (!is_on_ground(map, r_));
+
+        a_.ay = 0.0f;
+    }
+
 private:
     routine_type::self& self_;
     rect& r_;
