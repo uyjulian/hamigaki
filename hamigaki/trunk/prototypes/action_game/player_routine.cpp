@@ -8,41 +8,58 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "player_routine.hpp"
+#include "routine_state.hpp"
 #include <cmath>
 
 namespace
 {
+
+const boost::uint32_t walk_form = player_routine::walk_form;
+const boost::uint32_t jump_form = player_routine::jump_form;
+const boost::uint32_t duck_form = player_routine::duck_form;
+const boost::uint32_t brake_form = player_routine::brake_form;
+
 
 bool is_breaking(float vx, float ax)
 {
     return ((vx < 0.0f) && (ax > 0.0f)) || ((vx > 0.0f) && (ax < 0.0f));
 }
 
-} // namespace
 
-routine_result player_routine::operator()(
+class x_routine
+{
+public:
+    x_routine(const stage_map& map, sound_engine& sound)
+        : map_(map), sound_(sound)
+    {
+    }
+
+    routine_result operator()(
+        routine_type::self& self,
+        rect r, velocity v, sprite_form form, input_command cmd) const;
+
+private:
+    const stage_map& map_;
+    sound_engine& sound_;
+};
+
+routine_result x_routine::operator()(
     routine_type::self& self,
     rect r, velocity v, sprite_form form, input_command cmd) const
 {
-    const float brake = 0.2f;
+    acceleration a;
+    routine_state stat(self,r,v,form,cmd,a);
 
-    bool old_jump = false;
-    bool jump_boost = false;
+    const float brake = 0.2f;
 
     while (true)
     {
         bool on_ground = is_on_ground(map_, r);
-        bool jump_start = !old_jump && cmd.jump;
 
         if (cmd.x < 0.0f)
             form.options |= sprite_options::back;
         else if (cmd.x > 0.0f)
             form.options &= ~sprite_options::back;
-
-        acceleration a;
-
-        a.ax = 0.0f;
-        a.ay = 0.0f;
 
         float max_speed = 3.0f;
         if (cmd.dash)
@@ -53,7 +70,9 @@ routine_result player_routine::operator()(
                 max_speed = 5.0f;
         }
 
-        if (on_ground && !jump_start && is_breaking(v.vx, cmd.x))
+        a.ax = 0.0f;
+
+        if (on_ground && !cmd.jump && is_breaking(v.vx, cmd.x))
         {
             if (v.vx < 0.0f)
                 a.ax = (std::min)(brake*2.0f, -v.vx);
@@ -96,39 +115,107 @@ routine_result player_routine::operator()(
             }
         }
 
-        if (on_ground && (cmd.x == 0.0f) && (cmd.y < 0.0f))
-            form.type = duck_form;
-        else if ((form.type == duck_form) && on_ground)
-            form.type = sprite_form::normal;
-
-        if (!on_ground)
+        if (on_ground)
         {
-            if (jump_boost && cmd.jump && (v.vy > 0.0))
-                a.ay = 0.35f;
-            else
-                jump_boost = false;
-
-            if (form.type == walk_form)
+            if ((cmd.x == 0.0f) && (cmd.y < 0.0f))
+                form.type = duck_form;
+            else if (form.type == duck_form)
                 form.type = sprite_form::normal;
         }
-        else if (jump_start)
-        {
-            a.ay = 8.0f;
-            if (std::abs(v.vx) > 4.0f)
-                a.ay += 1.0f;
-            jump_boost = true;
-            if (form.type != duck_form)
-                form.type = jump_form;
+        else if (form.type == walk_form)
+            form.type = sprite_form::normal;
 
-            sound_.play_se("jump.ogg");
+        stat.yield();
+    }
+
+    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(routine_result())
+}
+
+class y_routine
+{
+public:
+    y_routine(const stage_map& map, sound_engine& sound)
+        : map_(map), sound_(sound)
+    {
+    }
+
+    routine_result operator()(
+        routine_type::self& self,
+        rect r, velocity v, sprite_form form, input_command cmd) const;
+
+private:
+    const stage_map& map_;
+    sound_engine& sound_;
+};
+
+routine_result y_routine::operator()(
+    routine_type::self& self,
+    rect r, velocity v, sprite_form form, input_command cmd) const
+{
+    acceleration a;
+    routine_state stat(self,r,v,form,cmd,a);
+
+    bool old_jump = false;
+
+    while (true)
+    {
+        while (!(is_on_ground(map_, r) && !old_jump && cmd.jump))
+        {
+            old_jump = cmd.jump;
+            stat.yield();
         }
-        else
-            jump_boost = false;
+
+        if (form.type != duck_form)
+            form.type = jump_form;
+
+        sound_.play_se("jump.ogg");
+
+        a.ay = 8.0f;
+        if (std::abs(v.vx) > 4.0f)
+            a.ay += 1.0f;
+
+        stat.yield();
+
+        a.ay = 0.35f;
+        while (!is_on_ground(map_, r))
+        {
+            if (!cmd.jump || (v.vy < 0.0f))
+                a.ay = 0.0f;
+
+            stat.yield();
+        }
+
+        a.ay = 0.0f;
+
+        if (form.type != duck_form)
+            form.type = sprite_form::normal;
 
         old_jump = cmd.jump;
+    }
 
+    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(routine_result())
+}
+
+} // namespace
+
+routine_result player_routine::operator()(
+    routine_type::self& self,
+    rect r, velocity v, sprite_form form, input_command cmd) const
+{
+    routine_type rx(x_routine(map_, sound_));
+    routine_type ry(y_routine(map_, sound_));
+
+    while (true)
+    {
+        acceleration ax, ay;
+        boost::tie(ax,form) = rx(r,v,form,cmd);
+        boost::tie(ay,form) = ry(r,v,form,cmd);
+
+        acceleration a;
+        a.ax = ax.ax;
+        a.ay = ay.ay;
         boost::tie(r,v,form,cmd) = self.yield(a,form);
     }
 
-    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(routine_result(a,form))
+    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(routine_result())
 }
