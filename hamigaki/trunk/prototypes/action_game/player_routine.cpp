@@ -88,7 +88,7 @@ routine_result x_routine::operator()(
         else if (cmd.x != 0.0f)
         {
             a.ax = cmd.x * 0.25f;
-            if (v.vx < 0.0f)
+            if (a.ax < 0.0f)
                 a.ax = (std::max)(a.ax, -max_speed-v.vx);
             else
                 a.ax = (std::min)(a.ax, max_speed-v.vx);
