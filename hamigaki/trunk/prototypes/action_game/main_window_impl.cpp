@@ -475,6 +475,42 @@ private:
         }
     }
 
+    void process_enemy_collisions()
+    {
+        for (chara_iterator i = enemies_.begin(); i != enemies_.end(); ++i)
+        {
+            rect left_rect = i->position;
+            left_rect.lx *= 0.5f;
+
+            rect right_rect = i->position;
+            right_rect.lx *= 0.5f;
+            right_rect.x += right_rect.lx;
+
+            for (chara_iterator j = enemies_.begin(); j != enemies_.end(); ++j)
+            {
+                if (i == j)
+                    continue;
+
+                if (i->speed.vx < 0.0f)
+                {
+                    if ( intersect_rects(left_rect,  j->position) &&
+                        !intersect_rects(right_rect, j->position) )
+                    {
+                        i->speed.vx = 0.0f;
+                    }
+                }
+                else if (i->speed.vx > 0.0f)
+                {
+                    if ( intersect_rects(right_rect, j->position) &&
+                        !intersect_rects(left_rect,  j->position) )
+                    {
+                        i->speed.vx = 0.0f;
+                    }
+                }
+            }
+        }
+    }
+
     void process_input_impl(const input_command& cmd)
     {
         if (cmd.reset)
@@ -507,6 +543,7 @@ private:
 
         process_map_collisions();
         process_collisions();
+        process_enemy_collisions();
 
         float center = player_.position.x + player_.position.lx * 0.5f;
         float right_end = static_cast<float>(map_.width()*32);
