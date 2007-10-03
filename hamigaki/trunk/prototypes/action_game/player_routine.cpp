@@ -25,6 +25,23 @@ bool is_breaking(float vx, float ax)
     return ((vx < 0.0f) && (ax > 0.0f)) || ((vx > 0.0f) && (ax < 0.0f));
 }
 
+float limit_accel(float a, float limit, float v)
+{
+    float new_v = v + a;
+
+    if (a < 0.0f)
+    {
+        if (new_v < -limit)
+            return -limit - v;
+    }
+    else
+    {
+        if (new_v > limit)
+            return limit - v;
+    }
+
+    return a;
+}
 
 class x_routine
 {
@@ -50,7 +67,7 @@ routine_result x_routine::operator()(
     acceleration a;
     routine_state stat(self,r,v,form,cmd,a);
 
-    const float brake = 0.2f;
+    const float brake = 0.125f;
 
     while (true)
     {
@@ -63,23 +80,20 @@ routine_result x_routine::operator()(
 
         float max_speed = 3.0f;
         if (cmd.dash)
-        {
-            if (on_ground)
-                max_speed = 8.0f;
-            else
-                max_speed = 5.0f;
-        }
+            max_speed = 6.0f;
 
         a.ax = 0.0f;
 
-        if (on_ground && !cmd.jump && is_breaking(v.vx, cmd.x))
+        if (is_breaking(v.vx, cmd.x))
         {
             if (v.vx < 0.0f)
-                a.ax = (std::min)(brake*2.0f, -v.vx);
-            else if (v.vx > 0.0f)
-                a.ax = -(std::min)(brake*2.0f, v.vx);;
+                a.ax = brake*2.0f;
+            else
+                a.ax = -brake*2.0f;
 
-            if (form.type != brake_form)
+            a.ax = limit_accel(a.ax, 0.0f, v.vx);
+
+            if (on_ground && (form.type != brake_form))
             {
                 form.type = brake_form;
                 sound_.play_se("brake.ogg");
@@ -87,11 +101,12 @@ routine_result x_routine::operator()(
         }
         else if (cmd.x != 0.0f)
         {
-            a.ax = cmd.x * 0.25f;
-            if (a.ax < 0.0f)
-                a.ax = (std::max)(a.ax, -max_speed-v.vx);
+            if (cmd.dash)
+                a.ax = cmd.x * 0.125f;
             else
-                a.ax = (std::min)(a.ax, max_speed-v.vx);
+                a.ax = cmd.x * 0.1f;
+
+            a.ax = limit_accel(a.ax, max_speed, v.vx);
 
             if (on_ground)
             {
@@ -103,9 +118,11 @@ routine_result x_routine::operator()(
         else
         {
             if (v.vx < 0.0f)
-                a.ax = (std::min)(brake, -v.vx);
-            else if (v.vx > 0.0f)
-                a.ax = -(std::min)(brake, v.vx);;
+                a.ax = brake;
+            else
+                a.ax = -brake;
+
+            a.ax = limit_accel(a.ax, 0.0f, v.vx);
 
             if (on_ground)
             {
