@@ -66,8 +66,10 @@ struct game_character
             return;
         else if (old_form != form.type)
             change_form(form.type);
+        else if (int d = static_cast<int>(std::abs(speed.vx/2.0f)))
+            step += d;
         else
-            ++(step);
+            ++step;
 
         ::move(position, speed, a, map);
 
