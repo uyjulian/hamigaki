@@ -15,6 +15,7 @@
 
 ::ATOM register_main_window_class(::HINSTANCE hInstance);
 ::HWND create_main_window(::HINSTANCE hInstance, ::ATOM cls);
+void set_stage_file(::HWND hwnd, const std::string& filename);
 void connect_d3d_device(::HWND hwnd);
 void process_input(::HWND hwnd);
 void render(::HWND hwnd);

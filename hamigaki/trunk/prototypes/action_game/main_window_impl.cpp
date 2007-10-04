@@ -42,7 +42,7 @@ public:
         : handle_(handle)
         , sound_(handle_), input_(handle_)
         , active_(false), last_time_(::GetTickCount()), frames_(0)
-        , scroll_x_(0.0f)
+        , stage_file_("map.txt"), scroll_x_(0.0f)
     {
         load_sprite_info_set_from_text("man.txt", player_sprite_info_);
         load_sprite_info_set_from_text("ball.txt", ball_sprite_info_);
@@ -55,6 +55,12 @@ public:
 
     ~impl()
     {
+    }
+
+    void stage_file(const std::string& filename)
+    {
+        stage_file_ = filename;
+        reset_characters();
     }
 
     void connect_d3d_device()
@@ -164,6 +170,7 @@ private:
     bool active_;
     unsigned long last_time_;
     unsigned frames_;
+    std::string stage_file_;
     stage_map map_;
     float scroll_x_;
     sprite_info_set player_sprite_info_;
@@ -175,7 +182,7 @@ private:
 
     void reset_characters()
     {
-        load_map_from_text("map.txt", map_);
+        load_map_from_text(stage_file_.c_str(), map_);
 
         player_.sprite_infos = &player_sprite_info_;
         player_.texture = &man_texture_;
@@ -600,6 +607,11 @@ private:
 
 main_window::main_window(::HWND handle) : pimpl_(new impl(handle))
 {
+}
+
+void main_window::stage_file(const std::string& filename)
+{
+    pimpl_->stage_file(filename);
 }
 
 void main_window::connect_d3d_device()

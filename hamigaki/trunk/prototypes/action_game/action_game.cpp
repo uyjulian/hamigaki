@@ -26,6 +26,8 @@ int WINAPI WinMain(
 
         ::ShowWindow(hwnd, nCmdShow);
         ::UpdateWindow(hwnd);
+        if (*lpCmdLine)
+            set_stage_file(hwnd, lpCmdLine);
         connect_d3d_device(hwnd);
 
         ::MSG msg;

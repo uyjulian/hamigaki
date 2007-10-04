@@ -96,6 +96,17 @@ namespace
     return hwnd;
 }
 
+void set_stage_file(::HWND hwnd, const std::string& filename)
+{
+    main_window* pimpl =
+        reinterpret_cast<main_window*>(
+            GetWindowLongPtr(hwnd, GWLP_USERDATA)
+        );
+
+    if (pimpl)
+        pimpl->stage_file(filename);
+}
+
 void connect_d3d_device(::HWND hwnd)
 {
     main_window* pimpl =
