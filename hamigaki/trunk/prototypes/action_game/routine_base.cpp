@@ -65,7 +65,7 @@ bool is_on_ground(const stage_map& map, const rect& r)
         int x2 = right_block(r);
 
         for (int x = x1; x <= x2; ++x)
-            if (map(x, y-1) == '=')
+            if (is_block(map(x, y-1)))
                 return true;
     }
     return false;
@@ -84,7 +84,7 @@ bool is_in_blocks(const stage_map& map, const rect& r)
 
     for (int y = y1; y <= y2; ++y)
         for (int x = x1; x <= x2; ++x)
-            if (map(x, y) == '=')
+            if (is_block(map(x, y)))
                 return true;
 
     return false;
@@ -93,7 +93,7 @@ bool is_in_blocks(const stage_map& map, const rect& r)
 bool find_vertical_blocks(const stage_map& map, int x, int y1, int y2)
 {
     for (int y = y1; y <= y2; ++y)
-        if (map(x, y) == '=')
+        if (is_block(map(x, y)))
             return true;
 
     return false;
@@ -102,7 +102,7 @@ bool find_vertical_blocks(const stage_map& map, int x, int y1, int y2)
 bool find_horizontal_blocks(const stage_map& map, int y, int x1, int x2)
 {
     for (int x = x1; x <= x2; ++x)
-        if (map(x, y) == '=')
+        if (is_block(map(x, y)))
             return true;
 
     return false;

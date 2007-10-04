@@ -117,7 +117,9 @@ public:
                 {
                     char c = map_(x, y);
                     if (c == '=')
-                        draw_block(x, y);
+                        draw_block(x, y, 0, 0);
+                    else if (c == 'm')
+                        draw_block(x, y, 32, 0);
                 }
             }
 
@@ -336,7 +338,7 @@ private:
 
             for (int y = old_y+1; y <= new_y; ++y)
             {
-                if (map_(x, y) == '=')
+                if (is_block(map_(x, y)))
                 {
                     r.y = static_cast<float>(y * 32) - r.ly;
                     i->speed.vy = -i->speed.vy * 0.5f;
@@ -400,6 +402,12 @@ private:
 
                     sound_.play_se("break_block.ogg");
 
+                    break;
+                }
+                else if (is_block(map_(x, y)))
+                {
+                    r.y = static_cast<float>(y * 32) - r.ly;
+                    player_.speed.vy = -player_.speed.vy * 0.5f;
                     break;
                 }
                 else if (find_horizontal_blocks(map_, y, x1, x2))
@@ -577,7 +585,7 @@ private:
         );
     }
 
-    void draw_block(int x, int y)
+    void draw_block(int x, int y, int tx, int ty)
     {
         ::draw_sprite(
             device_,
@@ -585,7 +593,7 @@ private:
             static_cast<float>(480-32 - y*32),
             0.0f,
             map_texture_,
-            0, 0, 32, 32, false
+            tx, ty, 32, 32, false
         );
     }
 };

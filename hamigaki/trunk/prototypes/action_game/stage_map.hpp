@@ -15,13 +15,18 @@
 #include <utility>
 #include <vector>
 
+inline bool is_block(char c)
+{
+    return (c == '=') || (c == 'm');
+}
+
 class stage_map
 {
 public:
     char operator()(int x, int y) const
     {
         if (x < 0)
-            return '=';
+            return ' ';
         else if (y < 0)
             return ' ';
 
