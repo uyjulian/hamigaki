@@ -80,7 +80,7 @@ routine_result x_routine::operator()(
 
         float max_speed = 3.0f;
         if (cmd.dash)
-            max_speed = 6.0f;
+            max_speed = 5.0f;
 
         a.ax = 0.0f;
 
