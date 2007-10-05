@@ -26,8 +26,9 @@ struct game_character
     sprite_form form;
     int step;
     unsigned long color;
-    sprite_info_set* sprite_infos;
+    const sprite_info_set* sprite_infos;
     direct3d_texture9* texture;
+    std::pair<int,int> origin;
 
     game_character() : step(0)
     {

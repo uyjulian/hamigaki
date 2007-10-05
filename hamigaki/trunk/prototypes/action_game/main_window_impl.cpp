@@ -31,6 +31,40 @@
     #include "knock_back_routine.hpp"
 #endif
 
+namespace
+{
+
+game_character
+create_enemy(
+    int x, int y, bool back,
+    const routine_type& routine, const sprite_info_set& infos,
+    direct3d_texture9& texture)
+{
+    game_character enemy;
+
+    const sprite_info& info = infos.get_group(enemy.form.type)[0];
+
+    enemy.routine = routine;
+    enemy.tmp_routine = routine_type();
+    enemy.sprite_infos = &infos;
+    enemy.texture = &texture;
+    enemy.position.x = static_cast<float>(x * 32 + info.left);
+    enemy.position.y = static_cast<float>(y * 32);
+    enemy.position.lx = static_cast<float>(info.width);
+    enemy.position.ly = static_cast<float>(info.height);
+    enemy.speed.vx = 0.0f;
+    enemy.speed.vy = 0.0f;
+    enemy.origin.first = x;
+    enemy.origin.second = y;
+
+    if (back)
+        enemy.form.options = sprite_options::back;
+
+    return enemy;
+}
+
+} // namespace
+
 class main_window::impl
 {
 private:
@@ -180,6 +214,69 @@ private:
     chara_list enemies_;
     chara_list particles_;
 
+    chara_iterator find_enemy(int x, int y)
+    {
+        for (chara_iterator i = enemies_.begin(); i != enemies_.end(); ++i)
+        {
+            if ((i->origin.first == x) && (i->origin.second == y))
+                return i;
+        }
+
+        return enemies_.end();
+    }
+
+    void add_enemy(int x, int y, char type)
+    {
+        if (is_block(type) || (type == ' '))
+            return;
+
+        if (find_enemy(x, y) != enemies_.end())
+            return;
+
+        bool back = left_block(player_.position) <= x;
+
+        if (type == 'o')
+        {
+            enemies_.push_back(
+                create_enemy(
+                    x, y, back,
+                    routine_type(straight_routine()),
+                    ball_sprite_info_, ball_texture_
+                )
+            );
+        }
+        else if (type == 'a')
+        {
+            enemies_.push_back(
+                create_enemy(
+                    x, y, back,
+                    routine_type(turn_routine(map_)),
+                    ball_sprite_info_, ball_texture_
+                )
+            );
+        }
+        else if (type == 'p')
+        {
+            enemies_.push_back(
+                create_enemy(
+                    x, y, back,
+                    routine_type(hop_routine(map_, 2.0f)),
+                    ball_sprite_info_, ball_texture_
+                )
+            );
+        }
+        else if (type == 'w')
+        {
+            enemies_.push_back(
+                create_enemy(
+                    x, y, back,
+                    routine_type(hop_step_jump_routine(map_, 2.0f)),
+                    ball_sprite_info_, ball_texture_
+                )
+            );
+        }
+    }
+
     void reset_characters()
     {
         load_map_from_text(stage_file_.c_str(), map_);
@@ -208,94 +305,8 @@ private:
         enemies_.clear();
         for (int y = 0; y < map_.height(); ++y)
         {
-            for (int x = 0; x < map_.width(); ++x)
-            {
-                if (map_(x, y) == 'o')
-                {
-                    game_character enemy;
-
-                    const sprite_info& info =
-                        ball_sprite_info_.get_group(enemy.form.type)[0];
-
-                    enemy.routine = routine_type(straight_routine());
-                    enemy.tmp_routine = routine_type();
-                    enemy.sprite_infos = &ball_sprite_info_;
-                    enemy.texture = &ball_texture_;
-                    enemy.position.x = static_cast<float>(x * 32 + info.left);
-                    enemy.position.y = static_cast<float>(y * 32);
-                    enemy.position.lx = static_cast<float>(info.width);
-                    enemy.position.ly = static_cast<float>(info.height);
-                    enemy.speed.vx = 0.0f;
-                    enemy.speed.vy = 0.0f;
-                    enemy.form.options = sprite_options::back;
-
-                    enemies_.push_back(enemy);
-                }
-                else if (map_(x, y) == 'a')
-                {
-                    game_character enemy;
-
-                    const sprite_info& info =
-                        ball_sprite_info_.get_group(enemy.form.type)[0];
-
-                    enemy.routine = routine_type(turn_routine(map_));
-                    enemy.tmp_routine = routine_type();
-                    enemy.sprite_infos = &ball_sprite_info_;
-                    enemy.texture = &ball_texture_;
-                    enemy.position.x = static_cast<float>(x * 32 + info.left);
-                    enemy.position.y = static_cast<float>(y * 32);
-                    enemy.position.lx = static_cast<float>(info.width);
-                    enemy.position.ly = static_cast<float>(info.height);
-                    enemy.speed.vx = 0.0f;
-                    enemy.speed.vy = 0.0f;
-                    enemy.form.options = sprite_options::back;
-
-                    enemies_.push_back(enemy);
-                }
-                else if (map_(x, y) == 'p')
-                {
-                    game_character enemy;
-
-                    const sprite_info& info =
-                        ball_sprite_info_.get_group(enemy.form.type)[0];
-
-                    enemy.routine = routine_type(hop_routine(map_, 2.0f));
-                    enemy.tmp_routine = routine_type();
-                    enemy.sprite_infos = &ball_sprite_info_;
-                    enemy.texture = &ball_texture_;
-                    enemy.position.x = static_cast<float>(x * 32 + info.left);
-                    enemy.position.y = static_cast<float>(y * 32);
-                    enemy.position.lx = static_cast<float>(info.width);
-                    enemy.position.ly = static_cast<float>(info.height);
-                    enemy.speed.vx = 0.0f;
-                    enemy.speed.vy = 0.0f;
-                    enemy.form.options = sprite_options::back;
-
-                    enemies_.push_back(enemy);
-                }
-                else if (map_(x, y) == 'w')
-                {
-                    game_character enemy;
-
-                    const sprite_info& info =
-                        ball_sprite_info_.get_group(enemy.form.type)[0];
-
-                    enemy.routine =
-                        routine_type(hop_step_jump_routine(map_, 2.0f));
-                    enemy.tmp_routine = routine_type();
-                    enemy.sprite_infos = &ball_sprite_info_;
-                    enemy.texture = &ball_texture_;
-                    enemy.position.x = static_cast<float>(x * 32 + info.left);
-                    enemy.position.y = static_cast<float>(y * 32);
-                    enemy.position.lx = static_cast<float>(info.width);
-                    enemy.position.ly = static_cast<float>(info.height);
-                    enemy.speed.vx = 0.0f;
-                    enemy.speed.vy = 0.0f;
-                    enemy.form.options = sprite_options::back;
-
-                    enemies_.push_back(enemy);
-                }
-            }
+            for (int x = 0; x < 640/32 + 3; ++x)
+                add_enemy(x, y, map_(x, y));
         }
 
         particles_.clear();
@@ -434,6 +445,7 @@ private:
 
             if (i->form.type == sprite_form::nform)
             {
+                map_.erase(i->origin.first, i->origin.second);
                 enemies_.erase(i);
                 i = next;
                 continue;
@@ -563,11 +575,26 @@ private:
         float center = player_.position.x + player_.position.lx * 0.5f;
         float right_end = static_cast<float>(map_.width()*32);
 
+        int old_scroll_block = static_cast<int>(scroll_x_ / 32.0f);
         scroll_x_ = center - 320.0f;
         if (scroll_x_ < 0.0f)
             scroll_x_ = 0.0f;
         else if (scroll_x_ + 640.0f > right_end)
             scroll_x_ = right_end - 640.0f;
+
+        int scroll_block = static_cast<int>(scroll_x_ / 32.0f);
+        if (scroll_block > old_scroll_block)
+        {
+            int x = scroll_block + 640/32 + 2;
+            for (int y = 0; y < map_.height(); ++y)
+                add_enemy(x, y, map_(x, y));
+        }
+        else if (scroll_block < old_scroll_block)
+        {
+            int x = scroll_block - 2;
+            for (int y = 0; y < map_.height(); ++y)
+                add_enemy(x, y, map_(x, y));
+        }
     }
 
     void draw_character(const game_character& chara)
