@@ -329,7 +329,7 @@ private:
             const rect& r = i->position;
             int center = static_cast<int>(r.x+r.lx*0.5f)/32;
 
-            if ((center == x) && (bottom_block(r) == y) && is_on_ground(map_,r))
+            if ((center == x) && (r.y == static_cast<float>(y*32)))
             {
                 i->routine = routine_type(vanish_routine(5));
                 i->position.y += 16.0f;
