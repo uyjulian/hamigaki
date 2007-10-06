@@ -78,6 +78,11 @@ public:
         , active_(false), last_time_(::GetTickCount()), frames_(0)
         , stage_file_("map.txt"), scroll_x_(0.0f)
     {
+        ::RECT cr;
+        ::GetClientRect(handle_, &cr);
+        width_ = static_cast<int>(cr.right);
+        height_ = static_cast<int>(cr.bottom);
+
         load_sprite_info_set_from_text("man.txt", player_sprite_info_);
         load_sprite_info_set_from_text("ball.txt", ball_sprite_info_);
         load_sprite_info_set_from_text("fragment.txt", fragment_sprite_info_);
@@ -143,7 +148,9 @@ public:
     void render()
     {
         int x1 = static_cast<int>(scroll_x_) / 32;
-        int x2 = static_cast<int>(std::ceil((scroll_x_+640.0f) / 32.0f));
+
+        int x2 = static_cast<int>(std::ceil((scroll_x_) / 32.0f));
+        x2 += width_ / 32;
 
         device_.clear_target(D3DCOLOR_XRGB(0x77,0x66,0xDD));
         {
@@ -213,6 +220,8 @@ private:
     game_character player_;
     chara_list enemies_;
     chara_list particles_;
+    int width_;
+    int height_;
 
     chara_iterator find_enemy(int x, int y)
     {
@@ -303,9 +312,10 @@ private:
         scroll_x_ = 0.0f;
 
         enemies_.clear();
+        int x_blocks = width_ / 32;
         for (int y = 0; y < map_.height(); ++y)
         {
-            for (int x = 0; x < 640/32 + 3; ++x)
+            for (int x = 0; x < x_blocks + 3; ++x)
                 add_enemy(x, y, map_(x, y));
         }
 
@@ -576,16 +586,16 @@ private:
         float right_end = static_cast<float>(map_.width()*32);
 
         int old_scroll_block = static_cast<int>(scroll_x_ / 32.0f);
-        scroll_x_ = center - 320.0f;
+        scroll_x_ = center - static_cast<float>(width_ / 2);
         if (scroll_x_ < 0.0f)
             scroll_x_ = 0.0f;
-        else if (scroll_x_ + 640.0f > right_end)
-            scroll_x_ = right_end - 640.0f;
+        else if (scroll_x_ + static_cast<float>(width_) > right_end)
+            scroll_x_ = right_end - static_cast<float>(width_);
 
         int scroll_block = static_cast<int>(scroll_x_ / 32.0f);
         if (scroll_block > old_scroll_block)
         {
-            int x = scroll_block + 640/32 + 2;
+            int x = scroll_block + width_/32 + 2;
             for (int y = 0; y < map_.height(); ++y)
                 add_enemy(x, y, map_(x, y));
         }
@@ -610,7 +620,7 @@ private:
         ::draw_sprite(
             device_,
             chara.position.x - info.left - scroll_x_,
-            480.0f - chara.position.y - infos.height(),
+            static_cast<float>(height_) - chara.position.y - infos.height(),
             0.0f,
             *(chara.texture),
             info.x, info.y,
@@ -624,7 +634,7 @@ private:
         ::draw_sprite(
             device_,
             static_cast<float>(x*32)-scroll_x_,
-            static_cast<float>(480-32 - y*32),
+            static_cast<float>(height_-32 - y*32),
             0.0f,
             map_texture_,
             tx, ty, 32, 32, false
