@@ -38,7 +38,7 @@ game_character
 create_enemy(
     int x, int y, bool back,
     const routine_type& routine, const sprite_info_set& infos,
-    direct3d_texture9& texture)
+    direct3d_texture9* texture)
 {
     game_character enemy;
 
@@ -47,7 +47,7 @@ create_enemy(
     enemy.routine = routine;
     enemy.tmp_routine = routine_type();
     enemy.sprite_infos = &infos;
-    enemy.texture = &texture;
+    enemy.texture = texture;
     enemy.position.x = static_cast<float>(x * 32 + info.left);
     enemy.position.y = static_cast<float>(y * 32);
     enemy.position.lx = static_cast<float>(info.width);
@@ -254,7 +254,7 @@ private:
                 create_enemy(
                     x, y, back,
                     routine_type(straight_routine()),
-                    ball_sprite_info_, ball_texture_
+                    ball_sprite_info_, &ball_texture_
                 )
             );
         }
@@ -264,7 +264,7 @@ private:
                 create_enemy(
                     x, y, back,
                     routine_type(turn_routine(map_)),
-                    ball_sprite_info_, ball_texture_
+                    ball_sprite_info_, &ball_texture_
                 )
             );
         }
@@ -274,7 +274,7 @@ private:
                 create_enemy(
                     x, y, back,
                     routine_type(hop_routine(map_, 2.0f)),
-                    ball_sprite_info_, ball_texture_
+                    ball_sprite_info_, &ball_texture_
                 )
             );
         }
@@ -284,7 +284,7 @@ private:
                 create_enemy(
                     x, y, back,
                     routine_type(hop_step_jump_routine(map_, 2.0f)),
-                    ball_sprite_info_, ball_texture_
+                    ball_sprite_info_, &ball_texture_
                 )
             );
         }
@@ -331,6 +331,9 @@ private:
         for (chara_iterator i = enemies_.begin(); i != enemies_.end(); ++i)
         {
             const rect& r = i->position;
+            if (r.ly == 0.0f)
+                continue;
+
             int center = static_cast<int>(r.x+r.lx*0.5f)/32;
 
             if ((center == x) && (r.y == static_cast<float>(y*32)))
@@ -437,7 +440,7 @@ private:
 
                     break;
                 }
-                else if ((type == '$') || (type == 'G'))
+                else if ((type == '$') || (type == 'G') || (type == 'S'))
                 {
                     map_.erase(x, y);
                     r.y = static_cast<float>(y * 32) - r.ly;
@@ -495,6 +498,12 @@ private:
             }
 
             rect r = i->position;
+            if ((r.lx == 0.0f) || (r.ly == 0.0f))
+            {
+                i = next;
+                continue;
+            }
+
             r.ly *= 0.5f;
             r.y += r.ly;
 
@@ -650,16 +659,17 @@ private:
         std::size_t pattern = (chara.step % (15 * group.size())) / 15;
         const sprite_info& info = group[pattern];
 
-        ::draw_sprite(
-            device_,
-            chara.position.x - info.left - scroll_x_,
-            static_cast<float>(height_) - chara.position.y - infos.height(),
-            0.0f,
-            *(chara.texture),
-            info.x, info.y,
-            infos.width(), infos.height(),
-            chara.form.options, chara.color
-        );
+        float x = chara.position.x - info.left - scroll_x_;
+        float y = static_cast<float>(height_)-chara.position.y-infos.height();
+
+        if (chara.texture != 0)
+        {
+            ::draw_sprite(
+                device_, x, y, 0.0f, *(chara.texture),
+                info.x, info.y, infos.width(), infos.height(),
+                chara.form.options, chara.color
+            );
+        }
     }
 
     void draw_block(int x, int y, int tx, int ty)
