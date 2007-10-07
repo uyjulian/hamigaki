@@ -86,6 +86,7 @@ public:
         load_sprite_info_set_from_text("man.txt", player_sprite_info_);
         load_sprite_info_set_from_text("ball.txt", ball_sprite_info_);
         load_sprite_info_set_from_text("fragment.txt", fragment_sprite_info_);
+        load_sprite_info_set_from_text("used_block.txt", block_sprite_info_);
 
         reset_characters();
 
@@ -163,10 +164,12 @@ public:
                 for (int x = x1; x < x2; ++x)
                 {
                     char c = map_(x, y);
-                    if (c == '=')
+                    if ((c == '=') || (c == 'G'))
                         draw_block(x, y, 0, 0);
                     else if (c == 'm')
                         draw_block(x, y, 32, 0);
+                    else if (c == '$')
+                        draw_block(x, y, 64, 0);
                 }
             }
 
@@ -217,6 +220,7 @@ private:
     sprite_info_set player_sprite_info_;
     sprite_info_set ball_sprite_info_;
     sprite_info_set fragment_sprite_info_;
+    sprite_info_set block_sprite_info_;
     game_character player_;
     chara_list enemies_;
     chara_list particles_;
@@ -397,7 +401,8 @@ private:
 
             for (int y = old_y+1; y <= new_y; ++y)
             {
-                if (map_(x, y) == '=')
+                char type = map_(x, y);
+                if (type == '=')
                 {
                     map_.erase(x, y);
                     r.y = static_cast<float>(y * 32) - r.ly;
@@ -432,7 +437,35 @@ private:
 
                     break;
                 }
-                else if (is_block(map_(x, y)))
+                else if ((type == '$') || (type == 'G'))
+                {
+                    map_.erase(x, y);
+                    r.y = static_cast<float>(y * 32) - r.ly;
+                    player_.speed.vy = -player_.speed.vy * 0.5f;
+
+                    process_hit_from_below(x, y+1);
+
+                    game_character b;
+
+                    b.routine = routine_type(vanish_routine(10));
+                    b.tmp_routine = routine_type();
+                    b.sprite_infos = &block_sprite_info_;
+                    b.texture = &map_texture_;
+                    b.position.x = static_cast<float>(x*32);
+                    b.position.y = static_cast<float>(y*32);
+                    b.position.lx = 0.0f;
+                    b.position.ly = 0.0f;
+                    b.speed.vx = 0.0f;
+                    b.speed.vy = 4.0f;
+                    b.origin.first = x;
+                    b.origin.second = y;
+                    b.next_char = 'm';
+
+                    enemies_.push_back(b);
+
+                    break;
+                }
+                else if (is_block(type))
                 {
                     r.y = static_cast<float>(y * 32) - r.ly;
                     player_.speed.vy = -player_.speed.vy * 0.5f;
@@ -455,7 +488,7 @@ private:
 
             if (i->form.type == sprite_form::nform)
             {
-                map_.erase(i->origin.first, i->origin.second);
+                map_.replace(i->origin.first, i->origin.second, i->next_char);
                 enemies_.erase(i);
                 i = next;
                 continue;

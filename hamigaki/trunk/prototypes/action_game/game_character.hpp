@@ -29,8 +29,9 @@ struct game_character
     const sprite_info_set* sprite_infos;
     direct3d_texture9* texture;
     std::pair<int,int> origin;
+    char next_char;
 
-    game_character() : step(0)
+    game_character() : step(0), next_char(' ')
     {
     }
 

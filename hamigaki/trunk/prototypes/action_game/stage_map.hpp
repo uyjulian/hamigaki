@@ -17,7 +17,7 @@
 
 inline bool is_block(char c)
 {
-    return (c == '=') || (c == 'm');
+    return (c == '=') || (c == 'm') || (c == '$') || (c == 'G');
 }
 
 class stage_map
@@ -83,7 +83,7 @@ public:
         return std::pair<int,int>(1, 1);
     }
 
-    void erase(int x, int y)
+    void replace(int x, int y, char type)
     {
         if (x < 0)
             return;
@@ -98,7 +98,12 @@ public:
 
         std::string& line = data_[data_.size()-1-uy];
         if (ux < line.size())
-            line[ux] = ' ';
+            line[ux] = type;
+    }
+
+    void erase(int x, int y)
+    {
+        replace(x, y, ' ');
     }
 
 private:
