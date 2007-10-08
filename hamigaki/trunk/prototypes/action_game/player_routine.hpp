@@ -26,6 +26,9 @@ public:
     static const boost::uint32_t duck_form =
         static_four_char_code<'D','U','C','K'>::value;
 
+    static const boost::uint32_t duck_jump_form =
+        static_four_char_code<'D','J','M','P'>::value;
+
     static const boost::uint32_t brake_form =
         static_four_char_code<'B','R','A','K'>::value;
 

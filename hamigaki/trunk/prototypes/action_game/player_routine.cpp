@@ -17,6 +17,7 @@ namespace
 const boost::uint32_t walk_form = player_routine::walk_form;
 const boost::uint32_t jump_form = player_routine::jump_form;
 const boost::uint32_t duck_form = player_routine::duck_form;
+const boost::uint32_t duck_jump_form = player_routine::duck_jump_form;
 const boost::uint32_t brake_form = player_routine::brake_form;
 
 
@@ -182,7 +183,9 @@ routine_result y_routine::operator()(
             stat.yield();
         }
 
-        if (form.type != duck_form)
+        if (form.type == duck_form)
+            form.type = duck_jump_form;
+        else
             form.type = jump_form;
 
         sound_.play_se("jump.ogg");
@@ -204,7 +207,9 @@ routine_result y_routine::operator()(
 
         a.ay = 0.0f;
 
-        if (form.type != duck_form)
+        if (form.type == duck_jump_form)
+            form.type = duck_form;
+        else if (form.type == jump_form)
             form.type = sprite_form::normal;
 
         old_jump = cmd.jump;

@@ -84,6 +84,7 @@ public:
         height_ = static_cast<int>(cr.bottom);
 
         load_sprite_info_set_from_text("man.txt", player_sprite_info_);
+        load_sprite_info_set_from_text("boy.txt", mini_sprite_info_);
         load_sprite_info_set_from_text("ball.txt", ball_sprite_info_);
         load_sprite_info_set_from_text("fragment.txt", fragment_sprite_info_);
         load_sprite_info_set_from_text("used_block.txt", block_sprite_info_);
@@ -119,6 +120,8 @@ public:
 
         man_texture_ =
             create_png_texture(device_, player_sprite_info_.texture());
+        boy_texture_ =
+            create_png_texture(device_, mini_sprite_info_.texture());
         ball_texture_ =
             create_png_texture(device_, ball_sprite_info_.texture());
         fragment_texture_ =
@@ -209,6 +212,7 @@ private:
     direct3d_device9 device_;
     direct3d_texture9 map_texture_;
     direct3d_texture9 man_texture_;
+    direct3d_texture9 boy_texture_;
     direct3d_texture9 ball_texture_;
     direct3d_texture9 fragment_texture_;
     bool active_;
@@ -218,6 +222,7 @@ private:
     stage_map map_;
     float scroll_x_;
     sprite_info_set player_sprite_info_;
+    sprite_info_set mini_sprite_info_;
     sprite_info_set ball_sprite_info_;
     sprite_info_set fragment_sprite_info_;
     sprite_info_set block_sprite_info_;
@@ -522,13 +527,35 @@ private:
                 i->speed.vy = 0.0f;
                 sound_.play_se("stomp.ogg");
                 player_.speed.vy = 8.0f;
-                if (player_.form.type != player_routine::duck_form)
-                    player_.change_form(player_routine::jump_form);
+                if (player_.form.type != player_routine::duck_jump_form)
+                {
+                    if (player_.form.type == player_routine::duck_form)
+                        player_.change_form(player_routine::duck_jump_form);
+                    else
+                        player_.change_form(player_routine::jump_form);
+                }
             }
             else if (player_.effect.empty() && player_.tmp_routine.empty() &&
                 intersect_rects(player_.position, i->position))
             {
 #if !defined(HAMIGAKI_USE_KNOCK_BACK)
+                sprite_info info0 =
+                    player_.sprite_infos->get_group(player_.form.type)[0];
+
+                float left = player_.position.x - info0.left;
+                float bottom = player_.position.y;
+
+                player_.sprite_infos = &mini_sprite_info_;
+                player_.texture = &boy_texture_;
+
+                sprite_info info =
+                    player_.sprite_infos->get_group(player_.form.type)[0];
+
+                player_.position.x = left + info.left;
+                player_.position.y = bottom;
+                player_.position.lx = static_cast<float>(info.width);
+                player_.position.ly = static_cast<float>(info.height);
+
                 player_.effect = effect_type(&blink_effect);
 #else
                 player_.tmp_routine = routine_type(knock_back_routine(10,4.0f));
