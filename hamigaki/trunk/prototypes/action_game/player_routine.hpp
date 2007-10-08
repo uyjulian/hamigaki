@@ -35,6 +35,9 @@ public:
     static const boost::uint32_t knock_back_form =
         static_four_char_code<'K','N','O','K'>::value;
 
+    static const boost::uint32_t miss_form =
+        static_four_char_code<'M','I','S','S'>::value;
+
     player_routine(const stage_map& map, sound_engine& sound)
         : map_(map), sound_(sound)
     {

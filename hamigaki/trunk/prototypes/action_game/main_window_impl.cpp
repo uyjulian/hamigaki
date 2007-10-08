@@ -307,6 +307,7 @@ private:
         player_.routine = routine_type(player_routine(map_, sound_));
         player_.tmp_routine = routine_type();
         player_.effect = effect_type();
+        player_.form = sprite_form();
 
         int x, y;
         boost::tie(x, y) = map_.player_position();
@@ -421,20 +422,13 @@ private:
 
                     process_hit_from_below(x, y+1);
 
-                    game_character b;
-
-                    b.routine = routine_type(vanish_routine(10));
-                    b.tmp_routine = routine_type();
-                    b.sprite_infos = &brick_sprite_info_;
-                    b.texture = &map_texture_;
-                    b.position.x = static_cast<float>(x*32);
-                    b.position.y = static_cast<float>(y*32);
-                    b.position.lx = 0.0f;
-                    b.position.ly = 0.0f;
-                    b.speed.vx = 0.0f;
+                    game_character b =
+                        create_enemy(
+                            x, y, false,
+                            routine_type(vanish_routine(10)),
+                            brick_sprite_info_, &map_texture_
+                        );
                     b.speed.vy = 4.0f;
-                    b.origin.first = x;
-                    b.origin.second = y;
                     b.next_char = '=';
 
                     enemies_.push_back(b);
@@ -484,20 +478,13 @@ private:
 
                     process_hit_from_below(x, y+1);
 
-                    game_character b;
-
-                    b.routine = routine_type(vanish_routine(10));
-                    b.tmp_routine = routine_type();
-                    b.sprite_infos = &block_sprite_info_;
-                    b.texture = &map_texture_;
-                    b.position.x = static_cast<float>(x*32);
-                    b.position.y = static_cast<float>(y*32);
-                    b.position.lx = 0.0f;
-                    b.position.ly = 0.0f;
-                    b.speed.vx = 0.0f;
+                    game_character b =
+                        create_enemy(
+                            x, y, false,
+                            routine_type(vanish_routine(10)),
+                            block_sprite_info_, &map_texture_
+                        );
                     b.speed.vy = 4.0f;
-                    b.origin.first = x;
-                    b.origin.second = y;
                     b.next_char = 'm';
 
                     enemies_.push_back(b);
@@ -544,6 +531,12 @@ private:
             r.y += r.ly;
 
             const rect& r2 = player_.position;
+            if ((r2.lx == 0.0f) || (r2.ly == 0.0f))
+            {
+                i = next;
+                continue;
+            }
+
             float x1 = r2.x;
             float y1 = r2.y;
             float x2 = r2.x + r2.lx;
@@ -570,6 +563,16 @@ private:
                 intersect_rects(player_.position, i->position))
             {
 #if !defined(HAMIGAKI_USE_KNOCK_BACK)
+                if (player_.sprite_infos == &mini_sprite_info_)
+                {
+                    player_.change_form(player_routine::miss_form);
+                    player_.routine = routine_type(vanish_routine(150));
+                    player_.speed.vx = 0.0f;
+                    player_.speed.vy = 10.0f;
+                    i = next;
+                    continue;
+                }
+
                 sprite_info info0 =
                     player_.sprite_infos->get_group(player_.form.type)[0];
 
@@ -659,6 +662,8 @@ private:
         );
 
         player_.move(cmd, map_);
+        if (player_.form.type == sprite_form::nform)
+            reset_characters();
 
         if (player_.position.x < 0.0f)
         {
