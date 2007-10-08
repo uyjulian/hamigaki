@@ -88,6 +88,7 @@ public:
         load_sprite_info_set_from_text("ball.txt", ball_sprite_info_);
         load_sprite_info_set_from_text("fragment.txt", fragment_sprite_info_);
         load_sprite_info_set_from_text("used_block.txt", block_sprite_info_);
+        load_sprite_info_set_from_text("brick_block.txt", brick_sprite_info_);
 
         reset_characters();
 
@@ -226,6 +227,7 @@ private:
     sprite_info_set ball_sprite_info_;
     sprite_info_set fragment_sprite_info_;
     sprite_info_set block_sprite_info_;
+    sprite_info_set brick_sprite_info_;
     game_character player_;
     chara_list enemies_;
     chara_list particles_;
@@ -410,7 +412,36 @@ private:
             for (int y = old_y+1; y <= new_y; ++y)
             {
                 char type = map_(x, y);
-                if (type == '=')
+                if ((type == '=') &&
+                    (player_.sprite_infos == &mini_sprite_info_) )
+                {
+                    map_.erase(x, y);
+                    r.y = static_cast<float>(y * 32) - r.ly;
+                    player_.speed.vy = -player_.speed.vy * 0.5f;
+
+                    process_hit_from_below(x, y+1);
+
+                    game_character b;
+
+                    b.routine = routine_type(vanish_routine(10));
+                    b.tmp_routine = routine_type();
+                    b.sprite_infos = &brick_sprite_info_;
+                    b.texture = &map_texture_;
+                    b.position.x = static_cast<float>(x*32);
+                    b.position.y = static_cast<float>(y*32);
+                    b.position.lx = 0.0f;
+                    b.position.ly = 0.0f;
+                    b.speed.vx = 0.0f;
+                    b.speed.vy = 4.0f;
+                    b.origin.first = x;
+                    b.origin.second = y;
+                    b.next_char = '=';
+
+                    enemies_.push_back(b);
+
+                    break;
+                }
+                else if (type == '=')
                 {
                     map_.erase(x, y);
                     r.y = static_cast<float>(y * 32) - r.ly;
