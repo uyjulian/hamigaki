@@ -96,6 +96,13 @@ public:
         bgm_player_.play();
     }
 
+    void stop_bgm()
+    {
+        if (bgm_player_)
+            bgm_player_.close();
+        bgm_file_.reset();
+    }
+
     void play_se(const std::string& filename)
     {
         se_player_.reset();
@@ -111,8 +118,8 @@ public:
         se_player_.reset(
             new io_ex::background_copy(
                 *se_file_,
-                audio::widen<float>(dsound_.create_buffer(fmt, 1024)),
-                512
+                audio::widen<float>(dsound_.create_buffer(fmt, 4096)),
+                2048
             )
         );
 
@@ -129,6 +136,14 @@ public:
     std::string se_filename() const
     {
         return se_filename_;
+    }
+
+    bool playing_se()
+    {
+        if (io_ex::background_copy* ptr = se_player_.get())
+            return !ptr->done();
+        else
+            return false;
     }
 
 private:
@@ -153,6 +168,11 @@ void sound_engine::play_bgm(const std::string& filename)
     pimpl_->play_bgm(filename);
 }
 
+void sound_engine::stop_bgm()
+{
+    pimpl_->stop_bgm();
+}
+
 void sound_engine::play_se(const std::string& filename)
 {
     pimpl_->play_se(filename);
@@ -166,4 +186,9 @@ void sound_engine::stop_se()
 std::string sound_engine::se_filename() const
 {
     return pimpl_->se_filename();
+}
+
+bool sound_engine::playing_se()
+{
+    return pimpl_->playing_se();
 }

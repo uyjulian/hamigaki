@@ -20,9 +20,11 @@ public:
     ~sound_engine();
 
     void play_bgm(const std::string& filename);
+    void stop_bgm();
     void play_se(const std::string& filename);
     void stop_se();
     std::string se_filename() const;
+    bool playing_se();
 
 private:
     class impl;

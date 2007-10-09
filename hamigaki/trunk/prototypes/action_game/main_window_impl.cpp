@@ -22,6 +22,7 @@
 #include "straight_routine.hpp"
 #include "turn_routine.hpp"
 #include "vanish_routine.hpp"
+#include "wait_se_routine.hpp"
 #include <boost/bind.hpp>
 #include <boost/next_prior.hpp>
 #include <cmath>
@@ -76,7 +77,7 @@ public:
         : handle_(handle)
         , sound_(handle_), input_(handle_)
         , active_(false), last_time_(::GetTickCount()), frames_(0)
-        , stage_file_("map.txt"), scroll_x_(0.0f)
+        , stage_file_("map.txt"), scroll_x_(0.0f), missed_(true)
     {
         ::RECT cr;
         ::GetClientRect(handle_, &cr);
@@ -91,8 +92,6 @@ public:
         load_sprite_info_set_from_text("brick_block.txt", brick_sprite_info_);
 
         reset_characters();
-
-        sound_.play_bgm("bgm.ogg");
     }
 
     ~impl()
@@ -233,6 +232,7 @@ private:
     chara_list particles_;
     int width_;
     int height_;
+    bool missed_;
 
     chara_iterator find_enemy(int x, int y)
     {
@@ -299,6 +299,9 @@ private:
 
     void reset_characters()
     {
+        missed_ = false;
+        sound_.stop_se();
+
         load_map_from_text(stage_file_.c_str(), map_);
 
         player_.sprite_infos = &player_sprite_info_;
@@ -332,6 +335,8 @@ private:
         }
 
         particles_.clear();
+
+        sound_.play_bgm("bgm.ogg");
     }
 
     void process_hit_from_below(int x, int y)
@@ -357,9 +362,10 @@ private:
 
     void process_map_collisions()
     {
-        for (chara_iterator i = enemies_.begin(); i != enemies_.end(); )
+        chara_iterator next;
+        for (chara_iterator i = enemies_.begin(); i != enemies_.end(); i = next)
         {
-            chara_iterator next = boost::next(i);
+            next = boost::next(i);
 
             rect& r = i->position;
 
@@ -375,7 +381,6 @@ private:
             if ((x2 < 0) || (x1 >= map_.width()) || (new_y < 0))
             {
                 enemies_.erase(i);
-                i = next;
                 continue;
             }
 
@@ -393,8 +398,6 @@ private:
                     break;
                 }
             }
-
-            i = next;
         }
 
         if (player_.speed.vy > 0.0f)
@@ -508,34 +511,28 @@ private:
 
     void process_collisions()
     {
-        for (chara_iterator i = enemies_.begin(); i != enemies_.end(); )
+        chara_iterator next;
+        for (chara_iterator i = enemies_.begin(); i != enemies_.end(); i = next)
         {
-            chara_iterator next = boost::next(i);
+            next = boost::next(i);
 
             if (i->form.type == sprite_form::nform)
             {
                 map_.replace(i->origin.first, i->origin.second, i->next_char);
                 enemies_.erase(i);
-                i = next;
                 continue;
             }
 
             rect r = i->position;
             if ((r.lx == 0.0f) || (r.ly == 0.0f))
-            {
-                i = next;
                 continue;
-            }
 
             r.ly *= 0.5f;
             r.y += r.ly;
 
             const rect& r2 = player_.position;
             if ((r2.lx == 0.0f) || (r2.ly == 0.0f))
-            {
-                i = next;
                 continue;
-            }
 
             float x1 = r2.x;
             float y1 = r2.y;
@@ -565,53 +562,37 @@ private:
 #if !defined(HAMIGAKI_USE_KNOCK_BACK)
                 if (player_.sprite_infos == &mini_sprite_info_)
                 {
+                    sound_.stop_bgm();
                     player_.change_form(player_routine::miss_form);
-                    player_.routine = routine_type(vanish_routine(150));
+                    player_.routine =
+                        routine_type(wait_se_routine(sound_, "miss.ogg"));
                     player_.speed.vx = 0.0f;
                     player_.speed.vy = 10.0f;
-                    i = next;
-                    continue;
+                    missed_ = true;
                 }
-
-                sprite_info info0 =
-                    player_.sprite_infos->get_group(player_.form.type)[0];
-
-                float left = player_.position.x - info0.left;
-                float bottom = player_.position.y;
-
-                player_.sprite_infos = &mini_sprite_info_;
-                player_.texture = &boy_texture_;
-
-                sprite_info info =
-                    player_.sprite_infos->get_group(player_.form.type)[0];
-
-                player_.position.x = left + info.left;
-                player_.position.y = bottom;
-                player_.position.lx = static_cast<float>(info.width);
-                player_.position.ly = static_cast<float>(info.height);
-
-                player_.effect = effect_type(&blink_effect);
+                else
+                {
+                    player_.change_sprite(mini_sprite_info_, &boy_texture_);
+                    player_.effect = effect_type(&blink_effect);
+                    sound_.play_se("damage.ogg");
+                }
 #else
                 player_.tmp_routine = routine_type(knock_back_routine(10,4.0f));
                 player_.form.type = player_routine::knock_back_form;
-#endif
                 sound_.play_se("damage.ogg");
+#endif
             }
-
-            i = next;
         }
 
-        for (chara_iterator i = particles_.begin(); i != particles_.end(); )
+        for (chara_iterator i=particles_.begin(); i != particles_.end(); i=next)
         {
-            chara_iterator next = boost::next(i);
+            next = boost::next(i);
 
             if (i->form.type == sprite_form::nform)
             {
                 particles_.erase(i);
-                i = next;
                 continue;
             }
-            i = next;
         }
     }
 
@@ -676,6 +657,15 @@ private:
         {
             player_.position.x = max_x;
             player_.speed.vx = 0.0f;
+        }
+
+        if (!missed_ && (top_block(player_.position) < 0))
+        {
+            sound_.stop_bgm();
+            player_.change_sprite(mini_sprite_info_, &boy_texture_);
+            player_.change_form(player_routine::miss_form);
+            player_.routine = routine_type(wait_se_routine(sound_, "miss.ogg"));
+            missed_ = true;
         }
 
         std::for_each(

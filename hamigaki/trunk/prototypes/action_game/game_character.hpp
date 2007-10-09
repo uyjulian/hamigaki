@@ -44,6 +44,24 @@ struct game_character
         step = 0;
     }
 
+    void change_sprite(const sprite_info_set& infos, direct3d_texture9* tex)
+    {
+        sprite_info info0 = sprite_infos->get_group(form.type)[0];
+
+        float left = position.x - info0.left;
+        float bottom = position.y;
+
+        sprite_infos = &infos;
+        texture = tex;
+
+        sprite_info info = sprite_infos->get_group(form.type)[0];
+
+        position.x = left + info.left;
+        position.y = bottom;
+        position.lx = static_cast<float>(info.width);
+        position.ly = static_cast<float>(info.height);
+    }
+
     void move(const input_command& cmd, const stage_map& map)
     {
         acceleration a;
