@@ -419,7 +419,7 @@ private:
                 if ((type == '=') &&
                     (player_.sprite_infos == &mini_sprite_info_) )
                 {
-                    map_.erase(x, y);
+                    map_.replace(x, y, '_');
                     r.y = static_cast<float>(y * 32) - r.ly;
                     player_.speed.vy = -player_.speed.vy * 0.5f;
 
@@ -431,10 +431,12 @@ private:
                             routine_type(vanish_routine(10)),
                             brick_sprite_info_, &map_texture_
                         );
+                    b.position.lx = 0.0f;
+                    b.position.ly = 0.0f;
                     b.speed.vy = 4.0f;
                     b.next_char = '=';
 
-                    enemies_.push_back(b);
+                    particles_.push_back(b);
 
                     break;
                 }
@@ -463,6 +465,8 @@ private:
                         fr.position.ly = 0.0f;
                         fr.speed.vx = vx[i];
                         fr.speed.vy = vy[i];
+                        fr.origin.first = -1;
+                        fr.origin.second = -1;
 
                         particles_.push_back(fr);
                     }
@@ -475,7 +479,7 @@ private:
                 }
                 else if ((type == '$') || (type == 'G') || (type == 'S'))
                 {
-                    map_.erase(x, y);
+                    map_.replace(x, y, '_');
                     r.y = static_cast<float>(y * 32) - r.ly;
                     player_.speed.vy = -player_.speed.vy * 0.5f;
 
@@ -487,10 +491,12 @@ private:
                             routine_type(vanish_routine(10)),
                             block_sprite_info_, &map_texture_
                         );
+                    b.position.lx = 0.0f;
+                    b.position.ly = 0.0f;
                     b.speed.vy = 4.0f;
                     b.next_char = 'm';
 
-                    enemies_.push_back(b);
+                    particles_.push_back(b);
 
                     break;
                 }
@@ -590,6 +596,7 @@ private:
 
             if (i->form.type == sprite_form::nform)
             {
+                map_.replace(i->origin.first, i->origin.second, i->next_char);
                 particles_.erase(i);
                 continue;
             }

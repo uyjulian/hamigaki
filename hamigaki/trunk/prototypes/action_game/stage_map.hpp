@@ -17,7 +17,7 @@
 
 inline bool is_block(char c)
 {
-    return (c == '=') || (c == 'm') || (c == '$') || (c == 'G');
+    return (c == '=') || (c == 'm') || (c == '$') || (c == 'G') || (c == '_');
 }
 
 class stage_map
