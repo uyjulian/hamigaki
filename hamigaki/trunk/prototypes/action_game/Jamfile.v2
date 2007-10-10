@@ -36,6 +36,7 @@ exe action_game
     routine_base.cpp
     sound_engine.cpp
     sprite_info.cpp
+    stage_map.cpp
     straight_routine.cpp
     turn_routine.cpp
     vanish_routine.cpp

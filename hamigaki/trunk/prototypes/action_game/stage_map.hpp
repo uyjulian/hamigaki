@@ -10,35 +10,16 @@
 #ifndef STAGE_MAP_HPP
 #define STAGE_MAP_HPP
 
-#include <fstream>
 #include <string>
 #include <utility>
 #include <vector>
 
-inline bool is_block(char c)
-{
-    return (c == '=') || (c == 'm') || (c == '$') || (c == 'G') || (c == '_');
-}
+bool is_block(char c);
 
 class stage_map
 {
 public:
-    char operator()(int x, int y) const
-    {
-        if (x < 0)
-            return ' ';
-        else if (y < 0)
-            return ' ';
-
-        std::size_t ux = static_cast<std::size_t>(x);
-        std::size_t uy = static_cast<std::size_t>(y);
-
-        if (uy >= data_.size())
-            return ' ';
-
-        const std::string& line = data_[data_.size()-1-uy];
-        return (ux < line.size()) ? line[ux] : ' ';
-    }
+    char operator()(int x, int y) const;
 
     void push_back(const std::string& line)
     {
@@ -65,41 +46,8 @@ public:
         return static_cast<int>(data_.size());
     }
 
-    std::pair<int,int> player_position() const
-    {
-        for (std::size_t i = 0; i < data_.size(); ++i)
-        {
-            const std::string& line = data_[i];
-            std::string::size_type pos = line.find('@');
-            if (pos != std::string::npos)
-            {
-                return std::make_pair(
-                    static_cast<int>(pos),
-                    static_cast<int>(data_.size() - 1 - i)
-                );
-            }
-        }
-
-        return std::pair<int,int>(1, 1);
-    }
-
-    void replace(int x, int y, char type)
-    {
-        if (x < 0)
-            return;
-        else if (y < 0)
-            return;
-
-        std::size_t ux = static_cast<std::size_t>(x);
-        std::size_t uy = static_cast<std::size_t>(y);
-
-        if (uy >= data_.size())
-            return;
-
-        std::string& line = data_[data_.size()-1-uy];
-        if (ux < line.size())
-            line[ux] = type;
-    }
+    std::pair<int,int> player_position() const;
+    void replace(int x, int y, char type);
 
     void erase(int x, int y)
     {
@@ -110,26 +58,6 @@ private:
     std::vector<std::string> data_;
 };
 
-inline void load_map_from_text(const char* filename, stage_map& m)
-{
-    std::ifstream is(filename);
-    if (!is)
-    {
-        m.clear();
-        return;
-    }
-
-    stage_map tmp;
-    std::string line;
-    while (std::getline(is, line))
-    {
-        if (line.empty() || (line[0] == '#'))
-            continue;
-        else
-            tmp.push_back(line);
-    }
-
-    m.swap(tmp);
-}
+void load_map_from_text(const char* filename, stage_map& m);
 
 #endif // STAGE_MAP_HPP
