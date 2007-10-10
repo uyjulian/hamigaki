@@ -90,6 +90,7 @@ public:
         load_sprite_info_set_from_text("fragment.txt", fragment_sprite_info_);
         load_sprite_info_set_from_text("used_block.txt", block_sprite_info_);
         load_sprite_info_set_from_text("brick_block.txt", brick_sprite_info_);
+        load_sprite_info_set_from_text("milk.txt", milk_sprite_info_);
 
         reset_characters();
     }
@@ -126,6 +127,8 @@ public:
             create_png_texture(device_, ball_sprite_info_.texture());
         fragment_texture_ =
             create_png_texture(device_, fragment_sprite_info_.texture());
+        milk_texture_ =
+            create_png_texture(device_, milk_sprite_info_.texture());
 
         last_time_ = ::GetTickCount();
     }
@@ -167,11 +170,11 @@ public:
                 for (int x = x1; x < x2; ++x)
                 {
                     char c = map_(x, y);
-                    if ((c == '=') || (c == 'G'))
+                    if ((c == '=') || (c == 'G') || (c == 'I'))
                         draw_block(x, y, 0, 0);
                     else if (c == 'm')
                         draw_block(x, y, 32, 0);
-                    else if (c == '$')
+                    else if ((c == '$') || (c == '?'))
                         draw_block(x, y, 64, 0);
                 }
             }
@@ -186,6 +189,11 @@ public:
 
             std::for_each(
                 enemies_.begin(), enemies_.end(),
+                boost::bind(&impl::draw_character, this, _1)
+            );
+
+            std::for_each(
+                items_.begin(), items_.end(),
                 boost::bind(&impl::draw_character, this, _1)
             );
 
@@ -215,6 +223,7 @@ private:
     direct3d_texture9 boy_texture_;
     direct3d_texture9 ball_texture_;
     direct3d_texture9 fragment_texture_;
+    direct3d_texture9 milk_texture_;
     bool active_;
     unsigned long last_time_;
     unsigned frames_;
@@ -227,8 +236,10 @@ private:
     sprite_info_set fragment_sprite_info_;
     sprite_info_set block_sprite_info_;
     sprite_info_set brick_sprite_info_;
+    sprite_info_set milk_sprite_info_;
     game_character player_;
     chara_list enemies_;
+    chara_list items_;
     chara_list particles_;
     int width_;
     int height_;
@@ -304,8 +315,8 @@ private:
 
         load_map_from_text(stage_file_.c_str(), map_);
 
-        player_.sprite_infos = &player_sprite_info_;
-        player_.texture = &man_texture_;
+        player_.sprite_infos = &mini_sprite_info_;
+        player_.texture = &boy_texture_;
 
         player_.routine = routine_type(player_routine(map_, sound_));
         player_.tmp_routine = routine_type();
@@ -334,6 +345,7 @@ private:
                 add_enemy(x, y, map_(x, y));
         }
 
+        items_.clear();
         particles_.clear();
 
         sound_.play_bgm("bgm.ogg");
@@ -357,6 +369,18 @@ private:
                 i->speed.vy = 0.0f;
                 i->form.options |= sprite_options::upside_down;
             }
+        }
+
+        for (chara_iterator i = items_.begin(); i != items_.end(); ++i)
+        {
+            const rect& r = i->position;
+            if (r.ly == 0.0f)
+                continue;
+
+            int center = static_cast<int>(r.x+r.lx*0.5f)/32;
+
+            if ((center == x) && (r.y == static_cast<float>(y*32)))
+                i->speed.vy = 8.0f;
         }
     }
 
@@ -500,6 +524,40 @@ private:
 
                     break;
                 }
+                else if ((type == '?') || (type == 'I'))
+                {
+                    map_.replace(x, y, '_');
+                    r.y = static_cast<float>(y * 32) - r.ly;
+                    player_.speed.vy = -player_.speed.vy * 0.5f;
+
+                    process_hit_from_below(x, y+1);
+
+                    game_character b =
+                        create_enemy(
+                            x, y, false,
+                            routine_type(vanish_routine(10)),
+                            block_sprite_info_, &map_texture_
+                        );
+                    b.position.lx = 0.0f;
+                    b.position.ly = 0.0f;
+                    b.speed.vy = 4.0f;
+                    b.next_char = 'm';
+
+                    particles_.push_back(b);
+
+                    game_character it =
+                        create_enemy(
+                            x, y+1, false,
+                            routine_type((straight_routine(1.5f))),
+                            milk_sprite_info_, &milk_texture_
+                        );
+                    it.origin.first = -1;
+                    it.origin.second = -1;
+
+                    items_.push_back(it);
+
+                    break;
+                }
                 else if (is_block(type))
                 {
                     r.y = static_cast<float>(y * 32) - r.ly;
@@ -590,6 +648,24 @@ private:
             }
         }
 
+        for (chara_iterator i = items_.begin(); i != items_.end(); i = next)
+        {
+            next = boost::next(i);
+
+            if (i->form.type == sprite_form::nform)
+            {
+                items_.erase(i);
+                continue;
+            }
+
+            if (intersect_rects(player_.position, i->position))
+            {
+                items_.erase(i);
+                if (player_.sprite_infos == &mini_sprite_info_)
+                    player_.change_sprite(player_sprite_info_, &man_texture_);
+            }
+        }
+
         for (chara_iterator i=particles_.begin(); i != particles_.end(); i=next)
         {
             next = boost::next(i);
@@ -674,6 +750,11 @@ private:
             player_.routine = routine_type(wait_se_routine(sound_, "miss.ogg"));
             missed_ = true;
         }
+
+        std::for_each(
+            items_.begin(), items_.end(),
+            boost::bind(&game_character::move, _1, cmd, boost::cref(map_))
+        );
 
         std::for_each(
             particles_.begin(), particles_.end(),

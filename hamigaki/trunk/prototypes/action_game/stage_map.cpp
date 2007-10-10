@@ -13,7 +13,9 @@
 
 bool is_block(char c)
 {
-    return (c == '=') || (c == 'm') || (c == '$') || (c == 'G') || (c == '_');
+    return
+        (c == '=') || (c == 'm') || (c == '$') || (c == 'G') || (c == '_') ||
+        (c == '?') || (c == 'I') ;
 }
 
 char stage_map::operator()(int x, int y) const
