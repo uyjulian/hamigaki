@@ -313,18 +313,21 @@ private:
         int scroll_x1 = static_cast<int>(scroll_x_ / 32.0f);
         int scroll_x2 = scroll_x1 + width_/32;
 
-        scroll_x1 -= 3;
-        scroll_x2 += 3;
-
         chara_iterator next;
         for (chara_iterator i = enemies_.begin(); i != enemies_.end(); i = next)
         {
             next = boost::next(i);
 
             const rect& r = i->position;
+            int left = left_block(r);
+            int right = left_block(r);
+            int origin = i->origin.first;
 
-            if ((left_block(r) < scroll_x1) || (right_block(r) > scroll_x2))
+            if (((origin < scroll_x1) || (origin > scroll_x2)) &&
+                ((left < scroll_x1-3) || (right > scroll_x2+3)) )
+            {
                 enemies_.erase(i);
+            }
         }
     }
 
