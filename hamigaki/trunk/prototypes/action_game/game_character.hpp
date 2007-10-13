@@ -30,8 +30,9 @@ struct game_character
     direct3d_texture9* texture;
     std::pair<int,int> origin;
     char next_char;
+    bool auto_slip_out;
 
-    game_character() : step(0), next_char(' ')
+    game_character() : step(0), next_char(' '), auto_slip_out(false)
     {
     }
 
@@ -91,7 +92,14 @@ struct game_character
         else
             ++step;
 
-        ::move(position, speed, a, map);
+        if (auto_slip_out &&
+            is_on_ground(map, position) && is_in_blocks(map, position) )
+        {
+            speed.vx = 0.0f;
+            position.x += 2.0f;
+        }
+        else
+            ::move(position, speed, a, map);
 
         color = 0xFFFFFFFFul;
         if (!effect.empty())

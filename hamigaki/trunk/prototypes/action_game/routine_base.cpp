@@ -115,18 +115,9 @@ void move(rect& r, velocity& v, const acceleration& a, const stage_map& map)
 
     bool on_ground = is_on_ground(map, r);
 
-    // FIXME
-    if (r.y > -32.0f)
-        v.vx += a.ax;
-    else
-        v.vx = 0.0f;
+    v.vx += a.ax;
 
-    if (is_in_blocks(map, r))
-    {
-        v.vx = 0.0f;
-        r.x += 2.0f;
-    }
-    else if (v.vx < 0.0f)
+    if (v.vx < 0.0f)
     {
         int old_x = left_block(r);
 

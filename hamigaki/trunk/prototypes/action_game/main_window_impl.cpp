@@ -355,6 +355,7 @@ private:
         player_.position.ly = static_cast<float>(info.height);
         player_.speed.vx = 0.0f;
         player_.speed.vy = 0.0f;
+        player_.auto_slip_out = true;
         scroll_x_ = 0.0f;
 
         enemies_.clear();
