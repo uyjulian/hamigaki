@@ -308,6 +308,26 @@ private:
         }
     }
 
+    void erase_old_enemies()
+    {
+        int scroll_x1 = static_cast<int>(scroll_x_ / 32.0f);
+        int scroll_x2 = scroll_x1 + width_/32;
+
+        scroll_x1 -= 3;
+        scroll_x2 += 3;
+
+        chara_iterator next;
+        for (chara_iterator i = enemies_.begin(); i != enemies_.end(); i = next)
+        {
+            next = boost::next(i);
+
+            const rect& r = i->position;
+
+            if ((left_block(r) < scroll_x1) || (right_block(r) > scroll_x2))
+                enemies_.erase(i);
+        }
+    }
+
     void reset_characters()
     {
         missed_ = false;
@@ -788,6 +808,8 @@ private:
             for (int y = 0; y < map_.height(); ++y)
                 add_enemy(x, y, map_(x, y));
         }
+
+        erase_old_enemies();
     }
 
     void draw_character(const game_character& chara)
