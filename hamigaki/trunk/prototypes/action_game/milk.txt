@@ -8,4 +8,4 @@
 # See http://hamigaki.sourceforge.jp/ for library home page.
 
 milk.png 32 32
-NORM 0 0 8 0 32 16
+NORM 0 0 8 0 16 32
