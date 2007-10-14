@@ -31,6 +31,7 @@ struct game_character
     std::pair<int,int> origin;
     char next_char;
     bool auto_slip_out;
+    boost::function0<void> on_end;
 
     game_character() : step(0), next_char(' '), auto_slip_out(false)
     {

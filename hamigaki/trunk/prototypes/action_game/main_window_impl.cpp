@@ -16,6 +16,7 @@
 #include "hop_step_jump_routine.hpp"
 #include "player_routine.hpp"
 #include "png_loader.hpp"
+#include "pop_up_routine.hpp"
 #include "sprite.hpp"
 #include "sprite_info.hpp"
 #include "stage_map.hpp"
@@ -331,6 +332,35 @@ private:
         }
     }
 
+    void pop_up_milk(int x, int y)
+    {
+        game_character b =
+            create_enemy(
+                x, y, false,
+                routine_type(vanish_routine(32+1)),
+                block_sprite_info_, &map_texture_
+            );
+        b.tmp_routine =
+            routine_type(pop_up_routine(0.0f, 0.6f, 32));
+        b.origin.first = -1;
+        b.origin.second = -1;
+
+        particles_.push_back(b);
+
+        game_character it =
+            create_enemy(
+                x, y, false,
+                routine_type((straight_routine(1.5f))),
+                milk_sprite_info_, &milk_texture_
+            );
+        it.tmp_routine =
+            routine_type(pop_up_routine(1.0f, 0.6f, 32));
+        it.origin.first = -1;
+        it.origin.second = -1;
+
+        items_.push_back(it);
+    }
+
     void reset_characters()
     {
         missed_ = false;
@@ -566,19 +596,9 @@ private:
                     b.position.ly = 0.0f;
                     b.speed.vy = 4.0f;
                     b.next_char = 'm';
+                    b.on_end = boost::bind(&impl::pop_up_milk, this, x, y);
 
                     particles_.push_back(b);
-
-                    game_character it =
-                        create_enemy(
-                            x, y+1, false,
-                            routine_type((straight_routine(1.5f))),
-                            milk_sprite_info_, &milk_texture_
-                        );
-                    it.origin.first = -1;
-                    it.origin.second = -1;
-
-                    items_.push_back(it);
 
                     break;
                 }
@@ -607,6 +627,8 @@ private:
             if (i->form.type == sprite_form::nform)
             {
                 map_.replace(i->origin.first, i->origin.second, i->next_char);
+                if (i->on_end)
+                     i->on_end();
                 enemies_.erase(i);
                 continue;
             }
@@ -697,6 +719,8 @@ private:
             if (i->form.type == sprite_form::nform)
             {
                 map_.replace(i->origin.first, i->origin.second, i->next_char);
+                if (i->on_end)
+                     i->on_end();
                 particles_.erase(i);
                 continue;
             }
