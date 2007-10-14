@@ -1,4 +1,4 @@
-# brick_block.txt: data about used block
+# brick_block.txt: data about brick block
 
 # Copyright Takeshi Mouri 2007.
 # Distributed under the Boost Software License, Version 1.0.
