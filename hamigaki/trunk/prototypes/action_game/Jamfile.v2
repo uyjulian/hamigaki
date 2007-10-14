@@ -33,6 +33,7 @@ exe action_game
     main_window_impl.cpp
     player_routine.cpp
     png_loader.cpp
+    pop_up_routine.cpp
     routine_base.cpp
     sound_engine.cpp
     sprite_info.cpp
