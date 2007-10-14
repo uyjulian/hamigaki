@@ -26,6 +26,6 @@ routine_result pop_up_routine::operator()(
         stat.wait(frames_-1);
     }
 
-    a.ay = -v.vy;
+    a.ay = -v.vy + ay_;
     return routine_result(a, form);
 }
