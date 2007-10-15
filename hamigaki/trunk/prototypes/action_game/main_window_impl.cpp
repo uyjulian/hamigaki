@@ -337,11 +337,10 @@ private:
         game_character b =
             create_enemy(
                 x, y, false,
-                routine_type(vanish_routine(32+1)),
+                routine_type(vanish_routine(32)),
                 block_sprite_info_, &map_texture_
             );
-        b.tmp_routine =
-            routine_type(pop_up_routine(0.0f, 0.6f, 32));
+        b.flying = true;
         b.origin.first = -1;
         b.origin.second = -1;
 
