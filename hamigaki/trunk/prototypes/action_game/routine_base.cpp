@@ -111,8 +111,6 @@ bool find_horizontal_blocks(const stage_map& map, int y, int x1, int x2)
 
 void move(rect& r, velocity& v, const acceleration& a, const stage_map& map)
 {
-    const float gravity = -0.6f;
-
     bool on_ground = is_on_ground(map, r);
 
     v.vx += a.ax;
@@ -166,10 +164,7 @@ void move(rect& r, velocity& v, const acceleration& a, const stage_map& map)
             v.vy = 0.0f;
     }
     else
-    {
-        v.vy += gravity;
         v.vy = (std::max)(v.vy, -10.0f);
-    }
 
     if (v.vy > 0.0f)
         r.y += v.vy;

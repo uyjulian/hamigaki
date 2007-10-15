@@ -31,9 +31,11 @@ struct game_character
     std::pair<int,int> origin;
     char next_char;
     bool auto_slip_out;
+    bool flying;
     boost::function0<void> on_end;
 
-    game_character() : step(0), next_char(' '), auto_slip_out(false)
+    game_character()
+        : step(0), next_char(' '), auto_slip_out(false), flying(false)
     {
     }
 
@@ -66,6 +68,8 @@ struct game_character
 
     void move(const input_command& cmd, const stage_map& map)
     {
+        const float gravity = -0.6f;
+
         acceleration a;
         sprite_form f;
 
@@ -93,8 +97,12 @@ struct game_character
         else
             ++step;
 
-        if (auto_slip_out &&
-            is_on_ground(map, position) && is_in_blocks(map, position) )
+        bool on_ground = is_on_ground(map, position);
+
+        if (!on_ground && !flying)
+            a.ay += gravity;
+
+        if (auto_slip_out && on_ground && is_in_blocks(map, position))
         {
             speed.vx = 0.0f;
             position.x += 2.0f;
