@@ -350,7 +350,7 @@ private:
         game_character it =
             create_enemy(
                 x, y, false,
-                routine_type((straight_routine(1.5f))),
+                routine_type((straight_routine(2.0f))),
                 milk_sprite_info_, &milk_texture_
             );
         it.tmp_routine =
