@@ -104,11 +104,11 @@ struct game_character
 
         if (auto_slip_out && on_ground && is_in_blocks(map, position))
         {
+            a.ax = 0.0f;
             speed.vx = 0.0f;
             position.x += 2.0f;
         }
-        else
-            ::move(position, speed, a, map);
+        ::move(position, speed, a, map);
 
         color = 0xFFFFFFFFul;
         if (!effect.empty())
