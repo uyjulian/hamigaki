@@ -121,6 +121,7 @@ public:
 
         cmd.jump  = cmd.jump  || joy_cmd.jump;
         cmd.dash  = cmd.dash  || joy_cmd.dash;
+        cmd.punch = cmd.punch || joy_cmd.punch;
         cmd.reset = cmd.reset || joy_cmd.reset;
 
         return cmd;
@@ -236,6 +237,8 @@ private:
             cmd.jump = button_is_down(state[key_cfg_.jump]);
         if (key_cfg_.dash != -1)
             cmd.dash = button_is_down(state[key_cfg_.dash]);
+        if (key_cfg_.punch != -1)
+            cmd.punch = button_is_down(state[key_cfg_.punch]);
         if (key_cfg_.reset != -1)
             cmd.reset = button_is_down(state[key_cfg_.reset]);
 
@@ -266,6 +269,8 @@ private:
             cmd.jump = button_is_down(state.buttons[joy_cfg_.jump]);
         if (joy_cfg_.dash != -1)
             cmd.dash = button_is_down(state.buttons[joy_cfg_.dash]);
+        if (joy_cfg_.punch != -1)
+            cmd.punch = button_is_down(state.buttons[joy_cfg_.punch]);
         if (joy_cfg_.reset != -1)
             cmd.reset = button_is_down(state.buttons[joy_cfg_.reset]);
 

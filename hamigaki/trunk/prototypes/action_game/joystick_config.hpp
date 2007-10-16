@@ -20,9 +20,10 @@ struct joystick_config
 {
     int jump;
     int dash;
+    int punch;
     int reset;
 
-    joystick_config() : jump(0), dash(1), reset(-1)
+    joystick_config() : jump(0), dash(1), punch(2), reset(-1)
     {
     }
 };
@@ -52,6 +53,8 @@ void load_joystick_config_list(const char* filename, joystick_config_list& ls)
             cfg.jump = -1;
         if (!(is >> cfg.dash))
             cfg.dash = -1;
+        if (!(is >> cfg.punch))
+            cfg.punch = -1;
         if (!(is >> cfg.reset))
             cfg.reset = -1;
 
@@ -74,6 +77,7 @@ inline void append_joystick_config(
         << guid.to_guid_string() << ' '
         << cfg.jump << ' '
         << cfg.dash << ' '
+        << cfg.punch << ' '
         << cfg.reset << '\n';
 }
 

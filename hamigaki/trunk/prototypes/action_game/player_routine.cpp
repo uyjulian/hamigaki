@@ -20,6 +20,12 @@ const boost::uint32_t duck_form = player_routine::duck_form;
 const boost::uint32_t duck_jump_form = player_routine::duck_jump_form;
 const boost::uint32_t brake_form = player_routine::brake_form;
 
+const boost::uint32_t punch_form =
+    static_four_char_code<'P','U','N','C'>::value;
+
+const boost::uint32_t duck_punch_form =
+    static_four_char_code<'D','P','N','C'>::value;
+
 
 bool is_breaking(float vx, float ax)
 {
@@ -227,11 +233,47 @@ routine_result player_routine::operator()(
     routine_type rx(x_routine(map_, sound_));
     routine_type ry(y_routine(map_, sound_));
 
+    int punch_frames = 0;
+    boost::uint32_t form_type;
+    bool old_punch = false;
+
     while (true)
     {
+        bool punch_pushed = !old_punch && cmd.punch;
+        old_punch = cmd.punch;
+
+        if (punch_frames > 0)
+            std::swap(form_type, form.type);
+        else if (punch_pushed)
+        {
+            if ((form.type == duck_form) || (form.type == duck_jump_form))
+                form_type = duck_punch_form;
+            else
+                form_type = punch_form;
+
+            punch_frames = 5;
+        }
+
         acceleration ax, ay;
         boost::tie(ax,form) = rx(r,v,form,cmd);
         boost::tie(ay,form) = ry(r,v,form,cmd);
+
+        if (punch_frames > 0)
+        {
+            if (--punch_frames == 0)
+            {
+                if ((form.type != duck_form) &&
+                    (form.type != duck_jump_form) &&
+                    (form.type != jump_form) )
+                {
+                    form_type = walk_form;
+                }
+            }
+
+            ax.ax = 0.0f;
+            ay.ay = 0.0f;
+            std::swap(form_type, form.type);
+        }
 
         acceleration a;
         a.ax = ax.ax;

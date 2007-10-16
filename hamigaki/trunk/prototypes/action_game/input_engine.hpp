@@ -19,11 +19,12 @@ struct input_command
     float y;
     bool jump;
     bool dash;
+    bool punch;
     bool reset;
 
     input_command()
         : x(0.0f), y(0.0f)
-        , jump(false), dash(false), reset(false)
+        , jump(false), dash(false), punch(false), reset(false)
     {
     }
 };

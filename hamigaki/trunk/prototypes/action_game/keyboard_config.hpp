@@ -17,9 +17,10 @@ struct keyboard_config
 {
     int jump;
     int dash;
+    int punch;
     int reset;
 
-    keyboard_config() : jump(0x2C), dash(0x2D), reset(-1)
+    keyboard_config() : jump(0x2C), dash(0x2D), punch(0x2E), reset(-1)
     {
     }
 };
@@ -29,7 +30,7 @@ inline keyboard_config load_keyboard_config(const char* filename)
     std::ifstream is(filename);
 
     keyboard_config cfg;
-    is >> cfg.jump >> cfg.dash >> cfg.reset;
+    is >> cfg.jump >> cfg.dash >> cfg.punch >> cfg.reset;
     return cfg;
 }
 
@@ -40,6 +41,7 @@ void save_keyboard_config(const char* filename, const keyboard_config& cfg)
     os
         << cfg.jump << ' '
         << cfg.dash << ' '
+        << cfg.punch << ' '
         << cfg.reset << '\n';
 }
 
