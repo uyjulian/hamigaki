@@ -7,12 +7,14 @@
 
 # See http://hamigaki.sourceforge.jp/ for library home page.
 
-man.png 32 64
-NORM  0  0 2  0 28 64
-WALK 32  0 2  0 28 64
-WALK 64  0 2  1 28 63
-JUMP 96  0 2  2 28 62
-DUCK  0 64 2 38 28 26
-DJMP  0 64 2 38 28 26
-BRAK 32 64 2  5 28 59
-KNOK 64 64 2  3 28 61
+man.png 64 64
+NORM   0   0 18  0 28 64
+WALK  64   0 18  0 28 64
+WALK 128   0 18  1 28 63
+JUMP 192   0 18  2 28 62
+DUCK   0  64 18 38 28 26
+DJMP   0  64 18 38 28 26
+BRAK  64  64 18  5 28 59
+KNOK 128  64 18  3 28 61
+PUNC 192  64 18  1 28 63
+DPNC   0 128 18 38 28 26
