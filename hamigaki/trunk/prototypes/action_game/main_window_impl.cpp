@@ -360,6 +360,22 @@ private:
         items_.push_back(it);
     }
 
+    void hit_enemy(game_character& enemy)
+    {
+        map_.replace(enemy.origin.first, enemy.origin.second, enemy.next_char);
+
+        enemy.change_form(player_routine::miss_form);
+        enemy.routine = routine_type(vanish_routine(10));
+        enemy.position.y += 16.0f;
+
+        if ((player_.form.options & sprite_options::back) != 0)
+            enemy.speed.vx = -4.0f;
+        else
+            enemy.speed.vx = 4.0f;
+
+        enemy.speed.vy = 4.0f;
+    }
+
     void reset_characters()
     {
         missed_ = false;
@@ -415,13 +431,7 @@ private:
             int center = static_cast<int>(r.x+r.lx*0.5f)/32;
 
             if ((center == x) && (r.y == static_cast<float>(y*32)))
-            {
-                i->routine = routine_type(vanish_routine(5));
-                i->position.y += 16.0f;
-                i->speed.vx = 0.0f;
-                i->speed.vy = 0.0f;
-                i->form.options |= sprite_options::upside_down;
-            }
+                hit_enemy(*i);
         }
 
         for (chara_iterator i = items_.begin(); i != items_.end(); ++i)
@@ -755,13 +765,7 @@ private:
         for (chara_iterator i = enemies_.begin(); i != enemies_.end(); ++i)
         {
             if (intersect_rects(ar, i->position))
-            {
-                i->routine = routine_type(vanish_routine(5));
-                i->position.y += 16.0f;
-                i->speed.vx = 0.0f;
-                i->speed.vy = 0.0f;
-                i->form.options |= sprite_options::upside_down;
-            }
+                hit_enemy(*i);
         }
     }
 
@@ -769,6 +773,9 @@ private:
     {
         for (chara_iterator i = enemies_.begin(); i != enemies_.end(); ++i)
         {
+            if ((i->position.lx == 0) || (i->position.ly == 0))
+                continue;
+
             rect left_rect = i->position;
             left_rect.lx *= 0.5f;
 
@@ -779,6 +786,9 @@ private:
             for (chara_iterator j = enemies_.begin(); j != enemies_.end(); ++j)
             {
                 if (i == j)
+                    continue;
+
+                if ((j->position.lx == 0) || (j->position.ly == 0))
                     continue;
 
                 if (i->speed.vx < 0.0f)
