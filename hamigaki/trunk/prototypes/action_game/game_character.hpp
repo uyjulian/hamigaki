@@ -52,7 +52,7 @@ struct game_character
     {
         sprite_info info0 = sprite_infos->get_group(form.type)[0];
 
-        float left = position.x - info0.left;
+        float left = position.x - info0.bounds.x;
         float bottom = position.y;
 
         sprite_infos = &infos;
@@ -60,10 +60,10 @@ struct game_character
 
         sprite_info info = sprite_infos->get_group(form.type)[0];
 
-        position.x = left + info.left;
+        position.x = left + info.bounds.x;
         position.y = bottom;
-        position.lx = static_cast<float>(info.width);
-        position.ly = static_cast<float>(info.height);
+        position.lx = static_cast<float>(info.bounds.lx);
+        position.ly = static_cast<float>(info.bounds.ly);
     }
 
     void move(const input_command& cmd, const stage_map& map)

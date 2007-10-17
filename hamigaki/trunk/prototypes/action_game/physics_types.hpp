@@ -10,13 +10,15 @@
 #ifndef PHYSICS_TYPES_HPP
 #define PHYSICS_TYPES_HPP
 
-struct rect
+template<class T>
+struct rectangle
 {
-    float x;
-    float y;
-    float lx;
-    float ly;
+    T x;
+    T y;
+    T lx;
+    T ly;
 };
+typedef rectangle<float> rect;
 
 struct acceleration
 {

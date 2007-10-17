@@ -50,10 +50,10 @@ create_enemy(
     enemy.tmp_routine = routine_type();
     enemy.sprite_infos = &infos;
     enemy.texture = texture;
-    enemy.position.x = static_cast<float>(x * 32 + info.left);
+    enemy.position.x = static_cast<float>(x * 32 + info.bounds.x);
     enemy.position.y = static_cast<float>(y * 32);
-    enemy.position.lx = static_cast<float>(info.width);
-    enemy.position.ly = static_cast<float>(info.height);
+    enemy.position.lx = static_cast<float>(info.bounds.lx);
+    enemy.position.ly = static_cast<float>(info.bounds.ly);
     enemy.speed.vx = 0.0f;
     enemy.speed.vy = 0.0f;
     enemy.origin.first = x;
@@ -381,10 +381,10 @@ private:
         sprite_info info =
             player_.sprite_infos->get_group(player_.form.type)[0];
 
-        player_.position.x = static_cast<float>(x * 32 + info.left);
+        player_.position.x = static_cast<float>(x * 32 + info.bounds.x);
         player_.position.y = static_cast<float>(y * 32);
-        player_.position.lx = static_cast<float>(info.width);
-        player_.position.ly = static_cast<float>(info.height);
+        player_.position.lx = static_cast<float>(info.bounds.lx);
+        player_.position.ly = static_cast<float>(info.bounds.ly);
         player_.speed.vx = 0.0f;
         player_.speed.vy = 0.0f;
         player_.auto_slip_out = true;
@@ -726,6 +726,45 @@ private:
         }
     }
 
+    void process_attack_collisions()
+    {
+        const sprite_info& info =
+            player_.sprite_infos->get_group(player_.form.type)[0];
+
+        const rectangle<int>& br = info.bounds;
+        const rectangle<int>& ar0 = info.attack;
+
+        if ((ar0.lx == 0) || (ar0.ly == 0))
+            return;
+
+        rect ar;
+        if ((player_.form.options & sprite_options::back) != 0)
+        {
+            ar.x = player_.position.x +
+                static_cast<float>(
+                    player_.sprite_infos->width() - ar0.x - ar0.lx - br.x);
+        }
+        else
+            ar.x = player_.position.x + static_cast<float>(ar0.x - br.x);
+        ar.y = player_.position.y +
+            static_cast<float>(player_.sprite_infos->height() - ar0.y - ar0.ly);
+        ar.lx = static_cast<float>(ar0.lx);
+        ar.ly = static_cast<float>(ar0.ly);
+
+        chara_iterator next;
+        for (chara_iterator i = enemies_.begin(); i != enemies_.end(); ++i)
+        {
+            if (intersect_rects(ar, i->position))
+            {
+                i->routine = routine_type(vanish_routine(5));
+                i->position.y += 16.0f;
+                i->speed.vx = 0.0f;
+                i->speed.vy = 0.0f;
+                i->form.options |= sprite_options::upside_down;
+            }
+        }
+    }
+
     void process_enemy_collisions()
     {
         for (chara_iterator i = enemies_.begin(); i != enemies_.end(); ++i)
@@ -810,6 +849,7 @@ private:
 
         process_map_collisions();
         process_collisions();
+        process_attack_collisions();
         process_enemy_collisions();
 
         float center = player_.position.x + player_.position.lx * 0.5f;
@@ -849,7 +889,7 @@ private:
         std::size_t pattern = (chara.step % (15 * group.size())) / 15;
         const sprite_info& info = group[pattern];
 
-        float x = chara.position.x - info.left - scroll_x_;
+        float x = chara.position.x - info.bounds.x - scroll_x_;
         float y = static_cast<float>(height_)-chara.position.y-infos.height();
 
         if (chara.texture != 0)

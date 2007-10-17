@@ -75,10 +75,23 @@ load_sprite_info_set_from_text(const char* filename, sprite_info_set& infos)
         parser.clear();
         parser
             >> std::setw(5) >> fcc >> info.x >> info.y
-            >> info.left >> info.top >> info.width >> info.height;
+            >> info.bounds.x >> info.bounds.y
+            >> info.bounds.lx >> info.bounds.ly;
 
         if (!parser)
             throw_invalid_format(filename);
+
+        parser
+            >> info.attack.x >> info.attack.y
+            >> info.attack.lx >> info.attack.ly;
+
+        if (!parser)
+        {
+            info.attack.x = 0;
+            info.attack.y = 0;
+            info.attack.lx = 0;
+            info.attack.ly = 0;
+        }
 
         tmp.push_back(four_char_code(fcc), info);
     }

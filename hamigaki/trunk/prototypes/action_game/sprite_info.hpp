@@ -10,6 +10,7 @@
 #ifndef SPRITE_INFO_HPP
 #define SPRITE_INFO_HPP
 
+#include "physics_types.hpp"
 #include <boost/cstdint.hpp>
 #include <map>
 #include <stdexcept>
@@ -21,10 +22,8 @@ struct sprite_info
     int x;
     int y;
 
-    int left;
-    int top;
-    int width;
-    int height;
+    rectangle<int> bounds;
+    rectangle<int> attack;
 };
 
 class sprite_info_set

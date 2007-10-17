@@ -196,9 +196,9 @@ void move(rect& r, velocity& v, const acceleration& a, const stage_map& map)
 
 void change_form(rect& r, const sprite_info& old, const sprite_info& cur)
 {
-    float x = r.x - static_cast<float>(old.left);
+    float x = r.x - static_cast<float>(old.bounds.x);
 
-    r.x = x + static_cast<float>(cur.left);
-    r.lx = static_cast<float>(cur.width);
-    r.ly = static_cast<float>(cur.height);
+    r.x = x + static_cast<float>(cur.bounds.x);
+    r.lx = static_cast<float>(cur.bounds.lx);
+    r.ly = static_cast<float>(cur.bounds.ly);
 }
