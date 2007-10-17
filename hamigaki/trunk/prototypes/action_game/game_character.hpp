@@ -53,6 +53,7 @@ struct game_character
         sprite_info info0 = sprite_infos->get_group(form.type)[0];
 
         float left = position.x - info0.bounds.x;
+        float center = left + sprite_infos->width() * 0.5f;
         float bottom = position.y;
 
         sprite_infos = &infos;
@@ -60,7 +61,7 @@ struct game_character
 
         sprite_info info = sprite_infos->get_group(form.type)[0];
 
-        position.x = left + info.bounds.x;
+        position.x = center - sprite_infos->width()*0.5f + info.bounds.x;
         position.y = bottom;
         position.lx = static_cast<float>(info.bounds.lx);
         position.ly = static_cast<float>(info.bounds.ly);
