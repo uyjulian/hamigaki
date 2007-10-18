@@ -164,7 +164,13 @@ public:
         {
             scoped_scene scene(device_);
 
-            device_.set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
+            device_.set_render_state(D3DRS_ALPHABLENDENABLE, TRUE);
+            device_.set_render_state(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+            device_.set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+
+            device_.set_texture_stage_state(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+            device_.set_texture_stage_state(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+            device_.set_texture_stage_state(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
 
             for (int y = 0; y < 15; ++y)
             {
@@ -177,16 +183,12 @@ public:
                         draw_block(x, y, 32, 0);
                     else if ((c == '$') || (c == '?'))
                         draw_block(x, y, 64, 0);
+                    else if (c == '/')
+                        draw_block(x, y, 0, 32);
+                    else if (c == '\\')
+                        draw_block(x, y, 32, 32);
                 }
             }
-
-            device_.set_render_state(D3DRS_ALPHABLENDENABLE, TRUE);
-            device_.set_render_state(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-            device_.set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-
-            device_.set_texture_stage_state(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-            device_.set_texture_stage_state(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-            device_.set_texture_stage_state(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
 
             std::for_each(
                 enemies_.begin(), enemies_.end(),
@@ -204,6 +206,8 @@ public:
                 particles_.begin(), particles_.end(),
                 boost::bind(&impl::draw_character, this, _1)
             );
+
+            device_.set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
         }
         device_.present();
     }
@@ -920,7 +924,7 @@ private:
             static_cast<float>(height_-32 - y*32),
             0.0f,
             map_texture_,
-            tx, ty, 32, 32, false
+            tx, ty, 32, 32, 0
         );
     }
 };
