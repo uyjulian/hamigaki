@@ -35,6 +35,9 @@ inline bool intersect_rects(const rect& r1, const rect& r2)
         (r1.y < r2.y + r2.ly) && (r2.y < r1.y + r1.ly) ;
 }
 
+float slope_height(const stage_map& map, float x, float y);
+bool is_slope(const stage_map& map, const rect& r);
+bool is_on_slope(const stage_map& map, const rect& r);
 bool is_on_ground(const stage_map& map, const rect& r);
 bool is_in_blocks(const stage_map& map, const rect& r);
 bool find_vertical_blocks(const stage_map& map, int x, int y1, int y2);

@@ -53,10 +53,82 @@ int bottom_block(const rect& r)
 }
 
 
+float slope_height(const stage_map& map, float x, float y)
+{
+    int x_blk = static_cast<int>(x) / 32;
+    int y_blk = static_cast<int>(y) / 32;
+
+    char c = map(x_blk, y_blk);
+    if (c == '/')
+    {
+        float dx = x - x_blk * 32;
+        return static_cast<float>(y_blk * 32) + dx;
+    }
+    else if (c == '\\')
+    {
+        float dx = x - x_blk * 32;
+        return static_cast<float>(y_blk * 32 + 32) - dx;
+    }
+    else if (is_block(c))
+        return static_cast<float>(y_blk * 32 + 32);
+
+    c = map(x_blk, --y_blk);
+    if (c == '/')
+    {
+        float dx = x - x_blk * 32;
+        return static_cast<float>(y_blk * 32) + dx;
+    }
+    else if (c == '\\')
+    {
+        float dx = x - x_blk * 32;
+        return static_cast<float>(y_blk * 32 + 32) - dx;
+    }
+    else
+        return 0.0f;
+}
+
+bool is_slope(const stage_map& map, const rect& r)
+{
+    if (r.lx == 0.0f)
+        return false;
+
+    int y = bottom_block(r);
+
+    float center = r.x + r.lx * 0.5f;
+    int x = static_cast<int>(center)/32;
+    char c = map(x, y);
+    if ((c == '/') || (c == '\\'))
+        return true;
+
+    float dy = r.y - static_cast<float>(y*32);
+    if (dy < 16.0f)
+        --y;
+    else
+        ++y;
+
+    c = map(x, y);
+    if ((c == '/') || (c == '\\'))
+        return true;
+
+    return false;
+}
+
+bool is_on_slope(const stage_map& map, const rect& r)
+{
+    if (r.lx == 0.0f)
+        return false;
+
+    float center = r.x + r.lx * 0.5f;
+    return slope_height(map, center, r.y) == r.y;
+}
+
 bool is_on_ground(const stage_map& map, const rect& r)
 {
     if (r.lx == 0.0f)
         return false;
+
+    if (is_slope(map, r))
+        return is_on_slope(map, r);
 
     int y = bottom_block(r);
     if (r.y == static_cast<float>(y*32))
@@ -74,6 +146,9 @@ bool is_on_ground(const stage_map& map, const rect& r)
 bool is_in_blocks(const stage_map& map, const rect& r)
 {
     if ((r.lx == 0.0f) || (r.ly == 0.0f))
+        return false;
+
+    if (is_slope(map, r))
         return false;
 
     int y1 = bottom_block(r);
@@ -111,6 +186,7 @@ bool find_horizontal_blocks(const stage_map& map, int y, int x1, int x2)
 
 void move(rect& r, velocity& v, const acceleration& a, const stage_map& map)
 {
+    bool slope = is_slope(map, r);
     bool on_ground = is_on_ground(map, r);
 
     v.vx += a.ax;
@@ -124,6 +200,9 @@ void move(rect& r, velocity& v, const acceleration& a, const stage_map& map)
         int new_x = left_block(r);
         int y1 = bottom_block(r);
         int y2 = top_block(r);
+
+        if (slope)
+            --old_x;
 
         for (int x = old_x-1; x >= new_x; --x)
         {
@@ -144,6 +223,9 @@ void move(rect& r, velocity& v, const acceleration& a, const stage_map& map)
         int new_x = right_block(r);
         int y1 = bottom_block(r);
         int y2 = top_block(r);
+
+        if (slope)
+            ++old_x;
 
         for (int x = old_x+1; x <= new_x; ++x)
         {
@@ -168,7 +250,7 @@ void move(rect& r, velocity& v, const acceleration& a, const stage_map& map)
 
     if (v.vy > 0.0f)
         r.y += v.vy;
-    else if (v.vy < 0.0f)
+    else if ((v.vy < 0.0f) && !slope)
     {
         int old_y = bottom_block(r);
 
@@ -192,6 +274,18 @@ void move(rect& r, velocity& v, const acceleration& a, const stage_map& map)
             }
         }
     }
+
+    if (is_slope(map, r))
+    {
+        float center = r.x + r.lx * 0.5f;
+        float h = slope_height(map, center, r.y);
+        if (h > r.y)
+            r.y = h;
+        else if (v.vy <= 0.0f)
+            r.y = h;
+    }
+    else if (slope && (v.vy <= 0.0f))
+        r.y = static_cast<float>((static_cast<int>(r.y) + 16) / 32 * 32);
 }
 
 void change_form(rect& r, const sprite_info& old, const sprite_info& cur)
