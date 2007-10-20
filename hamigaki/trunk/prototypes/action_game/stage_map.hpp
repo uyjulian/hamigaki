@@ -15,6 +15,10 @@
 #include <vector>
 
 bool is_block(char c);
+bool is_left_wall(char c);
+bool is_right_wall(char c);
+bool is_floor(char c);
+bool is_ceiling(char c);
 
 class stage_map
 {

@@ -18,6 +18,26 @@ bool is_block(char c)
         (c == '?') || (c == 'I') ;
 }
 
+bool is_left_wall(char c)
+{
+    return is_block(c) || (c == '/');
+}
+
+bool is_right_wall(char c)
+{
+    return is_block(c) || (c == '\\');
+}
+
+bool is_floor(char c)
+{
+    return is_block(c);
+}
+
+bool is_ceiling(char c)
+{
+    return is_block(c) || (c == '/') || (c == '\\');
+}
+
 char stage_map::operator()(int x, int y) const
 {
     if (x < 0)

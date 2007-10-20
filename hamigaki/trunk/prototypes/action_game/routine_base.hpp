@@ -40,8 +40,7 @@ bool is_slope(const stage_map& map, const rect& r);
 bool is_on_slope(const stage_map& map, const rect& r);
 bool is_on_ground(const stage_map& map, const rect& r);
 bool is_in_blocks(const stage_map& map, const rect& r);
-bool find_vertical_blocks(const stage_map& map, int x, int y1, int y2);
-bool find_horizontal_blocks(const stage_map& map, int y, int x1, int x2);
+bool find_ceiling(const stage_map& map, int y, int x1, int x2);
 
 void move(rect& r, velocity& v, const acceleration& a, const stage_map& map);
 void change_form(rect& r, const sprite_info& old, const sprite_info& cur);

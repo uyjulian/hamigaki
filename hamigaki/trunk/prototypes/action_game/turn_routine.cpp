@@ -18,7 +18,7 @@ bool is_on_ground_left(const stage_map& map, const rect& r)
     int x = left_block(r);
     int y = bottom_block(r) - 1;
 
-    return is_block(map(x, y));
+    return is_floor(map(x, y));
 }
 
 bool is_on_ground_right(const stage_map& map, const rect& r)
@@ -26,7 +26,7 @@ bool is_on_ground_right(const stage_map& map, const rect& r)
     int x = right_block(r);
     int y = bottom_block(r) - 1;
 
-    return is_block(map(x, y));
+    return is_floor(map(x, y));
 }
 
 bool is_on_ground_front(

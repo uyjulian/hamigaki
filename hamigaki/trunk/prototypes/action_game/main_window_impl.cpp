@@ -477,13 +477,13 @@ private:
 
             for (int y = old_y+1; y <= new_y; ++y)
             {
-                if (is_block(map_(x, y)))
+                if (is_ceiling(map_(x, y)))
                 {
                     r.y = static_cast<float>(y * 32) - r.ly;
                     i->speed.vy = -i->speed.vy * 0.5f;
                     break;
                 }
-                else if (find_horizontal_blocks(map_, y, x1, x2))
+                else if (find_ceiling(map_, y, x1, x2))
                 {
                     r.x = static_cast<float>(x * 32);
                     break;
@@ -615,13 +615,13 @@ private:
 
                     break;
                 }
-                else if (is_block(type))
+                else if (is_ceiling(type))
                 {
                     r.y = static_cast<float>(y * 32) - r.ly;
                     player_.speed.vy = -player_.speed.vy * 0.5f;
                     break;
                 }
-                else if (find_horizontal_blocks(map_, y, x1, x2))
+                else if (find_ceiling(map_, y, x1, x2))
                 {
                     r.x = static_cast<float>(x * 32);
                     break;

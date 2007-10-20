@@ -72,6 +72,19 @@ float slope_height(const stage_map& map, float x, float y)
     else if (is_block(c))
         return static_cast<float>(y_blk * 32 + 32);
 
+    c = map(x_blk, ++y_blk);
+    if (c == '/')
+    {
+        float dx = x - x_blk * 32;
+        return static_cast<float>(y_blk * 32) + dx;
+    }
+    else if (c == '\\')
+    {
+        float dx = x - x_blk * 32;
+        return static_cast<float>(y_blk * 32 + 32) - dx;
+    }
+    --y_blk;
+
     c = map(x_blk, --y_blk);
     if (c == '/')
     {
@@ -148,11 +161,11 @@ bool is_in_blocks(const stage_map& map, const rect& r)
     if ((r.lx == 0.0f) || (r.ly == 0.0f))
         return false;
 
-    if (is_slope(map, r))
-        return false;
-
     int y1 = bottom_block(r);
     int y2 = top_block(r);
+
+    if (is_slope(map, r))
+        ++y1;
 
     int x1 = left_block(r);
     int x2 = right_block(r);
@@ -165,19 +178,37 @@ bool is_in_blocks(const stage_map& map, const rect& r)
     return false;
 }
 
-bool find_vertical_blocks(const stage_map& map, int x, int y1, int y2)
+bool find_left_wall(const stage_map& map, int x, int y1, int y2)
 {
     for (int y = y1; y <= y2; ++y)
-        if (is_block(map(x, y)))
+        if (is_left_wall(map(x, y)))
             return true;
 
     return false;
 }
 
-bool find_horizontal_blocks(const stage_map& map, int y, int x1, int x2)
+bool find_right_wall(const stage_map& map, int x, int y1, int y2)
+{
+    for (int y = y1; y <= y2; ++y)
+        if (is_right_wall(map(x, y)))
+            return true;
+
+    return false;
+}
+
+bool find_floor(const stage_map& map, int y, int x1, int x2)
 {
     for (int x = x1; x <= x2; ++x)
-        if (is_block(map(x, y)))
+        if (is_floor(map(x, y)))
+            return true;
+
+    return false;
+}
+
+bool find_ceiling(const stage_map& map, int y, int x1, int x2)
+{
+    for (int x = x1; x <= x2; ++x)
+        if (is_ceiling(map(x, y)))
             return true;
 
     return false;
@@ -202,11 +233,11 @@ void move(rect& r, velocity& v, const acceleration& a, const stage_map& map)
         int y2 = top_block(r);
 
         if (slope)
-            --old_x;
+            ++y1;
 
         for (int x = old_x-1; x >= new_x; --x)
         {
-            if (find_vertical_blocks(map, x, y1, y2))
+            if (find_left_wall(map, x, y1, y2))
             {
                 r.x = static_cast<float>((x+1) * 32);
                 v.vx = 0.0f;
@@ -225,11 +256,11 @@ void move(rect& r, velocity& v, const acceleration& a, const stage_map& map)
         int y2 = top_block(r);
 
         if (slope)
-            ++old_x;
+            ++y1;
 
         for (int x = old_x+1; x <= new_x; ++x)
         {
-            if (find_vertical_blocks(map, x, y1, y2))
+            if (find_right_wall(map, x, y1, y2))
             {
                 r.x = static_cast<float>(x * 32) - r.lx;
                 v.vx = 0.0f;
@@ -265,7 +296,7 @@ void move(rect& r, velocity& v, const acceleration& a, const stage_map& map)
 
             for (int y = old_y-1; y >= new_y; --y)
             {
-                if (find_horizontal_blocks(map, y, x1, x2))
+                if (find_floor(map, y, x1, x2))
                 {
                     r.y = static_cast<float>((y+1) * 32);
                     v.vy = 0.0f;
@@ -280,7 +311,10 @@ void move(rect& r, velocity& v, const acceleration& a, const stage_map& map)
         float center = r.x + r.lx * 0.5f;
         float h = slope_height(map, center, r.y);
         if (h > r.y)
+        {
+            v.vx = limit_abs(v.vx, 3.0f); // FIXME
             r.y = h;
+        }
         else if (v.vy <= 0.0f)
             r.y = h;
     }
