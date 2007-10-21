@@ -372,7 +372,7 @@ private:
         enemy.routine = routine_type(vanish_routine(10));
         enemy.position.y += 16.0f;
 
-        if ((player_.form.options & sprite_options::back) != 0)
+        if (enemy.position.x < player_.position.x)
             enemy.speed.vx = -4.0f;
         else
             enemy.speed.vx = 4.0f;
@@ -630,7 +630,7 @@ private:
         }
     }
 
-    void process_collisions()
+    void remove_nform_characters()
     {
         chara_iterator next;
         for (chara_iterator i = enemies_.begin(); i != enemies_.end(); i = next)
@@ -645,6 +645,42 @@ private:
                 enemies_.erase(i);
                 continue;
             }
+        }
+
+        for (chara_iterator i = items_.begin(); i != items_.end(); i = next)
+        {
+            next = boost::next(i);
+
+            if (i->form.type == sprite_form::nform)
+            {
+                items_.erase(i);
+                continue;
+            }
+        }
+
+        for (chara_iterator i=particles_.begin(); i != particles_.end(); i=next)
+        {
+            next = boost::next(i);
+
+            if (i->form.type == sprite_form::nform)
+            {
+                map_.replace(i->origin.first, i->origin.second, i->next_char);
+                if (i->on_end)
+                     i->on_end();
+                particles_.erase(i);
+                continue;
+            }
+        }
+    }
+
+    void process_collisions()
+    {
+        bool on_slope = is_on_slope(map_, player_.position);
+
+        chara_iterator next;
+        for (chara_iterator i = enemies_.begin(); i != enemies_.end(); i = next)
+        {
+            next = boost::next(i);
 
             rect r = i->position;
             if ((r.lx == 0.0f) || (r.ly == 0.0f))
@@ -663,7 +699,8 @@ private:
             float y2 = r2.y + r2.ly;
 
             if ( (includes_point(r, x1, y1) || includes_point(r, x2, y1)) &&
-                !(includes_point(r, x1, y2) || includes_point(r, x2, y2)) )
+                !(includes_point(r, x1, y2) || includes_point(r, x2, y2)) &&
+                !on_slope )
             {
                 i->change_form(static_four_char_code<'S','T','M','P'>::value);
                 i->routine = routine_type(vanish_routine(5));
@@ -711,31 +748,11 @@ private:
         {
             next = boost::next(i);
 
-            if (i->form.type == sprite_form::nform)
-            {
-                items_.erase(i);
-                continue;
-            }
-
             if (intersect_rects(player_.position, i->position))
             {
                 items_.erase(i);
                 if (player_.sprite_infos == &mini_sprite_info_)
                     player_.change_sprite(player_sprite_info_, &man_texture_);
-            }
-        }
-
-        for (chara_iterator i=particles_.begin(); i != particles_.end(); i=next)
-        {
-            next = boost::next(i);
-
-            if (i->form.type == sprite_form::nform)
-            {
-                map_.replace(i->origin.first, i->origin.second, i->next_char);
-                if (i->on_end)
-                     i->on_end();
-                particles_.erase(i);
-                continue;
             }
         }
     }
@@ -862,8 +879,9 @@ private:
         );
 
         process_map_collisions();
-        process_collisions();
+        remove_nform_characters();
         process_attack_collisions();
+        process_collisions();
         process_enemy_collisions();
 
         float center = player_.position.x + player_.position.lx * 0.5f;

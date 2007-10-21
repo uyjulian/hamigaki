@@ -26,6 +26,9 @@ const boost::uint32_t punch_form =
 const boost::uint32_t duck_punch_form =
     static_four_char_code<'D','P','N','C'>::value;
 
+const boost::uint32_t slide_down_form =
+    static_four_char_code<'S','L','D','D'>::value;
+
 
 bool is_breaking(float vx, float ax)
 {
@@ -79,11 +82,15 @@ routine_result x_routine::operator()(
     while (true)
     {
         bool on_ground = is_on_ground(map_, r);
+        bool slope = is_slope(map_, r);
 
-        if (cmd.x < 0.0f)
-            form.options |= sprite_options::back;
-        else if (cmd.x > 0.0f)
-            form.options &= ~sprite_options::back;
+        if (form.type != slide_down_form)
+        {
+            if (cmd.x < 0.0f)
+                form.options |= sprite_options::back;
+            else if (cmd.x > 0.0f)
+                form.options &= ~sprite_options::back;
+        }
 
         float max_speed = 3.0f;
         if (cmd.dash)
@@ -105,6 +112,13 @@ routine_result x_routine::operator()(
                 form.type = brake_form;
                 sound_.play_se("brake.ogg");
             }
+        }
+        else if (on_ground && slope && (form.type == slide_down_form))
+        {
+            if (v.vx < 0.0f)
+                a.ax = -0.125f;
+            else
+                a.ax = 0.125f;
         }
         else if (cmd.x != 0.0f)
         {
@@ -133,7 +147,8 @@ routine_result x_routine::operator()(
 
             if (on_ground)
             {
-                form.type = sprite_form::normal;
+                if (form.type != slide_down_form)
+                    form.type = sprite_form::normal;
                 if (sound_.se_filename() == "brake.ogg")
                     sound_.stop_se();
             }
@@ -141,10 +156,47 @@ routine_result x_routine::operator()(
 
         if (on_ground)
         {
-            if ((cmd.x == 0.0f) && (cmd.y < 0.0f))
-                form.type = duck_form;
-            else if (form.type == duck_form)
-                form.type = sprite_form::normal;
+            if (form.type == slide_down_form)
+            {
+                if (v.vx == 0.0f)
+                    form.type = sprite_form::normal;
+                else if (slope)
+                {
+                    int x = static_cast<int>(r.x + r.lx * 0.5f) / 32;
+                    int y = bottom_block(r);
+                    char floor = map_(x, y);
+                    if ((floor == '/') && (v.vx > 0.0f))
+                        form.type = sprite_form::normal;
+                    else if ((floor == '\\') && (v.vx < 0.0f))
+                        form.type = sprite_form::normal;
+                }
+            }
+            else
+            {
+                if ((cmd.x == 0.0f) && (cmd.y < 0.0f))
+                {
+                    if (slope)
+                    {
+                        int x = static_cast<int>(r.x + r.lx * 0.5f) / 32;
+                        int y = bottom_block(r);
+                        char floor = map_(x, y);
+                        if (floor == '/')
+                        {
+                            a.ax = -v.vx - 0.125f;
+                            form.type = slide_down_form;
+                        }
+                        else if (floor == '\\')
+                        {
+                            a.ax = -v.vx + 0.125f;
+                            form.type = slide_down_form;
+                        }
+                    }
+                    else
+                        form.type = duck_form;
+                }
+                else if (form.type == duck_form)
+                    form.type = sprite_form::normal;
+            }
         }
         else if (form.type == walk_form)
             form.type = sprite_form::normal;
