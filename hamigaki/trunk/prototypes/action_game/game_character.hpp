@@ -101,7 +101,11 @@ struct game_character
         bool on_ground = is_on_ground(map, position);
 
         if (!on_ground && !flying)
+        {
             a.ay += gravity;
+            if (speed.vy + a.ay < -10.0f)
+                a.ay = -speed.vy - 10.0f;
+        }
 
         if (auto_slip_out && on_ground && is_in_blocks(map, position))
         {

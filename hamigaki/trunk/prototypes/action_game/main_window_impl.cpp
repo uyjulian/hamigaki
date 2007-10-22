@@ -14,6 +14,7 @@
 #include "game_character.hpp"
 #include "hop_routine.hpp"
 #include "hop_step_jump_routine.hpp"
+#include "lift_routine.hpp"
 #include "player_routine.hpp"
 #include "png_loader.hpp"
 #include "pop_up_routine.hpp"
@@ -92,6 +93,7 @@ public:
         load_sprite_info_set_from_text("used_block.txt", block_sprite_info_);
         load_sprite_info_set_from_text("brick_block.txt", brick_sprite_info_);
         load_sprite_info_set_from_text("milk.txt", milk_sprite_info_);
+        load_sprite_info_set_from_text("lift.txt", lift_sprite_info_);
 
         reset_characters();
     }
@@ -130,6 +132,8 @@ public:
             create_png_texture(device_, fragment_sprite_info_.texture());
         milk_texture_ =
             create_png_texture(device_, milk_sprite_info_.texture());
+        lift_texture_ =
+            create_png_texture(device_, lift_sprite_info_.texture());
 
         last_time_ = ::GetTickCount();
     }
@@ -229,6 +233,7 @@ private:
     direct3d_texture9 ball_texture_;
     direct3d_texture9 fragment_texture_;
     direct3d_texture9 milk_texture_;
+    direct3d_texture9 lift_texture_;
     bool active_;
     unsigned long last_time_;
     unsigned frames_;
@@ -242,6 +247,7 @@ private:
     sprite_info_set block_sprite_info_;
     sprite_info_set brick_sprite_info_;
     sprite_info_set milk_sprite_info_;
+    sprite_info_set lift_sprite_info_;
     game_character player_;
     chara_list enemies_;
     chara_list items_;
@@ -310,6 +316,28 @@ private:
                     ball_sprite_info_, &ball_texture_
                 )
             );
+        }
+        else if (type == 'U')
+        {
+            game_character c =
+                create_enemy(
+                    x, y, false,
+                    routine_type(lift_routine(2.0f)),
+                    lift_sprite_info_, &lift_texture_
+                );
+            c.flying = true;
+            particles_.push_back(c);
+        }
+        else if (type == 'D')
+        {
+            game_character c =
+                create_enemy(
+                    x, y, false,
+                    routine_type(lift_routine(-2.0f)),
+                    lift_sprite_info_, &lift_texture_
+                );
+            c.flying = true;
+            particles_.push_back(c);
         }
     }
 
@@ -469,7 +497,7 @@ private:
             int x2 = right_block(r);
             int x = static_cast<int>(r.x+r.lx*0.5f)/32;
 
-            if ((x2 < 0) || (x1 >= map_.width()) || (new_y < 0))
+            if ((x2 < 0) || (x1 >= map_.width()) || (new_y < -1))
             {
                 enemies_.erase(i);
                 continue;

@@ -276,8 +276,6 @@ void move(rect& r, velocity& v, const acceleration& a, const stage_map& map)
         if (v.vy < 0.0f)
             v.vy = 0.0f;
     }
-    else
-        v.vy = (std::max)(v.vy, -10.0f);
 
     if (v.vy > 0.0f)
         r.y += v.vy;
