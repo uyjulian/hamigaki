@@ -325,8 +325,10 @@ private:
                     routine_type(lift_routine(2.0f)),
                     lift_sprite_info_, &lift_texture_
                 );
+            c.position.lx = 0.0f;
+            c.position.ly = 0.0f;
             c.flying = true;
-            particles_.push_back(c);
+            enemies_.push_back(c);
         }
         else if (type == 'D')
         {
@@ -336,8 +338,10 @@ private:
                     routine_type(lift_routine(-2.0f)),
                     lift_sprite_info_, &lift_texture_
                 );
+            c.position.lx = 0.0f;
+            c.position.ly = 0.0f;
             c.flying = true;
-            particles_.push_back(c);
+            enemies_.push_back(c);
         }
     }
 
@@ -510,6 +514,9 @@ private:
                 enemies_.erase(i);
                 continue;
             }
+
+            if (r.ly == 0.0f)
+                continue;
 
             for (int y = old_y+1; y <= new_y; ++y)
             {
