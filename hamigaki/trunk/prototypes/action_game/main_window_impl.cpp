@@ -423,26 +423,34 @@ private:
         player_.effect = effect_type();
         player_.form = sprite_form();
 
-        int x, y;
-        boost::tie(x, y) = map_.player_position();
+        std::pair<int,int> pos = map_.player_position();
 
         sprite_info info =
             player_.sprite_infos->get_group(player_.form.type)[0];
 
-        player_.position.x = static_cast<float>(x * 32 + info.bounds.x);
-        player_.position.y = static_cast<float>(y * 32);
+        player_.position.x = static_cast<float>(pos.first * 32 + info.bounds.x);
+        player_.position.y = static_cast<float>(pos.second * 32);
         player_.position.lx = static_cast<float>(info.bounds.lx);
         player_.position.ly = static_cast<float>(info.bounds.ly);
         player_.speed.vx = 0.0f;
         player_.speed.vy = 0.0f;
         player_.auto_slip_out = true;
-        scroll_x_ = 0.0f;
+
+        const rect& r = player_.position;
+        float center = player_.position.x + player_.position.lx * 0.5f;
+        float right_end = static_cast<float>(map_.width()*32);
+        scroll_x_ = center - static_cast<float>(width_ / 2);
+        if (scroll_x_ < 0.0f)
+            scroll_x_ = 0.0f;
+        else if (scroll_x_ + static_cast<float>(width_) > right_end)
+            scroll_x_ = right_end - static_cast<float>(width_);
 
         enemies_.clear();
-        int x_blocks = width_ / 32;
+        int min_x = static_cast<int>(scroll_x_) / 32 - 3;
+        int max_x = static_cast<int>(scroll_x_) / 32 + width_ / 32 + 3;
         for (int y = 0; y < map_.height(); ++y)
         {
-            for (int x = 0; x < x_blocks + 3; ++x)
+            for (int x = min_x; x < max_x; ++x)
                 add_enemy(x, y, map_(x, y));
         }
 
