@@ -101,77 +101,56 @@ struct acceleration
 
 
 #include <hamigaki/coroutine/shared_coroutine.hpp>
+#include <bitset>
 
-class game_system;
-class character;
+namespace char_attr
+{
+    enum values
+    {
+        player,
+        enemy,
+        weapon,
+        block,
+
+        max_value
+    };
+};
+
+struct game_system;
+struct character;
 
 typedef hamigaki::coroutines::shared_coroutine<
     void (game_system*, character*)
 > routine_type;
 
-class character
+struct character
 {
-public:
-    character() : width_(0.0f), height_(0.0f)
-    {
-    }
+    std::bitset<char_attr::max_value> attrs;
+    point position;
+    float width;
+    float height;
+    velocity speed;
+    routine_type routine;
 
-    point position() const
+    character() : width(0.0f), height(0.0f)
     {
-        return pos_;
-    }
-
-    void position(const point& pos)
-    {
-        pos_ = pos;
-    }
-
-    float width() const
-    {
-        return width_;
-    }
-
-    void width(float w)
-    {
-        width_ = w;
-    }
-
-    float height() const
-    {
-        return height_;
-    }
-
-    void height(float h)
-    {
-        height_ = h;
     }
 
     rectangle bounds() const
     {
-        return make_bounds(pos_, width_, height_);
-    }
-
-    void routine(const routine_type& x)
-    {
-        routine_ = x;
+        return make_bounds(position, width, height);
     }
 
     void move(game_system& game)
     {
-        if (!routine_.empty())
+        if (!routine.empty())
         {
             // Note:
             // This copy guarantees the lifetime until the call is completed.
-            routine_type ro = routine_;
+            routine_type ro = routine;
             ro(&game, this);
         }
     }
-
-private:
-    point pos_;
-    float width_;
-    float height_;
-    routine_type routine_;
 };
 
 
@@ -180,16 +159,9 @@ private:
 typedef std::list<character> character_list;
 typedef character_list::iterator character_iterator;
 
-class game_system
+struct game_system
 {
-public:
-    character_list& characters()
-    {
-        return chars_;
-    }
-
-private:
-    character_list chars_;
+    character_list characters;
 };
 
 
@@ -205,19 +177,18 @@ void gravity_routine(
 {
     const float gravity = -0.6f;
     const float min_vy = -10.0f;
-    float vy = 0.0f;
 
     while (true)
     {
-        vy += gravity;
-        vy = (std::max)(vy, min_vy);
+        c->speed.vy += gravity;
+        c->speed.vy = (std::max)(c->speed.vy, min_vy);
 
-        point pos = c->position();
-        pos.y += vy;
+        float y = c->position.y;
+        y += c->speed.vy;
 
-        rectangle r = sweep_y(c->bounds(), vy);
+        rectangle r = sweep_y(c->bounds(), c->speed.vy);
 
-        character_list& ls = game->characters();
+        character_list& ls = game->characters;
         for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
         {
             // itself
@@ -228,14 +199,14 @@ void gravity_routine(
 
             if (intersect_rects(r, r2))
             {
-                vy = 0.0f;
-                pos.y = r2.y + r2.ly;
-                r.y = pos.y;
-                r.ly = c->height() + c->position().y - r.y;
+                c->speed.vy = 0.0f;
+                y = r2.y + r2.ly;
+                r.y = y;
+                r.ly = c->height + c->position.y - r.y;
             }
         }
 
-        c->position(pos);
+        c->position.y = y;
 
         boost::tie(game,c) = self.yield();
     }
@@ -244,20 +215,19 @@ void gravity_routine(
 void lift_routine(
     routine_type::self& self, game_system* game, character* c)
 {
-    const float vy = 2.0f;
     const float max_y = 480.0f + 32.0f;
     const float min_y = -32.0f;
 
     while (true)
     {
-        point pos = c->position();
-        pos.y += vy;
-        if (pos.y > max_y)
-            pos.y -= max_y;
+        float y = c->position.y;
+        y += c->speed.vy;
+        if (y > max_y)
+            y -= max_y;
 
-        rectangle r = sweep_y(c->bounds(), pos.y - c->position().y);
+        rectangle r = sweep_y(c->bounds(), y - c->position.y);
 
-        character_list& ls = game->characters();
+        character_list& ls = game->characters;
         for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
         {
             // itself
@@ -268,13 +238,12 @@ void lift_routine(
 
             if (intersect_rects(r, r2))
             {
-                point pos2 = i->position();
-                pos2.y = r.y + r.ly;
-                i->position(pos2);
+                i->speed.vy = 0.0f;
+                i->position.y = r.y + r.ly;
             }
         }
 
-        c->position(pos);
+        c->position.y = y;
 
         boost::tie(game,c) = self.yield();
     }
@@ -292,20 +261,23 @@ int main()
         game_system game;
 
         character c1;
-        c1.position(point(48.0f, 0.0f));
-        c1.width(96.0f);
-        c1.height(16.0f);
-        c1.routine(routine_type(&lift_routine));
-        game.characters().push_back(c1);
+        c1.attrs.set(char_attr::block);
+        c1.position = point(48.0f, 0.0f);
+        c1.width = 96.0f;
+        c1.height = 16.0f;
+        c1.speed.vy = 2.0f;
+        c1.routine = routine_type(&lift_routine);
+        game.characters.push_back(c1);
 
         character c2;
-        c2.position(point(16.0f, 64.0f));
-        c2.width(32.0f);
-        c2.height(32.0f);
-        c2.routine(routine_type(&gravity_routine));
-        game.characters().push_back(c2);
+        c1.attrs.set(char_attr::player);
+        c2.position = point(16.0f, 64.0f);
+        c2.width = 32.0f;
+        c2.height = 32.0f;
+        c2.routine = routine_type(&gravity_routine);
+        game.characters.push_back(c2);
 
-        character_list& ls = game.characters();
+        character_list& ls = game.characters;
         for (int i = 0; i < 20; ++i)
         {
             std::for_each(
@@ -314,9 +286,9 @@ int main()
             );
 
             std::cout
-                << ls.front().position().y
+                << ls.front().position.y
                 << '\t'
-                << ls.back().position().y
+                << ls.back().position.y
                 << std::endl;
         }
 
