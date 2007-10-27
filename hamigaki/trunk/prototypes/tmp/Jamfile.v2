@@ -7,4 +7,9 @@
 
 # See http://hamigaki.sourceforge.jp/ for library home page.
 
+project
+    : requirements
+      <library>/boost-lib//boost_unit_test_framework/<link>static
+    ;
+
 run lift_test.cpp ;
