@@ -210,6 +210,54 @@ void stop_routine(
         boost::tie(game,c) = self.yield();
 }
 
+void walk_routine(
+    routine_type::self& self, game_system* game, character* c)
+{
+    while (true)
+    {
+        bool collision = false;
+        float x = c->position.x;
+        x += c->vx;
+
+        rectangle r = sweep_x(c->bounds(), c->vx);
+
+        character_list& ls = game->characters;
+        for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
+        {
+            // itself
+            if (&*i == c)
+                continue;
+
+            if (!i->attrs.test(char_attr::block))
+                continue;
+
+            const rectangle& r2 = i->bounds();
+
+            if (intersect_rects(r, r2))
+            {
+                collision = true;
+                if (c->vx < 0.0f)
+                {
+                    r.x = r2.x + r2.lx;
+                    x = r.x + c->width * 0.5f;
+                    r.lx = c->width + c->position.x - x;
+                }
+                else
+                {
+                    x = r2.x - c->width * 0.5f;
+                    r.lx = c->width + x - c->position.x;
+                }
+            }
+        }
+
+        if (collision)
+            c->vx = -c->vx;
+        c->position.x = x;
+
+        boost::tie(game,c) = self.yield();
+    }
+}
+
 void gravity_routine(
     routine_type::self& self, game_system* game, character* c)
 {
@@ -307,7 +355,26 @@ void loop_lift_routine(
 
 namespace ut = boost::unit_test;
 
-void lift_check(game_system& game, const float y1[], const float y2[])
+void move_check_x1(game_system& game, const float x1[])
+{
+    character_list& ls = game.characters;
+    for (std::size_t i = 0; i < 20; ++i)
+    {
+        std::for_each(
+            ls.begin(), ls.end(),
+            boost::bind(&character::move, _1, boost::ref(game))
+        );
+
+        std::cout
+            << ls.front().position.x
+            << '\n';
+
+        BOOST_REQUIRE_CLOSE(ls.front().position.x, x1[i], 0.001f);
+    }
+    std::cout << '\n';
+}
+
+void move_check_y1_y2(game_system& game, const float y1[], const float y2[])
 {
     character_list& ls = game.characters;
     for (std::size_t i = 0; i < 20; ++i)
@@ -340,7 +407,7 @@ void up_lift_test()
     c1.routine = routine_type(&loop_lift_routine);
 
     character c2;
-    c1.attrs.set(char_attr::player);
+    c2.attrs.set(char_attr::player);
     c2.position = point(16.0f, 64.0f);
     c2.width = 32.0f;
     c2.height = 32.0f;
@@ -362,7 +429,7 @@ void up_lift_test()
         game_system game;
         game.characters.push_back(c1);
         game.characters.push_back(c2);
-        lift_check(game, y1, y2);
+        move_check_y1_y2(game, y1, y2);
     }
 
     c1.routine.restart();
@@ -372,7 +439,7 @@ void up_lift_test()
         game_system game;
         game.characters.push_back(c2);
         game.characters.push_back(c1);
-        lift_check(game, y2, y1);
+        move_check_y1_y2(game, y2, y1);
     }
 }
 
@@ -387,7 +454,7 @@ void down_lift_test()
     c1.routine = routine_type(&loop_lift_routine);
 
     character c2;
-    c1.attrs.set(char_attr::player);
+    c2.attrs.set(char_attr::player);
     c2.position = point(16.0f, 96.0f);
     c2.width = 32.0f;
     c2.height = 32.0f;
@@ -409,7 +476,7 @@ void down_lift_test()
         game_system game;
         game.characters.push_back(c1);
         game.characters.push_back(c2);
-        lift_check(game, y1, y2);
+        move_check_y1_y2(game, y1, y2);
     }
 
     c1.routine.restart();
@@ -419,7 +486,133 @@ void down_lift_test()
         game_system game;
         game.characters.push_back(c2);
         game.characters.push_back(c1);
-        lift_check(game, y2, y1);
+        move_check_y1_y2(game, y2, y1);
+    }
+}
+
+void walk_on_lift_test()
+{
+    character c1;
+    c1.attrs.set(char_attr::block);
+    c1.position = point(48.0f, 0.0f);
+    c1.width = 96.0f;
+    c1.height = 16.0f;
+    c1.vy = 2.0f;
+    c1.routine = routine_type(&loop_lift_routine);
+
+    character c2;
+    c2.attrs.set(char_attr::player);
+    c2.position = point(16.0f, 16.0f);
+    c2.width = 32.0f;
+    c2.height = 32.0f;
+    c2.vx = 1.0f;
+    c2.routine = routine_type(&walk_routine);
+
+    const float y1[] =
+    {
+         2.0f,  4.0f,  6.0f,  8.0f, 10.0f, 12.0f, 14.0f, 16.0f, 18.0f, 20.0f,
+        22.0f, 24.0f, 26.0f, 28.0f, 30.0f, 32.0f, 34.0f, 36.0f, 38.0f, 40.0f
+    };
+
+    const float y2[] =
+    {
+        18.0f, 20.0f, 22.0f, 24.0f, 26.0f, 28.0f, 30.0f, 32.0f, 34.0f, 36.0f,
+        38.0f, 40.0f, 42.0f, 44.0f, 46.0f, 48.0f, 50.0f, 52.0f, 54.0f, 56.0f
+    };
+
+    {
+        game_system game;
+        game.characters.push_back(c1);
+        game.characters.push_back(c2);
+        move_check_y1_y2(game, y1, y2);
+    }
+}
+
+void right_walk_test()
+{
+    character c1;
+    c1.attrs.set(char_attr::player);
+    c1.position = point(16.0f, 32.0f);
+    c1.width = 32.0f;
+    c1.height = 64.0f;
+    c1.vx = 2.0f;
+    c1.routine = routine_type(&walk_routine);
+
+    character c2;
+    c2.attrs.set(char_attr::block);
+    c2.position = point(64.0f, 0.0f);
+    c2.width = 128.0f;
+    c2.height = 32.0f;
+
+    character c3;
+    c3.attrs.set(char_attr::block);
+    c3.position = point(81.0f, 64.0f);
+    c3.width = 32.0f;
+    c3.height = 32.0f;
+
+    character c4;
+    c4.attrs.set(char_attr::block);
+    c4.position = point(80.0f, 32.0f);
+    c4.width = 32.0f;
+    c4.height = 32.0f;
+
+    const float x1[] =
+    {
+        18.0f, 20.0f, 22.0f, 24.0f, 26.0f, 28.0f, 30.0f, 32.0f, 34.0f, 36.0f,
+        38.0f, 40.0f, 42.0f, 44.0f, 46.0f, 48.0f, 48.0f, 46.0f, 44.0f, 42.0f
+    };
+
+    {
+        game_system game;
+        game.characters.push_back(c1);
+        game.characters.push_back(c2);
+        game.characters.push_back(c3);
+        game.characters.push_back(c4);
+        move_check_x1(game, x1);
+    }
+}
+
+void left_walk_test()
+{
+    character c1;
+    c1.attrs.set(char_attr::player);
+    c1.position = point(80.0f, 32.0f);
+    c1.width = 32.0f;
+    c1.height = 64.0f;
+    c1.vx = -2.0f;
+    c1.routine = routine_type(&walk_routine);
+
+    character c2;
+    c2.attrs.set(char_attr::block);
+    c2.position = point(64.0f, 0.0f);
+    c2.width = 128.0f;
+    c2.height = 32.0f;
+
+    character c3;
+    c3.attrs.set(char_attr::block);
+    c3.position = point(15.0f, 64.0f);
+    c3.width = 32.0f;
+    c3.height = 32.0f;
+
+    character c4;
+    c4.attrs.set(char_attr::block);
+    c4.position = point(16.0f, 32.0f);
+    c4.width = 32.0f;
+    c4.height = 32.0f;
+
+    const float x1[] =
+    {
+        78.0f, 76.0f, 74.0f, 72.0f, 70.0f, 68.0f, 66.0f, 64.0f, 62.0f, 60.0f,
+        58.0f, 56.0f, 54.0f, 52.0f, 50.0f, 48.0f, 48.0f, 50.0f, 52.0f, 54.0f
+    };
+
+    {
+        game_system game;
+        game.characters.push_back(c1);
+        game.characters.push_back(c2);
+        game.characters.push_back(c3);
+        game.characters.push_back(c4);
+        move_check_x1(game, x1);
     }
 }
 
@@ -428,5 +621,8 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     ut::test_suite* test = BOOST_TEST_SUITE("lift test");
     test->add(BOOST_TEST_CASE(&up_lift_test));
     test->add(BOOST_TEST_CASE(&down_lift_test));
+    test->add(BOOST_TEST_CASE(&walk_on_lift_test));
+    test->add(BOOST_TEST_CASE(&right_walk_test));
+    test->add(BOOST_TEST_CASE(&left_walk_test));
     return test;
 }
