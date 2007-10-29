@@ -193,12 +193,16 @@ bool is_on_floor(const character& c, const character_list& ls)
 
 struct game_system
 {
-    game_system() : screen_width(640), screen_height(480)
+    game_system()
+        : screen_width(640), screen_height(480)
+        , gravity(-0.6f), min_vy(-10.0f)
     {
     }
 
     int screen_width;
     int screen_height;
+    float gravity;
+    float min_vy;
     character_list characters;
 };
 
@@ -261,13 +265,10 @@ void walk_routine(
 void gravity_routine(
     routine_type::self& self, game_system* game, character* c)
 {
-    const float gravity = -0.6f;
-    const float min_vy = -10.0f;
-
     while (true)
     {
-        c->vy += gravity;
-        c->vy = (std::max)(c->vy, min_vy);
+        c->vy += game->gravity;
+        c->vy = (std::max)(c->vy, game->min_vy);
 
         float y = c->position.y;
         y += c->vy;
