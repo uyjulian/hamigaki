@@ -221,7 +221,7 @@ void stop_routine(game_system* game, character* c)
 {
 }
 
-void walk_routine(game_system* game, character* c)
+void vx_routine(game_system* game, character* c)
 {
     float x = c->position.x;
     x += c->vx;
@@ -263,11 +263,8 @@ void walk_routine(game_system* game, character* c)
     c->position.x = x;
 }
 
-void gravity_routine(game_system* game, character* c)
+void vy_routine(game_system* game, character* c)
 {
-    c->vy += game->gravity;
-    c->vy = (std::max)(c->vy, game->min_vy);
-
     float y = c->position.y;
     y += c->vy;
 
@@ -295,6 +292,16 @@ void gravity_routine(game_system* game, character* c)
     }
 
     c->position.y = y;
+}
+
+void straight_routine(game_system* game, character* c)
+{
+    vx_routine(game, c);
+
+    c->vy += game->gravity;
+    c->vy = (std::max)(c->vy, game->min_vy);
+
+    vy_routine(game, c);
 }
 
 void loop_lift_routine(game_system* game, character* c)
@@ -394,14 +401,14 @@ void up_lift_test()
     c1.width = 96.0f;
     c1.height = 16.0f;
     c1.vy = 2.0f;
-    c1.routine = routine_type(&loop_lift_routine);
+    c1.routine = &loop_lift_routine;
 
     character c2;
     c2.attrs.set(char_attr::player);
     c2.position = point(16.0f, 64.0f);
     c2.width = 32.0f;
     c2.height = 32.0f;
-    c2.routine = routine_type(&gravity_routine);
+    c2.routine = &straight_routine;
 
     const float y1[] =
     {
@@ -438,14 +445,14 @@ void down_lift_test()
     c1.width = 96.0f;
     c1.height = 16.0f;
     c1.vy = -2.0f;
-    c1.routine = routine_type(&loop_lift_routine);
+    c1.routine = &loop_lift_routine;
 
     character c2;
     c2.attrs.set(char_attr::player);
     c2.position = point(16.0f, 96.0f);
     c2.width = 32.0f;
     c2.height = 32.0f;
-    c2.routine = routine_type(&gravity_routine);
+    c2.routine = &straight_routine;
 
     const float y1[] =
     {
@@ -478,20 +485,19 @@ void walk_on_lift_test()
 {
     character c1;
     c1.attrs.set(char_attr::block);
-    c1.position = point(48.0f, 0.0f);
-    c1.width = 96.0f;
+    c1.position = point(32.0f, 0.0f);
+    c1.width = 64.0f;
     c1.height = 16.0f;
     c1.vy = 2.0f;
-    c1.routine = routine_type(&loop_lift_routine);
+    c1.routine = &loop_lift_routine;
 
     character c2;
     c2.attrs.set(char_attr::player);
     c2.position = point(16.0f, 16.0f);
     c2.width = 32.0f;
     c2.height = 32.0f;
-    c2.vx = 1.0f;
-    c2.routine = routine_type(&walk_routine);
-    c2.on_collide_block_side = &turn;
+    c2.vx = 4.0f;
+    c2.routine = &straight_routine;
 
     const float y1[] =
     {
@@ -502,7 +508,7 @@ void walk_on_lift_test()
     const float y2[] =
     {
         18.0f, 20.0f, 22.0f, 24.0f, 26.0f, 28.0f, 30.0f, 32.0f, 34.0f, 36.0f,
-        38.0f, 40.0f, 42.0f, 44.0f, 46.0f, 48.0f, 50.0f, 52.0f, 54.0f, 56.0f
+        38.0f, 40.0f, 42.0f, 44.0f, 46.0f, 47.4f, 46.2f, 44.4f, 42.0f, 39.0f
     };
 
     {
@@ -521,7 +527,7 @@ void right_walk_test()
     c1.width = 32.0f;
     c1.height = 64.0f;
     c1.vx = 2.0f;
-    c1.routine = routine_type(&walk_routine);
+    c1.routine = &straight_routine;
     c1.on_collide_block_side = &turn;
 
     character c2;
@@ -566,7 +572,7 @@ void left_walk_test()
     c1.width = 32.0f;
     c1.height = 64.0f;
     c1.vx = -2.0f;
-    c1.routine = routine_type(&walk_routine);
+    c1.routine = &straight_routine;
     c1.on_collide_block_side = &turn;
 
     character c2;
