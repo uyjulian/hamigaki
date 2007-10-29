@@ -130,6 +130,10 @@ typedef boost::function<
     void (game_system*, character*)
 > routine_type;
 
+typedef boost::function<
+    void (game_system*, character*, character*)
+> collision_event_type;
+
 struct character
 {
     std::bitset<char_attr::max_value> attrs;
@@ -139,6 +143,7 @@ struct character
     float vx;
     float vy;
     routine_type routine;
+    collision_event_type on_collide_block_side;
 
     character() : width(0.0f), height(0.0f), vx(0.0f), vy(0.0f)
     {
@@ -207,19 +212,24 @@ struct game_system
 };
 
 
+void turn(game_system* game, character* c, character* target)
+{
+    c->vx = -c->vx;
+}
+
 void stop_routine(game_system* game, character* c)
 {
 }
 
 void walk_routine(game_system* game, character* c)
 {
-    bool collision = false;
     float x = c->position.x;
     x += c->vx;
 
     rectangle r = sweep_x(c->bounds(), c->vx);
 
     character_list& ls = game->characters;
+    character_iterator ti = ls.end();
     for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
     {
         // itself
@@ -233,7 +243,7 @@ void walk_routine(game_system* game, character* c)
 
         if (intersect_rects(r, r2))
         {
-            collision = true;
+            ti = i;
             if (c->vx < 0.0f)
             {
                 r.x = r2.x + r2.lx;
@@ -248,8 +258,8 @@ void walk_routine(game_system* game, character* c)
         }
     }
 
-    if (collision)
-        c->vx = -c->vx;
+    if ((ti != ls.end()) && c->on_collide_block_side)
+        c->on_collide_block_side(game, c, &*ti);
     c->position.x = x;
 }
 
@@ -481,6 +491,7 @@ void walk_on_lift_test()
     c2.height = 32.0f;
     c2.vx = 1.0f;
     c2.routine = routine_type(&walk_routine);
+    c2.on_collide_block_side = &turn;
 
     const float y1[] =
     {
@@ -511,6 +522,7 @@ void right_walk_test()
     c1.height = 64.0f;
     c1.vx = 2.0f;
     c1.routine = routine_type(&walk_routine);
+    c1.on_collide_block_side = &turn;
 
     character c2;
     c2.attrs.set(char_attr::block);
@@ -555,6 +567,7 @@ void left_walk_test()
     c1.height = 64.0f;
     c1.vx = -2.0f;
     c1.routine = routine_type(&walk_routine);
+    c1.on_collide_block_side = &turn;
 
     character c2;
     c2.attrs.set(char_attr::block);
