@@ -107,7 +107,7 @@ struct acceleration
 };
 
 
-#include <hamigaki/coroutine/shared_coroutine.hpp>
+#include <boost/function.hpp>
 #include <bitset>
 
 namespace char_attr
@@ -126,7 +126,7 @@ namespace char_attr
 struct game_system;
 struct character;
 
-typedef hamigaki::coroutines::shared_coroutine<
+typedef boost::function<
     void (game_system*, character*)
 > routine_type;
 
@@ -207,144 +207,123 @@ struct game_system
 };
 
 
-void stop_routine(
-    routine_type::self& self, game_system* game, character* c)
+void stop_routine(game_system* game, character* c)
 {
-    while (true)
-        boost::tie(game,c) = self.yield();
 }
 
-void walk_routine(
-    routine_type::self& self, game_system* game, character* c)
+void walk_routine(game_system* game, character* c)
 {
-    while (true)
+    bool collision = false;
+    float x = c->position.x;
+    x += c->vx;
+
+    rectangle r = sweep_x(c->bounds(), c->vx);
+
+    character_list& ls = game->characters;
+    for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
     {
-        bool collision = false;
-        float x = c->position.x;
-        x += c->vx;
+        // itself
+        if (&*i == c)
+            continue;
 
-        rectangle r = sweep_x(c->bounds(), c->vx);
+        if (!i->attrs.test(char_attr::block))
+            continue;
 
-        character_list& ls = game->characters;
-        for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
+        const rectangle& r2 = i->bounds();
+
+        if (intersect_rects(r, r2))
         {
-            // itself
-            if (&*i == c)
-                continue;
-
-            if (!i->attrs.test(char_attr::block))
-                continue;
-
-            const rectangle& r2 = i->bounds();
-
-            if (intersect_rects(r, r2))
+            collision = true;
+            if (c->vx < 0.0f)
             {
-                collision = true;
-                if (c->vx < 0.0f)
-                {
-                    r.x = r2.x + r2.lx;
-                    x = r.x + c->width * 0.5f;
-                    r.lx = c->width + c->position.x - x;
-                }
-                else
-                {
-                    x = r2.x - c->width * 0.5f;
-                    r.lx = c->width + x - c->position.x;
-                }
+                r.x = r2.x + r2.lx;
+                x = r.x + c->width * 0.5f;
+                r.lx = c->width + c->position.x - x;
+            }
+            else
+            {
+                x = r2.x - c->width * 0.5f;
+                r.lx = c->width + x - c->position.x;
             }
         }
-
-        if (collision)
-            c->vx = -c->vx;
-        c->position.x = x;
-
-        boost::tie(game,c) = self.yield();
     }
+
+    if (collision)
+        c->vx = -c->vx;
+    c->position.x = x;
 }
 
-void gravity_routine(
-    routine_type::self& self, game_system* game, character* c)
+void gravity_routine(game_system* game, character* c)
 {
-    while (true)
+    c->vy += game->gravity;
+    c->vy = (std::max)(c->vy, game->min_vy);
+
+    float y = c->position.y;
+    y += c->vy;
+
+    rectangle r = sweep_y(c->bounds(), c->vy);
+
+    character_list& ls = game->characters;
+    for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
     {
-        c->vy += game->gravity;
-        c->vy = (std::max)(c->vy, game->min_vy);
+        // itself
+        if (&*i == c)
+            continue;
 
-        float y = c->position.y;
-        y += c->vy;
+        if (!i->attrs.test(char_attr::block))
+            continue;
 
-        rectangle r = sweep_y(c->bounds(), c->vy);
+        const rectangle& r2 = i->bounds();
 
-        character_list& ls = game->characters;
-        for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
+        if (intersect_rects(r, r2))
         {
-            // itself
-            if (&*i == c)
-                continue;
-
-            if (!i->attrs.test(char_attr::block))
-                continue;
-
-            const rectangle& r2 = i->bounds();
-
-            if (intersect_rects(r, r2))
-            {
-                c->vy = 0.0f;
-                y = r2.y + r2.ly;
-                r.y = y;
-                r.ly = c->height + c->position.y - r.y;
-            }
+            c->vy = 0.0f;
+            y = r2.y + r2.ly;
+            r.y = y;
+            r.ly = c->height + c->position.y - r.y;
         }
-
-        c->position.y = y;
-
-        boost::tie(game,c) = self.yield();
     }
+
+    c->position.y = y;
 }
 
-void loop_lift_routine(
-    routine_type::self& self, game_system* game, character* c)
+void loop_lift_routine(game_system* game, character* c)
 {
     const float max_y = static_cast<float>(game->screen_height);
     const float min_y = -64.0f;
 
-    while (true)
+    float y = c->position.y;
+    y += c->vy;
+    if (y > max_y)
+        y -= (max_y - min_y);
+    else if (y < min_y)
+        y += (max_y - min_y);
+
+    rectangle br = c->bounds();
+    rectangle r = sweep_y(br, y - c->position.y);
+
+    character_list& ls = game->characters;
+    for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
     {
-        float y = c->position.y;
-        y += c->vy;
-        if (y > max_y)
-            y -= (max_y - min_y);
-        else if (y < min_y)
-            y += (max_y - min_y);
+        // itself
+        if (&*i == c)
+            continue;
 
-        rectangle br = c->bounds();
-        rectangle r = sweep_y(br, y - c->position.y);
+        const rectangle& r2 = i->bounds();
 
-        character_list& ls = game->characters;
-        for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
+        if ((i->vy == 0.0f) && on_rects(r2, br))
+            i->position.y = y + br.ly;
+        else if (intersect_rects(r, r2))
         {
-            // itself
-            if (&*i == c)
-                continue;
-
-            const rectangle& r2 = i->bounds();
-
-            if ((i->vy == 0.0f) && on_rects(r2, br))
-                i->position.y = y + br.ly;
-            else if (intersect_rects(r, r2))
-            {
-                i->vy = 0.0f;
-                if (c->vy < 0.0f)
-                    i->position.y = y - i->height;
-                else
-                    i->position.y = y;
-            }
+            i->vy = 0.0f;
+            if (c->vy < 0.0f)
+                i->position.y = y - i->height;
+            else
+                i->position.y = y;
         }
-
-        c->position.y = y;
-
-        boost::tie(game,c) = self.yield();
     }
+
+    c->position.y = y;
 }
 
 
@@ -433,9 +412,6 @@ void up_lift_test()
         move_check_y1_y2(game, y1, y2);
     }
 
-    c1.routine.restart();
-    c2.routine.restart();
-
     {
         game_system game;
         game.characters.push_back(c2);
@@ -479,9 +455,6 @@ void down_lift_test()
         game.characters.push_back(c2);
         move_check_y1_y2(game, y1, y2);
     }
-
-    c1.routine.restart();
-    c2.routine.restart();
 
     {
         game_system game;
