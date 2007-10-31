@@ -192,6 +192,29 @@ struct character
     }
 };
 
+inline bool on_characters(const character& c1, const character& c2)
+{
+    if (c2.slope == slope_type::none)
+        return on_rects(c1.bounds(), c2.bounds());
+    else
+    {
+        if (c1.vy != 0.0f)
+            return false;
+
+        const rectangle& r2 = c2.bounds();
+
+        if ((r2.x <= c1.position.x) && (c1.position.x < r2.x + r2.lx))
+        {
+            float dx = c1.position.x - c2.position.x;
+            float height = c2.slope_height(dx);
+
+            return r2.y + height == c1.position.y;
+        }
+        else
+            return false;
+    }
+}
+
 
 #include <list>
 
@@ -495,17 +518,10 @@ void velocity_routine(game_system* game, character* c)
     vy_routine(game, c);
 }
 
-void loop_lift_routine(game_system* game, character* c)
+void vy_lift_routine(game_system* game, character* c)
 {
-    const float max_y = static_cast<float>(game->screen_height);
-    const float min_y = -64.0f;
-
     float y = c->position.y;
     y += c->vy;
-    if (y > max_y)
-        y -= (max_y - min_y);
-    else if (y < min_y)
-        y += (max_y - min_y);
 
     rectangle br = c->bounds();
     rectangle r = sweep_y(br, y - c->position.y);
@@ -517,21 +533,81 @@ void loop_lift_routine(game_system* game, character* c)
         if (&*i == c)
             continue;
 
-        const rectangle& r2 = i->bounds();
-
-        if ((i->vy == 0.0f) && on_rects(r2, br))
-            i->position.y = y + br.ly;
-        else if (intersect_rects(r, r2))
+        if ((c->slope != slope_type::none) && (i->position.y > c->position.y))
         {
-            i->vy = 0.0f;
-            if (c->vy < 0.0f)
-                i->position.y = y - i->height;
-            else
-                i->position.y = y;
+            const rectangle& r2 = i->bounds();
+
+            if ((i->vy == 0.0f) && on_characters(*i, *c))
+            {
+                float dx = i->position.x - c->position.x;
+                float height = c->slope_height(dx);
+
+                i->position.y = y + height;
+            }
+            else if ((y <= r2.y) && (r2.y < y + br.ly) &&
+                (r.x <= i->position.x) && (i->position.x < r.x + r.lx) )
+            {
+                float dx = i->position.x - c->position.x;
+                float height = c->slope_height(dx);
+                float y1 = y + height;
+
+                if (r2.y < y1)
+                {
+                    i->vy = 0.0f;
+                    i->position.y = y1;
+                }
+            }
+        }
+        else
+        {
+            const rectangle& r2 = i->bounds();
+
+            if ((i->vy == 0.0f) && on_rects(r2, br))
+                i->position.y = y + br.ly;
+            else if (intersect_rects(r, r2))
+            {
+                i->vy = 0.0f;
+                if (c->vy < 0.0f)
+                    i->position.y = y - i->height;
+                else
+                    i->position.y = y;
+            }
         }
     }
 
     c->position.y = y;
+}
+
+void loop_lift_routine(game_system* game, character* c)
+{
+    const float max_y = static_cast<float>(game->screen_height);
+    const float min_y = -64.0f;
+
+    float y = c->position.y;
+    float vy = c->vy;
+
+    y += vy;
+
+    if (y > max_y)
+    {
+        c->vy = max_y - c->position.y;
+        vy_lift_routine(game, c);
+        c->position.y = min_y;
+        c->vy = y - max_y;
+        vy_lift_routine(game, c);
+        c->vy = vy;
+    }
+    else if (y < min_y)
+    {
+        c->vy = min_y - c->position.y;
+        vy_lift_routine(game, c);
+        c->vy = y - min_y;
+        c->position.y = max_y;
+        vy_lift_routine(game, c);
+        c->vy = vy;
+    }
+    else
+        vy_lift_routine(game, c);
 }
 
 
@@ -981,6 +1057,51 @@ void go_down_slope_test()
     }
 }
 
+void fall_on_down_slope_lift_test()
+{
+    character c1;
+    c1.attrs.set(char_attr::block);
+    c1.position = point(16.0f, 64.0f);
+    c1.width = 32.0f;
+    c1.height = 32.0f;
+    c1.vy = -2.0f;
+    c1.routine = &loop_lift_routine;
+    c1.slope = slope_type::left_down;
+
+    character c2;
+    c2.attrs.set(char_attr::player);
+    c2.position = point(16.0f, 96.0f);
+    c2.width = 32.0f;
+    c2.height = 32.0f;
+    c2.routine = &velocity_routine;
+
+    const float y1[] =
+    {
+        62.0f, 60.0f, 58.0f, 56.0f, 54.0f, 52.0f, 50.0f, 48.0f, 46.0f, 44.0f,
+        42.0f, 40.0f, 38.0f, 36.0f, 34.0f, 32.0f, 30.0f, 28.0f, 26.0f, 24.0f,
+    };
+
+    const float y2[] =
+    {
+        95.4f, 94.2f, 92.4f, 90.0f, 87.0f, 83.4f, 79.2f, 74.4f, 69.0f, 63.0f,
+        58.0f, 56.0f, 54.0f, 52.0f, 50.0f, 48.0f, 46.0f, 44.0f, 42.0f, 40.0f
+    };
+
+    {
+        game_system game;
+        game.characters.push_back(c1);
+        game.characters.push_back(c2);
+        move_check_y1_y2(game, y1, y2);
+    }
+
+    {
+        game_system game;
+        game.characters.push_back(c2);
+        game.characters.push_back(c1);
+        move_check_y1_y2(game, y2, y1);
+    }
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("lift test");
@@ -993,5 +1114,6 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&jump_test));
     test->add(BOOST_TEST_CASE(&go_up_slope_test));
     test->add(BOOST_TEST_CASE(&go_down_slope_test));
+    test->add(BOOST_TEST_CASE(&fall_on_down_slope_lift_test));
     return test;
 }
