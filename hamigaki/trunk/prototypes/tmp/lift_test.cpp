@@ -518,13 +518,13 @@ void velocity_routine(game_system* game, character* c)
     vy_routine(game, c);
 }
 
-void vy_lift_routine(game_system* game, character* c)
+void move_y(game_system* game, character* c, float vy)
 {
-    float y = c->position.y;
-    y += c->vy;
+    float old_y = c->position.y;
+    float new_y = old_y + vy;
 
     rectangle br = c->bounds();
-    rectangle r = sweep_y(br, y - c->position.y);
+    rectangle r = sweep_y(br, vy);
 
     character_list& ls = game->characters;
     for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
@@ -533,7 +533,7 @@ void vy_lift_routine(game_system* game, character* c)
         if (&*i == c)
             continue;
 
-        if ((c->slope != slope_type::none) && (i->position.y > c->position.y))
+        if ((c->slope != slope_type::none) && (i->position.y > old_y))
         {
             const rectangle& r2 = i->bounds();
 
@@ -542,14 +542,14 @@ void vy_lift_routine(game_system* game, character* c)
                 float dx = i->position.x - c->position.x;
                 float height = c->slope_height(dx);
 
-                i->position.y = y + height;
+                i->position.y = new_y + height;
             }
-            else if ((y <= r2.y) && (r2.y < y + br.ly) &&
+            else if ((new_y <= r2.y) && (r2.y < new_y + br.ly) &&
                 (r.x <= i->position.x) && (i->position.x < r.x + r.lx) )
             {
                 float dx = i->position.x - c->position.x;
                 float height = c->slope_height(dx);
-                float y1 = y + height;
+                float y1 = new_y + height;
 
                 if (r2.y < y1)
                 {
@@ -563,19 +563,44 @@ void vy_lift_routine(game_system* game, character* c)
             const rectangle& r2 = i->bounds();
 
             if ((i->vy == 0.0f) && on_rects(r2, br))
-                i->position.y = y + br.ly;
+            {
+                if (i->attrs.test(char_attr::block))
+                {
+                    if (vy < 0.0f)
+                        c->position.y = new_y;
+                    move_y(game, &*i, new_y + br.ly - r2.y);
+                    c->position.y = old_y;
+                }
+                else
+                    i->position.y = new_y + br.ly;
+            }
             else if (intersect_rects(r, r2))
             {
-                i->vy = 0.0f;
-                if (c->vy < 0.0f)
-                    i->position.y = y - i->height;
+                if (vy < 0.0f)
+                {
+                    i->vy = 0.0f;
+                    if (i->attrs.test(char_attr::block))
+                    {
+                        c->position.y = new_y;
+                        move_y(game, &*i, new_y - r2.ly - r2.y);
+                        c->position.y = old_y;
+                    }
+                    else
+                        i->position.y = new_y - r2.ly;
+                }
                 else
-                    i->position.y = y;
+                {
+                    i->vy = 0.0f;
+                    if (i->attrs.test(char_attr::block))
+                        move_y(game, &*i, new_y + br.ly - r2.y);
+                    else
+                        i->position.y = new_y + br.ly;
+                }
             }
         }
     }
 
-    c->position.y = y;
+    c->position.y = new_y;
 }
 
 void loop_lift_routine(game_system* game, character* c)
@@ -584,30 +609,23 @@ void loop_lift_routine(game_system* game, character* c)
     const float min_y = -64.0f;
 
     float y = c->position.y;
-    float vy = c->vy;
 
-    y += vy;
+    y += c->vy;
 
     if (y > max_y)
     {
-        c->vy = max_y - c->position.y;
-        vy_lift_routine(game, c);
+        move_y(game, c, max_y - c->position.y);
         c->position.y = min_y;
-        c->vy = y - max_y;
-        vy_lift_routine(game, c);
-        c->vy = vy;
+        move_y(game, c, y - max_y);
     }
     else if (y < min_y)
     {
-        c->vy = min_y - c->position.y;
-        vy_lift_routine(game, c);
-        c->vy = y - min_y;
+        move_y(game, c, min_y - c->position.y);
         c->position.y = max_y;
-        vy_lift_routine(game, c);
-        c->vy = vy;
+        move_y(game, c, y - min_y);
     }
     else
-        vy_lift_routine(game, c);
+        move_y(game, c, c->vy);
 }
 
 
@@ -1102,6 +1120,57 @@ void fall_on_down_slope_lift_test()
     }
 }
 
+void up_lift_chain_test()
+{
+    character c1;
+    c1.attrs.set(char_attr::block);
+    c1.position = point(16.0f, 0.0f);
+    c1.width = 32.0f;
+    c1.height = 32.0f;
+    c1.vy = 2.0f;
+    c1.routine = &loop_lift_routine;
+
+    character c2;
+    c2.attrs.set(char_attr::block);
+    c2.position = point(16.0f, 32.0f);
+    c2.width = 32.0f;
+    c2.height = 32.0f;
+
+    character c3;
+    c3.attrs.set(char_attr::player);
+    c3.position = point(16.0f, 64.0f);
+    c3.width = 32.0f;
+    c3.height = 32.0f;
+
+    const float y1[] =
+    {
+         2.0f,  4.0f,  6.0f,  8.0f, 10.0f, 12.0f, 14.0f, 16.0f, 18.0f, 20.0f,
+        22.0f, 24.0f, 26.0f, 28.0f, 30.0f, 32.0f, 34.0f, 36.0f, 38.0f, 40.0f
+    };
+
+    const float y3[] =
+    {
+        66.0f, 68.0f, 70.0f, 72.0f, 74.0f, 76.0f, 78.0f, 80.0f, 82.0f, 84.0f,
+        86.0f, 88.0f, 90.0f, 92.0f, 94.0f, 96.0f, 98.0f,100.0f,102.0f,104.0f
+    };
+
+    {
+        game_system game;
+        game.characters.push_back(c1);
+        game.characters.push_back(c2);
+        game.characters.push_back(c3);
+        move_check_y1_y2(game, y1, y3);
+    }
+
+    {
+        game_system game;
+        game.characters.push_back(c3);
+        game.characters.push_back(c2);
+        game.characters.push_back(c1);
+        move_check_y1_y2(game, y3, y1);
+    }
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("lift test");
@@ -1115,5 +1184,6 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&go_up_slope_test));
     test->add(BOOST_TEST_CASE(&go_down_slope_test));
     test->add(BOOST_TEST_CASE(&fall_on_down_slope_lift_test));
+    test->add(BOOST_TEST_CASE(&up_lift_chain_test));
     return test;
 }
