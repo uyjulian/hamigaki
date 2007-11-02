@@ -14,8 +14,6 @@
 #include "effect_base.hpp"
 #include "routine_base.hpp"
 
-class direct3d_texture9;
-
 struct game_character
 {
     rect position;
