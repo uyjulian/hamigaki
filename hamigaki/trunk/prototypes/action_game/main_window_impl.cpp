@@ -12,6 +12,7 @@
 #include "draw.hpp"
 #include "direct3d9.hpp"
 #include "game_character.hpp"
+#include "game_system.hpp"
 #include "hop_routine.hpp"
 #include "hop_step_jump_routine.hpp"
 #include "lift_routine.hpp"
@@ -76,7 +77,7 @@ private:
 public:
     explicit impl(::HWND handle)
         : handle_(handle)
-        , sound_(handle_), input_(handle_), textures_(device_)
+        , system_(handle_), textures_(device_)
         , active_(false), last_time_(::GetTickCount()), frames_(0)
         , stage_file_("map.txt"), scroll_x_(0.0f), missed_(true)
     {
@@ -126,7 +127,7 @@ public:
     {
         input_command cmd;
         if (active_)
-            cmd  = input_();
+            cmd  = system_.input();
 
         const unsigned long table[] = { 16, 17, 17 };
         unsigned long now = ::GetTickCount();
@@ -207,8 +208,7 @@ public:
 
 private:
     ::HWND handle_;
-    sound_engine sound_;
-    input_engine input_;
+    game_system system_;
     direct3d9 d3d_;
     direct3d_device9 device_;
     texture_cache textures_;
@@ -393,12 +393,12 @@ private:
     void reset_characters()
     {
         missed_ = false;
-        sound_.stop_se();
+        system_.sound.stop_se();
 
         load_map_from_text(stage_file_.c_str(), map_);
 
         player_.sprite_infos = &mini_sprite_info_;
-        player_.routine = routine_type(player_routine(map_, sound_));
+        player_.routine = routine_type(player_routine(map_, system_.sound));
         player_.tmp_routine = routine_type();
         player_.effect = effect_type();
         player_.form = sprite_form();
@@ -437,7 +437,7 @@ private:
         items_.clear();
         particles_.clear();
 
-        sound_.play_bgm("bgm.ogg");
+        system_.sound.play_bgm("bgm.ogg");
     }
 
     void process_hit_from_below(int x, int y)
@@ -582,7 +582,7 @@ private:
 
                     process_hit_from_below(x, y+1);
 
-                    sound_.play_se("break_block.ogg");
+                    system_.sound.play_se("break_block.ogg");
 
                     break;
                 }
@@ -724,7 +724,7 @@ private:
                 i->routine = routine_type(vanish_routine(5));
                 i->speed.vx = 0.0f;
                 i->speed.vy = 0.0f;
-                sound_.play_se("stomp.ogg");
+                system_.sound.play_se("stomp.ogg");
                 player_.speed.vy = 8.0f;
                 if (player_.form.type != player_routine::duck_jump_form)
                 {
@@ -740,10 +740,12 @@ private:
 #if !defined(HAMIGAKI_USE_KNOCK_BACK)
                 if (player_.sprite_infos == &mini_sprite_info_)
                 {
-                    sound_.stop_bgm();
+                    system_.sound.stop_bgm();
                     player_.change_form(player_routine::miss_form);
                     player_.routine =
-                        routine_type(wait_se_routine(sound_, "miss.ogg"));
+                        routine_type(
+                            wait_se_routine(system_.sound, "miss.ogg")
+                        );
                     player_.speed.vx = 0.0f;
                     player_.speed.vy = 10.0f;
                     missed_ = true;
@@ -752,12 +754,12 @@ private:
                 {
                     player_.change_sprite(mini_sprite_info_);
                     player_.effect = effect_type(&blink_effect);
-                    sound_.play_se("damage.ogg");
+                    system_.sound.play_se("damage.ogg");
                 }
 #else
                 player_.tmp_routine = routine_type(knock_back_routine(10,4.0f));
                 player_.form.type = player_routine::knock_back_form;
-                sound_.play_se("damage.ogg");
+                system_.sound.play_se("damage.ogg");
 #endif
             }
         }
@@ -879,10 +881,11 @@ private:
 
         if (!missed_ && (top_block(player_.position) < 0))
         {
-            sound_.stop_bgm();
+            system_.sound.stop_bgm();
             player_.change_sprite(mini_sprite_info_);
             player_.change_form(player_routine::miss_form);
-            player_.routine = routine_type(wait_se_routine(sound_, "miss.ogg"));
+            player_.routine =
+                routine_type(wait_se_routine(system_.sound, "miss.ogg"));
             missed_ = true;
         }
 
