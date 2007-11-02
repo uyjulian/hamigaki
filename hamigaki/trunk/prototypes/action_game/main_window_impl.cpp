@@ -22,6 +22,7 @@
 #include "sprite_info.hpp"
 #include "stage_map.hpp"
 #include "straight_routine.hpp"
+#include "texture_cache.hpp"
 #include "turn_routine.hpp"
 #include "vanish_routine.hpp"
 #include "wait_se_routine.hpp"
@@ -40,8 +41,7 @@ namespace
 game_character
 create_enemy(
     int x, int y, bool back,
-    const routine_type& routine, const sprite_info_set& infos,
-    direct3d_texture9* texture)
+    const routine_type& routine, const sprite_info_set& infos)
 {
     game_character enemy;
 
@@ -50,7 +50,6 @@ create_enemy(
     enemy.routine = routine;
     enemy.tmp_routine = routine_type();
     enemy.sprite_infos = &infos;
-    enemy.texture = texture;
     enemy.position.x = static_cast<float>(x * 32 + info.bounds.x);
     enemy.position.y = static_cast<float>(y * 32);
     enemy.position.lx = static_cast<float>(info.bounds.lx);
@@ -77,7 +76,7 @@ private:
 public:
     explicit impl(::HWND handle)
         : handle_(handle)
-        , sound_(handle_), input_(handle_)
+        , sound_(handle_), input_(handle_), textures_(device_)
         , active_(false), last_time_(::GetTickCount()), frames_(0)
         , stage_file_("map.txt"), scroll_x_(0.0f), missed_(true)
     {
@@ -119,21 +118,6 @@ public:
         device_ = d3d_.create_device(
             D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, handle_,
             D3DCREATE_HARDWARE_VERTEXPROCESSING, params);
-
-        map_texture_ = create_png_texture(device_, "map_chips.png");
-
-        man_texture_ =
-            create_png_texture(device_, player_sprite_info_.texture());
-        boy_texture_ =
-            create_png_texture(device_, mini_sprite_info_.texture());
-        ball_texture_ =
-            create_png_texture(device_, ball_sprite_info_.texture());
-        fragment_texture_ =
-            create_png_texture(device_, fragment_sprite_info_.texture());
-        milk_texture_ =
-            create_png_texture(device_, milk_sprite_info_.texture());
-        lift_texture_ =
-            create_png_texture(device_, lift_sprite_info_.texture());
 
         last_time_ = ::GetTickCount();
     }
@@ -227,13 +211,7 @@ private:
     input_engine input_;
     direct3d9 d3d_;
     direct3d_device9 device_;
-    direct3d_texture9 map_texture_;
-    direct3d_texture9 man_texture_;
-    direct3d_texture9 boy_texture_;
-    direct3d_texture9 ball_texture_;
-    direct3d_texture9 fragment_texture_;
-    direct3d_texture9 milk_texture_;
-    direct3d_texture9 lift_texture_;
+    texture_cache textures_;
     bool active_;
     unsigned long last_time_;
     unsigned frames_;
@@ -283,7 +261,7 @@ private:
                 create_enemy(
                     x, y, back,
                     routine_type(straight_routine()),
-                    ball_sprite_info_, &ball_texture_
+                    ball_sprite_info_
                 )
             );
         }
@@ -293,7 +271,7 @@ private:
                 create_enemy(
                     x, y, back,
                     routine_type(turn_routine(map_)),
-                    ball_sprite_info_, &ball_texture_
+                    ball_sprite_info_
                 )
             );
         }
@@ -303,7 +281,7 @@ private:
                 create_enemy(
                     x, y, back,
                     routine_type(hop_routine(map_, 2.0f)),
-                    ball_sprite_info_, &ball_texture_
+                    ball_sprite_info_
                 )
             );
         }
@@ -313,7 +291,7 @@ private:
                 create_enemy(
                     x, y, back,
                     routine_type(hop_step_jump_routine(map_, 2.0f)),
-                    ball_sprite_info_, &ball_texture_
+                    ball_sprite_info_
                 )
             );
         }
@@ -323,7 +301,7 @@ private:
                 create_enemy(
                     x, y, false,
                     routine_type(lift_routine(2.0f)),
-                    lift_sprite_info_, &lift_texture_
+                    lift_sprite_info_
                 );
             c.position.lx = 0.0f;
             c.position.ly = 0.0f;
@@ -336,7 +314,7 @@ private:
                 create_enemy(
                     x, y, false,
                     routine_type(lift_routine(-2.0f)),
-                    lift_sprite_info_, &lift_texture_
+                    lift_sprite_info_
                 );
             c.position.lx = 0.0f;
             c.position.ly = 0.0f;
@@ -374,7 +352,7 @@ private:
             create_enemy(
                 x, y, false,
                 routine_type(vanish_routine(32)),
-                block_sprite_info_, &map_texture_
+                block_sprite_info_
             );
         b.flying = true;
         b.origin.first = -1;
@@ -386,7 +364,7 @@ private:
             create_enemy(
                 x, y, false,
                 routine_type((straight_routine(2.0f))),
-                milk_sprite_info_, &milk_texture_
+                milk_sprite_info_
             );
         it.tmp_routine =
             routine_type(pop_up_routine(1.0f, 0.6f, 32));
@@ -420,8 +398,6 @@ private:
         load_map_from_text(stage_file_.c_str(), map_);
 
         player_.sprite_infos = &mini_sprite_info_;
-        player_.texture = &boy_texture_;
-
         player_.routine = routine_type(player_routine(map_, sound_));
         player_.tmp_routine = routine_type();
         player_.effect = effect_type();
@@ -563,7 +539,7 @@ private:
                         create_enemy(
                             x, y, false,
                             routine_type(vanish_routine(10)),
-                            brick_sprite_info_, &map_texture_
+                            brick_sprite_info_
                         );
                     b.position.lx = 0.0f;
                     b.position.ly = 0.0f;
@@ -592,7 +568,6 @@ private:
                         fr.routine = routine_type(vanish_routine(30));
                         fr.tmp_routine = routine_type();
                         fr.sprite_infos = &fragment_sprite_info_;
-                        fr.texture = &fragment_texture_;
                         fr.position.x = static_cast<float>(x*32) + dx[i];
                         fr.position.y = static_cast<float>(y*32) + dy[i];
                         fr.position.lx = 0.0f;
@@ -623,7 +598,7 @@ private:
                         create_enemy(
                             x, y, false,
                             routine_type(vanish_routine(10)),
-                            block_sprite_info_, &map_texture_
+                            block_sprite_info_
                         );
                     b.position.lx = 0.0f;
                     b.position.ly = 0.0f;
@@ -646,7 +621,7 @@ private:
                         create_enemy(
                             x, y, false,
                             routine_type(vanish_routine(10)),
-                            block_sprite_info_, &map_texture_
+                            block_sprite_info_
                         );
                     b.position.lx = 0.0f;
                     b.position.ly = 0.0f;
@@ -775,7 +750,7 @@ private:
                 }
                 else
                 {
-                    player_.change_sprite(mini_sprite_info_, &boy_texture_);
+                    player_.change_sprite(mini_sprite_info_);
                     player_.effect = effect_type(&blink_effect);
                     sound_.play_se("damage.ogg");
                 }
@@ -795,7 +770,7 @@ private:
             {
                 items_.erase(i);
                 if (player_.sprite_infos == &mini_sprite_info_)
-                    player_.change_sprite(player_sprite_info_, &man_texture_);
+                    player_.change_sprite(player_sprite_info_);
             }
         }
     }
@@ -905,7 +880,7 @@ private:
         if (!missed_ && (top_block(player_.position) < 0))
         {
             sound_.stop_bgm();
-            player_.change_sprite(mini_sprite_info_, &boy_texture_);
+            player_.change_sprite(mini_sprite_info_);
             player_.change_form(player_routine::miss_form);
             player_.routine = routine_type(wait_se_routine(sound_, "miss.ogg"));
             missed_ = true;
@@ -967,10 +942,11 @@ private:
         float x = chara.position.x - info.bounds.x - scroll_x_;
         float y = static_cast<float>(height_)-chara.position.y-infos.height();
 
-        if (chara.texture != 0)
+        const std::string& texture = infos.texture();
+        if (!texture.empty())
         {
             ::draw_sprite(
-                device_, x, y, 0.0f, *(chara.texture),
+                device_, x, y, 0.0f, textures_[texture],
                 info.x, info.y, infos.width(), infos.height(),
                 chara.form.options, chara.color
             );
@@ -984,7 +960,7 @@ private:
             static_cast<float>(x*32)-scroll_x_,
             static_cast<float>(height_-32 - y*32),
             0.0f,
-            map_texture_,
+            textures_["map_chips.png"],
             tx, ty, 32, 32, 0
         );
     }

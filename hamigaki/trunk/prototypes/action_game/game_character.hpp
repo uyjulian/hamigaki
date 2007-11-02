@@ -27,7 +27,6 @@ struct game_character
     int step;
     unsigned long color;
     const sprite_info_set* sprite_infos;
-    direct3d_texture9* texture;
     std::pair<int,int> origin;
     char next_char;
     bool auto_slip_out;
@@ -48,7 +47,7 @@ struct game_character
         step = 0;
     }
 
-    void change_sprite(const sprite_info_set& infos, direct3d_texture9* tex)
+    void change_sprite(const sprite_info_set& infos)
     {
         sprite_info info0 = sprite_infos->get_group(form.type)[0];
 
@@ -57,7 +56,6 @@ struct game_character
         float bottom = position.y;
 
         sprite_infos = &infos;
-        texture = tex;
 
         sprite_info info = sprite_infos->get_group(form.type)[0];
 

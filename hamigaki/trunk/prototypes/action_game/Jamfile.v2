@@ -40,6 +40,7 @@ exe action_game
     sprite_info.cpp
     stage_map.cpp
     straight_routine.cpp
+    texture_cache.cpp
     turn_routine.cpp
     vanish_routine.cpp
     wait_se_routine.cpp
