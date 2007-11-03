@@ -115,6 +115,8 @@ public:
         params.Windowed = TRUE;
         params.SwapEffect = D3DSWAPEFFECT_DISCARD;
         params.BackBufferFormat = D3DFMT_UNKNOWN;
+        params.EnableAutoDepthStencil = TRUE;
+        params.AutoDepthStencilFormat = D3DFMT_D16;
 
         device_ = d3d_.create_device(
             D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, handle_,
@@ -149,7 +151,7 @@ public:
         int x2 = static_cast<int>(std::ceil((scroll_x_) / 32.0f));
         x2 += width_ / 32;
 
-        device_.clear_target(D3DCOLOR_XRGB(0x77,0x66,0xDD));
+        device_.clear(D3DCOLOR_XRGB(0x77,0x66,0xDD));
         {
             scoped_scene scene(device_);
 

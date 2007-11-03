@@ -36,6 +36,16 @@ public:
             throw directx9_error(res, "IDirect3DDevice9::Clear()");
     }
 
+    void clear(::D3DCOLOR color)
+    {
+        ::HRESULT res =
+            pimpl_->Clear(
+                0, 0, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER, color, 1.0f, 0
+            );
+        if (FAILED(res))
+            throw directx9_error(res, "IDirect3DDevice9::Clear()");
+    }
+
     void begin_scene()
     {
         ::HRESULT res = pimpl_->BeginScene();
