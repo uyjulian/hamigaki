@@ -43,6 +43,7 @@ exe action_game
     texture_cache.cpp
     turn_routine.cpp
     vanish_routine.cpp
+    velocity_routine.cpp
     wait_se_routine.cpp
     /directx//d3d9
     /directx//dxerr9

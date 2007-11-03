@@ -10,8 +10,13 @@
 #ifndef GAME_SYSTEM_HPP
 #define GAME_SYSTEM_HPP
 
+#include "game_character.hpp"
 #include "input_engine.hpp"
 #include "sound_engine.hpp"
+#include <list>
+
+typedef std::list<game_character> character_list;
+typedef character_list::iterator character_iterator;
 
 struct game_system
 {
@@ -29,6 +34,8 @@ struct game_system
     int screen_height;
     float gravity;
     float min_vy;
+
+    character_list characters;
 };
 
 #endif // GAME_SYSTEM_HPP

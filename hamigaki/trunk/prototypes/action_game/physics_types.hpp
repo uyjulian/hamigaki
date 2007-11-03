@@ -17,6 +17,13 @@ struct rectangle
     T y;
     T lx;
     T ly;
+
+    rectangle() : x(), y(), lx(), ly() {}
+
+    rectangle(T x, T y, T lx, T ly)
+        : x(x), y(y), lx(lx), ly(ly)
+    {
+    }
 };
 typedef rectangle<float> rect;
 
