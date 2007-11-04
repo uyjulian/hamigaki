@@ -553,7 +553,7 @@ public:
         pimpl_ = tmp;
     }
 
-    R operator()(HAMIGAKI_COROUTINE_PARMS)
+    R operator()(HAMIGAKI_COROUTINE_PARMS) const
     {
         BOOST_ASSERT(pimpl_.get());
         return pimpl_->call(
@@ -563,7 +563,8 @@ public:
     }
 
     optional_result_type operator()(
-        const std::nothrow_t& HAMIGAKI_COROUTINE_COMMA HAMIGAKI_COROUTINE_PARMS)
+        const std::nothrow_t& HAMIGAKI_COROUTINE_COMMA
+        HAMIGAKI_COROUTINE_PARMS) const
     {
         BOOST_ASSERT(pimpl_.get());
         return pimpl_->call_nothrow(

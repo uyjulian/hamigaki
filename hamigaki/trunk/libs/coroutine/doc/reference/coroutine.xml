@@ -127,7 +127,7 @@
         </method-group>
 
         <method-group name="invocations">
-          <method name="operator()">
+          <method name="operator()" cv="const">
             <type>R</type>
             <parameter name="a1"><paramtype>T1</paramtype></parameter>
             <parameter name="a2"><paramtype>T2</paramtype></parameter>
@@ -135,7 +135,7 @@
             <parameter name="aN"><paramtype>TN</paramtype></parameter>
           </method>
 
-          <method name="operator()">
+          <method name="operator()" cv="const">
             <type>boost::optional&lt;R&gt;</type>
             <parameter name=""><paramtype>std::nothrow_t</paramtype></parameter>
             <parameter name="a1"><paramtype>T1</paramtype></parameter>
