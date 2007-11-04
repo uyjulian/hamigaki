@@ -21,13 +21,13 @@ typedef character_list::iterator character_iterator;
 struct game_system
 {
     explicit game_system(void* hwnd)
-        : input(hwnd), sound(hwnd)
+        : sound(hwnd)
         , screen_width(640), screen_height(480)
         , gravity(-0.6f), min_vy(-10.0f)
     {
     }
 
-    input_engine input;
+    input_command command;
     sound_engine sound;
 
     int screen_width;

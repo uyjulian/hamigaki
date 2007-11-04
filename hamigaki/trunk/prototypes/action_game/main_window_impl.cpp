@@ -59,6 +59,11 @@ create_enemy(
     return enemy;
 }
 
+void stop(game_system* game, game_character* c, game_character* target)
+{
+    c->vx = 0.0f;
+}
+
 } // namespace
 
 class main_window::impl
@@ -70,9 +75,9 @@ private:
 public:
     explicit impl(::HWND handle)
         : handle_(handle)
-        , system_(handle_), textures_(device_)
+        , input_(handle_), system_(handle_), textures_(device_)
         , active_(false), last_time_(::GetTickCount()), frames_(0)
-        , stage_file_("map.txt"), scroll_x_(0.0f), missed_(true)
+        , stage_file_("map.txt"), scroll_x_(0.0f)
     {
         ::RECT cr;
         ::GetClientRect(handle_, &cr);
@@ -124,9 +129,8 @@ public:
 
     void process_input()
     {
-        input_command cmd;
         if (active_)
-            cmd  = system_.input();
+            system_.command  = input_();
 
         const unsigned long table[] = { 16, 17, 17 };
         unsigned long now = ::GetTickCount();
@@ -136,18 +140,13 @@ public:
             elapsed -= table[frames_ % 3];
             if (++frames_ == 60)
                 frames_ = 0;
-            this->process_input_impl(cmd);
+            this->process_input_impl();
         }
         last_time_ = now - elapsed;
     }
 
     void render()
     {
-        int x1 = static_cast<int>(scroll_x_) / 32;
-
-        int x2 = static_cast<int>(std::ceil((scroll_x_) / 32.0f));
-        x2 += width_ / 32;
-
         device_.clear(D3DCOLOR_XRGB(0x77,0x66,0xDD));
         {
             scoped_scene scene(device_);
@@ -179,6 +178,7 @@ public:
 
 private:
     ::HWND handle_;
+    input_engine input_;
     game_system system_;
     direct3d9 d3d_;
     direct3d_device9 device_;
@@ -203,7 +203,6 @@ private:
     game_character player_;
     int width_;
     int height_;
-    bool missed_;
 
     chara_iterator find_enemy(int x, int y)
     {
@@ -398,12 +397,13 @@ private:
 
     void reset_characters()
     {
-        missed_ = false;
         system_.sound.stop_se();
 
         load_map_from_text(stage_file_.c_str(), map_);
 
         player_.move_routine = &velocity_routine;
+        player_.speed_routine = player_routine();
+        player_.on_collide_block_side = &stop;
         player_.sprite_infos = &mini_sprite_info_;
         player_.effect = effect_type();
         player_.form = sprite_form::normal;
@@ -419,7 +419,7 @@ private:
         player_.y = static_cast<float>(pos.second * 32);
         player_.width = static_cast<float>(info.bounds.lx);
         player_.height = static_cast<float>(info.bounds.ly);
-        player_.vx = 2.0f;
+        player_.vx = 0.0f;
         player_.vy = 0.0f;
 
         float right_end = static_cast<float>(map_.width()*32);
@@ -441,9 +441,9 @@ private:
         system_.sound.play_bgm("bgm.ogg");
     }
 
-    void process_input_impl(const input_command& cmd)
+    void process_input_impl()
     {
-        if (cmd.reset)
+        if (system_.command.reset)
             reset_characters();
 
         std::for_each(
@@ -467,14 +467,6 @@ private:
         {
             player_.x = max_x;
             player_.vx = 0.0f;
-        }
-
-        if (!missed_ && (player_.y + player_.height < 0.0f))
-        {
-            system_.sound.stop_bgm();
-            player_.change_sprite(mini_sprite_info_);
-            player_.change_form(player_routine::miss_form);
-            missed_ = true;
         }
 
         float right_end = static_cast<float>(map_.width()*32);

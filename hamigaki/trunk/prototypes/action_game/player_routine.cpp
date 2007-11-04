@@ -8,330 +8,351 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "player_routine.hpp"
-#include "routine_state.hpp"
+#include "game_character.hpp"
+#include "game_system.hpp"
 #include <cmath>
 
 namespace
 {
 
-const boost::uint32_t walk_form = player_routine::walk_form;
-const boost::uint32_t jump_form = player_routine::jump_form;
-const boost::uint32_t duck_form = player_routine::duck_form;
-const boost::uint32_t duck_jump_form = player_routine::duck_jump_form;
-const boost::uint32_t brake_form = player_routine::brake_form;
+typedef hamigaki::coroutines::shared_coroutine<
+    void (game_system*, game_character*)
+> coroutine_type;
 
-const boost::uint32_t punch_form =
-    static_four_char_code<'P','U','N','C'>::value;
+template<char C1, char C2, char C3, char C4>
+struct static4cc
+{
+    static const boost::uint32_t value =
+        static_four_char_code<C1,C2,C3,C4>::value;
+};
 
-const boost::uint32_t duck_punch_form =
-    static_four_char_code<'D','P','N','C'>::value;
+const boost::uint32_t walk_form = static4cc<'W','A','L','K'>::value;
+const boost::uint32_t jump_form = static4cc<'J','U','M','P'>::value;
+const boost::uint32_t duck_form = static4cc<'D','U','C','K'>::value;
+const boost::uint32_t duck_jump_form = static4cc<'D','J','M','P'>::value;
+const boost::uint32_t brake_form = static4cc<'B','R','A','K'>::value;
+const boost::uint32_t knock_back_form = static4cc<'K','N','O','K'>::value;
+const boost::uint32_t miss_form = static4cc<'M','I','S','S'>::value;
+const boost::uint32_t punch_form = static4cc<'P','U','N','C'>::value;
+const boost::uint32_t duck_punch_form = static4cc<'D','P','N','C'>::value;
+const boost::uint32_t slide_down_form = static4cc<'S','L','D','D'>::value;
 
-const boost::uint32_t slide_down_form =
-    static_four_char_code<'S','L','D','D'>::value;
+inline bool on_rects(const rect& r1, const rect& r2)
+{
+    return
+        (r1.x < r2.x + r2.lx) && (r2.x < r1.x + r1.lx) &&
+        (r1.y == r2.y + r2.ly) ;
+}
 
+inline rect sweep_x(const rect& r, float dx)
+{
+    if (dx < 0.0f)
+        return rect(r.x+dx, r.y, r.lx-dx, r.ly);
+    else
+        return rect(r.x, r.y, r.lx+dx, r.ly);
+}
+
+inline rect sweep_y(const rect& r, float dy)
+{
+    if (dy < 0.0f)
+        return rect(r.x, r.y+dy, r.lx, r.ly-dy);
+    else
+        return rect(r.x, r.y, r.lx, r.ly+dy);
+}
+
+slope_type::values
+current_slope(const game_character& c, const character_list& ls)
+{
+    typedef character_list::const_iterator iter_type;
+    for (iter_type i = ls.begin(), end = ls.end(); i != end; ++i)
+    {
+        // itself
+        if (&*i == &c)
+            continue;
+
+        if (!i->attrs.test(char_attr::block) || (i->slope == slope_type::none))
+            continue;
+
+        const rect& r2 = i->bounds();
+        if ((r2.x <= c.x) && (c.x <  r2.x + r2.lx) &&
+            (r2.y <  c.y) && (c.y <= r2.y + r2.ly) )
+        {
+            return i->slope;
+        }
+    }
+
+    return slope_type::none;
+}
+
+bool is_on_floor(const game_character& c, const character_list& ls)
+{
+    if (c.vy != 0.0f)
+        return false;
+
+    const rect& r = c.bounds();
+
+    typedef character_list::const_iterator iter_type;
+    for (iter_type i = ls.begin(), end = ls.end(); i != end; ++i)
+    {
+        // itself
+        if (&*i == &c)
+            continue;
+
+        if (!i->attrs.test(char_attr::block))
+            continue;
+
+        if (i->slope != slope_type::none)
+        {
+            const rect& r2 = i->bounds();
+            if ((r2.x > c.x) || (c.x >= r2.x + r2.lx))
+                continue;
+
+            float dx = c.x - i->x;
+            float height = i->slope_height(dx);
+            if (i->y + height == c.y)
+                return true;
+        }
+        else if (on_rects(r, i->bounds()))
+            return true;
+    }
+
+    return false;
+}
 
 bool is_breaking(float vx, float ax)
 {
     return ((vx < 0.0f) && (ax > 0.0f)) || ((vx > 0.0f) && (ax < 0.0f));
 }
 
-float limit_accel(float a, float limit, float v)
+void x_routine(game_system* game, game_character* c)
 {
-    float new_v = v + a;
-
-    if (a < 0.0f)
-    {
-        if (new_v < -limit)
-            return -limit - v;
-    }
-    else
-    {
-        if (new_v > limit)
-            return limit - v;
-    }
-
-    return a;
-}
-
-class x_routine
-{
-public:
-    x_routine(const stage_map& map, sound_engine& sound)
-        : map_(map), sound_(sound)
-    {
-    }
-
-    routine_result operator()(
-        routine_type::self& self,
-        rect r, velocity v, sprite_form form, input_command cmd) const;
-
-private:
-    const stage_map& map_;
-    sound_engine& sound_;
-};
-
-routine_result x_routine::operator()(
-    routine_type::self& self,
-    rect r, velocity v, sprite_form form, input_command cmd) const
-{
-    acceleration a;
-    routine_state stat(self,r,v,form,cmd,a);
-
     const float brake = 0.125f;
 
-    while (true)
+    character_list& ls = game->characters;
+    bool on_floor = is_on_floor(*c, ls);
+    slope_type::values slope = current_slope(*c, ls);
+
+    if (c->form != slide_down_form)
     {
-        bool on_ground = is_on_ground(map_, r);
-        bool slope = is_slope(map_, r);
+        if (game->command.x < 0.0f)
+            c->back = true;
+        else if (game->command.x > 0.0f)
+            c->back = false;
+    }
 
-        if (form.type != slide_down_form)
+    float max_speed = 3.0f;
+    if (game->command.dash)
+        max_speed = 5.0f;
+
+    if (is_breaking(c->vx, game->command.x))
+    {
+        if (c->vx < 0.0f)
         {
-            if (cmd.x < 0.0f)
-                form.options |= sprite_options::back;
-            else if (cmd.x > 0.0f)
-                form.options &= ~sprite_options::back;
-        }
-
-        float max_speed = 3.0f;
-        if (cmd.dash)
-            max_speed = 5.0f;
-
-        a.ax = 0.0f;
-
-        if (is_breaking(v.vx, cmd.x))
-        {
-            if (v.vx < 0.0f)
-                a.ax = brake*2.0f;
-            else
-                a.ax = -brake*2.0f;
-
-            a.ax = limit_accel(a.ax, 0.0f, v.vx);
-
-            if (on_ground && (form.type != brake_form))
-            {
-                form.type = brake_form;
-                sound_.play_se("brake.ogg");
-            }
-        }
-        else if (on_ground && slope && (form.type == slide_down_form))
-        {
-            if (v.vx < 0.0f)
-                a.ax = -0.125f;
-            else
-                a.ax = 0.125f;
-        }
-        else if (cmd.x != 0.0f)
-        {
-            if (cmd.dash)
-                a.ax = cmd.x * 0.125f;
-            else
-                a.ax = cmd.x * 0.1f;
-
-            a.ax = limit_accel(a.ax, max_speed, v.vx);
-
-            if (on_ground)
-            {
-                form.type = walk_form;
-                if (sound_.se_filename() == "brake.ogg")
-                    sound_.stop_se();
-            }
+            c->vx += brake*2.0f;
+            c->vx = (std::min)(c->vx, 0.0f);
         }
         else
         {
-            if (v.vx < 0.0f)
-                a.ax = brake;
-            else
-                a.ax = -brake;
-
-            a.ax = limit_accel(a.ax, 0.0f, v.vx);
-
-            if (on_ground)
-            {
-                if (form.type != slide_down_form)
-                    form.type = sprite_form::normal;
-                if (sound_.se_filename() == "brake.ogg")
-                    sound_.stop_se();
-            }
+            c->vx -= brake*2.0f;
+            c->vx = (std::max)(c->vx, 0.0f);
         }
 
-        if (on_ground)
+        if (on_floor && (c->form != brake_form))
         {
-            if (form.type == slide_down_form)
-            {
-                if (v.vx == 0.0f)
-                    form.type = sprite_form::normal;
-                else if (slope)
-                {
-                    int x = static_cast<int>(r.x + r.lx * 0.5f) / 32;
-                    int y = bottom_block(r);
-                    char floor = map_(x, y);
-                    if ((floor == '/') && (v.vx > 0.0f))
-                        form.type = sprite_form::normal;
-                    else if ((floor == '\\') && (v.vx < 0.0f))
-                        form.type = sprite_form::normal;
-                }
-            }
-            else
-            {
-                if ((cmd.x == 0.0f) && (cmd.y < 0.0f))
-                {
-                    if (slope)
-                    {
-                        int x = static_cast<int>(r.x + r.lx * 0.5f) / 32;
-                        int y = bottom_block(r);
-                        char floor = map_(x, y);
-                        if (floor == '/')
-                        {
-                            a.ax = -v.vx - 0.125f;
-                            form.type = slide_down_form;
-                        }
-                        else if (floor == '\\')
-                        {
-                            a.ax = -v.vx + 0.125f;
-                            form.type = slide_down_form;
-                        }
-                    }
-                    else
-                        form.type = duck_form;
-                }
-                else if (form.type == duck_form)
-                    form.type = sprite_form::normal;
-            }
+            c->form = brake_form;
+            game->sound.play_se("brake.ogg");
         }
-        else if (form.type == walk_form)
-            form.type = sprite_form::normal;
+    }
+    else if (
+        on_floor && (slope != slope_type::none) &&
+        (c->form == slide_down_form) )
+    {
+        if (c->vx < 0.0f)
+        {
+            c->vx -= 0.125f;
+            c->vx = (std::max)(c->vx, -max_speed);
+        }
+        else
+        {
+            c->vx += 0.125f;
+            c->vx = (std::min)(c->vx, max_speed);
+        }
+    }
+    else if (game->command.x != 0.0f)
+    {
+        if (game->command.dash)
+            c->vx += game->command.x * 0.125f;
+        else
+            c->vx += game->command.x * 0.1f;
 
-        stat.yield();
+        if (c->vx > max_speed)
+            c->vx = max_speed;
+        else if (c->vx < -max_speed)
+            c->vx = -max_speed;
+
+        if (on_floor)
+        {
+            c->form = walk_form;
+            if (game->sound.se_filename() == "brake.ogg")
+                game->sound.stop_se();
+        }
+    }
+    else
+    {
+        if (c->vx < 0.0f)
+        {
+            c->vx += brake;
+            c->vx = (std::min)(c->vx, 0.0f);
+        }
+        else
+        {
+            c->vx -= brake;
+            c->vx = (std::max)(c->vx, 0.0f);
+        }
+
+        if (on_floor)
+        {
+            if (c->form != slide_down_form)
+                c->form = sprite_form::normal;
+            if (game->sound.se_filename() == "brake.ogg")
+                game->sound.stop_se();
+        }
     }
 
-    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(routine_result())
+    if (on_floor)
+    {
+        if (c->form == slide_down_form)
+        {
+            if (c->vx == 0.0f)
+                c->form = sprite_form::normal;
+        }
+        else
+        {
+            if ((game->command.x == 0.0f) && (game->command.y < 0.0f))
+            {
+                if (slope == slope_type::left_down)
+                {
+                    c->vx = -0.125f;
+                    c->form = slide_down_form;
+                }
+                else if (slope == slope_type::right_down)
+                {
+                    c->vx = 0.125f;
+                    c->form = slide_down_form;
+                }
+                else
+                    c->form = duck_form;
+            }
+            else if (c->form == duck_form)
+                c->form = sprite_form::normal;
+        }
+    }
+    else if (c->form == walk_form)
+        c->form = sprite_form::normal;
 }
 
-class y_routine
+void y_routine_impl(
+    coroutine_type::self& self, game_system* game, game_character* c)
 {
-public:
-    y_routine(const stage_map& map, sound_engine& sound)
-        : map_(map), sound_(sound)
-    {
-    }
-
-    routine_result operator()(
-        routine_type::self& self,
-        rect r, velocity v, sprite_form form, input_command cmd) const;
-
-private:
-    const stage_map& map_;
-    sound_engine& sound_;
-};
-
-routine_result y_routine::operator()(
-    routine_type::self& self,
-    rect r, velocity v, sprite_form form, input_command cmd) const
-{
-    acceleration a;
-    routine_state stat(self,r,v,form,cmd,a);
-
     bool old_jump = false;
 
     while (true)
     {
-        while (!(is_on_ground(map_, r) && !old_jump && cmd.jump))
+        while (!(
+            is_on_floor(*c, game->characters) &&
+            !old_jump && game->command.jump ) )
         {
-            old_jump = cmd.jump;
-            stat.yield();
+            old_jump = game->command.jump;
+            boost::tie(game,c) = self.yield();
         }
 
-        if (form.type == duck_form)
-            form.type = duck_jump_form;
+        if (c->form == duck_form)
+            c->form = duck_jump_form;
         else
-            form.type = jump_form;
+            c->form = jump_form;
 
-        sound_.play_se("jump.ogg");
+        game->sound.play_se("jump.ogg");
 
-        a.ay = 8.0f;
-        if (std::abs(v.vx) > 4.0f)
-            a.ay += 1.0f;
+        c->vy = 8.6f;
+        if (std::abs(c->vx) > 4.0f)
+            c->vy += 1.0f;
 
-        stat.yield();
+        boost::tie(game,c) = self.yield();
 
-        a.ay = 0.35f;
-        while (!is_on_ground(map_, r))
+        float ay = 0.35f;
+        while (!is_on_floor(*c, game->characters))
         {
-            if (!cmd.jump || (v.vy < 0.0f))
-                a.ay = 0.0f;
+            if (!game->command.jump || (c->vy < 0.0f))
+                ay = 0.0f;
 
-            stat.yield();
+            c->vy += ay;
+            boost::tie(game,c) = self.yield();
         }
 
-        a.ay = 0.0f;
+        if (c->form == duck_jump_form)
+            c->form = duck_form;
+        else if (c->form == jump_form)
+            c->form = sprite_form::normal;
 
-        if (form.type == duck_jump_form)
-            form.type = duck_form;
-        else if (form.type == jump_form)
-            form.type = sprite_form::normal;
-
-        old_jump = cmd.jump;
+        old_jump = game->command.jump;
     }
-
-    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(routine_result())
 }
 
 } // namespace
 
-routine_result player_routine::operator()(
-    routine_type::self& self,
-    rect r, velocity v, sprite_form form, input_command cmd) const
+void player_routine_impl(
+    coroutine_type::self& self, game_system* game, game_character* c)
 {
-    routine_type rx(x_routine(map_, sound_));
-    routine_type ry(y_routine(map_, sound_));
+    coroutine_type y_routine(&y_routine_impl);
 
     int punch_frames = 0;
-    boost::uint32_t form_type;
+    boost::uint32_t form;
     bool old_punch = false;
 
     while (true)
     {
-        bool punch_pushed = !old_punch && cmd.punch;
-        old_punch = cmd.punch;
+        bool punch_pushed = !old_punch && game->command.punch;
+        old_punch = game->command.punch;
 
         if (punch_frames > 0)
-            std::swap(form_type, form.type);
+            std::swap(form, c->form);
         else if (punch_pushed)
         {
-            if ((form.type == duck_form) || (form.type == duck_jump_form))
-                form_type = duck_punch_form;
+            if ((c->form == duck_form) || (c->form == duck_jump_form))
+                form = duck_punch_form;
             else
-                form_type = punch_form;
+                form = punch_form;
 
             punch_frames = 5;
         }
 
-        acceleration ax, ay;
-        boost::tie(ax,form) = rx(r,v,form,cmd);
-        boost::tie(ay,form) = ry(r,v,form,cmd);
+        x_routine(game, c);
+        y_routine(game, c);
 
         if (punch_frames > 0)
         {
             if (--punch_frames == 0)
             {
-                if ((form.type != duck_form) &&
-                    (form.type != duck_jump_form) &&
-                    (form.type != jump_form) )
+                if ((c->form != duck_form) &&
+                    (c->form != duck_jump_form) &&
+                    (c->form != jump_form) )
                 {
-                    form_type = walk_form;
+                    form = walk_form;
                 }
             }
 
-            ax.ax = 0.0f;
-            ay.ay = 0.0f;
-            std::swap(form_type, form.type);
+            std::swap(form, c->form);
         }
 
-        acceleration a;
-        a.ax = ax.ax;
-        a.ay = ay.ay;
-        boost::tie(r,v,form,cmd) = self.yield(a,form);
+        boost::tie(game,c) = self.yield();
     }
+}
 
-    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(routine_result())
+player_routine::player_routine() : coroutine_(&player_routine_impl)
+{
+}
+
+void player_routine::operator()(game_system* game, game_character* c) const
+{
+    coroutine_(game, c);
 }
