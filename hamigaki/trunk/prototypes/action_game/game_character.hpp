@@ -161,6 +161,8 @@ struct game_character
 
     void move(game_system& game)
     {
+        boost::uint32_t old_form = form;
+
         if (!speed_routine.empty())
         {
             // Note:
@@ -176,6 +178,15 @@ struct game_character
             move_routine_type mv = move_routine;
             mv(&game, this);
         }
+
+        if (form == sprite_form::nform)
+            return;
+        else if (old_form != form)
+            change_form(form);
+        else if (int d = static_cast<int>(std::abs(vx/2.0f)))
+            step += d;
+        else
+            ++step;
     }
 };
 
