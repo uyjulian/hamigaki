@@ -8,95 +8,7 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "velocity_routine.hpp"
-#include "game_character.hpp"
-#include "game_system.hpp"
-
-namespace
-{
-
-inline bool on_rects(const rect& r1, const rect& r2)
-{
-    return
-        (r1.x < r2.x + r2.lx) && (r2.x < r1.x + r1.lx) &&
-        (r1.y == r2.y + r2.ly) ;
-}
-
-inline rect sweep_x(const rect& r, float dx)
-{
-    if (dx < 0.0f)
-        return rect(r.x+dx, r.y, r.lx-dx, r.ly);
-    else
-        return rect(r.x, r.y, r.lx+dx, r.ly);
-}
-
-inline rect sweep_y(const rect& r, float dy)
-{
-    if (dy < 0.0f)
-        return rect(r.x, r.y+dy, r.lx, r.ly-dy);
-    else
-        return rect(r.x, r.y, r.lx, r.ly+dy);
-}
-
-slope_type::values
-current_slope(const game_character& c, const character_list& ls)
-{
-    typedef character_list::const_iterator iter_type;
-    for (iter_type i = ls.begin(), end = ls.end(); i != end; ++i)
-    {
-        // itself
-        if (&*i == &c)
-            continue;
-
-        if (!i->attrs.test(char_attr::block) || (i->slope == slope_type::none))
-            continue;
-
-        const rect& r2 = i->bounds();
-        if ((r2.x <= c.x) && (c.x <  r2.x + r2.lx) &&
-            (r2.y <  c.y) && (c.y <= r2.y + r2.ly) )
-        {
-            return i->slope;
-        }
-    }
-
-    return slope_type::none;
-}
-
-bool is_on_floor(const game_character& c, const character_list& ls)
-{
-    if (c.vy != 0.0f)
-        return false;
-
-    const rect& r = c.bounds();
-
-    typedef character_list::const_iterator iter_type;
-    for (iter_type i = ls.begin(), end = ls.end(); i != end; ++i)
-    {
-        // itself
-        if (&*i == &c)
-            continue;
-
-        if (!i->attrs.test(char_attr::block))
-            continue;
-
-        if (i->slope != slope_type::none)
-        {
-            const rect& r2 = i->bounds();
-            if ((r2.x > c.x) || (c.x >= r2.x + r2.lx))
-                continue;
-
-            float dx = c.x - i->x;
-            float height = i->slope_height(dx);
-            if (i->y + height == c.y)
-                return true;
-        }
-        else if (on_rects(r, i->bounds()))
-            return true;
-    }
-
-    return false;
-}
-
-} // namespace
+#include "collision_utility.hpp"
 
 void vx_routine(game_system* game, game_character* c)
 {
@@ -285,10 +197,15 @@ void vy_routine(game_system* game, game_character* c)
         {
             if (c->vy < 0.0f)
             {
-                c->vy = 0.0f;
-                y = r2.y + r2.ly;
-                r.y = y;
-                r.ly = c->height + c->y - y;
+                float dx = c->x - i->x;
+                float height = i->slope_height(dx);
+                if (height == r2.ly)
+                {
+                    c->vy = 0.0f;
+                    y = r2.y + height;
+                    r.y = y;
+                    r.ly = c->height + c->y - y;
+                }
             }
             else
             {

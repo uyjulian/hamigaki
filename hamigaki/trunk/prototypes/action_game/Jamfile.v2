@@ -25,6 +25,7 @@ exe action_game
     :
     action_game.cpp
     blink_effect.cpp
+    collision_utility.cpp
     knock_back_routine.cpp
     hop_routine.cpp
     hop_step_jump_routine.cpp

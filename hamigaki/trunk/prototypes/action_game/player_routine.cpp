@@ -8,8 +8,7 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "player_routine.hpp"
-#include "game_character.hpp"
-#include "game_system.hpp"
+#include "collision_utility.hpp"
 #include <cmath>
 
 namespace
@@ -36,88 +35,6 @@ const boost::uint32_t miss_form = static4cc<'M','I','S','S'>::value;
 const boost::uint32_t punch_form = static4cc<'P','U','N','C'>::value;
 const boost::uint32_t duck_punch_form = static4cc<'D','P','N','C'>::value;
 const boost::uint32_t slide_down_form = static4cc<'S','L','D','D'>::value;
-
-inline bool on_rects(const rect& r1, const rect& r2)
-{
-    return
-        (r1.x < r2.x + r2.lx) && (r2.x < r1.x + r1.lx) &&
-        (r1.y == r2.y + r2.ly) ;
-}
-
-inline rect sweep_x(const rect& r, float dx)
-{
-    if (dx < 0.0f)
-        return rect(r.x+dx, r.y, r.lx-dx, r.ly);
-    else
-        return rect(r.x, r.y, r.lx+dx, r.ly);
-}
-
-inline rect sweep_y(const rect& r, float dy)
-{
-    if (dy < 0.0f)
-        return rect(r.x, r.y+dy, r.lx, r.ly-dy);
-    else
-        return rect(r.x, r.y, r.lx, r.ly+dy);
-}
-
-slope_type::values
-current_slope(const game_character& c, const character_list& ls)
-{
-    typedef character_list::const_iterator iter_type;
-    for (iter_type i = ls.begin(), end = ls.end(); i != end; ++i)
-    {
-        // itself
-        if (&*i == &c)
-            continue;
-
-        if (!i->attrs.test(char_attr::block) || (i->slope == slope_type::none))
-            continue;
-
-        const rect& r2 = i->bounds();
-        if ((r2.x <= c.x) && (c.x <  r2.x + r2.lx) &&
-            (r2.y <  c.y) && (c.y <= r2.y + r2.ly) )
-        {
-            return i->slope;
-        }
-    }
-
-    return slope_type::none;
-}
-
-bool is_on_floor(const game_character& c, const character_list& ls)
-{
-    if (c.vy != 0.0f)
-        return false;
-
-    const rect& r = c.bounds();
-
-    typedef character_list::const_iterator iter_type;
-    for (iter_type i = ls.begin(), end = ls.end(); i != end; ++i)
-    {
-        // itself
-        if (&*i == &c)
-            continue;
-
-        if (!i->attrs.test(char_attr::block))
-            continue;
-
-        if (i->slope != slope_type::none)
-        {
-            const rect& r2 = i->bounds();
-            if ((r2.x > c.x) || (c.x >= r2.x + r2.lx))
-                continue;
-
-            float dx = c.x - i->x;
-            float height = i->slope_height(dx);
-            if (i->y + height == c.y)
-                return true;
-        }
-        else if (on_rects(r, i->bounds()))
-            return true;
-    }
-
-    return false;
-}
 
 bool is_breaking(float vx, float ax)
 {
