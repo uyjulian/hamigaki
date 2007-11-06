@@ -428,7 +428,7 @@ void vx_routine(game_system* game, game_character* c)
         c->on_collide_block_side(game, c, &*ti);
 }
 
-void vy_routine(game_system* game, game_character* c)
+void vy_down_routine(game_system* game, game_character* c)
 {
     float y = c->y;
     y += c->vy;
@@ -487,23 +487,106 @@ void vy_routine(game_system* game, game_character* c)
         }
         else if (intersect_rects(r, r2) && !intersect_rects(er, r2))
         {
-            if (c->vy < 0.0f)
+            float dx = c->x - i->x;
+            float height = i->slope_height(dx);
+            if (height == r2.ly)
             {
                 c->vy = 0.0f;
-                y = r2.y + r2.ly;
+                y = r2.y + height;
                 r.y = y;
                 r.ly = c->height + c->y - y;
-            }
-            else
-            {
-                c->vy = -c->vy * 0.5f;
-                y = r2.y - c->height;
-                r.ly = c->height + y - c->y;
             }
         }
     }
 
     c->y = y;
+}
+
+void vy_up_routine(game_system* game, game_character* c)
+{
+    float y = c->y;
+    y += c->vy;
+
+    bool collision = false;
+
+    character_list& ls = game->characters;
+    for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
+    {
+        // itself
+        if (&*i == c)
+            continue;
+
+        if (!i->attrs.test(char_attr::block))
+            continue;
+
+        const rect& r2 = i->bounds();
+
+        if ((r2.x <= c->x) && (c->x < r2.x + r2.lx) &&
+            (c->y + c->height <= i->y) && (i->y < y + c->height) )
+        {
+            collision = true;
+            c->vy = -c->vy * 0.5f;
+            y = r2.y - c->height;
+        }
+    }
+
+    if (collision)
+    {
+        c->y = y;
+        return;
+    }
+
+    rect r = sweep_y(c->bounds(), c->vy);
+
+    slope_type::values slope = current_slope(*c, ls);
+
+    rect er;
+    if (slope == slope_type::left_down)
+    {
+        er.lx = c->width * 0.5f;
+        er.ly = er.lx;
+        er.x = c->x;
+        er.y = c->y;
+        er = sweep_y(er, c->vy);
+    }
+    else if (slope == slope_type::right_down)
+    {
+        er.lx = c->width * 0.5f;
+        er.ly = er.lx;
+        er.x = c->x - er.lx;
+        er.y = c->y;
+        er = sweep_y(er, c->vy);
+    }
+
+    for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
+    {
+        // itself
+        if (&*i == c)
+            continue;
+
+        if (!i->attrs.test(char_attr::block))
+            continue;
+
+        const rect& r2 = i->bounds();
+
+        if (intersect_rects(r, r2) && !intersect_rects(er, r2))
+        {
+            if (c->x < i->x)
+                c->x = r2.x - c->width*0.5f;
+            else
+                c->x = r2.x + r2.lx + c->width*0.5f;
+        }
+    }
+
+    c->y = y;
+}
+
+void vy_routine(game_system* game, game_character* c)
+{
+    if (c->vy <= 0.0f)
+        vy_down_routine(game, c);
+    else
+        vy_up_routine(game, c);
 }
 
 void velocity_routine(game_system* game, game_character* c)
@@ -1237,6 +1320,46 @@ void dash_test()
     move_check_x1(game, x1);
 }
 
+void dodge_block_test()
+{
+    game_character c1;
+    c1.attrs.set(char_attr::player);
+    c1.x = 40.0f;
+    c1.y = 32.0f;
+    c1.width = 32.0f;
+    c1.height = 32.0f;
+    c1.vy = 8.0f;
+    c1.routine = &velocity_routine;
+
+    game_character c2;
+    c2.attrs.set(char_attr::block);
+    c2.x = 32.0f;
+    c2.y = 0.0f;
+    c2.width = 64.0f;
+    c2.height = 32.0f;
+
+    game_character c3;
+    c3.attrs.set(char_attr::block);
+    c3.x = 16.0f;
+    c3.y = 64.0f;
+    c3.width = 32.0f;
+    c3.height = 32.0f;
+
+    const float x1[] =
+    {
+        48.0f, 48.0f, 48.0f, 48.0f, 48.0f, 48.0f, 48.0f, 48.0f, 48.0f, 48.0f,
+        48.0f, 48.0f, 48.0f, 48.0f, 48.0f, 48.0f, 48.0f, 48.0f, 48.0f, 48.0f
+    };
+
+    {
+        game_system game;
+        game.characters.push_back(c1);
+        game.characters.push_back(c2);
+        game.characters.push_back(c3);
+        move_check_x1(game, x1);
+    }
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("lift test");
@@ -1252,5 +1375,6 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&fall_on_down_slope_lift_test));
     test->add(BOOST_TEST_CASE(&up_lift_chain_test));
     test->add(BOOST_TEST_CASE(&dash_test));
+    test->add(BOOST_TEST_CASE(&dodge_block_test));
     return test;
 }
