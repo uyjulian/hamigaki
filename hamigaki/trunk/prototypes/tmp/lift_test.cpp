@@ -7,75 +7,51 @@
 
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
-struct rectangle
+struct rect
 {
     float x;
     float y;
     float lx;
     float ly;
 
-    rectangle() : x(0.0f), y(0.0f), lx(0.0f), ly(0.0f)
+    rect() : x(0.0f), y(0.0f), lx(0.0f), ly(0.0f)
     {
     }
 
-    rectangle(float x, float y, float lx, float ly)
+    rect(float x, float y, float lx, float ly)
         : x(x), y(y), lx(lx), ly(ly)
     {
     }
 };
 
-inline bool intersect_rects(const rectangle& r1, const rectangle& r2)
+inline bool intersect_rects(const rect& r1, const rect& r2)
 {
     return
         (r1.x < r2.x + r2.lx) && (r2.x < r1.x + r1.lx) &&
         (r1.y < r2.y + r2.ly) && (r2.y < r1.y + r1.ly) ;
 }
 
-inline bool on_rects(const rectangle& r1, const rectangle& r2)
+inline bool on_rects(const rect& r1, const rect& r2)
 {
     return
         (r1.x < r2.x + r2.lx) && (r2.x < r1.x + r1.lx) &&
         (r1.y == r2.y + r2.ly) ;
 }
 
-inline rectangle sweep_x(const rectangle& r, float dx)
+inline rect sweep_x(const rect& r, float dx)
 {
     if (dx < 0.0f)
-        return rectangle(r.x+dx, r.y, r.lx-dx, r.ly);
+        return rect(r.x+dx, r.y, r.lx-dx, r.ly);
     else
-        return rectangle(r.x, r.y, r.lx+dx, r.ly);
+        return rect(r.x, r.y, r.lx+dx, r.ly);
 }
 
-inline rectangle sweep_y(const rectangle& r, float dy)
+inline rect sweep_y(const rect& r, float dy)
 {
     if (dy < 0.0f)
-        return rectangle(r.x, r.y+dy, r.lx, r.ly-dy);
+        return rect(r.x, r.y+dy, r.lx, r.ly-dy);
     else
-        return rectangle(r.x, r.y, r.lx, r.ly+dy);
-}
-
-struct point
-{
-    float x;
-    float y;
-
-    point() : x(0.0f), y(0.0f)
-    {
-    }
-
-    point(float x, float y) : x(x), y(y)
-    {
-    }
-};
-
-inline rectangle make_bounds(const point& pos, float width, float height)
-{
-    rectangle r;
-    r.x = pos.x - width * 0.5f;
-    r.y = pos.y;
-    r.lx = width;
-    r.ly = height;
-    return r;
+        return rect(r.x, r.y, r.lx, r.ly+dy);
 }
 
 struct velocity
@@ -134,20 +110,21 @@ namespace slope_type
 };
 
 struct game_system;
-struct character;
+struct game_character;
 
 typedef boost::function<
-    void (game_system*, character*)
+    void (game_system*, game_character*)
 > routine_type;
 
 typedef boost::function<
-    void (game_system*, character*, character*)
+    void (game_system*, game_character*, game_character*)
 > collision_event_type;
 
-struct character
+struct game_character
 {
     std::bitset<char_attr::max_value> attrs;
-    point position;
+    float x;
+    float y;
     float width;
     float height;
     float vx;
@@ -156,15 +133,20 @@ struct character
     routine_type routine;
     collision_event_type on_collide_block_side;
 
-    character()
-        : width(0.0f), height(0.0f), vx(0.0f), vy(0.0f)
+    game_character()
+        : x(0.0f), y(0.0f), width(0.0f), height(0.0f), vx(0.0f), vy(0.0f)
         , slope(slope_type::none)
     {
     }
 
-    rectangle bounds() const
+    rect bounds() const
     {
-        return make_bounds(position, width, height);
+        rect r;
+        r.x = x - width * 0.5f;
+        r.y = y;
+        r.lx = width;
+        r.ly = height;
+        return r;
     }
 
     float slope_height(float dx) const
@@ -192,7 +174,7 @@ struct character
     }
 };
 
-inline bool on_characters(const character& c1, const character& c2)
+inline bool on_characters(const game_character& c1, const game_character& c2)
 {
     if (c2.slope == slope_type::none)
         return on_rects(c1.bounds(), c2.bounds());
@@ -201,14 +183,14 @@ inline bool on_characters(const character& c1, const character& c2)
         if (c1.vy != 0.0f)
             return false;
 
-        const rectangle& r2 = c2.bounds();
+        const rect& r2 = c2.bounds();
 
-        if ((r2.x <= c1.position.x) && (c1.position.x < r2.x + r2.lx))
+        if ((r2.x <= c1.x) && (c1.x < r2.x + r2.lx))
         {
-            float dx = c1.position.x - c2.position.x;
+            float dx = c1.x - c2.x;
             float height = c2.slope_height(dx);
 
-            return r2.y + height == c1.position.y;
+            return r2.y + height == c1.y;
         }
         else
             return false;
@@ -218,12 +200,13 @@ inline bool on_characters(const character& c1, const character& c2)
 
 #include <list>
 
-typedef std::list<character> character_list;
+typedef std::list<game_character> character_list;
 typedef character_list::iterator character_iterator;
 
-slope_type::values current_slope(const character& c, const character_list& ls)
+slope_type::values
+current_slope(const game_character& c, const character_list& ls)
 {
-    const rectangle& r = c.bounds();
+    const rect& r = c.bounds();
 
     typedef character_list::const_iterator iter_type;
     for (iter_type i = ls.begin(), end = ls.end(); i != end; ++i)
@@ -235,13 +218,12 @@ slope_type::values current_slope(const character& c, const character_list& ls)
         if (!i->attrs.test(char_attr::block) || (i->slope == slope_type::none))
             continue;
 
-        const rectangle& r2 = i->bounds();
-        if ((r2.x <= c.position.x) && (c.position.x <  r2.x + r2.lx) &&
-            (r2.y <  c.position.y) )
+        const rect& r2 = i->bounds();
+        if ((r2.x <= c.x) && (c.x <  r2.x + r2.lx) && (r2.y <  c.y))
         {
-            if (c.position.y < r2.y + r2.ly)
+            if (c.y < r2.y + r2.ly)
                 return i->slope;
-            else if (c.position.y == r2.y + r2.ly)
+            else if (c.y == r2.y + r2.ly)
             {
                 if (r.x <= r2.x)
                 {
@@ -260,12 +242,12 @@ slope_type::values current_slope(const character& c, const character_list& ls)
     return slope_type::none;
 }
 
-bool is_on_floor(const character& c, const character_list& ls)
+bool is_on_floor(const game_character& c, const character_list& ls)
 {
     if (c.vy != 0.0f)
         return false;
 
-    const rectangle& r = c.bounds();
+    const rect& r = c.bounds();
 
     typedef character_list::const_iterator iter_type;
     for (iter_type i = ls.begin(), end = ls.end(); i != end; ++i)
@@ -279,13 +261,13 @@ bool is_on_floor(const character& c, const character_list& ls)
 
         if (i->slope != slope_type::none)
         {
-            const rectangle& r2 = i->bounds();
-            if ((r2.x > c.position.x) || (c.position.x >= r2.x + r2.lx))
+            const rect& r2 = i->bounds();
+            if ((r2.x > c.x) || (c.x >= r2.x + r2.lx))
                 continue;
 
-            float dx = c.position.x - i->position.x;
+            float dx = c.x - i->x;
             float height = i->slope_height(dx);
-            if (i->position.y + height == c.position.y)
+            if (i->y + height == c.y)
                 return true;
         }
         else if (on_rects(r, i->bounds()))
@@ -311,42 +293,42 @@ struct game_system
 };
 
 
-void turn(game_system* game, character* c, character* target)
+void turn(game_system* game, game_character* c, game_character* target)
 {
     c->vx = -c->vx;
 }
 
-void stop_routine(game_system* game, character* c)
+void stop_routine(game_system* game, game_character* c)
 {
 }
 
-void vx_routine(game_system* game, character* c)
+void vx_routine(game_system* game, game_character* c)
 {
     character_list& ls = game->characters;
     bool on_floor = is_on_floor(*c, ls);
 
-    float x = c->position.x;
+    float x = c->x;
     x += c->vx;
 
-    rectangle r = sweep_x(c->bounds(), c->vx);
+    rect r = sweep_x(c->bounds(), c->vx);
 
     slope_type::values slope = current_slope(*c, ls);
 
-    rectangle er;
+    rect er;
     if (slope == slope_type::left_down)
     {
         er.lx = c->width * 0.5f;
         er.ly = er.lx;
-        er.x = c->position.x;
-        er.y = c->position.y;
+        er.x = c->x;
+        er.y = c->y;
         er = sweep_x(er, c->vx);
     }
     else if (slope == slope_type::right_down)
     {
         er.lx = c->width * 0.5f;
         er.ly = er.lx;
-        er.x = c->position.x - er.lx;
-        er.y = c->position.y;
+        er.x = c->x - er.lx;
+        er.y = c->y;
         er = sweep_x(er, c->vx);
     }
 
@@ -360,15 +342,15 @@ void vx_routine(game_system* game, character* c)
         if (!i->attrs.test(char_attr::block))
             continue;
 
-        const rectangle& r2 = i->bounds();
+        const rect& r2 = i->bounds();
 
         if ((i->slope == slope_type::left_down)
-            && (c->position.x < r2.x + r2.lx) )
+            && (c->x < r2.x + r2.lx) )
         {
             ;
         }
         else if ((i->slope == slope_type::right_down) &&
-            (r2.x < c->position.x) )
+            (r2.x < c->x) )
         {
             ;
         }
@@ -379,12 +361,12 @@ void vx_routine(game_system* game, character* c)
             {
                 r.x = r2.x + r2.lx;
                 x = r.x + c->width * 0.5f;
-                r.lx = c->width + c->position.x - x;
+                r.lx = c->width + c->x - x;
             }
             else
             {
                 x = r2.x - c->width * 0.5f;
-                r.lx = c->width + x - c->position.x;
+                r.lx = c->width + x - c->x;
             }
         }
     }
@@ -401,11 +383,11 @@ void vx_routine(game_system* game, character* c)
                 (i->slope == slope_type::none) )
                 continue;
 
-            const rectangle& r2 = i->bounds();
-            if ((r2.x <= c->position.x) && (c->position.x <  r2.x + r2.lx) &&
-                (r2.y <  c->position.y) && (c->position.y <= r2.y + r2.ly) )
+            const rect& r2 = i->bounds();
+            if ((r2.x <= c->x) && (c->x <  r2.x + r2.lx) &&
+                (r2.y <  c->y) && (c->y <= r2.y + r2.ly) )
             {
-                float dx = x - i->position.x;
+                float dx = x - i->x;
                 float w = i->width*0.5f;
                 if (dx < -w)
                     dx = -w;
@@ -413,7 +395,7 @@ void vx_routine(game_system* game, character* c)
                     dx = w;
 
                 float height = i->slope_height(dx);
-                c->position.y = i->position.y + height;
+                c->y = i->y + height;
                 break;
             }
         }
@@ -428,49 +410,49 @@ void vx_routine(game_system* game, character* c)
                 (i->slope == slope_type::none) )
                 continue;
 
-            const rectangle& r2 = i->bounds();
+            const rect& r2 = i->bounds();
             if ((r2.x <= x) && (x <  r2.x + r2.lx) &&
-                (r2.y <  c->position.y) && (c->position.y <= r2.y + r2.ly) )
+                (r2.y <  c->y) && (c->y <= r2.y + r2.ly) )
             {
-                float dx = x - i->position.x;
+                float dx = x - i->x;
                 float height = i->slope_height(dx);
-                c->position.y = i->position.y + height;
+                c->y = i->y + height;
                 break;
             }
         }
     }
 
-    c->position.x = x;
+    c->x = x;
 
     if ((ti != ls.end()) && c->on_collide_block_side)
         c->on_collide_block_side(game, c, &*ti);
 }
 
-void vy_routine(game_system* game, character* c)
+void vy_routine(game_system* game, game_character* c)
 {
-    float y = c->position.y;
+    float y = c->y;
     y += c->vy;
 
-    rectangle r = sweep_y(c->bounds(), c->vy);
+    rect r = sweep_y(c->bounds(), c->vy);
 
     character_list& ls = game->characters;
     slope_type::values slope = current_slope(*c, ls);
 
-    rectangle er;
+    rect er;
     if (slope == slope_type::left_down)
     {
         er.lx = c->width * 0.5f;
         er.ly = er.lx;
-        er.x = c->position.x;
-        er.y = c->position.y;
+        er.x = c->x;
+        er.y = c->y;
         er = sweep_y(er, c->vy);
     }
     else if (slope == slope_type::right_down)
     {
         er.lx = c->width * 0.5f;
         er.ly = er.lx;
-        er.x = c->position.x - er.lx;
-        er.y = c->position.y;
+        er.x = c->x - er.lx;
+        er.y = c->y;
         er = sweep_y(er, c->vy);
     }
 
@@ -483,14 +465,14 @@ void vy_routine(game_system* game, character* c)
         if (!i->attrs.test(char_attr::block))
             continue;
 
-        const rectangle& r2 = i->bounds();
+        const rect& r2 = i->bounds();
 
         if ((i->slope != slope_type::none) &&
-            (r2.y <= c->position.y) && (r.y < r2.y + r2.ly) )
+            (r2.y <= c->y) && (r.y < r2.y + r2.ly) )
         {
-            if ((r2.x <= c->position.x) && (c->position.x < r2.x + r2.lx))
+            if ((r2.x <= c->x) && (c->x < r2.x + r2.lx))
             {
-                float dx = c->position.x - i->position.x;
+                float dx = c->x - i->x;
                 float height = i->slope_height(dx);
                 float y2 = r2.y + height;
 
@@ -499,7 +481,7 @@ void vy_routine(game_system* game, character* c)
                     c->vy = 0.0f;
                     y = y2;
                     r.y = y;
-                    r.ly = c->height + c->position.y - r.y;
+                    r.ly = c->height + c->y - r.y;
                 }
             }
         }
@@ -510,21 +492,21 @@ void vy_routine(game_system* game, character* c)
                 c->vy = 0.0f;
                 y = r2.y + r2.ly;
                 r.y = y;
-                r.ly = c->height + c->position.y - y;
+                r.ly = c->height + c->y - y;
             }
             else
             {
                 c->vy = -c->vy * 0.5f;
                 y = r2.y - c->height;
-                r.ly = c->height + y - c->position.y;
+                r.ly = c->height + y - c->y;
             }
         }
     }
 
-    c->position.y = y;
+    c->y = y;
 }
 
-void velocity_routine(game_system* game, character* c)
+void velocity_routine(game_system* game, game_character* c)
 {
     bool on_floor = is_on_floor(*c, game->characters);
 
@@ -539,13 +521,13 @@ void velocity_routine(game_system* game, character* c)
     vy_routine(game, c);
 }
 
-void move_y(game_system* game, character* c, float vy)
+void move_y(game_system* game, game_character* c, float vy)
 {
-    float old_y = c->position.y;
+    float old_y = c->y;
     float new_y = old_y + vy;
 
-    rectangle br = c->bounds();
-    rectangle r = sweep_y(br, vy);
+    rect br = c->bounds();
+    rect r = sweep_y(br, vy);
 
     character_list& ls = game->characters;
     for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
@@ -554,46 +536,46 @@ void move_y(game_system* game, character* c, float vy)
         if (&*i == c)
             continue;
 
-        if ((c->slope != slope_type::none) && (i->position.y > old_y))
+        if ((c->slope != slope_type::none) && (i->y > old_y))
         {
-            const rectangle& r2 = i->bounds();
+            const rect& r2 = i->bounds();
 
             if ((i->vy == 0.0f) && on_characters(*i, *c))
             {
-                float dx = i->position.x - c->position.x;
+                float dx = i->x - c->x;
                 float height = c->slope_height(dx);
 
-                i->position.y = new_y + height;
+                i->y = new_y + height;
             }
             else if ((new_y <= r2.y) && (r2.y < new_y + br.ly) &&
-                (r.x <= i->position.x) && (i->position.x < r.x + r.lx) )
+                (r.x <= i->x) && (i->x < r.x + r.lx) )
             {
-                float dx = i->position.x - c->position.x;
+                float dx = i->x - c->x;
                 float height = c->slope_height(dx);
                 float y1 = new_y + height;
 
                 if (r2.y < y1)
                 {
                     i->vy = 0.0f;
-                    i->position.y = y1;
+                    i->y = y1;
                 }
             }
         }
         else
         {
-            const rectangle& r2 = i->bounds();
+            const rect& r2 = i->bounds();
 
             if ((i->vy == 0.0f) && on_rects(r2, br))
             {
                 if (i->attrs.test(char_attr::block))
                 {
                     if (vy < 0.0f)
-                        c->position.y = new_y;
+                        c->y = new_y;
                     move_y(game, &*i, new_y + br.ly - r2.y);
-                    c->position.y = old_y;
+                    c->y = old_y;
                 }
                 else
-                    i->position.y = new_y + br.ly;
+                    i->y = new_y + br.ly;
             }
             else if (intersect_rects(r, r2))
             {
@@ -602,12 +584,12 @@ void move_y(game_system* game, character* c, float vy)
                     i->vy = 0.0f;
                     if (i->attrs.test(char_attr::block))
                     {
-                        c->position.y = new_y;
+                        c->y = new_y;
                         move_y(game, &*i, new_y - r2.ly - r2.y);
-                        c->position.y = old_y;
+                        c->y = old_y;
                     }
                     else
-                        i->position.y = new_y - r2.ly;
+                        i->y = new_y - r2.ly;
                 }
                 else
                 {
@@ -615,34 +597,34 @@ void move_y(game_system* game, character* c, float vy)
                     if (i->attrs.test(char_attr::block))
                         move_y(game, &*i, new_y + br.ly - r2.y);
                     else
-                        i->position.y = new_y + br.ly;
+                        i->y = new_y + br.ly;
                 }
             }
         }
     }
 
-    c->position.y = new_y;
+    c->y = new_y;
 }
 
-void loop_lift_routine(game_system* game, character* c)
+void loop_lift_routine(game_system* game, game_character* c)
 {
     const float max_y = static_cast<float>(game->screen_height);
     const float min_y = -64.0f;
 
-    float y = c->position.y;
+    float y = c->y;
 
     y += c->vy;
 
     if (y > max_y)
     {
-        move_y(game, c, max_y - c->position.y);
-        c->position.y = min_y;
+        move_y(game, c, max_y - c->y);
+        c->y = min_y;
         move_y(game, c, y - max_y);
     }
     else if (y < min_y)
     {
-        move_y(game, c, min_y - c->position.y);
-        c->position.y = max_y;
+        move_y(game, c, min_y - c->y);
+        c->y = max_y;
         move_y(game, c, y - min_y);
     }
     else
@@ -664,16 +646,16 @@ void move_check_x1(game_system& game, const float x1[])
     {
         std::for_each(
             ls.begin(), ls.end(),
-            boost::bind(&character::move, _1, boost::ref(game))
+            boost::bind(&game_character::move, _1, boost::ref(game))
         );
 
         std::cout
-            << ls.front().position.x
+            << ls.front().x
             << ", "
-            << ls.front().position.y
+            << ls.front().y
             << '\n';
 
-        BOOST_REQUIRE_CLOSE(ls.front().position.x, x1[i], 0.001f);
+        BOOST_REQUIRE_CLOSE(ls.front().x, x1[i], 0.001f);
     }
     std::cout << '\n';
 }
@@ -685,16 +667,16 @@ void move_check_y1(game_system& game, const float y1[])
     {
         std::for_each(
             ls.begin(), ls.end(),
-            boost::bind(&character::move, _1, boost::ref(game))
+            boost::bind(&game_character::move, _1, boost::ref(game))
         );
 
         std::cout
-            << ls.front().position.x
+            << ls.front().x
             << ", "
-            << ls.front().position.y
+            << ls.front().y
             << '\n';
 
-        BOOST_REQUIRE_CLOSE(ls.front().position.y, y1[i], 0.001f);
+        BOOST_REQUIRE_CLOSE(ls.front().y, y1[i], 0.001f);
     }
     std::cout << '\n';
 }
@@ -706,34 +688,36 @@ void move_check_y1_y2(game_system& game, const float y1[], const float y2[])
     {
         std::for_each(
             ls.begin(), ls.end(),
-            boost::bind(&character::move, _1, boost::ref(game))
+            boost::bind(&game_character::move, _1, boost::ref(game))
         );
 
         std::cout
-            << ls.front().position.y
+            << ls.front().y
             << '\t'
-            << ls.back().position.y
+            << ls.back().y
             << '\n';
 
-        BOOST_REQUIRE_CLOSE(ls.front().position.y, y1[i], 0.001f);
-        BOOST_REQUIRE_CLOSE(ls.back() .position.y, y2[i], 0.001f);
+        BOOST_REQUIRE_CLOSE(ls.front().y, y1[i], 0.001f);
+        BOOST_REQUIRE_CLOSE(ls.back() .y, y2[i], 0.001f);
     }
     std::cout << '\n';
 }
 
 void up_lift_test()
 {
-    character c1;
+    game_character c1;
     c1.attrs.set(char_attr::block);
-    c1.position = point(48.0f, 0.0f);
+    c1.x = 48.0f;
+    c1.y = 0.0f;
     c1.width = 96.0f;
     c1.height = 16.0f;
     c1.vy = 2.0f;
     c1.routine = &loop_lift_routine;
 
-    character c2;
+    game_character c2;
     c2.attrs.set(char_attr::player);
-    c2.position = point(16.0f, 64.0f);
+    c2.x = 16.0f;
+    c2.y = 64.0f;
     c2.width = 32.0f;
     c2.height = 32.0f;
     c2.routine = &velocity_routine;
@@ -767,17 +751,19 @@ void up_lift_test()
 
 void down_lift_test()
 {
-    character c1;
+    game_character c1;
     c1.attrs.set(char_attr::block);
-    c1.position = point(48.0f, 64.0f);
+    c1.x = 48.0f;
+    c1.y = 64.0f;
     c1.width = 96.0f;
     c1.height = 16.0f;
     c1.vy = -2.0f;
     c1.routine = &loop_lift_routine;
 
-    character c2;
+    game_character c2;
     c2.attrs.set(char_attr::player);
-    c2.position = point(16.0f, 96.0f);
+    c2.x = 16.0f;
+    c2.y = 96.0f;
     c2.width = 32.0f;
     c2.height = 32.0f;
     c2.routine = &velocity_routine;
@@ -811,17 +797,19 @@ void down_lift_test()
 
 void walk_on_lift_test()
 {
-    character c1;
+    game_character c1;
     c1.attrs.set(char_attr::block);
-    c1.position = point(32.0f, 0.0f);
+    c1.x = 32.0f;
+    c1.y = 0.0f;
     c1.width = 64.0f;
     c1.height = 16.0f;
     c1.vy = 2.0f;
     c1.routine = &loop_lift_routine;
 
-    character c2;
+    game_character c2;
     c2.attrs.set(char_attr::player);
-    c2.position = point(16.0f, 16.0f);
+    c2.x = 16.0f;
+    c2.y = 16.0f;
     c2.width = 32.0f;
     c2.height = 32.0f;
     c2.vx = 4.0f;
@@ -849,30 +837,34 @@ void walk_on_lift_test()
 
 void right_walk_test()
 {
-    character c1;
+    game_character c1;
     c1.attrs.set(char_attr::player);
-    c1.position = point(16.0f, 32.0f);
+    c1.x = 16.0f;
+    c1.y = 32.0f;
     c1.width = 32.0f;
     c1.height = 64.0f;
     c1.vx = 2.0f;
     c1.routine = &velocity_routine;
     c1.on_collide_block_side = &turn;
 
-    character c2;
+    game_character c2;
     c2.attrs.set(char_attr::block);
-    c2.position = point(64.0f, 0.0f);
+    c2.x = 64.0f;
+    c2.y = 0.0f;
     c2.width = 128.0f;
     c2.height = 32.0f;
 
-    character c3;
+    game_character c3;
     c3.attrs.set(char_attr::block);
-    c3.position = point(81.0f, 64.0f);
+    c3.x = 81.0f;
+    c3.y = 64.0f;
     c3.width = 32.0f;
     c3.height = 32.0f;
 
-    character c4;
+    game_character c4;
     c4.attrs.set(char_attr::block);
-    c4.position = point(80.0f, 32.0f);
+    c4.x = 80.0f;
+    c4.y = 32.0f;
     c4.width = 32.0f;
     c4.height = 32.0f;
 
@@ -894,30 +886,34 @@ void right_walk_test()
 
 void left_walk_test()
 {
-    character c1;
+    game_character c1;
     c1.attrs.set(char_attr::player);
-    c1.position = point(80.0f, 32.0f);
+    c1.x = 80.0f;
+    c1.y = 32.0f;
     c1.width = 32.0f;
     c1.height = 64.0f;
     c1.vx = -2.0f;
     c1.routine = &velocity_routine;
     c1.on_collide_block_side = &turn;
 
-    character c2;
+    game_character c2;
     c2.attrs.set(char_attr::block);
-    c2.position = point(64.0f, 0.0f);
+    c2.x = 64.0f;
+    c2.y = 0.0f;
     c2.width = 128.0f;
     c2.height = 32.0f;
 
-    character c3;
+    game_character c3;
     c3.attrs.set(char_attr::block);
-    c3.position = point(15.0f, 64.0f);
+    c3.x = 15.0f;
+    c3.y = 64.0f;
     c3.width = 32.0f;
     c3.height = 32.0f;
 
-    character c4;
+    game_character c4;
     c4.attrs.set(char_attr::block);
-    c4.position = point(16.0f, 32.0f);
+    c4.x = 16.0f;
+    c4.y = 32.0f;
     c4.width = 32.0f;
     c4.height = 32.0f;
 
@@ -939,16 +935,18 @@ void left_walk_test()
 
 void fall_on_slope_test()
 {
-    character c1;
+    game_character c1;
     c1.attrs.set(char_attr::player);
-    c1.position = point(16.0f, 64.0f);
+    c1.x = 16.0f;
+    c1.y = 64.0f;
     c1.width = 32.0f;
     c1.height = 32.0f;
     c1.routine = &velocity_routine;
 
-    character c2;
+    game_character c2;
     c2.attrs.set(char_attr::block);
-    c2.position = point(16.0f, 0.0f);
+    c2.x = 16.0f;
+    c2.y = 0.0f;
     c2.width = 32.0f;
     c2.height = 32.0f;
     c2.slope = slope_type::left_down;
@@ -969,17 +967,19 @@ void fall_on_slope_test()
 
 void jump_test()
 {
-    character c1;
+    game_character c1;
     c1.attrs.set(char_attr::player);
-    c1.position = point(16.0f, 64.0f);
+    c1.x = 16.0f;
+    c1.y = 64.0f;
     c1.width = 32.0f;
     c1.height = 32.0f;
     c1.vy = 8.0f;
     c1.routine = &velocity_routine;
 
-    character c2;
+    game_character c2;
     c2.attrs.set(char_attr::block);
-    c2.position = point(16.0f, 128.0f);
+    c2.x = 16.0f;
+    c2.y = 128.0f;
     c2.width = 32.0f;
     c2.height = 32.0f;
 
@@ -1008,30 +1008,34 @@ void jump_test()
 
 void go_up_slope_test()
 {
-    character c1;
+    game_character c1;
     c1.attrs.set(char_attr::player);
-    c1.position = point(16.0f, 32.0f);
+    c1.x = 16.0f;
+    c1.y = 32.0f;
     c1.width = 32.0f;
     c1.height = 32.0f;
     c1.vx = 4.0f;
     c1.routine = &velocity_routine;
 
-    character c2;
+    game_character c2;
     c2.attrs.set(char_attr::block);
-    c2.position = point(64.0f, 0.0f);
+    c2.x = 64.0f;
+    c2.y = 0.0f;
     c2.width = 128.0f;
     c2.height = 32.0f;
 
-    character c3;
+    game_character c3;
     c3.attrs.set(char_attr::block);
-    c3.position = point(48.0f, 32.0f);
+    c3.x = 48.0f;
+    c3.y = 32.0f;
     c3.width = 32.0f;
     c3.height = 32.0f;
     c3.slope = slope_type::left_down;
 
-    character c4;
+    game_character c4;
     c4.attrs.set(char_attr::block);
-    c4.position = point(80.0f, 32.0f);
+    c4.x = 80.0f;
+    c4.y = 32.0f;
     c4.width = 32.0f;
     c4.height = 32.0f;
 
@@ -1053,30 +1057,34 @@ void go_up_slope_test()
 
 void go_down_slope_test()
 {
-    character c1;
+    game_character c1;
     c1.attrs.set(char_attr::player);
-    c1.position = point(16.0f, 64.0f);
+    c1.x = 16.0f;
+    c1.y = 64.0f;
     c1.width = 32.0f;
     c1.height = 32.0f;
     c1.vx = 4.0f;
     c1.routine = &velocity_routine;
 
-    character c2;
+    game_character c2;
     c2.attrs.set(char_attr::block);
-    c2.position = point(16.0f, 32.0f);
+    c2.x = 16.0f;
+    c2.y = 32.0f;
     c2.width = 32.0f;
     c2.height = 32.0f;
 
-    character c3;
+    game_character c3;
     c3.attrs.set(char_attr::block);
-    c3.position = point(48.0f, 32.0f);
+    c3.x = 48.0f;
+    c3.y = 32.0f;
     c3.width = 32.0f;
     c3.height = 32.0f;
     c3.slope = slope_type::right_down;
 
-    character c4;
+    game_character c4;
     c4.attrs.set(char_attr::block);
-    c4.position = point(48.0f, 0.0f);
+    c4.x = 48.0f;
+    c4.y = 0.0f;
     c4.width = 96.0f;
     c4.height = 32.0f;
 
@@ -1098,18 +1106,20 @@ void go_down_slope_test()
 
 void fall_on_down_slope_lift_test()
 {
-    character c1;
+    game_character c1;
     c1.attrs.set(char_attr::block);
-    c1.position = point(16.0f, 64.0f);
+    c1.x = 16.0f;
+    c1.y = 64.0f;
     c1.width = 32.0f;
     c1.height = 32.0f;
     c1.vy = -2.0f;
     c1.routine = &loop_lift_routine;
     c1.slope = slope_type::left_down;
 
-    character c2;
+    game_character c2;
     c2.attrs.set(char_attr::player);
-    c2.position = point(16.0f, 96.0f);
+    c2.x = 16.0f;
+    c2.y = 96.0f;
     c2.width = 32.0f;
     c2.height = 32.0f;
     c2.routine = &velocity_routine;
@@ -1143,23 +1153,26 @@ void fall_on_down_slope_lift_test()
 
 void up_lift_chain_test()
 {
-    character c1;
+    game_character c1;
     c1.attrs.set(char_attr::block);
-    c1.position = point(16.0f, 0.0f);
+    c1.x = 16.0f;
+    c1.y = 0.0f;
     c1.width = 32.0f;
     c1.height = 32.0f;
     c1.vy = 2.0f;
     c1.routine = &loop_lift_routine;
 
-    character c2;
+    game_character c2;
     c2.attrs.set(char_attr::block);
-    c2.position = point(16.0f, 32.0f);
+    c2.x = 16.0f;
+    c2.y = 32.0f;
     c2.width = 32.0f;
     c2.height = 32.0f;
 
-    character c3;
+    game_character c3;
     c3.attrs.set(char_attr::player);
-    c3.position = point(16.0f, 64.0f);
+    c3.x = 16.0f;
+    c3.y = 64.0f;
     c3.width = 32.0f;
     c3.height = 32.0f;
 
@@ -1194,9 +1207,10 @@ void up_lift_chain_test()
 
 void dash_test()
 {
-    character c1;
+    game_character c1;
     c1.attrs.set(char_attr::player);
-    c1.position = point(16.0f, 32.0f);
+    c1.x = 16.0f;
+    c1.y = 32.0f;
     c1.width = 28.0f;
     c1.height = 32.0f;
     c1.vx = 5.0f;
@@ -1212,9 +1226,10 @@ void dash_test()
     game.characters.push_back(c1);
     for (int i = 0; i < 4; ++i)
     {
-        character c;
+        game_character c;
         c.attrs.set(char_attr::block);
-        c.position = point(i*64+16.0f, 0.0f);
+        c.x = i*64+16.0f;
+        c.y = 0.0f;
         c.width = 32.0f;
         c.height = 32.0f;
         game.characters.push_back(c);
