@@ -221,10 +221,15 @@ void vy_routine(game_system* game, game_character* c)
 
 void velocity_routine(game_system* game, game_character* c)
 {
+    bool on_floor = is_on_floor(*c, game->characters);
+
     vx_routine(game, c);
 
-    c->vy += game->gravity;
-    c->vy = (std::max)(c->vy, game->min_vy);
+    if (!on_floor)
+    {
+        c->vy += game->gravity;
+        c->vy = (std::max)(c->vy, game->min_vy);
+    }
 
     vy_routine(game, c);
 }

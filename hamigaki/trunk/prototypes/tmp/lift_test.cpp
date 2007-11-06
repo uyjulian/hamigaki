@@ -223,6 +223,8 @@ typedef character_list::iterator character_iterator;
 
 slope_type::values current_slope(const character& c, const character_list& ls)
 {
+    const rectangle& r = c.bounds();
+
     typedef character_list::const_iterator iter_type;
     for (iter_type i = ls.begin(), end = ls.end(); i != end; ++i)
     {
@@ -235,9 +237,23 @@ slope_type::values current_slope(const character& c, const character_list& ls)
 
         const rectangle& r2 = i->bounds();
         if ((r2.x <= c.position.x) && (c.position.x <  r2.x + r2.lx) &&
-            (r2.y <  c.position.y) && (c.position.y <= r2.y + r2.ly) )
+            (r2.y <  c.position.y) )
         {
-            return i->slope;
+            if (c.position.y < r2.y + r2.ly)
+                return i->slope;
+            else if (c.position.y == r2.y + r2.ly)
+            {
+                if (r.x <= r2.x)
+                {
+                    if (i->slope == slope_type::right_down)
+                        return i->slope;
+                }
+                else if (r2.x + r2.lx <= r.x + r.lx)
+                {
+                    if (i->slope == slope_type::left_down)
+                        return i->slope;
+                }
+            }
         }
     }
 
@@ -510,10 +526,15 @@ void vy_routine(game_system* game, character* c)
 
 void velocity_routine(game_system* game, character* c)
 {
+    bool on_floor = is_on_floor(*c, game->characters);
+
     vx_routine(game, c);
 
-    c->vy += game->gravity;
-    c->vy = (std::max)(c->vy, game->min_vy);
+    if (!on_floor)
+    {
+        c->vy += game->gravity;
+        c->vy = (std::max)(c->vy, game->min_vy);
+    }
 
     vy_routine(game, c);
 }
@@ -815,7 +836,7 @@ void walk_on_lift_test()
     const float y2[] =
     {
         18.0f, 20.0f, 22.0f, 24.0f, 26.0f, 28.0f, 30.0f, 32.0f, 34.0f, 36.0f,
-        38.0f, 40.0f, 42.0f, 44.0f, 46.0f, 47.4f, 46.2f, 44.4f, 42.0f, 39.0f
+        38.0f, 40.0f, 42.0f, 44.0f, 46.0f, 48.0f, 47.4f, 46.2f, 44.4f, 42.0f
     };
 
     {
@@ -1171,6 +1192,36 @@ void up_lift_chain_test()
     }
 }
 
+void dash_test()
+{
+    character c1;
+    c1.attrs.set(char_attr::player);
+    c1.position = point(16.0f, 32.0f);
+    c1.width = 28.0f;
+    c1.height = 32.0f;
+    c1.vx = 5.0f;
+    c1.routine = &velocity_routine;
+
+    const float x1[] =
+    {
+        21.0f, 26.0f, 31.0f, 36.0f, 41.0f, 46.0f, 51.0f, 56.0f, 61.0f, 66.0f,
+        71.0f, 76.0f, 81.0f, 86.0f, 91.0f, 96.0f,101.0f,106.0f,111.0f,116.0f
+    };
+
+    game_system game;
+    game.characters.push_back(c1);
+    for (int i = 0; i < 4; ++i)
+    {
+        character c;
+        c.attrs.set(char_attr::block);
+        c.position = point(i*64+16.0f, 0.0f);
+        c.width = 32.0f;
+        c.height = 32.0f;
+        game.characters.push_back(c);
+    }
+    move_check_x1(game, x1);
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("lift test");
@@ -1185,5 +1236,6 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&go_down_slope_test));
     test->add(BOOST_TEST_CASE(&fall_on_down_slope_lift_test));
     test->add(BOOST_TEST_CASE(&up_lift_chain_test));
+    test->add(BOOST_TEST_CASE(&dash_test));
     return test;
 }
