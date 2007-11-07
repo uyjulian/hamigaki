@@ -254,6 +254,20 @@ private:
         float dx = static_cast<float>(state.position.x)/r;
         float dy = static_cast<float>(-state.position.y)/r;
 
+        if (static_cast<unsigned>(state.pov_directions[0] & 0xFFFF) != 0xFFFF)
+        {
+            float pov = static_cast<float>(state.pov_directions[0]);
+            float a = pov / 18000.0f * 3.1415927f;
+
+            dx = std::sin(a);
+            if (std::abs(dx) < 0.001)
+                dx = 0.0f;
+
+            dy = std::cos(a);
+            if (std::abs(dy) < 0.001)
+                dy = 0.0f;
+        }
+
         float radius = std::sqrt(dx*dx + dy*dy);
         if (radius > 1.0f)
         {
