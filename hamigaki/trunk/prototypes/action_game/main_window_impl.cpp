@@ -22,7 +22,6 @@
 #include "sprite.hpp"
 #include "sprite_info.hpp"
 #include "stage_map.hpp"
-#include "straight_routine.hpp"
 #include "texture_cache.hpp"
 #include "turn_routine.hpp"
 #include "vanish_routine.hpp"
@@ -62,6 +61,12 @@ create_enemy(
 void stop(game_system* game, game_character* c, game_character* target)
 {
     c->vx = 0.0f;
+}
+
+void turn(game_system* game, game_character* c, game_character* target)
+{
+    c->vx = -c->vx;
+    c->back = !c->back;
 }
 
 } // namespace
@@ -216,7 +221,7 @@ private:
         return system_.characters.end();
     }
 
-    void add_enemy(int x, int y, char type)
+    void add_character(int x, int y, char type)
     {
         if (type == ' ')
             return;
@@ -228,13 +233,16 @@ private:
 
         if (type == 'o')
         {
-            system_.characters.push_back(
+            game_character c =
                 create_enemy(
                     x, y, back,
-                    routine_type(straight_routine()),
+                    routine_type(),
                     ball_sprite_info_
-                )
-            );
+                );
+            c.vx = back ? -1.0f : 1.0f;
+            c.move_routine = &velocity_routine;
+            c.on_collide_block_side = &turn;
+            system_.characters.push_back(c);
         }
         else if (type == 'a')
         {
@@ -386,9 +394,12 @@ private:
         game_character it =
             create_enemy(
                 x, y, false,
-                routine_type((straight_routine(2.0f))),
+                routine_type(),
                 milk_sprite_info_
             );
+        it.vx = 2.0f;
+        it.move_routine = &velocity_routine;
+        it.on_collide_block_side = &turn;
         it.origin.first = -1;
         it.origin.second = -1;
 
@@ -435,7 +446,7 @@ private:
         for (int y = 0; y < map_.height(); ++y)
         {
             for (int x = min_x; x < max_x; ++x)
-                add_enemy(x, y, map_(x, y));
+                add_character(x, y, map_(x, y));
         }
 
         system_.sound.play_bgm("bgm.ogg");
@@ -483,13 +494,13 @@ private:
         {
             int x = scroll_block + width_/32 + 2;
             for (int y = 0; y < map_.height(); ++y)
-                add_enemy(x, y, map_(x, y));
+                add_character(x, y, map_(x, y));
         }
         else if (scroll_block < old_scroll_block)
         {
             int x = scroll_block - 2;
             for (int y = 0; y < map_.height(); ++y)
-                add_enemy(x, y, map_(x, y));
+                add_character(x, y, map_(x, y));
         }
 
         erase_old_enemies();
