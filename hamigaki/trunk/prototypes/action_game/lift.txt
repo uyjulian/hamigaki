@@ -7,5 +7,5 @@
 
 # See http://hamigaki.sourceforge.jp/ for library home page.
 
-lift.png 32 16
-NORM 0 0 0 0 32 16
+lift.png 96 16
+NORM 0 0 0 0 96 16

@@ -10,21 +10,9 @@
 #ifndef LIFT_ROUTINE_HPP
 #define LIFT_ROUTINE_HPP
 
-#include "routine_base.hpp"
+struct game_character;
+struct game_system;
 
-class lift_routine
-{
-public:
-    explicit lift_routine(float speed) : speed_(speed)
-    {
-    }
-
-    routine_result operator()(
-        routine_type::self& self, rect r, velocity v,
-        sprite_form form, input_command cmd) const;
-
-private:
-    float speed_;
-};
+void loop_lift_routine(game_system* game, game_character* c);
 
 #endif // LIFT_ROUTINE_HPP

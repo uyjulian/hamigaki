@@ -290,10 +290,12 @@ private:
             game_character c =
                 create_enemy(
                     x, y, false,
-                    routine_type(lift_routine(2.0f)),
+                    routine_type(),
                     lift_sprite_info_
                 );
             c.attrs.set(char_attr::block);
+            c.vy = 2.0f;
+            c.move_routine = &loop_lift_routine;
             add_block(c);
         }
         else if (type == 'D')
@@ -301,10 +303,12 @@ private:
             game_character c =
                 create_enemy(
                     x, y, false,
-                    routine_type(lift_routine(-2.0f)),
+                    routine_type(),
                     lift_sprite_info_
                 );
             c.attrs.set(char_attr::block);
+            c.vy = -2.0f;
+            c.move_routine = &loop_lift_routine;
             add_block(c);
         }
         else if ((type == '=') || (type == 'G') || (type == 'I'))
@@ -377,12 +381,12 @@ private:
         {
             next = boost::next(i);
 
-            int left = static_cast<int>(i->x) / 32;
-            int right = static_cast<int>(i->x + i->width) / 32;
+            int left  = static_cast<int>(i->x - i->width * 0.5f) / 32;
+            int right = static_cast<int>(i->x + i->width * 0.5f) / 32;
             int origin = i->origin.first;
 
-            if (((origin < scroll_x1) || (origin > scroll_x2)) &&
-                ((left < scroll_x1-3) || (right > scroll_x2+3)) )
+            if (((origin < scroll_x1)  || (origin > scroll_x2)) &&
+                ((right < scroll_x1-3) || (left > scroll_x2+3)) )
             {
                 if (i == block_end_)
                     block_end_ = player_;
