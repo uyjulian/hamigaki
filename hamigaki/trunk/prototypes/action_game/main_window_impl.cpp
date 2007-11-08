@@ -169,8 +169,6 @@ public:
                 boost::bind(&impl::draw_character, this, _1)
             );
 
-            draw_character(player_);
-
             device_.set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
         }
         device_.present();
@@ -205,7 +203,8 @@ private:
     sprite_info_set item_box_sprite_info_;
     sprite_info_set left_down_sprite_info_;
     sprite_info_set right_down_sprite_info_;
-    game_character player_;
+    chara_iterator block_end_;
+    chara_iterator player_;
     int width_;
     int height_;
 
@@ -221,6 +220,18 @@ private:
         return system_.characters.end();
     }
 
+    void add_enemy(const game_character& c)
+    {
+        chara_iterator i = system_.characters.insert(player_, c);
+        if (block_end_ == player_)
+            block_end_ = i;
+    }
+
+    void add_block(const game_character& c)
+    {
+        system_.characters.insert(block_end_, c);
+    }
+
     void add_character(int x, int y, char type)
     {
         if (type == ' ')
@@ -229,7 +240,7 @@ private:
         if (find_enemy(x, y) != system_.characters.end())
             return;
 
-        bool back = player_.x <= static_cast<float>(x*32);
+        bool back = player_->x <= static_cast<float>(x*32);
 
         if (type == 'o')
         {
@@ -242,11 +253,11 @@ private:
             c.vx = back ? -1.0f : 1.0f;
             c.move_routine = &velocity_routine;
             c.on_collide_block_side = &turn;
-            system_.characters.push_back(c);
+            add_enemy(c);
         }
         else if (type == 'a')
         {
-            system_.characters.push_back(
+            add_enemy(
                 create_enemy(
                     x, y, back,
                     routine_type(turn_routine(map_)),
@@ -256,7 +267,7 @@ private:
         }
         else if (type == 'p')
         {
-            system_.characters.push_back(
+            add_enemy(
                 create_enemy(
                     x, y, back,
                     routine_type(hop_routine(map_, 2.0f)),
@@ -266,7 +277,7 @@ private:
         }
         else if (type == 'w')
         {
-            system_.characters.push_back(
+            add_enemy(
                 create_enemy(
                     x, y, back,
                     routine_type(hop_step_jump_routine(map_, 2.0f)),
@@ -283,7 +294,7 @@ private:
                     lift_sprite_info_
                 );
             c.attrs.set(char_attr::block);
-            system_.characters.push_back(c);
+            add_block(c);
         }
         else if (type == 'D')
         {
@@ -294,7 +305,7 @@ private:
                     lift_sprite_info_
                 );
             c.attrs.set(char_attr::block);
-            system_.characters.push_back(c);
+            add_block(c);
         }
         else if ((type == '=') || (type == 'G') || (type == 'I'))
         {
@@ -305,7 +316,7 @@ private:
                     brick_sprite_info_
                 );
             c.attrs.set(char_attr::block);
-            system_.characters.push_back(c);
+            add_block(c);
         }
         else if (type == 'm')
         {
@@ -316,7 +327,7 @@ private:
                     block_sprite_info_
                 );
             c.attrs.set(char_attr::block);
-            system_.characters.push_back(c);
+            add_block(c);
         }
         else if ((type == '$') || (type == '?'))
         {
@@ -327,7 +338,7 @@ private:
                     item_box_sprite_info_
                 );
             c.attrs.set(char_attr::block);
-            system_.characters.push_back(c);
+            add_block(c);
         }
         else if (type == '/')
         {
@@ -339,7 +350,7 @@ private:
                 );
             c.attrs.set(char_attr::block);
             c.slope = slope_type::left_down;
-            system_.characters.push_back(c);
+            add_block(c);
         }
         else if (type == '\\')
         {
@@ -351,7 +362,7 @@ private:
                 );
             c.attrs.set(char_attr::block);
             c.slope = slope_type::right_down;
-            system_.characters.push_back(c);
+            add_block(c);
         }
     }
 
@@ -373,6 +384,8 @@ private:
             if (((origin < scroll_x1) || (origin > scroll_x2)) &&
                 ((left < scroll_x1-3) || (right > scroll_x2+3)) )
             {
+                if (i == block_end_)
+                    block_end_ = player_;
                 system_.characters.erase(i);
             }
         }
@@ -389,7 +402,7 @@ private:
         b.origin.first = -1;
         b.origin.second = -1;
 
-        system_.characters.push_back(b);
+        system_.characters.insert(player_, b);
 
         game_character it =
             create_enemy(
@@ -403,7 +416,7 @@ private:
         it.origin.first = -1;
         it.origin.second = -1;
 
-        system_.characters.push_back(it);
+        system_.characters.insert(player_, it);
     }
 
     void reset_characters()
@@ -412,35 +425,35 @@ private:
 
         load_map_from_text(stage_file_.c_str(), map_);
 
-        player_.move_routine = &velocity_routine;
-        player_.speed_routine = player_routine();
-        player_.on_collide_block_side = &stop;
-        player_.sprite_infos = &mini_sprite_info_;
-        player_.effect = effect_type();
-        player_.form = sprite_form::normal;
-        player_.attrs.set(char_attr::player);
-
+        game_character player;
+        player.move_routine = &velocity_routine;
+        player.speed_routine = player_routine();
+        player.on_collide_block_side = &stop;
+        player.sprite_infos = &mini_sprite_info_;
+        player.attrs.set(char_attr::player);
+        player.back = false;
 
         std::pair<int,int> pos = map_.player_position();
 
         sprite_info info =
-            player_.sprite_infos->get_group(player_.form)[0];
+            player.sprite_infos->get_group(player.form)[0];
 
-        player_.x = static_cast<float>(pos.first * 32 + 16);
-        player_.y = static_cast<float>(pos.second * 32);
-        player_.width = static_cast<float>(info.bounds.lx);
-        player_.height = static_cast<float>(info.bounds.ly);
-        player_.vx = 0.0f;
-        player_.vy = 0.0f;
+        player.x = static_cast<float>(pos.first * 32 + 16);
+        player.y = static_cast<float>(pos.second * 32);
+        player.width = static_cast<float>(info.bounds.lx);
+        player.height = static_cast<float>(info.bounds.ly);
 
         float right_end = static_cast<float>(map_.width()*32);
-        scroll_x_ = player_.x - static_cast<float>(width_ / 2);
+        scroll_x_ = player.x - static_cast<float>(width_ / 2);
         if (scroll_x_ < 0.0f)
             scroll_x_ = 0.0f;
         else if (scroll_x_ + static_cast<float>(width_) > right_end)
             scroll_x_ = right_end - static_cast<float>(width_);
 
         system_.characters.clear();
+        player_ = system_.characters.insert(system_.characters.end(), player);
+        block_end_ = player_;
+
         int min_x = static_cast<int>(scroll_x_) / 32 - 3;
         int max_x = static_cast<int>(scroll_x_) / 32 + width_ / 32 + 3;
         for (int y = 0; y < map_.height(); ++y)
@@ -462,28 +475,24 @@ private:
             boost::bind(&game_character::move, _1, boost::ref(system_))
         );
 
-        player_.move(system_);
-        if (player_.form == sprite_form::nform)
-            reset_characters();
-
-        float min_x = player_.width * 0.5f;
-        if (player_.x < min_x)
+        float min_x = player_->width * 0.5f;
+        if (player_->x < min_x)
         {
-            player_.x = min_x;
-            player_.vx = 0.0f;
+            player_->x = min_x;
+            player_->vx = 0.0f;
         }
 
-        float max_x = static_cast<float>(map_.width()*32) - player_.width*0.5f;
-        if (player_.x > max_x)
+        float max_x = static_cast<float>(map_.width()*32) - player_->width*0.5f;
+        if (player_->x > max_x)
         {
-            player_.x = max_x;
-            player_.vx = 0.0f;
+            player_->x = max_x;
+            player_->vx = 0.0f;
         }
 
         float right_end = static_cast<float>(map_.width()*32);
 
         int old_scroll_block = static_cast<int>(scroll_x_ / 32.0f);
-        scroll_x_ = player_.x - static_cast<float>(width_ / 2);
+        scroll_x_ = player_->x - static_cast<float>(width_ / 2);
         if (scroll_x_ < 0.0f)
             scroll_x_ = 0.0f;
         else if (scroll_x_ + static_cast<float>(width_) > right_end)
