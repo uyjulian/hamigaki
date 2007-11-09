@@ -8,66 +8,33 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "turn_routine.hpp"
-#include "routine_state.hpp"
+#include "collision_utility.hpp"
 
-namespace
+void turn_routine(game_system* game, game_character* c)
 {
+    character_list& ls = game->characters;
+    float new_x = c->x + c->vx;
 
-bool is_on_ground_left(const stage_map& map, const rect& r)
-{
-    int x = left_block(r);
-    int y = bottom_block(r) - 1;
-
-    return is_floor(map(x, y));
-}
-
-bool is_on_ground_right(const stage_map& map, const rect& r)
-{
-    int x = right_block(r);
-    int y = bottom_block(r) - 1;
-
-    return is_floor(map(x, y));
-}
-
-bool is_on_ground_front(
-    const stage_map& map, const rect& r, const sprite_form& form)
-{
-    if ((form.options & sprite_options::back) != 0)
-        return is_on_ground_left(map, r);
-    else
-        return is_on_ground_right(map, r);
-}
-
-} // namespace
-
-routine_result turn_routine::operator()(
-    routine_type::self& self,
-    rect r, velocity v, sprite_form form, input_command cmd) const
-{
-    acceleration a;
-    routine_state stat(self,r,v,form,cmd,a);
-
-    while (true)
+    if (is_on_floor(*c, ls))
     {
-        stat.stop();
-        stat.yield();
-
-        stat.accelerate(speed_);
-        stat.yield();
-
-        a.ax = 0.0f;
-        while (v.vx != 0.0f)
+        for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
         {
-            if (!is_on_ground(map_, r))
-                ;
-            else if (!is_on_ground_front(map_, r, form))
-                break;
+            // itself
+            if (&*i == c)
+                continue;
 
-            stat.yield();
+            if (!i->attrs.test(char_attr::block))
+                continue;
+
+            const rect& r2 = i->bounds();
+            if ((r2.x <= new_x) && (new_x < r2.x + r2.lx) &&
+                (c->y == r2.y + r2.ly) )
+            {
+                return;
+            }
         }
-
-        stat.turn();
     }
 
-    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(routine_result())
+    c->vx = -c->vx;
+    c->back = !c->back;
 }

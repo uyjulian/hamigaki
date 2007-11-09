@@ -257,13 +257,17 @@ private:
         }
         else if (type == 'a')
         {
-            add_enemy(
+            game_character c =
                 create_enemy(
                     x, y, back,
-                    routine_type(turn_routine(map_)),
+                    routine_type(),
                     ball_sprite_info_
-                )
-            );
+                );
+            c.vx = back ? -1.0f : 1.0f;
+            c.move_routine = &velocity_routine;
+            c.speed_routine = &turn_routine;
+            c.on_collide_block_side = &turn;
+            add_enemy(c);
         }
         else if (type == 'p')
         {

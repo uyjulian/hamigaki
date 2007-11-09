@@ -10,23 +10,9 @@
 #ifndef TURN_ROUTINE_HPP
 #define TURN_ROUTINE_HPP
 
-#include "routine_base.hpp"
+struct game_character;
+struct game_system;
 
-class turn_routine
-{
-public:
-    explicit turn_routine(const stage_map& map, float speed = 1.0f)
-        : map_(map), speed_(speed)
-    {
-    }
-
-    routine_result operator()(
-        routine_type::self& self, rect r, velocity v,
-        sprite_form form, input_command cmd) const;
-
-private:
-    const stage_map& map_;
-    float speed_;
-};
+void turn_routine(game_system* game, game_character* c);
 
 #endif // TURN_ROUTINE_HPP
