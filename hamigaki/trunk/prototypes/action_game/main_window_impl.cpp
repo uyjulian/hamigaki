@@ -279,19 +279,23 @@ private:
                 );
             c.vx = back ? -2.0f : 2.0f;
             c.move_routine = &velocity_routine;
-            c.speed_routine = hop_routine(8.0f);
+            c.speed_routine = hop_routine();
             c.on_collide_block_side = &turn;
             add_enemy(c);
         }
         else if (type == 'w')
         {
-            add_enemy(
+            game_character c =
                 create_enemy(
                     x, y, back,
-                    routine_type(hop_step_jump_routine(map_, 2.0f)),
+                    routine_type(),
                     ball_sprite_info_
-                )
-            );
+                );
+            c.vx = back ? -2.0f : 2.0f;
+            c.move_routine = &velocity_routine;
+            c.speed_routine = hop_step_jump_routine();
+            c.on_collide_block_side = &turn;
+            add_enemy(c);
         }
         else if (type == 'U')
         {

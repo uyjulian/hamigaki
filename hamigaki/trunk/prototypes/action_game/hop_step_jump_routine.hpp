@@ -10,26 +10,21 @@
 #ifndef HOP_STEP_JUMP_ROUTINE_HPP
 #define HOP_STEP_JUMP_ROUTINE_HPP
 
-#include "routine_base.hpp"
+#include <hamigaki/coroutine/shared_coroutine.hpp>
+
+struct game_character;
+struct game_system;
 
 class hop_step_jump_routine
 {
 public:
-    explicit hop_step_jump_routine(
-        const stage_map& map, float vx = 1.0f, float vy = 8.0f
-    )
-        : map_(map), vx_(vx), vy_(vy)
-    {
-    }
-
-    routine_result operator()(
-        routine_type::self& self, rect r, velocity v,
-        sprite_form form, input_command cmd) const;
+    explicit hop_step_jump_routine(float vy=8.0f, float ay=0.3f);
+    void operator()(game_system* game, game_character* c) const;
 
 private:
-    const stage_map& map_;
-    float vx_;
-    float vy_;
+    hamigaki::coroutines::shared_coroutine<
+        void (game_system*, game_character*)
+    > coroutine_;
 };
 
 #endif // HOP_STEP_JUMP_ROUTINE_HPP
