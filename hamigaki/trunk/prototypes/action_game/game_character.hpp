@@ -24,6 +24,7 @@ namespace char_attr
         enemy,
         weapon,
         block,
+        breaker,
 
         max_value
     };

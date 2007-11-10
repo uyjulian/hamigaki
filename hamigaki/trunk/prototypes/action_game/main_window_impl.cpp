@@ -239,6 +239,8 @@ private:
             game->new_particles.push_back(fr);
         }
 
+        system_.sound.play_se("break_block.ogg");
+
         c->y = -c->height - 128.0f;
     }
 
@@ -505,6 +507,7 @@ private:
         player.on_collide_block_side = &stop;
         player.sprite_infos = &mini_sprite_info_;
         player.attrs.set(char_attr::player);
+        player.attrs.set(char_attr::breaker);
         player.back = false;
 
         std::pair<int,int> pos = map_.player_position();

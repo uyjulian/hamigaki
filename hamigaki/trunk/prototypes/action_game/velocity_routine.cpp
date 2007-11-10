@@ -239,7 +239,7 @@ void vy_up_routine(game_system* game, game_character* c)
             c->vy = -c->vy * 0.5f;
             y = r2.y - c->height;
 
-            if (i->on_hit_from_below)
+            if (c->attrs.test(char_attr::breaker) && i->on_hit_from_below)
                 i->on_hit_from_below(game, &*i, c);
         }
     }
