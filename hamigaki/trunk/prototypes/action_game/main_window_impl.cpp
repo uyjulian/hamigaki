@@ -208,6 +208,40 @@ private:
     int width_;
     int height_;
 
+    void to_fragments(
+        game_system* game, game_character* c, game_character* target)
+    {
+        int x, y;
+        boost::tie(x,y) = c->origin;
+
+        if ((x != -1) && (y != -1))
+            map_.erase(x, y);
+
+        float dx[] = {-12.0f, -12.0f, 12.0f, 12.0f };
+        float dy[] = { 32.0f,  64.0f, 32.0f, 64.0f };
+        float vx[] = { -2.0f,  -2.0f,  2.0f,  2.0f };
+        float vy[] = {  2.0f,   4.0f,  2.0f,  4.0f };
+
+        for (std::size_t i = 0; i < 4; ++i)
+        {
+            game_character fr;
+
+            fr.move_routine = &velocity_routine;
+            fr.sprite_infos = &fragment_sprite_info_;
+            fr.x = c->x + dx[i];
+            fr.y = c->y + dy[i];
+            fr.width = 0.0f;
+            fr.height = 0.0f;
+            fr.vx = vx[i];
+            fr.vy = vy[i];
+            fr.back = false;
+
+            game->new_particles.push_back(fr);
+        }
+
+        c->y = -c->height - 128.0f;
+    }
+
     chara_iterator find_enemy(int x, int y)
     {
         for (chara_iterator i = system_.characters.begin();
@@ -323,7 +357,20 @@ private:
             c.move_routine = &loop_lift_routine;
             add_block(c);
         }
-        else if ((type == '=') || (type == 'G') || (type == 'I'))
+        else if (type == '=')
+        {
+            game_character c =
+                create_enemy(
+                    x, y, false,
+                    routine_type(),
+                    brick_sprite_info_
+                );
+            c.attrs.set(char_attr::block);
+            c.on_hit_from_below =
+                boost::bind(&impl::to_fragments, this, _1, _2, _3);
+            add_block(c);
+        }
+        else if ((type == 'G') || (type == 'I'))
         {
             game_character c =
                 create_enemy(
@@ -393,9 +440,20 @@ private:
         {
             next = boost::next(i);
 
+            if (i->y + i->height < -64.0f)
+            {
+                if (i == block_end_)
+                    block_end_ = player_;
+                system_.characters.erase(i);
+                continue;
+            }
+
+            int origin = i->origin.first;
+            if (origin == -1)
+                continue;
+
             int left  = static_cast<int>(i->x - i->width * 0.5f) / 32;
             int right = static_cast<int>(i->x + i->width * 0.5f) / 32;
-            int origin = i->origin.first;
 
             if (((origin < scroll_x1)  || (origin > scroll_x2)) &&
                 ((right < scroll_x1-3) || (left > scroll_x2+3)) )
@@ -483,13 +541,38 @@ private:
 
     void process_input_impl()
     {
+        character_list& ls = system_.characters;
+
         if (system_.command.reset)
             reset_characters();
 
         std::for_each(
-            system_.characters.begin(), system_.characters.end(),
+            ls.begin(), ls.end(),
             boost::bind(&game_character::move, _1, boost::ref(system_))
         );
+
+        if (!system_.new_blocks.empty())
+            ls.splice(block_end_, system_.new_blocks);
+
+        if (!system_.new_enemies.empty())
+        {
+            if (block_end_ != player_)
+                ls.splice(player_, system_.new_enemies);
+            else if (block_end_ == ls.begin())
+            {
+                ls.splice(player_, system_.new_enemies);
+                block_end_ = ls.begin();
+            }
+            else
+            {
+                chara_iterator i = boost::prior(block_end_);
+                ls.splice(player_, system_.new_enemies);
+                block_end_ = boost::next(i);
+            }
+        }
+
+        if (!system_.new_particles.empty())
+            ls.splice(ls.end(), system_.new_particles);
 
         float min_x = player_->width * 0.5f;
         if (player_->x < min_x)
@@ -503,6 +586,12 @@ private:
         {
             player_->x = max_x;
             player_->vx = 0.0f;
+        }
+
+        if (player_->y + player_->height < -64.0f)
+        {
+            reset_characters();
+            return;
         }
 
         float right_end = static_cast<float>(map_.width()*32);

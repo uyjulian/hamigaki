@@ -36,6 +36,9 @@ struct game_system
     float min_vy;
 
     character_list characters;
+    character_list new_blocks;
+    character_list new_enemies;
+    character_list new_particles;
 };
 
 #endif // GAME_SYSTEM_HPP
