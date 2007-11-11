@@ -80,13 +80,12 @@ struct game_character
     unsigned long color;
     const sprite_info_set* sprite_infos;
     std::pair<int,int> origin;
-    char next_char;
 
     game_character()
         : x(0.0f), y(0.0f), width(0.0f), height(0.0f), vx(0.0f), vy(0.0f)
         , slope(slope_type::none)
         , form(sprite_form::normal), back(false), step(0)
-        , color(0xFFFFFFFFul), origin(-1,-1), next_char(' ')
+        , color(0xFFFFFFFFul), origin(-1,-1)
     {
     }
 

@@ -9,6 +9,7 @@
 
 #include "main_window_impl.hpp"
 #include "blink_effect.hpp"
+#include "bounce_routine.hpp"
 #include "draw.hpp"
 #include "direct3d9.hpp"
 #include "game_character.hpp"
@@ -244,6 +245,20 @@ private:
         c->y = -c->height - 128.0f;
     }
 
+    void to_used_block(
+        game_system* game, game_character* c, game_character* target)
+    {
+        int x, y;
+        boost::tie(x,y) = c->origin;
+
+        if ((x != -1) && (y != -1))
+            map_.replace(x, y, 'm');
+
+        c->change_sprite(block_sprite_info_);
+        c->move_routine = bounce_routine();
+        c->on_hit_from_below.clear();
+    }
+
     chara_iterator find_enemy(int x, int y)
     {
         for (chara_iterator i = system_.characters.begin();
@@ -372,7 +387,20 @@ private:
                 boost::bind(&impl::to_fragments, this, _1, _2, _3);
             add_block(c);
         }
-        else if ((type == 'G') || (type == 'I'))
+        else if (type == 'G')
+        {
+            game_character c =
+                create_enemy(
+                    x, y, false,
+                    routine_type(),
+                    brick_sprite_info_
+                );
+            c.attrs.set(char_attr::block);
+            c.on_hit_from_below =
+                boost::bind(&impl::to_used_block, this, _1, _2, _3);
+            add_block(c);
+        }
+        else if (type == 'I')
         {
             game_character c =
                 create_enemy(
@@ -394,7 +422,20 @@ private:
             c.attrs.set(char_attr::block);
             add_block(c);
         }
-        else if ((type == '$') || (type == '?'))
+        else if (type == '$')
+        {
+            game_character c =
+                create_enemy(
+                    x, y, false,
+                    routine_type(),
+                    item_box_sprite_info_
+                );
+            c.attrs.set(char_attr::block);
+            c.on_hit_from_below =
+                boost::bind(&impl::to_used_block, this, _1, _2, _3);
+            add_block(c);
+        }
+        else if (type == '?')
         {
             game_character c =
                 create_enemy(
