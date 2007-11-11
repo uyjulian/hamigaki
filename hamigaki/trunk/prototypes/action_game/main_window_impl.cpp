@@ -21,8 +21,6 @@
 #include "png_loader.hpp"
 #include "pop_up_routine.hpp"
 #include "sprite.hpp"
-#include "sprite_info_cache.hpp"
-#include "stage_map.hpp"
 #include "texture_cache.hpp"
 #include "turn_routine.hpp"
 #include "vanish_routine.hpp"
@@ -68,6 +66,58 @@ void turn(game_system* game, game_character* c, game_character* target)
 {
     c->vx = -c->vx;
     c->back = !c->back;
+}
+
+void to_fragments(
+    game_system* game, game_character* c, game_character* target)
+{
+    int x, y;
+    boost::tie(x,y) = c->origin;
+
+    if ((x != -1) && (y != -1))
+        game->map.erase(x, y);
+
+    float dx[] = {-12.0f, -12.0f, 12.0f, 12.0f };
+    float dy[] = { 32.0f,  64.0f, 32.0f, 64.0f };
+    float vx[] = { -2.0f,  -2.0f,  2.0f,  2.0f };
+    float vy[] = {  2.0f,   4.0f,  2.0f,  4.0f };
+
+    const sprite_info_set& infos = game->sprites["fragment.txt"];
+
+    for (std::size_t i = 0; i < 4; ++i)
+    {
+        game_character fr;
+
+        fr.move_routine = &velocity_routine;
+        fr.sprite_infos = &infos;
+        fr.x = c->x + dx[i];
+        fr.y = c->y + dy[i];
+        fr.width = 0.0f;
+        fr.height = 0.0f;
+        fr.vx = vx[i];
+        fr.vy = vy[i];
+        fr.back = false;
+
+        game->new_particles.push_back(fr);
+    }
+
+    game->sound.play_se("break_block.ogg");
+
+    c->y = -c->height - 128.0f;
+}
+
+void to_used_block(
+    game_system* game, game_character* c, game_character* target)
+{
+    int x, y;
+    boost::tie(x,y) = c->origin;
+
+    if ((x != -1) && (y != -1))
+        game->map.replace(x, y, 'm');
+
+    c->change_sprite(game->sprites["used_block.txt"]);
+    c->move_routine = bounce_routine();
+    c->on_hit_from_below.clear();
 }
 
 } // namespace
@@ -178,63 +228,11 @@ private:
     unsigned long last_time_;
     unsigned frames_;
     std::string stage_file_;
-    stage_map map_;
     float scroll_x_;
-    sprite_info_cache sprites_;
     chara_iterator block_end_;
     chara_iterator player_;
     int width_;
     int height_;
-
-    void to_fragments(
-        game_system* game, game_character* c, game_character* target)
-    {
-        int x, y;
-        boost::tie(x,y) = c->origin;
-
-        if ((x != -1) && (y != -1))
-            map_.erase(x, y);
-
-        float dx[] = {-12.0f, -12.0f, 12.0f, 12.0f };
-        float dy[] = { 32.0f,  64.0f, 32.0f, 64.0f };
-        float vx[] = { -2.0f,  -2.0f,  2.0f,  2.0f };
-        float vy[] = {  2.0f,   4.0f,  2.0f,  4.0f };
-
-        for (std::size_t i = 0; i < 4; ++i)
-        {
-            game_character fr;
-
-            fr.move_routine = &velocity_routine;
-            fr.sprite_infos = &sprites_["fragment.txt"];
-            fr.x = c->x + dx[i];
-            fr.y = c->y + dy[i];
-            fr.width = 0.0f;
-            fr.height = 0.0f;
-            fr.vx = vx[i];
-            fr.vy = vy[i];
-            fr.back = false;
-
-            game->new_particles.push_back(fr);
-        }
-
-        system_.sound.play_se("break_block.ogg");
-
-        c->y = -c->height - 128.0f;
-    }
-
-    void to_used_block(
-        game_system* game, game_character* c, game_character* target)
-    {
-        int x, y;
-        boost::tie(x,y) = c->origin;
-
-        if ((x != -1) && (y != -1))
-            map_.replace(x, y, 'm');
-
-        c->change_sprite(sprites_["used_block.txt"]);
-        c->move_routine = bounce_routine();
-        c->on_hit_from_below.clear();
-    }
 
     chara_iterator find_enemy(int x, int y)
     {
@@ -276,7 +274,7 @@ private:
                 create_enemy(
                     x, y, back,
                     routine_type(),
-                    sprites_["ball.txt"]
+                    system_.sprites["ball.txt"]
                 );
             c.vx = back ? -1.0f : 1.0f;
             c.move_routine = &velocity_routine;
@@ -289,7 +287,7 @@ private:
                 create_enemy(
                     x, y, back,
                     routine_type(),
-                    sprites_["ball.txt"]
+                    system_.sprites["ball.txt"]
                 );
             c.vx = back ? -1.0f : 1.0f;
             c.move_routine = &velocity_routine;
@@ -303,7 +301,7 @@ private:
                 create_enemy(
                     x, y, back,
                     routine_type(),
-                    sprites_["ball.txt"]
+                    system_.sprites["ball.txt"]
                 );
             c.vx = back ? -2.0f : 2.0f;
             c.move_routine = &velocity_routine;
@@ -317,7 +315,7 @@ private:
                 create_enemy(
                     x, y, back,
                     routine_type(),
-                    sprites_["ball.txt"]
+                    system_.sprites["ball.txt"]
                 );
             c.vx = back ? -2.0f : 2.0f;
             c.move_routine = &velocity_routine;
@@ -331,7 +329,7 @@ private:
                 create_enemy(
                     x, y, false,
                     routine_type(),
-                    sprites_["lift.txt"]
+                    system_.sprites["lift.txt"]
                 );
             c.attrs.set(char_attr::block);
             c.vy = 2.0f;
@@ -344,7 +342,7 @@ private:
                 create_enemy(
                     x, y, false,
                     routine_type(),
-                    sprites_["lift.txt"]
+                    system_.sprites["lift.txt"]
                 );
             c.attrs.set(char_attr::block);
             c.vy = -2.0f;
@@ -357,11 +355,10 @@ private:
                 create_enemy(
                     x, y, false,
                     routine_type(),
-                    sprites_["brick_block.txt"]
+                    system_.sprites["brick_block.txt"]
                 );
             c.attrs.set(char_attr::block);
-            c.on_hit_from_below =
-                boost::bind(&impl::to_fragments, this, _1, _2, _3);
+            c.on_hit_from_below = &to_fragments;
             add_block(c);
         }
         else if (type == 'G')
@@ -370,11 +367,10 @@ private:
                 create_enemy(
                     x, y, false,
                     routine_type(),
-                    sprites_["brick_block.txt"]
+                    system_.sprites["brick_block.txt"]
                 );
             c.attrs.set(char_attr::block);
-            c.on_hit_from_below =
-                boost::bind(&impl::to_used_block, this, _1, _2, _3);
+            c.on_hit_from_below = &to_used_block;
             add_block(c);
         }
         else if (type == 'I')
@@ -383,7 +379,7 @@ private:
                 create_enemy(
                     x, y, false,
                     routine_type(),
-                    sprites_["brick_block.txt"]
+                    system_.sprites["brick_block.txt"]
                 );
             c.attrs.set(char_attr::block);
             add_block(c);
@@ -394,7 +390,7 @@ private:
                 create_enemy(
                     x, y, false,
                     routine_type(),
-                    sprites_["used_block.txt"]
+                    system_.sprites["used_block.txt"]
                 );
             c.attrs.set(char_attr::block);
             add_block(c);
@@ -405,11 +401,10 @@ private:
                 create_enemy(
                     x, y, false,
                     routine_type(),
-                    sprites_["item_box.txt"]
+                    system_.sprites["item_box.txt"]
                 );
             c.attrs.set(char_attr::block);
-            c.on_hit_from_below =
-                boost::bind(&impl::to_used_block, this, _1, _2, _3);
+            c.on_hit_from_below = &to_used_block;
             add_block(c);
         }
         else if (type == '?')
@@ -418,7 +413,7 @@ private:
                 create_enemy(
                     x, y, false,
                     routine_type(),
-                    sprites_["item_box.txt"]
+                    system_.sprites["item_box.txt"]
                 );
             c.attrs.set(char_attr::block);
             add_block(c);
@@ -429,7 +424,7 @@ private:
                 create_enemy(
                     x, y, false,
                     routine_type(),
-                    sprites_["left_down.txt"]
+                    system_.sprites["left_down.txt"]
                 );
             c.attrs.set(char_attr::block);
             c.slope = slope_type::left_down;
@@ -441,7 +436,7 @@ private:
                 create_enemy(
                     x, y, false,
                     routine_type(),
-                    sprites_["right_down.txt"]
+                    system_.sprites["right_down.txt"]
                 );
             c.attrs.set(char_attr::block);
             c.slope = slope_type::right_down;
@@ -491,7 +486,7 @@ private:
             create_enemy(
                 x, y, false,
                 routine_type(vanish_routine(32)),
-                sprites_["used_block.txt"]
+                system_.sprites["used_block.txt"]
             );
         b.origin.first = -1;
         b.origin.second = -1;
@@ -502,7 +497,7 @@ private:
             create_enemy(
                 x, y, false,
                 routine_type(),
-                sprites_["milk.txt"]
+                system_.sprites["milk.txt"]
             );
         it.vx = 2.0f;
         it.move_routine = &velocity_routine;
@@ -517,18 +512,18 @@ private:
     {
         system_.sound.stop_se();
 
-        load_map_from_text(stage_file_.c_str(), map_);
+        load_map_from_text(stage_file_.c_str(), system_.map);
 
         game_character player;
         player.move_routine = &velocity_routine;
         player.speed_routine = player_routine();
         player.on_collide_block_side = &stop;
-        player.sprite_infos = &sprites_["boy.txt"];
+        player.sprite_infos = &system_.sprites["boy.txt"];
         player.attrs.set(char_attr::player);
         player.attrs.set(char_attr::breaker);
         player.back = false;
 
-        std::pair<int,int> pos = map_.player_position();
+        std::pair<int,int> pos = system_.map.player_position();
 
         sprite_info info =
             player.sprite_infos->get_group(player.form)[0];
@@ -538,7 +533,7 @@ private:
         player.width = static_cast<float>(info.bounds.lx);
         player.height = static_cast<float>(info.bounds.ly);
 
-        float right_end = static_cast<float>(map_.width()*32);
+        float right_end = static_cast<float>(system_.map.width()*32);
         scroll_x_ = player.x - static_cast<float>(width_ / 2);
         if (scroll_x_ < 0.0f)
             scroll_x_ = 0.0f;
@@ -551,10 +546,10 @@ private:
 
         int min_x = static_cast<int>(scroll_x_) / 32 - 3;
         int max_x = static_cast<int>(scroll_x_) / 32 + width_ / 32 + 3;
-        for (int y = 0; y < map_.height(); ++y)
+        for (int y = 0; y < system_.map.height(); ++y)
         {
             for (int x = min_x; x < max_x; ++x)
-                add_character(x, y, map_(x, y));
+                add_character(x, y, system_.map(x, y));
         }
 
         system_.sound.play_bgm("bgm.ogg");
@@ -602,7 +597,8 @@ private:
             player_->vx = 0.0f;
         }
 
-        float max_x = static_cast<float>(map_.width()*32) - player_->width*0.5f;
+        float max_x =
+            static_cast<float>(system_.map.width()*32) - player_->width*0.5f;
         if (player_->x > max_x)
         {
             player_->x = max_x;
@@ -615,7 +611,7 @@ private:
             return;
         }
 
-        float right_end = static_cast<float>(map_.width()*32);
+        float right_end = static_cast<float>(system_.map.width()*32);
 
         int old_scroll_block = static_cast<int>(scroll_x_ / 32.0f);
         scroll_x_ = player_->x - static_cast<float>(width_ / 2);
@@ -628,14 +624,14 @@ private:
         if (scroll_block > old_scroll_block)
         {
             int x = scroll_block + width_/32 + 2;
-            for (int y = 0; y < map_.height(); ++y)
-                add_character(x, y, map_(x, y));
+            for (int y = 0; y < system_.map.height(); ++y)
+                add_character(x, y, system_.map(x, y));
         }
         else if (scroll_block < old_scroll_block)
         {
             int x = scroll_block - 2;
-            for (int y = 0; y < map_.height(); ++y)
-                add_character(x, y, map_(x, y));
+            for (int y = 0; y < system_.map.height(); ++y)
+                add_character(x, y, system_.map(x, y));
         }
 
         erase_old_enemies();

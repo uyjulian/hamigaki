@@ -13,6 +13,8 @@
 #include "game_character.hpp"
 #include "input_engine.hpp"
 #include "sound_engine.hpp"
+#include "sprite_info_cache.hpp"
+#include "stage_map.hpp"
 #include <list>
 
 typedef std::list<game_character> character_list;
@@ -34,6 +36,9 @@ struct game_system
     int screen_height;
     float gravity;
     float min_vy;
+
+    stage_map map;
+    sprite_info_cache sprites;
 
     character_list characters;
     character_list new_blocks;
