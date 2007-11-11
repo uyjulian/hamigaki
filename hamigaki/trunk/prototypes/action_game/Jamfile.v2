@@ -40,6 +40,7 @@ exe action_game
     routine_base.cpp
     sound_engine.cpp
     sprite_info.cpp
+    sprite_info_cache.cpp
     stage_map.cpp
     texture_cache.cpp
     turn_routine.cpp

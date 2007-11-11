@@ -21,7 +21,7 @@
 #include "png_loader.hpp"
 #include "pop_up_routine.hpp"
 #include "sprite.hpp"
-#include "sprite_info.hpp"
+#include "sprite_info_cache.hpp"
 #include "stage_map.hpp"
 #include "texture_cache.hpp"
 #include "turn_routine.hpp"
@@ -89,19 +89,6 @@ public:
         ::GetClientRect(handle_, &cr);
         width_ = static_cast<int>(cr.right);
         height_ = static_cast<int>(cr.bottom);
-
-        load_sprite_info_set_from_text("man.txt", player_sprite_info_);
-        load_sprite_info_set_from_text("boy.txt", mini_sprite_info_);
-        load_sprite_info_set_from_text("ball.txt", ball_sprite_info_);
-        load_sprite_info_set_from_text("fragment.txt", fragment_sprite_info_);
-        load_sprite_info_set_from_text("used_block.txt", block_sprite_info_);
-        load_sprite_info_set_from_text("brick_block.txt", brick_sprite_info_);
-        load_sprite_info_set_from_text("milk.txt", milk_sprite_info_);
-        load_sprite_info_set_from_text("lift.txt", lift_sprite_info_);
-        load_sprite_info_set_from_text("item_box.txt", item_box_sprite_info_);
-        load_sprite_info_set_from_text("left_down.txt", left_down_sprite_info_);
-        load_sprite_info_set_from_text(
-            "right_down.txt", right_down_sprite_info_);
 
         reset_characters();
     }
@@ -193,17 +180,7 @@ private:
     std::string stage_file_;
     stage_map map_;
     float scroll_x_;
-    sprite_info_set player_sprite_info_;
-    sprite_info_set mini_sprite_info_;
-    sprite_info_set ball_sprite_info_;
-    sprite_info_set fragment_sprite_info_;
-    sprite_info_set block_sprite_info_;
-    sprite_info_set brick_sprite_info_;
-    sprite_info_set milk_sprite_info_;
-    sprite_info_set lift_sprite_info_;
-    sprite_info_set item_box_sprite_info_;
-    sprite_info_set left_down_sprite_info_;
-    sprite_info_set right_down_sprite_info_;
+    sprite_info_cache sprites_;
     chara_iterator block_end_;
     chara_iterator player_;
     int width_;
@@ -228,7 +205,7 @@ private:
             game_character fr;
 
             fr.move_routine = &velocity_routine;
-            fr.sprite_infos = &fragment_sprite_info_;
+            fr.sprite_infos = &sprites_["fragment.txt"];
             fr.x = c->x + dx[i];
             fr.y = c->y + dy[i];
             fr.width = 0.0f;
@@ -254,7 +231,7 @@ private:
         if ((x != -1) && (y != -1))
             map_.replace(x, y, 'm');
 
-        c->change_sprite(block_sprite_info_);
+        c->change_sprite(sprites_["used_block.txt"]);
         c->move_routine = bounce_routine();
         c->on_hit_from_below.clear();
     }
@@ -299,7 +276,7 @@ private:
                 create_enemy(
                     x, y, back,
                     routine_type(),
-                    ball_sprite_info_
+                    sprites_["ball.txt"]
                 );
             c.vx = back ? -1.0f : 1.0f;
             c.move_routine = &velocity_routine;
@@ -312,7 +289,7 @@ private:
                 create_enemy(
                     x, y, back,
                     routine_type(),
-                    ball_sprite_info_
+                    sprites_["ball.txt"]
                 );
             c.vx = back ? -1.0f : 1.0f;
             c.move_routine = &velocity_routine;
@@ -326,7 +303,7 @@ private:
                 create_enemy(
                     x, y, back,
                     routine_type(),
-                    ball_sprite_info_
+                    sprites_["ball.txt"]
                 );
             c.vx = back ? -2.0f : 2.0f;
             c.move_routine = &velocity_routine;
@@ -340,7 +317,7 @@ private:
                 create_enemy(
                     x, y, back,
                     routine_type(),
-                    ball_sprite_info_
+                    sprites_["ball.txt"]
                 );
             c.vx = back ? -2.0f : 2.0f;
             c.move_routine = &velocity_routine;
@@ -354,7 +331,7 @@ private:
                 create_enemy(
                     x, y, false,
                     routine_type(),
-                    lift_sprite_info_
+                    sprites_["lift.txt"]
                 );
             c.attrs.set(char_attr::block);
             c.vy = 2.0f;
@@ -367,7 +344,7 @@ private:
                 create_enemy(
                     x, y, false,
                     routine_type(),
-                    lift_sprite_info_
+                    sprites_["lift.txt"]
                 );
             c.attrs.set(char_attr::block);
             c.vy = -2.0f;
@@ -380,7 +357,7 @@ private:
                 create_enemy(
                     x, y, false,
                     routine_type(),
-                    brick_sprite_info_
+                    sprites_["brick_block.txt"]
                 );
             c.attrs.set(char_attr::block);
             c.on_hit_from_below =
@@ -393,7 +370,7 @@ private:
                 create_enemy(
                     x, y, false,
                     routine_type(),
-                    brick_sprite_info_
+                    sprites_["brick_block.txt"]
                 );
             c.attrs.set(char_attr::block);
             c.on_hit_from_below =
@@ -406,7 +383,7 @@ private:
                 create_enemy(
                     x, y, false,
                     routine_type(),
-                    brick_sprite_info_
+                    sprites_["brick_block.txt"]
                 );
             c.attrs.set(char_attr::block);
             add_block(c);
@@ -417,7 +394,7 @@ private:
                 create_enemy(
                     x, y, false,
                     routine_type(),
-                    block_sprite_info_
+                    sprites_["used_block.txt"]
                 );
             c.attrs.set(char_attr::block);
             add_block(c);
@@ -428,7 +405,7 @@ private:
                 create_enemy(
                     x, y, false,
                     routine_type(),
-                    item_box_sprite_info_
+                    sprites_["item_box.txt"]
                 );
             c.attrs.set(char_attr::block);
             c.on_hit_from_below =
@@ -441,7 +418,7 @@ private:
                 create_enemy(
                     x, y, false,
                     routine_type(),
-                    item_box_sprite_info_
+                    sprites_["item_box.txt"]
                 );
             c.attrs.set(char_attr::block);
             add_block(c);
@@ -452,7 +429,7 @@ private:
                 create_enemy(
                     x, y, false,
                     routine_type(),
-                    left_down_sprite_info_
+                    sprites_["left_down.txt"]
                 );
             c.attrs.set(char_attr::block);
             c.slope = slope_type::left_down;
@@ -464,7 +441,7 @@ private:
                 create_enemy(
                     x, y, false,
                     routine_type(),
-                    right_down_sprite_info_
+                    sprites_["right_down.txt"]
                 );
             c.attrs.set(char_attr::block);
             c.slope = slope_type::right_down;
@@ -514,7 +491,7 @@ private:
             create_enemy(
                 x, y, false,
                 routine_type(vanish_routine(32)),
-                block_sprite_info_
+                sprites_["used_block.txt"]
             );
         b.origin.first = -1;
         b.origin.second = -1;
@@ -525,7 +502,7 @@ private:
             create_enemy(
                 x, y, false,
                 routine_type(),
-                milk_sprite_info_
+                sprites_["milk.txt"]
             );
         it.vx = 2.0f;
         it.move_routine = &velocity_routine;
@@ -546,7 +523,7 @@ private:
         player.move_routine = &velocity_routine;
         player.speed_routine = player_routine();
         player.on_collide_block_side = &stop;
-        player.sprite_infos = &mini_sprite_info_;
+        player.sprite_infos = &sprites_["boy.txt"];
         player.attrs.set(char_attr::player);
         player.attrs.set(char_attr::breaker);
         player.back = false;
