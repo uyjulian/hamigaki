@@ -10,24 +10,21 @@
 #ifndef POP_UP_ROUTINE_HPP
 #define POP_UP_ROUTINE_HPP
 
-#include "routine_base.hpp"
+#include <hamigaki/coroutine/shared_coroutine.hpp>
+
+struct game_character;
+struct game_system;
 
 class pop_up_routine
 {
 public:
-    pop_up_routine(float vy, float ay, std::size_t frames)
-        : vy_(vy), ay_(ay), frames_(frames)
-    {
-    }
-
-    routine_result operator()(
-        routine_type::self& self, rect r, velocity v,
-        sprite_form form, input_command cmd) const;
+    pop_up_routine(float vy, int frames);
+    void operator()(game_system* game, game_character* c) const;
 
 private:
-    float vy_;
-    float ay_;
-    std::size_t frames_;
+    hamigaki::coroutines::shared_coroutine<
+        void (game_system*, game_character*)
+    > coroutine_;
 };
 
 #endif // POP_UP_ROUTINE_HPP

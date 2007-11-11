@@ -8,24 +8,49 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "pop_up_routine.hpp"
-#include "routine_state.hpp"
+#include "collision_utility.hpp"
+#include "velocity_routine.hpp"
 
-routine_result pop_up_routine::operator()(
-    routine_type::self& self,
-    rect r, velocity v, sprite_form form, input_command cmd) const
+namespace
 {
-    acceleration a;
-    routine_state stat(self,r,v,form,cmd,a);
 
-    a.ay = vy_ + ay_;
-    stat.yield();
+typedef hamigaki::coroutines::shared_coroutine<
+    void (game_system*, game_character*)
+> coroutine_type;
 
-    if (frames_ > 1u)
+class pop_up_routine_impl
+{
+public:
+    pop_up_routine_impl(float vy, int frames) : vy_(vy), frames_(frames)
     {
-        a.ay = ay_;
-        stat.wait(frames_-1);
     }
 
-    a.ay = -v.vy + ay_;
-    return routine_result(a, form);
+    void operator()(
+        coroutine_type::self& self, game_system* game, game_character* c) const
+    {
+        for (int i = 0; i < frames_; ++i)
+        {
+            boost::tie(game,c) = self.yield();
+            c->y += vy_;
+        }
+
+        c->move_routine = &velocity_routine;
+        self.yield();
+    }
+
+private:
+    float vy_;
+    int frames_;
+};
+
+} // namespace
+
+pop_up_routine::pop_up_routine(float vy, int frames)
+    : coroutine_(pop_up_routine_impl(vy, frames))
+{
+}
+
+void pop_up_routine::operator()(game_system* game, game_character* c) const
+{
+    coroutine_(game, c);
 }

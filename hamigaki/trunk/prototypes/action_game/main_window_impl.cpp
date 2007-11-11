@@ -120,6 +120,36 @@ void to_used_block(
     c->on_hit_from_below.clear();
 }
 
+void pop_up_milk(game_system* game, game_character* c, game_character* target)
+{
+    int x, y;
+    boost::tie(x,y) = c->origin;
+
+    if ((x != -1) && (y != -1))
+        game->map.replace(x, y, 'm');
+
+    c->change_sprite(game->sprites["used_block.txt"]);
+    c->on_hit_from_below.clear();
+
+
+    game_character milk;
+
+    const sprite_info_set& infos = game->sprites["milk.txt"];
+    const sprite_info& info = infos.get_group(milk.form)[0];
+
+    milk.sprite_infos = &infos;
+    milk.x = c->x;
+    milk.y = c->y;
+    milk.width = static_cast<float>(info.bounds.lx);
+    milk.height = static_cast<float>(info.bounds.ly);
+    milk.vx = 2.0f;
+    milk.back = false;
+    milk.move_routine = pop_up_routine(1.0f, static_cast<int>(c->height));
+    milk.on_collide_block_side = &turn;
+
+    game->new_enemies.push_back(milk);
+}
+
 } // namespace
 
 class main_window::impl
@@ -382,6 +412,7 @@ private:
                     system_.sprites["brick_block.txt"]
                 );
             c.attrs.set(char_attr::block);
+            c.on_hit_from_below = &pop_up_milk;
             add_block(c);
         }
         else if (type == 'm')
@@ -416,6 +447,7 @@ private:
                     system_.sprites["item_box.txt"]
                 );
             c.attrs.set(char_attr::block);
+            c.on_hit_from_below = &pop_up_milk;
             add_block(c);
         }
         else if (type == '/')
@@ -478,34 +510,6 @@ private:
                 system_.characters.erase(i);
             }
         }
-    }
-
-    void pop_up_milk(int x, int y)
-    {
-        game_character b =
-            create_enemy(
-                x, y, false,
-                routine_type(vanish_routine(32)),
-                system_.sprites["used_block.txt"]
-            );
-        b.origin.first = -1;
-        b.origin.second = -1;
-
-        system_.characters.insert(player_, b);
-
-        game_character it =
-            create_enemy(
-                x, y, false,
-                routine_type(),
-                system_.sprites["milk.txt"]
-            );
-        it.vx = 2.0f;
-        it.move_routine = &velocity_routine;
-        it.on_collide_block_side = &turn;
-        it.origin.first = -1;
-        it.origin.second = -1;
-
-        system_.characters.insert(player_, it);
     }
 
     void reset_characters()
