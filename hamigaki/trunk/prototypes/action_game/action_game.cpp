@@ -41,8 +41,8 @@ int WINAPI WinMain(
             }
             else
             {
-                process_input(hwnd);
-                render(hwnd);
+                if (process_input(hwnd))
+                    render(hwnd);
             }
         }
 

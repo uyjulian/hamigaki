@@ -118,7 +118,7 @@ void connect_d3d_device(::HWND hwnd)
         pimpl->connect_d3d_device();
 }
 
-void process_input(::HWND hwnd)
+bool process_input(::HWND hwnd)
 {
     main_window* pimpl =
         reinterpret_cast<main_window*>(
@@ -126,7 +126,9 @@ void process_input(::HWND hwnd)
         );
 
     if (pimpl)
-        pimpl->process_input();
+        return pimpl->process_input();
+    else
+        return false;
 }
 
 void render(::HWND hwnd)

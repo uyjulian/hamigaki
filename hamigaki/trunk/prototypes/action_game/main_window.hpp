@@ -17,7 +17,7 @@
 ::HWND create_main_window(::HINSTANCE hInstance, ::ATOM cls);
 void set_stage_file(::HWND hwnd, const std::string& filename);
 void connect_d3d_device(::HWND hwnd);
-void process_input(::HWND hwnd);
+bool process_input(::HWND hwnd);
 void render(::HWND hwnd);
 
 #endif // MAIN_WINDOW_HPP

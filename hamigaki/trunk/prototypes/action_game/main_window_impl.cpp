@@ -31,6 +31,10 @@
 #include <cmath>
 #include <list>
 
+#if !defined(NDEBUG)
+    #define HAMIGAKI_DISPLAY_FPS
+#endif
+
 namespace
 {
 
@@ -163,6 +167,9 @@ public:
         : handle_(handle)
         , input_(handle_), system_(handle_), textures_(device_)
         , active_(false), last_time_(::GetTickCount()), frames_(0)
+#if defined(HAMIGAKI_DISPLAY_FPS)
+        , last_fps_time_(0), fps_count_(0)
+#endif
         , stage_file_("map.txt"), scroll_x_(0.0f)
     {
         ::RECT cr;
@@ -198,24 +205,49 @@ public:
             D3DCREATE_HARDWARE_VERTEXPROCESSING, params);
 
         last_time_ = ::GetTickCount();
+#if defined(HAMIGAKI_DISPLAY_FPS)
+        last_fps_time_ = last_time_;
+#endif
     }
 
-    void process_input()
+    bool process_input()
     {
         if (active_)
             system_.command  = input_();
+        else
+            system_.command  = input_command();
 
         const unsigned long table[] = { 16, 17, 17 };
         unsigned long now = ::GetTickCount();
         unsigned long elapsed = now - last_time_;
+        bool updated = false;
         while (elapsed >= table[frames_ % 3])
         {
             elapsed -= table[frames_ % 3];
             if (++frames_ == 60)
                 frames_ = 0;
             this->process_input_impl();
+            updated = true;
         }
         last_time_ = now - elapsed;
+
+#if defined(HAMIGAKI_DISPLAY_FPS)
+        if (updated)
+            ++fps_count_;
+
+        if (now - last_fps_time_ >= 1000)
+        {
+            char buf[64];
+            int fps = fps_count_*1000/(now-last_fps_time_);
+            ::wsprintfA(buf, "FPS = %d", fps);
+            ::SetWindowTextA(handle_, buf);
+
+            last_fps_time_ = now;
+            fps_count_ = 0;
+        }
+#endif
+
+        return updated;
     }
 
     void render()
@@ -257,6 +289,10 @@ private:
     bool active_;
     unsigned long last_time_;
     unsigned frames_;
+#if defined(HAMIGAKI_DISPLAY_FPS)
+    unsigned long last_fps_time_;
+    int fps_count_;
+#endif
     std::string stage_file_;
     float scroll_x_;
     chara_iterator block_end_;
@@ -681,9 +717,9 @@ void main_window::connect_d3d_device()
     pimpl_->connect_d3d_device();
 }
 
-void main_window::process_input()
+bool main_window::process_input()
 {
-    pimpl_->process_input();
+    return pimpl_->process_input();
 }
 
 void main_window::render()
