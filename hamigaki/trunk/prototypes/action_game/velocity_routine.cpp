@@ -303,8 +303,17 @@ void vy_routine(game_system* game, game_character* c)
         vy_up_routine(game, c);
 }
 
-void velocity_routine(game_system* game, game_character* c)
+bool velocity_routine(game_system* game, game_character* c)
 {
+    if (!c->speed_routine.empty())
+    {
+        // Note:
+        // This copy guarantees the lifetime until the call is completed.
+        speed_routine_type sp = c->speed_routine;
+        if (!sp(game, c))
+            c->speed_routine.clear();
+    }
+
     bool on_floor = is_on_floor(*c, game->characters);
 
     vx_routine(game, c);
@@ -316,4 +325,6 @@ void velocity_routine(game_system* game, game_character* c)
     }
 
     vy_routine(game, c);
+
+    return true;
 }

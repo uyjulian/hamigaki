@@ -13,6 +13,6 @@
 struct game_character;
 struct game_system;
 
-void turn_routine(game_system* game, game_character* c);
+bool turn_routine(game_system* game, game_character* c);
 
 #endif // TURN_ROUTINE_HPP

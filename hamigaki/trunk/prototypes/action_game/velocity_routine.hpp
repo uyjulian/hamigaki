@@ -13,8 +13,6 @@
 struct game_character;
 struct game_system;
 
-void vx_routine(game_system* game, game_character* c);
-void vy_routine(game_system* game, game_character* c);
-void velocity_routine(game_system* game, game_character* c);
+bool velocity_routine(game_system* game, game_character* c);
 
 #endif // VELOCITY_ROUTINE_HPP

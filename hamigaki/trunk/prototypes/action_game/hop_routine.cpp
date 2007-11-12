@@ -14,10 +14,12 @@ hop_routine::hop_routine(float vy, float ay) : vy_(vy), ay_(ay)
 {
 }
 
-void hop_routine::operator()(game_system* game, game_character* c) const
+bool hop_routine::operator()(game_system* game, game_character* c) const
 {
     if (is_on_floor(*c, game->characters))
         c->vy = vy_;
     else
         c->vy += ay_;
+
+    return true;
 }

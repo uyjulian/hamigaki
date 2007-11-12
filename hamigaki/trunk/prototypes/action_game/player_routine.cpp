@@ -15,7 +15,7 @@ namespace
 {
 
 typedef hamigaki::coroutines::shared_coroutine<
-    void (game_system*, game_character*)
+    bool (game_system*, game_character*)
 > coroutine_type;
 
 template<char C1, char C2, char C3, char C4>
@@ -168,7 +168,7 @@ void x_routine(game_system* game, game_character* c)
         c->form = sprite_form::normal;
 }
 
-void y_routine_impl(
+bool y_routine_impl(
     coroutine_type::self& self, game_system* game, game_character* c)
 {
     bool old_jump = false;
@@ -180,7 +180,7 @@ void y_routine_impl(
             !old_jump && game->command.jump ) )
         {
             old_jump = game->command.jump;
-            boost::tie(game,c) = self.yield();
+            boost::tie(game,c) = self.yield(true);
         }
 
         if (c->form == duck_form)
@@ -194,7 +194,7 @@ void y_routine_impl(
         if (std::abs(c->vx) > 4.0f)
             c->vy += 1.0f;
 
-        boost::tie(game,c) = self.yield();
+        boost::tie(game,c) = self.yield(true);
 
         float ay = 0.35f;
         while (!is_on_floor(*c, game->characters))
@@ -203,7 +203,7 @@ void y_routine_impl(
                 ay = 0.0f;
 
             c->vy += ay;
-            boost::tie(game,c) = self.yield();
+            boost::tie(game,c) = self.yield(true);
         }
 
         if (c->form == duck_jump_form)
@@ -213,11 +213,13 @@ void y_routine_impl(
 
         old_jump = game->command.jump;
     }
+
+    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(false)
 }
 
 } // namespace
 
-void player_routine_impl(
+bool player_routine_impl(
     coroutine_type::self& self, game_system* game, game_character* c)
 {
     coroutine_type y_routine(&y_routine_impl);
@@ -261,15 +263,17 @@ void player_routine_impl(
             std::swap(form, c->form);
         }
 
-        boost::tie(game,c) = self.yield();
+        boost::tie(game,c) = self.yield(true);
     }
+
+    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(false)
 }
 
 player_routine::player_routine() : coroutine_(&player_routine_impl)
 {
 }
 
-void player_routine::operator()(game_system* game, game_character* c) const
+bool player_routine::operator()(game_system* game, game_character* c) const
 {
-    coroutine_(game, c);
+    return coroutine_(game, c);
 }

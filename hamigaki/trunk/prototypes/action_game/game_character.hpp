@@ -44,11 +44,11 @@ struct game_character;
 struct game_system;
 
 typedef boost::function<
-    void (game_system*, game_character*)
+    bool (game_system*, game_character*)
 > move_routine_type;
 
 typedef boost::function<
-    void (game_system*, game_character*)
+    bool (game_system*, game_character*)
 > speed_routine_type;
 
 typedef boost::function<
@@ -166,20 +166,13 @@ struct game_character
     {
         boost::uint32_t old_form = form;
 
-        if (!speed_routine.empty())
-        {
-            // Note:
-            // This copy guarantees the lifetime until the call is completed.
-            speed_routine_type sp = speed_routine;
-            sp(&game, this);
-        }
-
         if (!move_routine.empty())
         {
             // Note:
             // This copy guarantees the lifetime until the call is completed.
             move_routine_type mv = move_routine;
-            mv(&game, this);
+            if (!mv(&game, this))
+                move_routine.clear();
         }
 
         if (form == sprite_form::nform)

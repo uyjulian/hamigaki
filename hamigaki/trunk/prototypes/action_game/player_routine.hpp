@@ -19,11 +19,11 @@ class player_routine
 {
 public:
     player_routine();
-    void operator()(game_system* game, game_character* c) const;
+    bool operator()(game_system* game, game_character* c) const;
 
 private:
     hamigaki::coroutines::shared_coroutine<
-        void (game_system*, game_character*)
+        bool (game_system*, game_character*)
     > coroutine_;
 };
 

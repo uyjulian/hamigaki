@@ -15,7 +15,7 @@ namespace
 {
 
 typedef hamigaki::coroutines::shared_coroutine<
-    void (game_system*, game_character*)
+    bool (game_system*, game_character*)
 > coroutine_type;
 
 class pop_up_routine_impl
@@ -25,17 +25,17 @@ public:
     {
     }
 
-    void operator()(
+    bool operator()(
         coroutine_type::self& self, game_system* game, game_character* c) const
     {
         for (int i = 0; i < frames_; ++i)
         {
-            boost::tie(game,c) = self.yield();
+            boost::tie(game,c) = self.yield(true);
             c->y += vy_;
         }
 
         c->move_routine = &velocity_routine;
-        self.yield();
+        return true;
     }
 
 private:
@@ -50,7 +50,7 @@ pop_up_routine::pop_up_routine(float vy, int frames)
 {
 }
 
-void pop_up_routine::operator()(game_system* game, game_character* c) const
+bool pop_up_routine::operator()(game_system* game, game_character* c) const
 {
-    coroutine_(game, c);
+    return coroutine_(game, c);
 }

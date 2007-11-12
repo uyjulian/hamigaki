@@ -31,6 +31,7 @@ exe action_game
     hop_routine.cpp
     hop_step_jump_routine.cpp
     input_engine.cpp
+    item_box_routine.cpp
     lift_routine.cpp
     main_window.cpp
     main_window_impl.cpp

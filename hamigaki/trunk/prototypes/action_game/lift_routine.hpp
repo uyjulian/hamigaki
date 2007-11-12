@@ -13,6 +13,6 @@
 struct game_character;
 struct game_system;
 
-void loop_lift_routine(game_system* game, game_character* c);
+bool loop_lift_routine(game_system* game, game_character* c);
 
 #endif // LIFT_ROUTINE_HPP

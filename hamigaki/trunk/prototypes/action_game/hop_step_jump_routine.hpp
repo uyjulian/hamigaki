@@ -19,11 +19,11 @@ class hop_step_jump_routine
 {
 public:
     explicit hop_step_jump_routine(float vy=8.0f, float ay=0.3f);
-    void operator()(game_system* game, game_character* c) const;
+    bool operator()(game_system* game, game_character* c) const;
 
 private:
     hamigaki::coroutines::shared_coroutine<
-        void (game_system*, game_character*)
+        bool (game_system*, game_character*)
     > coroutine_;
 };
 

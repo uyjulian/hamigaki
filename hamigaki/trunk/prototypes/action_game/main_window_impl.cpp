@@ -16,6 +16,7 @@
 #include "game_system.hpp"
 #include "hop_routine.hpp"
 #include "hop_step_jump_routine.hpp"
+#include "item_box_routine.hpp"
 #include "lift_routine.hpp"
 #include "player_routine.hpp"
 #include "png_loader.hpp"
@@ -151,17 +152,14 @@ void pop_up_milk(game_system* game, game_character* c, game_character* target)
     const sprite_info& info = infos.get_group(milk.form)[0];
 
     milk.sprite_infos = &infos;
-    milk.x = c->x;
-    milk.y = c->y;
     milk.z = layer::enemy;
     milk.width = static_cast<float>(info.bounds.lx);
     milk.height = static_cast<float>(info.bounds.ly);
     milk.vx = 2.0f;
     milk.back = false;
-    milk.move_routine = pop_up_routine(1.0f, static_cast<int>(c->height));
     milk.on_collide_block_side = &turn;
 
-    game->new_characters.push_back(milk);
+    c->move_routine = item_box_routine(milk);
 }
 
 } // namespace

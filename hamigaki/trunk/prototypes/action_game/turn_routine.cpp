@@ -10,7 +10,7 @@
 #include "turn_routine.hpp"
 #include "collision_utility.hpp"
 
-void turn_routine(game_system* game, game_character* c)
+bool turn_routine(game_system* game, game_character* c)
 {
     character_list& ls = game->characters;
     float new_x = c->x + c->vx;
@@ -30,11 +30,13 @@ void turn_routine(game_system* game, game_character* c)
             if ((r2.x <= new_x) && (new_x < r2.x + r2.lx) &&
                 (c->y == r2.y + r2.ly) )
             {
-                return;
+                return true;
             }
         }
     }
 
     c->vx = -c->vx;
     c->back = !c->back;
+
+    return true;
 }

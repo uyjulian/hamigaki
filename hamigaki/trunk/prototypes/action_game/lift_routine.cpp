@@ -123,7 +123,7 @@ void move_y(game_system* game, game_character* c, float vy)
     c->y = new_y;
 }
 
-void loop_lift_routine(game_system* game, game_character* c)
+bool loop_lift_routine(game_system* game, game_character* c)
 {
     const float max_y = static_cast<float>(game->screen_height);
     const float min_y = -64.0f;
@@ -146,4 +146,6 @@ void loop_lift_routine(game_system* game, game_character* c)
     }
     else
         move_y(game, c, c->vy);
+
+    return true;
 }

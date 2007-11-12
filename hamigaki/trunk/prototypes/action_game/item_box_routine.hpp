@@ -1,4 +1,4 @@
-// pop_up_routine.hpp: the pop-up routine for items
+// item_box_routine.hpp: the routine for the item boxes
 
 // Copyright Takeshi Mouri 2007.
 // Distributed under the Boost Software License, Version 1.0.
@@ -7,18 +7,18 @@
 
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
-#ifndef POP_UP_ROUTINE_HPP
-#define POP_UP_ROUTINE_HPP
+#ifndef ITEM_BOX_ROUTINE_HPP
+#define ITEM_BOX_ROUTINE_HPP
 
 #include <hamigaki/coroutine/shared_coroutine.hpp>
 
 struct game_character;
 struct game_system;
 
-class pop_up_routine
+class item_box_routine
 {
 public:
-    pop_up_routine(float vy, int frames);
+    explicit item_box_routine(const game_character& item);
     bool operator()(game_system* game, game_character* c) const;
 
 private:
@@ -27,4 +27,4 @@ private:
     > coroutine_;
 };
 
-#endif // POP_UP_ROUTINE_HPP
+#endif // ITEM_BOX_ROUTINE_HPP

@@ -17,7 +17,7 @@ class hop_routine
 {
 public:
     explicit hop_routine(float vy=8.0f, float ay=0.3f);
-    void operator()(game_system* game, game_character* c) const;
+    bool operator()(game_system* game, game_character* c) const;
 
 private:
     float vy_;

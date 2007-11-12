@@ -14,23 +14,22 @@ namespace
 {
 
 typedef hamigaki::coroutines::shared_coroutine<
-    void (game_system*, game_character*)
+    bool (game_system*, game_character*)
 > coroutine_type;
 
-void bounce_routine_impl(
+bool bounce_routine_impl(
     coroutine_type::self& self, game_system* game, game_character* c)
 {
-    boost::tie(game,c) = self.yield();
-    boost::tie(game,c) = self.yield();
+    boost::tie(game,c) = self.yield(true);
+    boost::tie(game,c) = self.yield(true);
 
     for (int i = 8; i >= -8; i -= 2)
     {
         c->y += static_cast<float>(i);
-        boost::tie(game,c) = self.yield();
+        boost::tie(game,c) = self.yield(true);
     }
 
-    c->move_routine.clear();
-    self.yield();
+    return false;
 }
 
 } // namespace
@@ -39,7 +38,7 @@ bounce_routine::bounce_routine() : coroutine_(&bounce_routine_impl)
 {
 }
 
-void bounce_routine::operator()(game_system* game, game_character* c) const
+bool bounce_routine::operator()(game_system* game, game_character* c) const
 {
-    coroutine_(game, c);
+    return coroutine_(game, c);
 }
