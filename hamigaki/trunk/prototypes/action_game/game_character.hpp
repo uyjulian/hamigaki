@@ -59,6 +59,7 @@ struct game_character
 {
     float x;
     float y;
+    float z;
     float width;
     float height;
     float vx;
@@ -81,7 +82,8 @@ struct game_character
     std::pair<int,int> origin;
 
     game_character()
-        : x(0.0f), y(0.0f), width(0.0f), height(0.0f), vx(0.0f), vy(0.0f)
+        : x(0.0f), y(0.0f), z(0.0f), width(0.0f), height(0.0f)
+        , vx(0.0f), vy(0.0f)
         , slope(slope_type::none)
         , form(sprite_form::normal), back(false), step(0)
         , color(0xFFFFFFFFul), origin(-1,-1)

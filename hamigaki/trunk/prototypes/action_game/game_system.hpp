@@ -41,9 +41,7 @@ struct game_system
     sprite_info_cache sprites;
 
     character_list characters;
-    character_list new_blocks;
-    character_list new_enemies;
-    character_list new_particles;
+    character_list new_characters;
 };
 
 #endif // GAME_SYSTEM_HPP

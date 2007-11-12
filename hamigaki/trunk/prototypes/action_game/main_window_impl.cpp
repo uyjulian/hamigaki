@@ -26,6 +26,7 @@
 #include "vanish_routine.hpp"
 #include "velocity_routine.hpp"
 #include "wait_se_routine.hpp"
+#include <hamigaki/functional.hpp>
 #include <boost/bind.hpp>
 #include <boost/next_prior.hpp>
 #include <cmath>
@@ -38,27 +39,34 @@
 namespace
 {
 
-game_character
-create_enemy(
-    int x, int y, bool back,
-    const routine_type& routine, const sprite_info_set& infos)
+namespace layer
 {
-    game_character enemy;
+    const float back    = 1.00f;
+    const float block   = 0.75f;
+    const float enemy   = 0.50f;
+    const float player  = 0.25f;
+    const float front   = 0.00f;
 
-    const sprite_info& info = infos.get_group(enemy.form)[0];
+} // namespace depth
 
-    enemy.sprite_infos = &infos;
-    enemy.x = static_cast<float>(x * 32 + 16);
-    enemy.y = static_cast<float>(y * 32);
-    enemy.width = static_cast<float>(info.bounds.lx);
-    enemy.height = static_cast<float>(info.bounds.ly);
-    enemy.vx = 0.0f;
-    enemy.vy = 0.0f;
-    enemy.origin.first = x;
-    enemy.origin.second = y;
-    enemy.back = back;
+game_character
+create_character(int x, int y,float z, bool back, const sprite_info_set& infos)
+{
+    game_character c;
 
-    return enemy;
+    const sprite_info& info = infos.get_group(c.form)[0];
+
+    c.sprite_infos = &infos;
+    c.x = static_cast<float>(x * 32 + 16);
+    c.y = static_cast<float>(y * 32);
+    c.z = z;
+    c.width = static_cast<float>(info.bounds.lx);
+    c.height = static_cast<float>(info.bounds.ly);
+    c.origin.first = x;
+    c.origin.second = y;
+    c.back = back;
+
+    return c;
 }
 
 void stop(game_system* game, game_character* c, game_character* target)
@@ -96,13 +104,14 @@ void to_fragments(
         fr.sprite_infos = &infos;
         fr.x = c->x + dx[i];
         fr.y = c->y + dy[i];
+        fr.z = layer::front;
         fr.width = 0.0f;
         fr.height = 0.0f;
         fr.vx = vx[i];
         fr.vy = vy[i];
         fr.back = false;
 
-        game->new_particles.push_back(fr);
+        game->new_characters.push_back(fr);
     }
 
     game->sound.play_se("break_block.ogg");
@@ -144,6 +153,7 @@ void pop_up_milk(game_system* game, game_character* c, game_character* target)
     milk.sprite_infos = &infos;
     milk.x = c->x;
     milk.y = c->y;
+    milk.z = layer::enemy;
     milk.width = static_cast<float>(info.bounds.lx);
     milk.height = static_cast<float>(info.bounds.ly);
     milk.vx = 2.0f;
@@ -151,7 +161,7 @@ void pop_up_milk(game_system* game, game_character* c, game_character* target)
     milk.move_routine = pop_up_routine(1.0f, static_cast<int>(c->height));
     milk.on_collide_block_side = &turn;
 
-    game->new_enemies.push_back(milk);
+    game->new_characters.push_back(milk);
 }
 
 } // namespace
@@ -252,6 +262,8 @@ public:
 
     void render()
     {
+        system_.characters.sort(hamigaki::mem_var_greator(&game_character::z));
+
         device_.clear(D3DCOLOR_XRGB(0x77,0x66,0xDD));
         {
             scoped_scene scene(device_);
@@ -295,7 +307,6 @@ private:
 #endif
     std::string stage_file_;
     float scroll_x_;
-    chara_iterator block_end_;
     chara_iterator player_;
     int width_;
     int height_;
@@ -312,18 +323,6 @@ private:
         return system_.characters.end();
     }
 
-    void add_enemy(const game_character& c)
-    {
-        chara_iterator i = system_.characters.insert(player_, c);
-        if (block_end_ == player_)
-            block_end_ = i;
-    }
-
-    void add_block(const game_character& c)
-    {
-        system_.characters.insert(block_end_, c);
-    }
-
     void add_character(int x, int y, char type)
     {
         if (type == ' ')
@@ -337,178 +336,164 @@ private:
         if (type == 'o')
         {
             game_character c =
-                create_enemy(
-                    x, y, back,
-                    routine_type(),
+                create_character(
+                    x, y, layer::enemy, back,
                     system_.sprites["ball.txt"]
                 );
             c.vx = back ? -1.0f : 1.0f;
             c.move_routine = &velocity_routine;
             c.on_collide_block_side = &turn;
-            add_enemy(c);
+            system_.characters.push_back(c);
         }
         else if (type == 'a')
         {
             game_character c =
-                create_enemy(
-                    x, y, back,
-                    routine_type(),
+                create_character(
+                    x, y, layer::enemy, back,
                     system_.sprites["ball.txt"]
                 );
             c.vx = back ? -1.0f : 1.0f;
             c.move_routine = &velocity_routine;
             c.speed_routine = &turn_routine;
             c.on_collide_block_side = &turn;
-            add_enemy(c);
+            system_.characters.push_back(c);
         }
         else if (type == 'p')
         {
             game_character c =
-                create_enemy(
-                    x, y, back,
-                    routine_type(),
+                create_character(
+                    x, y, layer::enemy, back,
                     system_.sprites["ball.txt"]
                 );
             c.vx = back ? -2.0f : 2.0f;
             c.move_routine = &velocity_routine;
             c.speed_routine = hop_routine();
             c.on_collide_block_side = &turn;
-            add_enemy(c);
+            system_.characters.push_back(c);
         }
         else if (type == 'w')
         {
             game_character c =
-                create_enemy(
-                    x, y, back,
-                    routine_type(),
+                create_character(
+                    x, y, layer::enemy, back,
                     system_.sprites["ball.txt"]
                 );
             c.vx = back ? -2.0f : 2.0f;
             c.move_routine = &velocity_routine;
             c.speed_routine = hop_step_jump_routine();
             c.on_collide_block_side = &turn;
-            add_enemy(c);
+            system_.characters.push_back(c);
         }
         else if (type == 'U')
         {
             game_character c =
-                create_enemy(
-                    x, y, false,
-                    routine_type(),
+                create_character(
+                    x, y, layer::block, false,
                     system_.sprites["lift.txt"]
                 );
             c.attrs.set(char_attr::block);
             c.vy = 2.0f;
             c.move_routine = &loop_lift_routine;
-            add_block(c);
+            system_.characters.push_back(c);
         }
         else if (type == 'D')
         {
             game_character c =
-                create_enemy(
-                    x, y, false,
-                    routine_type(),
+                create_character(
+                    x, y, layer::block, false,
                     system_.sprites["lift.txt"]
                 );
             c.attrs.set(char_attr::block);
             c.vy = -2.0f;
             c.move_routine = &loop_lift_routine;
-            add_block(c);
+            system_.characters.push_back(c);
         }
         else if (type == '=')
         {
             game_character c =
-                create_enemy(
-                    x, y, false,
-                    routine_type(),
+                create_character(
+                    x, y, layer::block, false,
                     system_.sprites["brick_block.txt"]
                 );
             c.attrs.set(char_attr::block);
             c.on_hit_from_below = &to_fragments;
-            add_block(c);
+            system_.characters.push_back(c);
         }
         else if (type == 'G')
         {
             game_character c =
-                create_enemy(
-                    x, y, false,
-                    routine_type(),
+                create_character(
+                    x, y, layer::block, false,
                     system_.sprites["brick_block.txt"]
                 );
             c.attrs.set(char_attr::block);
             c.on_hit_from_below = &to_used_block;
-            add_block(c);
+            system_.characters.push_back(c);
         }
         else if (type == 'I')
         {
             game_character c =
-                create_enemy(
-                    x, y, false,
-                    routine_type(),
+                create_character(
+                    x, y, layer::block, false,
                     system_.sprites["brick_block.txt"]
                 );
             c.attrs.set(char_attr::block);
             c.on_hit_from_below = &pop_up_milk;
-            add_block(c);
+            system_.characters.push_back(c);
         }
         else if (type == 'm')
         {
             game_character c =
-                create_enemy(
-                    x, y, false,
-                    routine_type(),
+                create_character(
+                    x, y, layer::block, false,
                     system_.sprites["used_block.txt"]
                 );
             c.attrs.set(char_attr::block);
-            add_block(c);
+            system_.characters.push_back(c);
         }
         else if (type == '$')
         {
             game_character c =
-                create_enemy(
-                    x, y, false,
-                    routine_type(),
+                create_character(
+                    x, y, layer::block, false,
                     system_.sprites["item_box.txt"]
                 );
             c.attrs.set(char_attr::block);
             c.on_hit_from_below = &to_used_block;
-            add_block(c);
+            system_.characters.push_back(c);
         }
         else if (type == '?')
         {
             game_character c =
-                create_enemy(
-                    x, y, false,
-                    routine_type(),
+                create_character(
+                    x, y, layer::block, false,
                     system_.sprites["item_box.txt"]
                 );
             c.attrs.set(char_attr::block);
             c.on_hit_from_below = &pop_up_milk;
-            add_block(c);
+            system_.characters.push_back(c);
         }
         else if (type == '/')
         {
             game_character c =
-                create_enemy(
-                    x, y, false,
-                    routine_type(),
+                create_character(
+                    x, y, layer::block, false,
                     system_.sprites["left_down.txt"]
                 );
             c.attrs.set(char_attr::block);
             c.slope = slope_type::left_down;
-            add_block(c);
+            system_.characters.push_back(c);
         }
         else if (type == '\\')
         {
             game_character c =
-                create_enemy(
-                    x, y, false,
-                    routine_type(),
+                create_character(
+                    x, y, layer::block, false,
                     system_.sprites["right_down.txt"]
                 );
             c.attrs.set(char_attr::block);
             c.slope = slope_type::right_down;
-            add_block(c);
+            system_.characters.push_back(c);
         }
     }
 
@@ -525,8 +510,6 @@ private:
 
             if (i->y + i->height < -64.0f)
             {
-                if (i == block_end_)
-                    block_end_ = player_;
                 system_.characters.erase(i);
                 continue;
             }
@@ -541,8 +524,6 @@ private:
             if (((origin < scroll_x1)  || (origin > scroll_x2)) &&
                 ((right < scroll_x1-3) || (left > scroll_x2+3)) )
             {
-                if (i == block_end_)
-                    block_end_ = player_;
                 system_.characters.erase(i);
             }
         }
@@ -570,6 +551,7 @@ private:
 
         player.x = static_cast<float>(pos.first * 32 + 16);
         player.y = static_cast<float>(pos.second * 32);
+        player.z = layer::player;
         player.width = static_cast<float>(info.bounds.lx);
         player.height = static_cast<float>(info.bounds.ly);
 
@@ -582,7 +564,6 @@ private:
 
         system_.characters.clear();
         player_ = system_.characters.insert(system_.characters.end(), player);
-        block_end_ = player_;
 
         int min_x = static_cast<int>(scroll_x_) / 32 - 3;
         int max_x = static_cast<int>(scroll_x_) / 32 + width_ / 32 + 3;
@@ -607,28 +588,8 @@ private:
             boost::bind(&game_character::move, _1, boost::ref(system_))
         );
 
-        if (!system_.new_blocks.empty())
-            ls.splice(block_end_, system_.new_blocks);
-
-        if (!system_.new_enemies.empty())
-        {
-            if (block_end_ != player_)
-                ls.splice(player_, system_.new_enemies);
-            else if (block_end_ == ls.begin())
-            {
-                ls.splice(player_, system_.new_enemies);
-                block_end_ = ls.begin();
-            }
-            else
-            {
-                chara_iterator i = boost::prior(block_end_);
-                ls.splice(player_, system_.new_enemies);
-                block_end_ = boost::next(i);
-            }
-        }
-
-        if (!system_.new_particles.empty())
-            ls.splice(ls.end(), system_.new_particles);
+        if (!system_.new_characters.empty())
+            ls.splice(ls.end(), system_.new_characters);
 
         float min_x = player_->width * 0.5f;
         if (player_->x < min_x)
@@ -677,16 +638,16 @@ private:
         erase_old_enemies();
     }
 
-    void draw_character(const game_character& chara)
+    void draw_character(const game_character& c)
     {
-        const sprite_info_set& infos = *(chara.sprite_infos);
+        const sprite_info_set& infos = *(c.sprite_infos);
 
-        const std::vector<sprite_info>& group = infos.get_group(chara.form);
+        const std::vector<sprite_info>& group = infos.get_group(c.form);
 
-        std::size_t pattern = (chara.step % (15 * group.size())) / 15;
+        std::size_t pattern = (c.step % (15 * group.size())) / 15;
         const sprite_info& info = group[pattern];
 
-        const rect& tr = chara.texture_rect();
+        const rect& tr = c.texture_rect();
 
         float x = tr.x - scroll_x_;
         float y = height_ - tr.y - tr.ly;
@@ -695,9 +656,9 @@ private:
         if (!texture.empty())
         {
             ::draw_sprite(
-                device_, x, y, 0.0f, textures_[texture],
+                device_, x, y, c.z, textures_[texture],
                 info.x, info.y, infos.width(), infos.height(),
-                chara.back, chara.color
+                c.back, c.color
             );
         }
     }
