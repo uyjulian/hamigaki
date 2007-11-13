@@ -12,6 +12,12 @@
 
 void vx_routine(game_system* game, game_character* c)
 {
+    if ((c->width == 0.0f) || (c->height == 0.0f))
+    {
+        c->x += c->vx;
+        return;
+    }
+
     character_list& ls = game->characters;
     bool on_floor = is_on_floor(*c, ls);
 
@@ -215,9 +221,6 @@ void vy_up_routine(game_system* game, game_character* c)
     float y = c->y;
     y += c->vy;
 
-    if ((c->width == 0.0f) || (c->height == 0.0f))
-        return;
-
     bool collision = false;
 
     character_list& ls = game->characters;
@@ -297,7 +300,9 @@ void vy_up_routine(game_system* game, game_character* c)
 
 void vy_routine(game_system* game, game_character* c)
 {
-    if (c->vy <= 0.0f)
+    if ((c->width == 0.0f) || (c->height == 0.0f))
+        c->y += c->vy;
+    else if (c->vy <= 0.0f)
         vy_down_routine(game, c);
     else
         vy_up_routine(game, c);

@@ -12,6 +12,9 @@
 slope_type::values
 current_slope(const game_character& c, const character_list& ls)
 {
+    if ((c.width == 0.0f) || (c.height == 0.0f))
+        return slope_type::none;
+
     const rect& r = c.bounds();
 
     typedef character_list::const_iterator iter_type;
@@ -50,7 +53,7 @@ current_slope(const game_character& c, const character_list& ls)
 
 bool is_on_floor(const game_character& c, const character_list& ls)
 {
-    if (c.vy != 0.0f)
+    if ((c.vy != 0.0f) || (c.width == 0.0f) || (c.height == 0.0f))
         return false;
 
     const rect& r = c.bounds();

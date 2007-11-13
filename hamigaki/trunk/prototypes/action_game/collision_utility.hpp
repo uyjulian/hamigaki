@@ -22,7 +22,9 @@ inline bool on_rects(const rect& r1, const rect& r2)
 
 inline rect sweep_x(const rect& r, float dx)
 {
-    if (dx < 0.0f)
+    if (r.lx == 0.0f)
+        return r;
+    else if (dx < 0.0f)
         return rect(r.x+dx, r.y, r.lx-dx, r.ly);
     else
         return rect(r.x, r.y, r.lx+dx, r.ly);
@@ -30,7 +32,9 @@ inline rect sweep_x(const rect& r, float dx)
 
 inline rect sweep_y(const rect& r, float dy)
 {
-    if (dy < 0.0f)
+    if (r.ly == 0.0f)
+        return r;
+    else if (dy < 0.0f)
         return rect(r.x, r.y+dy, r.lx, r.ly-dy);
     else
         return rect(r.x, r.y, r.lx, r.ly+dy);
