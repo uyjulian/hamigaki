@@ -11,7 +11,6 @@
 #define GAME_CHARACTER_HPP
 
 #include "four_char_code.hpp"
-#include "effect_base.hpp"
 #include "routine_base.hpp"
 #include <boost/function.hpp>
 #include <bitset>
@@ -50,6 +49,10 @@ typedef boost::function<
 typedef boost::function<
     bool (game_system*, game_character*)
 > speed_routine_type;
+
+typedef boost::function<
+    bool (game_system*, game_character*)
+> effect_type;
 
 typedef boost::function<
     void (game_system*, game_character*, game_character*)
@@ -174,6 +177,15 @@ struct game_character
             move_routine_type mv = move_routine;
             if (!mv(&game, this))
                 move_routine.clear();
+        }
+
+        if (!effect.empty())
+        {
+            // Note:
+            // This copy guarantees the lifetime until the call is completed.
+            effect_type e = effect;
+            if (!e(&game, this))
+                effect.clear();
         }
 
         if (form == sprite_form::nform)

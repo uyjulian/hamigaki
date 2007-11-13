@@ -10,8 +10,21 @@
 #ifndef BLINK_EFFECT_HPP
 #define BLINK_EFFECT_HPP
 
-#include "effect_base.hpp"
+#include <hamigaki/coroutine/shared_coroutine.hpp>
 
-unsigned long blink_effect(effect_type::self& self);
+struct game_character;
+struct game_system;
+
+class blink_effect
+{
+public:
+    blink_effect();
+    bool operator()(game_system* game, game_character* c) const;
+
+private:
+    hamigaki::coroutines::shared_coroutine<
+        bool (game_system*, game_character*)
+    > coroutine_;
+};
 
 #endif // BLINK_EFFECT_HPP

@@ -148,6 +148,23 @@ void power_up(game_system* game, game_character* c, game_character* target)
     c->y = -c->height - 128.0f;
 }
 
+void power_down(game_system* game, game_character* c, game_character* target)
+{
+    if (target->effect)
+        return;
+
+    if (target->attrs.test(char_attr::breaker))
+    {
+        target->attrs.reset(char_attr::breaker);
+        target->change_sprite(game->sprites["boy.txt"]);
+        target->effect = blink_effect();
+    }
+    else
+    {
+        target->y = -target->height - 128.0f;
+    }
+}
+
 void pop_up_milk(game_system* game, game_character* c, game_character* target)
 {
     int x, y;
@@ -356,6 +373,7 @@ private:
             c.vx = back ? -1.0f : 1.0f;
             c.move_routine = &velocity_routine;
             c.on_collide_block_side = &turn;
+            c.on_get_by_player = &power_down;
             system_.characters.push_back(c);
         }
         else if (type == 'a')
@@ -369,6 +387,7 @@ private:
             c.move_routine = &velocity_routine;
             c.speed_routine = &turn_routine;
             c.on_collide_block_side = &turn;
+            c.on_get_by_player = &power_down;
             system_.characters.push_back(c);
         }
         else if (type == 'p')
@@ -382,6 +401,7 @@ private:
             c.move_routine = &velocity_routine;
             c.speed_routine = hop_routine();
             c.on_collide_block_side = &turn;
+            c.on_get_by_player = &power_down;
             system_.characters.push_back(c);
         }
         else if (type == 'w')
@@ -395,6 +415,7 @@ private:
             c.move_routine = &velocity_routine;
             c.speed_routine = hop_step_jump_routine();
             c.on_collide_block_side = &turn;
+            c.on_get_by_player = &power_down;
             system_.characters.push_back(c);
         }
         else if (type == 'U')
