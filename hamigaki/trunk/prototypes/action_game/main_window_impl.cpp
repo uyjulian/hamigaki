@@ -10,6 +10,7 @@
 #include "main_window_impl.hpp"
 #include "blink_effect.hpp"
 #include "bounce_routine.hpp"
+#include "collision_utility.hpp"
 #include "draw.hpp"
 #include "direct3d9.hpp"
 #include "game_character.hpp"
@@ -84,6 +85,12 @@ void turn(game_system* game, game_character* c, game_character* target)
 void to_fragments(
     game_system* game, game_character* c, game_character* target)
 {
+    if (!target->attrs.test(char_attr::breaker))
+    {
+        c->move_routine = bounce_routine();
+        return;
+    }
+
     int x, y;
     boost::tie(x,y) = c->origin;
 
@@ -134,6 +141,13 @@ void to_used_block(
     c->on_hit_from_below.clear();
 }
 
+void power_up(game_system* game, game_character* c, game_character* target)
+{
+    target->attrs.set(char_attr::breaker);
+    target->change_sprite(game->sprites["man.txt"]);
+    c->y = -c->height - 128.0f;
+}
+
 void pop_up_milk(game_system* game, game_character* c, game_character* target)
 {
     int x, y;
@@ -158,6 +172,7 @@ void pop_up_milk(game_system* game, game_character* c, game_character* target)
     milk.vx = 2.0f;
     milk.back = false;
     milk.on_collide_block_side = &turn;
+    milk.on_get_by_player = &power_up;
 
     c->move_routine = item_box_routine(milk);
 }
@@ -539,7 +554,6 @@ private:
         player.on_collide_block_side = &stop;
         player.sprite_infos = &system_.sprites["boy.txt"];
         player.attrs.set(char_attr::player);
-        player.attrs.set(char_attr::breaker);
         player.back = false;
 
         std::pair<int,int> pos = system_.map.player_position();
@@ -584,6 +598,11 @@ private:
         std::for_each(
             ls.begin(), ls.end(),
             boost::bind(&game_character::move, _1, boost::ref(system_))
+        );
+
+        std::for_each(
+            ls.begin(), ls.end(),
+            boost::bind(&process_collisions, boost::ref(system_), _1)
         );
 
         if (!system_.new_characters.empty())

@@ -45,4 +45,6 @@ current_slope(const game_character& c, const character_list& ls);
 
 bool is_on_floor(const game_character& c, const character_list& ls);
 
+void process_collisions(game_system& game, game_character& c);
+
 #endif // COLLISION_UTILITY_HPP

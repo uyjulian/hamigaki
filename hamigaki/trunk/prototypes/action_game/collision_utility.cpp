@@ -85,3 +85,30 @@ bool is_on_floor(const game_character& c, const character_list& ls)
 
     return false;
 }
+
+void process_collisions(game_system& game, game_character& c)
+{
+    if ((c.width == 0.0f) || (c.height == 0.0f))
+        return;
+
+    character_list& ls = game.characters;
+    const rect& r = c.bounds();
+
+    for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
+    {
+        // itself
+        if (&*i == &c)
+            continue;
+
+        const rect& r2 = i->bounds();
+
+        if (intersect_rects(r, r2))
+        {
+            if (i->attrs.test(char_attr::player))
+            {
+                if (c.on_get_by_player)
+                    c.on_get_by_player(&game, &c, &*i);
+            }
+        }
+    }
+}

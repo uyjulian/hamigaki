@@ -10,6 +10,9 @@
 #include "velocity_routine.hpp"
 #include "collision_utility.hpp"
 
+namespace
+{
+
 void vx_routine(game_system* game, game_character* c)
 {
     if ((c->width == 0.0f) || (c->height == 0.0f))
@@ -242,8 +245,12 @@ void vy_up_routine(game_system* game, game_character* c)
             c->vy = -c->vy * 0.5f;
             y = r2.y - c->height;
 
-            if (c->attrs.test(char_attr::breaker) && i->on_hit_from_below)
-                i->on_hit_from_below(game, &*i, c);
+            if (c->attrs.test(char_attr::player) ||
+                c->attrs.test(char_attr::breaker) )
+            {
+                if (i->on_hit_from_below)
+                    i->on_hit_from_below(game, &*i, c);
+            }
         }
     }
 
@@ -307,6 +314,8 @@ void vy_routine(game_system* game, game_character* c)
     else
         vy_up_routine(game, c);
 }
+
+} // namespace
 
 bool velocity_routine(game_system* game, game_character* c)
 {
