@@ -10,21 +10,22 @@
 #ifndef VANISH_ROUTINE_HPP
 #define VANISH_ROUTINE_HPP
 
-#include "routine_base.hpp"
+#include <hamigaki/coroutine/shared_coroutine.hpp>
+
+struct game_character;
+struct game_system;
 
 class vanish_routine
 {
 public:
-    explicit vanish_routine(std::size_t frames) : frames_(frames)
-    {
-    }
+    explicit vanish_routine(int frames);
 
-    routine_result operator()(
-        routine_type::self& self, rect r, velocity v,
-        sprite_form form, input_command cmd) const;
+    bool operator()(game_system* game, game_character* c) const;
 
 private:
-    std::size_t frames_;
+    hamigaki::coroutines::shared_coroutine<
+        bool (game_system*, game_character*)
+    > coroutine_;
 };
 
 #endif // VANISH_ROUTINE_HPP

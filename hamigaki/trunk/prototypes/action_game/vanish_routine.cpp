@@ -8,16 +8,45 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "vanish_routine.hpp"
-#include "routine_state.hpp"
+#include "game_character.hpp"
 
-routine_result vanish_routine::operator()(
-    routine_type::self& self,
-    rect r, velocity v, sprite_form form, input_command cmd) const
+namespace
 {
-    acceleration a;
-    routine_state stat(self,r,v,form,cmd,a);
-    stat.wait(frames_);
 
-    form.type = sprite_form::nform;
-    return routine_result(a, form);
+typedef hamigaki::coroutines::shared_coroutine<
+    bool (game_system*, game_character*)
+> coroutine_type;
+
+class vanish_routine_impl
+{
+public:
+    explicit vanish_routine_impl(int frames) : frames_(frames)
+    {
+    }
+
+    bool operator()(
+        coroutine_type::self& self, game_system* game, game_character* c) const
+    {
+        for (int i = 0; i < frames_; ++i)
+            boost::tie(game,c) = self.yield(true);
+
+        c->y = -c->height - 128.0f; // FIXME
+
+        return false;
+    }
+
+private:
+    int frames_;
+};
+
+} // namespace
+
+vanish_routine::vanish_routine(int frames)
+    : coroutine_(vanish_routine_impl(frames))
+{
+}
+
+bool vanish_routine::operator()(game_system* game, game_character* c) const
+{
+    return coroutine_(game, c);
 }

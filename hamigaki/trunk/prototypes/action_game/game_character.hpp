@@ -76,7 +76,8 @@ struct game_character
     effect_type effect;
     collision_event_type on_collide_block_side;
     collision_event_type on_hit_from_below;
-    collision_event_type on_get_by_player;
+    collision_event_type on_collide_player;
+    collision_event_type on_stomp;
 
     boost::uint32_t form;
     bool back;

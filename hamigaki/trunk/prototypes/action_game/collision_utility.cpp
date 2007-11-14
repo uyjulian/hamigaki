@@ -102,12 +102,36 @@ void process_collisions(game_system& game, game_character& c)
 
         const rect& r2 = i->bounds();
 
-        if (intersect_rects(r, r2))
+        if (i->attrs.test(char_attr::player))
         {
-            if (i->attrs.test(char_attr::player))
+            if (c.attrs.test(char_attr::enemy) && c.on_stomp)
             {
-                if (c.on_get_by_player)
-                    c.on_get_by_player(&game, &c, &*i);
+                rect u = r;
+                u.ly *= 0.5f;
+                u.y += u.ly;
+
+                float x1 = r2.x;
+                float y1 = r2.y;
+                float x2 = r2.x + r2.lx;
+                float y2 = r2.y + r2.ly;
+
+                if ( (includes_point(u, x1, y1) || includes_point(u, x2, y1)) &&
+                    !(includes_point(u, x1, y2) || includes_point(u, x2, y2)) &&
+                    ((current_slope(*i, ls) == slope_type::none) ||
+                     !is_on_floor(*i, ls) ) )
+                {
+                    c.on_stomp(&game, &c, &*i);
+                    continue;
+                }
+            }
+
+            if (intersect_rects(r, r2))
+            {
+                if (i->attrs.test(char_attr::player))
+                {
+                    if (c.on_collide_player)
+                        c.on_collide_player(&game, &c, &*i);
+                }
             }
         }
     }

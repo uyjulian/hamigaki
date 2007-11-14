@@ -196,9 +196,27 @@ void pop_up_milk(game_system* game, game_character* c, game_character* target)
     milk.vx = 2.0f;
     milk.back = false;
     milk.on_collide_block_side = &turn;
-    milk.on_get_by_player = &power_up;
+    milk.on_collide_player = &power_up;
 
     c->move_routine = item_box_routine(milk);
+}
+
+void stomp(game_system* game, game_character* c, game_character* target)
+{
+    int x, y;
+    boost::tie(x,y) = c->origin;
+
+    if ((x != -1) && (y != -1))
+        game->map.replace(x, y, ' ');
+
+    c->change_form(static_four_char_code<'S','T','M','P'>::value);
+    c->move_routine = vanish_routine(5);
+    c->speed_routine.clear();
+    c->vx = 0.0f;
+    c->vy = 0.0f;
+    game->sound.play_se("stomp.ogg");
+
+    target->vy = 8.0f;
 }
 
 } // namespace
@@ -377,10 +395,12 @@ private:
                     x, y, layer::enemy, back,
                     system_.sprites["ball.txt"]
                 );
+            c.attrs.set(char_attr::enemy);
             c.vx = back ? -1.0f : 1.0f;
             c.move_routine = &velocity_routine;
             c.on_collide_block_side = &turn;
-            c.on_get_by_player = &power_down;
+            c.on_collide_player = &power_down;
+            c.on_stomp = &stomp;
             system_.characters.push_back(c);
         }
         else if (type == 'a')
@@ -390,11 +410,13 @@ private:
                     x, y, layer::enemy, back,
                     system_.sprites["ball.txt"]
                 );
+            c.attrs.set(char_attr::enemy);
             c.vx = back ? -1.0f : 1.0f;
             c.move_routine = &velocity_routine;
             c.speed_routine = &turn_routine;
             c.on_collide_block_side = &turn;
-            c.on_get_by_player = &power_down;
+            c.on_collide_player = &power_down;
+            c.on_stomp = &stomp;
             system_.characters.push_back(c);
         }
         else if (type == 'p')
@@ -404,11 +426,13 @@ private:
                     x, y, layer::enemy, back,
                     system_.sprites["ball.txt"]
                 );
+            c.attrs.set(char_attr::enemy);
             c.vx = back ? -2.0f : 2.0f;
             c.move_routine = &velocity_routine;
             c.speed_routine = hop_routine();
             c.on_collide_block_side = &turn;
-            c.on_get_by_player = &power_down;
+            c.on_collide_player = &power_down;
+            c.on_stomp = &stomp;
             system_.characters.push_back(c);
         }
         else if (type == 'w')
@@ -418,11 +442,13 @@ private:
                     x, y, layer::enemy, back,
                     system_.sprites["ball.txt"]
                 );
+            c.attrs.set(char_attr::enemy);
             c.vx = back ? -2.0f : 2.0f;
             c.move_routine = &velocity_routine;
             c.speed_routine = hop_step_jump_routine();
             c.on_collide_block_side = &turn;
-            c.on_get_by_player = &power_down;
+            c.on_collide_player = &power_down;
+            c.on_stomp = &stomp;
             system_.characters.push_back(c);
         }
         else if (type == 'U')
