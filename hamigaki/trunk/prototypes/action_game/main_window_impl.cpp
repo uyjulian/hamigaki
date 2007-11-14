@@ -51,6 +51,8 @@ namespace layer
 
 } // namespace depth
 
+const boost::uint32_t miss_form = static_four_char_code<'M','I','S','S'>::value;
+
 game_character
 create_character(int x, int y,float z, bool back, const sprite_info_set& infos)
 {
@@ -155,13 +157,18 @@ void power_down(game_system* game, game_character* c, game_character* target)
 
     if (target->attrs.test(char_attr::breaker))
     {
+        game->sound.play_se("damage.ogg");
         target->attrs.reset(char_attr::breaker);
         target->change_sprite(game->sprites["boy.txt"]);
         target->effect = blink_effect();
     }
     else
     {
-        target->y = -target->height - 128.0f;
+        game->sound.stop_bgm();
+        target->vx = 0.0f;
+        target->vy = 10.0f;
+        target->change_form(miss_form);
+        target->effect = wait_se_routine("miss.ogg");
     }
 }
 
@@ -570,8 +577,8 @@ private:
         load_map_from_text(stage_file_.c_str(), system_.map);
 
         game_character player;
-        player.move_routine = &velocity_routine;
-        player.speed_routine = player_routine();
+        player.move_routine = &player_routine;
+        player.speed_routine = user_control_routine();
         player.on_collide_block_side = &stop;
         player.sprite_infos = &system_.sprites["boy.txt"];
         player.attrs.set(char_attr::player);
@@ -629,25 +636,19 @@ private:
         if (!system_.new_characters.empty())
             ls.splice(ls.end(), system_.new_characters);
 
-        float min_x = player_->width * 0.5f;
-        if (player_->x < min_x)
-        {
-            player_->x = min_x;
-            player_->vx = 0.0f;
-        }
-
-        float max_x =
-            static_cast<float>(system_.map.width()*32) - player_->width*0.5f;
-        if (player_->x > max_x)
-        {
-            player_->x = max_x;
-            player_->vx = 0.0f;
-        }
-
-        if (player_->y + player_->height < -64.0f)
-        {
+        if ((player_->form == miss_form) && player_->effect.empty())
             reset_characters();
-            return;
+        else if (player_->y < - player_->height - 32.0f)
+        {
+            if (player_->form != miss_form)
+            {
+                system_.sound.stop_bgm();
+                player_->change_sprite(system_.sprites["boy.txt"]);
+                player_->change_form(miss_form);
+                player_->effect = wait_se_routine("miss.ogg");
+            }
+            player_->y = -player_->height - 32.0f;
+            player_->move_routine.clear();
         }
 
         float right_end = static_cast<float>(system_.map.width()*32);

@@ -15,10 +15,10 @@
 struct game_character;
 struct game_system;
 
-class player_routine
+class user_control_routine
 {
 public:
-    player_routine();
+    user_control_routine();
     bool operator()(game_system* game, game_character* c) const;
 
 private:
@@ -26,5 +26,7 @@ private:
         bool (game_system*, game_character*)
     > coroutine_;
 };
+
+bool player_routine(game_system* game, game_character* c);
 
 #endif // PLAYER_ROUTINE_HPP

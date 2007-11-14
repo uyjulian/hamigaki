@@ -9,6 +9,7 @@
 
 #include "player_routine.hpp"
 #include "collision_utility.hpp"
+#include "velocity_routine.hpp"
 #include <cmath>
 
 namespace
@@ -219,7 +220,7 @@ bool y_routine_impl(
 
 } // namespace
 
-bool player_routine_impl(
+bool user_control_routine_impl(
     coroutine_type::self& self, game_system* game, game_character* c)
 {
     coroutine_type y_routine(&y_routine_impl);
@@ -269,11 +270,34 @@ bool player_routine_impl(
     HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(false)
 }
 
-player_routine::player_routine() : coroutine_(&player_routine_impl)
+user_control_routine::user_control_routine()
+    : coroutine_(&user_control_routine_impl)
 {
 }
 
-bool player_routine::operator()(game_system* game, game_character* c) const
+bool
+user_control_routine::operator()(game_system* game, game_character* c) const
 {
     return coroutine_(game, c);
+}
+
+bool player_routine(game_system* game, game_character* c)
+{
+    velocity_routine(game, c);
+
+    float min_x = c->width * 0.5f;
+    if (c->x < min_x)
+    {
+        c->x = min_x;
+        c->vx = 0.0f;
+    }
+
+    float max_x = static_cast<float>(game->map.width() * 32) - c->width * 0.5f;
+    if (c->x > max_x)
+    {
+        c->x = max_x;
+        c->vx = 0.0f;
+    }
+
+    return true;
 }

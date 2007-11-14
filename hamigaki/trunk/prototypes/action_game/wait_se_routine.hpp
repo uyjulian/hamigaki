@@ -10,20 +10,21 @@
 #ifndef WAIT_SE_ROUTINE_HPP
 #define WAIT_SE_ROUTINE_HPP
 
-#include "routine_base.hpp"
-#include "sound_engine.hpp"
+#include <hamigaki/coroutine/shared_coroutine.hpp>
+
+struct game_character;
+struct game_system;
 
 class wait_se_routine
 {
 public:
-    wait_se_routine(sound_engine& sound, const std::string& filename);
-
-    routine_result operator()(
-        routine_type::self& self, rect r, velocity v,
-        sprite_form form, input_command cmd) const;
+    explicit wait_se_routine(const std::string& filename);
+    bool operator()(game_system* game, game_character* c) const;
 
 private:
-    sound_engine& sound_;
+    hamigaki::coroutines::shared_coroutine<
+        bool (game_system*, game_character*)
+    > coroutine_;
 };
 
 #endif // WAIT_SE_ROUTINE_HPP

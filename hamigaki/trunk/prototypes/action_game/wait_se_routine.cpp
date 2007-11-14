@@ -8,26 +8,46 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "wait_se_routine.hpp"
-#include "routine_state.hpp"
+#include "game_system.hpp"
 
-wait_se_routine::wait_se_routine(
-    sound_engine& sound, const std::string& filename
-)
-    : sound_(sound)
+namespace
 {
-    sound_.play_se(filename);
+
+typedef hamigaki::coroutines::shared_coroutine<
+    bool (game_system*, game_character*)
+> coroutine_type;
+
+class wait_se_routine_impl
+{
+public:
+    explicit wait_se_routine_impl(const std::string& filename)
+        : filename_(filename)
+    {
+    }
+
+    bool operator()(
+        coroutine_type::self& self, game_system* game, game_character* c) const
+    {
+        game->sound.play_se(filename_);
+
+        while (game->sound.playing_se())
+            boost::tie(game,c) = self.yield(true);
+
+        return false;
+    }
+
+private:
+    std::string filename_;
+};
+
+} // namespace
+
+wait_se_routine::wait_se_routine(const std::string& filename)
+    : coroutine_(wait_se_routine_impl(filename))
+{
 }
 
-routine_result wait_se_routine::operator()(
-    routine_type::self& self,
-    rect r, velocity v, sprite_form form, input_command cmd) const
+bool wait_se_routine::operator()(game_system* game, game_character* c) const
 {
-    acceleration a;
-    routine_state stat(self,r,v,form,cmd,a);
-
-    while (sound_.playing_se())
-        stat.yield();
-
-    form.type = sprite_form::nform;
-    return routine_result(a, form);
+    return coroutine_(game, c);
 }
