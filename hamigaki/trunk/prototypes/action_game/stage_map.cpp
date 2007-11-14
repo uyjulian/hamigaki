@@ -43,7 +43,7 @@ char stage_map::operator()(int x, int y) const
     if (x < 0)
         return ' ';
     else if (y < 0)
-        return ' ';
+        y = 0;
 
     std::size_t ux = static_cast<std::size_t>(x);
     std::size_t uy = static_cast<std::size_t>(y);
