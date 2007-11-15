@@ -84,9 +84,30 @@ void turn(game_system* game, game_character* c, game_character* target)
     c->back = !c->back;
 }
 
+void hit_on_block(game_system& game, game_character& c)
+{
+    const rect& r = c.bounds();
+
+    character_list& ls = game.characters;
+    for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
+    {
+        // itself
+        if (&*i == &c)
+            continue;
+
+        if (i->attrs.test(char_attr::block) || i->on_hit.empty())
+            continue;
+
+        if ((r.x <= i->x) && (i->x < r.x + r.lx) && (i->y == r.y + r.ly))
+            i->on_hit(&game, &*i, &c);
+    }
+}
+
 void to_fragments(
     game_system* game, game_character* c, game_character* target)
 {
+    hit_on_block(*game, *c);
+
     if (!target->attrs.test(char_attr::breaker))
     {
         c->move_routine = bounce_routine();
@@ -132,6 +153,8 @@ void to_fragments(
 void to_used_block(
     game_system* game, game_character* c, game_character* target)
 {
+    hit_on_block(*game, *c);
+
     int x, y;
     boost::tie(x,y) = c->origin;
 
@@ -172,6 +195,11 @@ void power_down(game_system* game, game_character* c, game_character* target)
     }
 }
 
+void hop(game_system* game, game_character* c, game_character* target)
+{
+    c->vy = 10.0f;
+}
+
 void pop_up_milk(game_system* game, game_character* c, game_character* target)
 {
     int x, y;
@@ -197,6 +225,7 @@ void pop_up_milk(game_system* game, game_character* c, game_character* target)
     milk.back = false;
     milk.on_collide_block_side = &turn;
     milk.on_collide_player = &power_up;
+    milk.on_hit = &hop;
 
     c->move_routine = item_box_routine(milk);
 }
@@ -217,6 +246,27 @@ void stomp(game_system* game, game_character* c, game_character* target)
     game->sound.play_se("stomp.ogg");
 
     target->vy = 8.0f;
+}
+
+void hit(game_system* game, game_character* c, game_character* target)
+{
+    int x, y;
+    boost::tie(x,y) = c->origin;
+
+    if ((x != -1) && (y != -1))
+        game->map.replace(x, y, ' ');
+
+    c->change_form(miss_form);
+    c->move_routine = &velocity_routine;
+    c->speed_routine.clear();
+    c->effect = vanish_routine(20);
+    c->y += 16.0f;
+    c->vy = 8.0f;
+
+    if (c->x < target->x)
+        c->vx = -4.0f;
+    else
+        c->vx = 4.0f;
 }
 
 } // namespace
@@ -401,6 +451,7 @@ private:
             c.on_collide_block_side = &turn;
             c.on_collide_player = &power_down;
             c.on_stomp = &stomp;
+            c.on_hit = &hit;
             system_.characters.push_back(c);
         }
         else if (type == 'a')
@@ -417,6 +468,7 @@ private:
             c.on_collide_block_side = &turn;
             c.on_collide_player = &power_down;
             c.on_stomp = &stomp;
+            c.on_hit = &hit;
             system_.characters.push_back(c);
         }
         else if (type == 'p')
@@ -433,6 +485,7 @@ private:
             c.on_collide_block_side = &turn;
             c.on_collide_player = &power_down;
             c.on_stomp = &stomp;
+            c.on_hit = &hit;
             system_.characters.push_back(c);
         }
         else if (type == 'w')
@@ -449,6 +502,7 @@ private:
             c.on_collide_block_side = &turn;
             c.on_collide_player = &power_down;
             c.on_stomp = &stomp;
+            c.on_hit = &hit;
             system_.characters.push_back(c);
         }
         else if (type == 'U')
