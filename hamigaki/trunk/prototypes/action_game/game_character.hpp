@@ -128,7 +128,10 @@ struct game_character
             r.x = tr.x + tr.lx - static_cast<float>(info.attack.x);
         else
             r.x = tr.x + static_cast<float>(info.attack.x);
-        r.y = tr.y + sprite_infos->height() - static_cast<float>(info.attack.y);
+
+        r.y = tr.y + sprite_infos->height();
+        r.y -= static_cast<float>(info.attack.y+info.attack.ly);
+
         r.lx = static_cast<float>(info.attack.lx);
         r.ly = static_cast<float>(info.attack.ly);
         return r;
