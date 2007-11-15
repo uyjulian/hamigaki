@@ -166,6 +166,18 @@ void to_used_block(
     c->on_hit_from_below.clear();
 }
 
+void secret_block(
+    game_system* game, game_character* c, game_character* target)
+{
+    if (target->vy > 0.0f)
+    {
+        target->y = c->y - target->height;
+        target->vy = -target->vy * 0.5f;
+        c->attrs.set(char_attr::block);
+        to_used_block(game, c, target);
+    }
+}
+
 void power_up(game_system* game, game_character* c, game_character* target)
 {
     target->attrs.set(char_attr::breaker);
@@ -592,6 +604,16 @@ private:
                 );
             c.attrs.set(char_attr::block);
             c.on_hit_from_below = &pop_up_milk;
+            system_.characters.push_back(c);
+        }
+        else if (type == 'S')
+        {
+            game_character c =
+                create_character(
+                    x, y, layer::block, false,
+                    system_.sprites["secret_block.txt"]
+                );
+            c.on_collide_player = &secret_block;
             system_.characters.push_back(c);
         }
         else if (type == '/')
