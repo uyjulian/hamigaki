@@ -104,8 +104,18 @@ void process_collisions(game_system& game, game_character& c)
 
         if (i->attrs.test(char_attr::player))
         {
-            if (c.attrs.test(char_attr::enemy) && c.on_stomp)
+            if (c.attrs.test(char_attr::enemy))
             {
+                const rect& ar = i->attack_rect();
+                if (intersect_rects(ar, r))
+                {
+                    if (c.on_hit)
+                    {
+                        c.on_hit(&game, &c, &*i);
+                        continue;
+                    }
+                }
+
                 rect u = r;
                 u.ly *= 0.5f;
                 u.y += u.ly;
@@ -120,7 +130,8 @@ void process_collisions(game_system& game, game_character& c)
                     ((current_slope(*i, ls) == slope_type::none) ||
                      !is_on_floor(*i, ls) ) )
                 {
-                    c.on_stomp(&game, &c, &*i);
+                    if (c.on_stomp)
+                        c.on_stomp(&game, &c, &*i);
                     continue;
                 }
             }
