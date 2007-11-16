@@ -125,7 +125,10 @@ struct game_character
 
         rect r;
         if (back)
-            r.x = tr.x + tr.lx - static_cast<float>(info.attack.x);
+        {
+            r.x = tr.x + tr.lx;
+            r.x -= static_cast<float>(info.attack.x+info.attack.lx);
+        }
         else
             r.x = tr.x + static_cast<float>(info.attack.x);
 
