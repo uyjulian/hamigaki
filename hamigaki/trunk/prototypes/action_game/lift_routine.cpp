@@ -98,15 +98,18 @@ void move_y(game_system* game, game_character* c, float vy)
             {
                 if (vy < 0.0f)
                 {
-                    i->vy = 0.0f;
                     if (i->attrs.test(char_attr::block))
                     {
+                        i->vy = 0.0f;
                         c->y = new_y;
                         move_y(game, &*i, new_y - r2.ly - r2.y);
                         c->y = old_y;
                     }
                     else
+                    {
+                        i->vy = vy;
                         i->y = new_y - r2.ly;
+                    }
                 }
                 else
                 {
