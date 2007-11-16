@@ -27,7 +27,8 @@ void vx_routine(game_system* game, game_character* c)
     float x = c->x;
     x += c->vx;
 
-    rect r = sweep_x(c->bounds(), c->vx);
+    const rect& br = c->bounds();
+    rect r = sweep_x(br, c->vx);
 
     slope_type::values slope = current_slope(*c, ls);
 
@@ -70,6 +71,11 @@ void vx_routine(game_system* game, game_character* c)
             (r2.x < c->x) )
         {
             ;
+        }
+        else if (intersect_rects(br, r2) && !intersect_rects(er, r2))
+        {
+            c->x += 2.0f;
+            return;
         }
         else if (intersect_rects(r, r2) && !intersect_rects(er, r2))
         {
@@ -150,7 +156,8 @@ void vy_down_routine(game_system* game, game_character* c)
     float y = c->y;
     y += c->vy;
 
-    rect r = sweep_y(c->bounds(), c->vy);
+    const rect& br = c->bounds();
+    rect r = sweep_y(br, c->vy);
 
     character_list& ls = game->characters;
     slope_type::values slope = current_slope(*c, ls);
@@ -202,6 +209,8 @@ void vy_down_routine(game_system* game, game_character* c)
                 }
             }
         }
+        else if (intersect_rects(br, r2) && !intersect_rects(er, r2))
+            ;
         else if (intersect_rects(r, r2) && !intersect_rects(er, r2))
         {
             float dx = c->x - i->x;
@@ -260,7 +269,8 @@ void vy_up_routine(game_system* game, game_character* c)
         return;
     }
 
-    rect r = sweep_y(c->bounds(), c->vy);
+    const rect& br = c->bounds();
+    rect r = sweep_y(br, c->vy);
 
     slope_type::values slope = current_slope(*c, ls);
 
@@ -293,7 +303,9 @@ void vy_up_routine(game_system* game, game_character* c)
 
         const rect& r2 = i->bounds();
 
-        if (intersect_rects(r, r2) && !intersect_rects(er, r2))
+        if (intersect_rects(br, r2) && !intersect_rects(er, r2))
+            ;
+        else if (intersect_rects(r, r2) && !intersect_rects(er, r2))
         {
             if (c->x < i->x)
                 c->x = r2.x - c->width*0.5f;
