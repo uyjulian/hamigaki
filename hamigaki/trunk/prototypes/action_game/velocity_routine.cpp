@@ -72,7 +72,9 @@ void vx_routine(game_system* game, game_character* c)
         {
             ;
         }
-        else if (intersect_rects(br, r2) && !intersect_rects(er, r2))
+        else if (
+            c->attrs.test(char_attr::player) &&
+            intersect_rects(br, r2) && !intersect_rects(er, r2) )
         {
             c->x += 2.0f;
             return;
