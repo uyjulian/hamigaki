@@ -13,6 +13,7 @@
 #include "collision_utility.hpp"
 #include "draw.hpp"
 #include "direct3d9.hpp"
+#include "fire_man_routine.hpp"
 #include "game_character.hpp"
 #include "game_system.hpp"
 #include "hop_routine.hpp"
@@ -178,11 +179,27 @@ void secret_block(
     }
 }
 
-void power_up(game_system* game, game_character* c, game_character* target)
+void to_man(game_system* game, game_character* c, game_character* target)
 {
-    target->attrs.set(char_attr::breaker);
-    target->change_sprite(game->sprites["man.txt"]);
-    c->y = -c->height - 128.0f;
+    if (target->sprite_infos == &game->sprites["boy.txt"])
+    {
+        target->attrs.set(char_attr::breaker);
+        target->change_sprite(game->sprites["man.txt"]);
+    }
+
+    c->y = -c->height - 128.0f; // FIXME
+}
+
+void to_fire_man(game_system* game, game_character* c, game_character* target)
+{
+    if (target->sprite_infos != &game->sprites["fire_man.txt"])
+    {
+        target->attrs.set(char_attr::breaker);
+        target->change_sprite(game->sprites["fire_man.txt"]);
+        target->speed_routine = fire_man_routine();
+    }
+
+    c->y = -c->height - 128.0f; // FIXME
 }
 
 void power_down(game_system* game, game_character* c, game_character* target)
@@ -193,8 +210,16 @@ void power_down(game_system* game, game_character* c, game_character* target)
     if (target->attrs.test(char_attr::breaker))
     {
         game->sound.play_se("damage.ogg");
-        target->attrs.reset(char_attr::breaker);
-        target->change_sprite(game->sprites["boy.txt"]);
+        if (target->sprite_infos == &game->sprites["man.txt"])
+        {
+            target->attrs.reset(char_attr::breaker);
+            target->change_sprite(game->sprites["boy.txt"]);
+        }
+        else
+        {
+            target->change_sprite(game->sprites["man.txt"]);
+            target->speed_routine = user_control_routine();
+        }
         target->effect = blink_effect();
     }
     else
@@ -212,7 +237,7 @@ void hop(game_system* game, game_character* c, game_character* target)
     c->vy = 10.0f;
 }
 
-void pop_up_milk(game_system* game, game_character* c, game_character* target)
+void pop_up_item(game_system* game, game_character* c, game_character* target)
 {
     int x, y;
     boost::tie(x,y) = c->origin;
@@ -224,22 +249,36 @@ void pop_up_milk(game_system* game, game_character* c, game_character* target)
     c->on_hit_from_below.clear();
 
 
-    game_character milk;
+    game_character item;
 
-    const sprite_info_set& infos = game->sprites["milk.txt"];
-    const sprite_info& info = infos.get_group(milk.form)[0];
+    if (target->sprite_infos == &game->sprites["boy.txt"])
+    {
+        const sprite_info_set& infos = game->sprites["milk.txt"];
+        const sprite_info& info = infos.get_group(item.form)[0];
 
-    milk.sprite_infos = &infos;
-    milk.z = layer::enemy;
-    milk.width = static_cast<float>(info.bounds.lx);
-    milk.height = static_cast<float>(info.bounds.ly);
-    milk.vx = 2.0f;
-    milk.back = false;
-    milk.on_collide_block_side = &turn;
-    milk.on_collide_player = &power_up;
-    milk.on_hit = &hop;
+        item.sprite_infos = &infos;
+        item.width = static_cast<float>(info.bounds.lx);
+        item.height = static_cast<float>(info.bounds.ly);
+        item.vx = 2.0f;
+        item.on_collide_block_side = &turn;
+        item.on_hit = &hop;
+        item.on_collide_player = &to_man;
+    }
+    else
+    {
+        const sprite_info_set& infos = game->sprites["capsule.txt"];
+        const sprite_info& info = infos.get_group(item.form)[0];
 
-    c->move_routine = item_box_routine(milk);
+        item.sprite_infos = &infos;
+        item.width = static_cast<float>(info.bounds.lx);
+        item.height = static_cast<float>(info.bounds.ly);
+        item.on_collide_player = &to_fire_man;
+    }
+
+    item.z = layer::enemy;
+    item.back = false;
+
+    c->move_routine = item_box_routine(item);
 }
 
 void stomp(game_system* game, game_character* c, game_character* target)
@@ -571,7 +610,7 @@ private:
                     system_.sprites["brick_block.txt"]
                 );
             c.attrs.set(char_attr::block);
-            c.on_hit_from_below = &pop_up_milk;
+            c.on_hit_from_below = &pop_up_item;
             system_.characters.push_back(c);
         }
         else if (type == 'm')
@@ -603,7 +642,7 @@ private:
                     system_.sprites["item_box.txt"]
                 );
             c.attrs.set(char_attr::block);
-            c.on_hit_from_below = &pop_up_milk;
+            c.on_hit_from_below = &pop_up_item;
             system_.characters.push_back(c);
         }
         else if (type == 'S')

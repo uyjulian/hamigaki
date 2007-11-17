@@ -162,5 +162,16 @@ void process_collisions(game_system& game, game_character& c)
                 }
             }
         }
+        else if (i->attrs.test(char_attr::weapon))
+        {
+            if (c.attrs.test(char_attr::enemy))
+            {
+                if (intersect_rects(r, r2))
+                {
+                    if (c.on_hit)
+                        c.on_hit(&game, &c, &*i);
+                }
+            }
+        }
     }
 }

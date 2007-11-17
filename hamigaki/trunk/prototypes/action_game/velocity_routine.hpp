@@ -14,5 +14,6 @@ struct game_character;
 struct game_system;
 
 bool velocity_routine(game_system* game, game_character* c);
+bool fly_routine(game_system* game, game_character* c);
 
 #endif // VELOCITY_ROUTINE_HPP

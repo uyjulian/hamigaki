@@ -356,3 +356,20 @@ bool velocity_routine(game_system* game, game_character* c)
 
     return true;
 }
+
+bool fly_routine(game_system* game, game_character* c)
+{
+    if (!c->speed_routine.empty())
+    {
+        // Note:
+        // This copy guarantees the lifetime until the call is completed.
+        speed_routine_type sp = c->speed_routine;
+        if (!sp(game, c))
+            c->speed_routine.clear();
+    }
+
+    vx_routine(game, c);
+    vy_routine(game, c);
+
+    return true;
+}
