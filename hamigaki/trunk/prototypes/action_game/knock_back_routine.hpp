@@ -10,23 +10,22 @@
 #ifndef KNOCK_BACK_ROUTINE_HPP
 #define KNOCK_BACK_ROUTINE_HPP
 
-#include "routine_base.hpp"
+#include <hamigaki/coroutine/shared_coroutine.hpp>
+
+struct game_character;
+struct game_system;
 
 class knock_back_routine
 {
 public:
-    knock_back_routine(std::size_t frames, float dx)
-        : frames_(frames), dx_(dx)
-    {
-    }
+    explicit knock_back_routine(int frames, float dx);
 
-    routine_result operator()(
-        routine_type::self& self, rect r, velocity v,
-        sprite_form form, input_command cmd) const;
+    bool operator()(game_system* game, game_character* c) const;
 
 private:
-    std::size_t frames_;
-    float dx_;
+    hamigaki::coroutines::shared_coroutine<
+        bool (game_system*, game_character*)
+    > coroutine_;
 };
 
 #endif // KNOCK_BACK_ROUTINE_HPP
