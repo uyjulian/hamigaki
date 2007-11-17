@@ -13,6 +13,24 @@
 #include "game_character.hpp"
 #include "game_system.hpp"
 
+inline bool includes_point(const rect& r, float x, float y)
+{
+    return (r.x <= x) && (r.x+r.lx > x) && (r.y <= y) && (r.y+r.ly > y);
+}
+
+inline bool intersect_rects(const rect& r1, const rect& r2)
+{
+    if ((r1.lx == 0.0f) || (r1.ly == 0.0f) ||
+        (r2.lx == 0.0f) || (r2.ly == 0.0f) )
+    {
+        return false;
+    }
+
+    return
+        (r1.x < r2.x + r2.lx) && (r2.x < r1.x + r1.lx) &&
+        (r1.y < r2.y + r2.ly) && (r2.y < r1.y + r1.ly) ;
+}
+
 inline bool on_rects(const rect& r1, const rect& r2)
 {
     return

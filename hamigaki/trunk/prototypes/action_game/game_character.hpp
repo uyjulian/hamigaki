@@ -11,9 +11,12 @@
 #define GAME_CHARACTER_HPP
 
 #include "four_char_code.hpp"
-#include "routine_base.hpp"
+#include "physics_types.hpp"
+#include "sprite_form.hpp"
+#include "sprite_info.hpp"
 #include <boost/function.hpp>
 #include <bitset>
+#include <utility>
 
 namespace char_attr
 {
