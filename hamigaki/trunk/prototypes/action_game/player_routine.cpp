@@ -1,4 +1,4 @@
-// player_routine.cpp: the routine for going straight
+// player_routine.cpp: the routine for player character
 
 // Copyright Takeshi Mouri 2007.
 // Distributed under the Boost Software License, Version 1.0.
@@ -218,8 +218,6 @@ bool y_routine_impl(
     HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(false)
 }
 
-} // namespace
-
 bool user_control_routine_impl(
     coroutine_type::self& self, game_system* game, game_character* c)
 {
@@ -269,6 +267,8 @@ bool user_control_routine_impl(
 
     HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(false)
 }
+
+} // namespace
 
 user_control_routine::user_control_routine()
     : coroutine_(&user_control_routine_impl)
