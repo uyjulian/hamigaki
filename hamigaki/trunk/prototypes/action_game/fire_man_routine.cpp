@@ -16,7 +16,10 @@
 namespace
 {
 
-const boost::uint32_t punch_form=static_four_char_code<'P','U','N','C'>::value;
+const boost::uint32_t duck_form = static_four_char_code<'D','U','C','K'>::value;
+
+const boost::uint32_t duck_jump_form =
+    static_four_char_code<'D','J','M','P'>::value;
 
 typedef hamigaki::coroutines::shared_coroutine<
     bool (game_system*, game_character*)
@@ -31,16 +34,17 @@ bool fire_man_routine_impl(
     coroutine_type::self& self, game_system* game, game_character* c)
 {
     user_control_routine impl;
-    bool old_punch = false;
+    bool old_dash = true;
 
     while (true)
     {
-        bool punch_pushed = !old_punch && game->command.punch;
-        old_punch = game->command.punch;
+        bool dash_pushed = !old_dash && game->command.dash;
+        old_dash = game->command.dash;
 
         impl(game, c);
 
-        if (punch_pushed && (c->form == punch_form))
+        if ( dash_pushed &&
+            (c->form != duck_form) && (c->form != duck_jump_form) )
         {
             game_character beam;
 
