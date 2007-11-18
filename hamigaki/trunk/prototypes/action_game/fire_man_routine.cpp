@@ -23,7 +23,7 @@ typedef hamigaki::coroutines::shared_coroutine<
 
 void vanish(game_system* game, game_character* c, game_character* target)
 {
-    c->y = -c->height - 128.0f; // FIXME
+    c->removed = true;
 }
 
 bool fire_man_routine_impl(

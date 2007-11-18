@@ -148,7 +148,7 @@ void to_fragments(
 
     game->sound.play_se("break_block.ogg");
 
-    c->y = -c->height - 128.0f;
+    c->removed = true;
 }
 
 void to_used_block(
@@ -187,7 +187,7 @@ void to_man(game_system* game, game_character* c, game_character* target)
         target->change_sprite(game->sprites["man.txt"]);
     }
 
-    c->y = -c->height - 128.0f; // FIXME
+    c->removed = true;
 }
 
 void to_fire_man(game_system* game, game_character* c, game_character* target)
@@ -199,7 +199,7 @@ void to_fire_man(game_system* game, game_character* c, game_character* target)
         target->speed_routine = fire_man_routine();
     }
 
-    c->y = -c->height - 128.0f; // FIXME
+    c->removed = true;
 }
 
 void power_down(game_system* game, game_character* c, game_character* target)
@@ -679,7 +679,7 @@ private:
         }
     }
 
-    void erase_old_enemies()
+    void erase_old_characters()
     {
         int scroll_x1 = static_cast<int>(scroll_x_ / 32.0f);
         int scroll_x2 = scroll_x1 + width_/32;
@@ -690,7 +690,7 @@ private:
         {
             next = boost::next(i);
 
-            if (i->y + i->height < -64.0f)
+            if (i->removed || (i->y + i->height < -64.0f))
             {
                 system_.characters.erase(i);
                 continue;
@@ -815,7 +815,7 @@ private:
                 add_character(x, y, system_.map(x, y));
         }
 
-        erase_old_enemies();
+        erase_old_characters();
     }
 
     void draw_character(const game_character& c)

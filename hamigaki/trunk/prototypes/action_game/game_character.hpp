@@ -85,6 +85,7 @@ struct game_character
 
     boost::uint32_t form;
     bool back;
+    bool removed;
     int step;
     unsigned long color;
     const sprite_info_set* sprite_infos;
@@ -94,7 +95,7 @@ struct game_character
         : x(0.0f), y(0.0f), z(0.0f), width(0.0f), height(0.0f)
         , vx(0.0f), vy(0.0f)
         , slope(slope_type::none)
-        , form(sprite_form::normal), back(false), step(0)
+        , form(sprite_form::normal), back(false), removed(false), step(0)
         , color(0xFFFFFFFFul), origin(-1,-1)
     {
     }

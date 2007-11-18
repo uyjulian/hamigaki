@@ -30,7 +30,7 @@ public:
         for (int i = 0; i < frames_; ++i)
             boost::tie(game,c) = self.yield(true);
 
-        c->y = -c->height - 128.0f; // FIXME
+        c->removed = true;
 
         return false;
     }
