@@ -696,8 +696,8 @@ private:
 
     void erase_old_characters()
     {
-        int scroll_x1 = static_cast<int>(scroll_x_ / 32.0f);
-        int scroll_x2 = scroll_x1 + width_/32;
+        float scroll_x1 = scroll_x_;
+        float scroll_x2 = scroll_x1 + width_;
 
         chara_iterator next;
         for (chara_iterator i = system_.characters.begin();
@@ -711,17 +711,22 @@ private:
                 continue;
             }
 
-            int origin = i->origin.first;
-            if (origin == -1)
-                continue;
+            float left  = i->x - i->width * 0.5f;
+            float right = i->x + i->width * 0.5f;
 
-            int left  = static_cast<int>(i->x - i->width * 0.5f) / 32;
-            int right = static_cast<int>(i->x + i->width * 0.5f) / 32;
-
-            if (((origin < scroll_x1)  || (origin > scroll_x2)) &&
-                ((right < scroll_x1-3) || (left > scroll_x2+3)) )
+            if (i->origin.first == -1)
             {
-                system_.characters.erase(i);
+                if ((right < scroll_x1) || (left > scroll_x2))
+                    system_.characters.erase(i);
+            }
+            else
+            {
+                float origin = i->origin.first * 32.0f;
+                if (((origin < scroll_x1) || (origin+32.0f > scroll_x2)) &&
+                    ((right < scroll_x1-96.0f) || (left > scroll_x2+96.0f)) )
+                {
+                    system_.characters.erase(i);
+                }
             }
         }
     }
