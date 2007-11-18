@@ -9,6 +9,7 @@
 
 #include "fire_man_routine.hpp"
 #include "game_system.hpp"
+#include "hop_routine.hpp"
 #include "player_routine.hpp"
 #include "velocity_routine.hpp"
 
@@ -49,12 +50,12 @@ bool fire_man_routine_impl(
             if (c->back)
             {
                 beam.x = c->x - c->width*0.5f;
-                beam.vx = -10.0f;
+                beam.vx = -6.0f;
             }
             else
             {
                 beam.x = c->x + c->width*0.5f;
-                beam.vx = 10.0f;
+                beam.vx = 6.0f;
             }
             beam.y = c->y + c->height*0.5f;
             beam.z = 0.0f;
@@ -63,8 +64,10 @@ bool fire_man_routine_impl(
             beam.width = static_cast<float>(info.bounds.lx);
             beam.height = static_cast<float>(info.bounds.ly);
             beam.back = c->back;
-            beam.move_routine = &fly_routine;
+            beam.move_routine = &velocity_routine;
+            beam.speed_routine = hop_routine(6.0f, 0.0f);
             beam.on_collide_block_side = &vanish;
+            beam.on_collide_enemy = &vanish;
 
             game->new_characters.push_back(beam);
         }

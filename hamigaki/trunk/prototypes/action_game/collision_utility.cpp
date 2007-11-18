@@ -144,22 +144,10 @@ void process_collisions(game_system& game, game_character& c)
         }
         else if (i->attrs.test(char_attr::enemy))
         {
-            if (c.attrs.test(char_attr::enemy))
+            if (intersect_rects(r, r2))
             {
-                if (intersect_rects(r, r2))
-                {
-                    float dx = c.x - i->x;
-                    if ((dx < 0.0f) && (c.vx > 0.0f))
-                    {
-                        c.vx = -c.vx;
-                        c.back = true;
-                    }
-                    else if ((dx > 0.0f) && (c.vx < 0.0f))
-                    {
-                        c.vx = -c.vx;
-                        c.back = false;
-                    }
-                }
+                if (c.on_collide_enemy)
+                    c.on_collide_enemy(&game, &c, &*i);
             }
         }
         else if (i->attrs.test(char_attr::weapon))

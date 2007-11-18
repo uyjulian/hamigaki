@@ -81,8 +81,17 @@ void stop(game_system* game, game_character* c, game_character* target)
 
 void turn(game_system* game, game_character* c, game_character* target)
 {
-    c->vx = -c->vx;
-    c->back = !c->back;
+    float dx = c->x - target->x;
+    if ((dx < 0.0f) && (c->vx > 0.0f))
+    {
+        c->vx = -c->vx;
+        c->back = true;
+    }
+    else if ((dx > 0.0f) && (c->vx < 0.0f))
+    {
+        c->vx = -c->vx;
+        c->back = false;
+    }
 }
 
 void hit_on_block(game_system& game, game_character& c)
@@ -301,6 +310,9 @@ void stomp(game_system* game, game_character* c, game_character* target)
 
 void hit(game_system* game, game_character* c, game_character* target)
 {
+    if (c->attrs.test(char_attr::enemy) && target->on_collide_enemy)
+        target->on_collide_enemy(game, target, c);
+
     int x, y;
     boost::tie(x,y) = c->origin;
 
@@ -314,10 +326,11 @@ void hit(game_system* game, game_character* c, game_character* target)
     c->y += 16.0f;
     c->vy = 8.0f;
 
-    if (c->x < target->x)
-        c->vx = -4.0f;
-    else
-        c->vx = 4.0f;
+    c->vx = 4.0f;
+    if (target->vx < 0.0f)
+        c->vx = -c->vx;
+    else if ((target->vx == 0.0f) && (c->x < target->x))
+        c->vx = -c->vx;
 }
 
 } // namespace
@@ -501,6 +514,7 @@ private:
             c.move_routine = &velocity_routine;
             c.on_collide_block_side = &turn;
             c.on_collide_player = &power_down;
+            c.on_collide_enemy = &turn;
             c.on_stomp = &stomp;
             c.on_hit = &hit;
             system_.characters.push_back(c);
@@ -518,6 +532,7 @@ private:
             c.speed_routine = &turn_routine;
             c.on_collide_block_side = &turn;
             c.on_collide_player = &power_down;
+            c.on_collide_enemy = &turn;
             c.on_stomp = &stomp;
             c.on_hit = &hit;
             system_.characters.push_back(c);
