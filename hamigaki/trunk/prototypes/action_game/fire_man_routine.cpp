@@ -46,32 +46,32 @@ bool fire_man_routine_impl(
         if ( dash_pushed &&
             (c->form != duck_form) && (c->form != duck_jump_form) )
         {
-            game_character beam;
+            character_ptr beam(new game_character);
 
             const sprite_info_set& infos = game->sprites["beam.txt"];
-            const sprite_info& info = infos.get_group(beam.form)[0];
+            const sprite_info& info = infos.get_group(beam->form)[0];
 
             if (c->back)
             {
-                beam.x = c->x - c->width*0.5f;
-                beam.vx = -6.0f;
+                beam->x = c->x - c->width*0.5f;
+                beam->vx = -6.0f;
             }
             else
             {
-                beam.x = c->x + c->width*0.5f;
-                beam.vx = 6.0f;
+                beam->x = c->x + c->width*0.5f;
+                beam->vx = 6.0f;
             }
-            beam.y = c->y + c->height*0.5f;
-            beam.z = 0.0f;
-            beam.attrs.set(char_attr::weapon);
-            beam.sprite_infos = &infos;
-            beam.width = static_cast<float>(info.bounds.lx);
-            beam.height = static_cast<float>(info.bounds.ly);
-            beam.back = c->back;
-            beam.move_routine = &velocity_routine;
-            beam.speed_routine = hop_routine(6.0f, 0.0f);
-            beam.on_collide_block_side = &vanish;
-            beam.on_collide_enemy = &vanish;
+            beam->y = c->y + c->height*0.5f;
+            beam->z = 0.0f;
+            beam->attrs.set(char_attr::weapon);
+            beam->sprite_infos = &infos;
+            beam->width = static_cast<float>(info.bounds.lx);
+            beam->height = static_cast<float>(info.bounds.ly);
+            beam->back = c->back;
+            beam->move_routine = &velocity_routine;
+            beam->speed_routine = hop_routine(6.0f, 0.0f);
+            beam->on_collide_block_side = &vanish;
+            beam->on_collide_enemy = &vanish;
 
             game->new_characters.push_back(beam);
         }

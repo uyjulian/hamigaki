@@ -17,7 +17,8 @@
 #include "stage_map.hpp"
 #include <list>
 
-typedef std::list<game_character> character_list;
+typedef boost::shared_ptr<game_character> character_ptr;
+typedef std::list<character_ptr> character_list;
 typedef character_list::iterator character_iterator;
 
 struct game_system

@@ -49,75 +49,77 @@ void move_y(game_system* game, game_character* c, float vy)
     character_list& ls = game->characters;
     for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
     {
+        game_character* c2 = i->get();
+
         // itself
-        if (&*i == c)
+        if (c2 == c)
             continue;
 
-        if ((c->slope != slope_type::none) && (i->y > old_y))
+        if ((c->slope != slope_type::none) && (c2->y > old_y))
         {
-            const rect& r2 = i->bounds();
+            const rect& r2 = c2->bounds();
 
-            if ((i->vy == 0.0f) && on_characters(*i, *c))
+            if ((c2->vy == 0.0f) && on_characters(*c2, *c))
             {
-                float dx = i->x - c->x;
+                float dx = c2->x - c->x;
                 float height = c->slope_height(dx);
 
-                i->y = new_y + height;
+                c2->y = new_y + height;
             }
             else if ((new_y <= r2.y) && (r2.y < new_y + br.ly) &&
-                (r.x <= i->x) && (i->x < r.x + r.lx) )
+                (r.x <= c2->x) && (c2->x < r.x + r.lx) )
             {
-                float dx = i->x - c->x;
+                float dx = c2->x - c->x;
                 float height = c->slope_height(dx);
                 float y1 = new_y + height;
 
                 if (r2.y < y1)
                 {
-                    i->vy = 0.0f;
-                    i->y = y1;
+                    c2->vy = 0.0f;
+                    c2->y = y1;
                 }
             }
         }
         else
         {
-            const rect& r2 = i->bounds();
+            const rect& r2 = c2->bounds();
 
-            if ((i->vy == 0.0f) && on_rects(r2, br))
+            if ((c2->vy == 0.0f) && on_rects(r2, br))
             {
-                if (i->attrs.test(char_attr::block))
+                if (c2->attrs.test(char_attr::block))
                 {
                     if (vy < 0.0f)
                         c->y = new_y;
-                    move_y(game, &*i, new_y + br.ly - r2.y);
+                    move_y(game, c2, new_y + br.ly - r2.y);
                     c->y = old_y;
                 }
                 else
-                    i->y = new_y + br.ly;
+                    c2->y = new_y + br.ly;
             }
             else if (intersect_rects(r, r2))
             {
                 if (vy < 0.0f)
                 {
-                    if (i->attrs.test(char_attr::block))
+                    if (c2->attrs.test(char_attr::block))
                     {
-                        i->vy = 0.0f;
+                        c2->vy = 0.0f;
                         c->y = new_y;
-                        move_y(game, &*i, new_y - r2.ly - r2.y);
+                        move_y(game, c2, new_y - r2.ly - r2.y);
                         c->y = old_y;
                     }
                     else
                     {
-                        i->vy = vy;
-                        i->y = new_y - r2.ly;
+                        c2->vy = vy;
+                        c2->y = new_y - r2.ly;
                     }
                 }
                 else
                 {
-                    i->vy = 0.0f;
-                    if (i->attrs.test(char_attr::block))
-                        move_y(game, &*i, new_y + br.ly - r2.y);
+                    c2->vy = 0.0f;
+                    if (c2->attrs.test(char_attr::block))
+                        move_y(game, c2, new_y + br.ly - r2.y);
                     else
-                        i->y = new_y + br.ly;
+                        c2->y = new_y + br.ly;
                 }
             }
         }

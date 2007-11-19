@@ -19,14 +19,16 @@ bool turn_routine(game_system* game, game_character* c)
     {
         for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
         {
+            game_character* c2 = i->get();
+
             // itself
-            if (&*i == c)
+            if (c2 == c)
                 continue;
 
-            if (!i->attrs.test(char_attr::block))
+            if (!c2->attrs.test(char_attr::block))
                 continue;
 
-            const rect& r2 = i->bounds();
+            const rect& r2 = c2->bounds();
             if ((r2.x <= new_x) && (new_x < r2.x + r2.lx) &&
                 (c->y == r2.y + r2.ly) )
             {

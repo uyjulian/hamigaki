@@ -29,7 +29,7 @@
 #include "vanish_routine.hpp"
 #include "velocity_routine.hpp"
 #include "wait_se_routine.hpp"
-#include <hamigaki/functional.hpp>
+#include <boost/iterator/indirect_iterator.hpp>
 #include <boost/bind.hpp>
 #include <boost/next_prior.hpp>
 #include <cmath>
@@ -54,22 +54,30 @@ namespace layer
 
 const boost::uint32_t miss_form = static_four_char_code<'M','I','S','S'>::value;
 
-game_character
+struct character_ptr_z_greator
+{
+    bool operator()(const character_ptr& lhs, const character_ptr& rhs) const
+    {
+        return lhs->z > rhs->z;
+    }
+};
+
+character_ptr
 create_character(int x, int y,float z, bool back, const sprite_info_set& infos)
 {
-    game_character c;
+    character_ptr c(new game_character);
 
-    const sprite_info& info = infos.get_group(c.form)[0];
+    const sprite_info& info = infos.get_group(c->form)[0];
 
-    c.sprite_infos = &infos;
-    c.x = static_cast<float>(x * 32 + 16);
-    c.y = static_cast<float>(y * 32);
-    c.z = z;
-    c.width = static_cast<float>(info.bounds.lx);
-    c.height = static_cast<float>(info.bounds.ly);
-    c.origin.first = x;
-    c.origin.second = y;
-    c.back = back;
+    c->sprite_infos = &infos;
+    c->x = static_cast<float>(x * 32 + 16);
+    c->y = static_cast<float>(y * 32);
+    c->z = z;
+    c->width = static_cast<float>(info.bounds.lx);
+    c->height = static_cast<float>(info.bounds.ly);
+    c->origin.first = x;
+    c->origin.second = y;
+    c->back = back;
 
     return c;
 }
@@ -101,15 +109,17 @@ void hit_on_block(game_system& game, game_character& c)
     character_list& ls = game.characters;
     for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
     {
+        game_character* c2 = i->get();
+
         // itself
-        if (&*i == &c)
+        if (c2 == &c)
             continue;
 
-        if (i->attrs.test(char_attr::block) || i->on_hit.empty())
+        if (c2->attrs.test(char_attr::block) || c2->on_hit.empty())
             continue;
 
-        if ((r.x <= i->x) && (i->x < r.x + r.lx) && (i->y == r.y + r.ly))
-            i->on_hit(&game, &*i, &c);
+        if ((r.x <= c2->x) && (c2->x < r.x + r.lx) && (c2->y == r.y + r.ly))
+            c2->on_hit(&game, c2, &c);
     }
 }
 
@@ -139,18 +149,18 @@ void to_fragments(
 
     for (std::size_t i = 0; i < 4; ++i)
     {
-        game_character fr;
+        character_ptr fr(new game_character);
 
-        fr.move_routine = &velocity_routine;
-        fr.sprite_infos = &infos;
-        fr.x = c->x + dx[i];
-        fr.y = c->y + dy[i];
-        fr.z = layer::front;
-        fr.width = 0.0f;
-        fr.height = 0.0f;
-        fr.vx = vx[i];
-        fr.vy = vy[i];
-        fr.back = false;
+        fr->move_routine = &velocity_routine;
+        fr->sprite_infos = &infos;
+        fr->x = c->x + dx[i];
+        fr->y = c->y + dy[i];
+        fr->z = layer::front;
+        fr->width = 0.0f;
+        fr->height = 0.0f;
+        fr->vx = vx[i];
+        fr->vy = vy[i];
+        fr->back = false;
 
         game->new_characters.push_back(fr);
     }
@@ -258,34 +268,34 @@ void pop_up_item(game_system* game, game_character* c, game_character* target)
     c->on_hit_from_below.clear();
 
 
-    game_character item;
+    character_ptr item(new game_character);
 
     if (target->sprite_infos == &game->sprites["boy.txt"])
     {
         const sprite_info_set& infos = game->sprites["milk.txt"];
-        const sprite_info& info = infos.get_group(item.form)[0];
+        const sprite_info& info = infos.get_group(item->form)[0];
 
-        item.sprite_infos = &infos;
-        item.width = static_cast<float>(info.bounds.lx);
-        item.height = static_cast<float>(info.bounds.ly);
-        item.vx = 2.0f;
-        item.on_collide_block_side = &turn;
-        item.on_hit = &hop;
-        item.on_collide_player = &to_man;
+        item->sprite_infos = &infos;
+        item->width = static_cast<float>(info.bounds.lx);
+        item->height = static_cast<float>(info.bounds.ly);
+        item->vx = 2.0f;
+        item->on_collide_block_side = &turn;
+        item->on_hit = &hop;
+        item->on_collide_player = &to_man;
     }
     else
     {
         const sprite_info_set& infos = game->sprites["capsule.txt"];
-        const sprite_info& info = infos.get_group(item.form)[0];
+        const sprite_info& info = infos.get_group(item->form)[0];
 
-        item.sprite_infos = &infos;
-        item.width = static_cast<float>(info.bounds.lx);
-        item.height = static_cast<float>(info.bounds.ly);
-        item.on_collide_player = &to_fire_man;
+        item->sprite_infos = &infos;
+        item->width = static_cast<float>(info.bounds.lx);
+        item->height = static_cast<float>(info.bounds.ly);
+        item->on_collide_player = &to_fire_man;
     }
 
-    item.z = layer::enemy;
-    item.back = false;
+    item->z = layer::enemy;
+    item->back = false;
 
     c->move_routine = item_box_routine(item);
 }
@@ -337,10 +347,6 @@ void hit(game_system* game, game_character* c, game_character* target)
 
 class main_window::impl
 {
-private:
-    typedef std::list<game_character> chara_list;
-    typedef chara_list::iterator chara_iterator;
-
 public:
     explicit impl(::HWND handle)
         : handle_(handle)
@@ -431,7 +437,7 @@ public:
 
     void render()
     {
-        system_.characters.sort(hamigaki::mem_var_greator(&game_character::z));
+        system_.characters.sort(character_ptr_z_greator());
 
         device_.clear(D3DCOLOR_XRGB(0x77,0x66,0xDD));
         {
@@ -446,7 +452,8 @@ public:
             device_.set_texture_stage_state(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
 
             std::for_each(
-                system_.characters.begin(), system_.characters.end(),
+                boost::make_indirect_iterator(system_.characters.begin()),
+                boost::make_indirect_iterator(system_.characters.end()),
                 boost::bind(&impl::draw_character, this, _1)
             );
 
@@ -476,16 +483,16 @@ private:
 #endif
     std::string stage_file_;
     float scroll_x_;
-    chara_iterator player_;
+    character_iterator player_;
     int width_;
     int height_;
 
-    chara_iterator find_enemy(int x, int y)
+    character_iterator find_enemy(int x, int y)
     {
-        for (chara_iterator i = system_.characters.begin();
+        for (character_iterator i = system_.characters.begin();
             i != system_.characters.end(); ++i)
         {
-            if ((i->origin.first == x) && (i->origin.second == y))
+            if (((*i)->origin.first == x) && ((*i)->origin.second == y))
                 return i;
         }
 
@@ -500,196 +507,196 @@ private:
         if (find_enemy(x, y) != system_.characters.end())
             return;
 
-        bool back = player_->x <= static_cast<float>(x*32);
+        bool back = (*player_)->x <= static_cast<float>(x*32);
 
         if (type == 'o')
         {
-            game_character c =
+            character_ptr c =
                 create_character(
                     x, y, layer::enemy, back,
                     system_.sprites["ball.txt"]
                 );
-            c.attrs.set(char_attr::enemy);
-            c.vx = back ? -1.0f : 1.0f;
-            c.move_routine = &velocity_routine;
-            c.on_collide_block_side = &turn;
-            c.on_collide_player = &power_down;
-            c.on_collide_enemy = &turn;
-            c.on_stomp = &stomp;
-            c.on_hit = &hit;
+            c->attrs.set(char_attr::enemy);
+            c->vx = back ? -1.0f : 1.0f;
+            c->move_routine = &velocity_routine;
+            c->on_collide_block_side = &turn;
+            c->on_collide_player = &power_down;
+            c->on_collide_enemy = &turn;
+            c->on_stomp = &stomp;
+            c->on_hit = &hit;
             system_.characters.push_back(c);
         }
         else if (type == 'a')
         {
-            game_character c =
+            character_ptr c =
                 create_character(
                     x, y, layer::enemy, back,
                     system_.sprites["ball.txt"]
                 );
-            c.attrs.set(char_attr::enemy);
-            c.vx = back ? -1.0f : 1.0f;
-            c.move_routine = &velocity_routine;
-            c.speed_routine = &turn_routine;
-            c.on_collide_block_side = &turn;
-            c.on_collide_player = &power_down;
-            c.on_collide_enemy = &turn;
-            c.on_stomp = &stomp;
-            c.on_hit = &hit;
+            c->attrs.set(char_attr::enemy);
+            c->vx = back ? -1.0f : 1.0f;
+            c->move_routine = &velocity_routine;
+            c->speed_routine = &turn_routine;
+            c->on_collide_block_side = &turn;
+            c->on_collide_player = &power_down;
+            c->on_collide_enemy = &turn;
+            c->on_stomp = &stomp;
+            c->on_hit = &hit;
             system_.characters.push_back(c);
         }
         else if (type == 'p')
         {
-            game_character c =
+            character_ptr c =
                 create_character(
                     x, y, layer::enemy, back,
                     system_.sprites["ball.txt"]
                 );
-            c.attrs.set(char_attr::enemy);
-            c.vx = back ? -2.0f : 2.0f;
-            c.move_routine = &velocity_routine;
-            c.speed_routine = hop_routine();
-            c.on_collide_block_side = &turn;
-            c.on_collide_player = &power_down;
-            c.on_stomp = &stomp;
-            c.on_hit = &hit;
+            c->attrs.set(char_attr::enemy);
+            c->vx = back ? -2.0f : 2.0f;
+            c->move_routine = &velocity_routine;
+            c->speed_routine = hop_routine();
+            c->on_collide_block_side = &turn;
+            c->on_collide_player = &power_down;
+            c->on_stomp = &stomp;
+            c->on_hit = &hit;
             system_.characters.push_back(c);
         }
         else if (type == 'w')
         {
-            game_character c =
+            character_ptr c =
                 create_character(
                     x, y, layer::enemy, back,
                     system_.sprites["ball.txt"]
                 );
-            c.attrs.set(char_attr::enemy);
-            c.vx = back ? -2.0f : 2.0f;
-            c.move_routine = &velocity_routine;
-            c.speed_routine = hop_step_jump_routine();
-            c.on_collide_block_side = &turn;
-            c.on_collide_player = &power_down;
-            c.on_stomp = &stomp;
-            c.on_hit = &hit;
+            c->attrs.set(char_attr::enemy);
+            c->vx = back ? -2.0f : 2.0f;
+            c->move_routine = &velocity_routine;
+            c->speed_routine = hop_step_jump_routine();
+            c->on_collide_block_side = &turn;
+            c->on_collide_player = &power_down;
+            c->on_stomp = &stomp;
+            c->on_hit = &hit;
             system_.characters.push_back(c);
         }
         else if (type == 'U')
         {
-            game_character c =
+            character_ptr c =
                 create_character(
                     x, y, layer::block, false,
                     system_.sprites["lift.txt"]
                 );
-            c.attrs.set(char_attr::block);
-            c.vy = 2.0f;
-            c.move_routine = &loop_lift_routine;
+            c->attrs.set(char_attr::block);
+            c->vy = 2.0f;
+            c->move_routine = &loop_lift_routine;
             system_.characters.push_back(c);
         }
         else if (type == 'D')
         {
-            game_character c =
+            character_ptr c =
                 create_character(
                     x, y, layer::block, false,
                     system_.sprites["lift.txt"]
                 );
-            c.attrs.set(char_attr::block);
-            c.vy = -2.0f;
-            c.move_routine = &loop_lift_routine;
+            c->attrs.set(char_attr::block);
+            c->vy = -2.0f;
+            c->move_routine = &loop_lift_routine;
             system_.characters.push_back(c);
         }
         else if (type == '=')
         {
-            game_character c =
+            character_ptr c =
                 create_character(
                     x, y, layer::block, false,
                     system_.sprites["brick_block.txt"]
                 );
-            c.attrs.set(char_attr::block);
-            c.on_hit_from_below = &to_fragments;
+            c->attrs.set(char_attr::block);
+            c->on_hit_from_below = &to_fragments;
             system_.characters.push_back(c);
         }
         else if (type == 'G')
         {
-            game_character c =
+            character_ptr c =
                 create_character(
                     x, y, layer::block, false,
                     system_.sprites["brick_block.txt"]
                 );
-            c.attrs.set(char_attr::block);
-            c.on_hit_from_below = &to_used_block;
+            c->attrs.set(char_attr::block);
+            c->on_hit_from_below = &to_used_block;
             system_.characters.push_back(c);
         }
         else if (type == 'I')
         {
-            game_character c =
+            character_ptr c =
                 create_character(
                     x, y, layer::block, false,
                     system_.sprites["brick_block.txt"]
                 );
-            c.attrs.set(char_attr::block);
-            c.on_hit_from_below = &pop_up_item;
+            c->attrs.set(char_attr::block);
+            c->on_hit_from_below = &pop_up_item;
             system_.characters.push_back(c);
         }
         else if (type == 'm')
         {
-            game_character c =
+            character_ptr c =
                 create_character(
                     x, y, layer::block, false,
                     system_.sprites["used_block.txt"]
                 );
-            c.attrs.set(char_attr::block);
+            c->attrs.set(char_attr::block);
             system_.characters.push_back(c);
         }
         else if (type == '$')
         {
-            game_character c =
+            character_ptr c =
                 create_character(
                     x, y, layer::block, false,
                     system_.sprites["item_box.txt"]
                 );
-            c.attrs.set(char_attr::block);
-            c.on_hit_from_below = &to_used_block;
+            c->attrs.set(char_attr::block);
+            c->on_hit_from_below = &to_used_block;
             system_.characters.push_back(c);
         }
         else if (type == '?')
         {
-            game_character c =
+            character_ptr c =
                 create_character(
                     x, y, layer::block, false,
                     system_.sprites["item_box.txt"]
                 );
-            c.attrs.set(char_attr::block);
-            c.on_hit_from_below = &pop_up_item;
+            c->attrs.set(char_attr::block);
+            c->on_hit_from_below = &pop_up_item;
             system_.characters.push_back(c);
         }
         else if (type == 'S')
         {
-            game_character c =
+            character_ptr c =
                 create_character(
                     x, y, layer::block, false,
                     system_.sprites["secret_block.txt"]
                 );
-            c.on_collide_player = &secret_block;
+            c->on_collide_player = &secret_block;
             system_.characters.push_back(c);
         }
         else if (type == '/')
         {
-            game_character c =
+            character_ptr c =
                 create_character(
                     x, y, layer::block, false,
                     system_.sprites["left_down.txt"]
                 );
-            c.attrs.set(char_attr::block);
-            c.slope = slope_type::left_down;
+            c->attrs.set(char_attr::block);
+            c->slope = slope_type::left_down;
             system_.characters.push_back(c);
         }
         else if (type == '\\')
         {
-            game_character c =
+            character_ptr c =
                 create_character(
                     x, y, layer::block, false,
                     system_.sprites["right_down.txt"]
                 );
-            c.attrs.set(char_attr::block);
-            c.slope = slope_type::right_down;
+            c->attrs.set(char_attr::block);
+            c->slope = slope_type::right_down;
             system_.characters.push_back(c);
         }
     }
@@ -699,29 +706,30 @@ private:
         float scroll_x1 = scroll_x_;
         float scroll_x2 = scroll_x1 + width_;
 
-        chara_iterator next;
-        for (chara_iterator i = system_.characters.begin();
+        character_iterator next;
+        for (character_iterator i = system_.characters.begin();
             i != system_.characters.end(); i = next)
         {
             next = boost::next(i);
 
-            if (i->removed || (i->y + i->height < -64.0f))
+            game_character* c = i->get();
+            if (c->removed || (c->y + c->height < -64.0f))
             {
                 system_.characters.erase(i);
                 continue;
             }
 
-            float left  = i->x - i->width * 0.5f;
-            float right = i->x + i->width * 0.5f;
+            float left  = c->x - c->width * 0.5f;
+            float right = c->x + c->width * 0.5f;
 
-            if (i->origin.first == -1)
+            if (c->origin.first == -1)
             {
                 if ((right < scroll_x1) || (left > scroll_x2))
                     system_.characters.erase(i);
             }
             else
             {
-                float origin = i->origin.first * 32.0f;
+                float origin = c->origin.first * 32.0f;
                 if (((origin < scroll_x1) || (origin+32.0f > scroll_x2)) &&
                     ((right < scroll_x1-96.0f) || (left > scroll_x2+96.0f)) )
                 {
@@ -737,27 +745,27 @@ private:
 
         load_map_from_text(stage_file_.c_str(), system_.map);
 
-        game_character player;
-        player.move_routine = &player_routine;
-        player.speed_routine = user_control_routine();
-        player.on_collide_block_side = &stop;
-        player.sprite_infos = &system_.sprites["boy.txt"];
-        player.attrs.set(char_attr::player);
-        player.back = false;
+        character_ptr player(new game_character);
+        player->move_routine = &player_routine;
+        player->speed_routine = user_control_routine();
+        player->on_collide_block_side = &stop;
+        player->sprite_infos = &system_.sprites["boy.txt"];
+        player->attrs.set(char_attr::player);
+        player->back = false;
 
         std::pair<int,int> pos = system_.map.player_position();
 
         sprite_info info =
-            player.sprite_infos->get_group(player.form)[0];
+            player->sprite_infos->get_group(player->form)[0];
 
-        player.x = static_cast<float>(pos.first * 32 + 16);
-        player.y = static_cast<float>(pos.second * 32);
-        player.z = layer::player;
-        player.width = static_cast<float>(info.bounds.lx);
-        player.height = static_cast<float>(info.bounds.ly);
+        player->x = static_cast<float>(pos.first * 32 + 16);
+        player->y = static_cast<float>(pos.second * 32);
+        player->z = layer::player;
+        player->width = static_cast<float>(info.bounds.lx);
+        player->height = static_cast<float>(info.bounds.ly);
 
         float right_end = static_cast<float>(system_.map.width()*32);
-        scroll_x_ = player.x - static_cast<float>(width_ / 2);
+        scroll_x_ = player->x - static_cast<float>(width_ / 2);
         if (scroll_x_ < 0.0f)
             scroll_x_ = 0.0f;
         else if (scroll_x_ + static_cast<float>(width_) > right_end)
@@ -785,37 +793,39 @@ private:
             reset_characters();
 
         std::for_each(
-            ls.begin(), ls.end(),
+            boost::make_indirect_iterator(ls.begin()),
+            boost::make_indirect_iterator(ls.end()),
             boost::bind(&game_character::move, _1, boost::ref(system_))
         );
 
         std::for_each(
-            ls.begin(), ls.end(),
+            boost::make_indirect_iterator(ls.begin()),
+            boost::make_indirect_iterator(ls.end()),
             boost::bind(&process_collisions, boost::ref(system_), _1)
         );
 
         if (!system_.new_characters.empty())
             ls.splice(ls.end(), system_.new_characters);
 
-        if ((player_->form == miss_form) && player_->effect.empty())
+        if (((*player_)->form == miss_form) && (*player_)->effect.empty())
             reset_characters();
-        else if (player_->y < - player_->height - 32.0f)
+        else if ((*player_)->y < - (*player_)->height - 32.0f)
         {
-            if (player_->form != miss_form)
+            if ((*player_)->form != miss_form)
             {
                 system_.sound.stop_bgm();
-                player_->change_sprite(system_.sprites["boy.txt"]);
-                player_->change_form(miss_form);
-                player_->effect = wait_se_routine("miss.ogg");
+                (*player_)->change_sprite(system_.sprites["boy.txt"]);
+                (*player_)->change_form(miss_form);
+                (*player_)->effect = wait_se_routine("miss.ogg");
             }
-            player_->y = -player_->height - 32.0f;
-            player_->move_routine.clear();
+            (*player_)->y = -(*player_)->height - 32.0f;
+            (*player_)->move_routine.clear();
         }
 
         float right_end = static_cast<float>(system_.map.width()*32);
 
         int old_scroll_block = static_cast<int>(scroll_x_ / 32.0f);
-        scroll_x_ = player_->x - static_cast<float>(width_ / 2);
+        scroll_x_ = (*player_)->x - static_cast<float>(width_ / 2);
         if (scroll_x_ < 0.0f)
             scroll_x_ = 0.0f;
         else if (scroll_x_ + static_cast<float>(width_) > right_end)

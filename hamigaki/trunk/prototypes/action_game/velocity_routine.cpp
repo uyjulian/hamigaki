@@ -53,21 +53,23 @@ void vx_routine(game_system* game, game_character* c)
     character_iterator ti = ls.end();
     for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
     {
+        game_character* c2 = i->get();
+
         // itself
-        if (&*i == c)
+        if (c2 == c)
             continue;
 
-        if (!i->attrs.test(char_attr::block))
+        if (!c2->attrs.test(char_attr::block))
             continue;
 
-        const rect& r2 = i->bounds();
+        const rect& r2 = c2->bounds();
 
-        if ((i->slope == slope_type::left_down)
+        if ((c2->slope == slope_type::left_down)
             && (c->x < r2.x + r2.lx) )
         {
             ;
         }
-        else if ((i->slope == slope_type::right_down) &&
+        else if ((c2->slope == slope_type::right_down) &&
             (r2.x < c->x) )
         {
             ;
@@ -100,48 +102,56 @@ void vx_routine(game_system* game, game_character* c)
     {
         for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
         {
+            game_character* c2 = i->get();
+
             // itself
-            if (&*i == c)
+            if (c2 == c)
                 continue;
 
-            if (!i->attrs.test(char_attr::block) ||
-                (i->slope == slope_type::none) )
+            if (!c2->attrs.test(char_attr::block) ||
+                (c2->slope == slope_type::none) )
+            {
                 continue;
+            }
 
-            const rect& r2 = i->bounds();
+            const rect& r2 = c2->bounds();
             if ((r2.x <= c->x) && (c->x <  r2.x + r2.lx) &&
                 (r2.y <  c->y) && (c->y <= r2.y + r2.ly) )
             {
-                float dx = x - i->x;
-                float w = i->width*0.5f;
+                float dx = x - c2->x;
+                float w = c2->width*0.5f;
                 if (dx < -w)
                     dx = -w;
                 else if (dx > w)
                     dx = w;
 
-                float height = i->slope_height(dx);
-                c->y = i->y + height;
+                float height = c2->slope_height(dx);
+                c->y = c2->y + height;
                 break;
             }
         }
 
         for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
         {
+            game_character* c2 = i->get();
+
             // itself
-            if (&*i == c)
+            if (c2 == c)
                 continue;
 
-            if (!i->attrs.test(char_attr::block) ||
-                (i->slope == slope_type::none) )
+            if (!c2->attrs.test(char_attr::block) ||
+                (c2->slope == slope_type::none) )
+            {
                 continue;
+            }
 
-            const rect& r2 = i->bounds();
+            const rect& r2 = c2->bounds();
             if ((r2.x <= x) && (x <  r2.x + r2.lx) &&
                 (r2.y <  c->y) && (c->y <= r2.y + r2.ly) )
             {
-                float dx = x - i->x;
-                float height = i->slope_height(dx);
-                c->y = i->y + height;
+                float dx = x - c2->x;
+                float height = c2->slope_height(dx);
+                c->y = c2->y + height;
                 break;
             }
         }
@@ -150,7 +160,7 @@ void vx_routine(game_system* game, game_character* c)
     c->x = x;
 
     if ((ti != ls.end()) && c->on_collide_block_side)
-        c->on_collide_block_side(game, c, &*ti);
+        c->on_collide_block_side(game, c, ti->get());
 }
 
 void vy_down_routine(game_system* game, game_character* c)
@@ -184,22 +194,24 @@ void vy_down_routine(game_system* game, game_character* c)
 
     for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
     {
+        game_character* c2 = i->get();
+
         // itself
-        if (&*i == c)
+        if (c2 == c)
             continue;
 
-        if (!i->attrs.test(char_attr::block))
+        if (!c2->attrs.test(char_attr::block))
             continue;
 
-        const rect& r2 = i->bounds();
+        const rect& r2 = c2->bounds();
 
-        if ((i->slope != slope_type::none) &&
+        if ((c2->slope != slope_type::none) &&
             (r2.y <= c->y) && (r.y < r2.y + r2.ly) )
         {
             if ((r2.x <= c->x) && (c->x < r2.x + r2.lx))
             {
-                float dx = c->x - i->x;
-                float height = i->slope_height(dx);
+                float dx = c->x - c2->x;
+                float height = c2->slope_height(dx);
                 float y2 = r2.y + height;
 
                 if (y < y2)
@@ -215,8 +227,8 @@ void vy_down_routine(game_system* game, game_character* c)
             ;
         else if (intersect_rects(r, r2) && !intersect_rects(er, r2))
         {
-            float dx = c->x - i->x;
-            float height = i->slope_height(dx);
+            float dx = c->x - c2->x;
+            float height = c2->slope_height(dx);
             if (height == r2.ly)
             {
                 c->vy = 0.0f;
@@ -240,17 +252,19 @@ void vy_up_routine(game_system* game, game_character* c)
     character_list& ls = game->characters;
     for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
     {
+        game_character* c2 = i->get();
+
         // itself
-        if (&*i == c)
+        if (c2 == c)
             continue;
 
-        if (!i->attrs.test(char_attr::block))
+        if (!c2->attrs.test(char_attr::block))
             continue;
 
-        const rect& r2 = i->bounds();
+        const rect& r2 = c2->bounds();
 
         if ((r2.x <= c->x) && (c->x < r2.x + r2.lx) &&
-            (c->y + c->height <= i->y) && (i->y < y + c->height) )
+            (c->y + c->height <= c2->y) && (c2->y < y + c->height) )
         {
             collision = true;
             c->vy = -c->vy * 0.5f;
@@ -259,8 +273,8 @@ void vy_up_routine(game_system* game, game_character* c)
             if (c->attrs.test(char_attr::player) ||
                 c->attrs.test(char_attr::breaker) )
             {
-                if (i->on_hit_from_below)
-                    i->on_hit_from_below(game, &*i, c);
+                if (c2->on_hit_from_below)
+                    c2->on_hit_from_below(game, c2, c);
             }
         }
     }
@@ -296,20 +310,22 @@ void vy_up_routine(game_system* game, game_character* c)
 
     for (character_iterator i = ls.begin(), end = ls.end(); i != end; ++i)
     {
+        game_character* c2 = i->get();
+
         // itself
-        if (&*i == c)
+        if (c2 == c)
             continue;
 
-        if (!i->attrs.test(char_attr::block))
+        if (!c2->attrs.test(char_attr::block))
             continue;
 
-        const rect& r2 = i->bounds();
+        const rect& r2 = c2->bounds();
 
         if (intersect_rects(br, r2) && !intersect_rects(er, r2))
             ;
         else if (intersect_rects(r, r2) && !intersect_rects(er, r2))
         {
-            if (c->x < i->x)
+            if (c->x < c2->x)
                 c->x = r2.x - c->width*0.5f;
             else
                 c->x = r2.x + r2.lx + c->width*0.5f;

@@ -23,7 +23,7 @@ typedef hamigaki::coroutines::shared_coroutine<
 class item_box_routine_impl
 {
 public:
-    item_box_routine_impl(const game_character& item) : item_(item)
+    item_box_routine_impl(const character_ptr& item) : item_(item)
     {
     }
 
@@ -37,13 +37,12 @@ public:
         while (bounce(game, c))
             boost::tie(game,c) = self.yield(true);
 
-        game->new_characters.push_back(item_);
-        game_character& item = game->new_characters.back();
-
         int height = static_cast<int>(c->height);
-        item.x = c->x;
-        item.y = c->y;
-        item.move_routine = pop_up_routine(1.0f, height);
+        item_->x = c->x;
+        item_->y = c->y;
+        item_->move_routine = pop_up_routine(1.0f, height);
+
+        game->new_characters.push_back(item_);
 
         for (int i = 0; i < height; ++i)
             boost::tie(game,c) = self.yield(true);
@@ -54,12 +53,12 @@ public:
     }
 
 private:
-    game_character item_;
+    character_ptr item_;
 };
 
 } // namespace
 
-item_box_routine::item_box_routine(const game_character& item)
+item_box_routine::item_box_routine(const character_ptr& item)
     : coroutine_(item_box_routine_impl(item))
 {
 }
