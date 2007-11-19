@@ -12,6 +12,7 @@
 #include "hop_routine.hpp"
 #include "player_routine.hpp"
 #include "velocity_routine.hpp"
+#include <boost/weak_ptr.hpp>
 
 namespace
 {
@@ -30,11 +31,23 @@ void vanish(game_system* game, game_character* c, game_character* target)
     c->removed = true;
 }
 
+boost::weak_ptr<game_character>*
+find_next_beam(boost::weak_ptr<game_character>* p, std::size_t n)
+{
+    for (std::size_t i = 0; i < n; ++i)
+        if (p[i].expired())
+            return p + i;
+    return 0;
+}
+
 bool fire_man_routine_impl(
     coroutine_type::self& self, game_system* game, game_character* c)
 {
     user_control_routine impl;
     bool old_dash = true;
+
+    const std::size_t beams_size = 2;
+    boost::weak_ptr<game_character> beams[beams_size];
 
     while (true)
     {
@@ -43,8 +56,10 @@ bool fire_man_routine_impl(
 
         impl(game, c);
 
+        boost::weak_ptr<game_character>* next;
         if ( dash_pushed &&
-            (c->form != duck_form) && (c->form != duck_jump_form) )
+            (c->form != duck_form) && (c->form != duck_jump_form) &&
+            ((next = find_next_beam(beams, beams_size)) != 0) )
         {
             character_ptr beam(new game_character);
 
@@ -74,6 +89,7 @@ bool fire_man_routine_impl(
             beam->on_collide_enemy = &vanish;
 
             game->new_characters.push_back(beam);
+            *next = beam;
         }
 
         boost::tie(game,c) = self.yield(true);
