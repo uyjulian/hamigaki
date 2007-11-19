@@ -12,6 +12,7 @@
 #include "collision_utility.hpp"
 #include "pop_up_routine.hpp"
 #include "velocity_routine.hpp"
+#include <boost/weak_ptr.hpp>
 
 namespace
 {
@@ -23,7 +24,7 @@ typedef hamigaki::coroutines::shared_coroutine<
 class item_box_routine_impl
 {
 public:
-    item_box_routine_impl(const character_ptr& item) : item_(item)
+    item_box_routine_impl(const game_character& item) : item_(item)
     {
     }
 
@@ -37,15 +38,27 @@ public:
         while (bounce(game, c))
             boost::tie(game,c) = self.yield(true);
 
+        character_ptr item(new game_character(item_));
         int height = static_cast<int>(c->height);
-        item_->x = c->x;
-        item_->y = c->y;
-        item_->move_routine = pop_up_routine(1.0f, height);
+        item->x = c->x;
+        item->y = c->y;
+        item->move_routine = pop_up_routine(1.0f, height);
 
-        game->new_characters.push_back(item_);
+        game->new_characters.push_back(item);
 
-        for (int i = 0; i < height; ++i)
-            boost::tie(game,c) = self.yield(true);
+        boost::weak_ptr<game_character> wp(item);
+        item.reset();
+
+        while (character_ptr p = wp.lock())
+        {
+            if (p->move_routine)
+                boost::tie(game,c) = self.yield(true);
+            else
+            {
+                p->move_routine = &velocity_routine;
+                break;
+            }
+        }
 
         c->z = org_z;
 
@@ -53,12 +66,12 @@ public:
     }
 
 private:
-    character_ptr item_;
+    game_character item_;
 };
 
 } // namespace
 
-item_box_routine::item_box_routine(const character_ptr& item)
+item_box_routine::item_box_routine(const game_character& item)
     : coroutine_(item_box_routine_impl(item))
 {
 }

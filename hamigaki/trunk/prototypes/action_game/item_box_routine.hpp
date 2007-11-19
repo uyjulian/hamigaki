@@ -10,13 +10,15 @@
 #ifndef ITEM_BOX_ROUTINE_HPP
 #define ITEM_BOX_ROUTINE_HPP
 
-#include "game_system.hpp"
 #include <hamigaki/coroutine/shared_coroutine.hpp>
+
+struct game_character;
+struct game_system;
 
 class item_box_routine
 {
 public:
-    explicit item_box_routine(const character_ptr& item);
+    explicit item_box_routine(const game_character& item);
     bool operator()(game_system* game, game_character* c) const;
 
 private:

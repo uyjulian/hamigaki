@@ -268,34 +268,34 @@ void pop_up_item(game_system* game, game_character* c, game_character* target)
     c->on_hit_from_below.clear();
 
 
-    character_ptr item(new game_character);
+    game_character item;
 
     if (target->sprite_infos == &game->sprites["boy.txt"])
     {
         const sprite_info_set& infos = game->sprites["milk.txt"];
-        const sprite_info& info = infos.get_group(item->form)[0];
+        const sprite_info& info = infos.get_group(item.form)[0];
 
-        item->sprite_infos = &infos;
-        item->width = static_cast<float>(info.bounds.lx);
-        item->height = static_cast<float>(info.bounds.ly);
-        item->vx = 2.0f;
-        item->on_collide_block_side = &turn;
-        item->on_hit = &hop;
-        item->on_collide_player = &to_man;
+        item.sprite_infos = &infos;
+        item.width = static_cast<float>(info.bounds.lx);
+        item.height = static_cast<float>(info.bounds.ly);
+        item.vx = 2.0f;
+        item.on_collide_block_side = &turn;
+        item.on_hit = &hop;
+        item.on_collide_player = &to_man;
     }
     else
     {
         const sprite_info_set& infos = game->sprites["capsule.txt"];
-        const sprite_info& info = infos.get_group(item->form)[0];
+        const sprite_info& info = infos.get_group(item.form)[0];
 
-        item->sprite_infos = &infos;
-        item->width = static_cast<float>(info.bounds.lx);
-        item->height = static_cast<float>(info.bounds.ly);
-        item->on_collide_player = &to_fire_man;
+        item.sprite_infos = &infos;
+        item.width = static_cast<float>(info.bounds.lx);
+        item.height = static_cast<float>(info.bounds.ly);
+        item.on_collide_player = &to_fire_man;
     }
 
-    item->z = layer::enemy;
-    item->back = false;
+    item.z = layer::enemy;
+    item.back = false;
 
     c->move_routine = item_box_routine(item);
 }

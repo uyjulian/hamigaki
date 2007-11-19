@@ -9,7 +9,6 @@
 
 #include "pop_up_routine.hpp"
 #include "collision_utility.hpp"
-#include "velocity_routine.hpp"
 
 namespace
 {
@@ -34,8 +33,7 @@ public:
             c->y += vy_;
         }
 
-        c->move_routine = &velocity_routine;
-        return true;
+        return false;
     }
 
 private:
