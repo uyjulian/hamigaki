@@ -23,6 +23,7 @@
 #include "player_routine.hpp"
 #include "png_loader.hpp"
 #include "pop_up_routine.hpp"
+#include "side_scrolling_routine.hpp"
 #include "sprite.hpp"
 #include "texture_cache.hpp"
 #include "turn_routine.hpp"
@@ -49,6 +50,7 @@ namespace layer
     const float enemy   = 0.50f;
     const float player  = 0.25f;
     const float front   = 0.00f;
+    const float hidden  =-1.00f;
 
 } // namespace depth
 
@@ -355,7 +357,7 @@ public:
 #if defined(HAMIGAKI_DISPLAY_FPS)
         , last_fps_time_(0), fps_count_(0)
 #endif
-        , stage_file_("map.txt"), scroll_x_(0.0f)
+        , stage_file_("map.txt")
     {
         ::RECT cr;
         ::GetClientRect(handle_, &cr);
@@ -482,21 +484,21 @@ private:
     int fps_count_;
 #endif
     std::string stage_file_;
-    float scroll_x_;
     character_ptr player_;
+    character_ptr scroll_;
     int width_;
     int height_;
 
     character_iterator find_enemy(int x, int y)
     {
-        for (character_iterator i = system_.characters.begin();
-            i != system_.characters.end(); ++i)
+        character_list& ls = system_.characters;
+        for (character_iterator i = ls.begin(); i != ls.end(); ++i)
         {
             if (((*i)->origin.first == x) && ((*i)->origin.second == y))
                 return i;
         }
 
-        return system_.characters.end();
+        return ls.end();
     }
 
     void add_character(int x, int y, char type)
@@ -703,7 +705,7 @@ private:
 
     void erase_old_characters()
     {
-        float scroll_x1 = scroll_x_;
+        float scroll_x1 = scroll_->x;
         float scroll_x2 = scroll_x1 + width_;
 
         character_iterator next;
@@ -764,23 +766,25 @@ private:
         player_->width = static_cast<float>(info.bounds.lx);
         player_->height = static_cast<float>(info.bounds.ly);
 
-        float right_end = static_cast<float>(system_.map.width()*32);
-        scroll_x_ = player_->x - static_cast<float>(width_ / 2);
-        if (scroll_x_ < 0.0f)
-            scroll_x_ = 0.0f;
-        else if (scroll_x_ + static_cast<float>(width_) > right_end)
-            scroll_x_ = right_end - static_cast<float>(width_);
-
         system_.characters.clear();
         system_.characters.push_back(player_);
 
-        int min_x = static_cast<int>(scroll_x_) / 32 - 3;
-        int max_x = static_cast<int>(scroll_x_) / 32 + width_ / 32 + 3;
+        scroll_.reset(new game_character);
+        scroll_->move_routine = side_scrolling_routine(player_);
+        scroll_->z = layer::hidden;
+        system_.characters.push_back(scroll_);
+
+        scroll_->move_routine(&system_, scroll_.get());
+
+        int min_x = static_cast<int>(scroll_->x) / 32 - 3;
+        int max_x = static_cast<int>(scroll_->x) / 32 + width_ / 32 + 3;
         for (int y = 0; y < system_.map.height(); ++y)
         {
             for (int x = min_x; x < max_x; ++x)
                 add_character(x, y, system_.map(x, y));
         }
+
+        system_.characters.sort(character_ptr_z_greator());
 
         system_.sound.play_bgm("bgm.ogg");
     }
@@ -790,7 +794,12 @@ private:
         character_list& ls = system_.characters;
 
         if (system_.command.reset)
+        {
             reset_characters();
+            return;
+        }
+
+        int old_scroll_block = static_cast<int>(scroll_->x / 32.0f);
 
         std::for_each(
             boost::make_indirect_iterator(ls.begin()),
@@ -808,7 +817,10 @@ private:
             ls.splice(ls.end(), system_.new_characters);
 
         if ((player_->form == miss_form) && player_->effect.empty())
+        {
             reset_characters();
+            return;
+        }
         else if (player_->y < - player_->height - 32.0f)
         {
             if (player_->form != miss_form)
@@ -822,27 +834,28 @@ private:
             player_->move_routine.clear();
         }
 
-        float right_end = static_cast<float>(system_.map.width()*32);
-
-        int old_scroll_block = static_cast<int>(scroll_x_ / 32.0f);
-        scroll_x_ = player_->x - static_cast<float>(width_ / 2);
-        if (scroll_x_ < 0.0f)
-            scroll_x_ = 0.0f;
-        else if (scroll_x_ + static_cast<float>(width_) > right_end)
-            scroll_x_ = right_end - static_cast<float>(width_);
-
-        int scroll_block = static_cast<int>(scroll_x_ / 32.0f);
+        int scroll_block = static_cast<int>(scroll_->x / 32.0f);
         if (scroll_block > old_scroll_block)
         {
-            int x = scroll_block + width_/32 + 2;
-            for (int y = 0; y < system_.map.height(); ++y)
-                add_character(x, y, system_.map(x, y));
+            int min_x = old_scroll_block + width_/32 + 3;
+            int max_x = scroll_block + width_/32 + 2;
+
+            for (int x = min_x; x <= max_x; ++x)
+            {
+                for (int y = 0; y < system_.map.height(); ++y)
+                    add_character(x, y, system_.map(x, y));
+            }
         }
         else if (scroll_block < old_scroll_block)
         {
-            int x = scroll_block - 2;
-            for (int y = 0; y < system_.map.height(); ++y)
-                add_character(x, y, system_.map(x, y));
+            int max_x = old_scroll_block - 3;
+            int min_x = scroll_block - 2;
+
+            for (int x = max_x; x >= min_x; --x)
+            {
+                for (int y = 0; y < system_.map.height(); ++y)
+                    add_character(x, y, system_.map(x, y));
+            }
         }
 
         erase_old_characters();
@@ -850,6 +863,9 @@ private:
 
     void draw_character(const game_character& c)
     {
+        if (!c.sprite_infos)
+            return;
+
         const sprite_info_set& infos = *(c.sprite_infos);
 
         const std::vector<sprite_info>& group = infos.get_group(c.form);
@@ -859,7 +875,7 @@ private:
 
         const rect& tr = c.texture_rect();
 
-        float x = tr.x - scroll_x_;
+        float x = tr.x - scroll_->x;
         float y = height_ - tr.y - tr.ly;
 
         const std::string& texture = infos.texture();

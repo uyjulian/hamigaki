@@ -39,6 +39,7 @@ exe action_game
     player_routine.cpp
     png_loader.cpp
     pop_up_routine.cpp
+    side_scrolling_routine.cpp
     sound_engine.cpp
     sprite_info.cpp
     sprite_info_cache.cpp

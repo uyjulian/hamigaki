@@ -97,7 +97,7 @@ struct game_character
         , vx(0.0f), vy(0.0f)
         , slope(slope_type::none)
         , form(sprite_form::normal), back(false), removed(false), step(0)
-        , color(0xFFFFFFFFul), origin(-1,-1)
+        , color(0xFFFFFFFFul), sprite_infos(0), origin(-1,-1)
     {
     }
 
@@ -113,9 +113,13 @@ struct game_character
 
     rect texture_rect() const
     {
+        rect r;
+
+        if (!sprite_infos)
+            return r;
+
         const sprite_info& info = sprite_infos->get_group(form)[0];
 
-        rect r;
         r.x = x - sprite_infos->width() * 0.5f;
         r.y = y;
         r.lx = static_cast<float>(sprite_infos->width());
@@ -125,10 +129,14 @@ struct game_character
 
     rect attack_rect() const
     {
+        rect r;
+
+        if (!sprite_infos)
+            return r;
+
         const sprite_info& info = sprite_infos->get_group(form)[0];
         const rect& tr = texture_rect();
 
-        rect r;
         if (back)
         {
             r.x = tr.x + tr.lx;
@@ -160,10 +168,13 @@ struct game_character
 
     void change_form(boost::uint32_t f)
     {
-        const sprite_info& info = sprite_infos->get_group(f)[0];
+        if (sprite_infos)
+        {
+            const sprite_info& info = sprite_infos->get_group(f)[0];
 
-        width = static_cast<float>(info.bounds.lx);
-        height = static_cast<float>(info.bounds.ly);
+            width = static_cast<float>(info.bounds.lx);
+            height = static_cast<float>(info.bounds.ly);
+        }
 
         form = f;
         step = 0;
