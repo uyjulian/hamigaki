@@ -483,7 +483,7 @@ private:
 #endif
     std::string stage_file_;
     float scroll_x_;
-    character_iterator player_;
+    character_ptr player_;
     int width_;
     int height_;
 
@@ -507,7 +507,7 @@ private:
         if (find_enemy(x, y) != system_.characters.end())
             return;
 
-        bool back = (*player_)->x <= static_cast<float>(x*32);
+        bool back = player_->x <= static_cast<float>(x*32);
 
         if (type == 'o')
         {
@@ -745,34 +745,34 @@ private:
 
         load_map_from_text(stage_file_.c_str(), system_.map);
 
-        character_ptr player(new game_character);
-        player->move_routine = &player_routine;
-        player->speed_routine = user_control_routine();
-        player->on_collide_block_side = &stop;
-        player->sprite_infos = &system_.sprites["boy.txt"];
-        player->attrs.set(char_attr::player);
-        player->back = false;
+        player_.reset(new game_character);
+        player_->move_routine = &player_routine;
+        player_->speed_routine = user_control_routine();
+        player_->on_collide_block_side = &stop;
+        player_->sprite_infos = &system_.sprites["boy.txt"];
+        player_->attrs.set(char_attr::player);
+        player_->back = false;
 
         std::pair<int,int> pos = system_.map.player_position();
 
         sprite_info info =
-            player->sprite_infos->get_group(player->form)[0];
+            player_->sprite_infos->get_group(player_->form)[0];
 
-        player->x = static_cast<float>(pos.first * 32 + 16);
-        player->y = static_cast<float>(pos.second * 32);
-        player->z = layer::player;
-        player->width = static_cast<float>(info.bounds.lx);
-        player->height = static_cast<float>(info.bounds.ly);
+        player_->x = static_cast<float>(pos.first * 32 + 16);
+        player_->y = static_cast<float>(pos.second * 32);
+        player_->z = layer::player;
+        player_->width = static_cast<float>(info.bounds.lx);
+        player_->height = static_cast<float>(info.bounds.ly);
 
         float right_end = static_cast<float>(system_.map.width()*32);
-        scroll_x_ = player->x - static_cast<float>(width_ / 2);
+        scroll_x_ = player_->x - static_cast<float>(width_ / 2);
         if (scroll_x_ < 0.0f)
             scroll_x_ = 0.0f;
         else if (scroll_x_ + static_cast<float>(width_) > right_end)
             scroll_x_ = right_end - static_cast<float>(width_);
 
         system_.characters.clear();
-        player_ = system_.characters.insert(system_.characters.end(), player);
+        system_.characters.push_back(player_);
 
         int min_x = static_cast<int>(scroll_x_) / 32 - 3;
         int max_x = static_cast<int>(scroll_x_) / 32 + width_ / 32 + 3;
@@ -807,25 +807,25 @@ private:
         if (!system_.new_characters.empty())
             ls.splice(ls.end(), system_.new_characters);
 
-        if (((*player_)->form == miss_form) && (*player_)->effect.empty())
+        if ((player_->form == miss_form) && player_->effect.empty())
             reset_characters();
-        else if ((*player_)->y < - (*player_)->height - 32.0f)
+        else if (player_->y < - player_->height - 32.0f)
         {
-            if ((*player_)->form != miss_form)
+            if (player_->form != miss_form)
             {
                 system_.sound.stop_bgm();
-                (*player_)->change_sprite(system_.sprites["boy.txt"]);
-                (*player_)->change_form(miss_form);
-                (*player_)->effect = wait_se_routine("miss.ogg");
+                player_->change_sprite(system_.sprites["boy.txt"]);
+                player_->change_form(miss_form);
+                player_->effect = wait_se_routine("miss.ogg");
             }
-            (*player_)->y = -(*player_)->height - 32.0f;
-            (*player_)->move_routine.clear();
+            player_->y = -player_->height - 32.0f;
+            player_->move_routine.clear();
         }
 
         float right_end = static_cast<float>(system_.map.width()*32);
 
         int old_scroll_block = static_cast<int>(scroll_x_ / 32.0f);
-        scroll_x_ = (*player_)->x - static_cast<float>(width_ / 2);
+        scroll_x_ = player_->x - static_cast<float>(width_ / 2);
         if (scroll_x_ < 0.0f)
             scroll_x_ = 0.0f;
         else if (scroll_x_ + static_cast<float>(width_) > right_end)
