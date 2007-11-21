@@ -52,7 +52,7 @@ namespace layer
     const float front   = 0.00f;
     const float hidden  =-1.00f;
 
-} // namespace depth
+} // namespace layer
 
 const boost::uint32_t miss_form = static_four_char_code<'M','I','S','S'>::value;
 
