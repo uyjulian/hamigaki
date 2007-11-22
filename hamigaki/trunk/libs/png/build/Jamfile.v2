@@ -41,6 +41,12 @@ if $(png-source)
                     <source>pnggccrd.c
                     ;
             }
+            else
+            {
+                return
+                    <define>PNG_NO_MMX_CODE
+                    ;
+            }
         }
         else if <toolset>msvc in $(properties)
         {
@@ -48,6 +54,12 @@ if $(png-source)
                 <define>PNG_USE_PNGVCRD
                 <define>PNG_MMX_CODE_SUPPORTED
                 <source>pngvcrd.c
+                ;
+        }
+        else
+        {
+            return
+                <define>PNG_NO_MMX_CODE
                 ;
         }
     }
