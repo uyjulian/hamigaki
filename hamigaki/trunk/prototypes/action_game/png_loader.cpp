@@ -15,6 +15,10 @@
 #include <stdexcept>
 #include <png.h>
 
+#if !defined(NDEBUG)
+    #include <windows.h>
+#endif
+
 namespace
 {
 
@@ -28,9 +32,16 @@ void PNGAPI process_error(png_struct*, const char* msg)
     throw std::runtime_error(msg);
 }
 
+#if defined(NDEBUG)
 void PNGAPI process_warning(png_struct*, const char*)
 {
 }
+#else
+void PNGAPI process_warning(png_struct*, const char* msg)
+{
+    ::OutputDebugStringA(msg);
+}
+#endif
 
 void PNGAPI read_from_stream(png_struct* ctx, unsigned char* p, std::size_t n)
 {
@@ -79,10 +90,12 @@ public:
 
     void force_rgba()
     {
+        unsigned long w;
+        unsigned long h;
         int bits;
         int type;
 
-        ::png_get_IHDR(pimpl_, info_ptr_, 0, 0, &bits, &type, 0, 0, 0);
+        ::png_get_IHDR(pimpl_, info_ptr_, &w, &h, &bits, &type, 0, 0, 0);
 
         ::png_set_strip_16(pimpl_);
         ::png_set_packing(pimpl_);
@@ -95,8 +108,12 @@ public:
 
         if (png_get_valid(pimpl_, info_ptr_, PNG_INFO_tRNS))
             ::png_set_tRNS_to_alpha(pimpl_);
+        else if ((type & PNG_COLOR_MASK_ALPHA) == 0)
+            ::png_set_add_alpha(pimpl_, 0xFF, PNG_FILLER_AFTER);
 
         ::png_set_bgr(pimpl_);
+
+        ::png_read_update_info(pimpl_, info_ptr_);
     }
 
     unsigned long width() const
@@ -114,11 +131,6 @@ public:
         return ::png_get_rowbytes(pimpl_, info_ptr_);
     }
 
-    unsigned long type() const
-    {
-        return ::png_get_color_type(pimpl_, info_ptr_);
-    }
-
     void read_next_row(unsigned char* buf)
     {
         ::png_read_row(pimpl_, buf, 0);
@@ -126,7 +138,7 @@ public:
 
     void read_end()
     {
-        ::png_read_end(pimpl_, info_ptr_);
+        ::png_read_end(pimpl_, 0);
     }
 
 private:
@@ -156,11 +168,6 @@ public:
     unsigned long pitch() const
     {
         return base_.pitch();
-    }
-
-    unsigned long type() const
-    {
-        return base_.type();
     }
 
     void read_next_row(unsigned char* buf)
@@ -194,7 +201,6 @@ create_png_texture(direct3d_device9& device, const std::string& filename)
 
     png_reader png(is);
 
-    unsigned long type = png.type();
     std::size_t width = png.width();
     std::size_t height = png.height();
     std::size_t pitch = png.pitch();
@@ -203,6 +209,7 @@ create_png_texture(direct3d_device9& device, const std::string& filename)
     unsigned char* p = buffer.get();
     for (std::size_t i = 0; i < height; ++i, p += pitch)
         png.read_next_row(p);
+    png.read_end();
 
     direct3d_texture9 texture =
         device.create_texture(
@@ -213,44 +220,13 @@ create_png_texture(direct3d_device9& device, const std::string& filename)
 
     unsigned char* src = buffer.get();
     unsigned char* dst = static_cast<unsigned char*>(locking.address());
-    if (type == PNG_COLOR_TYPE_RGBA)
+    for (std::size_t i = 0; i < height; ++i)
     {
-        for (std::size_t i = 0; i < height; ++i)
-        {
-            std::memcpy(dst, src, pitch);
+        std::memcpy(dst, src, pitch);
 
-            src += pitch;
-            dst += locking.pitch();
-        }
+        src += pitch;
+        dst += locking.pitch();
     }
-    else if (type == PNG_COLOR_TYPE_RGB)
-    {
-        for (std::size_t i = 0; i < height; ++i)
-        {
-            std::size_t dst_off = 0;
-            std::size_t src_off = 0;
-
-            for (std::size_t j = 0; j < width; ++j)
-            {
-                dst[dst_off++] = src[src_off++];
-                dst[dst_off++] = src[src_off++];
-                dst[dst_off++] = src[src_off++];
-                dst[dst_off++] = 0xFF;
-            }
-
-            src += pitch;
-            dst += locking.pitch();
-        }
-    }
-    else
-    {
-        std::string msg;
-        msg = "unsupported PNG format '";
-        msg += filename;
-        msg += "'";
-        throw std::runtime_error(msg);
-    }
-    png.read_end();
 
     return texture;
 }
