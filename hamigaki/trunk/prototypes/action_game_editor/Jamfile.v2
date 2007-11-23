@@ -1,0 +1,51 @@
+# Jamfile for action_game_editor
+
+# Copyright Takeshi Mouri 2007.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/ for library home page.
+
+import exec ;
+
+rule user-interface-gui ( properties * )
+{
+    if <toolset>gcc in $(properties)
+    {
+        return <linkflags>-mwindows ;
+    }
+    else
+    {
+        return <user-interface>gui ;
+    }
+}
+
+exe action_game_editor
+    :
+    action_game_editor.cpp
+    action_game_editor.rc
+    char_select_window.cpp
+    main_window.cpp
+    main_window_impl.cpp
+    map_edit_window.cpp
+    /boost/thread//boost_thread
+    /hamigaki/png//hamigaki_png
+    :
+    <find-static-library>comctl32
+    <find-static-library>user32
+    <conditional>@user-interface-gui
+    <threading>multi
+    ;
+
+exec.register-exec-all ;
+
+install dist-bin
+    :
+    action_game_editor
+    :
+    <install-type>EXE
+    <location>../../dist/bin
+    ;
+
+explicit dist-bin ;
