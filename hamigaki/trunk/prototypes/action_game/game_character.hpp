@@ -16,6 +16,7 @@
 #include "sprite_info.hpp"
 #include <boost/function.hpp>
 #include <bitset>
+#include <cmath>
 #include <utility>
 
 namespace char_attr
@@ -117,8 +118,6 @@ struct game_character
 
         if (!sprite_infos)
             return r;
-
-        const sprite_info& info = sprite_infos->get_group(form)[0];
 
         r.x = x - sprite_infos->width() * 0.5f;
         r.y = y;
