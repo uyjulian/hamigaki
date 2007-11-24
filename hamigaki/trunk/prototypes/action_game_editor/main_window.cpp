@@ -17,6 +17,33 @@ using hamigaki::system::windows_error;
 namespace
 {
 
+bool get_open_file_name(::HWND hwnd, std::string& filename)
+{
+    char buf[MAX_PATH];
+    buf[0] = '\0';
+
+    ::OPENFILENAMEA ofn;
+    std::memset(&ofn, 0, sizeof(ofn));
+#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0500)
+    ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400A;
+#else
+    ofn.lStructSize = sizeof(ofn);
+#endif
+    ofn.hwndOwner = hwnd;
+    ofn.lpstrFilter =
+        "Text Files (*.txt)\0*.txt\0"
+        ;
+    ofn.Flags = OFN_FILEMUSTEXIST;
+    ofn.lpstrFile = buf;
+    ofn.nMaxFile = sizeof(buf);
+
+    if (::GetOpenFileNameA(&ofn) == FALSE)
+        return false;
+
+    filename = buf;
+    return true;
+}
+
 ::LRESULT CALLBACK window_proc(
     ::HWND hwnd, ::UINT uMsg, ::WPARAM wParam, ::LPARAM lParam)
 {
@@ -53,6 +80,18 @@ namespace
                 if (pimpl)
                     pimpl->update_size();
             }
+        }
+        else if (uMsg == WM_COMMAND)
+        {
+            ::WORD code = LOWORD(wParam);
+            if (code == HAMIGAKI_ID_FILE_OPEN)
+            {
+                std::string filename;
+                if (get_open_file_name(hwnd, filename))
+                    pimpl->load_stage(filename);
+            }
+            else if (code == HAMIGAKI_ID_FILE_EXIT)
+                ::DestroyWindow(hwnd);
         }
     }
     catch (const std::exception& e)

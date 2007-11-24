@@ -11,6 +11,7 @@
 #define MAIN_WINDOW_IMPL_HPP
 
 #include <boost/shared_ptr.hpp>
+#include <string>
 #include <windows.h>
 
 class main_window
@@ -19,6 +20,7 @@ public:
     explicit main_window(::HWND handle);
     ~main_window();
     void update_size();
+    void load_stage(const std::string& filename);
 
 private:
     class impl;

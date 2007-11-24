@@ -37,6 +37,13 @@ public:
     {
     }
 
+    void reset(::D3DPRESENT_PARAMETERS& params)
+    {
+        ::HRESULT res = pimpl_->Reset(&params);
+        if (FAILED(res))
+            throw directx9_error(res, "IDirect3DDevice9::Reset()");
+    }
+
     operator safe_bool() const
     {
         if (pimpl_.get() != 0)

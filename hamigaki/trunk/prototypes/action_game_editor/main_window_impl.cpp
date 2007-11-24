@@ -131,6 +131,11 @@ public:
             cr.right - cr.left -left, cr.bottom - cr.top, TRUE);
     }
 
+    void load_stage(const std::string& filename)
+    {
+        map_edit_window_load(map_window_, filename);
+    }
+
 private:
     ::HWND handle_;
     ::HINSTANCE hInstance_;
@@ -151,4 +156,9 @@ main_window::~main_window()
 void main_window::update_size()
 {
     pimpl_->update_size();
+}
+
+void main_window::load_stage(const std::string& filename)
+{
+    pimpl_->load_stage(filename);
 }

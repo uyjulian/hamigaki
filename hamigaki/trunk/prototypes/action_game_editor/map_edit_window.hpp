@@ -18,4 +18,6 @@
 ::HWND create_map_edit_window(
     ::HWND parent, int left, ::HINSTANCE hInstance, ::ATOM cls);
 
+void map_edit_window_load(::HWND hwnd, const std::string& filename);
+
 #endif // MAP_WINDOW_HPP

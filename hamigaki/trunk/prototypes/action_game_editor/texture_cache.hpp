@@ -1,4 +1,4 @@
-// map_edit_window_impl.hpp: the window implementation for stage map
+// texture_cache.hpp: the cache for textures
 
 // Copyright Takeshi Mouri 2007.
 // Distributed under the Boost Software License, Version 1.0.
@@ -7,25 +7,26 @@
 
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
-#ifndef MAP_EDIT_WINDOW_IMPL_HPP
-#define MAP_EDIT_WINDOW_IMPL_HPP
+#ifndef TEXTURE_CACHE_HPP
+#define TEXTURE_CACHE_HPP
 
 #include <boost/shared_ptr.hpp>
 #include <string>
-#include <windows.h>
 
-class map_edit_window
+class direct3d_device9;
+class direct3d_texture9;
+
+class texture_cache
 {
 public:
-    explicit map_edit_window(::HWND handle);
-    ~map_edit_window();
-    void load_stage(const std::string& filename);
-    void render();
-    void reset_d3d();
+    explicit texture_cache(direct3d_device9& device);
+    ~texture_cache();
+    direct3d_texture9& operator[](const std::string& filename);
+    void clear();
 
 private:
     class impl;
     boost::shared_ptr<impl> pimpl_;
 };
 
-#endif // MAP_EDIT_WINDOW_IMPL_HPP
+#endif // TEXTURE_CACHE_HPP

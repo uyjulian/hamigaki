@@ -30,12 +30,18 @@ exe action_game_editor
     main_window_impl.cpp
     map_edit_window.cpp
     map_edit_window_impl.cpp
+    png_loader.cpp
+    sprite_info.cpp
+    sprite_info_cache.cpp
+    stage_map.cpp
+    texture_cache.cpp
     /directx//d3d9
     /directx//dxerr9
     /boost/thread//boost_thread
     /hamigaki/png//hamigaki_png
     :
     <find-static-library>comctl32
+    <find-static-library>comdlg32
     <find-static-library>user32
     <conditional>@user-interface-gui
     <threading>multi

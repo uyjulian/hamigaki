@@ -1,4 +1,4 @@
-// map_edit_window_impl.hpp: the window implementation for stage map
+// sprite_info_cache.hpp: the cache for sprite_info_set
 
 // Copyright Takeshi Mouri 2007.
 // Distributed under the Boost Software License, Version 1.0.
@@ -7,25 +7,24 @@
 
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
-#ifndef MAP_EDIT_WINDOW_IMPL_HPP
-#define MAP_EDIT_WINDOW_IMPL_HPP
+#ifndef SPRITE_INFO_CACHE_HPP
+#define SPRITE_INFO_CACHE_HPP
 
+#include "sprite_info.hpp"
 #include <boost/shared_ptr.hpp>
 #include <string>
-#include <windows.h>
 
-class map_edit_window
+class sprite_info_cache
 {
 public:
-    explicit map_edit_window(::HWND handle);
-    ~map_edit_window();
-    void load_stage(const std::string& filename);
-    void render();
-    void reset_d3d();
+    sprite_info_cache();
+    ~sprite_info_cache();
+    sprite_info_set& operator[](const std::string& filename);
+    void clear();
 
 private:
     class impl;
     boost::shared_ptr<impl> pimpl_;
 };
 
-#endif // MAP_EDIT_WINDOW_IMPL_HPP
+#endif // TEXTURE_CACHE_HPP

@@ -42,6 +42,14 @@ namespace
             if (pimpl)
                 pimpl->render();
         }
+        else if (uMsg == WM_SIZE)
+        {
+            if ((wParam == SIZE_MAXIMIZED) || (wParam == SIZE_RESTORED))
+            {
+                if (pimpl)
+                    pimpl->reset_d3d();
+            }
+        }
     }
     catch (const std::exception& e)
     {
@@ -94,4 +102,15 @@ namespace
         throw windows_error(::GetLastError(), "CreateWindowExA()");
 
     return hwnd;
+}
+
+void map_edit_window_load(::HWND hwnd, const std::string& filename)
+{
+    map_edit_window* pimpl =
+        reinterpret_cast<map_edit_window*>(
+            GetWindowLongPtr(hwnd, GWLP_USERDATA)
+        );
+
+    if (pimpl != 0)
+        pimpl->load_stage(filename);
 }
