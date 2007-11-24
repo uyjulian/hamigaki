@@ -29,6 +29,9 @@ exe action_game_editor
     main_window.cpp
     main_window_impl.cpp
     map_edit_window.cpp
+    map_edit_window_impl.cpp
+    /directx//d3d9
+    /directx//dxerr9
     /boost/thread//boost_thread
     /hamigaki/png//hamigaki_png
     :
@@ -36,6 +39,7 @@ exe action_game_editor
     <find-static-library>user32
     <conditional>@user-interface-gui
     <threading>multi
+    <define>NOMINMAX=1
     ;
 
 exec.register-exec-all ;

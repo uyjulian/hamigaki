@@ -9,6 +9,7 @@
 
 #include <hamigaki/system/windows_error.hpp>
 #include "map_edit_window.hpp"
+#include "map_edit_window_impl.hpp"
 
 using hamigaki::system::windows_error;
 
@@ -20,6 +21,27 @@ namespace
 {
     try
     {
+        map_edit_window* pimpl =
+            reinterpret_cast<map_edit_window*>(
+                GetWindowLongPtr(hwnd, GWLP_USERDATA)
+            );
+
+        if (uMsg == WM_CREATE)
+        {
+            pimpl = new map_edit_window(hwnd);
+            SetWindowLongPtr(
+                hwnd, GWLP_USERDATA, reinterpret_cast< ::LONG_PTR>(pimpl));
+        }
+        else if (uMsg == WM_DESTROY)
+        {
+            SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
+            delete pimpl;
+        }
+        else if (uMsg == WM_PAINT)
+        {
+            if (pimpl)
+                pimpl->render();
+        }
     }
     catch (const std::exception& e)
     {
@@ -42,10 +64,7 @@ namespace
     wc.hInstance = hInstance;
     wc.hIcon = 0;
     wc.hCursor = ::LoadCursor(0, IDC_ARROW);
-    wc.hbrBackground =
-        reinterpret_cast< ::HBRUSH>(
-            static_cast< ::INT_PTR>(COLOR_APPWORKSPACE+1)
-        );
+    wc.hbrBackground = 0;
     wc.lpszMenuName = 0;
     wc.lpszClassName = "MapWindow";
     wc.hIconSm = 0;
@@ -75,4 +94,15 @@ namespace
         throw windows_error(::GetLastError(), "CreateWindowExA()");
 
     return hwnd;
+}
+
+void connect_d3d_device_map_edit_window(::HWND hwnd)
+{
+    map_edit_window* pimpl =
+        reinterpret_cast<map_edit_window*>(
+            GetWindowLongPtr(hwnd, GWLP_USERDATA)
+        );
+
+    if (pimpl)
+        pimpl->connect_d3d_device();
 }

@@ -1,4 +1,4 @@
-// main_window.hpp: main window implementation for action_game_editor
+// map_edit_window_impl.hpp: the window implementation for stage map
 
 // Copyright Takeshi Mouri 2007.
 // Distributed under the Boost Software License, Version 1.0.
@@ -7,23 +7,23 @@
 
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
-#ifndef MAIN_WINDOW_IMPL_HPP
-#define MAIN_WINDOW_IMPL_HPP
+#ifndef MAP_EDIT_WINDOW_IMPL_HPP
+#define MAP_EDIT_WINDOW_IMPL_HPP
 
 #include <boost/shared_ptr.hpp>
 #include <windows.h>
 
-class main_window
+class map_edit_window
 {
 public:
-    explicit main_window(::HWND handle);
-    ~main_window();
-    void update_size();
+    explicit map_edit_window(::HWND handle);
+    ~map_edit_window();
     void connect_d3d_device();
+    void render();
 
 private:
     class impl;
     boost::shared_ptr<impl> pimpl_;
 };
 
-#endif // MAIN_WINDOW_IMPL_HPP
+#endif // MAP_EDIT_WINDOW_IMPL_HPP

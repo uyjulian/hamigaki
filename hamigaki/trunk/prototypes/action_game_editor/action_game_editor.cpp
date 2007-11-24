@@ -37,6 +37,7 @@ int WINAPI WinMain(
 
         ::ATOM cls = register_main_window_class(hInstance);
         ::HWND hwnd = create_main_window(hInstance, cls);
+        connect_d3d_device(hwnd);
 
         ::ShowWindow(hwnd, nCmdShow);
         ::UpdateWindow(hwnd);
