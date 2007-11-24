@@ -59,6 +59,7 @@ exe action_game
     <find-static-library>user32
     <conditional>@user-interface-gui
     <threading>multi
+    <define>NOMINMAX=1
     ;
 
 exec.register-exec-all ;

@@ -7,6 +7,7 @@
 
 // See http://hamigaki.sourceforge.jp/libs/input for library home page.
 
+#include <objbase.h>
 #include <dinput.h>
 
 #ifndef DIDFT_OPTIONAL
