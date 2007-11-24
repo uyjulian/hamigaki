@@ -45,9 +45,11 @@ void PNGAPI process_warning(png_struct*, const char* msg)
 
 void PNGAPI read_from_stream(png_struct* ctx, unsigned char* p, std::size_t n)
 {
+    std::streamsize size = static_cast<std::streamsize>(n);
+
     std::istream& is = *static_cast<std::istream*>(png_get_io_ptr(ctx));
-    is.read(reinterpret_cast<char*>(p), n);
-    if (is.gcount() != n)
+    is.read(reinterpret_cast<char*>(p), size);
+    if (is.gcount() != size)
         throw std::runtime_error("failed read_from_stream()");
 }
 
@@ -213,7 +215,7 @@ create_png_texture(direct3d_device9& device, const std::string& filename)
 
     direct3d_texture9 texture =
         device.create_texture(
-            png.width(), png.height(), 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED
+            width, height, 1, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED
         );
 
     direct3d_texture9::scoped_lock locking(texture, 0);
