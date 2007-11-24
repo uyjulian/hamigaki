@@ -14,6 +14,8 @@
 #include "sprite_info_cache.hpp"
 #include "stage_map.hpp"
 #include "texture_cache.hpp"
+#include <algorithm>
+#include <utility>
 
 class map_edit_window::impl
 {
@@ -31,6 +33,12 @@ public:
     {
         load_map_from_text(filename.c_str(), map_);
         stage_file_ = filename;
+
+        int vert_max = update_scroll_box().second;
+
+        ::SetScrollPos(handle_, SB_HORZ, 0, TRUE);
+        ::SetScrollPos(handle_, SB_VERT, vert_max, TRUE);
+
         ::InvalidateRect(handle_, 0, FALSE);
     }
 
@@ -42,8 +50,16 @@ public:
         ::RECT cr;
         ::GetClientRect(handle_, &cr);
 
-        int max_x = (cr.right - cr.left + 31) / 32;
-        int max_y = (cr.bottom - cr.top + 31) / 32;
+        int min_x = ::GetScrollPos(handle_, SB_HORZ);
+
+        ::SCROLLINFO info = {};
+        info.cbSize = sizeof(info);
+        info.fMask = SIF_POS | SIF_RANGE;
+        ::GetScrollInfo(handle_, SB_VERT, &info);
+        int min_y = info.nMax - info.nPos;
+
+        int max_x = min_x + (cr.right - cr.left + 31) / 32;
+        int max_y = min_y + (cr.bottom - cr.top + 31) / 32;
 
         device_.clear_target(D3DCOLOR_XRGB(0x77,0x66,0xDD));
         {
@@ -57,13 +73,13 @@ public:
             device_.set_texture_stage_state(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
             device_.set_texture_stage_state(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
 
-            for (int y = 0; y < max_y; ++y)
+            for (int y = min_y; y < max_y; ++y)
             {
-                for (int x = 0; x < max_x; ++x)
+                for (int x = min_x; x < max_x; ++x)
                 {
                     char type = map_(x, y);
                     if (const sprite_info_set* p = get_sprite_info(type))
-                        draw_character(x, y, *p, is_enemy(type));
+                        draw_character(x-min_x, y-min_y, *p, is_enemy(type));
                 }
             }
 
@@ -84,6 +100,42 @@ public:
         params.BackBufferFormat = D3DFMT_UNKNOWN;
 
         device_.reset(params);
+    }
+
+    std::pair<int,int> update_scroll_box()
+    {
+        ::RECT cr;
+        ::GetClientRect(handle_, &cr);
+
+        ::SCROLLINFO old = {};
+        old.cbSize = sizeof(old);
+        old.fMask = SIF_POS | SIF_RANGE;
+        ::GetScrollInfo(handle_, SB_VERT, &old);
+
+        int width = cr.right - cr.left;
+        int horz_max = (std::max)(map_.width() - width/32, 0);
+        ::SetScrollRange(handle_, SB_HORZ, 0, horz_max, TRUE);
+
+        int height = cr.bottom - cr.top;
+        int vert_max = (std::max)(map_.height() - height/32, 0);
+        ::SetScrollRange(handle_, SB_VERT, 0, vert_max, TRUE);
+
+        int vert = (std::max)(vert_max-(old.nMax-old.nPos), 0);
+        ::SetScrollPos(handle_, SB_VERT, vert, TRUE);
+
+        return std::make_pair(horz_max, vert_max);
+    }
+
+    void horz_scroll_pos(int pos)
+    {
+        ::SetScrollPos(handle_, SB_HORZ, pos, TRUE);
+        ::InvalidateRect(handle_, 0, FALSE);
+    }
+
+    void vert_scroll_pos(int pos)
+    {
+        ::SetScrollPos(handle_, SB_VERT, pos, TRUE);
+        ::InvalidateRect(handle_, 0, FALSE);
     }
 
 private:
@@ -204,4 +256,19 @@ void map_edit_window::render()
 void map_edit_window::reset_d3d()
 {
     pimpl_->reset_d3d();
+}
+
+void map_edit_window::update_scroll_box()
+{
+    pimpl_->update_scroll_box();
+}
+
+void map_edit_window::horz_scroll_pos(int pos)
+{
+    pimpl_->horz_scroll_pos(pos);
+}
+
+void map_edit_window::vert_scroll_pos(int pos)
+{
+    pimpl_->vert_scroll_pos(pos);
 }

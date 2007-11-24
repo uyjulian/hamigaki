@@ -10,11 +10,44 @@
 #include <hamigaki/system/windows_error.hpp>
 #include "map_edit_window.hpp"
 #include "map_edit_window_impl.hpp"
+#include <boost/optional.hpp>
+#include <algorithm>
 
 using hamigaki::system::windows_error;
 
 namespace
 {
+
+boost::optional<int> next_scroll_pos(::HWND hwnd, int bar, ::WORD cmd)
+{
+    if (cmd == SB_THUMBTRACK)
+    {
+        ::SCROLLINFO info = {};
+        info.cbSize = sizeof(info);
+        info.fMask = SIF_TRACKPOS;
+        ::GetScrollInfo(hwnd, bar, &info);
+        return info.nTrackPos;
+    }
+
+    ::SCROLLINFO info = {};
+    info.cbSize = sizeof(info);
+    info.fMask = SIF_POS|SIF_RANGE;
+    ::GetScrollInfo(hwnd, bar, &info);
+
+    switch (cmd)
+    {
+        case SB_LINELEFT:
+            return (std::max)(info.nPos - 1, 0);
+        case SB_LINERIGHT:
+            return (std::min)(info.nPos + 1, info.nMax);
+        case SB_PAGELEFT:
+            return (std::max)(info.nPos - 10, 0);
+        case SB_PAGERIGHT:
+            return (std::min)(info.nPos + 10, info.nMax);
+    }
+
+    return boost::optional<int>();
+}
 
 ::LRESULT CALLBACK window_proc(
     ::HWND hwnd, ::UINT uMsg, ::WPARAM wParam, ::LPARAM lParam)
@@ -37,17 +70,31 @@ namespace
             SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
             delete pimpl;
         }
-        else if (uMsg == WM_PAINT)
+        else if (pimpl)
         {
-            if (pimpl)
+            if (uMsg == WM_PAINT)
                 pimpl->render();
-        }
-        else if (uMsg == WM_SIZE)
-        {
-            if ((wParam == SIZE_MAXIMIZED) || (wParam == SIZE_RESTORED))
+            else if (uMsg == WM_SIZE)
             {
-                if (pimpl)
+                if ((wParam == SIZE_MAXIMIZED) || (wParam == SIZE_RESTORED))
+                {
                     pimpl->reset_d3d();
+                    pimpl->update_scroll_box();
+                }
+            }
+            else if (uMsg == WM_HSCROLL)
+            {
+                ::WORD cmd = LOWORD(wParam);
+                boost::optional<int> pos = next_scroll_pos(hwnd, SB_HORZ, cmd);
+                if (pos)
+                    pimpl->horz_scroll_pos(*pos);
+            }
+            else if (uMsg == WM_VSCROLL)
+            {
+                ::WORD cmd = LOWORD(wParam);
+                boost::optional<int> pos = next_scroll_pos(hwnd, SB_VERT, cmd);
+                if (pos)
+                    pimpl->vert_scroll_pos(*pos);
             }
         }
     }

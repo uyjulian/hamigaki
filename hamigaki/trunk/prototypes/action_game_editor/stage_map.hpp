@@ -42,7 +42,10 @@ public:
 
     int width() const
     {
-        return static_cast<int>(data_[0].size());
+        if (data_.empty())
+            return 0;
+        else
+            return static_cast<int>(data_[0].size());
     }
 
     int height() const

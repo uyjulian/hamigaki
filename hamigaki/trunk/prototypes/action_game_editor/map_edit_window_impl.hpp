@@ -22,6 +22,9 @@ public:
     void load_stage(const std::string& filename);
     void render();
     void reset_d3d();
+    void update_scroll_box();
+    void horz_scroll_pos(int pos);
+    void vert_scroll_pos(int pos);
 
 private:
     class impl;
