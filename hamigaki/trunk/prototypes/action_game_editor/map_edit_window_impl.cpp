@@ -23,21 +23,11 @@ public:
     {
     }
 
-    void connect_d3d_device()
-    {
-        ::D3DPRESENT_PARAMETERS params; 
-        std::memset(&params, 0, sizeof(params));
-        params.Windowed = TRUE;
-        params.SwapEffect = D3DSWAPEFFECT_DISCARD;
-        params.BackBufferFormat = D3DFMT_UNKNOWN;
-
-        device_ = d3d_.create_device(
-            D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, handle_,
-            D3DCREATE_HARDWARE_VERTEXPROCESSING, params);
-    }
-
     void render()
     {
+        if (!device_)
+            connect_d3d_device();
+
         device_.clear_target(D3DCOLOR_XRGB(0x77,0x66,0xDD));
         {
             scoped_scene scene(device_);
@@ -59,6 +49,19 @@ private:
     ::HWND handle_;
     direct3d9 d3d_;
     direct3d_device9 device_;
+
+    void connect_d3d_device()
+    {
+        ::D3DPRESENT_PARAMETERS params; 
+        std::memset(&params, 0, sizeof(params));
+        params.Windowed = TRUE;
+        params.SwapEffect = D3DSWAPEFFECT_DISCARD;
+        params.BackBufferFormat = D3DFMT_UNKNOWN;
+
+        device_ = d3d_.create_device(
+            D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, handle_,
+            D3DCREATE_HARDWARE_VERTEXPROCESSING, params);
+    }
 };
 
 map_edit_window::map_edit_window(::HWND handle) : pimpl_(new impl(handle))
@@ -67,11 +70,6 @@ map_edit_window::map_edit_window(::HWND handle) : pimpl_(new impl(handle))
 
 map_edit_window::~map_edit_window()
 {
-}
-
-void map_edit_window::connect_d3d_device()
-{
-    pimpl_->connect_d3d_device();
 }
 
 void map_edit_window::render()

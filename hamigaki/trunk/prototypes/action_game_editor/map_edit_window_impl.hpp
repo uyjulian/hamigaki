@@ -18,7 +18,6 @@ class map_edit_window
 public:
     explicit map_edit_window(::HWND handle);
     ~map_edit_window();
-    void connect_d3d_device();
     void render();
 
 private:

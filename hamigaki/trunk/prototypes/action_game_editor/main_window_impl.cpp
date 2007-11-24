@@ -131,11 +131,6 @@ public:
             cr.right - cr.left -left, cr.bottom - cr.top, TRUE);
     }
 
-    void connect_d3d_device()
-    {
-        connect_d3d_device_map_edit_window(map_window_);
-    }
-
 private:
     ::HWND handle_;
     ::HINSTANCE hInstance_;
@@ -156,9 +151,4 @@ main_window::~main_window()
 void main_window::update_size()
 {
     pimpl_->update_size();
-}
-
-void main_window::connect_d3d_device()
-{
-    pimpl_->connect_d3d_device();
 }

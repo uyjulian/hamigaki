@@ -95,14 +95,3 @@ namespace
 
     return hwnd;
 }
-
-void connect_d3d_device_map_edit_window(::HWND hwnd)
-{
-    map_edit_window* pimpl =
-        reinterpret_cast<map_edit_window*>(
-            GetWindowLongPtr(hwnd, GWLP_USERDATA)
-        );
-
-    if (pimpl)
-        pimpl->connect_d3d_device();
-}

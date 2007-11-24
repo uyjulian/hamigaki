@@ -19,7 +19,6 @@ public:
     explicit main_window(::HWND handle);
     ~main_window();
     void update_size();
-    void connect_d3d_device();
 
 private:
     class impl;

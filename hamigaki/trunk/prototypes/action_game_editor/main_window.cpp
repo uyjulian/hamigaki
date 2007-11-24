@@ -106,14 +106,3 @@ namespace
 
     return hwnd;
 }
-
-void connect_d3d_device(::HWND hwnd)
-{
-    main_window* pimpl =
-        reinterpret_cast<main_window*>(
-            GetWindowLongPtr(hwnd, GWLP_USERDATA)
-        );
-
-    if (pimpl)
-        pimpl->connect_d3d_device();
-}

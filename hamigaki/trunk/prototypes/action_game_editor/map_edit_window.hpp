@@ -18,6 +18,4 @@
 ::HWND create_map_edit_window(
     ::HWND parent, int left, ::HINSTANCE hInstance, ::ATOM cls);
 
-void connect_d3d_device_map_edit_window(::HWND hwnd);
-
 #endif // MAP_WINDOW_HPP

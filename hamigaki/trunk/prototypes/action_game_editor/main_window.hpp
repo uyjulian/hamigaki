@@ -15,6 +15,5 @@
 
 ::ATOM register_main_window_class(::HINSTANCE hInstance);
 ::HWND create_main_window(::HINSTANCE hInstance, ::ATOM cls);
-void connect_d3d_device(::HWND hwnd);
 
 #endif // MAIN_WINDOW_HPP
