@@ -51,7 +51,7 @@ bool get_open_file_name(::HWND hwnd, std::string& filename)
         "Sound Files\0*.wav;*.ogg;*.aiff;*.aif\0"
         "WAVE Files (*.wav)\0*.wav\0"
         "Ogg Files (*.ogg)\0*.ogg\0"
-        "AIFF Files (*.aiff;*.aif)\0*.ogg\0"
+        "AIFF Files (*.aiff;*.aif)\0*.aiff;*.aif\0"
         ;
     ofn.Flags = OFN_FILEMUSTEXIST;
     ofn.lpstrFile = buf;
