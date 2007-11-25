@@ -9,6 +9,7 @@
 
 #include <hamigaki/system/windows_error.hpp>
 #include "char_select_window.hpp"
+#include "char_select_window_impl.hpp"
 
 using hamigaki::system::windows_error;
 
@@ -20,6 +21,27 @@ namespace
 {
     try
     {
+        char_select_window* pimpl =
+            reinterpret_cast<char_select_window*>(
+                GetWindowLongPtr(hwnd, GWLP_USERDATA)
+            );
+
+        if (uMsg == WM_CREATE)
+        {
+            pimpl = new char_select_window(hwnd);
+            SetWindowLongPtr(
+                hwnd, GWLP_USERDATA, reinterpret_cast< ::LONG_PTR>(pimpl));
+        }
+        else if (uMsg == WM_DESTROY)
+        {
+            SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
+            delete pimpl;
+        }
+        else if (pimpl)
+        {
+            if (uMsg == WM_PAINT)
+                pimpl->render();
+        }
     }
     catch (const std::exception& e)
     {
@@ -42,10 +64,7 @@ namespace
     wc.hInstance = hInstance;
     wc.hIcon = 0;
     wc.hCursor = ::LoadCursor(0, IDC_ARROW);
-    wc.hbrBackground =
-        reinterpret_cast< ::HBRUSH>(
-            static_cast< ::INT_PTR>(COLOR_APPWORKSPACE+1)
-        );
+    wc.hbrBackground = 0;
     wc.lpszMenuName = 0;
     wc.lpszClassName = "CharSelectWindow";
     wc.hIconSm = 0;
@@ -65,6 +84,8 @@ create_char_select_window(::HWND parent, ::HINSTANCE hInstance, ::ATOM cls)
 
     ::RECT r = { 0, 0, 128, 256 };
     ::AdjustWindowRectEx(&r, style, FALSE, ex_style);
+
+    r.right += ::GetSystemMetrics(SM_CXVSCROLL);
 
     ::HWND hwnd = ::CreateWindowExA(
         ex_style, MAKEINTATOM(cls), "", style,

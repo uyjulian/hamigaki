@@ -26,6 +26,7 @@ exe action_game_editor
     action_game_editor.cpp
     action_game_editor.rc
     char_select_window.cpp
+    char_select_window_impl.cpp
     main_window.cpp
     main_window_impl.cpp
     map_edit_window.cpp
