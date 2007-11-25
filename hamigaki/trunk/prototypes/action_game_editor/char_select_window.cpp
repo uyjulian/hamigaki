@@ -41,6 +41,12 @@ namespace
         {
             if (uMsg == WM_PAINT)
                 pimpl->render();
+            else if (uMsg == WM_LBUTTONUP)
+            {
+                int x = LOWORD(lParam) / 32;
+                int y = HIWORD(lParam) / 32;
+                pimpl->cursor_pos(x, y);
+            }
         }
     }
     catch (const std::exception& e)

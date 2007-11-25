@@ -44,23 +44,24 @@ public:
 
             draw_sprite(device_, 0.0f, 0.0f, 0.0f, chips_texture_);
 
+            draw_sprite(
+                device_,
+                static_cast<float>(cursor_pos_.first*32),
+                static_cast<float>(cursor_pos_.second*32),
+                0.0f, cursor_texture_
+            );
+
             device_.set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
         }
         device_.present();
     }
 
-    void reset_d3d()
+    void cursor_pos(int x, int y)
     {
-        if (!device_)
-            return;
+        cursor_pos_.first = x;
+        cursor_pos_.second = y;
 
-        ::D3DPRESENT_PARAMETERS params; 
-        std::memset(&params, 0, sizeof(params));
-        params.Windowed = TRUE;
-        params.SwapEffect = D3DSWAPEFFECT_DISCARD;
-        params.BackBufferFormat = D3DFMT_UNKNOWN;
-
-        device_.reset(params);
+        ::InvalidateRect(handle_, 0, FALSE);
     }
 
 private:
@@ -68,6 +69,8 @@ private:
     direct3d9 d3d_;
     direct3d_device9 device_;
     direct3d_texture9 chips_texture_;
+    direct3d_texture9 cursor_texture_;
+    std::pair<int,int> cursor_pos_;
 
     void connect_d3d_device()
     {
@@ -82,6 +85,7 @@ private:
             D3DCREATE_HARDWARE_VERTEXPROCESSING, params);
 
         chips_texture_ = create_png_texture(device_, "char_chips.png");
+        cursor_texture_ = create_png_texture(device_, "box_cursor.png");
     }
 };
 
@@ -96,4 +100,9 @@ char_select_window::~char_select_window()
 void char_select_window::render()
 {
     pimpl_->render();
+}
+
+void char_select_window::cursor_pos(int x, int y)
+{
+    pimpl_->cursor_pos(x, y);
 }

@@ -20,6 +20,7 @@ public:
     explicit char_select_window(::HWND handle);
     ~char_select_window();
     void render();
+    void cursor_pos(int x, int y);
 
 private:
     class impl;
