@@ -17,6 +17,30 @@
 #include <algorithm>
 #include <utility>
 
+namespace
+{
+
+inline bool is_enemy(char type)
+{
+    switch (type)
+    {
+        case 'o': case 'a': case 'p': case 'w':
+            return true;
+        default:
+            return false;
+    }
+}
+
+unsigned long sprite_color(char type)
+{
+    if (type == 'S')
+        return 0x80FFFFFFul;
+    else
+        return 0xFFFFFFFFul;
+}
+
+} // namespace
+
 class map_edit_window::impl
 {
 public:
@@ -79,7 +103,11 @@ public:
                 {
                     char type = map_(x, y);
                     if (const sprite_info_set* p = get_sprite_info(type))
-                        draw_character(x-min_x, y-min_y, *p, is_enemy(type));
+                    {
+                        bool back = is_enemy(type);
+                        unsigned long color = sprite_color(type);
+                        draw_character(x-min_x, y-min_y, *p, back, color);
+                    }
                 }
             }
 
@@ -189,7 +217,7 @@ private:
         else if (type == '?')
             return &sprites_["item_box.txt"];
         else if (type == 'S')
-            return &sprites_["secret_block.txt"];
+            return &sprites_["used_block.txt"];
         else if (type == '/')
             return &sprites_["left_down.txt"];
         else if (type == '\\')
@@ -198,18 +226,9 @@ private:
             return 0;
     }
 
-    bool is_enemy(char type)
-    {
-        switch (type)
-        {
-            case 'o': case 'a': case 'p': case 'w':
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    void draw_character(int x, int y, const sprite_info_set& infos, bool back)
+    void draw_character(
+        int x, int y, const sprite_info_set& infos,
+        bool back, unsigned long color)
     {
         const std::vector<sprite_info>& group =
             infos.get_group(sprite_form::normal);
@@ -229,7 +248,7 @@ private:
         {
             ::draw_sprite(
                 device_, left, top, 0.0f, textures_[texture],
-                info.x, info.y, infos.width(), infos.height(), back
+                info.x, info.y, infos.width(), infos.height(), back, color
             );
         }
     }
