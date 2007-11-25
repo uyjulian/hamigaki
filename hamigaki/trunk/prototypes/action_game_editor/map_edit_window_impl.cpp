@@ -10,42 +10,21 @@
 #include "map_edit_window_impl.hpp"
 #include "direct3d9.hpp"
 #include "direct3d_device9.hpp"
+#include "png_loader.hpp"
 #include "sprite.hpp"
-#include "sprite_info_cache.hpp"
 #include "stage_map.hpp"
-#include "texture_cache.hpp"
+#include <boost/optional.hpp>
 #include <algorithm>
 #include <utility>
 
-namespace
-{
-
-inline bool is_enemy(char type)
-{
-    switch (type)
-    {
-        case 'o': case 'a': case 'p': case 'w':
-            return true;
-        default:
-            return false;
-    }
-}
-
-unsigned long sprite_color(char type)
-{
-    if (type == 'S')
-        return 0x80FFFFFFul;
-    else
-        return 0xFFFFFFFFul;
-}
-
-} // namespace
-
 class map_edit_window::impl
 {
+private:
+    typedef std::pair<int,int> texture_pos;
+
 public:
     explicit impl(::HWND handle)
-        : handle_(handle), textures_(device_)
+        : handle_(handle)
     {
     }
 
@@ -62,6 +41,8 @@ public:
 
         ::SetScrollPos(handle_, SB_HORZ, 0, TRUE);
         ::SetScrollPos(handle_, SB_VERT, vert_max, TRUE);
+
+        chips_texture_ = create_png_texture(device_, "char_chips.png");
 
         ::InvalidateRect(handle_, 0, FALSE);
     }
@@ -102,12 +83,9 @@ public:
                 for (int x = min_x; x < max_x; ++x)
                 {
                     char type = map_(x, y);
-                    if (const sprite_info_set* p = get_sprite_info(type))
-                    {
-                        bool back = is_enemy(type);
-                        unsigned long color = sprite_color(type);
-                        draw_character(x-min_x, y-min_y, *p, back, color);
-                    }
+                    boost::optional<texture_pos> pos = get_texture_pos(type);
+                    if (pos)
+                        draw_character(x-min_x, y-min_y, *pos);
                 }
             }
 
@@ -172,8 +150,7 @@ private:
     direct3d_device9 device_;
     std::string stage_file_;
     stage_map map_;
-    sprite_info_cache sprites_;
-    texture_cache textures_;
+    direct3d_texture9 chips_texture_;
 
     void connect_d3d_device()
     {
@@ -188,69 +165,57 @@ private:
             D3DCREATE_HARDWARE_VERTEXPROCESSING, params);
     }
 
-    const sprite_info_set* get_sprite_info(char type)
+    boost::optional<texture_pos> get_texture_pos(char type)
     {
         if (type == '@')
-            return &sprites_["boy.txt"];
-        else if (type == 'o')
-            return &sprites_["ball.txt"];
-        else if (type == 'a')
-            return &sprites_["ball.txt"];
-        else if (type == 'p')
-            return &sprites_["ball.txt"];
-        else if (type == 'w')
-            return &sprites_["ball.txt"];
+            return texture_pos(32*1, 32*0);
         else if (type == 'U')
-            return &sprites_["lift.txt"];
+            return texture_pos(32*2, 32*0);
         else if (type == 'D')
-            return &sprites_["lift.txt"];
+            return texture_pos(32*3, 32*0);
+        else if (type == 'o')
+            return texture_pos(32*0, 32*1);
+        else if (type == 'a')
+            return texture_pos(32*1, 32*1);
+        else if (type == 'p')
+            return texture_pos(32*2, 32*1);
+        else if (type == 'w')
+            return texture_pos(32*3, 32*1);
         else if (type == '=')
-            return &sprites_["brick_block.txt"];
+            return texture_pos(32*0, 32*2);
         else if (type == 'G')
-            return &sprites_["brick_block.txt"];
+            return texture_pos(32*1, 32*2);
         else if (type == 'I')
-            return &sprites_["brick_block.txt"];
+            return texture_pos(32*2, 32*2);
         else if (type == 'm')
-            return &sprites_["used_block.txt"];
+            return texture_pos(32*3, 32*2);
         else if (type == '$')
-            return &sprites_["item_box.txt"];
+            return texture_pos(32*0, 32*3);
         else if (type == '?')
-            return &sprites_["item_box.txt"];
+            return texture_pos(32*1, 32*3);
         else if (type == 'S')
-            return &sprites_["used_block.txt"];
+            return texture_pos(32*2, 32*3);
         else if (type == '/')
-            return &sprites_["left_down.txt"];
+            return texture_pos(32*0, 32*4);
         else if (type == '\\')
-            return &sprites_["right_down.txt"];
+            return texture_pos(32*1, 32*4);
         else
-            return 0;
+            return boost::optional<texture_pos>();
     }
 
-    void draw_character(
-        int x, int y, const sprite_info_set& infos,
-        bool back, unsigned long color)
+    void draw_character(int x, int y, const texture_pos& pos)
     {
-        const std::vector<sprite_info>& group =
-            infos.get_group(sprite_form::normal);
-
-        const sprite_info& info = group[0];
-
         ::RECT cr;
         ::GetClientRect(handle_, &cr);
 
-        float half_width = static_cast<float>(infos.width()) * 0.5f;
-        float left = static_cast<float>(x * 32 + 16) - half_width;
+        float left = static_cast<float>(x * 32);
         float bottom = static_cast<float>((cr.bottom - cr.top) - y * 32);
-        float top = bottom - static_cast<float>(infos.height());
+        float top = bottom - 32.0f;
 
-        const std::string& texture = infos.texture();
-        if (!texture.empty())
-        {
-            ::draw_sprite(
-                device_, left, top, 0.0f, textures_[texture],
-                info.x, info.y, infos.width(), infos.height(), back, color
-            );
-        }
+        ::draw_sprite(
+            device_, left, top, 0.0f, chips_texture_,
+            pos.first, pos.second, 32, 32, false
+        );
     }
 };
 
