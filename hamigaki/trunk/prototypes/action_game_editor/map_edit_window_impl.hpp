@@ -20,6 +20,7 @@ public:
     explicit map_edit_window(::HWND handle);
     ~map_edit_window();
     void load_stage(const std::string& filename);
+    void save_stage(const std::string& filename);
     void render();
     void reset_d3d();
     void update_scroll_box();

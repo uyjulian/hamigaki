@@ -17,15 +17,17 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "&Open...",            HAMIGAKI_ID_FILE_OPEN
+        MENUITEM "&Save",               HAMIGAKI_ID_FILE_SAVE
+        MENUITEM "Save &As...",         HAMIGAKI_ID_FILE_SAVE_AS
         MENUITEM SEPARATOR
         MENUITEM "E&xit",               HAMIGAKI_ID_FILE_EXIT
     END
     POPUP "&Edit"
     BEGIN
-        MENUITEM "&Undo",               HAMIGAKI_ID_EDIT_UNDO
+        MENUITEM "&Undo",               HAMIGAKI_ID_EDIT_UNDO,  GRAYED
         MENUITEM SEPARATOR
-        MENUITEM "Cu&t",                HAMIGAKI_ID_EDIT_CUT
-        MENUITEM "&Copy",               HAMIGAKI_ID_EDIT_COPY
-        MENUITEM "&Delete",             HAMIGAKI_ID_EDIT_DEL
+        MENUITEM "Cu&t",                HAMIGAKI_ID_EDIT_CUT,   GRAYED
+        MENUITEM "&Copy",               HAMIGAKI_ID_EDIT_COPY,  GRAYED
+        MENUITEM "&Delete",             HAMIGAKI_ID_EDIT_DEL,   GRAYED
     END
 END

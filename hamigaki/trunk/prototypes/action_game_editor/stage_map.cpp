@@ -10,6 +10,7 @@
 
 #include "stage_map.hpp"
 #include <fstream>
+#include <stdexcept>
 
 bool is_block(char c)
 {
@@ -111,4 +112,30 @@ void load_map_from_text(const char* filename, stage_map& m)
     }
 
     m.swap(tmp);
+}
+
+void save_map_to_text(const char* filename, const stage_map& m)
+{
+    std::ofstream os(filename);
+    if (!os)
+    {
+        std::string msg;
+        msg = "cannot open file '";
+        msg += filename;
+        msg += "'";
+        throw std::runtime_error(msg);
+    }
+
+    int height = m.height();
+    for (int i = 0; i < height; ++i)
+        os << m.line(i) << '\n';
+
+    if (!os)
+    {
+        std::string msg;
+        msg = "failed to write for '";
+        msg += filename;
+        msg += "'";
+        throw std::runtime_error(msg);
+    }
 }

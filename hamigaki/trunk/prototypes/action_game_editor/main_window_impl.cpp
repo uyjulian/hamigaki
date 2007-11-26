@@ -142,6 +142,22 @@ public:
     void load_stage(const std::string& filename)
     {
         map_edit_window_load(map_window_, filename);
+        stage_file_ = filename;
+    }
+
+    void save_stage(const std::string& filename)
+    {
+        map_edit_window_save(map_window_, filename);
+        stage_file_ = filename;
+    }
+
+    bool save_stage()
+    {
+        if (stage_file_.empty())
+            return false;
+
+        map_edit_window_save(map_window_, stage_file_);
+        return true;
     }
 
 private:
@@ -151,6 +167,7 @@ private:
     scoped_window_class map_class_;
     ::HWND select_window_;
     ::HWND map_window_;
+    std::string stage_file_;
 };
 
 main_window::main_window(::HWND handle) : pimpl_(new impl(handle))
@@ -174,4 +191,14 @@ void main_window::update_selected_char()
 void main_window::load_stage(const std::string& filename)
 {
     pimpl_->load_stage(filename);
+}
+
+void main_window::save_stage(const std::string& filename)
+{
+    pimpl_->save_stage(filename);
+}
+
+bool main_window::save_stage()
+{
+    return pimpl_->save_stage();
 }

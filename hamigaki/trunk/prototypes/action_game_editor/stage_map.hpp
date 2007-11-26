@@ -25,6 +25,11 @@ class stage_map
 public:
     char operator()(int x, int y) const;
 
+    const std::string& line(int index) const
+    {
+        return data_[index];
+    }
+
     void push_back(const std::string& line)
     {
         data_.push_back(line);
@@ -66,5 +71,6 @@ private:
 };
 
 void load_map_from_text(const char* filename, stage_map& m);
+void save_map_to_text(const char* filename, const stage_map& m);
 
 #endif // STAGE_MAP_HPP

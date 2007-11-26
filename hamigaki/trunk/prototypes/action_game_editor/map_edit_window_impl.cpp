@@ -35,7 +35,6 @@ public:
     void load_stage(const std::string& filename)
     {
         load_map_from_text(filename.c_str(), map_);
-        stage_file_ = filename;
 
         int vert_max = update_scroll_box().second;
 
@@ -43,6 +42,11 @@ public:
         ::SetScrollPos(handle_, SB_VERT, vert_max, TRUE);
 
         ::InvalidateRect(handle_, 0, FALSE);
+    }
+
+    void save_stage(const std::string& filename)
+    {
+        save_map_to_text(filename.c_str(), map_);
     }
 
     void render()
@@ -170,7 +174,6 @@ private:
     ::HWND handle_;
     direct3d9 d3d_;
     direct3d_device9 device_;
-    std::string stage_file_;
     stage_map map_;
     direct3d_texture9 chips_texture_;
     direct3d_texture9 cursor_texture_;
@@ -272,6 +275,11 @@ map_edit_window::~map_edit_window()
 void map_edit_window::load_stage(const std::string& filename)
 {
     pimpl_->load_stage(filename);
+}
+
+void map_edit_window::save_stage(const std::string& filename)
+{
+    pimpl_->save_stage(filename);
 }
 
 void map_edit_window::render()

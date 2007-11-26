@@ -175,6 +175,17 @@ void map_edit_window_load(::HWND hwnd, const std::string& filename)
         pimpl->load_stage(filename);
 }
 
+void map_edit_window_save(::HWND hwnd, const std::string& filename)
+{
+    map_edit_window* pimpl =
+        reinterpret_cast<map_edit_window*>(
+            GetWindowLongPtr(hwnd, GWLP_USERDATA)
+        );
+
+    if (pimpl != 0)
+        pimpl->save_stage(filename);
+}
+
 void map_edit_window_select_char(::HWND hwnd, char c)
 {
     map_edit_window* pimpl =

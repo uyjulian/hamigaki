@@ -46,6 +46,34 @@ bool get_open_file_name(::HWND hwnd, std::string& filename)
     return true;
 }
 
+bool get_save_file_name(::HWND hwnd, std::string& filename)
+{
+    char buf[MAX_PATH];
+    buf[0] = '\0';
+
+    ::OPENFILENAMEA ofn;
+    std::memset(&ofn, 0, sizeof(ofn));
+#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0500)
+    ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400A;
+#else
+    ofn.lStructSize = sizeof(ofn);
+#endif
+    ofn.hwndOwner = hwnd;
+    ofn.lpstrFilter =
+        "Text Files (*.txt)\0*.txt\0"
+        ;
+    ofn.Flags = OFN_OVERWRITEPROMPT;
+    ofn.lpstrFile = buf;
+    ofn.nMaxFile = sizeof(buf);
+    ofn.lpstrDefExt = "txt";
+
+    if (::GetSaveFileName(&ofn) == FALSE)
+        return false;
+
+    filename = buf;
+    return true;
+}
+
 ::LRESULT CALLBACK window_proc(
     ::HWND hwnd, ::UINT uMsg, ::WPARAM wParam, ::LPARAM lParam)
 {
@@ -94,6 +122,21 @@ bool get_open_file_name(::HWND hwnd, std::string& filename)
                     std::string filename;
                     if (get_open_file_name(hwnd, filename))
                         pimpl->load_stage(filename);
+                }
+                else if (id == HAMIGAKI_ID_FILE_SAVE)
+                {
+                    if (!pimpl->save_stage())
+                    {
+                        std::string filename;
+                        if (get_save_file_name(hwnd, filename))
+                            pimpl->save_stage(filename);
+                    }
+                }
+                else if (id == HAMIGAKI_ID_FILE_SAVE_AS)
+                {
+                    std::string filename;
+                    if (get_save_file_name(hwnd, filename))
+                        pimpl->save_stage(filename);
                 }
                 else if (id == HAMIGAKI_ID_FILE_EXIT)
                     ::DestroyWindow(hwnd);

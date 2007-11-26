@@ -25,6 +25,8 @@ public:
     void update_size();
     void update_selected_char();
     void load_stage(const std::string& filename);
+    void save_stage(const std::string& filename);
+    bool save_stage();
 
 private:
     class impl;
