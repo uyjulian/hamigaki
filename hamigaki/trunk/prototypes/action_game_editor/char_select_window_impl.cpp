@@ -8,6 +8,7 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "char_select_window_impl.hpp"
+#include "char_select_window_msgs.hpp"
 #include "direct3d9.hpp"
 #include "direct3d_device9.hpp"
 #include "png_loader.hpp"
@@ -62,6 +63,31 @@ public:
         cursor_pos_.second = y;
 
         ::InvalidateRect(handle_, 0, FALSE);
+
+        int code = char_select_window_msgs::notify_sel_changed;
+        int id = ::GetDlgCtrlID(handle_);
+
+        ::SendMessage(
+            ::GetParent(handle_), WM_COMMAND,
+            MAKEWPARAM(id, code), reinterpret_cast< ::LPARAM>(handle_)
+        );
+    }
+
+    char selected_char() const
+    {
+        const char table[][4] =
+        {
+            { ' ', '@', 'U', 'D' },
+            { 'o', 'a', 'p', 'w' },
+            { '=', 'G', 'I', 'm' },
+            { '$', '?', 'S', ' ' },
+            { '/', '\\',' ', ' ' }
+        };
+
+        if (cursor_pos_.second < sizeof(table)/sizeof(table[0]))
+            return table[cursor_pos_.second][cursor_pos_.first];
+        else
+            return ' ';
     }
 
 private:
@@ -105,4 +131,9 @@ void char_select_window::render()
 void char_select_window::cursor_pos(int x, int y)
 {
     pimpl_->cursor_pos(x, y);
+}
+
+char char_select_window::selected_char() const
+{
+    return pimpl_->selected_char();
 }

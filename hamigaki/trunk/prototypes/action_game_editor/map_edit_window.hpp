@@ -16,8 +16,9 @@
 ::ATOM register_map_edit_window_class(::HINSTANCE hInstance);
 
 ::HWND create_map_edit_window(
-    ::HWND parent, int left, ::HINSTANCE hInstance, ::ATOM cls);
+    ::HWND parent, int id, int left, ::HINSTANCE hInstance, ::ATOM cls);
 
 void map_edit_window_load(::HWND hwnd, const std::string& filename);
+void map_edit_window_select_char(::HWND hwnd, char c);
 
 #endif // MAP_WINDOW_HPP

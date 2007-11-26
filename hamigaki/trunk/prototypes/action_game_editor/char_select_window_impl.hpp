@@ -21,6 +21,7 @@ public:
     ~char_select_window();
     void render();
     void cursor_pos(int x, int y);
+    char selected_char() const;
 
 private:
     class impl;

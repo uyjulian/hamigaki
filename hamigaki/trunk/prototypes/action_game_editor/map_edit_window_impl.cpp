@@ -24,7 +24,7 @@ private:
 
 public:
     explicit impl(::HWND handle)
-        : handle_(handle)
+        : handle_(handle), selected_char_(' ')
     {
     }
 
@@ -42,8 +42,6 @@ public:
         ::SetScrollPos(handle_, SB_HORZ, 0, TRUE);
         ::SetScrollPos(handle_, SB_VERT, vert_max, TRUE);
 
-        chips_texture_ = create_png_texture(device_, "char_chips.png");
-
         ::InvalidateRect(handle_, 0, FALSE);
     }
 
@@ -55,13 +53,8 @@ public:
         ::RECT cr;
         ::GetClientRect(handle_, &cr);
 
-        int min_x = ::GetScrollPos(handle_, SB_HORZ);
-
-        ::SCROLLINFO info = {};
-        info.cbSize = sizeof(info);
-        info.fMask = SIF_POS | SIF_RANGE;
-        ::GetScrollInfo(handle_, SB_VERT, &info);
-        int min_y = info.nMax - info.nPos;
+        int min_x = horz_scroll_pos();
+        int min_y = vert_scroll_pos();
 
         int max_x = min_x + (cr.right - cr.left + 31) / 32;
         int max_y = min_y + (cr.bottom - cr.top + 31) / 32;
@@ -88,6 +81,13 @@ public:
                         draw_character(x-min_x, y-min_y, *pos);
                 }
             }
+
+            draw_sprite(
+                device_,
+                static_cast<float>(cursor_pos_.first*32),
+                cr.bottom - static_cast<float>((cursor_pos_.second+1)*32),
+                0.0f, cursor_texture_
+            );
 
             device_.set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
         }
@@ -144,6 +144,28 @@ public:
         ::InvalidateRect(handle_, 0, FALSE);
     }
 
+    void cursor_pos(int x, int y)
+    {
+        cursor_pos_.first = x;
+        cursor_pos_.second = y;
+
+        ::InvalidateRect(handle_, 0, FALSE);
+    }
+
+    void select_char(char c)
+    {
+        selected_char_ = c;
+    }
+
+    void put_char()
+    {
+        int x = horz_scroll_pos() + cursor_pos_.first;
+        int y = vert_scroll_pos() + cursor_pos_.second;
+        map_.replace(x, y, selected_char_);
+
+        ::InvalidateRect(handle_, 0, FALSE);
+    }
+
 private:
     ::HWND handle_;
     direct3d9 d3d_;
@@ -151,6 +173,9 @@ private:
     std::string stage_file_;
     stage_map map_;
     direct3d_texture9 chips_texture_;
+    direct3d_texture9 cursor_texture_;
+    std::pair<int,int> cursor_pos_;
+    char selected_char_;
 
     void connect_d3d_device()
     {
@@ -163,6 +188,9 @@ private:
         device_ = d3d_.create_device(
             D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, handle_,
             D3DCREATE_HARDWARE_VERTEXPROCESSING, params);
+
+        chips_texture_ = create_png_texture(device_, "char_chips.png");
+        cursor_texture_ = create_png_texture(device_, "box_cursor.png");
     }
 
     boost::optional<texture_pos> get_texture_pos(char type)
@@ -217,6 +245,20 @@ private:
             pos.first, pos.second, 32, 32, false
         );
     }
+
+    int horz_scroll_pos() const
+    {
+        return ::GetScrollPos(handle_, SB_HORZ);
+    }
+
+    int vert_scroll_pos() const
+    {
+        ::SCROLLINFO info = {};
+        info.cbSize = sizeof(info);
+        info.fMask = SIF_POS | SIF_RANGE;
+        ::GetScrollInfo(handle_, SB_VERT, &info);
+        return info.nMax - info.nPos;
+    }
 };
 
 map_edit_window::map_edit_window(::HWND handle) : pimpl_(new impl(handle))
@@ -255,4 +297,19 @@ void map_edit_window::horz_scroll_pos(int pos)
 void map_edit_window::vert_scroll_pos(int pos)
 {
     pimpl_->vert_scroll_pos(pos);
+}
+
+void map_edit_window::cursor_pos(int x, int y)
+{
+    pimpl_->cursor_pos(x, y);
+}
+
+void map_edit_window::select_char(char c)
+{
+    pimpl_->select_char(c);
+}
+
+void map_edit_window::put_char()
+{
+    pimpl_->put_char();
 }

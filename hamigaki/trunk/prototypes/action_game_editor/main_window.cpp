@@ -7,9 +7,11 @@
 
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
-#include <hamigaki/system/windows_error.hpp>
-#include "main_window_impl.hpp"
 #include "main_window.hpp"
+#include "char_select_window_msgs.hpp"
+#include "main_window_impl.hpp"
+
+#include <hamigaki/system/windows_error.hpp>
 #include "menus.h"
 
 using hamigaki::system::windows_error;
@@ -83,15 +85,24 @@ bool get_open_file_name(::HWND hwnd, std::string& filename)
         }
         else if (uMsg == WM_COMMAND)
         {
-            ::WORD code = LOWORD(wParam);
-            if (code == HAMIGAKI_ID_FILE_OPEN)
+            ::WORD code = HIWORD(wParam);
+            ::WORD id = LOWORD(wParam);
+            if ((code == 0) || (code == 1))
             {
-                std::string filename;
-                if (get_open_file_name(hwnd, filename))
-                    pimpl->load_stage(filename);
+                if (id == HAMIGAKI_ID_FILE_OPEN)
+                {
+                    std::string filename;
+                    if (get_open_file_name(hwnd, filename))
+                        pimpl->load_stage(filename);
+                }
+                else if (id == HAMIGAKI_ID_FILE_EXIT)
+                    ::DestroyWindow(hwnd);
             }
-            else if (code == HAMIGAKI_ID_FILE_EXIT)
-                ::DestroyWindow(hwnd);
+            else if (id == main_window::char_select_id)
+            {
+                if (code == char_select_window_msgs::notify_sel_changed)
+                    pimpl->update_selected_char();
+            }
         }
     }
     catch (const std::exception& e)

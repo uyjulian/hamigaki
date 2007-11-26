@@ -25,6 +25,9 @@ public:
     void update_scroll_box();
     void horz_scroll_pos(int pos);
     void vert_scroll_pos(int pos);
+    void cursor_pos(int x, int y);
+    void select_char(char c);
+    void put_char();
 
 private:
     class impl;

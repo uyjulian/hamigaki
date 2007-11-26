@@ -17,9 +17,13 @@
 class main_window
 {
 public:
+    static const int char_select_id = 1;
+    static const int map_edit_id = 2;
+
     explicit main_window(::HWND handle);
     ~main_window();
     void update_size();
+    void update_selected_char();
     void load_stage(const std::string& filename);
 
 private:

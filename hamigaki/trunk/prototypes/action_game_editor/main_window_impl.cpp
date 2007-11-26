@@ -99,15 +99,17 @@ public:
         )
     {
         scoped_window select_window(
-            create_char_select_window(handle_, hInstance_, select_class_.get())
+            create_char_select_window(
+                handle_, char_select_id,
+                hInstance_, select_class_.get()
+            )
         );
 
         scoped_window map_window(
             create_map_edit_window(
-                handle_,
+                handle_, map_edit_id,
                 get_window_width(select_window.get()) + 2,
-                hInstance_,
-                map_class_.get()
+                hInstance_, map_class_.get()
             )
         );
 
@@ -129,6 +131,12 @@ public:
         ::MoveWindow(
             map_window_, left, 0,
             cr.right - cr.left -left, cr.bottom - cr.top, TRUE);
+    }
+
+    void update_selected_char()
+    {
+        char c = get_selected_char(select_window_);
+        map_edit_window_select_char(map_window_, c);
     }
 
     void load_stage(const std::string& filename)
@@ -156,6 +164,11 @@ main_window::~main_window()
 void main_window::update_size()
 {
     pimpl_->update_size();
+}
+
+void main_window::update_selected_char()
+{
+    pimpl_->update_selected_char();
 }
 
 void main_window::load_stage(const std::string& filename)

@@ -96,6 +96,17 @@ boost::optional<int> next_scroll_pos(::HWND hwnd, int bar, ::WORD cmd)
                 if (pos)
                     pimpl->vert_scroll_pos(*pos);
             }
+            else if (uMsg == WM_MOUSEMOVE)
+            {
+                ::RECT cr;
+                ::GetClientRect(hwnd, &cr);
+
+                int x = LOWORD(lParam) / 32;
+                int y = (cr.bottom - HIWORD(lParam)) / 32;
+                pimpl->cursor_pos(x, y);
+            }
+            else if (uMsg == WM_LBUTTONDOWN)
+                pimpl->put_char();
         }
     }
     catch (const std::exception& e)
@@ -132,7 +143,7 @@ boost::optional<int> next_scroll_pos(::HWND hwnd, int bar, ::WORD cmd)
 }
 
 ::HWND create_map_edit_window(
-    ::HWND parent, int left, ::HINSTANCE hInstance, ::ATOM cls)
+    ::HWND parent, int id, int left, ::HINSTANCE hInstance, ::ATOM cls)
 {
     ::RECT cr;
     ::GetClientRect(parent, &cr);
@@ -143,7 +154,9 @@ boost::optional<int> next_scroll_pos(::HWND hwnd, int bar, ::WORD cmd)
     ::HWND hwnd = ::CreateWindowExA(
         ex_style, MAKEINTATOM(cls), "", style,
         left, 0, cr.right - cr.left - left, cr.bottom - cr.top,
-        parent, 0, hInstance, 0
+        parent,
+        reinterpret_cast< ::HMENU>(static_cast< ::LONG_PTR>(id)),
+        hInstance, 0
     );
     if (hwnd == 0)
         throw windows_error(::GetLastError(), "CreateWindowExA()");
@@ -160,4 +173,15 @@ void map_edit_window_load(::HWND hwnd, const std::string& filename)
 
     if (pimpl != 0)
         pimpl->load_stage(filename);
+}
+
+void map_edit_window_select_char(::HWND hwnd, char c)
+{
+    map_edit_window* pimpl =
+        reinterpret_cast<map_edit_window*>(
+            GetWindowLongPtr(hwnd, GWLP_USERDATA)
+        );
+
+    if (pimpl != 0)
+        pimpl->select_char(c);
 }

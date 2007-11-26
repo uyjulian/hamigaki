@@ -41,7 +41,7 @@ namespace
         {
             if (uMsg == WM_PAINT)
                 pimpl->render();
-            else if (uMsg == WM_LBUTTONUP)
+            else if (uMsg == WM_LBUTTONDOWN)
             {
                 int x = LOWORD(lParam) / 32;
                 int y = HIWORD(lParam) / 32;
@@ -82,8 +82,8 @@ namespace
     return cls;
 }
 
-::HWND
-create_char_select_window(::HWND parent, ::HINSTANCE hInstance, ::ATOM cls)
+::HWND create_char_select_window(
+    ::HWND parent, int id, ::HINSTANCE hInstance, ::ATOM cls)
 {
     ::DWORD style = WS_CHILD | WS_VISIBLE | WS_VSCROLL;
     ::DWORD ex_style = WS_EX_CLIENTEDGE;
@@ -96,10 +96,25 @@ create_char_select_window(::HWND parent, ::HINSTANCE hInstance, ::ATOM cls)
     ::HWND hwnd = ::CreateWindowExA(
         ex_style, MAKEINTATOM(cls), "", style,
         0, 0, r.right - r.left, r.bottom - r.top,
-        parent, 0, hInstance, 0
+        parent,
+        reinterpret_cast< ::HMENU>(static_cast< ::LONG_PTR>(id)),
+        hInstance, 0
     );
     if (hwnd == 0)
         throw windows_error(::GetLastError(), "CreateWindowExA()");
 
     return hwnd;
+}
+
+char get_selected_char(::HWND hwnd)
+{
+    char_select_window* pimpl =
+        reinterpret_cast<char_select_window*>(
+            GetWindowLongPtr(hwnd, GWLP_USERDATA)
+        );
+
+    if (pimpl != 0)
+        return pimpl->selected_char();
+    else
+        return ' ';
 }

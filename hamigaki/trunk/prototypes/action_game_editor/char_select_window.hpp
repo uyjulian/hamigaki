@@ -15,7 +15,9 @@
 
 ::ATOM register_char_select_window_class(::HINSTANCE hInstance);
 
-::HWND
-create_char_select_window(::HWND parent, ::HINSTANCE hInstance, ::ATOM cls);
+::HWND create_char_select_window(
+    ::HWND parent, int id, ::HINSTANCE hInstance, ::ATOM cls);
+
+char get_selected_char(::HWND hwnd);
 
 #endif // CHAR_SELECT_WINDOW_HPP
