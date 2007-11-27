@@ -104,6 +104,9 @@ boost::optional<int> next_scroll_pos(::HWND hwnd, int bar, ::WORD cmd)
                 int x = LOWORD(lParam) / 32;
                 int y = (cr.bottom - HIWORD(lParam)) / 32;
                 pimpl->cursor_pos(x, y);
+
+                if ((wParam & MK_LBUTTON) != 0)
+                    pimpl->put_char();
             }
             else if (uMsg == WM_LBUTTONDOWN)
                 pimpl->put_char();

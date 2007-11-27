@@ -150,10 +150,13 @@ public:
 
     void cursor_pos(int x, int y)
     {
-        cursor_pos_.first = x;
-        cursor_pos_.second = y;
+        std::pair<int,int> pos(x, y);
 
-        ::InvalidateRect(handle_, 0, FALSE);
+        if (pos != cursor_pos_)
+        {
+            cursor_pos_ = pos;
+            ::InvalidateRect(handle_, 0, FALSE);
+        }
     }
 
     void select_char(char c)
@@ -165,9 +168,12 @@ public:
     {
         int x = horz_scroll_pos() + cursor_pos_.first;
         int y = vert_scroll_pos() + cursor_pos_.second;
-        map_.replace(x, y, selected_char_);
 
-        ::InvalidateRect(handle_, 0, FALSE);
+        if (map_(x, y) != selected_char_)
+        {
+            map_.replace(x, y, selected_char_);
+            ::InvalidateRect(handle_, 0, FALSE);
+        }
     }
 
 private:
