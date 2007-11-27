@@ -10,6 +10,7 @@
 #include "map_edit_window_impl.hpp"
 #include "direct3d9.hpp"
 #include "direct3d_device9.hpp"
+#include "draw.hpp"
 #include "png_loader.hpp"
 #include "sprite.hpp"
 #include "stage_map.hpp"
@@ -63,6 +64,9 @@ public:
         int max_x = min_x + (cr.right - cr.left + 31) / 32;
         int max_y = min_y + (cr.bottom - cr.top + 31) / 32;
 
+        int cursor_x = horz_scroll_pos() + cursor_pos_.first;
+        int cursor_y = vert_scroll_pos() + cursor_pos_.second;
+
         device_.clear_target(D3DCOLOR_XRGB(0x77,0x66,0xDD));
         {
             scoped_scene scene(device_);
@@ -79,19 +83,22 @@ public:
             {
                 for (int x = min_x; x < max_x; ++x)
                 {
-                    char type = map_(x, y);
-                    boost::optional<texture_pos> pos = get_texture_pos(type);
-                    if (pos)
-                        draw_character(x-min_x, y-min_y, *pos);
+                    if ((x < map_.width()) && (y < map_.height()))
+                    {
+                        char type = map_(x, y);
+                        boost::optional<texture_pos> pos
+                            = get_texture_pos(type);
+
+                        if (pos)
+                            draw_character(x-min_x, y-min_y, *pos);
+                    }
+                    else
+                        draw_box(x-min_x, y-min_y, 0xFFC0C0C0ul);
                 }
             }
 
-            draw_sprite(
-                device_,
-                static_cast<float>(cursor_pos_.first*32),
-                cr.bottom - static_cast<float>((cursor_pos_.second+1)*32),
-                0.0f, cursor_texture_
-            );
+            if ((cursor_x < map_.width()) && (cursor_y < map_.height()))
+                draw_cursor();
 
             device_.set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
         }
@@ -240,6 +247,18 @@ private:
             return boost::optional<texture_pos>();
     }
 
+    void draw_box(int x, int y, unsigned long color)
+    {
+        ::RECT cr;
+        ::GetClientRect(handle_, &cr);
+
+        float left = static_cast<float>(x * 32);
+        float bottom = static_cast<float>((cr.bottom - cr.top) - y * 32);
+        float top = bottom - 32.0f;
+
+        ::draw_rectangle(device_, left, top, 0.0f, 32.0f, 32.0f, color);
+    }
+
     void draw_character(int x, int y, const texture_pos& pos)
     {
         ::RECT cr;
@@ -252,6 +271,19 @@ private:
         ::draw_sprite(
             device_, left, top, 0.0f, chips_texture_,
             pos.first, pos.second, 32, 32, false
+        );
+    }
+
+    void draw_cursor()
+    {
+        ::RECT cr;
+        ::GetClientRect(handle_, &cr);
+
+        draw_sprite(
+            device_,
+            static_cast<float>(cursor_pos_.first*32),
+            cr.bottom - static_cast<float>((cursor_pos_.second+1)*32),
+            0.0f, cursor_texture_
         );
     }
 
