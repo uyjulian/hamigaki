@@ -8,11 +8,14 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "main_window.hpp"
+#include <boost/noncopyable.hpp>
 #include <iostream>
 #include <stdexcept>
 
 #include <windows.h>
 #include <commctrl.h>
+
+#include "accelerators.h"
 
 void init_common_controls()
 {
@@ -28,12 +31,36 @@ void init_common_controls()
 #endif
 }
 
+class accelerator_table : private boost::noncopyable
+{
+public:
+    accelerator_table(::HINSTANCE hInstance, int id)
+        : handle_(::LoadAcceleratorsA(hInstance, MAKEINTRESOURCE(id)))
+    {
+    }
+
+    ~accelerator_table()
+    {
+        ::DestroyAcceleratorTable(handle_);
+    }
+
+    bool process_message(::HWND hwnd, ::MSG& msg)
+    {
+        return ::TranslateAcceleratorA(hwnd, handle_, &msg) != 0;
+    }
+
+private:
+    ::HACCEL handle_;
+};
+
 int WINAPI WinMain(
     ::HINSTANCE hInstance, ::HINSTANCE, ::LPSTR, int nCmdShow)
 {
     try
     {
         init_common_controls();
+
+        accelerator_table accels(hInstance, HAMIGAKI_IDR_ACCELERATOR);
 
         ::ATOM cls = register_main_window_class(hInstance);
         ::HWND hwnd = create_main_window(hInstance, cls);
@@ -42,14 +69,17 @@ int WINAPI WinMain(
         ::UpdateWindow(hwnd);
 
         ::MSG msg;
-        msg.message = WM_NULL;
-        while (msg.message != WM_QUIT)
+        ::BOOL res;
+        while ((res = ::GetMessageA(&msg, 0, 0, 0)) != 0)
         {
-            ::BOOL res = ::GetMessageA(&msg, 0, 0, 0);
             if (res == -1)
+            {
+                ::MessageBoxA(
+                    hwnd, "failed GetMessageA()", "Action Game Editor", MB_OK);
                 break;
+            }
 
-            if (res != 0)
+            if (!accels.process_message(hwnd, msg))
             {
                 ::TranslateMessage(&msg);
                 ::DispatchMessageA(&msg);

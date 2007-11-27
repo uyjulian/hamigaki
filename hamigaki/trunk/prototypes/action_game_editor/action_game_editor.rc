@@ -8,6 +8,7 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include <windows.h>
+#include "accelerators.h"
 #include "menus.h"
 
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
@@ -16,18 +17,28 @@ HAMIGAKI_IDR_MENU MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "&Open...",            HAMIGAKI_ID_FILE_OPEN
-        MENUITEM "&Save",               HAMIGAKI_ID_FILE_SAVE
+        MENUITEM "&Open...\tCtrl+O",    HAMIGAKI_ID_FILE_OPEN
+        MENUITEM "&Save\tCtrl+S",       HAMIGAKI_ID_FILE_SAVE
         MENUITEM "Save &As...",         HAMIGAKI_ID_FILE_SAVE_AS
         MENUITEM SEPARATOR
         MENUITEM "E&xit",               HAMIGAKI_ID_FILE_EXIT
     END
     POPUP "&Edit"
     BEGIN
-        MENUITEM "&Undo",               HAMIGAKI_ID_EDIT_UNDO,  GRAYED
+        MENUITEM "&Undo\tCtrl+Z",       HAMIGAKI_ID_EDIT_UNDO,  GRAYED
         MENUITEM SEPARATOR
-        MENUITEM "Cu&t",                HAMIGAKI_ID_EDIT_CUT,   GRAYED
-        MENUITEM "&Copy",               HAMIGAKI_ID_EDIT_COPY,  GRAYED
-        MENUITEM "&Delete",             HAMIGAKI_ID_EDIT_DEL,   GRAYED
+        MENUITEM "Cu&t\tCtrl+X",        HAMIGAKI_ID_EDIT_CUT,   GRAYED
+        MENUITEM "&Copy\tCtrl+C",       HAMIGAKI_ID_EDIT_COPY,  GRAYED
+        MENUITEM "&Delete\tDel",        HAMIGAKI_ID_EDIT_DEL,   GRAYED
     END
+END
+
+HAMIGAKI_IDR_ACCELERATOR ACCELERATORS
+BEGIN
+    "^O",       HAMIGAKI_ID_FILE_OPEN
+    "^S",       HAMIGAKI_ID_FILE_SAVE
+    "^Z",       HAMIGAKI_ID_EDIT_UNDO
+    "^X",       HAMIGAKI_ID_EDIT_CUT
+    "^C",       HAMIGAKI_ID_EDIT_COPY
+    VK_DELETE,  HAMIGAKI_ID_EDIT_DEL,   VIRTKEY
 END
