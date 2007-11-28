@@ -18,6 +18,7 @@
 ::HWND create_map_edit_window(
     ::HWND parent, int id, int left, ::HINSTANCE hInstance, ::ATOM cls);
 
+void map_edit_window_new(::HWND hwnd, int width, int height);
 void map_edit_window_load(::HWND hwnd, const std::string& filename);
 void map_edit_window_save(::HWND hwnd, const std::string& filename);
 void map_edit_window_select_char(::HWND hwnd, char c);

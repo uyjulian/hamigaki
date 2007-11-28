@@ -33,6 +33,23 @@ public:
     {
     }
 
+    void new_stage(int width, int height)
+    {
+        stage_map tmp;
+        std::string line(static_cast<std::string::size_type>(width), ' ');
+        for (int i = 0; i < height; ++i)
+            tmp.push_back(line);
+
+        map_.swap(tmp);
+
+        int vert_max = update_scroll_box().second;
+
+        ::SetScrollPos(handle_, SB_HORZ, 0, TRUE);
+        ::SetScrollPos(handle_, SB_VERT, vert_max, TRUE);
+
+        ::InvalidateRect(handle_, 0, FALSE);
+    }
+
     void load_stage(const std::string& filename)
     {
         load_map_from_text(filename.c_str(), map_);
@@ -308,6 +325,11 @@ map_edit_window::map_edit_window(::HWND handle) : pimpl_(new impl(handle))
 
 map_edit_window::~map_edit_window()
 {
+}
+
+void map_edit_window::new_stage(int width, int height)
+{
+    pimpl_->new_stage(width, height);
 }
 
 void map_edit_window::load_stage(const std::string& filename)

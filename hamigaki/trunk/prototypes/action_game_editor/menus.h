@@ -8,10 +8,11 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #define HAMIGAKI_IDR_MENU           101
-#define HAMIGAKI_ID_FILE_OPEN       40001
-#define HAMIGAKI_ID_FILE_SAVE       40002
-#define HAMIGAKI_ID_FILE_SAVE_AS    40003
-#define HAMIGAKI_ID_FILE_EXIT       40004
+#define HAMIGAKI_ID_FILE_NEW        40001
+#define HAMIGAKI_ID_FILE_OPEN       40002
+#define HAMIGAKI_ID_FILE_SAVE       40003
+#define HAMIGAKI_ID_FILE_SAVE_AS    40004
+#define HAMIGAKI_ID_FILE_EXIT       40005
 #define HAMIGAKI_ID_EDIT_UNDO       40101
 #define HAMIGAKI_ID_EDIT_CUT        40102
 #define HAMIGAKI_ID_EDIT_COPY       40103

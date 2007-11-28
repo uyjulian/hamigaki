@@ -167,6 +167,17 @@ boost::optional<int> next_scroll_pos(::HWND hwnd, int bar, ::WORD cmd)
     return hwnd;
 }
 
+void map_edit_window_new(::HWND hwnd, int width, int height)
+{
+    map_edit_window* pimpl =
+        reinterpret_cast<map_edit_window*>(
+            GetWindowLongPtr(hwnd, GWLP_USERDATA)
+        );
+
+    if (pimpl != 0)
+        pimpl->new_stage(width, height);
+}
+
 void map_edit_window_load(::HWND hwnd, const std::string& filename)
 {
     map_edit_window* pimpl =

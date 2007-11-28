@@ -19,6 +19,7 @@ class map_edit_window
 public:
     explicit map_edit_window(::HWND handle);
     ~map_edit_window();
+    void new_stage(int width, int height);
     void load_stage(const std::string& filename);
     void save_stage(const std::string& filename);
     void render();

@@ -139,6 +139,12 @@ public:
         map_edit_window_select_char(map_window_, c);
     }
 
+    void new_stage(int width, int height)
+    {
+        map_edit_window_new(map_window_, width, height);
+        stage_file_.clear();
+    }
+
     void load_stage(const std::string& filename)
     {
         map_edit_window_load(map_window_, filename);
@@ -186,6 +192,11 @@ void main_window::update_size()
 void main_window::update_selected_char()
 {
     pimpl_->update_selected_char();
+}
+
+void main_window::new_stage(int width, int height)
+{
+    pimpl_->new_stage(width, height);
 }
 
 void main_window::load_stage(const std::string& filename)

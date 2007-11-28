@@ -10,6 +10,7 @@
 #include "main_window.hpp"
 #include "char_select_window_msgs.hpp"
 #include "main_window_impl.hpp"
+#include "new_stage_dialog.hpp"
 
 #include <hamigaki/system/windows_error.hpp>
 #include "menus.h"
@@ -117,7 +118,13 @@ bool get_save_file_name(::HWND hwnd, std::string& filename)
             ::WORD id = LOWORD(wParam);
             if ((code == 0) || (code == 1))
             {
-                if (id == HAMIGAKI_ID_FILE_OPEN)
+                if (id == HAMIGAKI_ID_FILE_NEW)
+                {
+                    stage_info info;
+                    if (get_new_stage_info(hwnd, info))
+                        pimpl->new_stage(info.width, info.height);
+                }
+                else if (id == HAMIGAKI_ID_FILE_OPEN)
                 {
                     std::string filename;
                     if (get_open_file_name(hwnd, filename))
