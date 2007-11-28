@@ -75,6 +75,41 @@ bool get_save_file_name(::HWND hwnd, std::string& filename)
     return true;
 }
 
+bool save_stage(main_window* pimpl, ::HWND hwnd)
+{
+    if (pimpl->save_stage())
+        return true;
+
+    std::string filename;
+    if (get_save_file_name(hwnd, filename))
+    {
+        pimpl->save_stage(filename);
+        return true;
+    }
+    else
+        return false;
+}
+
+bool close_stage(main_window* pimpl, ::HWND hwnd)
+{
+    if (pimpl->modified())
+    {
+        int res = ::MessageBoxA(hwnd,
+            "The current stage is modified. Do you save it?",
+            "Action Game Editor", MB_YESNOCANCEL|MB_ICONEXCLAMATION);
+
+        if (res == IDCANCEL)
+            return false;
+        else if (res == IDYES)
+        {
+            if (!save_stage(pimpl, hwnd))
+                return false;
+        }
+    }
+
+    return true;
+}
+
 ::LRESULT CALLBACK window_proc(
     ::HWND hwnd, ::UINT uMsg, ::WPARAM wParam, ::LPARAM lParam)
 {
@@ -104,6 +139,12 @@ bool get_save_file_name(::HWND hwnd, std::string& filename)
             delete pimpl;
             ::PostQuitMessage(0);
         }
+        else if (uMsg == WM_CLOSE)
+        {
+            if (close_stage(pimpl, hwnd))
+                ::DestroyWindow(hwnd);
+            return 0;
+        }
         else if (uMsg == WM_SIZE)
         {
             if ((wParam == SIZE_MAXIMIZED) || (wParam == SIZE_RESTORED))
@@ -120,25 +161,24 @@ bool get_save_file_name(::HWND hwnd, std::string& filename)
             {
                 if (id == HAMIGAKI_ID_FILE_NEW)
                 {
+                    if (!close_stage(pimpl, hwnd))
+                        return 0;
+
                     stage_info info;
                     if (get_new_stage_info(hwnd, info))
                         pimpl->new_stage(info.width, info.height);
                 }
                 else if (id == HAMIGAKI_ID_FILE_OPEN)
                 {
+                    if (!close_stage(pimpl, hwnd))
+                        return 0;
+
                     std::string filename;
                     if (get_open_file_name(hwnd, filename))
                         pimpl->load_stage(filename);
                 }
                 else if (id == HAMIGAKI_ID_FILE_SAVE)
-                {
-                    if (!pimpl->save_stage())
-                    {
-                        std::string filename;
-                        if (get_save_file_name(hwnd, filename))
-                            pimpl->save_stage(filename);
-                    }
-                }
+                    save_stage(pimpl, hwnd);
                 else if (id == HAMIGAKI_ID_FILE_SAVE_AS)
                 {
                     std::string filename;
@@ -146,7 +186,10 @@ bool get_save_file_name(::HWND hwnd, std::string& filename)
                         pimpl->save_stage(filename);
                 }
                 else if (id == HAMIGAKI_ID_FILE_EXIT)
-                    ::DestroyWindow(hwnd);
+                {
+                    if (close_stage(pimpl, hwnd))
+                        ::DestroyWindow(hwnd);
+                }
             }
             else if (id == main_window::char_select_id)
             {

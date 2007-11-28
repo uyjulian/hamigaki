@@ -210,3 +210,16 @@ void map_edit_window_select_char(::HWND hwnd, char c)
     if (pimpl != 0)
         pimpl->select_char(c);
 }
+
+bool map_edit_window_select_modified(::HWND hwnd)
+{
+    map_edit_window* pimpl =
+        reinterpret_cast<map_edit_window*>(
+            GetWindowLongPtr(hwnd, GWLP_USERDATA)
+        );
+
+    if (pimpl != 0)
+        return pimpl->modified();
+    else
+        return false;
+}

@@ -166,6 +166,11 @@ public:
         return true;
     }
 
+    bool modified()
+    {
+        return map_edit_window_select_modified(map_window_);
+    }
+
 private:
     ::HWND handle_;
     ::HINSTANCE hInstance_;
@@ -212,4 +217,9 @@ void main_window::save_stage(const std::string& filename)
 bool main_window::save_stage()
 {
     return pimpl_->save_stage();
+}
+
+bool main_window::modified()
+{
+    return pimpl_->modified();
 }

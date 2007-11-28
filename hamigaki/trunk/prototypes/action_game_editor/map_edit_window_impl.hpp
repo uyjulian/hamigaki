@@ -30,6 +30,7 @@ public:
     void cursor_pos(int x, int y);
     void select_char(char c);
     void put_char();
+    bool modified() const;
 
 private:
     class impl;

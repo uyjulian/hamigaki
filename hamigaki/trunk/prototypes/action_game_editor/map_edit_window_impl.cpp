@@ -25,7 +25,7 @@ private:
 
 public:
     explicit impl(::HWND handle)
-        : handle_(handle), selected_char_(' ')
+        : handle_(handle), selected_char_(' '), modified_(false)
     {
     }
 
@@ -41,6 +41,7 @@ public:
             tmp.push_back(line);
 
         map_.swap(tmp);
+        modified_ = true;
 
         int vert_max = update_scroll_box().second;
 
@@ -53,6 +54,7 @@ public:
     void load_stage(const std::string& filename)
     {
         load_map_from_text(filename.c_str(), map_);
+        modified_ = false;
 
         int vert_max = update_scroll_box().second;
 
@@ -65,6 +67,7 @@ public:
     void save_stage(const std::string& filename)
     {
         save_map_to_text(filename.c_str(), map_);
+        modified_ = false;
     }
 
     void render()
@@ -196,8 +199,14 @@ public:
         if (map_(x, y) != selected_char_)
         {
             map_.replace(x, y, selected_char_);
+            modified_ = true;
             ::InvalidateRect(handle_, 0, FALSE);
         }
+    }
+
+    bool modified() const
+    {
+        return modified_;
     }
 
 private:
@@ -209,6 +218,7 @@ private:
     direct3d_texture9 cursor_texture_;
     std::pair<int,int> cursor_pos_;
     char selected_char_;
+    bool modified_;
 
     void connect_d3d_device()
     {
@@ -380,4 +390,9 @@ void map_edit_window::select_char(char c)
 void map_edit_window::put_char()
 {
     pimpl_->put_char();
+}
+
+bool map_edit_window::modified() const
+{
+    return pimpl_->modified();
 }

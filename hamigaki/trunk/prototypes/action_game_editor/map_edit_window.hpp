@@ -22,5 +22,6 @@ void map_edit_window_new(::HWND hwnd, int width, int height);
 void map_edit_window_load(::HWND hwnd, const std::string& filename);
 void map_edit_window_save(::HWND hwnd, const std::string& filename);
 void map_edit_window_select_char(::HWND hwnd, char c);
+bool map_edit_window_select_modified(::HWND hwnd);
 
 #endif // MAP_WINDOW_HPP
