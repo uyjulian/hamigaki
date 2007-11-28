@@ -8,7 +8,7 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "new_stage_dialog.hpp"
-#include <memory>
+#include <exception>
 #include "new_dialog.h"
 
 namespace
@@ -36,6 +36,7 @@ inline bool get_dialog_item_int(::HWND hwnd, int id, int& value)
             stage_info* info = reinterpret_cast<stage_info*>(lParam);
             if (info)
             {
+                ::SetWindowLongPtr(hwndDlg, DWLP_USER, lParam);
                 set_dialog_item_int(hwndDlg, HAMIGAKI_IDC_WIDTH, info->width);
                 set_dialog_item_int(hwndDlg, HAMIGAKI_IDC_HEIGHT, info->height);
             }
@@ -46,20 +47,23 @@ inline bool get_dialog_item_int(::HWND hwnd, int id, int& value)
             ::WORD id = LOWORD(wParam);
             if (id == IDOK)
             {
-                std::auto_ptr<stage_info> info(new stage_info);
+                stage_info* info =
+                    reinterpret_cast<stage_info*>(
+                        ::GetWindowLongPtr(hwndDlg, DWLP_USER)
+                    );
+
                 if (get_dialog_item_int(
                         hwndDlg, HAMIGAKI_IDC_WIDTH, info->width) &&
                     get_dialog_item_int(
                         hwndDlg, HAMIGAKI_IDC_HEIGHT, info->height) )
                 {
-                    ::EndDialog(
-                        hwndDlg, reinterpret_cast< ::INT_PTR>(info.release()));
+                    ::EndDialog(hwndDlg, IDOK);
                 }
                 return 1;
             }
             else if (id == IDCANCEL)
             {
-                ::EndDialog(hwndDlg, 0);
+                ::EndDialog(hwndDlg, IDCANCEL);
                 return 1;
             }
         }
@@ -86,12 +90,5 @@ bool get_new_stage_info(::HWND hwnd, stage_info& info)
         hwnd, &new_dialog_proc, reinterpret_cast< ::LPARAM>(&info)
     );
 
-    if (res != 0)
-    {
-        std::auto_ptr<stage_info> result(reinterpret_cast<stage_info*>(res));
-        info = *result;
-        return true;
-    }
-    else
-        return 0;
+    return res == IDOK;
 }
