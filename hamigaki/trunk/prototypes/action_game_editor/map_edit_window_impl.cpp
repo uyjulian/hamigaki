@@ -79,14 +79,14 @@ public:
         ::RECT cr;
         ::GetClientRect(handle_, &cr);
 
-        int min_x = horz_scroll_pos();
-        int min_y = vert_scroll_pos();
+        int min_x = horz_scroll_value();
+        int min_y = vert_scroll_value();
 
         int max_x = min_x + (cr.right - cr.left + 31) / 32;
         int max_y = min_y + (cr.bottom - cr.top + 31) / 32;
 
-        int cursor_x = horz_scroll_pos() + cursor_pos_.first;
-        int cursor_y = vert_scroll_pos() + cursor_pos_.second;
+        int cursor_x = min_x + cursor_pos_.first;
+        int cursor_y = min_y + cursor_pos_.second;
 
         device_.clear_target(D3DCOLOR_XRGB(0x77,0x66,0xDD));
         {
@@ -145,23 +145,34 @@ public:
         ::RECT cr;
         ::GetClientRect(handle_, &cr);
 
-        ::SCROLLINFO old = {};
-        old.cbSize = sizeof(old);
-        old.fMask = SIF_POS | SIF_RANGE;
-        ::GetScrollInfo(handle_, SB_VERT, &old);
+        int old_vert = vert_scroll_value();
 
-        int width = cr.right - cr.left;
-        int horz_max = (std::max)(map_.width() - width/32, 0);
-        ::SetScrollRange(handle_, SB_HORZ, 0, horz_max, TRUE);
+        ::SCROLLINFO horz = {};
+        horz.cbSize = sizeof(horz);
+        horz.fMask = SIF_RANGE | SIF_PAGE;
+        horz.nMin = 0;
+        horz.nMax = map_.width() - 1;
+        horz.nPage = cr.right / 32;
+        ::SetScrollInfo(handle_, SB_HORZ, &horz, TRUE);
 
-        int height = cr.bottom - cr.top;
-        int vert_max = (std::max)(map_.height() - height/32, 0);
-        ::SetScrollRange(handle_, SB_VERT, 0, vert_max, TRUE);
+        ::SCROLLINFO vert = {};
+        vert.cbSize = sizeof(vert);
+        vert.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
+        vert.nMin = 0;
+        vert.nMax = map_.height() - 1;
+        vert.nPage = cr.bottom / 32;
+        vert.nPos = vert.nMax - old_vert - static_cast<int>(vert.nPage) + 1;
+        ::SetScrollInfo(handle_, SB_VERT, &vert, TRUE);
 
-        int vert = (std::max)(vert_max-(old.nMax-old.nPos), 0);
-        ::SetScrollPos(handle_, SB_VERT, vert, TRUE);
+        int max_horz_pos = horz.nMax - horz.nPage;
+        if (max_horz_pos < 0)
+            max_horz_pos = 0;
 
-        return std::make_pair(horz_max, vert_max);
+        int max_vert_pos = vert.nMax - vert.nPage;
+        if (max_vert_pos < 0)
+            max_vert_pos = 0;
+
+        return std::make_pair(max_horz_pos, max_vert_pos);
     }
 
     void horz_scroll_pos(int pos)
@@ -194,8 +205,8 @@ public:
 
     void put_char()
     {
-        int x = horz_scroll_pos() + cursor_pos_.first;
-        int y = vert_scroll_pos() + cursor_pos_.second;
+        int x = horz_scroll_value() + cursor_pos_.first;
+        int y = vert_scroll_value() + cursor_pos_.second;
 
         if (map_(x, y) != selected_char_)
         {
@@ -326,18 +337,20 @@ private:
         );
     }
 
-    int horz_scroll_pos() const
+    int horz_scroll_value() const
     {
         return ::GetScrollPos(handle_, SB_HORZ);
     }
 
-    int vert_scroll_pos() const
+    int vert_scroll_value() const
     {
         ::SCROLLINFO info = {};
         info.cbSize = sizeof(info);
-        info.fMask = SIF_POS | SIF_RANGE;
+        info.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
         ::GetScrollInfo(handle_, SB_VERT, &info);
-        return info.nMax - info.nPos;
+
+        int value = info.nMax - info.nPos - static_cast<int>(info.nPage) + 1;
+        return (std::max)(value, 0);
     }
 };
 
