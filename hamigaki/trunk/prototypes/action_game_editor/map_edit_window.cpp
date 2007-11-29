@@ -81,6 +81,7 @@ boost::optional<int> next_scroll_pos(::HWND hwnd, int bar, ::WORD cmd)
                     pimpl->reset_d3d();
                     pimpl->update_scroll_box();
                 }
+                return 0;
             }
             else if (uMsg == WM_HSCROLL)
             {
@@ -88,6 +89,7 @@ boost::optional<int> next_scroll_pos(::HWND hwnd, int bar, ::WORD cmd)
                 boost::optional<int> pos = next_scroll_pos(hwnd, SB_HORZ, cmd);
                 if (pos)
                     pimpl->horz_scroll_pos(*pos);
+                return 0;
             }
             else if (uMsg == WM_VSCROLL)
             {
@@ -95,6 +97,7 @@ boost::optional<int> next_scroll_pos(::HWND hwnd, int bar, ::WORD cmd)
                 boost::optional<int> pos = next_scroll_pos(hwnd, SB_VERT, cmd);
                 if (pos)
                     pimpl->vert_scroll_pos(*pos);
+                return 0;
             }
             else if (uMsg == WM_MOUSEMOVE)
             {
@@ -105,11 +108,28 @@ boost::optional<int> next_scroll_pos(::HWND hwnd, int bar, ::WORD cmd)
                 int y = (cr.bottom - HIWORD(lParam)) / 32;
                 pimpl->cursor_pos(x, y);
 
-                if ((wParam & MK_LBUTTON) != 0)
+                if (pimpl->mouse_captured())
                     pimpl->put_char();
+
+                return 0;
             }
             else if (uMsg == WM_LBUTTONDOWN)
+            {
+                ::SetCapture(hwnd);
+                pimpl->mouse_captured(true);
                 pimpl->put_char();
+                return 0;
+            }
+            else if (uMsg == WM_LBUTTONUP)
+            {
+                ::ReleaseCapture();
+                return 0;
+            }
+            else if (uMsg == WM_CAPTURECHANGED)
+            {
+                pimpl->mouse_captured(false);
+                return 0;
+            }
         }
     }
     catch (const std::exception& e)

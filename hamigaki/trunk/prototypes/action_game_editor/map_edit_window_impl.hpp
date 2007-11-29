@@ -31,6 +31,8 @@ public:
     void select_char(char c);
     void put_char();
     bool modified() const;
+    void mouse_captured(bool value);
+    bool mouse_captured() const;
 
 private:
     class impl;

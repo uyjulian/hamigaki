@@ -25,7 +25,8 @@ private:
 
 public:
     explicit impl(::HWND handle)
-        : handle_(handle), selected_char_(' '), modified_(false)
+        : handle_(handle), selected_char_(' ')
+        , modified_(false), mouse_captured_(false)
     {
     }
 
@@ -209,6 +210,16 @@ public:
         return modified_;
     }
 
+    void mouse_captured(bool value)
+    {
+        mouse_captured_ = value;
+    }
+
+    bool mouse_captured() const
+    {
+        return mouse_captured_;
+    }
+
 private:
     ::HWND handle_;
     direct3d9 d3d_;
@@ -219,6 +230,7 @@ private:
     std::pair<int,int> cursor_pos_;
     char selected_char_;
     bool modified_;
+    bool mouse_captured_;
 
     void connect_d3d_device()
     {
@@ -395,4 +407,14 @@ void map_edit_window::put_char()
 bool map_edit_window::modified() const
 {
     return pimpl_->modified();
+}
+
+void map_edit_window::mouse_captured(bool value)
+{
+    pimpl_->mouse_captured(value);
+}
+
+bool map_edit_window::mouse_captured() const
+{
+    return pimpl_->mouse_captured();
 }
