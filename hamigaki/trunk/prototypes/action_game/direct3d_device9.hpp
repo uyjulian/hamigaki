@@ -19,6 +19,14 @@
 
 class direct3d_device9
 {
+private:
+    struct safe_bool_helper
+    {
+        void non_null() {};
+    };
+
+    typedef void (safe_bool_helper::*safe_bool)();
+
 public:
     direct3d_device9()
     {
@@ -27,6 +35,26 @@ public:
     direct3d_device9(::IDirect3DDevice9* p)
         : pimpl_(p, hamigaki::detail::windows::com_release())
     {
+    }
+
+    void reset(::D3DPRESENT_PARAMETERS& params)
+    {
+        ::HRESULT res = pimpl_->Reset(&params);
+        if (FAILED(res))
+            throw directx9_error(res, "IDirect3DDevice9::Reset()");
+    }
+
+    operator safe_bool() const
+    {
+        if (pimpl_.get() != 0)
+            return &safe_bool_helper::non_null;
+        else
+            return static_cast<safe_bool>(0);
+    }
+
+    bool operator!() const
+    {
+        return pimpl_.get() == 0;
     }
 
     void clear_target(::D3DCOLOR color)
