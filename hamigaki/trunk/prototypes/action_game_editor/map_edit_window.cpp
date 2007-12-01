@@ -176,7 +176,7 @@ boost::optional<int> next_scroll_pos(::HWND hwnd, int bar, ::WORD cmd)
 
     ::HWND hwnd = ::CreateWindowExA(
         ex_style, MAKEINTATOM(cls), "", style,
-        left, 0, cr.right - cr.left - left, cr.bottom - cr.top,
+        left, 0, cr.right - left, cr.bottom,
         parent,
         reinterpret_cast< ::HMENU>(static_cast< ::LONG_PTR>(id)),
         hInstance, 0

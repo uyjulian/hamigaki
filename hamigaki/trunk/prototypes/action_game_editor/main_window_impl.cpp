@@ -128,9 +128,7 @@ public:
         ::RECT cr;
         ::GetClientRect(handle_, &cr);
 
-        ::MoveWindow(
-            map_window_, left, 0,
-            cr.right - cr.left -left, cr.bottom - cr.top, TRUE);
+        ::MoveWindow(map_window_, left, 0, cr.right - left, cr.bottom, TRUE);
     }
 
     void update_selected_char()

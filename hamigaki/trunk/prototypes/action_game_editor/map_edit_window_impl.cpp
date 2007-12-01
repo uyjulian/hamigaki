@@ -82,8 +82,8 @@ public:
         int min_x = horz_scroll_value();
         int min_y = vert_scroll_value();
 
-        int max_x = min_x + (cr.right - cr.left + 31) / 32;
-        int max_y = min_y + (cr.bottom - cr.top + 31) / 32;
+        int max_x = min_x + (cr.right + 31) / 32;
+        int max_y = min_y + (cr.bottom + 31) / 32;
 
         int cursor_x = min_x + cursor_pos_.first;
         int cursor_y = min_y + cursor_pos_.second;
@@ -303,7 +303,7 @@ private:
         ::GetClientRect(handle_, &cr);
 
         float left = static_cast<float>(x * 32);
-        float bottom = static_cast<float>((cr.bottom - cr.top) - y * 32);
+        float bottom = static_cast<float>(cr.bottom - y * 32);
         float top = bottom - 32.0f;
 
         ::draw_rectangle(device_, left, top, 0.0f, 32.0f, 32.0f, color);
@@ -315,7 +315,7 @@ private:
         ::GetClientRect(handle_, &cr);
 
         float left = static_cast<float>(x * 32);
-        float bottom = static_cast<float>((cr.bottom - cr.top) - y * 32);
+        float bottom = static_cast<float>(cr.bottom - y * 32);
         float top = bottom - 32.0f;
 
         ::draw_sprite(
