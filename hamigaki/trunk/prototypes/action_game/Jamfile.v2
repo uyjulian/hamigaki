@@ -44,6 +44,7 @@ exe action_game
     sprite_info.cpp
     sprite_info_cache.cpp
     stage_map.cpp
+    stage_map_load.cpp
     texture_cache.cpp
     turn_routine.cpp
     vanish_routine.cpp
@@ -51,6 +52,7 @@ exe action_game
     wait_se_routine.cpp
     /directx//d3d9
     /directx//dxerr9
+    /boost-lib//boost_iostreams
     /boost-lib//boost_thread
     /hamigaki/audio//hamigaki_audio
     /hamigaki/input//hamigaki_input

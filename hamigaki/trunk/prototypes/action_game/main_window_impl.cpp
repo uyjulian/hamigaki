@@ -25,6 +25,7 @@
 #include "pop_up_routine.hpp"
 #include "side_scrolling_routine.hpp"
 #include "sprite.hpp"
+#include "stage_map_load.hpp"
 #include "texture_cache.hpp"
 #include "turn_routine.hpp"
 #include "vanish_routine.hpp"
@@ -357,7 +358,7 @@ public:
 #if defined(HAMIGAKI_DISPLAY_FPS)
         , last_fps_time_(0), fps_count_(0)
 #endif
-        , stage_file_("map.txt")
+        , stage_file_("map.agm-yh")
     {
         ::RECT cr;
         ::GetClientRect(handle_, &cr);
@@ -745,7 +746,7 @@ private:
     {
         system_.sound.stop_se();
 
-        load_map_from_text(stage_file_.c_str(), system_.map);
+        load_map_from_binary(stage_file_.c_str(), system_.map);
 
         player_.reset(new game_character);
         player_->move_routine = &player_routine;
