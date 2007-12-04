@@ -13,7 +13,8 @@
 #include "draw.hpp"
 #include "png_loader.hpp"
 #include "sprite.hpp"
-#include "stage_map.hpp"
+#include "stage_map_save.hpp"
+#include <boost/algorithm/string/predicate.hpp>
 #include <boost/optional.hpp>
 #include <algorithm>
 #include <utility>
@@ -67,7 +68,10 @@ public:
 
     void save_stage(const std::string& filename)
     {
-        save_map_to_text(filename.c_str(), map_);
+        if (boost::algorithm::iends_with(filename, ".agm-yh", std::locale("")))
+            save_map_to_binary(filename.c_str(), map_);
+        else
+            save_map_to_text(filename.c_str(), map_);
         modified_ = false;
     }
 

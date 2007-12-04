@@ -11,6 +11,8 @@
 #include "char_select_window_msgs.hpp"
 #include "main_window_impl.hpp"
 #include "new_stage_dialog.hpp"
+#include <boost/algorithm/string/find.hpp>
+#include <cstring>
 
 #include <hamigaki/system/windows_error.hpp>
 #include "menus.h"
@@ -27,16 +29,12 @@ bool get_open_file_name(::HWND hwnd, std::string& filename)
 
     ::OPENFILENAMEA ofn;
     std::memset(&ofn, 0, sizeof(ofn));
-#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0500)
-    ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400A;
-#else
     ofn.lStructSize = sizeof(ofn);
-#endif
     ofn.hwndOwner = hwnd;
     ofn.lpstrFilter =
         "Text Files (*.txt)\0*.txt\0"
         ;
-    ofn.Flags = OFN_FILEMUSTEXIST;
+    ofn.Flags = OFN_EXPLORER|OFN_FILEMUSTEXIST;
     ofn.lpstrFile = buf;
     ofn.nMaxFile = sizeof(buf);
 
@@ -47,6 +45,26 @@ bool get_open_file_name(::HWND hwnd, std::string& filename)
     return true;
 }
 
+::UINT_PTR CALLBACK
+save_dialog_hook(::HWND hdlg, ::UINT uiMsg, ::WPARAM wParam, ::LPARAM lParam)
+{
+    if (uiMsg == WM_NOTIFY)
+    {
+        ::NMHDR* head = reinterpret_cast< ::NMHDR*>(lParam);
+        if (head->code == CDN_TYPECHANGE)
+        {
+            ::OPENFILENAMEA& info =
+                *reinterpret_cast< ::OFNOTIFYA*>(head)->lpOFN;
+
+            if (info.nFilterIndex == 1)
+                CommDlg_OpenSave_SetDefExt(hdlg, "agm-yh");
+            else if (info.nFilterIndex == 2)
+                CommDlg_OpenSave_SetDefExt(hdlg, "txt");
+        }
+    }
+    return 0;
+}
+
 bool get_save_file_name(::HWND hwnd, std::string& filename)
 {
     char buf[MAX_PATH];
@@ -54,19 +72,17 @@ bool get_save_file_name(::HWND hwnd, std::string& filename)
 
     ::OPENFILENAMEA ofn;
     std::memset(&ofn, 0, sizeof(ofn));
-#if defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0500)
-    ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400A;
-#else
     ofn.lStructSize = sizeof(ofn);
-#endif
     ofn.hwndOwner = hwnd;
     ofn.lpstrFilter =
+        "Action Game Map Files (*.agm-yh)\0*.agm-yh\0"
         "Text Files (*.txt)\0*.txt\0"
         ;
-    ofn.Flags = OFN_OVERWRITEPROMPT;
+    ofn.Flags = OFN_EXPLORER|OFN_ENABLEHOOK|OFN_OVERWRITEPROMPT;
     ofn.lpstrFile = buf;
     ofn.nMaxFile = sizeof(buf);
-    ofn.lpstrDefExt = "txt";
+    ofn.lpstrDefExt = "agm-yh";
+    ofn.lpfnHook = &save_dialog_hook;
 
     if (::GetSaveFileName(&ofn) == FALSE)
         return false;

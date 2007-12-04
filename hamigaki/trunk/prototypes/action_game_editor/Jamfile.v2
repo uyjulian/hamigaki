@@ -36,10 +36,12 @@ exe action_game_editor
     sprite_info.cpp
     sprite_info_cache.cpp
     stage_map.cpp
+    stage_map_save.cpp
     texture_cache.cpp
     /directx//d3d9
     /directx//dxerr9
-    /boost/thread//boost_thread
+    /boost-lib//boost_iostreams
+    /boost-lib//boost_thread
     /hamigaki/png//hamigaki_png
     :
     <find-static-library>comctl32

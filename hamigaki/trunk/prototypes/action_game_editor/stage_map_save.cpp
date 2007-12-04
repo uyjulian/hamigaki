@@ -93,4 +93,6 @@ void save_map_to_binary(const char* filename, const stage_map& m)
             io_ex::binary_write(out, char_to_guid(c));
         }
     }
+
+    out.close();
 }
