@@ -32,6 +32,7 @@ bool get_open_file_name(::HWND hwnd, std::string& filename)
     ofn.lStructSize = sizeof(ofn);
     ofn.hwndOwner = hwnd;
     ofn.lpstrFilter =
+        "Action Game Map Files (*.agm-yh)\0*.agm-yh\0"
         "Text Files (*.txt)\0*.txt\0"
         ;
     ofn.Flags = OFN_EXPLORER|OFN_FILEMUSTEXIST;

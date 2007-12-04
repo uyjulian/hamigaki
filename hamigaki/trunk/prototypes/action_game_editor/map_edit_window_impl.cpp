@@ -13,6 +13,7 @@
 #include "draw.hpp"
 #include "png_loader.hpp"
 #include "sprite.hpp"
+#include "stage_map_load.hpp"
 #include "stage_map_save.hpp"
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/optional.hpp>
@@ -55,7 +56,10 @@ public:
 
     void load_stage(const std::string& filename)
     {
-        load_map_from_text(filename.c_str(), map_);
+        if (boost::algorithm::iends_with(filename, ".agm-yh", std::locale("")))
+            load_map_from_binary(filename.c_str(), map_);
+        else
+            load_map_from_text(filename.c_str(), map_);
         modified_ = false;
 
         int vert_max = update_scroll_box().second;

@@ -36,6 +36,7 @@ exe action_game_editor
     sprite_info.cpp
     sprite_info_cache.cpp
     stage_map.cpp
+    stage_map_load.cpp
     stage_map_save.cpp
     texture_cache.cpp
     /directx//d3d9

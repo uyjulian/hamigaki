@@ -1,4 +1,4 @@
-// stage_map_save.cpp: save stage map
+// stage_map_load.cpp: load stage map
 
 // Copyright Takeshi Mouri 2007.
 // Distributed under the Boost Software License, Version 1.0.
@@ -7,12 +7,14 @@
 
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
-#include "stage_map_save.hpp"
+#include "stage_map_load.hpp"
 #include "guid_io.hpp"
 #include <hamigaki/iostreams/device/file.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>
 #include <boost/iostreams/filter/zlib.hpp>
 #include <boost/iostreams/compose.hpp>
+#include <algorithm>
+#include <functional>
 
 namespace io_ex = hamigaki::iostreams;
 namespace io = boost::iostreams;
@@ -40,59 +42,60 @@ const ::GUID guids[] =
     { 0x639CE8F6, 0xDB5A, 0x45DA, {0xA9,0x63,0x9D,0x93,0xF7,0x11,0xD3,0xFE} }
 };
 
-::GUID char_to_guid(char c)
+struct guid_equal_to : std::binary_function< ::GUID, ::GUID, bool>
 {
-    switch (c)
+    bool operator()(const ::GUID& lhs, const ::GUID& rhs) const
     {
-        default:
-        case '@': return guids[0];
-        case 'U': return guids[1];
-        case 'D': return guids[2];
-        case 'o': return guids[3];
-        case 'a': return guids[4];
-        case 'p': return guids[5];
-        case 'w': return guids[6];
-        case '=': return guids[7];
-        case 'G': return guids[8];
-        case 'I': return guids[9];
-        case 'm': return guids[10];
-        case '$': return guids[11];
-        case '?': return guids[12];
-        case 'S': return guids[13];
-        case '/': return guids[14];
-        case '\\': return guids[15];
+        return
+            (lhs.Data1 == rhs.Data1) &&
+            (lhs.Data2 == rhs.Data2) &&
+            (lhs.Data3 == rhs.Data3) &&
+            std::equal(lhs.Data4, lhs.Data4+8, rhs.Data4) ;
     }
+};
+
+char guid_to_char(const ::GUID& type)
+{
+    const ::GUID* beg = guids;
+    const ::GUID* end = beg + sizeof(guids)/sizeof(guids[0]);
+
+    const ::GUID* pos =
+        std::find_if(beg, end, std::bind2nd(guid_equal_to(), type));
+
+    if (pos == end)
+        return ' ';
+    else
+        return "@UDoapw=GIm$?S/\\"[pos-beg];
 }
 
 } // namespace
 
-void save_map_to_binary(const char* filename, const stage_map& m)
+void load_map_from_binary(const char* filename, stage_map& m)
 {
-    io::composite<io::zlib_compressor,io_ex::file_sink> out(
-        io::zlib_compressor(),
-        io_ex::file_sink(filename, std::ios_base::binary)
+    io::composite<io::zlib_decompressor,io_ex::file_source> in(
+        io::zlib_decompressor(),
+        io_ex::file_source(filename, std::ios_base::binary)
     );
 
-    int width = m.width();
-    int height = m.height();
+    int width = io_ex::read_int32<hamigaki::little>(in) / 32;
+    int height = io_ex::read_int32<hamigaki::little>(in) / 32;
 
-    io_ex::write_int32<hamigaki::little>(out, width*32);
-    io_ex::write_int32<hamigaki::little>(out, height*32);
+    stage_map tmp;
+    std::string line(static_cast<std::string::size_type>(width), ' ');
+    for (int i = 0; i < height; ++i)
+        tmp.push_back(line);
 
-    for (int y = 0; y < height; ++y)
+    boost::int32_t x;
+    boost::int32_t y;
+    ::GUID type;
+    while (io_ex::binary_read(in, x, std::nothrow))
     {
-        for (int x = 0; x < width; ++x)
-        {
-            char c = m(x,y);
+        y = io_ex::read_int32<hamigaki::little>(in);
+        io_ex::binary_read(in, type);
 
-            if (c == ' ')
-                continue;
-
-            io_ex::write_int32<hamigaki::little>(out, x*32+16);
-            io_ex::write_int32<hamigaki::little>(out, y*32+16);
-            io_ex::binary_write(out, char_to_guid(c));
-        }
+        tmp.replace(x/32, y/32, guid_to_char(type));
     }
 
-    out.close();
+    in.close();
+    m.swap(tmp);
 }
