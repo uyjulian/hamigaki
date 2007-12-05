@@ -25,7 +25,7 @@ side_scrolling_routine::operator()(game_system* game, game_character* c) const
         game_character& player = *ptr;
         c->x = player.x - half_width;
 
-        float right_end = static_cast<float>(game->map.width()*32);
+        float right_end = static_cast<float>(game->map.width);
 
         if (c->x < 0.0f)
             c->x = 0.0f;

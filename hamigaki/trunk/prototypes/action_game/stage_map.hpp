@@ -10,58 +10,33 @@
 #ifndef STAGE_MAP_HPP
 #define STAGE_MAP_HPP
 
-#include <string>
-#include <utility>
-#include <vector>
+#include "map_element.hpp"
+#include <boost/multi_index/mem_fun.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index_container.hpp>
 
-bool is_block(char c);
-bool is_left_wall(char c);
-bool is_right_wall(char c);
-bool is_floor(char c);
-bool is_ceiling(char c);
+typedef boost::multi_index::multi_index_container<
+    map_element,
+    boost::multi_index::indexed_by<
+        boost::multi_index::ordered_unique<
+            boost::multi_index::const_mem_fun<
+                map_element, std::pair<int,int>, &map_element::x_y
+            >
+        >,
+        boost::multi_index::ordered_unique<
+            boost::multi_index::const_mem_fun<
+                map_element, std::pair<int,int>, &map_element::y_x
+            >
+        >
+    >
+> map_elements;
 
-class stage_map
+struct stage_map
 {
-public:
-    char operator()(int x, int y) const;
-
-    void push_back(const std::string& line)
-    {
-        data_.push_back(line);
-    }
-
-    void clear()
-    {
-        data_.clear();
-    }
-
-    void swap(stage_map& rhs)
-    {
-        data_.swap(rhs.data_);
-    }
-
-    int width() const
-    {
-        return static_cast<int>(data_[0].size());
-    }
-
-    int height() const
-    {
-        return static_cast<int>(data_.size());
-    }
-
-    std::pair<int,int> player_position() const;
-    void replace(int x, int y, char type);
-
-    void erase(int x, int y)
-    {
-        replace(x, y, ' ');
-    }
-
-private:
-    std::vector<std::string> data_;
+    int width;
+    int height;
+    std::pair<int,int> player_position;
+    map_elements elements;
 };
-
-void load_map_from_text(const char* filename, stage_map& m);
 
 #endif // STAGE_MAP_HPP

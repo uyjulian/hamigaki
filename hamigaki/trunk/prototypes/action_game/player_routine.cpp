@@ -292,7 +292,7 @@ bool player_routine(game_system* game, game_character* c)
         c->vx = 0.0f;
     }
 
-    float max_x = static_cast<float>(game->map.width() * 32) - c->width * 0.5f;
+    float max_x = static_cast<float>(game->map.width) - c->width * 0.5f;
     if (c->x > max_x)
     {
         c->x = max_x;

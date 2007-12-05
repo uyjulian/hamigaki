@@ -57,6 +57,43 @@ namespace layer
 
 const boost::uint32_t miss_form = static_four_char_code<'M','I','S','S'>::value;
 
+const ::GUID guids[] =
+{
+    { 0xD5D26CC5, 0xD8BD, 0x40A4, {0x83,0x9E,0xE3,0xC7,0xFA,0x57,0x0F,0x66} },
+    { 0xF19E0B84, 0x45A2, 0x4FC6, {0x96,0x8A,0xE4,0x49,0x80,0x9A,0xC6,0x92} },
+    { 0xB2107203, 0x173F, 0x4AAA, {0x92,0x28,0xE9,0x54,0xED,0xBF,0x9C,0x2F} },
+    { 0x6F642A22, 0x86B5, 0x41BF, {0x99,0x03,0x44,0xC0,0x0B,0x45,0x4D,0x6C} },
+    { 0x1831D6D2, 0x0A6A, 0x4B73, {0x9F,0x92,0xE9,0x4B,0x56,0xEC,0xB9,0x70} },
+    { 0x52B81339, 0x4AA0, 0x47D4, {0x9C,0xC8,0xE7,0x7A,0x02,0x3E,0xCA,0x7F} },
+    { 0x5D55A5B6, 0x66B1, 0x4D4A, {0xAB,0xB4,0xAB,0xE3,0x38,0x94,0x6D,0x28} },
+    { 0x8DC4CEDB, 0xDF9F, 0x4B9E, {0xB2,0xC3,0x0D,0x4A,0x6D,0x89,0x8D,0xF3} },
+    { 0x9F211EEC, 0xAA1B, 0x4704, {0xAA,0x25,0x5C,0x40,0x19,0x24,0xDD,0xAD} },
+    { 0xF311F6F5, 0x8B30, 0x48CE, {0xA8,0x43,0x10,0xDA,0xC4,0x26,0x84,0xDA} },
+    { 0x7FB448BA, 0xDAE6, 0x45CB, {0x9E,0xD1,0xC1,0x6A,0x7C,0xFB,0x0C,0x97} },
+    { 0x2FC40FC2, 0x841F, 0x48BC, {0xB9,0x10,0xFD,0x03,0xA6,0x13,0xE5,0x8A} },
+    { 0x106AD0B7, 0x9A0A, 0x4351, {0xAD,0xB4,0xE2,0x1A,0x4C,0xFC,0xEC,0xD5} },
+    { 0x2F1830C6, 0x6734, 0x4D14, {0x9A,0x15,0x6A,0xD5,0xD6,0x6D,0x4B,0xFA} },
+    { 0x1047BBAC, 0x5FC8, 0x4435, {0xBD,0x26,0xAA,0x0A,0x11,0x87,0xBE,0x99} },
+    { 0x639CE8F6, 0xDB5A, 0x45DA, {0xA9,0x63,0x9D,0x93,0xF7,0x11,0xD3,0xFE} }
+};
+
+const hamigaki::uuid player_id(guids[0]);
+const hamigaki::uuid up_lift_id(guids[1]);
+const hamigaki::uuid down_lift_id(guids[2]);
+const hamigaki::uuid enemy_o_id(guids[3]);
+const hamigaki::uuid enemy_a_id(guids[4]);
+const hamigaki::uuid enemy_p_id(guids[5]);
+const hamigaki::uuid enemy_w_id(guids[6]);
+const hamigaki::uuid brick_id(guids[7]);
+const hamigaki::uuid coin_brick_id(guids[8]);
+const hamigaki::uuid item_brick_id(guids[9]);
+const hamigaki::uuid used_block_id(guids[10]);
+const hamigaki::uuid coin_box_id(guids[11]);
+const hamigaki::uuid item_box_id(guids[12]);
+const hamigaki::uuid secret_coin_id(guids[13]);
+const hamigaki::uuid left_down_id(guids[14]);
+const hamigaki::uuid right_down_id(guids[15]);
+
 struct character_ptr_z_greator
 {
     bool operator()(const character_ptr& lhs, const character_ptr& rhs) const
@@ -65,21 +102,20 @@ struct character_ptr_z_greator
     }
 };
 
-character_ptr
-create_character(int x, int y,float z, bool back, const sprite_info_set& infos)
+character_ptr create_character(
+    const map_element& e, float z, bool back, const sprite_info_set& infos)
 {
     character_ptr c(new game_character);
 
     const sprite_info& info = infos.get_group(c->form)[0];
 
     c->sprite_infos = &infos;
-    c->x = static_cast<float>(x * 32 + 16);
-    c->y = static_cast<float>(y * 32);
+    c->x = static_cast<float>(e.x);
+    c->y = static_cast<float>(e.y);
     c->z = z;
     c->width = static_cast<float>(info.bounds.lx);
     c->height = static_cast<float>(info.bounds.ly);
-    c->origin.first = x;
-    c->origin.second = y;
+    c->origin = e;
     c->back = back;
 
     return c;
@@ -137,11 +173,8 @@ void to_fragments(
         return;
     }
 
-    int x, y;
-    boost::tie(x,y) = c->origin;
-
-    if ((x != -1) && (y != -1))
-        game->map.erase(x, y);
+    if (!c->origin.type.is_null())
+        game->map.elements.get<0>().erase(c->origin.x_y());
 
     float dx[] = {-12.0f, -12.0f, 12.0f, 12.0f };
     float dy[] = { 32.0f,  64.0f, 32.0f, 64.0f };
@@ -178,11 +211,14 @@ void to_used_block(
 {
     hit_on_block(*game, *c);
 
-    int x, y;
-    boost::tie(x,y) = c->origin;
-
-    if ((x != -1) && (y != -1))
-        game->map.replace(x, y, 'm');
+    if (!c->origin.type.is_null())
+    {
+        // FIXME: should use replace
+        game->map.elements.get<0>().erase(c->origin.x_y());
+        game->map.elements.insert(
+            map_element(c->origin.x, c->origin.y, hamigaki::uuid(used_block_id))
+        );
+    }
 
     c->change_sprite(game->sprites["used_block.txt"]);
     c->move_routine = bounce_routine();
@@ -261,11 +297,14 @@ void hop(game_system* game, game_character* c, game_character* target)
 
 void pop_up_item(game_system* game, game_character* c, game_character* target)
 {
-    int x, y;
-    boost::tie(x,y) = c->origin;
-
-    if ((x != -1) && (y != -1))
-        game->map.replace(x, y, 'm');
+    if (!c->origin.type.is_null())
+    {
+        // FIXME: should use replace
+        game->map.elements.get<0>().erase(c->origin.x_y());
+        game->map.elements.insert(
+            map_element(c->origin.x, c->origin.y, hamigaki::uuid(used_block_id))
+        );
+    }
 
     c->change_sprite(game->sprites["used_block.txt"]);
     c->on_hit_from_below.clear();
@@ -305,11 +344,8 @@ void pop_up_item(game_system* game, game_character* c, game_character* target)
 
 void stomp(game_system* game, game_character* c, game_character* target)
 {
-    int x, y;
-    boost::tie(x,y) = c->origin;
-
-    if ((x != -1) && (y != -1))
-        game->map.replace(x, y, ' ');
+    if (!c->origin.type.is_null())
+        game->map.elements.get<0>().erase(c->origin.x_y());
 
     c->change_form(static_four_char_code<'S','T','M','P'>::value);
     c->move_routine = vanish_routine(5);
@@ -326,11 +362,8 @@ void hit(game_system* game, game_character* c, game_character* target)
     if (c->attrs.test(char_attr::enemy) && target->on_collide_enemy)
         target->on_collide_enemy(game, target, c);
 
-    int x, y;
-    boost::tie(x,y) = c->origin;
-
-    if ((x != -1) && (y != -1))
-        game->map.replace(x, y, ' ');
+    if (!c->origin.type.is_null())
+        game->map.elements.get<0>().erase(c->origin.x_y());
 
     c->change_form(miss_form);
     c->move_routine = &velocity_routine;
@@ -490,33 +523,30 @@ private:
     int width_;
     int height_;
 
-    character_iterator find_enemy(int x, int y)
+    character_iterator find_enemy(const map_element& e)
     {
         character_list& ls = system_.characters;
         for (character_iterator i = ls.begin(); i != ls.end(); ++i)
         {
-            if (((*i)->origin.first == x) && ((*i)->origin.second == y))
+            if ((*i)->origin == e)
                 return i;
         }
 
         return ls.end();
     }
 
-    void add_character(int x, int y, char type)
+    void add_character(const map_element& e)
     {
-        if (type == ' ')
+        if (find_enemy(e) != system_.characters.end())
             return;
 
-        if (find_enemy(x, y) != system_.characters.end())
-            return;
+        bool back = player_->x <= static_cast<float>(e.x);
 
-        bool back = player_->x <= static_cast<float>(x*32);
-
-        if (type == 'o')
+        if (e.type == enemy_o_id)
         {
             character_ptr c =
                 create_character(
-                    x, y, layer::enemy, back,
+                    e, layer::enemy, back,
                     system_.sprites["ball.txt"]
                 );
             c->attrs.set(char_attr::enemy);
@@ -529,11 +559,11 @@ private:
             c->on_hit = &hit;
             system_.characters.push_back(c);
         }
-        else if (type == 'a')
+        else if (e.type == enemy_a_id)
         {
             character_ptr c =
                 create_character(
-                    x, y, layer::enemy, back,
+                    e, layer::enemy, back,
                     system_.sprites["ball.txt"]
                 );
             c->attrs.set(char_attr::enemy);
@@ -547,11 +577,11 @@ private:
             c->on_hit = &hit;
             system_.characters.push_back(c);
         }
-        else if (type == 'p')
+        else if (e.type == enemy_p_id)
         {
             character_ptr c =
                 create_character(
-                    x, y, layer::enemy, back,
+                    e, layer::enemy, back,
                     system_.sprites["ball.txt"]
                 );
             c->attrs.set(char_attr::enemy);
@@ -564,11 +594,11 @@ private:
             c->on_hit = &hit;
             system_.characters.push_back(c);
         }
-        else if (type == 'w')
+        else if (e.type == enemy_w_id)
         {
             character_ptr c =
                 create_character(
-                    x, y, layer::enemy, back,
+                    e, layer::enemy, back,
                     system_.sprites["ball.txt"]
                 );
             c->attrs.set(char_attr::enemy);
@@ -581,11 +611,11 @@ private:
             c->on_hit = &hit;
             system_.characters.push_back(c);
         }
-        else if (type == 'U')
+        else if (e.type == up_lift_id)
         {
             character_ptr c =
                 create_character(
-                    x, y, layer::block, false,
+                    e, layer::block, false,
                     system_.sprites["lift.txt"]
                 );
             c->attrs.set(char_attr::block);
@@ -593,11 +623,11 @@ private:
             c->move_routine = &loop_lift_routine;
             system_.characters.push_back(c);
         }
-        else if (type == 'D')
+        else if (e.type == down_lift_id)
         {
             character_ptr c =
                 create_character(
-                    x, y, layer::block, false,
+                    e, layer::block, false,
                     system_.sprites["lift.txt"]
                 );
             c->attrs.set(char_attr::block);
@@ -605,97 +635,97 @@ private:
             c->move_routine = &loop_lift_routine;
             system_.characters.push_back(c);
         }
-        else if (type == '=')
+        else if (e.type == brick_id)
         {
             character_ptr c =
                 create_character(
-                    x, y, layer::block, false,
+                    e, layer::block, false,
                     system_.sprites["brick_block.txt"]
                 );
             c->attrs.set(char_attr::block);
             c->on_hit_from_below = &to_fragments;
             system_.characters.push_back(c);
         }
-        else if (type == 'G')
+        else if (e.type == coin_brick_id)
         {
             character_ptr c =
                 create_character(
-                    x, y, layer::block, false,
+                    e, layer::block, false,
                     system_.sprites["brick_block.txt"]
                 );
             c->attrs.set(char_attr::block);
             c->on_hit_from_below = &to_used_block;
             system_.characters.push_back(c);
         }
-        else if (type == 'I')
+        else if (e.type == item_brick_id)
         {
             character_ptr c =
                 create_character(
-                    x, y, layer::block, false,
+                    e, layer::block, false,
                     system_.sprites["brick_block.txt"]
                 );
             c->attrs.set(char_attr::block);
             c->on_hit_from_below = &pop_up_item;
             system_.characters.push_back(c);
         }
-        else if (type == 'm')
+        else if (e.type == used_block_id)
         {
             character_ptr c =
                 create_character(
-                    x, y, layer::block, false,
+                    e, layer::block, false,
                     system_.sprites["used_block.txt"]
                 );
             c->attrs.set(char_attr::block);
             system_.characters.push_back(c);
         }
-        else if (type == '$')
+        else if (e.type == coin_box_id)
         {
             character_ptr c =
                 create_character(
-                    x, y, layer::block, false,
+                    e, layer::block, false,
                     system_.sprites["item_box.txt"]
                 );
             c->attrs.set(char_attr::block);
             c->on_hit_from_below = &to_used_block;
             system_.characters.push_back(c);
         }
-        else if (type == '?')
+        else if (e.type == item_box_id)
         {
             character_ptr c =
                 create_character(
-                    x, y, layer::block, false,
+                    e, layer::block, false,
                     system_.sprites["item_box.txt"]
                 );
             c->attrs.set(char_attr::block);
             c->on_hit_from_below = &pop_up_item;
             system_.characters.push_back(c);
         }
-        else if (type == 'S')
+        else if (e.type == secret_coin_id)
         {
             character_ptr c =
                 create_character(
-                    x, y, layer::block, false,
+                    e, layer::block, false,
                     system_.sprites["secret_block.txt"]
                 );
             c->on_collide_player = &secret_block;
             system_.characters.push_back(c);
         }
-        else if (type == '/')
+        else if (e.type == left_down_id)
         {
             character_ptr c =
                 create_character(
-                    x, y, layer::block, false,
+                    e, layer::block, false,
                     system_.sprites["left_down.txt"]
                 );
             c->attrs.set(char_attr::block);
             c->slope = slope_type::left_down;
             system_.characters.push_back(c);
         }
-        else if (type == '\\')
+        else if (e.type == right_down_id)
         {
             character_ptr c =
                 create_character(
-                    x, y, layer::block, false,
+                    e, layer::block, false,
                     system_.sprites["right_down.txt"]
                 );
             c->attrs.set(char_attr::block);
@@ -725,14 +755,14 @@ private:
             float left  = c->x - c->width * 0.5f;
             float right = c->x + c->width * 0.5f;
 
-            if (c->origin.first == -1)
+            if (c->origin.type.is_null())
             {
                 if ((right < scroll_x1) || (left > scroll_x2))
                     system_.characters.erase(i);
             }
             else
             {
-                float origin = c->origin.first * 32.0f;
+                float origin = static_cast<float>(c->origin.x);
                 if (((origin < scroll_x1) || (origin+32.0f > scroll_x2)) &&
                     ((right < scroll_x1-96.0f) || (left > scroll_x2+96.0f)) )
                 {
@@ -756,13 +786,13 @@ private:
         player_->attrs.set(char_attr::player);
         player_->back = false;
 
-        std::pair<int,int> pos = system_.map.player_position();
+        std::pair<int,int> pos = system_.map.player_position;
 
         sprite_info info =
             player_->sprite_infos->get_group(player_->form)[0];
 
-        player_->x = static_cast<float>(pos.first * 32 + 16);
-        player_->y = static_cast<float>(pos.second * 32);
+        player_->x = static_cast<float>(pos.first);
+        player_->y = static_cast<float>(pos.second);
         player_->z = layer::player;
         player_->width = static_cast<float>(info.bounds.lx);
         player_->height = static_cast<float>(info.bounds.ly);
@@ -777,12 +807,22 @@ private:
 
         scroll_->move_routine(&system_, scroll_.get());
 
-        int min_x = static_cast<int>(scroll_->x) / 32 - 3;
-        int max_x = static_cast<int>(scroll_->x) / 32 + width_ / 32 + 3;
-        for (int y = 0; y < system_.map.height(); ++y)
+        int min_x = static_cast<int>(scroll_->x) - 32*3;
+        int max_x = static_cast<int>(scroll_->x) + width_ + 32*3;
+        int map_height = system_.map.height;
+
+        typedef map_elements::nth_index<0>::type x_y_index_t;
+        typedef x_y_index_t::iterator iter_type;
+
+        const x_y_index_t& x_y = system_.map.elements.get<0>();
+        iter_type beg = x_y.lower_bound(std::make_pair(min_x, 0));
+        iter_type end = x_y.upper_bound(std::make_pair(max_x, map_height));
+
+        for ( ; beg != end; ++beg)
         {
-            for (int x = min_x; x < max_x; ++x)
-                add_character(x, y, system_.map(x, y));
+            const map_element& e = *beg;
+            if ((e.y >= 0) && (e.y < map_height))
+                add_character(e);
         }
 
         system_.characters.sort(character_ptr_z_greator());
@@ -800,7 +840,7 @@ private:
             return;
         }
 
-        int old_scroll_block = static_cast<int>(scroll_->x / 32.0f);
+        int old_scroll_x = static_cast<int>(scroll_->x);
 
         std::for_each(
             boost::make_indirect_iterator(ls.begin()),
@@ -835,27 +875,45 @@ private:
             player_->move_routine.clear();
         }
 
-        int scroll_block = static_cast<int>(scroll_->x / 32.0f);
-        if (scroll_block > old_scroll_block)
+        int scroll_x = static_cast<int>(scroll_->x);
+        if (scroll_x > old_scroll_x)
         {
-            int min_x = old_scroll_block + width_/32 + 3;
-            int max_x = scroll_block + width_/32 + 2;
+            int min_x = old_scroll_x + width_ + 32*3;
+            int max_x = scroll_x + width_ + 32*3;
+            int map_height = system_.map.height;
 
-            for (int x = min_x; x <= max_x; ++x)
+            typedef map_elements::nth_index<0>::type x_y_index_t;
+            typedef x_y_index_t::iterator iter_type;
+
+            const x_y_index_t& x_y = system_.map.elements.get<0>();
+            iter_type beg = x_y.lower_bound(std::make_pair(min_x, 0));
+            iter_type end = x_y.upper_bound(std::make_pair(max_x, map_height));
+
+            for ( ; beg != end; ++beg)
             {
-                for (int y = 0; y < system_.map.height(); ++y)
-                    add_character(x, y, system_.map(x, y));
+                const map_element& e = *beg;
+                if ((e.y >= 0) && (e.y < map_height))
+                    add_character(e);
             }
         }
-        else if (scroll_block < old_scroll_block)
+        else if (scroll_x < old_scroll_x)
         {
-            int max_x = old_scroll_block - 3;
-            int min_x = scroll_block - 2;
+            int max_x = old_scroll_x - 32*3;
+            int min_x = scroll_x - 32*3;
+            int map_height = system_.map.height;
 
-            for (int x = max_x; x >= min_x; --x)
+            typedef map_elements::nth_index<0>::type x_y_index_t;
+            typedef x_y_index_t::iterator iter_type;
+
+            const x_y_index_t& x_y = system_.map.elements.get<0>();
+            iter_type beg = x_y.lower_bound(std::make_pair(min_x, 0));
+            iter_type end = x_y.upper_bound(std::make_pair(max_x, map_height));
+
+            for ( ; beg != end; ++beg)
             {
-                for (int y = 0; y < system_.map.height(); ++y)
-                    add_character(x, y, system_.map(x, y));
+                const map_element& e = *beg;
+                if ((e.y >= 0) && (e.y < map_height))
+                    add_character(e);
             }
         }
 

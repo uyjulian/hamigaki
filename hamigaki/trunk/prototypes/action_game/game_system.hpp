@@ -12,9 +12,9 @@
 
 #include "game_character.hpp"
 #include "input_engine.hpp"
+#include "stage_map.hpp"
 #include "sound_engine.hpp"
 #include "sprite_info_cache.hpp"
-#include "stage_map.hpp"
 #include <list>
 
 typedef boost::shared_ptr<game_character> character_ptr;

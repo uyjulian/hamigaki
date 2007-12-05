@@ -43,7 +43,6 @@ exe action_game
     sound_engine.cpp
     sprite_info.cpp
     sprite_info_cache.cpp
-    stage_map.cpp
     stage_map_load.cpp
     texture_cache.cpp
     turn_routine.cpp

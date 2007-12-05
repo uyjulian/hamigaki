@@ -11,6 +11,7 @@
 #define GAME_CHARACTER_HPP
 
 #include "four_char_code.hpp"
+#include "map_element.hpp"
 #include "physics_types.hpp"
 #include "sprite_form.hpp"
 #include "sprite_info.hpp"
@@ -91,14 +92,14 @@ struct game_character
     int step;
     unsigned long color;
     const sprite_info_set* sprite_infos;
-    std::pair<int,int> origin;
+    map_element origin;
 
     game_character()
         : x(0.0f), y(0.0f), z(0.0f), width(0.0f), height(0.0f)
         , vx(0.0f), vy(0.0f)
         , slope(slope_type::none)
         , form(sprite_form::normal), back(false), removed(false), step(0)
-        , color(0xFFFFFFFFul), sprite_infos(0), origin(-1,-1)
+        , color(0xFFFFFFFFul), sprite_infos(0)
     {
     }
 
