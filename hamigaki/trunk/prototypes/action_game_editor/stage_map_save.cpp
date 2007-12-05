@@ -89,7 +89,7 @@ void save_map_to_binary(const char* filename, const stage_map& m)
                 continue;
 
             io_ex::write_int32<hamigaki::little>(out, x*32+16);
-            io_ex::write_int32<hamigaki::little>(out, y*32+16);
+            io_ex::write_int32<hamigaki::little>(out, y*32);
             io_ex::binary_write(out, char_to_guid(c));
         }
     }
