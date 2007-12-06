@@ -10,6 +10,7 @@
 #ifndef MAP_EDIT_WINDOW_IMPL_HPP
 #define MAP_EDIT_WINDOW_IMPL_HPP
 
+#include <hamigaki/uuid.hpp>
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <windows.h>
@@ -28,7 +29,7 @@ public:
     void horz_scroll_pos(int pos);
     void vert_scroll_pos(int pos);
     void cursor_pos(int x, int y);
-    void select_char(char c);
+    void select_char(const hamigaki::uuid& c);
     void put_char();
     bool modified() const;
     void mouse_captured(bool value);

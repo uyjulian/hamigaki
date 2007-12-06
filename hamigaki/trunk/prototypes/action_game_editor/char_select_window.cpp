@@ -106,7 +106,7 @@ namespace
     return hwnd;
 }
 
-char get_selected_char(::HWND hwnd)
+hamigaki::uuid get_selected_char(::HWND hwnd)
 {
     char_select_window* pimpl =
         reinterpret_cast<char_select_window*>(
@@ -116,5 +116,5 @@ char get_selected_char(::HWND hwnd)
     if (pimpl != 0)
         return pimpl->selected_char();
     else
-        return ' ';
+        return hamigaki::uuid();
 }

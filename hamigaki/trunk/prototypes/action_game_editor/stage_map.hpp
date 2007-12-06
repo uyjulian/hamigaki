@@ -10,64 +10,17 @@
 #ifndef STAGE_MAP_HPP
 #define STAGE_MAP_HPP
 
-#include <string>
+#include <hamigaki/uuid.hpp>
+#include <map>
 #include <utility>
-#include <vector>
 
-bool is_block(char c);
-bool is_left_wall(char c);
-bool is_right_wall(char c);
-bool is_floor(char c);
-bool is_ceiling(char c);
+typedef std::map<std::pair<int,int>,hamigaki::uuid> map_elements;
 
-class stage_map
+struct stage_map
 {
-public:
-    char operator()(int x, int y) const;
-
-    const std::string& line(int index) const
-    {
-        return data_[index];
-    }
-
-    void push_back(const std::string& line)
-    {
-        data_.push_back(line);
-    }
-
-    void clear()
-    {
-        data_.clear();
-    }
-
-    void swap(stage_map& rhs)
-    {
-        data_.swap(rhs.data_);
-    }
-
-    int width() const
-    {
-        if (data_.empty())
-            return 0;
-        else
-            return static_cast<int>(data_[0].size());
-    }
-
-    int height() const
-    {
-        return static_cast<int>(data_.size());
-    }
-
-    std::pair<int,int> player_position() const;
-    void replace(int x, int y, char type);
-
-    void erase(int x, int y)
-    {
-        replace(x, y, ' ');
-    }
-
-private:
-    std::vector<std::string> data_;
+    int width;
+    int height;
+    map_elements elements;
 };
 
 void load_map_from_text(const char* filename, stage_map& m);

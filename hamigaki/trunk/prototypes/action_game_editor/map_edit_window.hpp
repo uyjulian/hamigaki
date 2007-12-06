@@ -10,6 +10,7 @@
 #ifndef MAP_WINDOW_HPP
 #define MAP_WINDOW_HPP
 
+#include <hamigaki/uuid.hpp>
 #include <string>
 #include <windows.h>
 
@@ -21,7 +22,7 @@
 void map_edit_window_new(::HWND hwnd, int width, int height);
 void map_edit_window_load(::HWND hwnd, const std::string& filename);
 void map_edit_window_save(::HWND hwnd, const std::string& filename);
-void map_edit_window_select_char(::HWND hwnd, char c);
+void map_edit_window_select_char(::HWND hwnd, const hamigaki::uuid& c);
 bool map_edit_window_select_modified(::HWND hwnd);
 
 #endif // MAP_WINDOW_HPP

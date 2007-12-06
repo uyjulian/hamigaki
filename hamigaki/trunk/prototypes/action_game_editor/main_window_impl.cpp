@@ -133,7 +133,7 @@ public:
 
     void update_selected_char()
     {
-        char c = get_selected_char(select_window_);
+        const hamigaki::uuid& c = get_selected_char(select_window_);
         map_edit_window_select_char(map_window_, c);
     }
 

@@ -10,6 +10,7 @@
 #ifndef CHAR_SELECT_WINDOW_HPP
 #define CHAR_SELECT_WINDOW_HPP
 
+#include <hamigaki/uuid.hpp>
 #include <string>
 #include <windows.h>
 
@@ -18,6 +19,6 @@
 ::HWND create_char_select_window(
     ::HWND parent, int id, ::HINSTANCE hInstance, ::ATOM cls);
 
-char get_selected_char(::HWND hwnd);
+hamigaki::uuid get_selected_char(::HWND hwnd);
 
 #endif // CHAR_SELECT_WINDOW_HPP

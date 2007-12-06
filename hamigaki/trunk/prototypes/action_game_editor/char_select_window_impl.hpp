@@ -10,6 +10,7 @@
 #ifndef CHAR_SELECT_WINDOW_IMPL_HPP
 #define CHAR_SELECT_WINDOW_IMPL_HPP
 
+#include <hamigaki/uuid.hpp>
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <windows.h>
@@ -21,7 +22,7 @@ public:
     ~char_select_window();
     void render();
     void cursor_pos(int x, int y);
-    char selected_char() const;
+    hamigaki::uuid selected_char() const;
 
 private:
     class impl;
