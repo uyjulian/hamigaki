@@ -140,6 +140,14 @@ if ! [ project.find /boost-lib : . ]
                     ;
             }
 
+            boost-prebuilt boost_serialization
+                :
+                $(requirements)
+                :
+                :
+                <link>shared:<define>BOOST_SERIALIZATION_DYN_LINK=1
+                ;
+
             boost-prebuilt boost_thread
                 :
                 $(requirements)
@@ -158,6 +166,14 @@ if ! [ project.find /boost-lib : . ]
                 <define>BOOST_TEST_NO_AUTO_LINK=1
                 <link>shared:<define>BOOST_TEST_DYN_LINK=1
                 <link>shared,<toolset>msvc:<cxxflags>-wd4275
+                ;
+
+            boost-prebuilt boost_wserialization
+                :
+                $(requirements)
+                :
+                :
+                <link>shared:<define>BOOST_SERIALIZATION_DYN_LINK=1
                 ;
         }
         project.pop-current ;
@@ -206,8 +222,10 @@ if ! [ project.find /boost-lib : . ]
                 <link>shared:<define>BOOST_REGEX_DYN_LINK=1
                 ;
 
+            alias boost_serialization : /boost/serialization//boost_serialization ;
             alias boost_thread : /boost/thread//boost_thread ;
             alias boost_unit_test_framework : /boost/test//boost_unit_test_framework ;
+            alias boost_wserialization : /boost/serialization//boost_wserialization ;
 
             if [ boost-version.version ] >= 1.35.0
             {

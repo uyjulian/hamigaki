@@ -16,6 +16,7 @@ project
     ;
 
 local tests =
+    [ run serialization_test.cpp : : : <library>/boost-lib//boost_serialization ]
     [ run uuid_test.cpp : ]
     ;
 

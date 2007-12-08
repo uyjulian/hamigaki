@@ -12,6 +12,8 @@
 
 #include <hamigaki/hex_format.hpp>
 #include <boost/detail/endian.hpp>
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/binary_object.hpp>
 #include <boost/array.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/operators.hpp>
@@ -204,6 +206,16 @@ private:
     static void invalid_uuid()
     {
         throw std::runtime_error("invalid uuid string");
+    }
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive& ar, const unsigned int version)
+    {
+        ar & boost::serialization::make_nvp(
+                "data",
+                boost::serialization::make_binary_object(data_.elems, 16)
+            );
     }
 };
 
