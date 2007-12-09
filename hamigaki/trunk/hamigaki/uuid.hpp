@@ -12,12 +12,12 @@
 
 #include <hamigaki/hex_format.hpp>
 #include <boost/detail/endian.hpp>
-#include <boost/serialization/access.hpp>
-#include <boost/serialization/binary_object.hpp>
+#include <boost/serialization/level.hpp>
 #include <boost/array.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/operators.hpp>
 #include <cstring>
+#include <iosfwd>
 #include <string>
 
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
@@ -25,6 +25,33 @@ struct _GUID;
 #endif
 
 namespace hamigaki {
+
+namespace detail
+{
+
+template<class CharT> struct uuid_delimiter;
+
+template<> struct uuid_delimiter<char>
+{
+    static const char value = '-';
+};
+
+template<> struct uuid_delimiter<wchar_t>
+{
+    static const wchar_t value = L'-';
+};
+
+template<class CharT, class Traits, class Allocator>
+inline void append_hex(
+    std::basic_string<CharT,Traits,Allocator>& s,
+    boost::uint8_t n, bool is_upper)
+{
+    std::pair<CharT,CharT> hex = to_hex_pair<CharT>(n, is_upper);
+    s.push_back(hex.first);
+    s.push_back(hex.second);
+}
+
+} // namespace detail
 
 class uuid : boost::totally_ordered<uuid>
 {
@@ -44,7 +71,7 @@ public:
         }
         else if (std::strlen(s) != 36)
             invalid_uuid();
-        from_string_impl<char,'-'>(s);
+        from_string_impl<char>(s);
     }
 
 #if !defined(BOOST_NO_STD_WSTRING)
@@ -58,7 +85,7 @@ public:
         }
         else if (std::wcslen(s) != 36)
             invalid_uuid();
-        from_string_impl<wchar_t,'-'>(s);
+        from_string_impl<wchar_t>(s);
     }
 #endif
 
@@ -130,11 +157,20 @@ public:
         return data_[idx];
     }
 
+    template<class CharT, class Traits, class Allocator>
+    std::basic_string<CharT,Traits,Allocator> to_basic_string() const
+    {
+        std::basic_string<CharT,Traits,Allocator> s;
+        s.reserve(36);
+        this->to_string_impl<char>(s, false);
+        return s;
+    }
+
     std::string to_string() const
     {
         std::string s;
         s.reserve(36);
-        this->to_string_impl<char,'-'>(s, false);
+        this->to_string_impl<char>(s, false);
         return s;
     }
 
@@ -143,7 +179,7 @@ public:
         std::string s;
         s.reserve(38);
         s += '{';
-        this->to_string_impl<char,'-'>(s, true);
+        this->to_string_impl<char>(s, true);
         s += '}';
         return s;
     }
@@ -153,7 +189,7 @@ public:
     {
         std::wstring s;
         s.reserve(36);
-        this->to_string_impl<wchar_t,L'-'>(s, false);
+        this->to_string_impl<wchar_t>(s, false);
         return s;
     }
 
@@ -162,7 +198,7 @@ public:
         std::wstring s;
         s.reserve(38);
         s += L'{';
-        this->to_string_impl<wchar_t,L'-'>(s, true);
+        this->to_string_impl<wchar_t>(s, true);
         s += L'}';
         return s;
     }
@@ -171,7 +207,7 @@ public:
 private:
     boost::array<boost::uint8_t,16> data_;
 
-    template<class CharT, CharT Delim>
+    template<class CharT>
     void from_string_impl(const CharT* s)
     {
         for (std::size_t i = 0; i < 16; ++i)
@@ -180,45 +216,86 @@ private:
             s += 2;
             if ((i == 3) || (i == 5) || (i == 7) || (i == 9))
             {
-                if (*s != Delim)
+                if (*s != detail::uuid_delimiter<CharT>::value)
                     invalid_uuid();
                 ++s;
             }
         }
     }
 
-    template<class CharT, CharT Delim>
-    void to_string_impl(std::basic_string<CharT>& s, bool is_upper) const
+    template<class CharT, class Traits, class Allocator>
+    void to_string_impl(
+        std::basic_string<CharT,Traits,Allocator>& s, bool is_upper) const
     {
-        s += hamigaki::to_hex<CharT>(
-            data_[0], data_[1], data_[2], data_[3], is_upper);
-        s += Delim;
-        s += hamigaki::to_hex<CharT>(data_[4], data_[5], is_upper);
-        s += Delim;
-        s += hamigaki::to_hex<CharT>(data_[6], data_[7], is_upper);
-        s += Delim;
-        s += hamigaki::to_hex<CharT>(data_[8], data_[9], is_upper);
-        s += Delim;
+        for (std::size_t i = 0; i < 4; ++i)
+            detail::append_hex(s, data_[i], is_upper);
+        s += detail::uuid_delimiter<CharT>::value;
+        detail::append_hex(s, data_[4], is_upper);
+        detail::append_hex(s, data_[5], is_upper);
+        s += detail::uuid_delimiter<CharT>::value;
+        detail::append_hex(s, data_[6], is_upper);
+        detail::append_hex(s, data_[7], is_upper);
+        s += detail::uuid_delimiter<CharT>::value;
+        detail::append_hex(s, data_[8], is_upper);
+        detail::append_hex(s, data_[9], is_upper);
+        s += detail::uuid_delimiter<CharT>::value;
         for (std::size_t i = 10; i < 16; ++i)
-            s += hamigaki::to_hex<CharT>(data_[i], is_upper);
+            detail::append_hex(s, data_[i], is_upper);
     }
 
     static void invalid_uuid()
     {
         throw std::runtime_error("invalid uuid string");
     }
-
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive& ar, const unsigned int version)
-    {
-        ar & boost::serialization::make_nvp(
-                "data",
-                boost::serialization::make_binary_object(data_.elems, 16)
-            );
-    }
 };
 
+template<class CharT, class Traits>
+inline std::basic_ostream<CharT,Traits>&
+operator<<(std::basic_ostream<CharT,Traits>& os, const uuid& id)
+{
+    typedef typename std::basic_ostream<CharT,Traits>::sentry sentry_t;
+    sentry_t ok(os);
+    if (ok)
+        os << id.to_basic_string<CharT,Traits,std::allocator<CharT> >();
+    return os;
+}
+
+template<class CharT, class Traits>
+inline std::basic_istream<CharT,Traits>&
+operator>>(std::basic_istream<CharT,Traits>& is, uuid& id)
+{
+    typedef typename std::basic_istream<CharT,Traits>::sentry sentry_t;
+    sentry_t ok(is);
+    if (ok)
+    {
+        CharT c;
+        if (!is.get(c))
+            return is;
+
+        is.unget();
+
+        if (c == is.widen('{'))
+        {
+            CharT buf[38+1];
+            if (!is.read(buf, 38))
+                return is;
+            buf[38] = CharT();
+            id = uuid(buf);
+        }
+        else
+        {
+            CharT buf[36+1];
+            if (!is.read(buf, 36))
+                return is;
+            buf[36] = CharT();
+            id = uuid(buf);
+        }
+    }
+    return is;
+}
+
 } // End namespace hamigaki.
+
+BOOST_CLASS_IMPLEMENTATION(hamigaki::uuid, boost::serialization::primitive_type)
 
 #endif // HAMIGAKI_UUID_HPP
