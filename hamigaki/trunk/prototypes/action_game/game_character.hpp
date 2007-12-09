@@ -10,6 +10,7 @@
 #ifndef GAME_CHARACTER_HPP
 #define GAME_CHARACTER_HPP
 
+#include "char_attributes.hpp"
 #include "four_char_code.hpp"
 #include "map_element.hpp"
 #include "physics_types.hpp"
@@ -19,30 +20,6 @@
 #include <bitset>
 #include <cmath>
 #include <utility>
-
-namespace char_attr
-{
-    enum values
-    {
-        player,
-        enemy,
-        weapon,
-        block,
-        breaker,
-
-        max_value
-    };
-};
-
-namespace slope_type
-{
-    enum values
-    {
-        none,
-        left_down,
-        right_down
-    };
-};
 
 struct game_character;
 struct game_system;

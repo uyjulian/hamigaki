@@ -52,6 +52,7 @@ exe action_game
     /directx//d3d9
     /directx//dxerr9
     /boost-lib//boost_iostreams
+    /boost-lib//boost_serialization
     /boost-lib//boost_thread
     /hamigaki/audio//hamigaki_audio
     /hamigaki/input//hamigaki_input
