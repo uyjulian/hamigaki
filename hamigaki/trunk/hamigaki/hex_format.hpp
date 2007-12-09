@@ -188,6 +188,15 @@ inline std::basic_string<CharT> to_hex(const T& x, bool is_upper)
 }
 
 template<typename CharT>
+inline std::pair<CharT,CharT> to_hex_pair(boost::uint8_t n, bool is_upper)
+{
+    return std::pair<CharT,CharT>(
+        hex_traits<CharT>::to_hex(n / 16, is_upper),
+        hex_traits<CharT>::to_hex(n % 16, is_upper)
+    );
+};
+
+template<typename CharT>
 inline boost::uint8_t from_hex(CharT c1, CharT c2)
 {
     return static_cast<boost::uint8_t>(
