@@ -17,10 +17,9 @@
 
 struct game_character_class
 {
+    hamigaki::uuid id;
     std::string sprite;
 
-    float width;
-    float height;
     float vx;
     float vy;
 
@@ -37,8 +36,7 @@ struct game_character_class
     hamigaki::uuid on_hit;
 
     game_character_class()
-        : width(32.0f), height(32.0f), vx(0.0f), vy(0.0f)
-        , slope(slope_type::none)
+        : vx(0.0f), vy(0.0f), slope(slope_type::none)
     {
     }
 };
@@ -49,7 +47,7 @@ template<class Archive>
 inline void serialize(
     Archive& ar, game_character_class& c, const unsigned int file_version)
 {
-    ar & c.sprite & c.width & c.height & c.vx & c.vy;
+    ar & c.id & c.sprite & c.vx & c.vy;
 
     unsigned long attrs;
     int slope;

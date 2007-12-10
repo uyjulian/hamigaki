@@ -10,6 +10,7 @@
 #include "main_window_impl.hpp"
 #include "blink_effect.hpp"
 #include "bounce_routine.hpp"
+#include "character_repository.hpp"
 #include "collision_utility.hpp"
 #include "draw.hpp"
 #include "direct3d9.hpp"
@@ -379,6 +380,69 @@ void hit(game_system* game, game_character* c, game_character* target)
         c->vx = -c->vx;
 }
 
+const hamigaki::uuid
+    loop_lift_routine_id("2df594a8-470b-4125-ade3-0fda70a2ad1d");
+const hamigaki::uuid
+    velocity_routine_id("461c9bc7-803a-41d6-95c2-0635eb4cc57c");
+
+const hamigaki::uuid hop_routine_id("453dc7fe-0039-4f5e-9337-8866834d4b49");
+const hamigaki::uuid
+    hop_step_jump_routine_id("a67e5469-c71e-4a48-a5e3-5c7e796e7282");
+const hamigaki::uuid turn_routine_id("352f6c96-62a6-4c9a-922e-84d45fcfb90c");
+
+const hamigaki::uuid hit_id("6a199951-2b1c-45bb-9ec0-ff552996e5a3");
+const hamigaki::uuid pop_up_item_id("bad301d1-2a1c-4156-a125-35746dac4883");
+const hamigaki::uuid power_down_id("bd31f66d-891b-4ed4-aec1-327cff2c01bc");
+const hamigaki::uuid secret_block_id("52cdb853-e6f3-48ca-a12a-9de6e7f6e76b");
+const hamigaki::uuid stomp_id("122ab3e8-c2e5-429f-8088-0c8b7b7107bb");
+const hamigaki::uuid to_fragments_id("3cb2edaf-4af1-498b-8025-9527a8b13808");
+const hamigaki::uuid to_used_block_id("c2209d0a-811e-4f31-8066-24f4cd998296");
+const hamigaki::uuid turn_id("796cff8f-1db7-4d80-b7bd-ac2ed12ecca0");
+
+move_routine_type find_move_routine(const hamigaki::uuid& id)
+{
+    if (id == loop_lift_routine_id)
+        return &loop_lift_routine;
+    else if (id == velocity_routine_id)
+        return &velocity_routine;
+    else
+        return move_routine_type();
+}
+
+speed_routine_type find_speed_routine(const hamigaki::uuid& id)
+{
+    if (id == hop_routine_id)
+        return hop_routine();
+    else if (id == hop_step_jump_routine_id)
+        return hop_step_jump_routine();
+    else if (id == turn_routine_id)
+        return &turn_routine;
+    else
+        return speed_routine_type();
+}
+
+collision_event_type find_collision_event(const hamigaki::uuid& id)
+{
+    if (id == hit_id)
+        return &hit;
+    else if (id == pop_up_item_id)
+        return &pop_up_item;
+    else if (id == power_down_id)
+        return &power_down;
+    else if (id == secret_block_id)
+        return &secret_block;
+    else if (id == stomp_id)
+        return &stomp;
+    else if (id == to_fragments_id)
+        return &to_fragments;
+    else if (id == to_used_block_id)
+        return &to_used_block;
+    else if (id == turn_id)
+        return &turn;
+    else
+        return collision_event_type();
+}
+
 } // namespace
 
 class main_window::impl
@@ -510,6 +574,7 @@ private:
     direct3d9 d3d_;
     direct3d_device9 device_;
     texture_cache textures_;
+    character_repository char_repository_;
     bool active_;
     unsigned long last_time_;
     unsigned frames_;
@@ -542,196 +607,51 @@ private:
 
         bool back = player_->x <= static_cast<float>(e.x);
 
-        if (e.type == enemy_o_id)
+        if (e.type == player_id)
+            return;
+
+        const game_character_class& cc = char_repository_[e.type];
+
+        character_ptr c(new game_character);
+
+        const sprite_info_set& infos = system_.sprites[cc.sprite];
+        const sprite_info& info = infos.get_group(c->form)[0];
+
+        c->vx = cc.vx;
+        c->vy = cc.vy;
+        c->attrs = cc.attrs;
+        c->slope = cc.slope;
+        c->move_routine = find_move_routine(cc.move_routine);
+        c->speed_routine = find_speed_routine(cc.speed_routine);
+        c->on_collide_block_side =
+            find_collision_event(cc.on_collide_block_side);
+        c->on_hit_from_below = find_collision_event(cc.on_hit_from_below);
+        c->on_collide_player = find_collision_event(cc.on_collide_player);
+        c->on_collide_enemy = find_collision_event(cc.on_collide_enemy);
+        c->on_stomp = find_collision_event(cc.on_stomp);
+        c->on_hit = find_collision_event(cc.on_hit);
+
+        c->sprite_infos = &infos;
+        c->x = static_cast<float>(e.x);
+        c->y = static_cast<float>(e.y);
+        c->width = static_cast<float>(info.bounds.lx);
+        c->height = static_cast<float>(info.bounds.ly);
+        c->origin = e;
+
+        if (cc.attrs.test(char_attr::block))
         {
-            character_ptr c =
-                create_character(
-                    e, layer::enemy, back,
-                    system_.sprites["ball.txt"]
-                );
-            c->attrs.set(char_attr::enemy);
-            c->vx = back ? -1.0f : 1.0f;
-            c->move_routine = &velocity_routine;
-            c->on_collide_block_side = &turn;
-            c->on_collide_player = &power_down;
-            c->on_collide_enemy = &turn;
-            c->on_stomp = &stomp;
-            c->on_hit = &hit;
-            system_.characters.push_back(c);
+            c->z = layer::block;
+            c->back = false;
         }
-        else if (e.type == enemy_a_id)
+        else
         {
-            character_ptr c =
-                create_character(
-                    e, layer::enemy, back,
-                    system_.sprites["ball.txt"]
-                );
-            c->attrs.set(char_attr::enemy);
-            c->vx = back ? -1.0f : 1.0f;
-            c->move_routine = &velocity_routine;
-            c->speed_routine = &turn_routine;
-            c->on_collide_block_side = &turn;
-            c->on_collide_player = &power_down;
-            c->on_collide_enemy = &turn;
-            c->on_stomp = &stomp;
-            c->on_hit = &hit;
-            system_.characters.push_back(c);
+            c->z = layer::enemy;
+            c->back = back;
+            if (back)
+                c->vx = -c->vx;
         }
-        else if (e.type == enemy_p_id)
-        {
-            character_ptr c =
-                create_character(
-                    e, layer::enemy, back,
-                    system_.sprites["ball.txt"]
-                );
-            c->attrs.set(char_attr::enemy);
-            c->vx = back ? -2.0f : 2.0f;
-            c->move_routine = &velocity_routine;
-            c->speed_routine = hop_routine();
-            c->on_collide_block_side = &turn;
-            c->on_collide_player = &power_down;
-            c->on_stomp = &stomp;
-            c->on_hit = &hit;
-            system_.characters.push_back(c);
-        }
-        else if (e.type == enemy_w_id)
-        {
-            character_ptr c =
-                create_character(
-                    e, layer::enemy, back,
-                    system_.sprites["ball.txt"]
-                );
-            c->attrs.set(char_attr::enemy);
-            c->vx = back ? -2.0f : 2.0f;
-            c->move_routine = &velocity_routine;
-            c->speed_routine = hop_step_jump_routine();
-            c->on_collide_block_side = &turn;
-            c->on_collide_player = &power_down;
-            c->on_stomp = &stomp;
-            c->on_hit = &hit;
-            system_.characters.push_back(c);
-        }
-        else if (e.type == up_lift_id)
-        {
-            character_ptr c =
-                create_character(
-                    e, layer::block, false,
-                    system_.sprites["lift.txt"]
-                );
-            c->attrs.set(char_attr::block);
-            c->vy = 2.0f;
-            c->move_routine = &loop_lift_routine;
-            system_.characters.push_back(c);
-        }
-        else if (e.type == down_lift_id)
-        {
-            character_ptr c =
-                create_character(
-                    e, layer::block, false,
-                    system_.sprites["lift.txt"]
-                );
-            c->attrs.set(char_attr::block);
-            c->vy = -2.0f;
-            c->move_routine = &loop_lift_routine;
-            system_.characters.push_back(c);
-        }
-        else if (e.type == brick_id)
-        {
-            character_ptr c =
-                create_character(
-                    e, layer::block, false,
-                    system_.sprites["brick_block.txt"]
-                );
-            c->attrs.set(char_attr::block);
-            c->on_hit_from_below = &to_fragments;
-            system_.characters.push_back(c);
-        }
-        else if (e.type == coin_brick_id)
-        {
-            character_ptr c =
-                create_character(
-                    e, layer::block, false,
-                    system_.sprites["brick_block.txt"]
-                );
-            c->attrs.set(char_attr::block);
-            c->on_hit_from_below = &to_used_block;
-            system_.characters.push_back(c);
-        }
-        else if (e.type == item_brick_id)
-        {
-            character_ptr c =
-                create_character(
-                    e, layer::block, false,
-                    system_.sprites["brick_block.txt"]
-                );
-            c->attrs.set(char_attr::block);
-            c->on_hit_from_below = &pop_up_item;
-            system_.characters.push_back(c);
-        }
-        else if (e.type == used_block_id)
-        {
-            character_ptr c =
-                create_character(
-                    e, layer::block, false,
-                    system_.sprites["used_block.txt"]
-                );
-            c->attrs.set(char_attr::block);
-            system_.characters.push_back(c);
-        }
-        else if (e.type == coin_box_id)
-        {
-            character_ptr c =
-                create_character(
-                    e, layer::block, false,
-                    system_.sprites["item_box.txt"]
-                );
-            c->attrs.set(char_attr::block);
-            c->on_hit_from_below = &to_used_block;
-            system_.characters.push_back(c);
-        }
-        else if (e.type == item_box_id)
-        {
-            character_ptr c =
-                create_character(
-                    e, layer::block, false,
-                    system_.sprites["item_box.txt"]
-                );
-            c->attrs.set(char_attr::block);
-            c->on_hit_from_below = &pop_up_item;
-            system_.characters.push_back(c);
-        }
-        else if (e.type == secret_coin_id)
-        {
-            character_ptr c =
-                create_character(
-                    e, layer::block, false,
-                    system_.sprites["secret_block.txt"]
-                );
-            c->on_collide_player = &secret_block;
-            system_.characters.push_back(c);
-        }
-        else if (e.type == left_down_id)
-        {
-            character_ptr c =
-                create_character(
-                    e, layer::block, false,
-                    system_.sprites["left_down.txt"]
-                );
-            c->attrs.set(char_attr::block);
-            c->slope = slope_type::left_down;
-            system_.characters.push_back(c);
-        }
-        else if (e.type == right_down_id)
-        {
-            character_ptr c =
-                create_character(
-                    e, layer::block, false,
-                    system_.sprites["right_down.txt"]
-                );
-            c->attrs.set(char_attr::block);
-            c->slope = slope_type::right_down;
-            system_.characters.push_back(c);
-        }
+
+        system_.characters.push_back(c);
     }
 
     void erase_old_characters()
