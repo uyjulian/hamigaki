@@ -25,6 +25,7 @@ exe action_game_editor
     :
     action_game_editor.cpp
     action_game_editor.rc
+    char_class_io.cpp
     char_select_window.cpp
     char_select_window_impl.cpp
     main_window.cpp
@@ -42,6 +43,7 @@ exe action_game_editor
     /directx//d3d9
     /directx//dxerr9
     /boost-lib//boost_iostreams
+    /boost-lib//boost_serialization
     /boost-lib//boost_thread
     /hamigaki/png//hamigaki_png
     :
