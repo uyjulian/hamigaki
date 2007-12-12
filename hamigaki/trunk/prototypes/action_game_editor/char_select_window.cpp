@@ -7,9 +7,11 @@
 
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
-#include <hamigaki/system/windows_error.hpp>
 #include "char_select_window.hpp"
+#include "char_class_dialog.hpp"
 #include "char_select_window_impl.hpp"
+
+#include <hamigaki/system/windows_error.hpp>
 
 using hamigaki::system::windows_error;
 
@@ -47,6 +49,21 @@ namespace
                 int y = HIWORD(lParam) / 32;
                 pimpl->cursor_pos(x, y);
             }
+            else if (uMsg == WM_LBUTTONDBLCLK)
+            {
+                const hamigaki::uuid& type = pimpl->selected_char();
+                if (!type.is_null())
+                {
+                    // FIXME: This is a test data.
+                    game_character_class info;
+                    info.sprite = "ball.txt";
+                    info.attrs.set(char_attr::enemy);
+                    get_character_class_info(hwnd, info);
+
+                    // FIXME:
+                    get_character_class_info(hwnd, info);
+                }
+            }
         }
     }
     catch (const std::exception& e)
@@ -63,7 +80,7 @@ namespace
     ::WNDCLASSEXA wc;
     std::memset(&wc, 0, sizeof(wc));
     wc.cbSize = sizeof(wc);
-    wc.style = CS_HREDRAW | CS_VREDRAW;
+    wc.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
     wc.lpfnWndProc = &window_proc;
     wc.cbClsExtra = 0;
     wc.cbWndExtra = sizeof(::LONG_PTR);
