@@ -162,6 +162,28 @@ public:
                     draw_character((x-min_x)/32, (y-min_y)/32, *pos);
             }
 
+            if (max_x > map_.width)
+            {
+                ::draw_rectangle(
+                    device_,
+                    map_.width-min_x+16.0f, 0.0f, 0.0f,
+                    max_x-static_cast<float>(map_.width),
+                    static_cast<float>(cr.bottom),
+                    0xFFC0C0C0ul
+                );
+            }
+
+            if (max_y > map_.height)
+            {
+                ::draw_rectangle(
+                    device_,
+                    0.0f, 0.0f, 0.0f,
+                    static_cast<float>(cr.right),
+                    max_y-static_cast<float>(map_.height),
+                    0xFFC0C0C0ul
+                );
+            }
+
             if ((cursor_x < map_.width) && (cursor_y < map_.height))
                 draw_cursor();
 
