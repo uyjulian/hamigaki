@@ -26,7 +26,7 @@ const ::GUID move_routines[] =
 const char* move_routine_names[] =
 {
     "None",
-    "Velocity-base",
+    "Velocity-based",
     "Loop Lift"
 };
 
@@ -44,6 +44,32 @@ const char* speed_routine_names[] =
     "Turn",
     "Hop",
     "Hop-step-jump"
+};
+
+const ::GUID collision_routines[] =
+{
+    {0x00000000,0x0000,0x0000,{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}},
+    {0x6A199951,0x2B1C,0x45BB,{0x9E,0xC0,0xFF,0x55,0x29,0x96,0xE5,0xA3}},
+    {0xBAD301D1,0x2A1C,0x4156,{0xA1,0x25,0x35,0x74,0x6D,0xAC,0x48,0x83}},
+    {0xBD31F66D,0x891B,0x4ED4,{0xAE,0xC1,0x32,0x7C,0xFF,0x2C,0x01,0xBC}},
+    {0x52CDB853,0xE6F3,0x48CA,{0xA1,0x2A,0x9D,0xE6,0xE7,0xF6,0xE7,0x6B}},
+    {0x122AB3E8,0xC2E5,0x429F,{0x80,0x88,0x0C,0x8B,0x7B,0x71,0x07,0xBB}},
+    {0x3CB2EDAF,0x4AF1,0x498B,{0x80,0x25,0x95,0x27,0xA8,0xB1,0x38,0x08}},
+    {0xC2209D0A,0x811E,0x4F31,{0x80,0x66,0x24,0xF4,0xCD,0x99,0x82,0x96}},
+    {0x796CFF8F,0x1DB7,0x4D80,{0xB7,0xBD,0xAC,0x2E,0xD1,0x2E,0xCC,0xA0}}
+};
+
+const char* collision_routine_names[] =
+{
+    "None",
+    "Hit",
+    "Pop-up Item",
+    "Power Down",
+    "Secret Coin",
+    "Stomp",
+    "To Fragments",
+    "To Used Block",
+    "Turn"
 };
 
 inline void set_dialog_item_text(::HWND hwnd, int id, const std::string& s)
@@ -84,6 +110,21 @@ std::size_t find_guid(const GUID (&items)[Size], const hamigaki::uuid& id)
             return i;
 
     return 0;
+}
+
+void setup_collision_event(::HWND hwnd, int id, const hamigaki::uuid& type)
+{
+    set_dialog_item_strings(hwnd, id, collision_routine_names);
+
+    ::SendDlgItemMessage(
+        hwnd, id, CB_SETCURSEL, find_guid(collision_routines, type), 0
+    );
+}
+
+hamigaki::uuid get_collision_event(::HWND hwnd, int id)
+{
+    int index = ::SendDlgItemMessage(hwnd, id, CB_GETCURSEL, 0, 0);
+    return hamigaki::uuid(collision_routines[index]);
 }
 
 ::INT_PTR CALLBACK char_dialog_proc(
@@ -158,6 +199,30 @@ std::size_t find_guid(const GUID (&items)[Size], const hamigaki::uuid& id)
                     hwndDlg, HAMIGAKI_IDC_ON_SPEED, CB_SETCURSEL,
                     find_guid(speed_routines, info->speed_routine), 0
                 );
+
+                setup_collision_event(
+                    hwndDlg, HAMIGAKI_IDC_ON_BLOCK, info->on_collide_block_side
+                );
+
+                setup_collision_event(
+                    hwndDlg, HAMIGAKI_IDC_ON_PUSH, info->on_hit_from_below
+                );
+
+                setup_collision_event(
+                    hwndDlg, HAMIGAKI_IDC_ON_PLAYER, info->on_collide_player
+                );
+
+                setup_collision_event(
+                    hwndDlg, HAMIGAKI_IDC_ON_ENEMY, info->on_collide_enemy
+                );
+
+                setup_collision_event(
+                    hwndDlg, HAMIGAKI_IDC_ON_STOMP, info->on_stomp
+                );
+
+                setup_collision_event(
+                    hwndDlg, HAMIGAKI_IDC_ON_HIT, info->on_hit
+                );
             }
             return 1;
         }
@@ -219,6 +284,19 @@ std::size_t find_guid(const GUID (&items)[Size], const hamigaki::uuid& id)
                 int on_speed = ::SendDlgItemMessage(
                         hwndDlg, HAMIGAKI_IDC_ON_SPEED, CB_GETCURSEL, 0, 0);
                 info->speed_routine = hamigaki::uuid(speed_routines[on_speed]);
+
+                info->on_collide_block_side =
+                    get_collision_event(hwndDlg, HAMIGAKI_IDC_ON_BLOCK);
+                info->on_hit_from_below =
+                    get_collision_event(hwndDlg, HAMIGAKI_IDC_ON_PUSH);
+                info->on_collide_player =
+                    get_collision_event(hwndDlg, HAMIGAKI_IDC_ON_PLAYER);
+                info->on_collide_enemy =
+                    get_collision_event(hwndDlg, HAMIGAKI_IDC_ON_ENEMY);
+                info->on_stomp =
+                    get_collision_event(hwndDlg, HAMIGAKI_IDC_ON_STOMP);
+                info->on_hit =
+                    get_collision_event(hwndDlg, HAMIGAKI_IDC_ON_HIT);
 
                 ::EndDialog(hwndDlg, IDOK);
                 return 1;
