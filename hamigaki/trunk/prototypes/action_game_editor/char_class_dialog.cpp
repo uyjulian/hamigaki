@@ -8,6 +8,7 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "char_class_dialog.hpp"
+#include "icon_select_dialog.hpp"
 #include <boost/lexical_cast.hpp>
 #include <exception>
 #include <cstring>
@@ -305,6 +306,14 @@ hamigaki::uuid get_collision_event(::HWND hwnd, int id)
             {
                 ::EndDialog(hwndDlg, IDCANCEL);
                 return 1;
+            }
+            else if (id == HAMIGAKI_IDC_SPRITE_BTN) // FIXME
+            {
+                icon_info info;
+                info.filename = "char_chips.png";
+                info.x = 1;
+                info.y = 2;
+                select_icon(hwndDlg, info);
             }
         }
         else

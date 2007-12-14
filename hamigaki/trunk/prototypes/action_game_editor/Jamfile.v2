@@ -7,6 +7,7 @@
 
 # See http://hamigaki.sourceforge.jp/ for library home page.
 
+import boost-version ;
 import exec ;
 
 rule user-interface-gui ( properties * )
@@ -21,6 +22,12 @@ rule user-interface-gui ( properties * )
     }
 }
 
+local requirements = ;
+if [ boost-version.version ] >= 1.35.0
+{
+    requirements += <library>/boost-lib//boost_system ;
+}
+
 exe action_game_editor
     :
     action_game_editor.cpp
@@ -29,6 +36,9 @@ exe action_game_editor
     char_class_io.cpp
     char_select_window.cpp
     char_select_window_impl.cpp
+    icon_select_dialog.cpp
+    icon_select_window.cpp
+    icon_select_window_impl.cpp
     main_window.cpp
     main_window_impl.cpp
     map_edit_window.cpp
@@ -43,6 +53,7 @@ exe action_game_editor
     texture_cache.cpp
     /directx//d3d9
     /directx//dxerr9
+    /boost-lib//boost_filesystem
     /boost-lib//boost_iostreams
     /boost-lib//boost_serialization
     /boost-lib//boost_thread
@@ -54,6 +65,7 @@ exe action_game_editor
     <conditional>@user-interface-gui
     <threading>multi
     <define>NOMINMAX=1
+    $(requirements)
     ;
 
 exec.register-exec-all ;

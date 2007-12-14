@@ -19,6 +19,14 @@
 
 class direct3d_texture9
 {
+private:
+    struct safe_bool_helper
+    {
+        void non_null() {};
+    };
+
+    typedef void (safe_bool_helper::*safe_bool)();
+
 public:
     class scoped_lock : boost::noncopyable
     {
@@ -70,6 +78,19 @@ public:
     direct3d_texture9(::IDirect3DTexture9* p)
         : pimpl_(p, hamigaki::detail::windows::com_release())
     {
+    }
+
+    operator safe_bool() const
+    {
+        if (pimpl_.get() != 0)
+            return &safe_bool_helper::non_null;
+        else
+            return static_cast<safe_bool>(0);
+    }
+
+    bool operator!() const
+    {
+        return pimpl_.get() == 0;
     }
 
     ::D3DLOCKED_RECT lock(unsigned level, unsigned long flags=0)
