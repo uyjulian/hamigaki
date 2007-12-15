@@ -50,18 +50,13 @@ inline void serialize(
     ar & c.id & c.sprite & c.vx & c.vy;
 
     unsigned long attrs;
-    int slope;
     if (Archive::is_saving::value)
-    {
         attrs = c.attrs.to_ulong();
-        slope = static_cast<int>(c.slope);
-    }
-    ar & attrs & slope;
+    ar & attrs;
     if (Archive::is_loading::value)
-    {
         c.attrs = std::bitset<char_attr::max_value>(attrs);
-        c.slope = static_cast<slope_type::values>(slope);
-    }
+
+    ar & c.slope;
 
     ar & c.move_routine;
     ar & c.speed_routine;
