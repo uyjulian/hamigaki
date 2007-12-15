@@ -8,8 +8,8 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #define HAMIGAKI_IDD_CHAR            302
-#define HAMIGAKI_IDC_SPRITE         1101
-#define HAMIGAKI_IDC_SPRITE_BTN     1102
+#define HAMIGAKI_IDC_ICON           1101
+#define HAMIGAKI_IDC_SPRITE         1102
 #define HAMIGAKI_IDC_IS_PLAYER      1103
 #define HAMIGAKI_IDC_IS_ENEMY       1104
 #define HAMIGAKI_IDC_IS_WEAPON      1105

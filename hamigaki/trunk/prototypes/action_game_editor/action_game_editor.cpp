@@ -8,6 +8,7 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "icon_select_window.hpp"
+#include "icon_view_window.hpp"
 #include "main_window.hpp"
 #include <boost/noncopyable.hpp>
 #include <iostream>
@@ -65,6 +66,7 @@ int WINAPI WinMain(
 
         ::ATOM cls = register_main_window_class(hInstance);
         ::ATOM cls2 = register_icon_select_window_class(hInstance);
+        ::ATOM cls3 = register_icon_view_window_class(hInstance);
         ::HWND hwnd = create_main_window(hInstance, cls);
 
         ::ShowWindow(hwnd, nCmdShow);
@@ -88,6 +90,7 @@ int WINAPI WinMain(
             }
         }
 
+        ::UnregisterClassA(MAKEINTATOM(cls3), hInstance);
         ::UnregisterClassA(MAKEINTATOM(cls2), hInstance);
         ::UnregisterClassA(MAKEINTATOM(cls), hInstance);
         return msg.wParam;

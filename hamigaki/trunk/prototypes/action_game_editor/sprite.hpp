@@ -46,7 +46,7 @@ inline void draw_sprite(direct3d_device9& device,
 }
 
 inline void draw_sprite(direct3d_device9& device,
-    float x, float y, float z,
+    float x, float y, float z, float dx, float dy,
     direct3d_texture9& texture, int tx, int ty, int tw, int th,
     boost::uint32_t options, unsigned long color = 0xFFFFFFFFul)
 {
@@ -67,15 +67,27 @@ inline void draw_sprite(direct3d_device9& device,
     const transformed_vertex vertices[] =
     {
         { x,    y,    z, 1.0f, color, tu1, tv1 },
-        { x+tw, y,    z, 1.0f, color, tu2, tv1 },
-        { x,    y+th, z, 1.0f, color, tu1, tv2 },
-        { x+tw, y+th, z, 1.0f, color, tu2, tv2 }
+        { x+dx, y,    z, 1.0f, color, tu2, tv1 },
+        { x,    y+dy, z, 1.0f, color, tu1, tv2 },
+        { x+dx, y+dy, z, 1.0f, color, tu2, tv2 }
     };
 
     device.set_vertex_format(D3DFVF_XYZRHW|D3DFVF_DIFFUSE|D3DFVF_TEX1);
     device.set_texture(texture, 0);
     device.draw_primitive(
         D3DPT_TRIANGLESTRIP, 2, vertices, sizeof(vertices[0]));
+}
+
+inline void draw_sprite(direct3d_device9& device,
+    float x, float y, float z,
+    direct3d_texture9& texture, int tx, int ty, int tw, int th,
+    boost::uint32_t options, unsigned long color = 0xFFFFFFFFul)
+{
+    float dx = static_cast<float>(tw);
+    float dy = static_cast<float>(th);
+
+    draw_sprite(
+        device, x, y, z, dx, dy, texture, tx, ty, tw, th, options, color);
 }
 
 #endif // SPRITE_HPP

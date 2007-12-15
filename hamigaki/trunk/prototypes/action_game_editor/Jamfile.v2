@@ -39,6 +39,8 @@ exe action_game_editor
     icon_select_dialog.cpp
     icon_select_window.cpp
     icon_select_window_impl.cpp
+    icon_view_window.cpp
+    icon_view_window_impl.cpp
     main_window.cpp
     main_window_impl.cpp
     map_edit_window.cpp
