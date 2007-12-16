@@ -56,7 +56,7 @@ namespace
                 {
                     // FIXME: This is a test data.
                     game_character_class info;
-                    info.sprite = "ball.txt";
+                    info.sprite = "ball.ags-yh";
                     info.attrs.set(char_attr::enemy);
                     info.vx = 2.0f;
                     info.vy = 1.0f;

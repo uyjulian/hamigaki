@@ -11,66 +11,100 @@
 #define SPRITE_INFO_HPP
 
 #include "physics_types.hpp"
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/vector.hpp>
 #include <boost/cstdint.hpp>
 #include <map>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
-struct sprite_info
+struct sprite_pattern
 {
     int x;
     int y;
+    rectangle<int> attack_rect;
+    rectangle<int> stomp_rect;
 
-    rectangle<int> bounds;
-    rectangle<int> attack;
+    sprite_pattern() : x(0), y(0)
+    {
+    }
 };
 
-class sprite_info_set
+struct sprite_group
 {
-public:
-    typedef std::vector<sprite_info> group_type;
-    typedef std::map<boost::uint32_t,group_type> table_type;
+    int bound_width;
+    int bound_height;
+    std::vector<sprite_pattern> patterns;
 
-    std::string texture() const { return texture_; }
-    void texture(const std::string& filename) { texture_ = filename; }
-
-    int width() const { return width_; }
-    void width(int w) { width_ = w; }
-
-    int height() const { return height_; }
-    void height(int h) { height_ = h; }
-
-    void push_back(boost::uint32_t form, const sprite_info& info)
+    sprite_group() : bound_width(0), bound_height(0)
     {
-        group_type& group = table_[form];
-        group.push_back(info);
     }
+};
 
-    const group_type& get_group(boost::uint32_t form) const
+struct sprite_info_set
+{
+    std::string texture;
+    int width;
+    int height;
+    int y;
+    int wait;
+    std::map<boost::uint32_t,sprite_group> groups;
+
+    sprite_info_set() : width(0), height(0), y(0), wait(1)
     {
-        table_type::const_iterator pos = table_.find(form);
-        if (pos == table_.end())
-            throw std::runtime_error("cannot find sprite group");
-        return pos->second;
     }
 
     void swap(sprite_info_set& rhs)
     {
-        texture_.swap(rhs.texture_);
-        std::swap(width_, rhs.width_);
-        std::swap(height_, rhs.height_);
-        table_.swap(rhs.table_);
+        texture.swap(rhs.texture);
+        std::swap(width, rhs.width);
+        std::swap(height, rhs.height);
+        std::swap(y, rhs.y);
+        std::swap(wait, rhs.wait);
+        groups.swap(rhs.groups);
     }
-
-private:
-    std::string texture_;
-    int width_;
-    int height_;
-    std::map<boost::uint32_t,group_type> table_;
 };
 
+void save_sprite_info_set(const char* filename, const sprite_info_set& infos);
+void load_sprite_info_set(const char* filename, sprite_info_set& infos);
 void
 load_sprite_info_set_from_text(const char* filename, sprite_info_set& infos);
+
+namespace boost { namespace serialization {
+
+template<class Archive>
+inline void serialize(
+    Archive& ar, sprite_pattern& p, const unsigned int file_version)
+{
+    ar & make_nvp("x", p.x);
+    ar & make_nvp("y", p.y);
+    ar & make_nvp("attack-rect", p.attack_rect);
+    ar & make_nvp("stomp-rect", p.stomp_rect);
+}
+
+template<class Archive>
+inline void serialize(
+    Archive& ar, sprite_group& g, const unsigned int file_version)
+{
+    ar & make_nvp("bound-width", g.bound_width);
+    ar & make_nvp("bound-height", g.bound_height);
+    ar & make_nvp("patterns", g.patterns);
+}
+
+template<class Archive>
+inline void serialize(
+    Archive& ar, sprite_info_set& s, const unsigned int file_version)
+{
+    ar & make_nvp("texture", s.texture);
+    ar & make_nvp("width", s.width);
+    ar & make_nvp("height", s.height);
+    ar & make_nvp("y", s.y);
+    ar & make_nvp("wait", s.wait);
+    ar & make_nvp("groups", s.groups);
+}
+
+} } // End namespaces serialization, boost.
 
 #endif // SPRITE_INFO_HPP

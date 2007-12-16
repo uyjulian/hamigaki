@@ -145,7 +145,7 @@ void setup_sprite_list(::HWND hwnd, const std::string& filename)
     for ( ; it != end; ++it)
     {
         const std::string& leaf = it->path().leaf();
-        if (algo::iends_with(leaf, ".txt", loc))
+        if (algo::iends_with(leaf, ".ags-yh", loc))
         {
             ::SendMessageA(
                 hwnd, CB_ADDSTRING, 0,
@@ -174,17 +174,18 @@ void update_icon(::HWND hwndDlg)
         return;
 
     sprite_info_set infos;
-    load_sprite_info_set_from_text(filename.c_str(), infos);
-    const sprite_info& info = infos.get_group(sprite_form::normal)[0];
+    load_sprite_info_set(filename.c_str(), infos);
+    const sprite_pattern& pattern =
+        infos.groups[sprite_form::normal].patterns.at(0);
 
     rectangle<int> r;
-    r.x = info.x;
-    r.y = info.y;
-    r.lx = infos.width();
-    r.ly = infos.height();
+    r.x = infos.width * pattern.x;
+    r.y = infos.height * pattern.y;
+    r.lx = infos.width;
+    r.ly = infos.height;
 
     ::HWND hwnd = ::GetDlgItem(hwndDlg, HAMIGAKI_IDC_ICON);
-    icon_window_load(hwnd, infos.texture(), r);
+    icon_window_load(hwnd, infos.texture, r);
 }
 
 ::INT_PTR CALLBACK char_dialog_proc(
