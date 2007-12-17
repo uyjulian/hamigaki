@@ -9,9 +9,17 @@
 
 #include "sprite_info.hpp"
 #include "four_char_code.hpp"
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/iostreams/filter/zlib.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
 #include <fstream>
 #include <iomanip>
 #include <sstream>
+#include <stdexcept>
+#include <string>
+
+namespace io = boost::iostreams;
 
 namespace
 {
@@ -36,6 +44,44 @@ void throw_invalid_format(const char* filename)
 
 } // namespace
 
+void save_sprite_info_set(const char* filename, const sprite_info_set& infos)
+{
+    std::ofstream file(filename, std::ios_base::binary);
+    if (!file)
+    {
+        std::string msg;
+        msg += "cannot open file '";
+        msg += filename;
+        msg += "'";
+        throw std::runtime_error(msg);
+    }
+
+    io::filtering_stream<io::output> os;
+    os.push(io::zlib_compressor());
+    os.push(file);
+    boost::archive::binary_oarchive oa(os);
+    oa << infos;
+}
+
+void load_sprite_info_set(const char* filename, sprite_info_set& infos)
+{
+    std::ifstream file(filename, std::ios_base::binary);
+    if (!file)
+    {
+        std::string msg;
+        msg += "cannot open file '";
+        msg += filename;
+        msg += "'";
+        throw std::runtime_error(msg);
+    }
+
+    io::filtering_stream<io::input> is;
+    is.push(io::zlib_decompressor());
+    is.push(file);
+    boost::archive::binary_iarchive ia(is);
+    ia >> infos;
+}
+
 void
 load_sprite_info_set_from_text(const char* filename, sprite_info_set& infos)
 {
@@ -48,52 +94,62 @@ load_sprite_info_set_from_text(const char* filename, sprite_info_set& infos)
         throw std::runtime_error(msg);
     }
 
-    sprite_info_set tmp;
     std::string line;
-
     if (!get_next_line(is, line))
         throw_invalid_format(filename);
 
     std::istringstream parser(line);
 
-    std::string texture;
-    int w, h;
-    parser >> texture >> w >> h;
+    sprite_info_set tmp;
+    tmp.wait = 15;
+    parser >> tmp.texture >> tmp.width >> tmp.height;
     if (!parser)
         throw_invalid_format(filename);
-
-    tmp.texture(texture);
-    tmp.width(w);
-    tmp.height(h);
 
     while (get_next_line(is, line))
     {
         char fcc[5];
-        sprite_info info;
+        int x;
+        int y;
+        rectangle<int> bounds;
+        rectangle<int> attack;
 
         parser.str(line);
         parser.clear();
         parser
-            >> std::setw(5) >> fcc >> info.x >> info.y
-            >> info.bounds.x >> info.bounds.y
-            >> info.bounds.lx >> info.bounds.ly;
+            >> std::setw(5) >> fcc >> x >> y
+            >> bounds.x >> bounds.y
+            >> bounds.lx >> bounds.ly;
 
         if (!parser)
             throw_invalid_format(filename);
 
         parser
-            >> info.attack.x >> info.attack.y
-            >> info.attack.lx >> info.attack.ly;
+            >> attack.x >> attack.y
+            >> attack.lx >> attack.ly;
 
-        if (!parser)
+        sprite_group& grp = tmp.groups[four_char_code(fcc)];
+        grp.bound_width = bounds.lx;
+        grp.bound_height = bounds.ly;
+
+        sprite_pattern ptn;
+        ptn.x = x / tmp.width;
+        ptn.y = y / tmp.height;
+
+        if (parser)
         {
-            info.attack.x = 0;
-            info.attack.y = 0;
-            info.attack.lx = 0;
-            info.attack.ly = 0;
+            ptn.attack_rect.x = attack.x - tmp.width/2;
+            ptn.attack_rect.y = tmp.height - (attack.y + attack.ly);
+            ptn.attack_rect.lx = attack.lx;
+            ptn.attack_rect.ly = attack.ly;
         }
 
-        tmp.push_back(four_char_code(fcc), info);
+        ptn.stomp_rect.x = -grp.bound_width/2;
+        ptn.stomp_rect.y = grp.bound_height/2;
+        ptn.stomp_rect.lx = grp.bound_width;
+        ptn.stomp_rect.ly = grp.bound_height/2;
+
+        grp.patterns.push_back(ptn);
     }
 
     infos.swap(tmp);

@@ -108,14 +108,14 @@ character_ptr create_character(
 {
     character_ptr c(new game_character);
 
-    const sprite_info& info = infos.get_group(c->form)[0];
+    const sprite_group& grp = infos.get_group(c->form);
 
     c->sprite_infos = &infos;
     c->x = static_cast<float>(e.x);
     c->y = static_cast<float>(e.y);
     c->z = z;
-    c->width = static_cast<float>(info.bounds.lx);
-    c->height = static_cast<float>(info.bounds.ly);
+    c->width = static_cast<float>(grp.bound_width);
+    c->height = static_cast<float>(grp.bound_height);
     c->origin = e;
     c->back = back;
 
@@ -182,7 +182,7 @@ void to_fragments(
     float vx[] = { -2.0f,  -2.0f,  2.0f,  2.0f };
     float vy[] = {  2.0f,   4.0f,  2.0f,  4.0f };
 
-    const sprite_info_set& infos = game->sprites["fragment.txt"];
+    const sprite_info_set& infos = game->sprites["fragment.ags-yh"];
 
     for (std::size_t i = 0; i < 4; ++i)
     {
@@ -221,7 +221,7 @@ void to_used_block(
         );
     }
 
-    c->change_sprite(game->sprites["used_block.txt"]);
+    c->change_sprite(game->sprites["used_block.ags-yh"]);
     c->move_routine = bounce_routine();
     c->on_hit_from_below.clear();
 }
@@ -240,10 +240,10 @@ void secret_block(
 
 void to_man(game_system* game, game_character* c, game_character* target)
 {
-    if (target->sprite_infos == &game->sprites["boy.txt"])
+    if (target->sprite_infos == &game->sprites["boy.ags-yh"])
     {
         target->attrs.set(char_attr::breaker);
-        target->change_sprite(game->sprites["man.txt"]);
+        target->change_sprite(game->sprites["man.ags-yh"]);
     }
 
     c->removed = true;
@@ -251,10 +251,10 @@ void to_man(game_system* game, game_character* c, game_character* target)
 
 void to_fire_man(game_system* game, game_character* c, game_character* target)
 {
-    if (target->sprite_infos != &game->sprites["fire_man.txt"])
+    if (target->sprite_infos != &game->sprites["fire_man.ags-yh"])
     {
         target->attrs.set(char_attr::breaker);
-        target->change_sprite(game->sprites["fire_man.txt"]);
+        target->change_sprite(game->sprites["fire_man.ags-yh"]);
         target->speed_routine = fire_man_routine();
     }
 
@@ -269,14 +269,14 @@ void power_down(game_system* game, game_character* c, game_character* target)
     if (target->attrs.test(char_attr::breaker))
     {
         game->sound.play_se("damage.ogg");
-        if (target->sprite_infos == &game->sprites["man.txt"])
+        if (target->sprite_infos == &game->sprites["man.ags-yh"])
         {
             target->attrs.reset(char_attr::breaker);
-            target->change_sprite(game->sprites["boy.txt"]);
+            target->change_sprite(game->sprites["boy.ags-yh"]);
         }
         else
         {
-            target->change_sprite(game->sprites["man.txt"]);
+            target->change_sprite(game->sprites["man.ags-yh"]);
             target->speed_routine = user_control_routine();
         }
         target->effect = blink_effect();
@@ -307,20 +307,20 @@ void pop_up_item(game_system* game, game_character* c, game_character* target)
         );
     }
 
-    c->change_sprite(game->sprites["used_block.txt"]);
+    c->change_sprite(game->sprites["used_block.ags-yh"]);
     c->on_hit_from_below.clear();
 
 
     game_character item;
 
-    if (target->sprite_infos == &game->sprites["boy.txt"])
+    if (target->sprite_infos == &game->sprites["boy.ags-yh"])
     {
-        const sprite_info_set& infos = game->sprites["milk.txt"];
-        const sprite_info& info = infos.get_group(item.form)[0];
+        const sprite_info_set& infos = game->sprites["milk.ags-yh"];
+        const sprite_group& grp = infos.get_group(item.form);
 
         item.sprite_infos = &infos;
-        item.width = static_cast<float>(info.bounds.lx);
-        item.height = static_cast<float>(info.bounds.ly);
+        item.width = static_cast<float>(grp.bound_width);
+        item.height = static_cast<float>(grp.bound_height);
         item.vx = 2.0f;
         item.on_collide_block_side = &turn;
         item.on_hit = &hop;
@@ -328,12 +328,12 @@ void pop_up_item(game_system* game, game_character* c, game_character* target)
     }
     else
     {
-        const sprite_info_set& infos = game->sprites["capsule.txt"];
-        const sprite_info& info = infos.get_group(item.form)[0];
+        const sprite_info_set& infos = game->sprites["capsule.ags-yh"];
+        const sprite_group& grp = infos.get_group(item.form);
 
         item.sprite_infos = &infos;
-        item.width = static_cast<float>(info.bounds.lx);
-        item.height = static_cast<float>(info.bounds.ly);
+        item.width = static_cast<float>(grp.bound_width);
+        item.height = static_cast<float>(grp.bound_height);
         item.on_collide_player = &to_fire_man;
     }
 
@@ -615,7 +615,7 @@ private:
         character_ptr c(new game_character);
 
         const sprite_info_set& infos = system_.sprites[cc.sprite];
-        const sprite_info& info = infos.get_group(c->form)[0];
+        const sprite_group& grp = infos.get_group(c->form);
 
         c->vx = cc.vx;
         c->vy = cc.vy;
@@ -634,8 +634,8 @@ private:
         c->sprite_infos = &infos;
         c->x = static_cast<float>(e.x);
         c->y = static_cast<float>(e.y);
-        c->width = static_cast<float>(info.bounds.lx);
-        c->height = static_cast<float>(info.bounds.ly);
+        c->width = static_cast<float>(grp.bound_width);
+        c->height = static_cast<float>(grp.bound_height);
         c->origin = e;
 
         if (cc.attrs.test(char_attr::block))
@@ -702,20 +702,20 @@ private:
         player_->move_routine = &player_routine;
         player_->speed_routine = user_control_routine();
         player_->on_collide_block_side = &stop;
-        player_->sprite_infos = &system_.sprites["boy.txt"];
+        player_->sprite_infos = &system_.sprites["boy.ags-yh"];
         player_->attrs.set(char_attr::player);
         player_->back = false;
 
         std::pair<int,int> pos = system_.map.player_position;
 
-        sprite_info info =
-            player_->sprite_infos->get_group(player_->form)[0];
+        const sprite_group& grp =
+            player_->sprite_infos->get_group(player_->form);
 
         player_->x = static_cast<float>(pos.first);
         player_->y = static_cast<float>(pos.second);
         player_->z = layer::player;
-        player_->width = static_cast<float>(info.bounds.lx);
-        player_->height = static_cast<float>(info.bounds.ly);
+        player_->width = static_cast<float>(grp.bound_width);
+        player_->height = static_cast<float>(grp.bound_height);
 
         system_.characters.clear();
         system_.characters.push_back(player_);
@@ -787,7 +787,7 @@ private:
             if (player_->form != miss_form)
             {
                 system_.sound.stop_bgm();
-                player_->change_sprite(system_.sprites["boy.txt"]);
+                player_->change_sprite(system_.sprites["boy.ags-yh"]);
                 player_->change_form(miss_form);
                 player_->effect = wait_se_routine("miss.ogg");
             }
@@ -847,22 +847,21 @@ private:
 
         const sprite_info_set& infos = *(c.sprite_infos);
 
-        const std::vector<sprite_info>& group = infos.get_group(c.form);
-
-        std::size_t pattern = (c.step % (15 * group.size())) / 15;
-        const sprite_info& info = group[pattern];
+        const sprite_group& group = infos.get_group(c.form);
+        const sprite_pattern& ptn = group.patterns[c.step / infos.wait];
 
         const rect& tr = c.texture_rect();
 
         float x = tr.x - scroll_->x;
         float y = height_ - tr.y - tr.ly;
 
-        const std::string& texture = infos.texture();
+        const std::string& texture = infos.texture;
         if (!texture.empty())
         {
             ::draw_sprite(
                 device_, x, y, c.z, textures_[texture],
-                info.x, info.y, infos.width(), infos.height(),
+                ptn.x * infos.width, ptn.y * infos.height,
+                infos.width, infos.height,
                 c.back, c.color
             );
         }

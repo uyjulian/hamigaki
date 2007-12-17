@@ -22,7 +22,7 @@ public:
         if ((pos == table_.end()) || (pos->first > filename))
         {
             sprite_info_set infos;
-            load_sprite_info_set_from_text(filename.c_str(), infos);
+            load_sprite_info_set(filename.c_str(), infos);
 
             pos = table_.insert(
                 pos, table_type::value_type(filename, sprite_info_set())

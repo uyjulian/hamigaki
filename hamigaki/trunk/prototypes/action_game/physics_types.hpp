@@ -10,6 +10,8 @@
 #ifndef PHYSICS_TYPES_HPP
 #define PHYSICS_TYPES_HPP
 
+#include <boost/serialization/nvp.hpp>
+
 template<class T>
 struct rectangle
 {
@@ -42,5 +44,19 @@ struct velocity
 
     velocity() : vx(0.0f), vy(0.0f) {}
 };
+
+namespace boost { namespace serialization {
+
+template<class Archive, class T>
+inline void serialize(
+    Archive& ar, rectangle<T>& r, const unsigned int file_version)
+{
+    ar & make_nvp("x", r.x);
+    ar & make_nvp("y", r.y);
+    ar & make_nvp("lx", r.lx);
+    ar & make_nvp("ly", r.ly);
+}
+
+} } // End namespaces serialization, boost.
 
 #endif // PHYSICS_TYPES_HPP

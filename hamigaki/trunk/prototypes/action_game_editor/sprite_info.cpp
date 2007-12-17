@@ -94,14 +94,14 @@ load_sprite_info_set_from_text(const char* filename, sprite_info_set& infos)
         throw std::runtime_error(msg);
     }
 
-    sprite_info_set tmp;
     std::string line;
-
     if (!get_next_line(is, line))
         throw_invalid_format(filename);
 
     std::istringstream parser(line);
 
+    sprite_info_set tmp;
+    tmp.wait = 15;
     parser >> tmp.texture >> tmp.width >> tmp.height;
     if (!parser)
         throw_invalid_format(filename);

@@ -63,8 +63,8 @@ bool fire_man_routine_impl(
         {
             character_ptr beam(new game_character);
 
-            const sprite_info_set& infos = game->sprites["beam.txt"];
-            const sprite_info& info = infos.get_group(beam->form)[0];
+            const sprite_info_set& infos = game->sprites["beam.ags-yh"];
+            const sprite_group& grp = infos.get_group(beam->form);
 
             if (c->back)
             {
@@ -80,8 +80,8 @@ bool fire_man_routine_impl(
             beam->z = 0.0f;
             beam->attrs.set(char_attr::weapon);
             beam->sprite_infos = &infos;
-            beam->width = static_cast<float>(info.bounds.lx);
-            beam->height = static_cast<float>(info.bounds.ly);
+            beam->width = static_cast<float>(grp.bound_width);
+            beam->height = static_cast<float>(grp.bound_height);
             beam->back = c->back;
             beam->move_routine = &velocity_routine;
             beam->speed_routine = hop_routine(6.0f, 0.0f);
