@@ -14,6 +14,7 @@
 #include <iostream>
 #include <stdexcept>
 
+#include <hamigaki/detail/windows/com_library.hpp>
 #include <windows.h>
 #include <commctrl.h>
 
@@ -60,6 +61,7 @@ int WINAPI WinMain(
 {
     try
     {
+        const hamigaki::detail::windows::com_library using_com;
         init_common_controls();
 
         accelerator_table accels(hInstance, HAMIGAKI_IDR_ACCELERATOR);

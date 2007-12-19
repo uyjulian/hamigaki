@@ -36,6 +36,8 @@ exe action_game_editor
     char_class_io.cpp
     char_select_window.cpp
     char_select_window_impl.cpp
+    folder_select_dialog.cpp
+    game_project_io.cpp
     icon_select_dialog.cpp
     icon_select_window.cpp
     icon_select_window_impl.cpp
@@ -63,7 +65,10 @@ exe action_game_editor
     :
     <find-static-library>comctl32
     <find-static-library>comdlg32
+    <find-static-library>ole32
+    <find-static-library>shell32
     <find-static-library>user32
+
     <conditional>@user-interface-gui
     <threading>multi
     <define>NOMINMAX=1

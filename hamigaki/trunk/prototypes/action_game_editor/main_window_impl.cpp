@@ -8,12 +8,69 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "main_window_impl.hpp"
+#include "char_class_io.hpp"
 #include "char_select_window.hpp"
+#include "game_project_io.hpp"
 #include "map_edit_window.hpp"
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
+#include <map>
+#include <set>
+
+namespace algo = boost::algorithm;
+namespace fs = boost::filesystem;
 
 namespace
 {
+
+void load_char_classes(
+    const fs::path& dir,
+    std::set<game_character_class>& char_table,
+    std::map<hamigaki::uuid,fs::path>& filename_table)
+{
+    fs::directory_iterator it(dir);
+    fs::directory_iterator end;
+
+    std::set<game_character_class> tmp;
+    std::map<hamigaki::uuid,fs::path> tmp2;
+    std::locale loc("");
+    for ( ; it != end; ++it)
+    {
+        const fs::path& ph = it->path();
+        const std::string& leaf = ph.leaf();
+        if (algo::iends_with(leaf, ".agc-yh", loc))
+        {
+            const game_character_class& c =
+                load_character_class(ph.file_string().c_str());
+            tmp.insert(c);
+            tmp2[c.id] = ph;
+        }
+    }
+
+    char_table.swap(tmp);
+    filename_table.swap(tmp2);
+}
+
+void save_char_classes(
+    const fs::path& dir,
+    const std::set<game_character_class>& char_table,
+    const std::map<hamigaki::uuid,fs::path>& filename_table)
+{
+    typedef std::set<game_character_class>::const_iterator char_iter;
+    typedef std::map<hamigaki::uuid,fs::path>::const_iterator name_iter;
+
+    for (char_iter i = char_table.begin(), end = char_table.end(); i!=end; ++i)
+    {
+        const game_character_class& c = *i;
+        name_iter pos = filename_table.find(c.id);
+        BOOST_ASSERT(pos != filename_table.end());
+        const fs::path& ph = pos->second;
+        save_character_class(ph.file_string().c_str(), c);
+    }
+}
 
 class scoped_window_class : private boost::noncopyable
 {
@@ -137,6 +194,42 @@ public:
         map_edit_window_select_char(map_window_, c);
     }
 
+    void new_project(const std::string& filename, const game_project& proj)
+    {
+        project_ = proj;
+
+        load_char_classes(
+            fs::path(filename).branch_path(),
+            char_table_,
+            filename_table_
+        );
+
+        project_file_ = filename;
+    }
+
+    void load_project(const std::string& filename)
+    {
+        project_ = load_game_project(filename.c_str());
+
+        load_char_classes(
+            fs::path(filename).branch_path(),
+            char_table_,
+            filename_table_
+        );
+
+        project_file_ = filename;
+    }
+
+    void save_project()
+    {
+        save_game_project(project_file_.c_str(), project_);
+
+        save_char_classes(
+            fs::path(project_file_).branch_path(),
+            char_table_, filename_table_
+        );
+    }
+
     void new_stage(int width, int height)
     {
         map_edit_window_new(map_window_, width, height);
@@ -160,7 +253,7 @@ public:
         if (stage_file_.empty())
             return false;
 
-        map_edit_window_save(map_window_, stage_file_);
+        save_stage(stage_file_);
         return true;
     }
 
@@ -172,6 +265,10 @@ public:
 private:
     ::HWND handle_;
     ::HINSTANCE hInstance_;
+    game_project project_;
+    std::string project_file_;
+    std::set<game_character_class> char_table_;
+    std::map<hamigaki::uuid,fs::path> filename_table_;
     scoped_window_class select_class_;
     scoped_window_class map_class_;
     ::HWND select_window_;
@@ -195,6 +292,22 @@ void main_window::update_size()
 void main_window::update_selected_char()
 {
     pimpl_->update_selected_char();
+}
+
+void main_window::new_project(
+    const std::string& filename, const game_project& proj)
+{
+    pimpl_->new_project(filename, proj);
+}
+
+void main_window::load_project(const std::string& filename)
+{
+    pimpl_->load_project(filename);
+}
+
+void main_window::save_project()
+{
+    pimpl_->save_project();
 }
 
 void main_window::new_stage(int width, int height)

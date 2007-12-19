@@ -10,6 +10,7 @@
 #ifndef MAIN_WINDOW_IMPL_HPP
 #define MAIN_WINDOW_IMPL_HPP
 
+#include "game_project.hpp"
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <windows.h>
@@ -24,6 +25,9 @@ public:
     ~main_window();
     void update_size();
     void update_selected_char();
+    void new_project(const std::string& filename, const game_project& proj);
+    void load_project(const std::string& filename);
+    void save_project();
     void new_stage(int width, int height);
     void load_stage(const std::string& filename);
     void save_stage(const std::string& filename);

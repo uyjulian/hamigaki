@@ -11,13 +11,18 @@
 #define GAME_CHARACTER_CLASS_HPP
 
 #include "char_attributes.hpp"
+#include "physics_types.hpp"
 #include <hamigaki/uuid.hpp>
+#include <boost/serialization/version.hpp>
 #include <bitset>
 #include <string>
 
 struct game_character_class
+    : private boost::totally_ordered<game_character_class>
 {
     hamigaki::uuid id;
+    std::string icon;
+    rectangle<int> icon_rect;
     std::string sprite;
 
     float vx;
@@ -39,7 +44,19 @@ struct game_character_class
         : vx(0.0f), vy(0.0f), slope(slope_type::none)
     {
     }
+
+    bool operator<(const game_character_class& rhs) const
+    {
+        return id < rhs.id;
+    }
+
+    bool operator==(const game_character_class& rhs) const
+    {
+        return id == rhs.id;
+    }
 };
+
+BOOST_CLASS_VERSION(game_character_class, 1);
 
 namespace boost { namespace serialization {
 
@@ -47,25 +64,35 @@ template<class Archive>
 inline void serialize(
     Archive& ar, game_character_class& c, const unsigned int file_version)
 {
-    ar & c.id & c.sprite & c.vx & c.vy;
+    ar & make_nvp("id", c.id);
+
+    if (file_version > 0)
+    {
+        ar & make_nvp("icon", c.icon);
+        ar & make_nvp("icon-rect", c.icon_rect);
+    }
+
+    ar & make_nvp("sprite", c.sprite);
+    ar & make_nvp("vx", c.vx);
+    ar & make_nvp("vy", c.vy);
 
     unsigned long attrs;
     if (Archive::is_saving::value)
         attrs = c.attrs.to_ulong();
-    ar & attrs;
+    ar & make_nvp("attrs", attrs);
     if (Archive::is_loading::value)
         c.attrs = std::bitset<char_attr::max_value>(attrs);
 
-    ar & c.slope;
+    ar & make_nvp("slope", c.slope);
 
-    ar & c.move_routine;
-    ar & c.speed_routine;
-    ar & c.on_collide_block_side;
-    ar & c.on_hit_from_below;
-    ar & c.on_collide_player;
-    ar & c.on_collide_enemy;
-    ar & c.on_stomp;
-    ar & c.on_hit;
+    ar & make_nvp("move-routine", c.move_routine);
+    ar & make_nvp("speed-routine", c.speed_routine);
+    ar & make_nvp("on-collide-block-side", c.on_collide_block_side);
+    ar & make_nvp("on-hit-from-below", c.on_hit_from_below);
+    ar & make_nvp("on-collide-player", c.on_collide_player);
+    ar & make_nvp("on-collide-enemy", c.on_collide_enemy);
+    ar & make_nvp("on-stomp", c.on_stomp);
+    ar & make_nvp("on-hit", c.on_hit);
 }
 
 } } // End namespaces serialization, boost.

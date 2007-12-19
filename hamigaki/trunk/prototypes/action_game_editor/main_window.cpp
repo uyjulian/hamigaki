@@ -9,9 +9,8 @@
 
 #include "main_window.hpp"
 #include "char_select_window_msgs.hpp"
+#include "folder_select_dialog.hpp"
 #include "main_window_impl.hpp"
-#include "new_stage_dialog.hpp"
-#include <boost/algorithm/string/find.hpp>
 #include <cstring>
 
 #include <hamigaki/system/windows_error.hpp>
@@ -32,8 +31,7 @@ bool get_open_file_name(::HWND hwnd, std::string& filename)
     ofn.lStructSize = sizeof(ofn);
     ofn.hwndOwner = hwnd;
     ofn.lpstrFilter =
-        "Action Game Map Files (*.agm-yh)\0*.agm-yh\0"
-        "Text Files (*.txt)\0*.txt\0"
+        "Action Game Project Files (*.agp-yh)\0*.agp-yh\0"
         ;
     ofn.Flags = OFN_EXPLORER|OFN_FILEMUSTEXIST;
     ofn.lpstrFile = buf;
@@ -46,82 +44,18 @@ bool get_open_file_name(::HWND hwnd, std::string& filename)
     return true;
 }
 
-::UINT_PTR CALLBACK
-save_dialog_hook(::HWND hdlg, ::UINT uiMsg, ::WPARAM wParam, ::LPARAM lParam)
-{
-    if (uiMsg == WM_NOTIFY)
-    {
-        ::NMHDR* head = reinterpret_cast< ::NMHDR*>(lParam);
-        if (head->code == CDN_TYPECHANGE)
-        {
-            ::OPENFILENAMEA& info =
-                *reinterpret_cast< ::OFNOTIFYA*>(head)->lpOFN;
-
-            if (info.nFilterIndex == 1)
-                CommDlg_OpenSave_SetDefExt(hdlg, "agm-yh");
-            else if (info.nFilterIndex == 2)
-                CommDlg_OpenSave_SetDefExt(hdlg, "txt");
-        }
-    }
-    return 0;
-}
-
-bool get_save_file_name(::HWND hwnd, std::string& filename)
-{
-    char buf[MAX_PATH];
-    buf[0] = '\0';
-
-    ::OPENFILENAMEA ofn;
-    std::memset(&ofn, 0, sizeof(ofn));
-    ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = hwnd;
-    ofn.lpstrFilter =
-        "Action Game Map Files (*.agm-yh)\0*.agm-yh\0"
-        "Text Files (*.txt)\0*.txt\0"
-        ;
-    ofn.Flags = OFN_EXPLORER|OFN_ENABLEHOOK|OFN_OVERWRITEPROMPT;
-    ofn.lpstrFile = buf;
-    ofn.nMaxFile = sizeof(buf);
-    ofn.lpstrDefExt = "agm-yh";
-    ofn.lpfnHook = &save_dialog_hook;
-
-    if (::GetSaveFileName(&ofn) == FALSE)
-        return false;
-
-    filename = buf;
-    return true;
-}
-
-bool save_stage(main_window* pimpl, ::HWND hwnd)
-{
-    if (pimpl->save_stage())
-        return true;
-
-    std::string filename;
-    if (get_save_file_name(hwnd, filename))
-    {
-        pimpl->save_stage(filename);
-        return true;
-    }
-    else
-        return false;
-}
-
-bool close_stage(main_window* pimpl, ::HWND hwnd)
+bool close_project(main_window* pimpl, ::HWND hwnd)
 {
     if (pimpl->modified())
     {
         int res = ::MessageBoxA(hwnd,
-            "The current stage is modified. Do you save it?",
+            "The current project is modified. Do you save it?",
             "Action Game Editor", MB_YESNOCANCEL|MB_ICONEXCLAMATION);
 
         if (res == IDCANCEL)
             return false;
         else if (res == IDYES)
-        {
-            if (!save_stage(pimpl, hwnd))
-                return false;
-        }
+            pimpl->save_project();
     }
 
     return true;
@@ -158,7 +92,7 @@ bool close_stage(main_window* pimpl, ::HWND hwnd)
         }
         else if (uMsg == WM_CLOSE)
         {
-            if (close_stage(pimpl, hwnd))
+            if (close_project(pimpl, hwnd))
                 ::DestroyWindow(hwnd);
             return 0;
         }
@@ -178,33 +112,28 @@ bool close_stage(main_window* pimpl, ::HWND hwnd)
             {
                 if (id == HAMIGAKI_ID_FILE_NEW)
                 {
-                    if (!close_stage(pimpl, hwnd))
+                    if (!close_project(pimpl, hwnd))
                         return 0;
 
-                    stage_info info;
-                    if (get_new_stage_info(hwnd, info))
-                        pimpl->new_stage(info.width, info.height);
+                    game_project proj;
+                    std::string dir;
+                    if (select_folder(hwnd, dir))
+                        pimpl->new_project(dir + "\\action_game.agp-yh", proj);
                 }
                 else if (id == HAMIGAKI_ID_FILE_OPEN)
                 {
-                    if (!close_stage(pimpl, hwnd))
+                    if (!close_project(pimpl, hwnd))
                         return 0;
 
                     std::string filename;
                     if (get_open_file_name(hwnd, filename))
-                        pimpl->load_stage(filename);
+                        pimpl->load_project(filename);
                 }
                 else if (id == HAMIGAKI_ID_FILE_SAVE)
-                    save_stage(pimpl, hwnd);
-                else if (id == HAMIGAKI_ID_FILE_SAVE_AS)
-                {
-                    std::string filename;
-                    if (get_save_file_name(hwnd, filename))
-                        pimpl->save_stage(filename);
-                }
+                    pimpl->save_project();
                 else if (id == HAMIGAKI_ID_FILE_EXIT)
                 {
-                    if (close_stage(pimpl, hwnd))
+                    if (close_project(pimpl, hwnd))
                         ::DestroyWindow(hwnd);
                 }
             }
