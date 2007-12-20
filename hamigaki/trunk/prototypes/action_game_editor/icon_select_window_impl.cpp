@@ -8,6 +8,7 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "icon_select_window_impl.hpp"
+#include "cursor.hpp"
 #include "direct3d9.hpp"
 #include "direct3d_device9.hpp"
 #include "png_loader.hpp"
@@ -99,7 +100,7 @@ private:
             D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, handle_,
             D3DCREATE_HARDWARE_VERTEXPROCESSING, params);
 
-        cursor_texture_ = create_png_texture(device_, "box_cursor.png");
+        cursor_texture_ = create_cursor_texture(device_, 32, 32);
     }
 };
 

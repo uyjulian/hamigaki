@@ -36,6 +36,7 @@ exe action_game_editor
     char_class_io.cpp
     char_select_window.cpp
     char_select_window_impl.cpp
+    cursor.cpp
     folder_select_dialog.cpp
     game_project_io.cpp
     icon_select_dialog.cpp

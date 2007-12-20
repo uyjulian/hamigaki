@@ -9,6 +9,7 @@
 
 #include "char_select_window_impl.hpp"
 #include "char_select_window_msgs.hpp"
+#include "cursor.hpp"
 #include "direct3d9.hpp"
 #include "direct3d_device9.hpp"
 #include "png_loader.hpp"
@@ -130,7 +131,7 @@ private:
             D3DCREATE_HARDWARE_VERTEXPROCESSING, params);
 
         chips_texture_ = create_png_texture(device_, "char_chips.png");
-        cursor_texture_ = create_png_texture(device_, "box_cursor.png");
+        cursor_texture_ = create_cursor_texture(device_, 32, 32);
     }
 };
 
