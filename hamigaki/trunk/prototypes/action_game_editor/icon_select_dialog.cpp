@@ -94,31 +94,28 @@ void setup_filename_list(::HWND hwndDlg, const std::string& filename)
     {
         ::WORD code = HIWORD(wParam);
         ::WORD id = LOWORD(wParam);
-        if ((code == 0) || (code == 1))
+        if (id == IDOK)
         {
-            if (id == IDOK)
-            {
-                icon_info* info =
-                    reinterpret_cast<icon_info*>(
-                        GetWindowLongPtr(hwndDlg, DWLP_USER)
-                    );
+            icon_info* info =
+                reinterpret_cast<icon_info*>(
+                    GetWindowLongPtr(hwndDlg, DWLP_USER)
+                );
 
-                ::HWND hwnd = ::GetDlgItem(hwndDlg, HAMIGAKI_IDC_PNG);
-                info->filename = get_window_text(hwnd);
+            ::HWND hwnd = ::GetDlgItem(hwndDlg, HAMIGAKI_IDC_PNG);
+            info->filename = get_window_text(hwnd);
 
-                ::HWND hwnd2 = ::GetDlgItem(hwndDlg, HAMIGAKI_IDC_ICON_SEL);
-                const std::pair<int,int>& x_y = select_window_cursor_pos(hwnd2);
-                info->x = x_y.first;
-                info->y = x_y.second;
+            ::HWND hwnd2 = ::GetDlgItem(hwndDlg, HAMIGAKI_IDC_ICON_SEL);
+            const std::pair<int,int>& x_y = select_window_cursor_pos(hwnd2);
+            info->x = x_y.first;
+            info->y = x_y.second;
 
-                ::EndDialog(hwndDlg, IDOK);
-                return 1;
-            }
-            else if (id == IDCANCEL)
-            {
-                ::EndDialog(hwndDlg, IDCANCEL);
-                return 1;
-            }
+            ::EndDialog(hwndDlg, IDOK);
+            return 1;
+        }
+        else if (id == IDCANCEL)
+        {
+            ::EndDialog(hwndDlg, IDCANCEL);
+            return 1;
         }
         else if (id == HAMIGAKI_IDC_PNG)
         {

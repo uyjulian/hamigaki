@@ -20,6 +20,7 @@ class main_window
 public:
     static const int char_select_id = 1;
     static const int map_edit_id = 2;
+    static const int map_select_id = 3;
 
     explicit main_window(::HWND handle);
     ~main_window();
@@ -32,6 +33,7 @@ public:
     void load_stage(const std::string& filename);
     void save_stage(const std::string& filename);
     bool save_stage();
+    void change_stage();
     bool modified();
 
 private:

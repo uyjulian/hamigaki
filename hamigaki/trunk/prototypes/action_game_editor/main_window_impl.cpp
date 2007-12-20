@@ -17,6 +17,7 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/scoped_array.hpp>
 #include <map>
 #include <set>
 
@@ -69,6 +70,26 @@ void save_char_classes(
         BOOST_ASSERT(pos != filename_table.end());
         const fs::path& ph = pos->second;
         save_character_class(ph.file_string().c_str(), c);
+    }
+}
+
+void setup_map_list(::HWND hwnd, const fs::path& dir)
+{
+    ::SendMessageA(hwnd, LB_RESETCONTENT, 0, 0);
+
+    fs::directory_iterator it(dir);
+    fs::directory_iterator end;
+
+    std::locale loc("");
+    for ( ; it != end; ++it)
+    {
+        const fs::path& ph = it->path();
+        const std::string& leaf = ph.leaf();
+        if (algo::iends_with(leaf, ".agm-yh", loc))
+        {
+            ::SendMessageA(hwnd, LB_ADDSTRING, 0,
+                reinterpret_cast< ::LPARAM>(leaf.c_str()));
+        }
     }
 }
 
@@ -131,13 +152,6 @@ private:
     );
 }
 
-int get_window_width(::HWND hwnd)
-{
-    ::RECT r;
-    ::GetWindowRect(hwnd, &r);
-    return r.right - r.left;
-}
-
 } // namespace
 
 class main_window::impl
@@ -162,15 +176,33 @@ public:
             )
         );
 
+        ::RECT r;
+        ::GetWindowRect(select_window.get(), &r);
+        int char_sel_width = r.right - r.left;
+        int char_sel_height = r.bottom - r.top;
+
         scoped_window map_window(
             create_map_edit_window(
                 handle_, map_edit_id,
-                get_window_width(select_window.get()) + 2,
+                char_sel_width + 2,
                 hInstance_, map_class_.get()
             )
         );
 
-        select_window_ = select_window.release();
+        ::RECT cr;
+        ::GetClientRect(handle_, &cr);
+
+        map_sel_window_ = ::CreateWindowExA(
+            WS_EX_CLIENTEDGE, "LISTBOX", "",
+            WS_CHILD | WS_VISIBLE | WS_VSCROLL | LBS_NOTIFY,
+            0, char_sel_height + 2,
+            char_sel_width, cr.bottom - (char_sel_height + 2),
+            handle_,
+            reinterpret_cast< ::HMENU>(static_cast< ::LONG_PTR>(map_select_id)),
+            hInstance_, 0
+        );
+
+        char_sel_window_ = select_window.release();
         map_window_ = map_window.release();
     }
 
@@ -180,17 +212,26 @@ public:
 
     void update_size()
     {
-        int left = get_window_width(select_window_) + 2;
+        ::RECT r;
+        ::GetWindowRect(char_sel_window_, &r);
+        int char_sel_width = r.right - r.left;
+        int char_sel_height = r.bottom - r.top;
 
         ::RECT cr;
         ::GetClientRect(handle_, &cr);
 
-        ::MoveWindow(map_window_, left, 0, cr.right - left, cr.bottom, TRUE);
+        ::MoveWindow(
+            map_window_, char_sel_width + 2, 0,
+            cr.right - (char_sel_width + 2), cr.bottom, TRUE);
+
+        ::MoveWindow(
+            map_sel_window_, 0, char_sel_height + 2,
+            char_sel_width, cr.bottom - (char_sel_height + 2), TRUE);
     }
 
     void update_selected_char()
     {
-        const hamigaki::uuid& c = get_selected_char(select_window_);
+        const hamigaki::uuid& c = get_selected_char(char_sel_window_);
         map_edit_window_select_char(map_window_, c);
     }
 
@@ -198,26 +239,17 @@ public:
     {
         project_ = proj;
 
-        load_char_classes(
-            fs::path(filename).branch_path(),
-            char_table_,
-            filename_table_
-        );
+        const fs::path& dir = fs::path(filename).branch_path();
+
+        load_char_classes(dir, char_table_, filename_table_);
+        setup_map_list(map_sel_window_, dir);
 
         project_file_ = filename;
     }
 
     void load_project(const std::string& filename)
     {
-        project_ = load_game_project(filename.c_str());
-
-        load_char_classes(
-            fs::path(filename).branch_path(),
-            char_table_,
-            filename_table_
-        );
-
-        project_file_ = filename;
+        this->new_project(filename, load_game_project(filename.c_str()));
     }
 
     void save_project()
@@ -257,6 +289,22 @@ public:
         return true;
     }
 
+    void change_stage()
+    {
+        int index = ::SendMessageA(map_sel_window_, LB_GETCURSEL, 0, 0);
+        int size = ::SendMessageA(map_sel_window_, LB_GETTEXTLEN, index, 0);
+
+        boost::scoped_array<char> buf(new char[size+1]);
+        ::SendMessageA(
+            map_sel_window_, LB_GETTEXT, index,
+            reinterpret_cast< ::LPARAM>(buf.get()));
+
+        std::string filename(buf.get(), size);
+
+        map_edit_window_load(map_window_, filename);
+        stage_file_ = filename;
+    }
+
     bool modified()
     {
         return map_edit_window_select_modified(map_window_);
@@ -271,8 +319,9 @@ private:
     std::map<hamigaki::uuid,fs::path> filename_table_;
     scoped_window_class select_class_;
     scoped_window_class map_class_;
-    ::HWND select_window_;
+    ::HWND char_sel_window_;
     ::HWND map_window_;
+    ::HWND map_sel_window_;
     std::string stage_file_;
 };
 
@@ -328,6 +377,11 @@ void main_window::save_stage(const std::string& filename)
 bool main_window::save_stage()
 {
     return pimpl_->save_stage();
+}
+
+void main_window::change_stage()
+{
+    pimpl_->change_stage();
 }
 
 bool main_window::modified()

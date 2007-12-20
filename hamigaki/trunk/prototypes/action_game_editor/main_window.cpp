@@ -108,39 +108,41 @@ bool close_project(main_window* pimpl, ::HWND hwnd)
         {
             ::WORD code = HIWORD(wParam);
             ::WORD id = LOWORD(wParam);
-            if ((code == 0) || (code == 1))
+            if (id == HAMIGAKI_ID_FILE_NEW)
             {
-                if (id == HAMIGAKI_ID_FILE_NEW)
-                {
-                    if (!close_project(pimpl, hwnd))
-                        return 0;
+                if (!close_project(pimpl, hwnd))
+                    return 0;
 
-                    game_project proj;
-                    std::string dir;
-                    if (select_folder(hwnd, dir))
-                        pimpl->new_project(dir + "\\action_game.agp-yh", proj);
-                }
-                else if (id == HAMIGAKI_ID_FILE_OPEN)
-                {
-                    if (!close_project(pimpl, hwnd))
-                        return 0;
+                game_project proj;
+                std::string dir;
+                if (select_folder(hwnd, dir))
+                    pimpl->new_project(dir + "\\action_game.agp-yh", proj);
+            }
+            else if (id == HAMIGAKI_ID_FILE_OPEN)
+            {
+                if (!close_project(pimpl, hwnd))
+                    return 0;
 
-                    std::string filename;
-                    if (get_open_file_name(hwnd, filename))
-                        pimpl->load_project(filename);
-                }
-                else if (id == HAMIGAKI_ID_FILE_SAVE)
-                    pimpl->save_project();
-                else if (id == HAMIGAKI_ID_FILE_EXIT)
-                {
-                    if (close_project(pimpl, hwnd))
-                        ::DestroyWindow(hwnd);
-                }
+                std::string filename;
+                if (get_open_file_name(hwnd, filename))
+                    pimpl->load_project(filename);
+            }
+            else if (id == HAMIGAKI_ID_FILE_SAVE)
+                pimpl->save_project();
+            else if (id == HAMIGAKI_ID_FILE_EXIT)
+            {
+                if (close_project(pimpl, hwnd))
+                    ::DestroyWindow(hwnd);
             }
             else if (id == main_window::char_select_id)
             {
                 if (code == char_select_window_msgs::notify_sel_changed)
                     pimpl->update_selected_char();
+            }
+            else if (id == main_window::map_select_id)
+            {
+                if (code == LBN_SELCHANGE)
+                    pimpl->change_stage();
             }
         }
     }

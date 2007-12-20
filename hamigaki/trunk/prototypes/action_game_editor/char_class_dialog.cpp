@@ -292,91 +292,88 @@ void update_icon(::HWND hwndDlg)
         {
             ::WORD code = HIWORD(wParam);
             ::WORD id = LOWORD(wParam);
-            if (code <= 1)
+            if (id == IDOK)
             {
-                if (id == IDOK)
-                {
-                    game_character_class* info =
-                        reinterpret_cast<game_character_class*>(
-                            ::GetWindowLongPtr(hwndDlg, DWLP_USER)
-                        );
-
-                    info->sprite =
-                        get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_SPRITE);
-
-                    info->attrs.set(
-                        char_attr::player,
-                        ::IsDlgButtonChecked(
-                            hwndDlg, HAMIGAKI_IDC_IS_PLAYER) != 0
+                game_character_class* info =
+                    reinterpret_cast<game_character_class*>(
+                        ::GetWindowLongPtr(hwndDlg, DWLP_USER)
                     );
 
-                    info->attrs.set(
-                        char_attr::enemy,
-                        ::IsDlgButtonChecked(
-                            hwndDlg, HAMIGAKI_IDC_IS_ENEMY) != 0
-                    );
+                info->sprite =
+                    get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_SPRITE);
 
-                    info->attrs.set(
-                        char_attr::weapon,
-                        ::IsDlgButtonChecked(
-                            hwndDlg, HAMIGAKI_IDC_IS_WEAPON) != 0
-                    );
+                info->attrs.set(
+                    char_attr::player,
+                    ::IsDlgButtonChecked(
+                        hwndDlg, HAMIGAKI_IDC_IS_PLAYER) != 0
+                );
 
-                    info->attrs.set(
-                        char_attr::block,
-                        ::IsDlgButtonChecked(
-                            hwndDlg, HAMIGAKI_IDC_IS_BLOCK) != 0
-                    );
+                info->attrs.set(
+                    char_attr::enemy,
+                    ::IsDlgButtonChecked(
+                        hwndDlg, HAMIGAKI_IDC_IS_ENEMY) != 0
+                );
 
-                    info->attrs.set(
-                        char_attr::breaker,
-                        ::IsDlgButtonChecked(
-                            hwndDlg, HAMIGAKI_IDC_IS_BREAKER) != 0
-                    );
+                info->attrs.set(
+                    char_attr::weapon,
+                    ::IsDlgButtonChecked(
+                        hwndDlg, HAMIGAKI_IDC_IS_WEAPON) != 0
+                );
 
-                    info->vx = boost::lexical_cast<float>(
-                        get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_VX)
-                    );
+                info->attrs.set(
+                    char_attr::block,
+                    ::IsDlgButtonChecked(
+                        hwndDlg, HAMIGAKI_IDC_IS_BLOCK) != 0
+                );
 
-                    info->vy = boost::lexical_cast<float>(
-                        get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_VY)
-                    );
+                info->attrs.set(
+                    char_attr::breaker,
+                    ::IsDlgButtonChecked(
+                        hwndDlg, HAMIGAKI_IDC_IS_BREAKER) != 0
+                );
 
-                    info->slope = static_cast<slope_type::values>(
-                        ::SendDlgItemMessage(
-                            hwndDlg, HAMIGAKI_IDC_SLOPE, CB_GETCURSEL, 0, 0)
-                    );
+                info->vx = boost::lexical_cast<float>(
+                    get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_VX)
+                );
 
-                    int on_move = ::SendDlgItemMessage(
-                            hwndDlg, HAMIGAKI_IDC_ON_MOVE, CB_GETCURSEL, 0, 0);
-                    info->move_routine = hamigaki::uuid(move_routines[on_move]);
+                info->vy = boost::lexical_cast<float>(
+                    get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_VY)
+                );
 
-                    int on_speed = ::SendDlgItemMessage(
-                            hwndDlg, HAMIGAKI_IDC_ON_SPEED, CB_GETCURSEL, 0, 0);
-                    info->speed_routine =
-                        hamigaki::uuid(speed_routines[on_speed]);
+                info->slope = static_cast<slope_type::values>(
+                    ::SendDlgItemMessage(
+                        hwndDlg, HAMIGAKI_IDC_SLOPE, CB_GETCURSEL, 0, 0)
+                );
 
-                    info->on_collide_block_side =
-                        get_collision_event(hwndDlg, HAMIGAKI_IDC_ON_BLOCK);
-                    info->on_hit_from_below =
-                        get_collision_event(hwndDlg, HAMIGAKI_IDC_ON_PUSH);
-                    info->on_collide_player =
-                        get_collision_event(hwndDlg, HAMIGAKI_IDC_ON_PLAYER);
-                    info->on_collide_enemy =
-                        get_collision_event(hwndDlg, HAMIGAKI_IDC_ON_ENEMY);
-                    info->on_stomp =
-                        get_collision_event(hwndDlg, HAMIGAKI_IDC_ON_STOMP);
-                    info->on_hit =
-                        get_collision_event(hwndDlg, HAMIGAKI_IDC_ON_HIT);
+                int on_move = ::SendDlgItemMessage(
+                        hwndDlg, HAMIGAKI_IDC_ON_MOVE, CB_GETCURSEL, 0, 0);
+                info->move_routine = hamigaki::uuid(move_routines[on_move]);
 
-                    ::EndDialog(hwndDlg, IDOK);
-                    return 1;
-                }
-                else if (id == IDCANCEL)
-                {
-                    ::EndDialog(hwndDlg, IDCANCEL);
-                    return 1;
-                }
+                int on_speed = ::SendDlgItemMessage(
+                        hwndDlg, HAMIGAKI_IDC_ON_SPEED, CB_GETCURSEL, 0, 0);
+                info->speed_routine =
+                    hamigaki::uuid(speed_routines[on_speed]);
+
+                info->on_collide_block_side =
+                    get_collision_event(hwndDlg, HAMIGAKI_IDC_ON_BLOCK);
+                info->on_hit_from_below =
+                    get_collision_event(hwndDlg, HAMIGAKI_IDC_ON_PUSH);
+                info->on_collide_player =
+                    get_collision_event(hwndDlg, HAMIGAKI_IDC_ON_PLAYER);
+                info->on_collide_enemy =
+                    get_collision_event(hwndDlg, HAMIGAKI_IDC_ON_ENEMY);
+                info->on_stomp =
+                    get_collision_event(hwndDlg, HAMIGAKI_IDC_ON_STOMP);
+                info->on_hit =
+                    get_collision_event(hwndDlg, HAMIGAKI_IDC_ON_HIT);
+
+                ::EndDialog(hwndDlg, IDOK);
+                return 1;
+            }
+            else if (id == IDCANCEL)
+            {
+                ::EndDialog(hwndDlg, IDCANCEL);
+                return 1;
             }
             else if (id == HAMIGAKI_IDC_SPRITE)
             {
