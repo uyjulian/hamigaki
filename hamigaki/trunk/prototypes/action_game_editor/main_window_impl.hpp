@@ -30,9 +30,6 @@ public:
     void load_project(const std::string& filename);
     void save_project();
     void new_stage(int width, int height);
-    void load_stage(const std::string& filename);
-    void save_stage(const std::string& filename);
-    bool save_stage();
     void change_stage();
     bool modified();
 

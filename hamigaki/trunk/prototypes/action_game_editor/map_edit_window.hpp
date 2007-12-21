@@ -10,6 +10,7 @@
 #ifndef MAP_WINDOW_HPP
 #define MAP_WINDOW_HPP
 
+#include "stage_map.hpp"
 #include <hamigaki/uuid.hpp>
 #include <string>
 #include <windows.h>
@@ -19,9 +20,7 @@
 ::HWND create_map_edit_window(
     ::HWND parent, int id, int left, ::HINSTANCE hInstance, ::ATOM cls);
 
-void map_edit_window_new(::HWND hwnd, int width, int height);
-void map_edit_window_load(::HWND hwnd, const std::string& filename);
-void map_edit_window_save(::HWND hwnd, const std::string& filename);
+void map_edit_window_set(::HWND hwnd, stage_map* map);
 void map_edit_window_select_char(::HWND hwnd, const hamigaki::uuid& c);
 bool map_edit_window_select_modified(::HWND hwnd);
 

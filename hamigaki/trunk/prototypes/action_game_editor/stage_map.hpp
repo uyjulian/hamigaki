@@ -21,6 +21,7 @@ struct stage_map
     int width;
     int height;
     map_elements elements;
+    bool modified;
 };
 
 void load_map_from_text(const char* filename, stage_map& m);

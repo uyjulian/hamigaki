@@ -187,7 +187,7 @@ boost::optional<int> next_scroll_pos(::HWND hwnd, int bar, ::WORD cmd)
     return hwnd;
 }
 
-void map_edit_window_new(::HWND hwnd, int width, int height)
+void map_edit_window_set(::HWND hwnd, stage_map* map)
 {
     map_edit_window* pimpl =
         reinterpret_cast<map_edit_window*>(
@@ -195,29 +195,7 @@ void map_edit_window_new(::HWND hwnd, int width, int height)
         );
 
     if (pimpl != 0)
-        pimpl->new_stage(width, height);
-}
-
-void map_edit_window_load(::HWND hwnd, const std::string& filename)
-{
-    map_edit_window* pimpl =
-        reinterpret_cast<map_edit_window*>(
-            GetWindowLongPtr(hwnd, GWLP_USERDATA)
-        );
-
-    if (pimpl != 0)
-        pimpl->load_stage(filename);
-}
-
-void map_edit_window_save(::HWND hwnd, const std::string& filename)
-{
-    map_edit_window* pimpl =
-        reinterpret_cast<map_edit_window*>(
-            GetWindowLongPtr(hwnd, GWLP_USERDATA)
-        );
-
-    if (pimpl != 0)
-        pimpl->save_stage(filename);
+        pimpl->set_stage(map);
 }
 
 void map_edit_window_select_char(::HWND hwnd, const hamigaki::uuid& c)

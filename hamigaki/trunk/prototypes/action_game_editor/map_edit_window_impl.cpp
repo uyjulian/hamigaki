@@ -70,7 +70,7 @@ private:
 
 public:
     explicit impl(::HWND handle)
-        : handle_(handle), modified_(false), mouse_captured_(false)
+        : handle_(handle), mouse_captured_(false), map_(0)
     {
     }
 
@@ -78,12 +78,9 @@ public:
     {
     }
 
-    void new_stage(int width, int height)
+    void set_stage(stage_map* map)
     {
-        map_.width = width*32;
-        map_.height = height*32;
-        map_.elements.clear();
-        modified_ = true;
+        map_ = map;
 
         int vert_max = update_scroll_box().second;
 
@@ -91,37 +88,19 @@ public:
         ::SetScrollPos(handle_, SB_VERT, vert_max, TRUE);
 
         ::InvalidateRect(handle_, 0, FALSE);
-    }
-
-    void load_stage(const std::string& filename)
-    {
-        if (boost::algorithm::iends_with(filename, ".agm-yh", std::locale("")))
-            load_map_from_binary(filename.c_str(), map_);
-        else
-            load_map_from_text(filename.c_str(), map_);
-        modified_ = false;
-
-        int vert_max = update_scroll_box().second;
-
-        ::SetScrollPos(handle_, SB_HORZ, 0, TRUE);
-        ::SetScrollPos(handle_, SB_VERT, vert_max, TRUE);
-
-        ::InvalidateRect(handle_, 0, FALSE);
-    }
-
-    void save_stage(const std::string& filename)
-    {
-        if (boost::algorithm::iends_with(filename, ".agm-yh", std::locale("")))
-            save_map_to_binary(filename.c_str(), map_);
-        else
-            save_map_to_text(filename.c_str(), map_);
-        modified_ = false;
     }
 
     void render()
     {
         if (!device_)
             connect_d3d_device();
+
+        if (!map_)
+        {
+            device_.clear_target(D3DCOLOR_XRGB(0xC0,0xC0,0xC0));
+            device_.present();
+            return;
+        }
 
         ::RECT cr;
         ::GetClientRect(handle_, &cr);
@@ -133,9 +112,9 @@ public:
         int max_y = min_y + cr.bottom;
 
         typedef map_elements::const_iterator iter_type;
-        const map_elements& x_y = map_.elements;
+        const map_elements& x_y = map_->elements;
         iter_type beg = x_y.lower_bound(std::make_pair(min_x, 0));
-        iter_type end = x_y.upper_bound(std::make_pair(max_x, map_.height));
+        iter_type end = x_y.upper_bound(std::make_pair(max_x, map_->height));
 
         int cursor_x = min_x + cursor_pos_.first*32;
         int cursor_y = min_y + cursor_pos_.second*32;
@@ -163,29 +142,29 @@ public:
                     draw_character((x-min_x)/32, (y-min_y)/32, *pos);
             }
 
-            if (max_x > map_.width)
+            if (max_x > map_->width)
             {
                 ::draw_rectangle(
                     device_,
-                    map_.width-min_x+16.0f, 0.0f, 0.0f,
-                    max_x-static_cast<float>(map_.width),
+                    map_->width-min_x+16.0f, 0.0f, 0.0f,
+                    max_x-static_cast<float>(map_->width),
                     static_cast<float>(cr.bottom),
                     0xFFC0C0C0ul
                 );
             }
 
-            if (max_y > map_.height)
+            if (max_y > map_->height)
             {
                 ::draw_rectangle(
                     device_,
                     0.0f, 0.0f, 0.0f,
                     static_cast<float>(cr.right),
-                    max_y-static_cast<float>(map_.height),
+                    max_y-static_cast<float>(map_->height),
                     0xFFC0C0C0ul
                 );
             }
 
-            if ((cursor_x < map_.width) && (cursor_y < map_.height))
+            if ((cursor_x < map_->width) && (cursor_y < map_->height))
                 draw_cursor();
 
             device_.set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
@@ -209,6 +188,9 @@ public:
 
     std::pair<int,int> update_scroll_box()
     {
+        int map_width = map_ ? map_->width : 0;
+        int map_height = map_ ? map_->height : 0;
+
         ::RECT cr;
         ::GetClientRect(handle_, &cr);
 
@@ -218,7 +200,7 @@ public:
         horz.cbSize = sizeof(horz);
         horz.fMask = SIF_RANGE | SIF_PAGE;
         horz.nMin = 0;
-        horz.nMax = map_.width/32 - 1;
+        horz.nMax = map_width/32 - 1;
         horz.nPage = cr.right / 32;
         ::SetScrollInfo(handle_, SB_HORZ, &horz, TRUE);
 
@@ -226,7 +208,7 @@ public:
         vert.cbSize = sizeof(vert);
         vert.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
         vert.nMin = 0;
-        vert.nMax = map_.height/32 - 1;
+        vert.nMax = map_height/32 - 1;
         vert.nPage = cr.bottom / 32;
         vert.nPos = vert.nMax - old_vert - static_cast<int>(vert.nPage) + 1;
         ::SetScrollInfo(handle_, SB_VERT, &vert, TRUE);
@@ -272,14 +254,17 @@ public:
 
     void put_char()
     {
+        if (!map_)
+            return;
+
         int x = (horz_scroll_value() + cursor_pos_.first) * 32 + 16;
         int y = (vert_scroll_value() + cursor_pos_.second) * 32;
 
-        if ((x >= map_.width) || (y >= map_.height))
+        if ((x >= map_->width) || (y >= map_->height))
             return;
 
         typedef map_elements::iterator iter_type;
-        map_elements& x_y = map_.elements;
+        map_elements& x_y = map_->elements;
 
         iter_type old = x_y.find(std::make_pair(x, y));
         if (old != x_y.end())
@@ -299,13 +284,13 @@ public:
                 x_y[std::make_pair(x, y)] = selected_char_;
         }
 
-        modified_ = true;
+        map_->modified = true;
         ::InvalidateRect(handle_, 0, FALSE);
     }
 
     bool modified() const
     {
-        return modified_;
+        return (map_ != 0) && map_->modified;
     }
 
     void mouse_captured(bool value)
@@ -322,12 +307,11 @@ private:
     ::HWND handle_;
     direct3d9 d3d_;
     direct3d_device9 device_;
-    stage_map map_;
+    stage_map* map_;
     direct3d_texture9 chips_texture_;
     direct3d_texture9 cursor_texture_;
     std::pair<int,int> cursor_pos_;
     hamigaki::uuid selected_char_;
-    bool modified_;
     bool mouse_captured_;
 
     void connect_d3d_device()
@@ -449,19 +433,9 @@ map_edit_window::~map_edit_window()
 {
 }
 
-void map_edit_window::new_stage(int width, int height)
+void map_edit_window::set_stage(stage_map* map)
 {
-    pimpl_->new_stage(width, height);
-}
-
-void map_edit_window::load_stage(const std::string& filename)
-{
-    pimpl_->load_stage(filename);
-}
-
-void map_edit_window::save_stage(const std::string& filename)
-{
-    pimpl_->save_stage(filename);
+    pimpl_->set_stage(map);
 }
 
 void map_edit_window::render()

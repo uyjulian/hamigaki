@@ -12,6 +12,8 @@
 #include "char_select_window.hpp"
 #include "game_project_io.hpp"
 #include "map_edit_window.hpp"
+#include "stage_map_load.hpp"
+#include "stage_map_save.hpp"
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
@@ -70,6 +72,44 @@ void save_char_classes(
         BOOST_ASSERT(pos != filename_table.end());
         const fs::path& ph = pos->second;
         save_character_class(ph.file_string().c_str(), c);
+    }
+}
+
+void load_maps(const fs::path& dir, std::map<std::string,stage_map>& table)
+{
+    fs::directory_iterator it(dir);
+    fs::directory_iterator end;
+
+    std::map<std::string,stage_map> tmp;
+    std::locale loc("");
+    for ( ; it != end; ++it)
+    {
+        const fs::path& ph = it->path();
+        const std::string& leaf = ph.leaf();
+        if (algo::iends_with(leaf, ".agm-yh", loc))
+        {
+            stage_map& m = tmp[leaf];
+            load_map_from_binary(ph.file_string().c_str(), m);
+            m.modified = false;
+        }
+    }
+
+    table.swap(tmp);
+}
+
+void save_maps(const fs::path& dir, std::map<std::string,stage_map>& table)
+{
+    typedef std::map<std::string,stage_map>::iterator iter_type;
+
+    for (iter_type i = table.begin(), end = table.end(); i != end; ++i)
+    {
+        stage_map& m = i->second;
+        if (m.modified)
+        {
+            const fs::path& ph = dir / i->first;
+            save_map_to_binary(ph.file_string().c_str(), m);
+            m.modified = false;
+        }
     }
 }
 
@@ -168,6 +208,7 @@ public:
             hInstance_,
             register_map_edit_window_class(hInstance_)
         )
+        , modified_(false)
     {
         scoped_window select_window(
             create_char_select_window(
@@ -242,56 +283,46 @@ public:
         const fs::path& dir = fs::path(filename).branch_path();
 
         load_char_classes(dir, char_table_, filename_table_);
+        load_maps(dir, map_table_);
         setup_map_list(map_sel_window_, dir);
+        map_edit_window_set(map_window_, 0);
 
         project_file_ = filename;
+        modified_ = true;
     }
 
     void load_project(const std::string& filename)
     {
         this->new_project(filename, load_game_project(filename.c_str()));
+        modified_ = false;
     }
 
     void save_project()
     {
+        const fs::path& dir = fs::path(project_file_).branch_path();
+
         save_game_project(project_file_.c_str(), project_);
 
-        save_char_classes(
-            fs::path(project_file_).branch_path(),
-            char_table_, filename_table_
-        );
+        save_char_classes(dir, char_table_, filename_table_);
+        save_maps(dir, map_table_);
+
+        modified_ = false;
     }
 
     void new_stage(int width, int height)
     {
-        map_edit_window_new(map_window_, width, height);
-        stage_file_.clear();
-    }
-
-    void load_stage(const std::string& filename)
-    {
-        map_edit_window_load(map_window_, filename);
-        stage_file_ = filename;
-    }
-
-    void save_stage(const std::string& filename)
-    {
-        map_edit_window_save(map_window_, filename);
-        stage_file_ = filename;
-    }
-
-    bool save_stage()
-    {
-        if (stage_file_.empty())
-            return false;
-
-        save_stage(stage_file_);
-        return true;
+        // TODO
     }
 
     void change_stage()
     {
+        if (map_edit_window_select_modified(map_window_))
+            modified_ = true;
+
         int index = ::SendMessageA(map_sel_window_, LB_GETCURSEL, 0, 0);
+        if (index == -1)
+            map_edit_window_set(map_window_, 0);
+
         int size = ::SendMessageA(map_sel_window_, LB_GETTEXTLEN, index, 0);
 
         boost::scoped_array<char> buf(new char[size+1]);
@@ -301,13 +332,12 @@ public:
 
         std::string filename(buf.get(), size);
 
-        map_edit_window_load(map_window_, filename);
-        stage_file_ = filename;
+        map_edit_window_set(map_window_, &map_table_[filename]);
     }
 
     bool modified()
     {
-        return map_edit_window_select_modified(map_window_);
+        return modified_ || map_edit_window_select_modified(map_window_);
     }
 
 private:
@@ -317,12 +347,13 @@ private:
     std::string project_file_;
     std::set<game_character_class> char_table_;
     std::map<hamigaki::uuid,fs::path> filename_table_;
+    std::map<std::string,stage_map> map_table_;
     scoped_window_class select_class_;
     scoped_window_class map_class_;
     ::HWND char_sel_window_;
     ::HWND map_window_;
     ::HWND map_sel_window_;
-    std::string stage_file_;
+    bool modified_;
 };
 
 main_window::main_window(::HWND handle) : pimpl_(new impl(handle))
@@ -362,21 +393,6 @@ void main_window::save_project()
 void main_window::new_stage(int width, int height)
 {
     pimpl_->new_stage(width, height);
-}
-
-void main_window::load_stage(const std::string& filename)
-{
-    pimpl_->load_stage(filename);
-}
-
-void main_window::save_stage(const std::string& filename)
-{
-    pimpl_->save_stage(filename);
-}
-
-bool main_window::save_stage()
-{
-    return pimpl_->save_stage();
 }
 
 void main_window::change_stage()
