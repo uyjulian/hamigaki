@@ -11,10 +11,13 @@
 #include "char_select_window_msgs.hpp"
 #include "folder_select_dialog.hpp"
 #include "main_window_impl.hpp"
+#include "map_config_dialog.hpp"
+#include <boost/format.hpp>
 #include <cstring>
 
 #include <hamigaki/system/windows_error.hpp>
 #include "menus.h"
+#include "popup_menus.h"
 
 using hamigaki::system::windows_error;
 
@@ -104,6 +107,14 @@ bool close_project(main_window* pimpl, ::HWND hwnd)
                     pimpl->update_size();
             }
         }
+        else if (uMsg == WM_CONTEXTMENU)
+        {
+            ::HWND handle = reinterpret_cast< ::HWND>(wParam);
+            int x = static_cast<short>(LOWORD(lParam));
+            int y = static_cast<short>(HIWORD(lParam));
+            if (pimpl)
+                pimpl->track_popup_menu(handle, x, y);
+        }
         else if (uMsg == WM_COMMAND)
         {
             ::WORD code = HIWORD(wParam);
@@ -133,6 +144,21 @@ bool close_project(main_window* pimpl, ::HWND hwnd)
             {
                 if (close_project(pimpl, hwnd))
                     ::DestroyWindow(hwnd);
+            }
+            else if (id == HAMIGAKI_ID_MAP_NEW)
+            {
+                stage_info info;
+                info.name =
+                    (boost::format("map%03d") % (pimpl->stage_count()+1)).str();
+                info.width = 20;
+                info.height = 15;
+
+                while (get_stage_info(hwnd, info))
+                {
+                    const std::string& filename = info.name + ".agm-yh";
+                    if (pimpl->new_stage(filename, info.width, info.height))
+                        break;
+                }
             }
             else if (id == main_window::char_select_id)
             {

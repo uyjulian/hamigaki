@@ -1,4 +1,4 @@
-// new_stage_dialog.hpp: the dialog to input data for creating a new stage
+// map_config_dialog.hpp: the dialog to input data for setting a map
 
 // Copyright Takeshi Mouri 2007.
 // Distributed under the Boost Software License, Version 1.0.
@@ -7,13 +7,15 @@
 
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
-#ifndef NEW_STAGE_DIALOG_HPP
-#define NEW_STAGE_DIALOG_HPP
+#ifndef MAP_SETTING_DIALOG_HPP
+#define MAP_SETTING_DIALOG_HPP
 
+#include <string>
 #include <windows.h>
 
 struct stage_info
 {
+    std::string name;
     int width;
     int height;
 
@@ -22,6 +24,6 @@ struct stage_info
     }
 };
 
-bool get_new_stage_info(::HWND hwnd, stage_info& info);
+bool get_stage_info(::HWND hwnd, stage_info& info);
 
-#endif // NEW_STAGE_DIALOG_HPP
+#endif // MAP_SETTING_DIALOG_HPP

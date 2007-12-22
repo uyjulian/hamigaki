@@ -29,9 +29,11 @@ public:
     void new_project(const std::string& filename, const game_project& proj);
     void load_project(const std::string& filename);
     void save_project();
-    void new_stage(int width, int height);
+    bool new_stage(const std::string& filename, int width, int height);
+    int stage_count() const;
     void change_stage();
     bool modified();
+    void track_popup_menu(::HWND hwnd, int x, int y);
 
 private:
     class impl;

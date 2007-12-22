@@ -46,9 +46,9 @@ exe action_game_editor
     icon_view_window_impl.cpp
     main_window.cpp
     main_window_impl.cpp
+    map_config_dialog.cpp
     map_edit_window.cpp
     map_edit_window_impl.cpp
-    new_stage_dialog.cpp
     png_loader.cpp
     sprite_info.cpp
     sprite_info_cache.cpp

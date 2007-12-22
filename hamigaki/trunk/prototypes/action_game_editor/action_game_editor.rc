@@ -11,8 +11,9 @@
 #include "accelerators.h"
 #include "char_dialog.h"
 #include "icon_dialog.h"
+#include "map_cfg_dialog.h"
 #include "menus.h"
-#include "new_dialog.h"
+#include "popup_menus.h"
 
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 
@@ -20,11 +21,11 @@ HAMIGAKI_IDR_MENU MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "&New...\tCtrl+N" ,    HAMIGAKI_ID_FILE_NEW
-        MENUITEM "&Open...\tCtrl+O",    HAMIGAKI_ID_FILE_OPEN
-        MENUITEM "&Save\tCtrl+S",       HAMIGAKI_ID_FILE_SAVE
+        MENUITEM "&New project...\tCtrl+N" ,    HAMIGAKI_ID_FILE_NEW
+        MENUITEM "&Open project...\tCtrl+O",    HAMIGAKI_ID_FILE_OPEN
+        MENUITEM "&Save project\tCtrl+S",       HAMIGAKI_ID_FILE_SAVE
         MENUITEM SEPARATOR
-        MENUITEM "E&xit",               HAMIGAKI_ID_FILE_EXIT
+        MENUITEM "E&xit",                       HAMIGAKI_ID_FILE_EXIT
     END
     POPUP "&Edit"
     BEGIN
@@ -32,7 +33,22 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Cu&t\tCtrl+X",        HAMIGAKI_ID_EDIT_CUT,   GRAYED
         MENUITEM "&Copy\tCtrl+C",       HAMIGAKI_ID_EDIT_COPY,  GRAYED
+        MENUITEM "&Paste\tCtrl+V",      HAMIGAKI_ID_EDIT_PASTE, GRAYED
         MENUITEM "&Delete\tDel",        HAMIGAKI_ID_EDIT_DEL,   GRAYED
+    END
+END
+
+HAMIGAKI_IDR_POPUP MENU
+BEGIN
+    POPUP "MapSelectWindow"
+    BEGIN
+        MENUITEM "&New...\tIns",            HAMIGAKI_ID_MAP_NEW
+        MENUITEM SEPARATOR
+        MENUITEM "&Copy\tCtrl+C",           HAMIGAKI_ID_MAP_COPY,   GRAYED
+        MENUITEM "&Paste\tCtrl+V",          HAMIGAKI_ID_MAP_PASTE,  GRAYED
+        MENUITEM "&Delete\tDel",            HAMIGAKI_ID_MAP_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "P&roperties\tSpace",      HAMIGAKI_ID_MAP_PROP
     END
 END
 
@@ -44,20 +60,23 @@ BEGIN
     "^Z",       HAMIGAKI_ID_EDIT_UNDO
     "^X",       HAMIGAKI_ID_EDIT_CUT
     "^C",       HAMIGAKI_ID_EDIT_COPY
+    "^V",       HAMIGAKI_ID_EDIT_PASTE
     VK_DELETE,  HAMIGAKI_ID_EDIT_DEL,   VIRTKEY
 END
 
-HAMIGAKI_IDD_NEW DIALOGEX 0, 0, 121, 62
+HAMIGAKI_IDD_MAP_CFG DIALOGEX 0, 0, 118, 100
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Create a new map"
+CAPTION "Map setting"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "&Width:",-1,7,7,22,8
-    EDITTEXT        HAMIGAKI_IDC_WIDTH,7,19,40,14,ES_AUTOHSCROLL
-    LTEXT           "&Height:",-1,58,7,24,8
-    EDITTEXT        HAMIGAKI_IDC_HEIGHT,57,19,40,14,ES_AUTOHSCROLL
-    DEFPUSHBUTTON   "OK",IDOK,7,41,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,64,41,50,14
+    LTEXT           "&Name:",-1,6,6,22,8
+    EDITTEXT        HAMIGAKI_IDC_MAP_NAME,6,18,102,14,ES_AUTOHSCROLL
+    LTEXT           "&Width:",-1,6,42,22,8
+    EDITTEXT        HAMIGAKI_IDC_WIDTH,6,54,42,14,ES_AUTOHSCROLL
+    LTEXT           "&Height:",-1,60,42,24,8
+    EDITTEXT        HAMIGAKI_IDC_HEIGHT,60,54,42,14,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,6,78,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,60,78,50,14
 END
 
 HAMIGAKI_IDD_CHAR DIALOGEX 0, 0, 184, 297

@@ -1,4 +1,4 @@
-// new_stage_dialog.cpp: the dialog to input data for creating a new stage
+// map_config_dialog.cpp: the dialog to input data for setting a map
 
 // Copyright Takeshi Mouri 2007.
 // Distributed under the Boost Software License, Version 1.0.
@@ -7,12 +7,19 @@
 
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
-#include "new_stage_dialog.hpp"
+#include "map_config_dialog.hpp"
 #include <exception>
-#include "new_dialog.h"
+#include "map_cfg_dialog.h"
 
 namespace
 {
+
+std::string get_dialog_item_text(::HWND hwnd, int id)
+{
+    char buf[256];
+    ::GetDlgItemTextA(hwnd, id, buf, sizeof(buf));
+    return std::string(buf);
+}
 
 inline void set_dialog_item_int(::HWND hwnd, int id, int value)
 {
@@ -26,7 +33,7 @@ inline bool get_dialog_item_int(::HWND hwnd, int id, int& value)
     return res != FALSE;
 }
 
-::INT_PTR CALLBACK new_dialog_proc(
+::INT_PTR CALLBACK map_cfg_dialog_proc(
     ::HWND hwndDlg, ::UINT uMsg, ::WPARAM wParam, ::LPARAM lParam)
 {
     try
@@ -37,6 +44,8 @@ inline bool get_dialog_item_int(::HWND hwnd, int id, int& value)
             if (info)
             {
                 ::SetWindowLongPtr(hwndDlg, DWLP_USER, lParam);
+                ::SetDlgItemTextA(
+                    hwndDlg, HAMIGAKI_IDC_MAP_NAME, info->name.c_str());
                 set_dialog_item_int(hwndDlg, HAMIGAKI_IDC_WIDTH, info->width);
                 set_dialog_item_int(hwndDlg, HAMIGAKI_IDC_HEIGHT, info->height);
             }
@@ -52,7 +61,11 @@ inline bool get_dialog_item_int(::HWND hwnd, int id, int& value)
                         ::GetWindowLongPtr(hwndDlg, DWLP_USER)
                     );
 
-                if (get_dialog_item_int(
+                info->name =
+                    get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_MAP_NAME);
+
+                if (!info->name.empty() &&
+                    get_dialog_item_int(
                         hwndDlg, HAMIGAKI_IDC_WIDTH, info->width) &&
                     get_dialog_item_int(
                         hwndDlg, HAMIGAKI_IDC_HEIGHT, info->height) )
@@ -79,15 +92,15 @@ inline bool get_dialog_item_int(::HWND hwnd, int id, int& value)
 
 } // namespace
 
-bool get_new_stage_info(::HWND hwnd, stage_info& info)
+bool get_stage_info(::HWND hwnd, stage_info& info)
 {
     // FIXME
     ::HINSTANCE module =
         reinterpret_cast< ::HINSTANCE>(::GetModuleHandle(0));
 
     ::INT_PTR res = ::DialogBoxParamA(
-        module, MAKEINTRESOURCE(HAMIGAKI_IDD_NEW),
-        hwnd, &new_dialog_proc, reinterpret_cast< ::LPARAM>(&info)
+        module, MAKEINTRESOURCE(HAMIGAKI_IDD_MAP_CFG),
+        hwnd, &map_cfg_dialog_proc, reinterpret_cast< ::LPARAM>(&info)
     );
 
     return res == IDOK;

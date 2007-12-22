@@ -23,6 +23,11 @@
 #include <map>
 #include <set>
 
+#include <hamigaki/system/windows_error.hpp>
+#include "popup_menus.h"
+
+using hamigaki::system::windows_error;
+
 namespace algo = boost::algorithm;
 namespace fs = boost::filesystem;
 
@@ -140,6 +145,31 @@ void setup_map_list(::HWND hwnd, const fs::path& dir)
     );
 }
 
+class menu : private boost::noncopyable
+{
+public:
+    menu(::HINSTANCE hInstance, const char* name)
+        : handle_(::LoadMenuA(hInstance, name))
+    {
+        if (handle_ == 0)
+            throw windows_error(::GetLastError(), "failed LoadMenuA()");
+    }
+
+    ~menu()
+    {
+        ::DestroyMenu(handle_);
+    }
+
+    void popup(int index, int x, int y, ::HWND hwnd)
+    {
+        ::TrackPopupMenuEx(
+            ::GetSubMenu(handle_, index), TPM_RIGHTBUTTON, x, y, hwnd, 0);
+    }
+
+private:
+    ::HMENU handle_;
+};
+
 } // namespace
 
 class main_window::impl
@@ -147,6 +177,7 @@ class main_window::impl
 public:
     explicit impl(::HWND handle)
         : handle_(handle), modified_(false)
+        , menu_(get_parent_module(handle_), MAKEINTRESOURCE(HAMIGAKI_IDR_POPUP))
     {
         ::HINSTANCE hInstance = get_parent_module(handle_);
 
@@ -238,9 +269,33 @@ public:
         modified_ = false;
     }
 
-    void new_stage(int width, int height)
+    bool new_stage(const std::string& filename, int width, int height)
     {
-        // TODO
+        fs::path ph = fs::path(project_file_).branch_path() / filename;
+        if (exists(ph))
+            return false;
+
+        if (map_edit_window_select_modified(map_window_))
+            modified_ = true;
+
+        int index = ::SendMessageA(map_sel_window_, LB_ADDSTRING, 0,
+            reinterpret_cast< ::LPARAM>(filename.c_str()));
+
+        ::SendMessageA(map_sel_window_, LB_SETCURSEL, index, 0);
+
+        stage_map& m = map_table_[filename];
+        m.width = width * 32;
+        m.height = height * 32;
+        m.modified = true;
+
+        map_edit_window_set(map_window_, &m);
+
+        return true;
+    }
+
+    int stage_count() const
+    {
+        return map_table_.size();
     }
 
     void change_stage()
@@ -269,6 +324,20 @@ public:
         return modified_ || map_edit_window_select_modified(map_window_);
     }
 
+    void track_popup_menu(::HWND hwnd, int x, int y)
+    {
+        if ((x == -1) && (y == -1))
+        {
+            ::RECT r;
+            ::GetWindowRect(hwnd, &r);
+            x = r.left;
+            y = r.top;
+        }
+
+        if (hwnd == map_sel_window_)
+            menu_.popup(0, x, y, handle_);
+    }
+
 private:
     ::HWND handle_;
     game_project project_;
@@ -280,6 +349,7 @@ private:
     ::HWND map_window_;
     ::HWND map_sel_window_;
     bool modified_;
+    menu menu_;
 };
 
 main_window::main_window(::HWND handle) : pimpl_(new impl(handle))
@@ -316,9 +386,14 @@ void main_window::save_project()
     pimpl_->save_project();
 }
 
-void main_window::new_stage(int width, int height)
+bool main_window::new_stage(const std::string& filename, int width, int height)
 {
-    pimpl_->new_stage(width, height);
+    return pimpl_->new_stage(filename, width, height);
+}
+
+int main_window::stage_count() const
+{
+    return pimpl_->stage_count();
 }
 
 void main_window::change_stage()
@@ -329,4 +404,9 @@ void main_window::change_stage()
 bool main_window::modified()
 {
     return pimpl_->modified();
+}
+
+void main_window::track_popup_menu(::HWND hwnd, int x, int y)
+{
+    pimpl_->track_popup_menu(hwnd, x, y);
 }
