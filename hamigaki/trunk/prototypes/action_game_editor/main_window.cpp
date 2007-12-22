@@ -145,6 +145,15 @@ bool close_project(main_window* pimpl, ::HWND hwnd)
                 if (close_project(pimpl, hwnd))
                     ::DestroyWindow(hwnd);
             }
+            else if (id == HAMIGAKI_ID_EDIT_DEL)
+            {
+                ::HWND focus = ::GetFocus();
+                if (focus == ::GetDlgItem(hwnd, main_window::map_select_id))
+                {
+                    ::SendMessageA(hwnd, WM_COMMAND,
+                        MAKEWPARAM(HAMIGAKI_ID_MAP_DEL, 1), 0);
+                }
+            }
             else if (id == HAMIGAKI_ID_MAP_NEW)
             {
                 stage_info info;
