@@ -46,7 +46,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Copy\tCtrl+C",           HAMIGAKI_ID_MAP_COPY,   GRAYED
         MENUITEM "&Paste\tCtrl+V",          HAMIGAKI_ID_MAP_PASTE,  GRAYED
-        MENUITEM "&Delete\tDel",            HAMIGAKI_ID_MAP_DELETE
+        MENUITEM "&Delete\tDel",            HAMIGAKI_ID_MAP_DEL
         MENUITEM SEPARATOR
         MENUITEM "P&roperties\tSpace",      HAMIGAKI_ID_MAP_PROP
     END

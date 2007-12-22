@@ -31,6 +31,8 @@ public:
     void save_project();
     bool new_stage(const std::string& filename, int width, int height);
     int stage_count() const;
+    std::string stage_name() const;
+    void delete_stage();
     void change_stage();
     bool modified();
     void track_popup_menu(::HWND hwnd, int x, int y);

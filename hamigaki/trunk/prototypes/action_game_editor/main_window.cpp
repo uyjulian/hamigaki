@@ -160,6 +160,20 @@ bool close_project(main_window* pimpl, ::HWND hwnd)
                         break;
                 }
             }
+            else if (id == HAMIGAKI_ID_MAP_DEL)
+            {
+                std::string msg;
+                msg += "Do you delete '";
+                msg += pimpl->stage_name();
+                msg += "' ?";
+
+                int res = ::MessageBoxA(hwnd,
+                    msg.c_str(),
+                    "Action Game Editor", MB_YESNO|MB_ICONINFORMATION);
+
+                if (res == IDYES)
+                    pimpl->delete_stage();
+            }
             else if (id == main_window::char_select_id)
             {
                 if (code == char_select_window_msgs::notify_sel_changed)

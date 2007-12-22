@@ -298,11 +298,8 @@ public:
         return map_table_.size();
     }
 
-    void change_stage()
+    std::string stage_name() const
     {
-        if (map_edit_window_select_modified(map_window_))
-            modified_ = true;
-
         int index = ::SendMessageA(map_sel_window_, LB_GETCURSEL, 0, 0);
         if (index == -1)
             map_edit_window_set(map_window_, 0);
@@ -314,9 +311,26 @@ public:
             map_sel_window_, LB_GETTEXT, index,
             reinterpret_cast< ::LPARAM>(buf.get()));
 
-        std::string filename(buf.get(), size);
+        return std::string(buf.get(), size);
+    }
 
-        map_edit_window_set(map_window_, &map_table_[filename]);
+    void delete_stage()
+    {
+        int index = ::SendMessageA(map_sel_window_, LB_GETCURSEL, 0, 0);
+        if (index != -1)
+        {
+            map_edit_window_set(map_window_, 0);
+            map_table_.erase(stage_name());
+            ::SendMessageA(map_sel_window_, LB_DELETESTRING, index, 0);
+        }
+    }
+
+    void change_stage()
+    {
+        if (map_edit_window_select_modified(map_window_))
+            modified_ = true;
+
+        map_edit_window_set(map_window_, &map_table_[stage_name()]);
     }
 
     bool modified()
@@ -394,6 +408,16 @@ bool main_window::new_stage(const std::string& filename, int width, int height)
 int main_window::stage_count() const
 {
     return pimpl_->stage_count();
+}
+
+std::string main_window::stage_name() const
+{
+    return pimpl_->stage_name();
+}
+
+void main_window::delete_stage()
+{
+    pimpl_->delete_stage();
 }
 
 void main_window::change_stage()
