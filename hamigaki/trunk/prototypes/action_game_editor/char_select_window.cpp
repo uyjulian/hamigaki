@@ -101,8 +101,7 @@ namespace
     return cls;
 }
 
-::HWND create_char_select_window(
-    ::HWND parent, int id, ::HINSTANCE hInstance, ::ATOM cls)
+::HWND create_char_select_window(::HWND parent, int id, ::HINSTANCE hInstance)
 {
     ::DWORD style = WS_CHILD | WS_VISIBLE | WS_VSCROLL;
     ::DWORD ex_style = WS_EX_CLIENTEDGE;
@@ -113,7 +112,7 @@ namespace
     r.right += ::GetSystemMetrics(SM_CXVSCROLL);
 
     ::HWND hwnd = ::CreateWindowExA(
-        ex_style, MAKEINTATOM(cls), "", style,
+        ex_style, "CharSelectWindow", "", style,
         0, 0, r.right - r.left, r.bottom - r.top,
         parent,
         reinterpret_cast< ::HMENU>(static_cast< ::LONG_PTR>(id)),

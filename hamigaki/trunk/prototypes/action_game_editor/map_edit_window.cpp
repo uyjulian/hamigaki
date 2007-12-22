@@ -166,7 +166,7 @@ boost::optional<int> next_scroll_pos(::HWND hwnd, int bar, ::WORD cmd)
 }
 
 ::HWND create_map_edit_window(
-    ::HWND parent, int id, int left, ::HINSTANCE hInstance, ::ATOM cls)
+    ::HWND parent, int id, int left, ::HINSTANCE hInstance)
 {
     ::RECT cr;
     ::GetClientRect(parent, &cr);
@@ -175,7 +175,7 @@ boost::optional<int> next_scroll_pos(::HWND hwnd, int bar, ::WORD cmd)
     ::DWORD ex_style = WS_EX_CLIENTEDGE;
 
     ::HWND hwnd = ::CreateWindowExA(
-        ex_style, MAKEINTATOM(cls), "", style,
+        ex_style, "MapWindow", "", style,
         left, 0, cr.right - left, cr.bottom,
         parent,
         reinterpret_cast< ::HMENU>(static_cast< ::LONG_PTR>(id)),

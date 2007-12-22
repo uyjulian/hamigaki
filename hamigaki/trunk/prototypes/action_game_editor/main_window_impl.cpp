@@ -133,58 +133,6 @@ void setup_map_list(::HWND hwnd, const fs::path& dir)
     }
 }
 
-class scoped_window_class : private boost::noncopyable
-{
-public:
-    scoped_window_class(::HINSTANCE hInstance, ::ATOM id)
-        : hInstance_(hInstance), id_(id)
-    {
-    }
-
-    ~scoped_window_class()
-    {
-        ::UnregisterClassA(MAKEINTATOM(id_), hInstance_);
-    }
-
-    ::ATOM get() const
-    {
-        return id_;
-    }
-
-private:
-    ::HINSTANCE hInstance_;
-    ::ATOM id_;
-};
-
-class scoped_window : private boost::noncopyable
-{
-public:
-    explicit scoped_window(::HWND handle) : handle_(handle)
-    {
-    }
-
-    ~scoped_window()
-    {
-        if (handle_ != 0)
-            ::DestroyWindow(handle_);
-    }
-
-    ::HWND get() const
-    {
-        return handle_;
-    }
-
-    ::HWND release()
-    {
-        ::HWND tmp = handle_;
-        handle_ = 0;
-        return tmp;
-    }
-
-private:
-    ::HWND handle_;
-};
-
 ::HINSTANCE get_parent_module(::HWND hwnd)
 {
     return reinterpret_cast< ::HINSTANCE>(
@@ -198,37 +146,21 @@ class main_window::impl
 {
 public:
     explicit impl(::HWND handle)
-        : handle_(handle)
-        , hInstance_(get_parent_module(handle_))
-        , select_class_(
-            hInstance_,
-            register_char_select_window_class(hInstance_)
-        )
-        , map_class_(
-            hInstance_,
-            register_map_edit_window_class(hInstance_)
-        )
-        , modified_(false)
+        : handle_(handle), modified_(false)
     {
-        scoped_window select_window(
-            create_char_select_window(
-                handle_, char_select_id,
-                hInstance_, select_class_.get()
-            )
-        );
+        ::HINSTANCE hInstance = get_parent_module(handle_);
+
+        char_sel_window_ =
+            create_char_select_window(handle_, char_select_id, hInstance);
 
         ::RECT r;
-        ::GetWindowRect(select_window.get(), &r);
+        ::GetWindowRect(char_sel_window_, &r);
         int char_sel_width = r.right - r.left;
         int char_sel_height = r.bottom - r.top;
 
-        scoped_window map_window(
+        map_window_ =
             create_map_edit_window(
-                handle_, map_edit_id,
-                char_sel_width + 2,
-                hInstance_, map_class_.get()
-            )
-        );
+                handle_, map_edit_id, char_sel_width + 2, hInstance);
 
         ::RECT cr;
         ::GetClientRect(handle_, &cr);
@@ -240,11 +172,8 @@ public:
             char_sel_width, cr.bottom - (char_sel_height + 2),
             handle_,
             reinterpret_cast< ::HMENU>(static_cast< ::LONG_PTR>(map_select_id)),
-            hInstance_, 0
+            hInstance, 0
         );
-
-        char_sel_window_ = select_window.release();
-        map_window_ = map_window.release();
     }
 
     ~impl()
@@ -342,14 +271,11 @@ public:
 
 private:
     ::HWND handle_;
-    ::HINSTANCE hInstance_;
     game_project project_;
     std::string project_file_;
     std::set<game_character_class> char_table_;
     std::map<hamigaki::uuid,fs::path> filename_table_;
     std::map<std::string,stage_map> map_table_;
-    scoped_window_class select_class_;
-    scoped_window_class map_class_;
     ::HWND char_sel_window_;
     ::HWND map_window_;
     ::HWND map_sel_window_;

@@ -18,7 +18,7 @@
 ::ATOM register_map_edit_window_class(::HINSTANCE hInstance);
 
 ::HWND create_map_edit_window(
-    ::HWND parent, int id, int left, ::HINSTANCE hInstance, ::ATOM cls);
+    ::HWND parent, int id, int left, ::HINSTANCE hInstance);
 
 void map_edit_window_set(::HWND hwnd, stage_map* map);
 void map_edit_window_select_char(::HWND hwnd, const hamigaki::uuid& c);

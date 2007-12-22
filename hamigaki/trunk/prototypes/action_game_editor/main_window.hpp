@@ -14,6 +14,6 @@
 #include <windows.h>
 
 ::ATOM register_main_window_class(::HINSTANCE hInstance);
-::HWND create_main_window(::HINSTANCE hInstance, ::ATOM cls);
+::HWND create_main_window(::HINSTANCE hInstance);
 
 #endif // MAIN_WINDOW_HPP

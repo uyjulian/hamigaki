@@ -7,9 +7,11 @@
 
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
+#include "char_select_window.hpp"
 #include "icon_select_window.hpp"
 #include "icon_view_window.hpp"
 #include "main_window.hpp"
+#include "map_edit_window.hpp"
 #include <boost/noncopyable.hpp>
 #include <iostream>
 #include <stdexcept>
@@ -66,10 +68,13 @@ int WINAPI WinMain(
 
         accelerator_table accels(hInstance, HAMIGAKI_IDR_ACCELERATOR);
 
-        ::ATOM cls = register_main_window_class(hInstance);
-        ::ATOM cls2 = register_icon_select_window_class(hInstance);
-        ::ATOM cls3 = register_icon_view_window_class(hInstance);
-        ::HWND hwnd = create_main_window(hInstance, cls);
+        register_char_select_window_class(hInstance);
+        register_icon_select_window_class(hInstance);
+        register_icon_view_window_class(hInstance);
+        register_main_window_class(hInstance);
+        register_map_edit_window_class(hInstance);
+
+        ::HWND hwnd = create_main_window(hInstance);
 
         ::ShowWindow(hwnd, nCmdShow);
         ::UpdateWindow(hwnd);
@@ -91,10 +96,6 @@ int WINAPI WinMain(
                 ::DispatchMessageA(&msg);
             }
         }
-
-        ::UnregisterClassA(MAKEINTATOM(cls3), hInstance);
-        ::UnregisterClassA(MAKEINTATOM(cls2), hInstance);
-        ::UnregisterClassA(MAKEINTATOM(cls), hInstance);
         return msg.wParam;
     }
     catch (const std::exception& e)

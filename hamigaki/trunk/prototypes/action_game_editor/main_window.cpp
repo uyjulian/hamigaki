@@ -182,13 +182,13 @@ bool close_project(main_window* pimpl, ::HWND hwnd)
     return cls;
 }
 
-::HWND create_main_window(::HINSTANCE hInstance, ::ATOM cls)
+::HWND create_main_window(::HINSTANCE hInstance)
 {
     ::DWORD style = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN;
     ::DWORD ex_style = 0;
 
     ::HWND hwnd = ::CreateWindowExA(
-        ex_style, MAKEINTATOM(cls), "Action Game Editor", style,
+        ex_style, "MainWindow", "Action Game Editor", style,
         CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
         0, 0, hInstance, 0
     );
