@@ -13,7 +13,8 @@
 #include "main_window.hpp"
 #include "map_edit_window.hpp"
 #include <boost/noncopyable.hpp>
-#include <iostream>
+#include <cstring>
+#include <locale>
 #include <stdexcept>
 
 #include <hamigaki/detail/windows/com_library.hpp>
@@ -63,6 +64,8 @@ int WINAPI WinMain(
 {
     try
     {
+        std::locale::global(std::locale(""));
+
         const hamigaki::detail::windows::com_library using_com;
         init_common_controls();
 
