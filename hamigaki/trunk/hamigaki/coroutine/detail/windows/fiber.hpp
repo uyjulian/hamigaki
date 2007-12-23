@@ -10,22 +10,30 @@
 #ifndef HAMIGAKI_COROUTINE_DETAIL_WINDOWS_FIBER_HPP
 #define HAMIGAKI_COROUTINE_DETAIL_WINDOWS_FIBER_HPP
 
+#include <boost/config.hpp>
+
 #if defined(_MSC_FULL_VER) && (_MSC_FULL_VER >= 13012035)
     #define HAMIGAKI_COROUTINE_HAS_READFSDWORD
     extern "C" unsigned long __readfsdword(unsigned long);
     #pragma intrinsic(__readfsdword)
 #endif
 
+#if defined(BOOST_HAS_DECLSPEC) && !defined(HAMIGAKI_COROUTINE_NO_DLLIMPORT)
+    #define HAMIGAKI_COROUTINE_DLLIMPORT __declspec(dllimport)
+#else
+    #define HAMIGAKI_COROUTINE_DLLIMPORT
+#endif
+
 extern "C" {
 
 typedef void (__stdcall* start_routine)(void*);
 
-__declspec(dllimport)
+HAMIGAKI_COROUTINE_DLLIMPORT
 void* __stdcall CreateFiber(unsigned long, start_routine, void*);
 
-__declspec(dllimport) void __stdcall DeleteFiber(void*);
-__declspec(dllimport) void* __stdcall ConvertThreadToFiber(void*);
-__declspec(dllimport) void __stdcall SwitchToFiber(void*);
+HAMIGAKI_COROUTINE_DLLIMPORT void __stdcall DeleteFiber(void*);
+HAMIGAKI_COROUTINE_DLLIMPORT void* __stdcall ConvertThreadToFiber(void*);
+HAMIGAKI_COROUTINE_DLLIMPORT void __stdcall SwitchToFiber(void*);
 
 } // extern "C"
 
