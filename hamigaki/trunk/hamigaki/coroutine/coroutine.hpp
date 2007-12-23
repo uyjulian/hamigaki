@@ -19,6 +19,10 @@
 #ifndef HAMIGAKI_COROUTINE_COROUTINE_HPP
 #define HAMIGAKI_COROUTINE_COROUTINE_HPP
 
+// Note:
+// The next line is a dummy for bjam "c-scanner".
+// #include <hamigaki/coroutine/detail/coroutine_template.hpp>
+
 #include <hamigaki/coroutine/detail/coroutine_utility.hpp>
 #include <hamigaki/coroutine/detail/default_context.hpp>
 #include <hamigaki/coroutine/exception.hpp>
