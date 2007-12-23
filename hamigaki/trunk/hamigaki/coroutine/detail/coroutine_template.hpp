@@ -344,6 +344,7 @@ public:
     template<class Functor>
     HAMIGAKI_COROUTINE_DATA(Functor func, std::ptrdiff_t stack_size)
         : func_(func), func_storage_(this), state_(coro_detail::normal)
+        , abnormal_exit_(false), type_ptr_(0)
         , callee_(func_storage_, stack_size)
     {
     }
@@ -379,7 +380,7 @@ public:
         HAMIGAKI_COROUTINE_PARMS)
     {
         if (state_ == coro_detail::exited)
-            throw coroutine_exited();
+            error();
         this->call_impl(HAMIGAKI_COROUTINE_ARGS);
         return *result_;
     }
@@ -389,7 +390,7 @@ public:
         HAMIGAKI_COROUTINE_PARMS)
     {
         if (state_ == coro_detail::exited)
-            throw coroutine_exited();
+            error();
         this->call_impl(HAMIGAKI_COROUTINE_ARGS);
     }
 
@@ -441,6 +442,8 @@ private:
         HAMIGAKI_COROUTINE_TEMPLATE_ARGS> func_;
     functor func_storage_;
     coro_detail::state state_;
+    bool abnormal_exit_;
+    const std::type_info* type_ptr_;
     typename ContextImpl::context_impl_base caller_;
     ContextImpl callee_;
 
@@ -462,8 +465,17 @@ private:
 
             swap_context(callee_, caller_, detail::default_hint());
         }
+        catch (const exit_exception&)
+        {
+        }
+        catch (const std::exception& e)
+        {
+            abnormal_exit_ = true;
+            type_ptr_ = &typeid(e);
+        }
         catch (...)
         {
+            abnormal_exit_ = true;
         }
         result_ = boost::none;
     }
@@ -486,8 +498,17 @@ private:
 
             swap_context(callee_, caller_, detail::default_hint());
         }
+        catch (const exit_exception&)
+        {
+        }
+        catch (const std::exception& e)
+        {
+            abnormal_exit_ = true;
+            type_ptr_ = &typeid(e);
+        }
         catch (...)
         {
+            abnormal_exit_ = true;
         }
     }
 
@@ -514,7 +535,7 @@ private:
     {
         this->call_nothrow_impl(HAMIGAKI_COROUTINE_ARGS);
         if (state_ == coro_detail::exited)
-            throw coroutine_exited();
+            error();
     }
 
     HAMIGAKI_COROUTINE_CORO_ARG_TYPE arguments()
@@ -522,6 +543,14 @@ private:
 #if HAMIGAKI_COROUTINE_NUM_ARGS != 0
         return arg_;
 #endif
+    }
+
+    void error()
+    {
+        if (abnormal_exit_)
+            throw abnormal_exit(type_ptr_);
+        else
+            throw coroutine_exited();
     }
 };
 

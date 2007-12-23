@@ -20,12 +20,50 @@
 #define HAMIGAKI_COROUTINE_EXCEPTION_HPP
 
 #include <exception>
+#include <typeinfo>
 
 namespace hamigaki { namespace coroutines {
 
+// Note:
+// The class exit_exception is NOT derived from std::exception.
+// The reasons are following:
+// 1. Some debuggers catch std::exception.
+// 2. This exception is never caught by users.
+class exit_exception {};
+
 class exception_base : public std::exception {};
-class exit_exception : public exception_base {};
 class coroutine_exited : public exception_base {};
+
+// Added for the compatibility to Boost.Coroutine
+// Thanks for the report by W.Dee
+class unknown_exception_tag {};
+class abnormal_exit : public std::exception
+{
+public:
+    explicit abnormal_exit(const std::type_info* p = 0)
+        : info_ptr_(p)
+    {
+    }
+
+    const char* what() const throw() // virtual
+    {
+        if (info_ptr_)
+            return info_ptr_->name();
+        else
+            return "unknown exception";
+    }
+
+    const std::type_info& type() const
+    {
+        if (info_ptr_)
+            return *info_ptr_;
+        else
+            return typeid(unknown_exception_tag);
+    }
+
+private:
+    const std::type_info* info_ptr_;
+};
 
 } } // End namespaces coroutines, hamigaki.
 
