@@ -31,8 +31,26 @@ namespace hamigaki { namespace coroutines {
 // 2. This exception is never caught by users.
 class exit_exception {};
 
-class exception_base : public std::exception {};
-class coroutine_exited : public exception_base {};
+class exception_base : public std::exception
+{
+public:
+    ~exception_base() throw() // virtual
+    {
+    }
+};
+
+class coroutine_exited : public exception_base
+{
+public:
+    ~coroutine_exited() throw() // virtual
+    {
+    }
+
+    const char* what() const throw() // virtual
+    {
+        return "coroutine exited";
+    }
+};
 
 // Added for the compatibility to Boost.Coroutine
 // Thanks for the report by W.Dee
@@ -41,28 +59,37 @@ class abnormal_exit : public std::exception
 {
 public:
     explicit abnormal_exit(const std::type_info* p = 0)
-        : info_ptr_(p)
+        : type_ptr_(p)
+    {
+    }
+
+    ~abnormal_exit() throw() // virtual
     {
     }
 
     const char* what() const throw() // virtual
     {
-        if (info_ptr_)
-            return info_ptr_->name();
+        if (type_ptr_)
+            return type_ptr_->name();
         else
             return "unknown exception";
     }
 
     const std::type_info& type() const
     {
-        if (info_ptr_)
-            return *info_ptr_;
+        if (type_ptr_)
+            return *type_ptr_;
         else
             return typeid(unknown_exception_tag);
     }
 
+    const std::type_info* type_ptr() const
+    {
+        return type_ptr_;
+    }
+
 private:
-    const std::type_info* info_ptr_;
+    const std::type_info* type_ptr_;
 };
 
 } } // End namespaces coroutines, hamigaki.

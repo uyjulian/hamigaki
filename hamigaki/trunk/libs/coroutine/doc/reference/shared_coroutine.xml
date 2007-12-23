@@ -82,6 +82,12 @@
             <parameter name="a2"><paramtype>T2</paramtype></parameter>
             <parameter><paramtype>...</paramtype></parameter>
             <parameter name="aN"><paramtype>TN</paramtype></parameter>
+            <effects><simpara>コルーチンの実行を再開し、その結果を返す。</simpara></effects>
+            <returns><simpara>コルーチンの戻り値</simpara></returns>
+            <throws>
+              <simpara>コルーチンが<code><methodname alt="hamigaki::coroutines::selfN::exit">exit</methodname>()</code>により終了した場合には、<classname>coroutine_exited</classname>を送出する。</simpara>
+              <simpara>捕捉されない例外によりコルーチンが異常終了した場合は、その例外の型情報を保持する<classname>abnormal_exit</classname>を送出する。</simpara>
+            </throws>
           </method>
 
           <method name="operator()" cv="const">
@@ -91,6 +97,9 @@
             <parameter name="a2"><paramtype>T2</paramtype></parameter>
             <parameter><paramtype>...</paramtype></parameter>
             <parameter name="aN"><paramtype>TN</paramtype></parameter>
+            <effects><simpara>コルーチンの実行を再開し、その結果を返す。</simpara></effects>
+            <returns><simpara>コルーチンが終了した、あるいは未捕捉例外により異常終了して、戻り値がない場合は、<code>boost::optional&lt;R&gt;()</code>。それ以外の場合は、コルーチンの戻り値。</simpara></returns>
+            <throws>引数や戻り値のコピーコンストラクタが例外を送出する場合を除いて、いかなる例外も送出しない。</throws>
           </method>
         </method-group>
       </class>

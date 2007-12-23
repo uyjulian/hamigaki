@@ -14,6 +14,7 @@
 <library-reference xmlns:xi="http://www.w3.org/2001/XInclude">
   <title>リファレンス</title>
   <xi:include href="coroutine.xml"/>
+  <xi:include href="exception.xml"/>
   <xi:include href="generator.xml"/>
   <xi:include href="processor.xml"/>
   <xi:include href="shared_coroutine.xml"/>
