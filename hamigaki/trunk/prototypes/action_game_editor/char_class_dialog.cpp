@@ -9,6 +9,7 @@
 
 #include "char_class_dialog.hpp"
 #include "icon_view_window.hpp"
+#include "msg_utilities.hpp"
 #include "sprite_form.hpp"
 #include "sprite_info.hpp"
 #include <boost/algorithm/string/predicate.hpp>
@@ -146,23 +147,14 @@ void setup_sprite_list(::HWND hwnd, const std::string& filename)
     {
         const std::string& leaf = it->path().leaf();
         if (algo::iends_with(leaf, ".ags-yh", loc))
-        {
-            ::SendMessageA(
-                hwnd, CB_ADDSTRING, 0,
-                reinterpret_cast< ::LPARAM>(leaf.c_str())
-            );
-        }
+            send_msg(hwnd, CB_ADDSTRING, 0, leaf);
     }
 
     if (!filename.empty())
     {
-        int index = ::SendMessageA(
-            hwnd, CB_FINDSTRINGEXACT,
-            0, reinterpret_cast< ::LPARAM>(filename.c_str())
-        );
-
+        int index = send_msg(hwnd, CB_FINDSTRINGEXACT, 0, filename);
         if (index != CB_ERR)
-            ::SendMessageA(hwnd, CB_SETCURSEL, index, 0);
+            send_msg(hwnd, CB_SETCURSEL, index);
     }
 }
 

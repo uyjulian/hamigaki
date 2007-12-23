@@ -12,6 +12,7 @@
 #include "char_select_window.hpp"
 #include "game_project_io.hpp"
 #include "map_edit_window.hpp"
+#include "msg_utilities.hpp"
 #include "stage_map_load.hpp"
 #include "stage_map_save.hpp"
 #include <boost/algorithm/string/predicate.hpp>
@@ -125,7 +126,7 @@ void save_maps(const fs::path& dir, std::map<std::string,stage_map>& table)
 
 void setup_map_list(::HWND hwnd, const fs::path& dir)
 {
-    ::SendMessageA(hwnd, LB_RESETCONTENT, 0, 0);
+    send_msg(hwnd, LB_RESETCONTENT);
 
     fs::directory_iterator it(dir);
     fs::directory_iterator end;
@@ -136,10 +137,7 @@ void setup_map_list(::HWND hwnd, const fs::path& dir)
         const fs::path& ph = it->path();
         const std::string& leaf = ph.leaf();
         if (algo::iends_with(leaf, ".agm-yh", loc))
-        {
-            ::SendMessageA(hwnd, LB_ADDSTRING, 0,
-                reinterpret_cast< ::LPARAM>(leaf.c_str()));
-        }
+            send_msg(hwnd, LB_ADDSTRING, 0, leaf);
     }
 }
 
@@ -283,10 +281,9 @@ public:
         if (map_edit_window_select_modified(map_window_))
             modified_ = true;
 
-        int index = ::SendMessageA(map_sel_window_, LB_ADDSTRING, 0,
-            reinterpret_cast< ::LPARAM>(filename.c_str()));
+        int index = send_msg(map_sel_window_, LB_ADDSTRING, 0, filename);
 
-        ::SendMessageA(map_sel_window_, LB_SETCURSEL, index, 0);
+        send_msg(map_sel_window_, LB_SETCURSEL, index);
 
         stage_map& m = map_table_[filename];
         m.width = width * 32;
@@ -305,28 +302,26 @@ public:
 
     std::string stage_name() const
     {
-        int index = ::SendMessageA(map_sel_window_, LB_GETCURSEL, 0, 0);
+        int index = send_msg(map_sel_window_, LB_GETCURSEL);
         if (index == -1)
             map_edit_window_set(map_window_, 0);
 
-        int size = ::SendMessageA(map_sel_window_, LB_GETTEXTLEN, index, 0);
+        int size = send_msg(map_sel_window_, LB_GETTEXTLEN, index);
 
         boost::scoped_array<char> buf(new char[size+1]);
-        ::SendMessageA(
-            map_sel_window_, LB_GETTEXT, index,
-            reinterpret_cast< ::LPARAM>(buf.get()));
+        send_msg_with_ptr(map_sel_window_, LB_GETTEXT, index, buf.get());
 
         return std::string(buf.get(), size);
     }
 
     void delete_stage()
     {
-        int index = ::SendMessageA(map_sel_window_, LB_GETCURSEL, 0, 0);
+        int index = send_msg(map_sel_window_, LB_GETCURSEL);
         if (index != -1)
         {
             map_edit_window_set(map_window_, 0);
             map_table_.erase(stage_name());
-            ::SendMessageA(map_sel_window_, LB_DELETESTRING, index, 0);
+            send_msg(map_sel_window_, LB_DELETESTRING, index);
         }
     }
 

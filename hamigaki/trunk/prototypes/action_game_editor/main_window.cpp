@@ -12,6 +12,7 @@
 #include "folder_select_dialog.hpp"
 #include "main_window_impl.hpp"
 #include "map_config_dialog.hpp"
+#include "msg_utilities.hpp"
 #include <boost/format.hpp>
 #include <cstring>
 
@@ -149,10 +150,7 @@ bool close_project(main_window* pimpl, ::HWND hwnd)
             {
                 ::HWND focus = ::GetFocus();
                 if (focus == ::GetDlgItem(hwnd, main_window::map_select_id))
-                {
-                    ::SendMessageA(hwnd, WM_COMMAND,
-                        MAKEWPARAM(HAMIGAKI_ID_MAP_DEL, 1), 0);
-                }
+                    send_command(hwnd, HAMIGAKI_ID_MAP_DEL, 1, 0);
             }
             else if (id == HAMIGAKI_ID_MAP_NEW)
             {

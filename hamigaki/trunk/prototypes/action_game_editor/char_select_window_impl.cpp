@@ -12,6 +12,7 @@
 #include "cursor.hpp"
 #include "direct3d9.hpp"
 #include "direct3d_device9.hpp"
+#include "msg_utilities.hpp"
 #include "png_loader.hpp"
 #include "sprite.hpp"
 
@@ -93,10 +94,7 @@ public:
         int code = char_select_window_msgs::notify_sel_changed;
         int id = ::GetDlgCtrlID(handle_);
 
-        ::SendMessage(
-            ::GetParent(handle_), WM_COMMAND,
-            MAKEWPARAM(id, code), reinterpret_cast< ::LPARAM>(handle_)
-        );
+        send_command(::GetParent(handle_), id, code, handle_);
     }
 
     hamigaki::uuid selected_char() const
