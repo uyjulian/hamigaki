@@ -64,19 +64,24 @@ void load_char_classes(
 
 void save_char_classes(
     const fs::path& dir,
-    const std::set<game_character_class>& char_table,
+    std::set<game_character_class>& char_table,
     const std::map<hamigaki::uuid,fs::path>& filename_table)
 {
-    typedef std::set<game_character_class>::const_iterator char_iter;
+    typedef std::set<game_character_class>::iterator char_iter;
     typedef std::map<hamigaki::uuid,fs::path>::const_iterator name_iter;
 
     for (char_iter i = char_table.begin(), end = char_table.end(); i!=end; ++i)
     {
-        const game_character_class& c = *i;
-        name_iter pos = filename_table.find(c.id);
-        BOOST_ASSERT(pos != filename_table.end());
-        const fs::path& ph = pos->second;
-        save_character_class(ph.file_string().c_str(), c);
+        game_character_class& c = *i;
+
+        if (c.modified)
+        {
+            name_iter pos = filename_table.find(c.id);
+            BOOST_ASSERT(pos != filename_table.end());
+            const fs::path& ph = pos->second;
+            save_character_class(ph.file_string().c_str(), c);
+            c.modified = false;
+        }
     }
 }
 

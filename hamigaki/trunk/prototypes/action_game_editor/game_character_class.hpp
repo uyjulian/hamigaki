@@ -40,8 +40,10 @@ struct game_character_class
     hamigaki::uuid on_stomp;
     hamigaki::uuid on_hit;
 
+    bool modified;
+
     game_character_class()
-        : vx(0.0f), vy(0.0f), slope(slope_type::none)
+        : vx(0.0f), vy(0.0f), slope(slope_type::none), modified(false)
     {
     }
 
