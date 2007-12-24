@@ -27,6 +27,7 @@ public:
     void update_size();
     void update_selected_char();
     void new_project(const std::string& filename, const game_project& proj);
+    void close_project();
     void load_project(const std::string& filename);
     void save_project();
     bool new_stage(const std::string& filename, int width, int height);

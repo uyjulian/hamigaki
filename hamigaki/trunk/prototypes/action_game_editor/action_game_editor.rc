@@ -23,7 +23,8 @@ BEGIN
     BEGIN
         MENUITEM "&New project...\tCtrl+N" ,    HAMIGAKI_ID_FILE_NEW
         MENUITEM "&Open project...\tCtrl+O",    HAMIGAKI_ID_FILE_OPEN
-        MENUITEM "&Save project\tCtrl+S",       HAMIGAKI_ID_FILE_SAVE
+        MENUITEM "&Close project",              HAMIGAKI_ID_FILE_CLOSE, GRAYED
+        MENUITEM "&Save project\tCtrl+S",       HAMIGAKI_ID_FILE_SAVE,  GRAYED
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       HAMIGAKI_ID_FILE_EXIT
     END

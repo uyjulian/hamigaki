@@ -181,33 +181,8 @@ public:
     explicit impl(::HWND handle)
         : handle_(handle), modified_(false)
         , menu_(get_parent_module(handle_), MAKEINTRESOURCE(HAMIGAKI_IDR_POPUP))
+        , char_sel_window_(0), map_window_(0), map_sel_window_(0)
     {
-        ::HINSTANCE hInstance = get_parent_module(handle_);
-
-        char_sel_window_ =
-            create_char_select_window(handle_, char_select_id, hInstance);
-
-        ::RECT r;
-        ::GetWindowRect(char_sel_window_, &r);
-        int char_sel_width = r.right - r.left;
-        int char_sel_height = r.bottom - r.top;
-
-        map_window_ =
-            create_map_edit_window(
-                handle_, map_edit_id, char_sel_width + 2, hInstance);
-
-        ::RECT cr;
-        ::GetClientRect(handle_, &cr);
-
-        map_sel_window_ = ::CreateWindowExA(
-            WS_EX_CLIENTEDGE, "LISTBOX", "",
-            WS_CHILD | WS_VISIBLE | WS_VSCROLL | LBS_NOTIFY,
-            0, char_sel_height + 2,
-            char_sel_width, cr.bottom - (char_sel_height + 2),
-            handle_,
-            reinterpret_cast< ::HMENU>(static_cast< ::LONG_PTR>(map_select_id)),
-            hInstance, 0
-        );
     }
 
     ~impl()
@@ -216,6 +191,9 @@ public:
 
     void update_size()
     {
+        if (map_window_ == 0)
+            return;
+
         ::RECT r;
         ::GetWindowRect(char_sel_window_, &r);
         int char_sel_width = r.right - r.left;
@@ -245,6 +223,9 @@ public:
 
         const fs::path& dir = fs::path(filename).branch_path();
 
+        if (map_window_ == 0)
+            create_child_windows();
+
         load_char_classes(dir, char_table_, filename_table_);
         load_maps(dir, map_table_);
         setup_map_list(map_sel_window_, dir);
@@ -252,6 +233,26 @@ public:
 
         project_file_ = filename;
         modified_ = true;
+    }
+
+    void close_project()
+    {
+        ::DestroyWindow(map_sel_window_);
+        map_sel_window_ = 0;
+
+        ::DestroyWindow(map_window_);
+        map_window_ = 0;
+
+        ::DestroyWindow(char_sel_window_);
+        char_sel_window_ = 0;
+
+        map_table_.clear();
+        filename_table_.clear();
+        char_table_.clear();
+        project_file_.clear();
+        project_ = game_project();
+
+        modified_ = false;
     }
 
     void load_project(const std::string& filename)
@@ -277,6 +278,9 @@ public:
         fs::path ph = fs::path(project_file_).branch_path() / filename;
         if (exists(ph))
             return false;
+
+        if (map_window_ == 0)
+            create_child_windows();
 
         if (map_edit_window_select_modified(map_window_))
             modified_ = true;
@@ -364,6 +368,36 @@ private:
     ::HWND map_sel_window_;
     bool modified_;
     menu menu_;
+
+    void create_child_windows()
+    {
+        ::HINSTANCE hInstance = get_parent_module(handle_);
+
+        char_sel_window_ =
+            create_char_select_window(handle_, char_select_id, hInstance);
+
+        ::RECT r;
+        ::GetWindowRect(char_sel_window_, &r);
+        int char_sel_width = r.right - r.left;
+        int char_sel_height = r.bottom - r.top;
+
+        map_window_ =
+            create_map_edit_window(
+                handle_, map_edit_id, char_sel_width + 2, hInstance);
+
+        ::RECT cr;
+        ::GetClientRect(handle_, &cr);
+
+        map_sel_window_ = ::CreateWindowExA(
+            WS_EX_CLIENTEDGE, "LISTBOX", "",
+            WS_CHILD | WS_VISIBLE | WS_VSCROLL | LBS_NOTIFY,
+            0, char_sel_height + 2,
+            char_sel_width, cr.bottom - (char_sel_height + 2),
+            handle_,
+            reinterpret_cast< ::HMENU>(static_cast< ::LONG_PTR>(map_select_id)),
+            hInstance, 0
+        );
+    }
 };
 
 main_window::main_window(::HWND handle) : pimpl_(new impl(handle))
@@ -388,6 +422,11 @@ void main_window::new_project(
     const std::string& filename, const game_project& proj)
 {
     pimpl_->new_project(filename, proj);
+}
+
+void main_window::close_project()
+{
+    pimpl_->close_project();
 }
 
 void main_window::load_project(const std::string& filename)

@@ -25,6 +25,16 @@ using hamigaki::system::windows_error;
 namespace
 {
 
+void enable_project_menu(::HWND hwnd, bool value)
+{
+    ::HMENU menu = ::GetMenu(hwnd);
+
+    ::DWORD flags = value ? MF_ENABLED : MF_GRAYED;
+
+    ::EnableMenuItem(menu, HAMIGAKI_ID_FILE_CLOSE, flags);
+    ::EnableMenuItem(menu, HAMIGAKI_ID_FILE_SAVE,  flags);
+}
+
 bool get_open_file_name(::HWND hwnd, std::string& filename)
 {
     char buf[MAX_PATH];
@@ -62,6 +72,8 @@ bool close_project(main_window* pimpl, ::HWND hwnd)
             pimpl->save_project();
     }
 
+    pimpl->close_project();
+    enable_project_menu(hwnd, false);
     return true;
 }
 
@@ -128,7 +140,10 @@ bool close_project(main_window* pimpl, ::HWND hwnd)
                 game_project proj;
                 std::string dir;
                 if (select_folder(hwnd, dir))
+                {
                     pimpl->new_project(dir + "\\action_game.agp-yh", proj);
+                    enable_project_menu(hwnd, true);
+                }
             }
             else if (id == HAMIGAKI_ID_FILE_OPEN)
             {
@@ -137,8 +152,13 @@ bool close_project(main_window* pimpl, ::HWND hwnd)
 
                 std::string filename;
                 if (get_open_file_name(hwnd, filename))
+                {
                     pimpl->load_project(filename);
+                    enable_project_menu(hwnd, true);
+                }
             }
+            else if (id == HAMIGAKI_ID_FILE_CLOSE)
+                close_project(pimpl, hwnd);
             else if (id == HAMIGAKI_ID_FILE_SAVE)
                 pimpl->save_project();
             else if (id == HAMIGAKI_ID_FILE_EXIT)
