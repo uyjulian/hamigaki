@@ -10,12 +10,17 @@
 #ifndef CHAR_SELECT_WINDOW_HPP
 #define CHAR_SELECT_WINDOW_HPP
 
+#include "game_character_class.hpp"
 #include <hamigaki/uuid.hpp>
+#include <set>
 #include <string>
 #include <windows.h>
 
 ::ATOM register_char_select_window_class(::HINSTANCE hInstance);
 ::HWND create_char_select_window(::HWND parent, int id, ::HINSTANCE hInstance);
 hamigaki::uuid get_selected_char(::HWND hwnd);
+void setup_char_list(::HWND hwnd, std::set<game_character_class>* chars);
+bool char_select_window_modified(::HWND hwnd);
+void char_select_window_modified(::HWND hwnd, bool value);
 
 #endif // CHAR_SELECT_WINDOW_HPP

@@ -119,3 +119,29 @@ void icon_window_load(
     if (pimpl != 0)
         pimpl->load(filename, r);
 }
+
+std::string icon_window_filename(::HWND hwnd)
+{
+    icon_view_window* pimpl =
+        reinterpret_cast<icon_view_window*>(
+            GetWindowLongPtr(hwnd, GWLP_USERDATA)
+        );
+
+    if (pimpl != 0)
+        return pimpl->filename();
+    else
+        return std::string();
+}
+
+rectangle<int> icon_window_icon_rect(::HWND hwnd)
+{
+    icon_view_window* pimpl =
+        reinterpret_cast<icon_view_window*>(
+            GetWindowLongPtr(hwnd, GWLP_USERDATA)
+        );
+
+    if (pimpl != 0)
+        return pimpl->icon_rect();
+    else
+        return rectangle<int>();
+}

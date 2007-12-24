@@ -209,7 +209,7 @@ void map_edit_window_select_char(::HWND hwnd, const hamigaki::uuid& c)
         pimpl->select_char(c);
 }
 
-bool map_edit_window_select_modified(::HWND hwnd)
+bool map_edit_window_modified(::HWND hwnd)
 {
     map_edit_window* pimpl =
         reinterpret_cast<map_edit_window*>(

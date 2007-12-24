@@ -22,6 +22,6 @@
 
 void map_edit_window_set(::HWND hwnd, stage_map* map);
 void map_edit_window_select_char(::HWND hwnd, const hamigaki::uuid& c);
-bool map_edit_window_select_modified(::HWND hwnd);
+bool map_edit_window_modified(::HWND hwnd);
 
 #endif // MAP_WINDOW_HPP

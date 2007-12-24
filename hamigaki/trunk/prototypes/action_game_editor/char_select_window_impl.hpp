@@ -10,8 +10,10 @@
 #ifndef CHAR_SELECT_WINDOW_IMPL_HPP
 #define CHAR_SELECT_WINDOW_IMPL_HPP
 
+#include "game_character_class.hpp"
 #include <hamigaki/uuid.hpp>
 #include <boost/shared_ptr.hpp>
+#include <set>
 #include <string>
 #include <windows.h>
 
@@ -20,9 +22,12 @@ class char_select_window
 public:
     explicit char_select_window(::HWND handle);
     ~char_select_window();
+    void set_characters(std::set<game_character_class>* chars);
     void render();
     void cursor_pos(int x, int y);
-    hamigaki::uuid selected_char() const;
+    game_character_class* selected_char() const;
+    bool modified() const;
+    void modified(bool value);
 
 private:
     class impl;

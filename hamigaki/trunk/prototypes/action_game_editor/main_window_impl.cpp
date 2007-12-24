@@ -222,6 +222,7 @@ public:
         project_ = proj;
 
         const fs::path& dir = fs::path(filename).branch_path();
+        ::SetCurrentDirectoryA(dir.directory_string().c_str());
 
         if (map_window_ == 0)
             create_child_windows();
@@ -230,6 +231,7 @@ public:
         load_maps(dir, map_table_);
         setup_map_list(map_sel_window_, dir);
         map_edit_window_set(map_window_, 0);
+        setup_char_list(char_sel_window_, &char_table_);
 
         project_file_ = filename;
         modified_ = true;
@@ -282,7 +284,7 @@ public:
         if (map_window_ == 0)
             create_child_windows();
 
-        if (map_edit_window_select_modified(map_window_))
+        if (map_edit_window_modified(map_window_))
             modified_ = true;
 
         int index = send_msg(map_sel_window_, LB_ADDSTRING, 0, filename);
@@ -331,7 +333,7 @@ public:
 
     void change_stage()
     {
-        if (map_edit_window_select_modified(map_window_))
+        if (map_edit_window_modified(map_window_))
             modified_ = true;
 
         map_edit_window_set(map_window_, &map_table_[stage_name()]);
@@ -339,7 +341,10 @@ public:
 
     bool modified()
     {
-        return modified_ || map_edit_window_select_modified(map_window_);
+        return
+            modified_ ||
+            map_edit_window_modified(map_window_) ||
+            char_select_window_modified(char_sel_window_) ;
     }
 
     void track_popup_menu(::HWND hwnd, int x, int y)

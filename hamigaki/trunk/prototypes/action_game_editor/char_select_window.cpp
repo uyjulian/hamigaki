@@ -51,19 +51,16 @@ namespace
             }
             else if (uMsg == WM_LBUTTONDBLCLK)
             {
-                const hamigaki::uuid& type = pimpl->selected_char();
-                if (!type.is_null())
+                if (game_character_class* p = pimpl->selected_char())
                 {
-                    // FIXME: This is a test data.
-                    game_character_class info;
-                    info.sprite = "ball.ags-yh";
-                    info.attrs.set(char_attr::enemy);
-                    info.vx = 2.0f;
-                    info.vy = 1.0f;
-                    get_character_class_info(hwnd, info);
-
-                    // FIXME:
-                    get_character_class_info(hwnd, info);
+                    game_character_class info(*p);
+                    if (get_character_class_info(hwnd, info))
+                    {
+                        *p = info;
+                        p->modified = true;
+                        pimpl->modified(true);
+                        ::InvalidateRect(hwnd, 0, FALSE);
+                    }
                 }
             }
         }
@@ -132,7 +129,47 @@ hamigaki::uuid get_selected_char(::HWND hwnd)
         );
 
     if (pimpl != 0)
-        return pimpl->selected_char();
+    {
+        if (game_character_class* p = pimpl->selected_char())
+            return p->id;
+        else
+            return hamigaki::uuid();
+    }
     else
         return hamigaki::uuid();
+}
+
+void setup_char_list(::HWND hwnd, std::set<game_character_class>* chars)
+{
+    char_select_window* pimpl =
+        reinterpret_cast<char_select_window*>(
+            GetWindowLongPtr(hwnd, GWLP_USERDATA)
+        );
+
+    if (pimpl != 0)
+        pimpl->set_characters(chars);
+}
+
+bool char_select_window_modified(::HWND hwnd)
+{
+    char_select_window* pimpl =
+        reinterpret_cast<char_select_window*>(
+            GetWindowLongPtr(hwnd, GWLP_USERDATA)
+        );
+
+    if (pimpl != 0)
+        return pimpl->modified();
+    else
+        return false;
+}
+
+void char_select_window_modified(::HWND hwnd, bool value)
+{
+    char_select_window* pimpl =
+        reinterpret_cast<char_select_window*>(
+            GetWindowLongPtr(hwnd, GWLP_USERDATA)
+        );
+
+    if (pimpl != 0)
+        pimpl->modified(value);
 }

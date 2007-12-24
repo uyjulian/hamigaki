@@ -195,7 +195,14 @@ void update_icon(::HWND hwndDlg)
 
                 setup_sprite_list(
                     ::GetDlgItem(hwndDlg, HAMIGAKI_IDC_SPRITE), info->sprite);
-                update_icon(hwndDlg);
+
+                if (info->icon.empty())
+                    update_icon(hwndDlg);
+                else
+                {
+                    ::HWND hwnd = ::GetDlgItem(hwndDlg, HAMIGAKI_IDC_ICON);
+                    icon_window_load(hwnd, info->icon, info->icon_rect);
+                }
 
                 ::CheckDlgButton(
                     hwndDlg, HAMIGAKI_IDC_IS_PLAYER,
@@ -290,6 +297,10 @@ void update_icon(::HWND hwndDlg)
                     reinterpret_cast<game_character_class*>(
                         ::GetWindowLongPtr(hwndDlg, DWLP_USER)
                     );
+
+                ::HWND icon_window = ::GetDlgItem(hwndDlg, HAMIGAKI_IDC_ICON);
+                info->icon = icon_window_filename(icon_window);
+                info->icon_rect = icon_window_icon_rect(icon_window);
 
                 info->sprite =
                     get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_SPRITE);
