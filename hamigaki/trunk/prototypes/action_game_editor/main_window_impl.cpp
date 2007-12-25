@@ -231,6 +231,7 @@ public:
         load_maps(dir, map_table_);
         setup_map_list(map_sel_window_, dir);
         map_edit_window_set(map_window_, 0);
+        map_edit_window_set_char_list(map_window_, &char_table_);
         setup_char_list(char_sel_window_, &char_table_);
 
         project_file_ = filename;

@@ -10,8 +10,10 @@
 #ifndef MAP_WINDOW_HPP
 #define MAP_WINDOW_HPP
 
+#include "game_character_class.hpp"
 #include "stage_map.hpp"
 #include <hamigaki/uuid.hpp>
+#include <set>
 #include <string>
 #include <windows.h>
 
@@ -21,6 +23,10 @@
     ::HWND parent, int id, int left, ::HINSTANCE hInstance);
 
 void map_edit_window_set(::HWND hwnd, stage_map* map);
+
+void map_edit_window_set_char_list(
+    ::HWND hwnd, std::set<game_character_class>* chars);
+
 void map_edit_window_select_char(::HWND hwnd, const hamigaki::uuid& c);
 bool map_edit_window_modified(::HWND hwnd);
 

@@ -198,6 +198,18 @@ void map_edit_window_set(::HWND hwnd, stage_map* map)
         pimpl->set_stage(map);
 }
 
+void map_edit_window_set_char_list(
+    ::HWND hwnd, std::set<game_character_class>* chars)
+{
+    map_edit_window* pimpl =
+        reinterpret_cast<map_edit_window*>(
+            GetWindowLongPtr(hwnd, GWLP_USERDATA)
+        );
+
+    if (pimpl != 0)
+        pimpl->set_characters(chars);
+}
+
 void map_edit_window_select_char(::HWND hwnd, const hamigaki::uuid& c)
 {
     map_edit_window* pimpl =

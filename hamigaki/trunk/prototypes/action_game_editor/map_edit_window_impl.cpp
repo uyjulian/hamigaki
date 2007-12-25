@@ -14,54 +14,14 @@
 #include "draw.hpp"
 #include "png_loader.hpp"
 #include "sprite.hpp"
+#include "sprite_info_cache.hpp"
 #include "stage_map_load.hpp"
 #include "stage_map_save.hpp"
+#include "texture_cache.hpp"
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/optional.hpp>
 #include <algorithm>
 #include <utility>
-
-namespace
-{
-
-const ::GUID guids[] =
-{
-    { 0xD5D26CC5, 0xD8BD, 0x40A4, {0x83,0x9E,0xE3,0xC7,0xFA,0x57,0x0F,0x66} },
-    { 0xF19E0B84, 0x45A2, 0x4FC6, {0x96,0x8A,0xE4,0x49,0x80,0x9A,0xC6,0x92} },
-    { 0xB2107203, 0x173F, 0x4AAA, {0x92,0x28,0xE9,0x54,0xED,0xBF,0x9C,0x2F} },
-    { 0x6F642A22, 0x86B5, 0x41BF, {0x99,0x03,0x44,0xC0,0x0B,0x45,0x4D,0x6C} },
-    { 0x1831D6D2, 0x0A6A, 0x4B73, {0x9F,0x92,0xE9,0x4B,0x56,0xEC,0xB9,0x70} },
-    { 0x52B81339, 0x4AA0, 0x47D4, {0x9C,0xC8,0xE7,0x7A,0x02,0x3E,0xCA,0x7F} },
-    { 0x5D55A5B6, 0x66B1, 0x4D4A, {0xAB,0xB4,0xAB,0xE3,0x38,0x94,0x6D,0x28} },
-    { 0x8DC4CEDB, 0xDF9F, 0x4B9E, {0xB2,0xC3,0x0D,0x4A,0x6D,0x89,0x8D,0xF3} },
-    { 0x9F211EEC, 0xAA1B, 0x4704, {0xAA,0x25,0x5C,0x40,0x19,0x24,0xDD,0xAD} },
-    { 0xF311F6F5, 0x8B30, 0x48CE, {0xA8,0x43,0x10,0xDA,0xC4,0x26,0x84,0xDA} },
-    { 0x7FB448BA, 0xDAE6, 0x45CB, {0x9E,0xD1,0xC1,0x6A,0x7C,0xFB,0x0C,0x97} },
-    { 0x2FC40FC2, 0x841F, 0x48BC, {0xB9,0x10,0xFD,0x03,0xA6,0x13,0xE5,0x8A} },
-    { 0x106AD0B7, 0x9A0A, 0x4351, {0xAD,0xB4,0xE2,0x1A,0x4C,0xFC,0xEC,0xD5} },
-    { 0x2F1830C6, 0x6734, 0x4D14, {0x9A,0x15,0x6A,0xD5,0xD6,0x6D,0x4B,0xFA} },
-    { 0x1047BBAC, 0x5FC8, 0x4435, {0xBD,0x26,0xAA,0x0A,0x11,0x87,0xBE,0x99} },
-    { 0x639CE8F6, 0xDB5A, 0x45DA, {0xA9,0x63,0x9D,0x93,0xF7,0x11,0xD3,0xFE} }
-};
-
-const hamigaki::uuid player_id(guids[0]);
-const hamigaki::uuid up_lift_id(guids[1]);
-const hamigaki::uuid down_lift_id(guids[2]);
-const hamigaki::uuid enemy_o_id(guids[3]);
-const hamigaki::uuid enemy_a_id(guids[4]);
-const hamigaki::uuid enemy_p_id(guids[5]);
-const hamigaki::uuid enemy_w_id(guids[6]);
-const hamigaki::uuid brick_id(guids[7]);
-const hamigaki::uuid coin_brick_id(guids[8]);
-const hamigaki::uuid item_brick_id(guids[9]);
-const hamigaki::uuid used_block_id(guids[10]);
-const hamigaki::uuid coin_box_id(guids[11]);
-const hamigaki::uuid item_box_id(guids[12]);
-const hamigaki::uuid secret_coin_id(guids[13]);
-const hamigaki::uuid left_down_id(guids[14]);
-const hamigaki::uuid right_down_id(guids[15]);
-
-} // namespace
 
 class map_edit_window::impl
 {
@@ -70,12 +30,38 @@ private:
 
 public:
     explicit impl(::HWND handle)
-        : handle_(handle), mouse_captured_(false), map_(0)
+        : handle_(handle), map_(0), textures_(device_), chars_(0)
+        , mouse_captured_(false)
     {
     }
 
     ~impl()
     {
+    }
+
+    void set_characters(std::set<game_character_class>* chars)
+    {
+        if (!device_)
+            connect_d3d_device();
+
+        chars_ = chars;
+        textures_.clear();
+        sprites_.clear();
+
+        if (chars_)
+        {
+            typedef std::set<game_character_class>::iterator iter_type;
+            for (iter_type i=chars_->begin(), end=chars_->end(); i!=end; ++i)
+            {
+                if (i->icon.empty())
+                {
+                    sprite_info_set& infos = sprites_[i->sprite];
+                    textures_[infos.texture];
+                }
+                else
+                    textures_[i->icon];
+            }
+        }
     }
 
     void set_stage(stage_map* map)
@@ -137,9 +123,7 @@ public:
                 int y = beg->first.second;
                 const hamigaki::uuid& type = beg->second;
 
-                boost::optional<texture_pos> pos = get_texture_pos(type);
-                if (pos)
-                    draw_character((x-min_x)/32, (y-min_y)/32, *pos);
+                draw_character((x-min_x)/32, (y-min_y)/32, type);
             }
 
             if (max_x > map_->width)
@@ -308,8 +292,10 @@ private:
     direct3d9 d3d_;
     direct3d_device9 device_;
     stage_map* map_;
-    direct3d_texture9 chips_texture_;
     direct3d_texture9 cursor_texture_;
+    texture_cache textures_;
+    std::set<game_character_class>* chars_;
+    sprite_info_cache sprites_;
     std::pair<int,int> cursor_pos_;
     hamigaki::uuid selected_char_;
     bool mouse_captured_;
@@ -326,46 +312,7 @@ private:
             D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, handle_,
             D3DCREATE_HARDWARE_VERTEXPROCESSING, params);
 
-        chips_texture_ = create_png_texture(device_, "char_chips.png");
         cursor_texture_ = create_cursor_texture(device_, 32, 32);
-    }
-
-    boost::optional<texture_pos> get_texture_pos(const hamigaki::uuid& type)
-    {
-        if (type == player_id)
-            return texture_pos(32*1, 32*0);
-        else if (type == up_lift_id)
-            return texture_pos(32*2, 32*0);
-        else if (type == down_lift_id)
-            return texture_pos(32*3, 32*0);
-        else if (type == enemy_o_id)
-            return texture_pos(32*0, 32*1);
-        else if (type == enemy_a_id)
-            return texture_pos(32*1, 32*1);
-        else if (type == enemy_p_id)
-            return texture_pos(32*2, 32*1);
-        else if (type == enemy_w_id)
-            return texture_pos(32*3, 32*1);
-        else if (type == brick_id)
-            return texture_pos(32*0, 32*2);
-        else if (type == coin_brick_id)
-            return texture_pos(32*1, 32*2);
-        else if (type == item_brick_id)
-            return texture_pos(32*2, 32*2);
-        else if (type == used_block_id)
-            return texture_pos(32*3, 32*2);
-        else if (type == coin_box_id)
-            return texture_pos(32*0, 32*3);
-        else if (type == item_box_id)
-            return texture_pos(32*1, 32*3);
-        else if (type == secret_coin_id)
-            return texture_pos(32*2, 32*3);
-        else if (type == left_down_id)
-            return texture_pos(32*0, 32*4);
-        else if (type == right_down_id)
-            return texture_pos(32*1, 32*4);
-        else
-            return boost::optional<texture_pos>();
     }
 
     void draw_box(int x, int y, unsigned long color)
@@ -380,8 +327,19 @@ private:
         ::draw_rectangle(device_, left, top, 0.0f, 32.0f, 32.0f, color);
     }
 
-    void draw_character(int x, int y, const texture_pos& pos)
+    void draw_character(int x, int y, const hamigaki::uuid& type)
     {
+        typedef std::set<game_character_class>::iterator iter_type;
+
+        if (chars_ == 0)
+            return;
+
+        game_character_class dummy;
+        dummy.id = type;
+        iter_type pos = chars_->find(dummy);
+        if (pos == chars_->end())
+            return;
+
         ::RECT cr;
         ::GetClientRect(handle_, &cr);
 
@@ -389,10 +347,33 @@ private:
         float bottom = static_cast<float>(cr.bottom - y * 32);
         float top = bottom - 32.0f;
 
-        ::draw_sprite(
-            device_, left, top, 0.0f, chips_texture_,
-            pos.first, pos.second, 32, 32, false
-        );
+        if (pos->icon.empty())
+        {
+            sprite_info_set& infos = sprites_[pos->sprite];
+            const sprite_pattern& pattern =
+                infos.groups[sprite_form::normal].patterns.at(0);
+
+            draw_sprite(
+                device_,
+                left, top, 0.0f, 32.0f, 32.0f,
+                textures_[infos.texture],
+                infos.width * pattern.x,
+                infos.height * pattern.y,
+                infos.width,
+                infos.height, 0
+            );
+        }
+        else
+        {
+            const rectangle<int>& r = pos->icon_rect;
+
+            draw_sprite(
+                device_,
+                left, top, 0.0f, 32.0f, 32.0f,
+                textures_[pos->icon],
+                r.x, r.y, r.lx, r.ly, 0
+            );
+        }
     }
 
     void draw_cursor()
@@ -431,6 +412,11 @@ map_edit_window::map_edit_window(::HWND handle) : pimpl_(new impl(handle))
 
 map_edit_window::~map_edit_window()
 {
+}
+
+void map_edit_window::set_characters(std::set<game_character_class>* chars)
+{
+    pimpl_->set_characters(chars);
 }
 
 void map_edit_window::set_stage(stage_map* map)
