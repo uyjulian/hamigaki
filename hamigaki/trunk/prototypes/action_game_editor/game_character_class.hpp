@@ -40,6 +40,7 @@ struct game_character_class
     hamigaki::uuid on_stomp;
     hamigaki::uuid on_hit;
 
+    std::string name;
     bool modified;
 
     game_character_class()

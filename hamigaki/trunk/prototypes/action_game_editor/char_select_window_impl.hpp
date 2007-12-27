@@ -28,6 +28,7 @@ public:
     game_character_class* selected_char() const;
     bool modified() const;
     void modified(bool value);
+    bool insert(const game_character_class& c);
 
 private:
     class impl;

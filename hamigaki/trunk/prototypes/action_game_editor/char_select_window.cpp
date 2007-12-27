@@ -12,6 +12,7 @@
 #include "char_select_window_impl.hpp"
 
 #include <hamigaki/system/windows_error.hpp>
+#include <objbase.h>
 
 using hamigaki::system::windows_error;
 
@@ -60,6 +61,24 @@ namespace
                         p->modified = true;
                         pimpl->modified(true);
                         ::InvalidateRect(hwnd, 0, FALSE);
+                    }
+                }
+                else
+                {
+                    game_character_class info;
+                    while (get_character_class_info(hwnd, info))
+                    {
+                        if (info.id.is_null())
+                        {
+                            ::GUID id;
+                            ::CoCreateGuid(&id);
+                            info.id = hamigaki::uuid(id);
+                        }
+
+                        info.modified = true;
+                        if (pimpl->insert(info))
+                            break;
+                        info.name.clear();
                     }
                 }
             }

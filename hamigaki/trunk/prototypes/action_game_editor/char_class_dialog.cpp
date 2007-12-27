@@ -193,6 +193,15 @@ void update_icon(::HWND hwndDlg)
             {
                 ::SetWindowLongPtr(hwndDlg, DWLP_USER, lParam);
 
+                set_dialog_item_text(
+                    hwndDlg, HAMIGAKI_IDC_CHAR_NAME, info->name);
+
+                if (!info->name.empty())
+                {
+                    ::EnableWindow(
+                        ::GetDlgItem(hwndDlg, HAMIGAKI_IDC_CHAR_NAME), FALSE);
+                }
+
                 setup_sprite_list(
                     ::GetDlgItem(hwndDlg, HAMIGAKI_IDC_SPRITE), info->sprite);
 
@@ -297,6 +306,15 @@ void update_icon(::HWND hwndDlg)
                     reinterpret_cast<game_character_class*>(
                         ::GetWindowLongPtr(hwndDlg, DWLP_USER)
                     );
+
+                info->name =
+                    get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_CHAR_NAME);
+
+                if (info->name.empty())
+                {
+                    ::SetFocus(::GetDlgItem(hwndDlg, HAMIGAKI_IDC_CHAR_NAME));
+                    return 1;
+                }
 
                 ::HWND icon_window = ::GetDlgItem(hwndDlg, HAMIGAKI_IDC_ICON);
                 info->icon = icon_window_filename(icon_window);

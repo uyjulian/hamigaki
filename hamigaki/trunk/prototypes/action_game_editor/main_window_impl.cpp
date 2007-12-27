@@ -36,15 +36,12 @@ namespace
 {
 
 void load_char_classes(
-    const fs::path& dir,
-    std::set<game_character_class>& char_table,
-    std::map<hamigaki::uuid,fs::path>& filename_table)
+    const fs::path& dir, std::set<game_character_class>& char_table)
 {
     fs::directory_iterator it(dir);
     fs::directory_iterator end;
 
     std::set<game_character_class> tmp;
-    std::map<hamigaki::uuid,fs::path> tmp2;
     std::locale loc("");
     for ( ; it != end; ++it)
     {
@@ -54,19 +51,15 @@ void load_char_classes(
         {
             const game_character_class& c =
                 load_character_class(ph.file_string().c_str());
-            tmp.insert(c);
-            tmp2[c.id] = ph;
+            tmp.insert(c).first->name = leaf.substr(0, leaf.size()-7);
         }
     }
 
     char_table.swap(tmp);
-    filename_table.swap(tmp2);
 }
 
 void save_char_classes(
-    const fs::path& dir,
-    std::set<game_character_class>& char_table,
-    const std::map<hamigaki::uuid,fs::path>& filename_table)
+    const fs::path& dir, std::set<game_character_class>& char_table)
 {
     typedef std::set<game_character_class>::iterator char_iter;
     typedef std::map<hamigaki::uuid,fs::path>::const_iterator name_iter;
@@ -77,9 +70,7 @@ void save_char_classes(
 
         if (c.modified)
         {
-            name_iter pos = filename_table.find(c.id);
-            BOOST_ASSERT(pos != filename_table.end());
-            const fs::path& ph = pos->second;
+            const fs::path& ph = dir / fs::path(c.name + ".agc-yh");
             save_character_class(ph.file_string().c_str(), c);
             c.modified = false;
         }
@@ -227,7 +218,7 @@ public:
         if (map_window_ == 0)
             create_child_windows();
 
-        load_char_classes(dir, char_table_, filename_table_);
+        load_char_classes(dir, char_table_);
         load_maps(dir, map_table_);
         setup_map_list(map_sel_window_, dir);
         map_edit_window_set(map_window_, 0);
@@ -250,7 +241,6 @@ public:
         char_sel_window_ = 0;
 
         map_table_.clear();
-        filename_table_.clear();
         char_table_.clear();
         project_file_.clear();
         project_ = game_project();
@@ -270,9 +260,10 @@ public:
 
         save_game_project(project_file_.c_str(), project_);
 
-        save_char_classes(dir, char_table_, filename_table_);
+        save_char_classes(dir, char_table_);
         save_maps(dir, map_table_);
 
+        char_select_window_modified(char_sel_window_, false);
         modified_ = false;
     }
 
@@ -367,7 +358,6 @@ private:
     game_project project_;
     std::string project_file_;
     std::set<game_character_class> char_table_;
-    std::map<hamigaki::uuid,fs::path> filename_table_;
     std::map<std::string,stage_map> map_table_;
     ::HWND char_sel_window_;
     ::HWND map_window_;

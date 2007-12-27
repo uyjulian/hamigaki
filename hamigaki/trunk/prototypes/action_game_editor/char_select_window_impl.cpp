@@ -17,6 +17,8 @@
 #include "sprite.hpp"
 #include "sprite_info_cache.hpp"
 #include "texture_cache.hpp"
+#include <boost/lambda/bind.hpp>
+#include <boost/lambda/lambda.hpp>
 
 class char_select_window::impl
 {
@@ -171,6 +173,26 @@ public:
         modified_ = value;
     }
 
+    bool insert(const game_character_class& c)
+    {
+        BOOST_ASSERT(chars_ != 0);
+
+        namespace bll = boost::lambda;
+
+        if (std::find_if(
+                chars_->begin(), chars_->end(),
+                bll::bind(&game_character_class::name, bll::_1) == c.name
+            ) != chars_->end())
+        {
+            return false;
+        }
+
+        chars_->insert(c).first->modified = true;
+        modified_ = true;
+        ::InvalidateRect(handle_, 0, FALSE);
+        return true;
+    }
+
 private:
     ::HWND handle_;
     direct3d9 d3d_;
@@ -234,4 +256,9 @@ bool char_select_window::modified() const
 void char_select_window::modified(bool value)
 {
     pimpl_->modified(value);
+}
+
+bool char_select_window::insert(const game_character_class& c)
+{
+    return pimpl_->insert(c);
 }
