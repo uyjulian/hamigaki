@@ -23,8 +23,11 @@ struct game_project
     float min_vy;
     std::string start_map;
 
+    // not serialize
+    std::string dir;
+
     game_project()
-        : title("Action Game"), screen_width(640), screen_height(480)
+        : screen_width(640), screen_height(480)
         , bg_color(0xFF7766DD), gravity(-0.6f), min_vy(-10.0f)
     {
     }

@@ -9,21 +9,34 @@
 
 #include "main_window.hpp"
 #include "char_select_window_msgs.hpp"
-#include "folder_select_dialog.hpp"
 #include "main_window_impl.hpp"
 #include "map_config_dialog.hpp"
 #include "msg_utilities.hpp"
+#include "project_config_dialog.hpp"
+#include <boost/filesystem/convenience.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
 #include <boost/format.hpp>
 #include <cstring>
 
 #include <hamigaki/system/windows_error.hpp>
+#include <shlobj.h>
 #include "menus.h"
 #include "popup_menus.h"
 
+namespace fs = boost::filesystem;
 using hamigaki::system::windows_error;
 
 namespace
 {
+
+std::string get_documents_path()
+{
+    char buf[MAX_PATH];
+    if (::SHGetSpecialFolderPathA(0, buf, CSIDL_PERSONAL, FALSE) == FALSE)
+        throw std::runtime_error("failed SHGetSpecialFolderPath()");
+    return buf;
+}
 
 void enable_project_menu(::HWND hwnd, bool value)
 {
@@ -137,11 +150,22 @@ bool close_project(main_window* pimpl, ::HWND hwnd)
                 if (!close_project(pimpl, hwnd))
                     return 0;
 
-                game_project proj;
-                std::string dir;
-                if (select_folder(hwnd, dir))
+                fs::path base = fs::path(get_documents_path()) / "ActionGame";
+                fs::path dir;
+                for (int i = 1; ; ++i)
                 {
-                    pimpl->new_project(dir + "\\action_game.agp-yh", proj);
+                    dir = base / (boost::format("Project%d") % i).str();
+                    if (!fs::exists(dir))
+                        break;
+                }
+
+                game_project proj;
+                proj.dir = dir.directory_string();
+                if (get_project_info(hwnd, proj))
+                {
+                    fs::create_directories(fs::path(proj.dir));
+                    fs::path ph = fs::path(proj.dir) / "action_game.agp-yh";
+                    pimpl->new_project(ph.file_string(), proj);
                     enable_project_menu(hwnd, true);
                 }
             }
