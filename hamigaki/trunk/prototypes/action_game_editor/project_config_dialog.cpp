@@ -8,6 +8,8 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "project_config_dialog.hpp"
+#include "folder_select_dialog.hpp"
+#include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/lexical_cast.hpp>
 #include <exception>
@@ -17,6 +19,12 @@ namespace fs = boost::filesystem;
 
 namespace
 {
+
+struct dialog_data
+{
+    game_project info;
+    std::string old_name;
+};
 
 inline void set_dialog_item_text(::HWND hwnd, int id, const std::string& s)
 {
@@ -49,59 +57,61 @@ inline bool get_dialog_item_int(::HWND hwnd, int id, int& value)
     {
         if (uMsg == WM_INITDIALOG)
         {
-            game_project* info = reinterpret_cast<game_project*>(lParam);
-            if (info)
+            dialog_data* data = reinterpret_cast<dialog_data*>(lParam);
+            game_project& info = data->info;
+            ::SetWindowLongPtr(hwndDlg, DWLP_USER, lParam);
+            std::string name = fs::path(info.dir).leaf();
+            set_dialog_item_text(hwndDlg, HAMIGAKI_IDC_FOLDER, name);
+            if (!info.title.empty())
             {
-                ::SetWindowLongPtr(hwndDlg, DWLP_USER, lParam);
-                std::string name = fs::path(info->dir).leaf();
-                set_dialog_item_text(hwndDlg, HAMIGAKI_IDC_FOLDER, name);
-                if (!info->title.empty())
-                {
-                    set_dialog_item_text(
-                        hwndDlg, HAMIGAKI_IDC_TITLE, info->title);
-                }
-                else
-                    set_dialog_item_text(hwndDlg, HAMIGAKI_IDC_TITLE, name);
-                set_dialog_item_text(hwndDlg, HAMIGAKI_IDC_DIR, info->dir);
-                set_dialog_item_int(
-                    hwndDlg, HAMIGAKI_IDC_SCREEN_W, info->screen_width);
-                set_dialog_item_int(
-                    hwndDlg, HAMIGAKI_IDC_SCREEN_H, info->screen_height);
                 set_dialog_item_text(
-                    hwndDlg, HAMIGAKI_IDC_GRAVITY,
-                    boost::lexical_cast<std::string>(info->gravity));
-                set_dialog_item_text(
-                    hwndDlg, HAMIGAKI_IDC_MIN_VY,
-                    boost::lexical_cast<std::string>(info->min_vy));
+                    hwndDlg, HAMIGAKI_IDC_TITLE, info.title);
             }
+            else
+                set_dialog_item_text(hwndDlg, HAMIGAKI_IDC_TITLE, name);
+            set_dialog_item_text(hwndDlg, HAMIGAKI_IDC_DIR, info.dir);
+            set_dialog_item_int(
+                hwndDlg, HAMIGAKI_IDC_SCREEN_W, info.screen_width);
+            set_dialog_item_int(
+                hwndDlg, HAMIGAKI_IDC_SCREEN_H, info.screen_height);
+            set_dialog_item_text(
+                hwndDlg, HAMIGAKI_IDC_GRAVITY,
+                boost::lexical_cast<std::string>(info.gravity));
+            set_dialog_item_text(
+                hwndDlg, HAMIGAKI_IDC_MIN_VY,
+                boost::lexical_cast<std::string>(info.min_vy));
+
+            data->old_name = name;
             return 1;
         }
         else if (uMsg == WM_COMMAND)
         {
             ::WORD id = LOWORD(wParam);
+            ::WORD code = HIWORD(wParam);
             if (id == IDOK)
             {
-                game_project* info =
-                    reinterpret_cast<game_project*>(
+                dialog_data* data =
+                    reinterpret_cast<dialog_data*>(
                         ::GetWindowLongPtr(hwndDlg, DWLP_USER)
                     );
+                game_project& info = data->info;
 
-                info->title =
+                info.title =
                     get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_TITLE);
-                info->dir =
+                info.dir =
                     get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_DIR);
-                info->gravity = boost::lexical_cast<float>(
+                info.gravity = boost::lexical_cast<float>(
                     get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_GRAVITY)
                 );
-                info->min_vy = boost::lexical_cast<float>(
+                info.min_vy = boost::lexical_cast<float>(
                     get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_MIN_VY)
                 );
 
-                if (!info->dir.empty() &&
+                if (!info.dir.empty() &&
                     get_dialog_item_int(
-                        hwndDlg, HAMIGAKI_IDC_SCREEN_W, info->screen_width) &&
+                        hwndDlg, HAMIGAKI_IDC_SCREEN_W, info.screen_width) &&
                     get_dialog_item_int(
-                        hwndDlg, HAMIGAKI_IDC_SCREEN_H, info->screen_height) )
+                        hwndDlg, HAMIGAKI_IDC_SCREEN_H, info.screen_height) )
                 {
                     ::EndDialog(hwndDlg, IDOK);
                 }
@@ -110,6 +120,62 @@ inline bool get_dialog_item_int(::HWND hwnd, int id, int& value)
             else if (id == IDCANCEL)
             {
                 ::EndDialog(hwndDlg, IDCANCEL);
+                return 1;
+            }
+            else if (id == HAMIGAKI_IDC_FOLDER)
+            {
+                if (code == EN_CHANGE)
+                {
+                    dialog_data* data =
+                        reinterpret_cast<dialog_data*>(
+                            ::GetWindowLongPtr(hwndDlg, DWLP_USER)
+                        );
+
+                    const std::string& name =
+                        get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_FOLDER);
+
+                    const std::string& title =
+                        get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_TITLE);
+
+                    if (title == data->old_name)
+                        set_dialog_item_text(hwndDlg, HAMIGAKI_IDC_TITLE, name);
+
+                    fs::path ph =
+                        get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_DIR);
+                    if (ph.leaf() == data->old_name)
+                        ph.remove_leaf();
+
+                    ph /= name;
+                    set_dialog_item_text(
+                        hwndDlg, HAMIGAKI_IDC_DIR, ph.directory_string());
+
+                    data->old_name = name;
+                }
+            }
+            else if (id == HAMIGAKI_IDC_DIR_SEL)
+            {
+                const fs::path org_ph =
+                    get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_DIR);
+
+                std::string dir;
+                for (fs::path ph = org_ph; ph.has_leaf(); ph.remove_leaf())
+                {
+                    if (fs::exists(ph))
+                    {
+                        dir = ph.directory_string();
+                        break;
+                    }
+                }
+
+                if (select_folder(hwndDlg, dir))
+                {
+                    const std::string& leaf =
+                        get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_FOLDER);
+
+                    const fs::path& ph = fs::path(dir) / leaf;
+                    set_dialog_item_text(
+                        hwndDlg, HAMIGAKI_IDC_DIR, ph.directory_string());
+                }
                 return 1;
             }
         }
@@ -131,10 +197,19 @@ bool get_project_info(::HWND hwnd, game_project& info)
     ::HINSTANCE module =
         reinterpret_cast< ::HINSTANCE>(::GetModuleHandle(0));
 
+    dialog_data data;
+    data.info = info;
+
     ::INT_PTR res = ::DialogBoxParamA(
         module, MAKEINTRESOURCE(HAMIGAKI_IDD_PROJ_CFG),
-        hwnd, &proj_cfg_dialog_proc, reinterpret_cast< ::LPARAM>(&info)
+        hwnd, &proj_cfg_dialog_proc, reinterpret_cast< ::LPARAM>(&data)
     );
 
-    return res == IDOK;
+    if (res == IDOK)
+    {
+        info = data.info;
+        return true;
+    }
+    else
+        return false;
 }
