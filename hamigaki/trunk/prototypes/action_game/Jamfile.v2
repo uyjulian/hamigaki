@@ -37,6 +37,7 @@ exe action_game
     collision_utility.cpp
     fire_man_routine.cpp
     game_character.cpp
+    game_project_io.cpp
     knock_back_routine.cpp
     hop_routine.cpp
     hop_step_jump_routine.cpp

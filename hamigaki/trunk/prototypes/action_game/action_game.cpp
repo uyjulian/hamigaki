@@ -27,7 +27,9 @@ int WINAPI WinMain(
         ::ShowWindow(hwnd, nCmdShow);
         ::UpdateWindow(hwnd);
         if (*lpCmdLine)
-            set_stage_file(hwnd, lpCmdLine);
+            load_project(hwnd, lpCmdLine);
+        else
+            load_project(hwnd, "action_game.agp-yh");
         connect_d3d_device(hwnd);
 
         ::MSG msg;

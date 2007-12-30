@@ -19,7 +19,7 @@ class main_window
 public:
     explicit main_window(::HWND handle);
 
-    void stage_file(const std::string& filename);
+    void load_project(const std::string& filename);
     void connect_d3d_device();
     bool process_input();
     void render();

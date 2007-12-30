@@ -16,6 +16,7 @@
 #include "direct3d9.hpp"
 #include "fire_man_routine.hpp"
 #include "game_character.hpp"
+#include "game_project_io.hpp"
 #include "game_system.hpp"
 #include "hop_routine.hpp"
 #include "hop_step_jump_routine.hpp"
@@ -33,14 +34,18 @@
 #include "velocity_routine.hpp"
 #include "wait_se_routine.hpp"
 #include <boost/iterator/indirect_iterator.hpp>
+#include <boost/filesystem/path.hpp>
 #include <boost/bind.hpp>
 #include <boost/next_prior.hpp>
 #include <cmath>
 #include <list>
+#include <memory>
 
 #if !defined(NDEBUG)
     #define HAMIGAKI_DISPLAY_FPS
 #endif
+
+namespace fs = boost::filesystem;
 
 namespace
 {
@@ -461,17 +466,28 @@ public:
         ::GetClientRect(handle_, &cr);
         width_ = static_cast<int>(cr.right);
         height_ = static_cast<int>(cr.bottom);
-
-        reset_characters();
     }
 
     ~impl()
     {
     }
 
-    void stage_file(const std::string& filename)
+    void load_project(const std::string& filename)
     {
-        stage_file_ = filename;
+        project_ = load_game_project(filename.c_str());
+
+        fs::path dir = fs::path(filename).branch_path();
+        ::SetCurrentDirectoryA(dir.directory_string().c_str());
+
+        if (project_.start_map.empty())
+            project_.start_map = "map.agm-yh";
+
+        stage_file_ = project_.start_map;
+
+        if (!project_.title.empty())
+            ::SetWindowTextA(handle_, project_.title.c_str());
+
+        char_repository_.reset(new character_repository);
         reset_characters();
     }
 
@@ -539,7 +555,7 @@ public:
     {
         system_.characters.sort(character_ptr_z_greator());
 
-        device_.clear(D3DCOLOR_XRGB(0x77,0x66,0xDD));
+        device_.clear(project_.bg_color);
         {
             scoped_scene scene(device_);
 
@@ -574,7 +590,7 @@ private:
     direct3d9 d3d_;
     direct3d_device9 device_;
     texture_cache textures_;
-    character_repository char_repository_;
+    std::auto_ptr<character_repository> char_repository_;
     bool active_;
     unsigned long last_time_;
     unsigned frames_;
@@ -582,6 +598,7 @@ private:
     unsigned long last_fps_time_;
     int fps_count_;
 #endif
+    game_project project_;
     std::string stage_file_;
     character_ptr player_;
     character_ptr scroll_;
@@ -610,7 +627,7 @@ private:
         if (e.type == player_id)
             return;
 
-        const game_character_class& cc = char_repository_[e.type];
+        const game_character_class& cc = (*char_repository_)[e.type];
 
         character_ptr c(new game_character);
 
@@ -872,9 +889,9 @@ main_window::main_window(::HWND handle) : pimpl_(new impl(handle))
 {
 }
 
-void main_window::stage_file(const std::string& filename)
+void main_window::load_project(const std::string& filename)
 {
-    pimpl_->stage_file(filename);
+    pimpl_->load_project(filename);
 }
 
 void main_window::connect_d3d_device()
