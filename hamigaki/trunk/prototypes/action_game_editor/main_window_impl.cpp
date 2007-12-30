@@ -15,6 +15,7 @@
 #include "msg_utilities.hpp"
 #include "stage_map_load.hpp"
 #include "stage_map_save.hpp"
+#include <hamigaki/iterator/first_iterator.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
@@ -210,7 +211,7 @@ public:
 
     void new_project(const std::string& filename, const game_project& proj)
     {
-        project_ = proj;
+        project_info(proj);
 
         const fs::path& dir = fs::path(filename).branch_path();
         ::SetCurrentDirectoryA(dir.directory_string().c_str());
@@ -226,6 +227,7 @@ public:
         setup_char_list(char_sel_window_, &char_table_);
 
         project_file_ = filename;
+        project_.dir = dir.directory_string();
         modified_ = true;
     }
 
@@ -243,7 +245,7 @@ public:
         map_table_.clear();
         char_table_.clear();
         project_file_.clear();
-        project_ = game_project();
+        project_info(game_project());
 
         modified_ = false;
     }
@@ -265,6 +267,26 @@ public:
 
         char_select_window_modified(char_sel_window_, false);
         modified_ = false;
+    }
+
+    game_project project_info() const
+    {
+        return project_;
+    }
+
+    void project_info(const game_project& info)
+    {
+        project_ = info;
+        modified_ = true;
+
+        std::string s;
+        if (!project_.title.empty())
+        {
+            s += project_.title;
+            s += " - ";
+        }
+        s += "Action Game Editor";
+        ::SetWindowTextA(handle_, s.c_str());
     }
 
     bool new_stage(const std::string& filename, int width, int height)
@@ -310,6 +332,14 @@ public:
         send_msg_with_ptr(map_sel_window_, LB_GETTEXT, index, buf.get());
 
         return std::string(buf.get(), size);
+    }
+
+    void get_stage_names(std::vector<std::string>& names) const
+    {
+        names.assign(
+            hamigaki::make_first_iterator(map_table_.begin()),
+            hamigaki::make_first_iterator(map_table_.end())
+        );
     }
 
     void delete_stage()
@@ -435,6 +465,16 @@ void main_window::save_project()
     pimpl_->save_project();
 }
 
+game_project main_window::project_info() const
+{
+    return pimpl_->project_info();
+}
+
+void main_window::project_info(const game_project& info)
+{
+    pimpl_->project_info(info);
+}
+
 bool main_window::new_stage(const std::string& filename, int width, int height)
 {
     return pimpl_->new_stage(filename, width, height);
@@ -448,6 +488,11 @@ int main_window::stage_count() const
 std::string main_window::stage_name() const
 {
     return pimpl_->stage_name();
+}
+
+void main_window::get_stage_names(std::vector<std::string>& names) const
+{
+    pimpl_->get_stage_names(names);
 }
 
 void main_window::delete_stage()

@@ -225,6 +225,15 @@ bool close_project(main_window* pimpl, ::HWND hwnd)
                 if (res == IDYES)
                     pimpl->delete_stage();
             }
+            else if (id == HAMIGAKI_ID_GAME_PROP)
+            {
+                std::vector<std::string> map_names;
+                pimpl->get_stage_names(map_names);
+
+                game_project proj = pimpl->project_info();
+                if (get_project_info(hwnd, proj, map_names))
+                    pimpl->project_info(proj);
+            }
             else if (id == main_window::char_select_id)
             {
                 if (code == char_select_window_msgs::notify_sel_changed)

@@ -11,7 +11,12 @@
 #define PROJECT_SETTING_DIALOG_HPP
 
 #include "game_project.hpp"
+#include <string>
+#include <vector>
 #include <windows.h>
+
+bool get_project_info(
+    ::HWND hwnd, game_project& info, const std::vector<std::string>& map_names);
 
 bool get_project_info(::HWND hwnd, game_project& info);
 

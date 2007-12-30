@@ -67,6 +67,7 @@ exe action_game_editor
     :
     <find-static-library>comctl32
     <find-static-library>comdlg32
+    <find-static-library>gdi32
     <find-static-library>ole32
     <find-static-library>shell32
     <find-static-library>user32

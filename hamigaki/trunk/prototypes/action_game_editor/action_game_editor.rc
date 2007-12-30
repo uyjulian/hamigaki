@@ -38,6 +38,10 @@ BEGIN
         MENUITEM "&Paste\tCtrl+V",      HAMIGAKI_ID_EDIT_PASTE, GRAYED
         MENUITEM "&Delete\tDel",        HAMIGAKI_ID_EDIT_DEL
     END
+    POPUP "&Game"
+    BEGIN
+        MENUITEM "P&roperties...",      HAMIGAKI_ID_GAME_PROP
+    END
 END
 
 HAMIGAKI_IDR_POPUP MENU

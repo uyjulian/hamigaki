@@ -13,6 +13,7 @@
 #include "game_project.hpp"
 #include <boost/shared_ptr.hpp>
 #include <string>
+#include <vector>
 #include <windows.h>
 
 class main_window
@@ -30,9 +31,12 @@ public:
     void close_project();
     void load_project(const std::string& filename);
     void save_project();
+    game_project project_info() const;
+    void project_info(const game_project& info);
     bool new_stage(const std::string& filename, int width, int height);
     int stage_count() const;
     std::string stage_name() const;
+    void get_stage_names(std::vector<std::string>& names) const;
     void delete_stage();
     void change_stage();
     bool modified();
