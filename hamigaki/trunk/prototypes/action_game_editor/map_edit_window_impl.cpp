@@ -30,13 +30,19 @@ private:
 
 public:
     explicit impl(::HWND handle)
-        : handle_(handle), map_(0), textures_(device_), chars_(0)
+        : handle_(handle), bg_color_(0), map_(0), textures_(device_), chars_(0)
         , mouse_captured_(false)
     {
     }
 
     ~impl()
     {
+    }
+
+    void set_bg_color(unsigned long color)
+    {
+        bg_color_ = color;
+        ::InvalidateRect(handle_, 0, FALSE);
     }
 
     void set_characters(std::set<game_character_class>* chars)
@@ -83,7 +89,7 @@ public:
 
         if (!map_)
         {
-            device_.clear_target(D3DCOLOR_XRGB(0xC0,0xC0,0xC0));
+            device_.clear_target(0xFFC0C0C0ul);
             device_.present();
             return;
         }
@@ -105,7 +111,7 @@ public:
         int cursor_x = min_x + cursor_pos_.first*32;
         int cursor_y = min_y + cursor_pos_.second*32;
 
-        device_.clear_target(D3DCOLOR_XRGB(0x77,0x66,0xDD));
+        device_.clear_target(bg_color_);
         {
             scoped_scene scene(device_);
 
@@ -291,6 +297,7 @@ private:
     ::HWND handle_;
     direct3d9 d3d_;
     direct3d_device9 device_;
+    unsigned long bg_color_;
     stage_map* map_;
     direct3d_texture9 cursor_texture_;
     texture_cache textures_;
@@ -412,6 +419,11 @@ map_edit_window::map_edit_window(::HWND handle) : pimpl_(new impl(handle))
 
 map_edit_window::~map_edit_window()
 {
+}
+
+void map_edit_window::set_bg_color(unsigned long color)
+{
+    pimpl_->set_bg_color(color);
 }
 
 void map_edit_window::set_characters(std::set<game_character_class>* chars)

@@ -22,6 +22,7 @@ class char_select_window
 public:
     explicit char_select_window(::HWND handle);
     ~char_select_window();
+    void set_bg_color(unsigned long color);
     void set_characters(std::set<game_character_class>* chars);
     void render();
     void cursor_pos(int x, int y);

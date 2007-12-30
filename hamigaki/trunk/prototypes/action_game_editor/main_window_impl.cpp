@@ -211,13 +211,13 @@ public:
 
     void new_project(const std::string& filename, const game_project& proj)
     {
-        project_info(proj);
-
         const fs::path& dir = fs::path(filename).branch_path();
         ::SetCurrentDirectoryA(dir.directory_string().c_str());
 
         if (map_window_ == 0)
             create_child_windows();
+
+        project_info(proj);
 
         load_char_classes(dir, char_table_);
         load_maps(dir, map_table_);
@@ -287,6 +287,9 @@ public:
         }
         s += "Action Game Editor";
         ::SetWindowTextA(handle_, s.c_str());
+
+        map_edit_window_set_bg_color(map_window_, project_.bg_color);
+        char_select_window_set_bg_color(char_sel_window_, project_.bg_color);
     }
 
     bool new_stage(const std::string& filename, int width, int height)

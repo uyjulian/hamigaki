@@ -24,12 +24,19 @@ class char_select_window::impl
 {
 public:
     explicit impl(::HWND handle)
-        : handle_(handle), chars_(0), textures_(device_), modified_(false)
+        : handle_(handle), bg_color_(0), chars_(0), textures_(device_)
+        , modified_(false)
     {
     }
 
     ~impl()
     {
+    }
+
+    void set_bg_color(unsigned long color)
+    {
+        bg_color_ = color;
+        ::InvalidateRect(handle_, 0, FALSE);
     }
 
     void set_characters(std::set<game_character_class>* chars)
@@ -63,7 +70,7 @@ public:
         if (!device_)
             connect_d3d_device();
 
-        device_.clear_target(D3DCOLOR_XRGB(0x77,0x66,0xDD));
+        device_.clear_target(bg_color_);
         {
             scoped_scene scene(device_);
 
@@ -197,10 +204,11 @@ private:
     ::HWND handle_;
     direct3d9 d3d_;
     direct3d_device9 device_;
+    unsigned long bg_color_;
+    std::set<game_character_class>* chars_;
     direct3d_texture9 cursor_texture_;
     texture_cache textures_;
     std::pair<int,int> cursor_pos_;
-    std::set<game_character_class>* chars_;
     sprite_info_cache sprites_;
     bool modified_;
 
@@ -226,6 +234,11 @@ char_select_window::char_select_window(::HWND handle) : pimpl_(new impl(handle))
 
 char_select_window::~char_select_window()
 {
+}
+
+void char_select_window::set_bg_color(unsigned long color)
+{
+    pimpl_->set_bg_color(color);
 }
 
 void char_select_window::set_characters(std::set<game_character_class>* chars)

@@ -158,6 +158,17 @@ hamigaki::uuid get_selected_char(::HWND hwnd)
         return hamigaki::uuid();
 }
 
+void char_select_window_set_bg_color(::HWND hwnd, unsigned long color)
+{
+    char_select_window* pimpl =
+        reinterpret_cast<char_select_window*>(
+            GetWindowLongPtr(hwnd, GWLP_USERDATA)
+        );
+
+    if (pimpl != 0)
+        pimpl->set_bg_color(color);
+}
+
 void setup_char_list(::HWND hwnd, std::set<game_character_class>* chars)
 {
     char_select_window* pimpl =

@@ -23,6 +23,7 @@ class map_edit_window
 public:
     explicit map_edit_window(::HWND handle);
     ~map_edit_window();
+    void set_bg_color(unsigned long color);
     void set_characters(std::set<game_character_class>* chars);
     void set_stage(stage_map* map);
     void render();
