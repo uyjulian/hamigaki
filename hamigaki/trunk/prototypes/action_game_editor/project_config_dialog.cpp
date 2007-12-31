@@ -142,12 +142,8 @@ inline bool get_dialog_item_int(::HWND hwnd, int id, int& value)
                 hwndDlg, HAMIGAKI_IDC_SCREEN_W, info.screen_width);
             set_dialog_item_int(
                 hwndDlg, HAMIGAKI_IDC_SCREEN_H, info.screen_height);
-            set_dialog_item_text(
-                hwndDlg, HAMIGAKI_IDC_GRAVITY,
-                boost::lexical_cast<std::string>(info.gravity));
-            set_dialog_item_text(
-                hwndDlg, HAMIGAKI_IDC_MIN_VY,
-                boost::lexical_cast<std::string>(info.min_vy));
+            set_dialog_item_text(hwndDlg, HAMIGAKI_IDC_GRAVITY, info.gravity);
+            set_dialog_item_text(hwndDlg, HAMIGAKI_IDC_MIN_VY, info.min_vy);
 
             ::HWND map_hwnd = ::GetDlgItem(hwndDlg, HAMIGAKI_IDC_START_MAP);
             if (data->map_names)
@@ -195,14 +191,15 @@ inline bool get_dialog_item_int(::HWND hwnd, int id, int& value)
                     get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_TITLE);
                 info.dir =
                     get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_DIR);
-                info.gravity = boost::lexical_cast<float>(
-                    get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_GRAVITY)
-                );
-                info.min_vy = boost::lexical_cast<float>(
-                    get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_MIN_VY)
-                );
+                info.gravity =
+                    get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_GRAVITY);
+                info.min_vy =
+                    get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_MIN_VY);
                 info.start_map =
                     get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_START_MAP);
+
+                boost::lexical_cast<float>(info.gravity);
+                boost::lexical_cast<float>(info.min_vy);
 
                 if (!info.dir.empty() &&
                     get_dialog_item_int(

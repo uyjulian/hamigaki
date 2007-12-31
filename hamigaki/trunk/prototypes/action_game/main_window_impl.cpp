@@ -34,6 +34,7 @@
 #include "wait_se_routine.hpp"
 #include <boost/iterator/indirect_iterator.hpp>
 #include <boost/bind.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/next_prior.hpp>
 #include <cmath>
 #include <list>
@@ -456,8 +457,8 @@ public:
         , last_fps_time_(0), fps_count_(0)
 #endif
     {
-        system_.gravity = project_.gravity;
-        system_.min_vy = project_.min_vy;
+        system_.gravity = boost::lexical_cast<float>(project_.gravity);
+        system_.min_vy = boost::lexical_cast<float>(project_.min_vy);
         system_.screen_width = project_.screen_width;
         system_.screen_height = project_.screen_height;
 
@@ -614,8 +615,8 @@ private:
         const sprite_info_set& infos = system_.sprites[cc.sprite];
         const sprite_group& grp = infos.get_group(c->form);
 
-        c->vx = cc.vx;
-        c->vy = cc.vy;
+        c->vx = boost::lexical_cast<float>(cc.vx);
+        c->vy = boost::lexical_cast<float>(cc.vy);
         c->attrs = cc.attrs;
         c->slope = cc.slope;
         c->move_routine = find_move_routine(cc.move_routine);

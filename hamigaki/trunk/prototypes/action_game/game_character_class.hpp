@@ -14,6 +14,7 @@
 #include "physics_types.hpp"
 #include <hamigaki/uuid.hpp>
 #include <boost/serialization/version.hpp>
+#include <boost/lexical_cast.hpp>
 #include <bitset>
 #include <string>
 
@@ -25,8 +26,8 @@ struct game_character_class
     rectangle<int> icon_rect;
     std::string sprite;
 
-    float vx;
-    float vy;
+    std::string vx;
+    std::string vy;
 
     std::bitset<char_attr::max_value> attrs;
     slope_type::values slope;
@@ -41,7 +42,7 @@ struct game_character_class
     hamigaki::uuid on_hit;
 
     game_character_class()
-        : vx(0.0f), vy(0.0f), slope(slope_type::none)
+        : vx("0.0"), vy("0.0"), slope(slope_type::none)
     {
     }
 
@@ -56,7 +57,7 @@ struct game_character_class
     }
 };
 
-BOOST_CLASS_VERSION(game_character_class, 1);
+BOOST_CLASS_VERSION(game_character_class, 2);
 
 namespace boost { namespace serialization {
 
@@ -73,8 +74,32 @@ inline void serialize(
     }
 
     ar & make_nvp("sprite", c.sprite);
-    ar & make_nvp("vx", c.vx);
-    ar & make_nvp("vy", c.vy);
+
+    if (file_version >= 2)
+    {
+        ar & make_nvp("vx", c.vx);
+        ar & make_nvp("vy", c.vy);
+    }
+    else
+    {
+        float vx;
+        float vy;
+
+        if (Archive::is_saving::value)
+        {
+            vx = boost::lexical_cast<float>(c.vx);
+            vy = boost::lexical_cast<float>(c.vy);
+        }
+
+        ar & make_nvp("vx", vx);
+        ar & make_nvp("vy", vy);
+
+        if (Archive::is_loading::value)
+        {
+            c.vx = boost::lexical_cast<std::string>(vx);
+            c.vy = boost::lexical_cast<std::string>(vy);
+        }
+    }
 
     unsigned long attrs;
     if (Archive::is_saving::value)

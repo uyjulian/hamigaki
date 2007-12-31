@@ -11,6 +11,8 @@
 #define GAME_PROJECT_HPP
 
 #include <boost/serialization/nvp.hpp>
+#include <boost/serialization/version.hpp>
+#include <boost/lexical_cast.hpp>
 #include <string>
 
 struct game_project
@@ -19,8 +21,8 @@ struct game_project
     int screen_width;
     int screen_height;
     unsigned long bg_color;
-    float gravity;
-    float min_vy;
+    std::string gravity;
+    std::string min_vy;
     std::string start_map;
 
     // not serialize
@@ -28,10 +30,12 @@ struct game_project
 
     game_project()
         : screen_width(640), screen_height(480)
-        , bg_color(0xFF7766DD), gravity(-0.6f), min_vy(-10.0f)
+        , bg_color(0xFF7766DD), gravity("-0.6"), min_vy("-10.0")
     {
     }
 };
+
+BOOST_CLASS_VERSION(game_project, 1);
 
 namespace boost { namespace serialization {
 
@@ -43,8 +47,31 @@ inline void serialize(
     ar & make_nvp("screen-width", proj.screen_width);
     ar & make_nvp("screen-height", proj.screen_height);
     ar & make_nvp("bg-color", proj.bg_color);
-    ar & make_nvp("gravity", proj.gravity);
-    ar & make_nvp("min-vy", proj.min_vy);
+    if (file_version > 0)
+    {
+        ar & make_nvp("gravity", proj.gravity);
+        ar & make_nvp("min-vy", proj.min_vy);
+    }
+    else
+    {
+        float gravity;
+        float min_vy;
+
+        if (Archive::is_saving::value)
+        {
+            gravity = boost::lexical_cast<float>(proj.gravity);
+            min_vy = boost::lexical_cast<float>(proj.min_vy);
+        }
+
+        ar & make_nvp("gravity", gravity);
+        ar & make_nvp("min-vy", min_vy);
+
+        if (Archive::is_loading::value)
+        {
+            proj.gravity = boost::lexical_cast<std::string>(gravity);
+            proj.min_vy = boost::lexical_cast<std::string>(min_vy);
+        }
+    }
     ar & make_nvp("start-map", proj.start_map);
 }
 

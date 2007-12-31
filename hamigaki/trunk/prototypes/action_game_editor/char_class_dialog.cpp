@@ -233,13 +233,8 @@ void update_icon(::HWND hwndDlg)
                     hwndDlg, HAMIGAKI_IDC_IS_BREAKER,
                     info->attrs.test(char_attr::breaker));
 
-                set_dialog_item_text(
-                    hwndDlg, HAMIGAKI_IDC_VX,
-                    boost::lexical_cast<std::string>(info->vx));
-
-                set_dialog_item_text(
-                    hwndDlg, HAMIGAKI_IDC_VY,
-                    boost::lexical_cast<std::string>(info->vy));
+                set_dialog_item_text(hwndDlg, HAMIGAKI_IDC_VX, info->vx);
+                set_dialog_item_text(hwndDlg, HAMIGAKI_IDC_VY, info->vy);
 
                 add_dialog_item_string(hwndDlg, HAMIGAKI_IDC_SLOPE, "None");
 
@@ -353,13 +348,11 @@ void update_icon(::HWND hwndDlg)
                         hwndDlg, HAMIGAKI_IDC_IS_BREAKER) != 0
                 );
 
-                info->vx = boost::lexical_cast<float>(
-                    get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_VX)
-                );
+                info->vx = get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_VX);
+                boost::lexical_cast<float>(info->vx);
 
-                info->vy = boost::lexical_cast<float>(
-                    get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_VY)
-                );
+                info->vy = get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_VY);
+                boost::lexical_cast<float>(info->vy);
 
                 info->slope = static_cast<slope_type::values>(
                     ::SendDlgItemMessage(
