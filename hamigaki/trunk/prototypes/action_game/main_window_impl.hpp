@@ -10,6 +10,7 @@
 #ifndef MAIN_WINDOW_IMPL_HPP
 #define MAIN_WINDOW_IMPL_HPP
 
+#include "game_project.hpp"
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <windows.h>
@@ -17,9 +18,7 @@
 class main_window
 {
 public:
-    explicit main_window(::HWND handle);
-
-    void load_project(const std::string& filename);
+    explicit main_window(::HWND handle, const game_project& proj);
     void connect_d3d_device();
     bool process_input();
     void render();

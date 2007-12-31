@@ -7,13 +7,16 @@
 
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
+#include "game_project_io.hpp"
 #include "main_window.hpp"
 #include <hamigaki/system/windows_error.hpp>
+#include <boost/filesystem/path.hpp>
 #include <exception>
 #include <iostream>
 
 #include <windows.h>
 
+namespace fs = boost::filesystem;
 using hamigaki::system::windows_error;
 
 int WINAPI WinMain(
@@ -21,15 +24,18 @@ int WINAPI WinMain(
 {
     try
     {
+        const char* filename = (*lpCmdLine) ? lpCmdLine : "action_game.agp-yh";
+        game_project proj = load_game_project(filename);
+
+        fs::path dir = fs::path(filename).branch_path();
+        if (!dir.empty())
+            ::SetCurrentDirectoryA(dir.directory_string().c_str());
+
         ::ATOM cls = register_main_window_class(hInstance);
-        ::HWND hwnd = create_main_window(hInstance, cls);
+        ::HWND hwnd = create_main_window(hInstance, cls, proj);
 
         ::ShowWindow(hwnd, nCmdShow);
         ::UpdateWindow(hwnd);
-        if (*lpCmdLine)
-            load_project(hwnd, lpCmdLine);
-        else
-            load_project(hwnd, "action_game.agp-yh");
         connect_d3d_device(hwnd);
 
         ::MSG msg;

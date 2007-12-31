@@ -10,12 +10,15 @@
 #ifndef MAIN_WINDOW_HPP
 #define MAIN_WINDOW_HPP
 
+#include "game_project.hpp"
 #include <string>
 #include <windows.h>
 
 ::ATOM register_main_window_class(::HINSTANCE hInstance);
-::HWND create_main_window(::HINSTANCE hInstance, ::ATOM cls);
-void load_project(::HWND hwnd, const std::string& filename);
+
+::HWND create_main_window(
+    ::HINSTANCE hInstance, ::ATOM cls, const game_project& proj);
+
 void connect_d3d_device(::HWND hwnd);
 bool process_input(::HWND hwnd);
 void render(::HWND hwnd);

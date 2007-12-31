@@ -16,7 +16,6 @@
 #include "direct3d9.hpp"
 #include "fire_man_routine.hpp"
 #include "game_character.hpp"
-#include "game_project_io.hpp"
 #include "game_system.hpp"
 #include "hop_routine.hpp"
 #include "hop_step_jump_routine.hpp"
@@ -34,18 +33,14 @@
 #include "velocity_routine.hpp"
 #include "wait_se_routine.hpp"
 #include <boost/iterator/indirect_iterator.hpp>
-#include <boost/filesystem/path.hpp>
 #include <boost/bind.hpp>
 #include <boost/next_prior.hpp>
 #include <cmath>
 #include <list>
-#include <memory>
 
 #if !defined(NDEBUG)
     #define HAMIGAKI_DISPLAY_FPS
 #endif
-
-namespace fs = boost::filesystem;
 
 namespace
 {
@@ -453,42 +448,29 @@ collision_event_type find_collision_event(const hamigaki::uuid& id)
 class main_window::impl
 {
 public:
-    explicit impl(::HWND handle)
-        : handle_(handle)
+    explicit impl(::HWND handle, const game_project& proj)
+        : handle_(handle), project_(proj)
         , input_(handle_), system_(handle_), textures_(device_)
         , active_(false), last_time_(::GetTickCount()), frames_(0)
 #if defined(HAMIGAKI_DISPLAY_FPS)
         , last_fps_time_(0), fps_count_(0)
 #endif
-        , stage_file_("map.agm-yh")
     {
-        ::RECT cr;
-        ::GetClientRect(handle_, &cr);
-        width_ = static_cast<int>(cr.right);
-        height_ = static_cast<int>(cr.bottom);
-    }
-
-    ~impl()
-    {
-    }
-
-    void load_project(const std::string& filename)
-    {
-        project_ = load_game_project(filename.c_str());
-
-        fs::path dir = fs::path(filename).branch_path();
-        ::SetCurrentDirectoryA(dir.directory_string().c_str());
+        system_.gravity = project_.gravity;
+        system_.min_vy = project_.min_vy;
+        system_.screen_width = project_.screen_width;
+        system_.screen_height = project_.screen_height;
 
         if (project_.start_map.empty())
             project_.start_map = "map.agm-yh";
 
         stage_file_ = project_.start_map;
 
-        if (!project_.title.empty())
-            ::SetWindowTextA(handle_, project_.title.c_str());
-
-        char_repository_.reset(new character_repository);
         reset_characters();
+    }
+
+    ~impl()
+    {
     }
 
     void connect_d3d_device()
@@ -585,12 +567,13 @@ public:
 
 private:
     ::HWND handle_;
+    game_project project_;
     input_engine input_;
     game_system system_;
     direct3d9 d3d_;
     direct3d_device9 device_;
     texture_cache textures_;
-    std::auto_ptr<character_repository> char_repository_;
+    character_repository char_repository_;
     bool active_;
     unsigned long last_time_;
     unsigned frames_;
@@ -598,12 +581,9 @@ private:
     unsigned long last_fps_time_;
     int fps_count_;
 #endif
-    game_project project_;
     std::string stage_file_;
     character_ptr player_;
     character_ptr scroll_;
-    int width_;
-    int height_;
 
     character_iterator find_enemy(const map_element& e)
     {
@@ -627,7 +607,7 @@ private:
         if (e.type == player_id)
             return;
 
-        const game_character_class& cc = (*char_repository_)[e.type];
+        const game_character_class& cc = char_repository_[e.type];
 
         character_ptr c(new game_character);
 
@@ -674,7 +654,7 @@ private:
     void erase_old_characters()
     {
         float scroll_x1 = scroll_->x;
-        float scroll_x2 = scroll_x1 + width_;
+        float scroll_x2 = scroll_x1 + system_.screen_width;
 
         character_iterator next;
         for (character_iterator i = system_.characters.begin();
@@ -745,7 +725,7 @@ private:
         scroll_->move_routine(&system_, scroll_.get());
 
         int min_x = static_cast<int>(scroll_->x) - 32*3;
-        int max_x = static_cast<int>(scroll_->x) + width_ + 32*3;
+        int max_x = static_cast<int>(scroll_->x) + system_.screen_width + 32*3;
         int map_height = system_.map.height;
 
         typedef map_elements::nth_index<0>::type x_y_index_t;
@@ -815,8 +795,8 @@ private:
         int scroll_x = static_cast<int>(scroll_->x);
         if (scroll_x > old_scroll_x)
         {
-            int min_x = old_scroll_x + width_ + 32*3;
-            int max_x = scroll_x + width_ + 32*3;
+            int min_x = old_scroll_x + system_.screen_width + 32*3;
+            int max_x = scroll_x + system_.screen_width + 32*3;
             int map_height = system_.map.height;
 
             typedef map_elements::nth_index<0>::type x_y_index_t;
@@ -870,7 +850,7 @@ private:
         const rect& tr = c.texture_rect();
 
         float x = tr.x - scroll_->x;
-        float y = height_ - tr.y - tr.ly;
+        float y = system_.screen_height - tr.y - tr.ly;
 
         const std::string& texture = infos.texture;
         if (!texture.empty())
@@ -885,13 +865,9 @@ private:
     }
 };
 
-main_window::main_window(::HWND handle) : pimpl_(new impl(handle))
+main_window::main_window(::HWND handle, const game_project& proj)
+    : pimpl_(new impl(handle, proj))
 {
-}
-
-void main_window::load_project(const std::string& filename)
-{
-    pimpl_->load_project(filename);
 }
 
 void main_window::connect_d3d_device()

@@ -28,7 +28,13 @@ namespace
 
         if (uMsg == WM_CREATE)
         {
-            pimpl = new main_window(hwnd);
+            ::CREATESTRUCTA& data =
+                *reinterpret_cast< ::CREATESTRUCTA*>(lParam);
+
+            const game_project& proj =
+                *reinterpret_cast<const game_project*>(data.lpCreateParams);
+
+            pimpl = new main_window(hwnd, proj);
             SetWindowLongPtr(
                 hwnd, GWLP_USERDATA, reinterpret_cast< ::LONG_PTR>(pimpl));
         }
@@ -77,34 +83,28 @@ namespace
     return cls;
 }
 
-::HWND create_main_window(::HINSTANCE hInstance, ::ATOM cls)
+::HWND
+create_main_window(::HINSTANCE hInstance, ::ATOM cls, const game_project& proj)
 {
     ::DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
     ::DWORD ex_style = 0;
 
-    ::RECT r = { 0, 0, 640, 480 };
+    ::RECT r = { 0, 0, proj.screen_width, proj.screen_height };
     ::AdjustWindowRectEx(&r, style, FALSE, ex_style);
 
+    std::string title = proj.title;
+    if (title.empty())
+        title = "Action Game";
+
     ::HWND hwnd = ::CreateWindowExA(
-        ex_style, MAKEINTATOM(cls), "Action Game", style,
+        ex_style, MAKEINTATOM(cls), title.c_str(), style,
         CW_USEDEFAULT, CW_USEDEFAULT, r.right - r.left, r.bottom - r.top,
-        0, 0, hInstance, 0
+        0, 0, hInstance, const_cast<game_project*>(&proj)
     );
     if (hwnd == 0)
         throw windows_error(::GetLastError(), "CreateWindowExA()");
 
     return hwnd;
-}
-
-void load_project(::HWND hwnd, const std::string& filename)
-{
-    main_window* pimpl =
-        reinterpret_cast<main_window*>(
-            GetWindowLongPtr(hwnd, GWLP_USERDATA)
-        );
-
-    if (pimpl)
-        pimpl->load_project(filename);
 }
 
 void connect_d3d_device(::HWND hwnd)
