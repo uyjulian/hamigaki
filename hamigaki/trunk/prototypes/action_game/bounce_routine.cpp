@@ -9,6 +9,7 @@
 
 #include "bounce_routine.hpp"
 #include "collision_utility.hpp"
+#include <boost/noncopyable.hpp>
 
 namespace
 {
@@ -17,9 +18,32 @@ typedef hamigaki::coroutines::shared_coroutine<
     bool (game_system*, game_character*)
 > coroutine_type;
 
+class scoped_weapon : private boost::noncopyable
+{
+public:
+    explicit scoped_weapon(game_character* c)
+        : ptr_(c), need_reset_(!ptr_->attrs.test(char_attr::weapon))
+    {
+        if (need_reset_)
+            ptr_->attrs.set(char_attr::weapon);
+    }
+
+    ~scoped_weapon()
+    {
+        if (need_reset_)
+            ptr_->attrs.reset(char_attr::weapon);
+    }
+
+private:
+    game_character* ptr_;
+    bool need_reset_;
+};
+
 bool bounce_routine_impl(
     coroutine_type::self& self, game_system* game, game_character* c)
 {
+    scoped_weapon gurad(c);
+
     boost::tie(game,c) = self.yield(true);
     boost::tie(game,c) = self.yield(true);
 
