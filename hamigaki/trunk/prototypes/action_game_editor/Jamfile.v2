@@ -79,6 +79,7 @@ exe action_game_editor
     ;
 
 exec.register-exec-all ;
+alias run : action_game_editor-run ;
 
 install dist-bin
     :
