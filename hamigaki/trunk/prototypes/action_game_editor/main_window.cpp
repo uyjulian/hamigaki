@@ -17,6 +17,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/format.hpp>
+#include <boost/scoped_array.hpp>
 #include <cstring>
 
 #include <hamigaki/system/windows_error.hpp>
@@ -90,6 +91,16 @@ bool close_project(main_window* pimpl, ::HWND hwnd)
     return true;
 }
 
+std::string get_drop_filename(::HDROP drop)
+{
+    ::UINT size = ::DragQueryFileA(drop, 0, 0, 0);
+    boost::scoped_array<char> buf(new char[size+1]);
+    ::DragQueryFileA(drop, 0, buf.get(), size+1);
+    buf[size] = '\0';
+
+    return buf.get();
+}
+
 ::LRESULT CALLBACK window_proc(
     ::HWND hwnd, ::UINT uMsg, ::WPARAM wParam, ::LPARAM lParam)
 {
@@ -140,6 +151,18 @@ bool close_project(main_window* pimpl, ::HWND hwnd)
             int y = static_cast<short>(HIWORD(lParam));
             if (pimpl)
                 pimpl->track_popup_menu(handle, x, y);
+        }
+        else if (uMsg == WM_DROPFILES)
+        {
+            ::HDROP drop = reinterpret_cast< ::HDROP>(wParam);
+            std::string filename = get_drop_filename(drop);
+            ::DragFinish(drop);
+
+            if (!close_project(pimpl, hwnd))
+                return 0;
+
+            pimpl->load_project(filename);
+            enable_project_menu(hwnd, true);
         }
         else if (uMsg == WM_COMMAND)
         {
@@ -285,7 +308,7 @@ bool close_project(main_window* pimpl, ::HWND hwnd)
 ::HWND create_main_window(::HINSTANCE hInstance)
 {
     ::DWORD style = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN;
-    ::DWORD ex_style = 0;
+    ::DWORD ex_style = WS_EX_ACCEPTFILES;
 
     ::HWND hwnd = ::CreateWindowExA(
         ex_style, "MainWindow", "Action Game Editor", style,
