@@ -159,7 +159,8 @@ void hit_on_block(game_system& game, game_character& c)
         if (c2->attrs.test(char_attr::block) || c2->on_hit.empty())
             continue;
 
-        if ((r.x <= c2->x) && (c2->x < r.x + r.lx) && (c2->y == r.y + r.ly))
+        const rect& r2 = c2->bounds();
+        if ((r.x < r2.x+r2.lx) && (r2.x <= r.x+r.lx) && (r2.y == r.y + r.ly))
             c2->on_hit(&game, c2, &c);
     }
 }

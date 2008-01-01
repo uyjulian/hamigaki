@@ -33,10 +33,12 @@ public:
     {
         float org_z = c->z;
         c->z = 0.0f;
+        c->attrs.set(char_attr::weapon);
 
         bounce_routine bounce;
         while (bounce(game, c))
             boost::tie(game,c) = self.yield(true);
+        c->attrs.reset(char_attr::weapon);
 
         character_ptr item(new game_character(item_));
         int height = static_cast<int>(c->height);
