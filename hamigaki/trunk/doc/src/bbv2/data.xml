@@ -4,7 +4,7 @@
 <!--
   Hamigaki Library Document Source
 
-  Copyright Takeshi Mouri 2007.
+  Copyright Takeshi Mouri 2007, 2008.
   Distributed under the Boost Software License, Version 1.0.
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
@@ -53,7 +53,7 @@ local a = 1 ;
   </section>
   <section id="bbv2.data.variable-expansion">
     <title>変数展開</title>
-    <para>トークン中の「$(<emphasis>変数名</emphasis>)」は対応する変数の値に展開される。変数の値が複数ある場合、変数値とと前後の文字列を連結した結果は直積になる。</para>
+    <para>トークン中の「$(<emphasis>変数名</emphasis>)」は対応する変数の値に展開される。変数の値が複数ある場合、変数値と前後の文字列を連結した結果は直積になる。</para>
     <informalexample>
       <programlisting><![CDATA[A = a ;
 B = 1 2 ;
