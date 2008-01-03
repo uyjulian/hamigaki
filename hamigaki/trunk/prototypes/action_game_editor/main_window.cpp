@@ -320,3 +320,14 @@ std::string get_drop_filename(::HDROP drop)
 
     return hwnd;
 }
+
+void main_window_load_project(::HWND hwnd, const std::string& filename)
+{
+    main_window* pimpl =
+        reinterpret_cast<main_window*>(
+            GetWindowLongPtr(hwnd, GWLP_USERDATA)
+        );
+
+    if (pimpl != 0)
+        pimpl->load_project(filename);
+}

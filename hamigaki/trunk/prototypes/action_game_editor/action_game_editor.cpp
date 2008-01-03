@@ -1,6 +1,6 @@
 // action_game_editor.cpp: a map editor for action_game.exe
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -60,7 +60,7 @@ private:
 };
 
 int WINAPI WinMain(
-    ::HINSTANCE hInstance, ::HINSTANCE, ::LPSTR, int nCmdShow)
+    ::HINSTANCE hInstance, ::HINSTANCE, ::LPSTR lpCmdLine, int nCmdShow)
 {
     try
     {
@@ -81,6 +81,9 @@ int WINAPI WinMain(
 
         ::ShowWindow(hwnd, nCmdShow);
         ::UpdateWindow(hwnd);
+
+        if (*lpCmdLine)
+            main_window_load_project(hwnd, lpCmdLine);
 
         ::MSG msg;
         ::BOOL res;

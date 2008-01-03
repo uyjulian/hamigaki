@@ -1,6 +1,6 @@
 // main_window.cpp: main window implementation for action_game_editor
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -211,8 +211,11 @@ public:
 
     void new_project(const std::string& filename, const game_project& proj)
     {
-        const fs::path& dir = fs::path(filename).branch_path();
-        ::SetCurrentDirectoryA(dir.directory_string().c_str());
+        fs::path dir = fs::path(filename).branch_path();
+        if (dir.empty())
+            dir = fs::current_path();
+        else
+            ::SetCurrentDirectoryA(dir.directory_string().c_str());
 
         if (map_window_ == 0)
             create_child_windows();
