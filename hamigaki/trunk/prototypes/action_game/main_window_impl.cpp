@@ -1,6 +1,6 @@
 // main_window.cpp: main window implementation for action_game
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -246,6 +246,9 @@ void to_man(game_system* game, game_character* c, game_character* target)
     {
         target->attrs.set(char_attr::breaker);
         target->change_sprite(game->sprites["man.ags-yh"]);
+
+        game->effect = wait_se_routine("power_up.ogg");
+        game->effect_target = target;
     }
 
     c->removed = true;
@@ -258,6 +261,9 @@ void to_fire_man(game_system* game, game_character* c, game_character* target)
         target->attrs.set(char_attr::breaker);
         target->change_sprite(game->sprites["fire_man.ags-yh"]);
         target->speed_routine = fire_man_routine();
+
+        game->effect = wait_se_routine("power_up.ogg");
+        game->effect_target = target;
     }
 
     c->removed = true;
@@ -756,6 +762,16 @@ private:
         if (system_.command.reset)
         {
             reset_characters();
+            return;
+        }
+
+        if (system_.effect)
+        {
+            // Note:
+            // This copy guarantees the lifetime until the call is completed.
+            effect_type e = system_.effect;
+            if (!e(&system_, system_.effect_target))
+                system_.effect.clear();
             return;
         }
 
