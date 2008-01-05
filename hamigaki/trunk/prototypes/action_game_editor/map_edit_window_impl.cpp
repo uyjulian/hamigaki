@@ -1,6 +1,6 @@
 // map_edit_window_impl.cpp: the window implementation for stage map
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -97,8 +97,8 @@ public:
         ::RECT cr;
         ::GetClientRect(handle_, &cr);
 
-        int min_x = horz_scroll_value()*32 + 16;
-        int min_y = vert_scroll_value()*32;
+        int min_x = horz_scroll_value()*16 + 16;
+        int min_y = vert_scroll_value()*16;
 
         int max_x = min_x + cr.right;
         int max_y = min_y + cr.bottom;
@@ -108,8 +108,8 @@ public:
         iter_type beg = x_y.lower_bound(std::make_pair(min_x, 0));
         iter_type end = x_y.upper_bound(std::make_pair(max_x, map_->height));
 
-        int cursor_x = min_x + cursor_pos_.first*32;
-        int cursor_y = min_y + cursor_pos_.second*32;
+        int cursor_x = min_x + cursor_pos_.first*16;
+        int cursor_y = min_y + cursor_pos_.second*16;
 
         device_.clear_target(bg_color_);
         {
@@ -129,7 +129,7 @@ public:
                 int y = beg->first.second;
                 const hamigaki::uuid& type = beg->second;
 
-                draw_character((x-min_x)/32, (y-min_y)/32, type);
+                draw_character((x-min_x)/16, (y-min_y)/16, type);
             }
 
             if (max_x > map_->width)
@@ -190,16 +190,16 @@ public:
         horz.cbSize = sizeof(horz);
         horz.fMask = SIF_RANGE | SIF_PAGE;
         horz.nMin = 0;
-        horz.nMax = map_width/32 - 1;
-        horz.nPage = cr.right / 32;
+        horz.nMax = map_width/16 - 1;
+        horz.nPage = cr.right / 16;
         ::SetScrollInfo(handle_, SB_HORZ, &horz, TRUE);
 
         ::SCROLLINFO vert = {};
         vert.cbSize = sizeof(vert);
         vert.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
         vert.nMin = 0;
-        vert.nMax = map_height/32 - 1;
-        vert.nPage = cr.bottom / 32;
+        vert.nMax = map_height/16 - 1;
+        vert.nPage = cr.bottom / 16;
         vert.nPos = vert.nMax - old_vert - static_cast<int>(vert.nPage) + 1;
         ::SetScrollInfo(handle_, SB_VERT, &vert, TRUE);
 
@@ -247,14 +247,30 @@ public:
         if (!map_)
             return;
 
-        int x = (horz_scroll_value() + cursor_pos_.first) * 32 + 16;
-        int y = (vert_scroll_value() + cursor_pos_.second) * 32;
+        int x = (horz_scroll_value() + cursor_pos_.first) * 16 + 16;
+        int y = (vert_scroll_value() + cursor_pos_.second) * 16;
 
         if ((x >= map_->width) || (y >= map_->height))
             return;
 
         typedef map_elements::iterator iter_type;
         map_elements& x_y = map_->elements;
+
+        if (!selected_char_.is_null())
+        {
+            std::pair<int,int> pos(x, y);
+            iter_type beg = x_y.lower_bound(std::make_pair(x-31, y-31));
+            iter_type end = x_y.lower_bound(std::make_pair(x+31, y+32));
+
+            for ( ; beg != end; ++beg)
+            {
+                const std::pair<int,int>& pos2 = beg->first;
+                if (pos2 == pos)
+                    break;
+                else if ((pos2.second > y-32) && (pos2.second < y+32))
+                    return;
+            }
+        }
 
         iter_type old = x_y.find(std::make_pair(x, y));
         if (old != x_y.end())
@@ -327,8 +343,8 @@ private:
         ::RECT cr;
         ::GetClientRect(handle_, &cr);
 
-        float left = static_cast<float>(x * 32);
-        float bottom = static_cast<float>(cr.bottom - y * 32);
+        float left = static_cast<float>(x * 16);
+        float bottom = static_cast<float>(cr.bottom - y * 16);
         float top = bottom - 32.0f;
 
         ::draw_rectangle(device_, left, top, 0.0f, 32.0f, 32.0f, color);
@@ -350,8 +366,8 @@ private:
         ::RECT cr;
         ::GetClientRect(handle_, &cr);
 
-        float left = static_cast<float>(x * 32);
-        float bottom = static_cast<float>(cr.bottom - y * 32);
+        float left = static_cast<float>(x * 16);
+        float bottom = static_cast<float>(cr.bottom - y * 16);
         float top = bottom - 32.0f;
 
         if (pos->icon.empty())
@@ -390,8 +406,8 @@ private:
 
         draw_sprite(
             device_,
-            static_cast<float>(cursor_pos_.first*32),
-            cr.bottom - static_cast<float>((cursor_pos_.second+1)*32),
+            static_cast<float>(cursor_pos_.first*16),
+            cr.bottom - static_cast<float>(cursor_pos_.second*16+32),
             0.0f, cursor_texture_
         );
     }

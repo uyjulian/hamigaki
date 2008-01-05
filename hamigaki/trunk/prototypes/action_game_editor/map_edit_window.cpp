@@ -1,6 +1,6 @@
 // map_edit_window.cpp: the window for stage map
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -104,8 +104,8 @@ boost::optional<int> next_scroll_pos(::HWND hwnd, int bar, ::WORD cmd)
                 ::RECT cr;
                 ::GetClientRect(hwnd, &cr);
 
-                int x = LOWORD(lParam) / 32;
-                int y = (cr.bottom - HIWORD(lParam)) / 32;
+                int x = LOWORD(lParam) / 16;
+                int y = (cr.bottom - HIWORD(lParam)) / 16;
                 pimpl->cursor_pos(x, y);
 
                 if (pimpl->mouse_captured())
