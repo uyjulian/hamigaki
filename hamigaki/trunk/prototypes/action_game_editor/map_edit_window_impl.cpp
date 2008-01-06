@@ -105,7 +105,7 @@ public:
 
         typedef map_elements::const_iterator iter_type;
         const map_elements& x_y = map_->elements;
-        iter_type beg = x_y.lower_bound(std::make_pair(min_x, 0));
+        iter_type beg = x_y.lower_bound(std::make_pair(min_x-16, 0));
         iter_type end = x_y.upper_bound(std::make_pair(max_x, map_->height));
 
         int cursor_x = min_x + cursor_pos_.first*16;
