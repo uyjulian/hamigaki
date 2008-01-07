@@ -388,6 +388,24 @@ void hit(game_system* game, game_character* c, game_character* target)
         c->vx = -c->vx;
 }
 
+void transfer_down(
+    game_system* game, game_character* c, game_character* target)
+{
+    if (game->command.y >= 0.0f)
+        return;
+
+    const rect& r = c->bounds();
+    const rect& r2 = target->bounds();
+
+    if ((r.x <= r2.x) && (r2.x+r2.lx <= r.x+r.lx) && (r2.y == r.y + r.ly))
+    {
+        std::pair<int,int> pos = game->map.player_position;
+
+        target->x = static_cast<float>(pos.first);
+        target->y = static_cast<float>(pos.second);
+    }
+}
+
 const hamigaki::uuid
     loop_lift_routine_id("2df594a8-470b-4125-ade3-0fda70a2ad1d");
 const hamigaki::uuid
@@ -405,6 +423,7 @@ const hamigaki::uuid secret_block_id("52cdb853-e6f3-48ca-a12a-9de6e7f6e76b");
 const hamigaki::uuid stomp_id("122ab3e8-c2e5-429f-8088-0c8b7b7107bb");
 const hamigaki::uuid to_fragments_id("3cb2edaf-4af1-498b-8025-9527a8b13808");
 const hamigaki::uuid to_used_block_id("c2209d0a-811e-4f31-8066-24f4cd998296");
+const hamigaki::uuid transfer_down_id("31aaa83d-5a2d-45e0-910d-74afe0e173f4");
 const hamigaki::uuid turn_id("796cff8f-1db7-4d80-b7bd-ac2ed12ecca0");
 
 move_routine_type find_move_routine(const hamigaki::uuid& id)
@@ -445,6 +464,8 @@ collision_event_type find_collision_event(const hamigaki::uuid& id)
         return &to_fragments;
     else if (id == to_used_block_id)
         return &to_used_block;
+    else if (id == transfer_down_id)
+        return &transfer_down;
     else if (id == turn_id)
         return &turn;
     else
@@ -635,6 +656,7 @@ private:
         c->on_collide_enemy = find_collision_event(cc.on_collide_enemy);
         c->on_stomp = find_collision_event(cc.on_stomp);
         c->on_hit = find_collision_event(cc.on_hit);
+        c->on_touch_player = find_collision_event(cc.on_touch_player);
 
         c->sprite_infos = &infos;
         c->x = static_cast<float>(e.x);

@@ -1,6 +1,6 @@
 // char_class_dialog.cpp: the dialog to input data for editing characters
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -66,6 +66,7 @@ const ::GUID collision_routines[] =
     {0x122AB3E8,0xC2E5,0x429F,{0x80,0x88,0x0C,0x8B,0x7B,0x71,0x07,0xBB}},
     {0x3CB2EDAF,0x4AF1,0x498B,{0x80,0x25,0x95,0x27,0xA8,0xB1,0x38,0x08}},
     {0xC2209D0A,0x811E,0x4F31,{0x80,0x66,0x24,0xF4,0xCD,0x99,0x82,0x96}},
+    {0x31AAA83D,0x5A2D,0x45E0,{0x91,0x0D,0x74,0xAF,0xE0,0xE1,0x73,0xF4}},
     {0x796CFF8F,0x1DB7,0x4D80,{0xB7,0xBD,0xAC,0x2E,0xD1,0x2E,0xCC,0xA0}}
 };
 
@@ -79,6 +80,7 @@ const char* collision_routine_names[] =
     "Stomp",
     "To Fragments",
     "To Used Block",
+    "Transfer Down",
     "Turn"
 };
 
@@ -288,6 +290,10 @@ void update_icon(::HWND hwndDlg)
                 setup_collision_event(
                     hwndDlg, HAMIGAKI_IDC_ON_HIT, info->on_hit
                 );
+
+                setup_collision_event(
+                    hwndDlg, HAMIGAKI_IDC_ON_TOUCH, info->on_touch_player
+                );
             }
             return 1;
         }
@@ -380,6 +386,8 @@ void update_icon(::HWND hwndDlg)
                     get_collision_event(hwndDlg, HAMIGAKI_IDC_ON_STOMP);
                 info->on_hit =
                     get_collision_event(hwndDlg, HAMIGAKI_IDC_ON_HIT);
+                info->on_touch_player =
+                    get_collision_event(hwndDlg, HAMIGAKI_IDC_ON_TOUCH);
 
                 ::EndDialog(hwndDlg, IDOK);
                 return 1;

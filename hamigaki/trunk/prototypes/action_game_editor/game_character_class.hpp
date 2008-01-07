@@ -1,6 +1,6 @@
 // game_character_class.hpp: game character class
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -40,6 +40,7 @@ struct game_character_class
     hamigaki::uuid on_collide_enemy;
     hamigaki::uuid on_stomp;
     hamigaki::uuid on_hit;
+    hamigaki::uuid on_touch_player;
 
     std::string name;
     bool modified;
@@ -60,7 +61,7 @@ struct game_character_class
     }
 };
 
-BOOST_CLASS_VERSION(game_character_class, 2);
+BOOST_CLASS_VERSION(game_character_class, 3);
 
 namespace boost { namespace serialization {
 
@@ -121,6 +122,9 @@ inline void serialize(
     ar & make_nvp("on-collide-enemy", c.on_collide_enemy);
     ar & make_nvp("on-stomp", c.on_stomp);
     ar & make_nvp("on-hit", c.on_hit);
+
+    if (file_version >= 3)
+        ar & make_nvp("on-touch-player", c.on_touch_player);
 }
 
 } } // End namespaces serialization, boost.

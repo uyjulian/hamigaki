@@ -1,6 +1,6 @@
 // collision_utility.cpp: utilities for collision detection
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -149,6 +149,11 @@ void process_collisions(game_system& game, game_character& c)
             {
                 if (c.on_collide_player)
                     c.on_collide_player(&game, &c, c2);
+            }
+            else if (r2.y == r.y + r.ly)
+            {
+                if (c.on_touch_player)
+                    c.on_touch_player(&game, &c, c2);
             }
         }
         else if (c2->attrs.test(char_attr::enemy))
