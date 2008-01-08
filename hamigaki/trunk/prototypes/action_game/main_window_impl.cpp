@@ -391,7 +391,7 @@ void hit(game_system* game, game_character* c, game_character* target)
 void transfer_down(
     game_system* game, game_character* c, game_character* target)
 {
-    if (game->command.y >= 0.0f)
+    if ((game->command.x != 0.0f) || (game->command.y >= 0.0f))
         return;
 
     const rect& r = c->bounds();
@@ -403,6 +403,8 @@ void transfer_down(
 
         target->x = static_cast<float>(pos.first);
         target->y = static_cast<float>(pos.second);
+        target->vx = 0.0f;
+        target->vy = 0.0f;
     }
 }
 
@@ -831,6 +833,9 @@ private:
             player_->y = -player_->height - 32.0f;
             player_->move_routine.clear();
         }
+
+        if (game_character* ptr = scroll_.get())
+            ptr->move(system_);
 
         int scroll_x = static_cast<int>(scroll_->x);
         if (scroll_x > old_scroll_x)
