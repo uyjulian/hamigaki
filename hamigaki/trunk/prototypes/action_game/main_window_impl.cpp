@@ -23,6 +23,7 @@
 #include "lift_routine.hpp"
 #include "player_routine.hpp"
 #include "png_loader.hpp"
+#include "pipe_down_routine.hpp"
 #include "pop_up_routine.hpp"
 #include "side_scrolling_routine.hpp"
 #include "sprite.hpp"
@@ -401,10 +402,12 @@ void transfer_down(
     {
         std::pair<int,int> pos = game->map.player_position;
 
-        target->x = static_cast<float>(pos.first);
-        target->y = static_cast<float>(pos.second);
-        target->vx = 0.0f;
-        target->vy = 0.0f;
+        float x = static_cast<float>(pos.first);
+        float y = static_cast<float>(pos.second);
+        game->effect = pipe_down_routine(x, y);
+        game->effect_target = target;
+
+        game->sound.play_se("pipe.ogg");
     }
 }
 
