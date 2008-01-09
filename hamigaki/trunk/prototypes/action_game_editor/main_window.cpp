@@ -11,6 +11,7 @@
 #include "char_select_window_msgs.hpp"
 #include "main_window_impl.hpp"
 #include "map_config_dialog.hpp"
+#include "map_edit_window_msgs.hpp"
 #include "msg_utilities.hpp"
 #include "project_config_dialog.hpp"
 #include <boost/filesystem/convenience.hpp>
@@ -261,6 +262,11 @@ std::string get_drop_filename(::HDROP drop)
             {
                 if (code == char_select_window_msgs::notify_sel_changed)
                     pimpl->update_selected_char();
+            }
+            else if (id == main_window::map_edit_id)
+            {
+                if (code == map_edit_window_msgs::notify_changed)
+                    pimpl->edit_additional_data();
             }
             else if (id == main_window::map_select_id)
             {

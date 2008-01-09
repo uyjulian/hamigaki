@@ -12,6 +12,7 @@
 #include "icon_view_window.hpp"
 #include "main_window.hpp"
 #include "map_edit_window.hpp"
+#include "position_select_window.hpp"
 #include <boost/noncopyable.hpp>
 #include <cstring>
 #include <locale>
@@ -76,6 +77,7 @@ int WINAPI WinMain(
         register_icon_view_window_class(hInstance);
         register_main_window_class(hInstance);
         register_map_edit_window_class(hInstance);
+        register_position_select_window_class(hInstance);
 
         ::HWND hwnd = create_main_window(hInstance);
 

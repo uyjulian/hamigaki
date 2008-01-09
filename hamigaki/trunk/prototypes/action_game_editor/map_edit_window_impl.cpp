@@ -12,6 +12,8 @@
 #include "direct3d9.hpp"
 #include "direct3d_device9.hpp"
 #include "draw.hpp"
+#include "map_edit_window_msgs.hpp"
+#include "msg_utilities.hpp"
 #include "png_loader.hpp"
 #include "sprite.hpp"
 #include "sprite_info_cache.hpp"
@@ -21,7 +23,6 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/optional.hpp>
 #include <algorithm>
-#include <utility>
 
 class map_edit_window::impl
 {
@@ -237,6 +238,11 @@ public:
         }
     }
 
+    std::pair<int,int> cursor_pos() const
+    {
+        return cursor_pos_;
+    }
+
     void select_char(const hamigaki::uuid& c)
     {
         selected_char_ = c;
@@ -292,6 +298,11 @@ public:
 
         map_->modified = true;
         ::InvalidateRect(handle_, 0, FALSE);
+
+        int code = map_edit_window_msgs::notify_changed;
+        int id = ::GetDlgCtrlID(handle_);
+
+        send_command(::GetParent(handle_), id, code, handle_);
     }
 
     bool modified() const
@@ -480,6 +491,11 @@ void map_edit_window::vert_scroll_pos(int pos)
 void map_edit_window::cursor_pos(int x, int y)
 {
     pimpl_->cursor_pos(x, y);
+}
+
+std::pair<int,int> map_edit_window::cursor_pos() const
+{
+    return pimpl_->cursor_pos();
 }
 
 void map_edit_window::select_char(const hamigaki::uuid& c)

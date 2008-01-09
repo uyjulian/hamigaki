@@ -13,6 +13,7 @@
 #include "game_project_io.hpp"
 #include "map_edit_window.hpp"
 #include "msg_utilities.hpp"
+#include "position_dialog.hpp"
 #include "stage_map_load.hpp"
 #include "stage_map_save.hpp"
 #include <hamigaki/iterator/first_iterator.hpp>
@@ -35,6 +36,11 @@ namespace fs = boost::filesystem;
 
 namespace
 {
+
+const ::GUID warp_routines[] =
+{
+    {0x31AAA83D,0x5A2D,0x45E0,{0x91,0x0D,0x74,0xAF,0xE0,0xE1,0x73,0xF4}}
+};
 
 void load_char_classes(
     const fs::path& dir, std::set<game_character_class>& char_table)
@@ -207,6 +213,32 @@ public:
     {
         const hamigaki::uuid& c = get_selected_char(char_sel_window_);
         map_edit_window_select_char(map_window_, c);
+    }
+
+    void edit_additional_data()
+    {
+        game_character_class dummy;
+        dummy.id = get_selected_char(char_sel_window_);
+
+        typedef std::set<game_character_class>::iterator iter_type;
+        iter_type it = char_table_.find(dummy);
+        if (it == char_table_.end())
+            return;
+
+        game_character_class& c = *it;
+        if (c.on_touch_player == hamigaki::uuid(warp_routines[0]))
+        {
+            map_position_info info;
+
+            info.map_table = &map_table_;
+            info.chars = &char_table_;
+            info.bg_color = project_.bg_color;
+
+            if (get_map_position(handle_, info))
+            {
+                ; // TODO
+            }
+        }
     }
 
     void new_project(const std::string& filename, const game_project& proj)
@@ -448,6 +480,11 @@ void main_window::update_size()
 void main_window::update_selected_char()
 {
     pimpl_->update_selected_char();
+}
+
+void main_window::edit_additional_data()
+{
+    pimpl_->edit_additional_data();
 }
 
 void main_window::new_project(

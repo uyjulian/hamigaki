@@ -50,6 +50,8 @@ exe action_game_editor
     map_edit_window.cpp
     map_edit_window_impl.cpp
     png_loader.cpp
+    position_dialog.cpp
+    position_select_window.cpp
     project_config_dialog.cpp
     sprite_info.cpp
     sprite_info_cache.cpp

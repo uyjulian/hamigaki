@@ -1,6 +1,6 @@
 // map_edit_window_impl.hpp: the window implementation for stage map
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -16,6 +16,7 @@
 #include <boost/shared_ptr.hpp>
 #include <set>
 #include <string>
+#include <utility>
 #include <windows.h>
 
 class map_edit_window
@@ -32,6 +33,7 @@ public:
     void horz_scroll_pos(int pos);
     void vert_scroll_pos(int pos);
     void cursor_pos(int x, int y);
+    std::pair<int,int> cursor_pos() const;
     void select_char(const hamigaki::uuid& c);
     void put_char();
     bool modified() const;
