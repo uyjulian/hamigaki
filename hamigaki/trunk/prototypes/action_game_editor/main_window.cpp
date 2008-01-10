@@ -48,6 +48,7 @@ void enable_project_menu(::HWND hwnd, bool value)
 
     ::EnableMenuItem(menu, HAMIGAKI_ID_FILE_CLOSE, flags);
     ::EnableMenuItem(menu, HAMIGAKI_ID_FILE_SAVE,  flags);
+    ::EnableMenuItem(menu, HAMIGAKI_ID_EDIT_DEL,   flags);
     ::EnableMenuItem(menu, HAMIGAKI_ID_GAME_PROP,  flags);
 }
 
