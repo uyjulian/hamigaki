@@ -41,7 +41,7 @@ BEGIN
     END
     POPUP "&Game"
     BEGIN
-        MENUITEM "P&roperties...",      HAMIGAKI_ID_GAME_PROP
+        MENUITEM "P&roperties...",      HAMIGAKI_ID_GAME_PROP,  GRAYED
     END
 END
 
