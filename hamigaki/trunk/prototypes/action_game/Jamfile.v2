@@ -56,6 +56,7 @@ exe action_game
     sprite_info_cache.cpp
     stage_map_load.cpp
     texture_cache.cpp
+    transfer_info.cpp
     turn_routine.cpp
     vanish_routine.cpp
     velocity_routine.cpp

@@ -15,6 +15,7 @@
 #include "stage_map.hpp"
 #include "sound_engine.hpp"
 #include "sprite_info_cache.hpp"
+#include "transfer_info.hpp"
 #include <list>
 
 typedef boost::shared_ptr<game_character> character_ptr;
@@ -39,6 +40,7 @@ struct game_system
     float min_vy;
 
     stage_map map;
+    transfer_info_table transfer_table;
     sprite_info_cache sprites;
 
     character_list characters;

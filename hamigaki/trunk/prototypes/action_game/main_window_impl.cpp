@@ -33,6 +33,8 @@
 #include "vanish_routine.hpp"
 #include "velocity_routine.hpp"
 #include "wait_se_routine.hpp"
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/path.hpp>
 #include <boost/iterator/indirect_iterator.hpp>
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
@@ -43,6 +45,8 @@
 #if !defined(NDEBUG)
     #define HAMIGAKI_DISPLAY_FPS
 #endif
+
+namespace fs = boost::filesystem;
 
 namespace
 {
@@ -400,10 +404,15 @@ void transfer_down(
 
     if ((r.x <= r2.x) && (r2.x+r2.lx <= r.x+r.lx) && (r2.y == r.y + r.ly))
     {
-        std::pair<int,int> pos = game->map.player_position;
+        transfer_info_table::iterator it =
+            game->transfer_table.find(std::make_pair(c->origin.x, c->origin.y));
+        if (it == game->transfer_table.end())
+            return;
 
-        float x = static_cast<float>(pos.first);
-        float y = static_cast<float>(pos.second);
+        const transfer_info& info = it->second;
+        float x = static_cast<float>(info.x);
+        float y = static_cast<float>(info.y);
+
         game->effect = pipe_down_routine(x, y);
         game->effect_target = target;
 
@@ -729,6 +738,13 @@ private:
         system_.sound.stop_se();
 
         load_map_from_binary(stage_file_.c_str(), system_.map);
+
+        fs::path agt = fs::path(stage_file_).branch_path()/"action_game.agt-yh";
+        if (fs::exists(agt))
+        {
+            load_transfer_infos(
+                agt.file_string().c_str(), system_.transfer_table);
+        }
 
         player_.reset(new game_character);
         player_->move_routine = &player_routine;
