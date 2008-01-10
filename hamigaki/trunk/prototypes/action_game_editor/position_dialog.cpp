@@ -25,6 +25,8 @@ void setup_map_list(
     typedef std::map<std::string,stage_map>::const_iterator iter_type;
     for (iter_type i = map_table.begin(), end = map_table.end(); i != end; ++i)
         send_msg(hwnd, LB_ADDSTRING, 0, i->first);
+
+    send_msg(hwnd, LB_SETCURSEL, 0);
 }
 
 std::string get_selected_string(::HWND hwnd)

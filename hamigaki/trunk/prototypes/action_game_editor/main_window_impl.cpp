@@ -238,10 +238,10 @@ public:
             if (get_map_position(handle_, info))
             {
                 transfer_info tmp;
-                tmp.x = info.x;
-                tmp.y = info.y;
+                tmp.x = info.x * 16 + 16;
+                tmp.y = info.y * 16;
                 tmp.map_file = info.filename;
-                transfer_table_[std::make_pair(x,y)] = tmp;
+                transfer_table_[std::make_pair(x*16+16,y*16)] = tmp;
             }
         }
     }
