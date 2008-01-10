@@ -59,6 +59,7 @@ exe action_game_editor
     stage_map_load.cpp
     stage_map_save.cpp
     texture_cache.cpp
+    transfer_info.cpp
     /directx//d3d9
     /directx//dxerr9
     /boost-lib//boost_filesystem

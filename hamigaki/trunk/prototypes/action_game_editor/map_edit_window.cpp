@@ -244,3 +244,16 @@ bool map_edit_window_modified(::HWND hwnd)
     else
         return false;
 }
+
+std::pair<int,int> map_edit_window_cursor_pos(::HWND hwnd)
+{
+    map_edit_window* pimpl =
+        reinterpret_cast<map_edit_window*>(
+            GetWindowLongPtr(hwnd, GWLP_USERDATA)
+        );
+
+    if (pimpl != 0)
+        return pimpl->cursor_pos();
+    else
+        return std::pair<int,int>();
+}

@@ -1,6 +1,6 @@
 // map_edit_window.hpp: the window for stage map
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -30,5 +30,6 @@ void map_edit_window_set_char_list(
 
 void map_edit_window_select_char(::HWND hwnd, const hamigaki::uuid& c);
 bool map_edit_window_modified(::HWND hwnd);
+std::pair<int,int> map_edit_window_cursor_pos(::HWND hwnd);
 
 #endif // MAP_WINDOW_HPP

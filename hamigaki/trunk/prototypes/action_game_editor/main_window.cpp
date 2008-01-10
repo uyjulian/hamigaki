@@ -11,12 +11,14 @@
 #include "char_select_window_msgs.hpp"
 #include "main_window_impl.hpp"
 #include "map_config_dialog.hpp"
+#include "map_edit_window.hpp"
 #include "map_edit_window_msgs.hpp"
 #include "msg_utilities.hpp"
 #include "project_config_dialog.hpp"
 #include <boost/filesystem/convenience.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <boost/format.hpp>
 #include <boost/scoped_array.hpp>
 #include <cstring>
@@ -268,7 +270,13 @@ std::string get_drop_filename(::HDROP drop)
             else if (id == main_window::map_edit_id)
             {
                 if (code == map_edit_window_msgs::notify_changed)
-                    pimpl->edit_additional_data();
+                {
+                    ::HWND map_hwnd = reinterpret_cast< ::HWND>(lParam);
+                    int x, y;
+                    boost::tie(x,y) = map_edit_window_cursor_pos(map_hwnd);
+
+                    pimpl->edit_additional_data(x, y);
+                }
             }
             else if (id == main_window::map_select_id)
             {

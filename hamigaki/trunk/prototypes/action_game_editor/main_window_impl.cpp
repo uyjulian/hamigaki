@@ -16,6 +16,7 @@
 #include "position_dialog.hpp"
 #include "stage_map_load.hpp"
 #include "stage_map_save.hpp"
+#include "transfer_info.hpp"
 #include <hamigaki/iterator/first_iterator.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -215,7 +216,7 @@ public:
         map_edit_window_select_char(map_window_, c);
     }
 
-    void edit_additional_data()
+    void edit_additional_data(int x, int y)
     {
         game_character_class dummy;
         dummy.id = get_selected_char(char_sel_window_);
@@ -236,7 +237,11 @@ public:
 
             if (get_map_position(handle_, info))
             {
-                ; // TODO
+                transfer_info tmp;
+                tmp.x = info.x;
+                tmp.y = info.y;
+                tmp.map_file = info.filename;
+                transfer_table_[std::make_pair(x,y)] = tmp;
             }
         }
     }
@@ -256,6 +261,11 @@ public:
 
         load_char_classes(dir, char_table_);
         load_maps(dir, map_table_);
+
+        fs::path agt = dir / "action_game.agt-yh";
+        if (fs::exists(agt))
+            load_transfer_infos(agt.file_string().c_str(), transfer_table_);
+
         setup_map_list(map_sel_window_, dir);
         map_edit_window_set(map_window_, 0);
         map_edit_window_set_char_list(map_window_, &char_table_);
@@ -277,6 +287,7 @@ public:
         ::DestroyWindow(char_sel_window_);
         char_sel_window_ = 0;
 
+        transfer_table_.clear();
         map_table_.clear();
         char_table_.clear();
         project_file_.clear();
@@ -299,6 +310,10 @@ public:
 
         save_char_classes(dir, char_table_);
         save_maps(dir, map_table_);
+
+        fs::path agt = dir / "action_game.agt-yh";
+        if (!transfer_table_.empty())
+            save_transfer_infos(agt.file_string().c_str(), transfer_table_);
 
         char_select_window_modified(char_sel_window_, false);
         modified_ = false;
@@ -427,6 +442,7 @@ private:
     std::string project_file_;
     std::set<game_character_class> char_table_;
     std::map<std::string,stage_map> map_table_;
+    transfer_info_table transfer_table_;
     ::HWND char_sel_window_;
     ::HWND map_window_;
     ::HWND map_sel_window_;
@@ -482,9 +498,9 @@ void main_window::update_selected_char()
     pimpl_->update_selected_char();
 }
 
-void main_window::edit_additional_data()
+void main_window::edit_additional_data(int x, int y)
 {
-    pimpl_->edit_additional_data();
+    pimpl_->edit_additional_data(x, y);
 }
 
 void main_window::new_project(

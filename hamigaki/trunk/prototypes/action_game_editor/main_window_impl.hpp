@@ -27,7 +27,7 @@ public:
     ~main_window();
     void update_size();
     void update_selected_char();
-    void edit_additional_data();
+    void edit_additional_data(int x, int y);
     void new_project(const std::string& filename, const game_project& proj);
     void close_project();
     void load_project(const std::string& filename);
