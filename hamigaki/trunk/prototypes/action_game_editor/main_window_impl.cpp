@@ -218,8 +218,16 @@ public:
 
     void edit_additional_data(int x, int y)
     {
+        const std::pair<int,int> pos(x,y);
+
         game_character_class dummy;
         dummy.id = get_selected_char(char_sel_window_);
+
+        if (dummy.id.is_null())
+        {
+            transfer_table_.erase(pos);
+            return;
+        }
 
         typedef std::set<game_character_class>::iterator iter_type;
         iter_type it = char_table_.find(dummy);
@@ -238,12 +246,14 @@ public:
             if (get_map_position(handle_, info))
             {
                 transfer_info tmp;
-                tmp.x = info.x * 16 + 16;
-                tmp.y = info.y * 16;
+                tmp.x = info.x;
+                tmp.y = info.y;
                 tmp.map_file = info.filename;
-                transfer_table_[std::make_pair(x*16+16,y*16)] = tmp;
+                transfer_table_[pos] = tmp;
             }
         }
+        else
+            transfer_table_.erase(pos);
     }
 
     void new_project(const std::string& filename, const game_project& proj)
@@ -314,6 +324,8 @@ public:
         fs::path agt = dir / "action_game.agt-yh";
         if (!transfer_table_.empty())
             save_transfer_infos(agt.file_string().c_str(), transfer_table_);
+        else
+            fs::remove(agt);
 
         char_select_window_modified(char_sel_window_, false);
         modified_ = false;

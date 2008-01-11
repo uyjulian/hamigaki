@@ -201,7 +201,7 @@ void position_select_window_set_char_list(
         pimpl->set_characters(chars);
 }
 
-std::pair<int,int> position_select_window_cursor_pos(::HWND hwnd)
+std::pair<int,int> position_select_window_selected_pos(::HWND hwnd)
 {
     map_edit_window* pimpl =
         reinterpret_cast<map_edit_window*>(
@@ -209,7 +209,7 @@ std::pair<int,int> position_select_window_cursor_pos(::HWND hwnd)
         );
 
     if (pimpl != 0)
-        return pimpl->cursor_pos();
+        return pimpl->selected_pos();
     else
         return std::pair<int,int>();
 }

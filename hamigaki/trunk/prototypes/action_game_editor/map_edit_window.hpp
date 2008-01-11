@@ -30,6 +30,6 @@ void map_edit_window_set_char_list(
 
 void map_edit_window_select_char(::HWND hwnd, const hamigaki::uuid& c);
 bool map_edit_window_modified(::HWND hwnd);
-std::pair<int,int> map_edit_window_cursor_pos(::HWND hwnd);
+std::pair<int,int> map_edit_window_selected_pos(::HWND hwnd);
 
 #endif // MAP_WINDOW_HPP

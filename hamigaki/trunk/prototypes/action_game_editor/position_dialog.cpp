@@ -89,7 +89,7 @@ std::string get_selected_string(::HWND hwnd)
 
                 ::HWND map_hwnd = ::GetDlgItem(hwndDlg, HAMIGAKI_IDC_MAP);
                 boost::tie(info->x, info->y) =
-                    position_select_window_cursor_pos(map_hwnd);
+                    position_select_window_selected_pos(map_hwnd);
 
                 ::EndDialog(hwndDlg, IDOK);
                 return 1;

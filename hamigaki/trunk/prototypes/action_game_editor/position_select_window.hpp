@@ -26,6 +26,6 @@ void position_select_window_set(::HWND hwnd, stage_map* map);
 void position_select_window_set_char_list(
     ::HWND hwnd, std::set<game_character_class>* chars);
 
-std::pair<int,int> position_select_window_cursor_pos(::HWND hwnd);
+std::pair<int,int> position_select_window_selected_pos(::HWND hwnd);
 
 #endif // POSITION_SELECT_WINDOW_HPP

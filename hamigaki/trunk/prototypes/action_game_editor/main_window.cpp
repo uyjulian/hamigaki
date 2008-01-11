@@ -273,7 +273,7 @@ std::string get_drop_filename(::HDROP drop)
                 {
                     ::HWND map_hwnd = reinterpret_cast< ::HWND>(lParam);
                     int x, y;
-                    boost::tie(x,y) = map_edit_window_cursor_pos(map_hwnd);
+                    boost::tie(x,y) = map_edit_window_selected_pos(map_hwnd);
 
                     pimpl->edit_additional_data(x, y);
                 }

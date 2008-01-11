@@ -245,7 +245,7 @@ bool map_edit_window_modified(::HWND hwnd)
         return false;
 }
 
-std::pair<int,int> map_edit_window_cursor_pos(::HWND hwnd)
+std::pair<int,int> map_edit_window_selected_pos(::HWND hwnd)
 {
     map_edit_window* pimpl =
         reinterpret_cast<map_edit_window*>(
@@ -253,7 +253,7 @@ std::pair<int,int> map_edit_window_cursor_pos(::HWND hwnd)
         );
 
     if (pimpl != 0)
-        return pimpl->cursor_pos();
+        return pimpl->selected_pos();
     else
         return std::pair<int,int>();
 }

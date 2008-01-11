@@ -238,9 +238,12 @@ public:
         }
     }
 
-    std::pair<int,int> cursor_pos() const
+    std::pair<int,int> selected_pos() const
     {
-        return cursor_pos_;
+        int x = (horz_scroll_value() + cursor_pos_.first) * 16 + 16;
+        int y = (vert_scroll_value() + cursor_pos_.second) * 16;
+
+        return std::make_pair(x, y);
     }
 
     void select_char(const hamigaki::uuid& c)
@@ -493,9 +496,9 @@ void map_edit_window::cursor_pos(int x, int y)
     pimpl_->cursor_pos(x, y);
 }
 
-std::pair<int,int> map_edit_window::cursor_pos() const
+std::pair<int,int> map_edit_window::selected_pos() const
 {
-    return pimpl_->cursor_pos();
+    return pimpl_->selected_pos();
 }
 
 void map_edit_window::select_char(const hamigaki::uuid& c)

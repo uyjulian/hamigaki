@@ -33,7 +33,7 @@ public:
     void horz_scroll_pos(int pos);
     void vert_scroll_pos(int pos);
     void cursor_pos(int x, int y);
-    std::pair<int,int> cursor_pos() const;
+    std::pair<int,int> selected_pos() const;
     void select_char(const hamigaki::uuid& c);
     void put_char();
     bool modified() const;
