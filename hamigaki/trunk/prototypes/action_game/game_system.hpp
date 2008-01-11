@@ -48,6 +48,8 @@ struct game_system
 
     effect_type effect;
     game_character* effect_target;
+
+    transfer_info next_pos;
 };
 
 #endif // GAME_SYSTEM_HPP

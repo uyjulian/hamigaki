@@ -10,6 +10,7 @@
 #ifndef PIPE_DOWN_ROUTINE_HPP
 #define PIPE_DOWN_ROUTINE_HPP
 
+#include "transfer_info.hpp"
 #include <hamigaki/coroutine/shared_coroutine.hpp>
 
 struct game_character;
@@ -18,7 +19,7 @@ struct game_system;
 class pipe_down_routine
 {
 public:
-    pipe_down_routine(float x, float y);
+    explicit pipe_down_routine(const transfer_info& info);
     bool operator()(game_system* game, game_character* c) const;
 
 private:

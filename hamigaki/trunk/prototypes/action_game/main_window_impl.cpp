@@ -409,11 +409,7 @@ void transfer_down(
         if (it == game->transfer_table.end())
             return;
 
-        const transfer_info& info = it->second;
-        float x = static_cast<float>(info.x);
-        float y = static_cast<float>(info.y);
-
-        game->effect = pipe_down_routine(x, y);
+        game->effect = pipe_down_routine(it->second);
         game->effect_target = target;
 
         game->sound.play_se("pipe.ogg");
@@ -798,14 +794,66 @@ private:
         system_.sound.play_bgm("bgm.ogg");
     }
 
+    void change_map()
+    {
+        stage_file_ = system_.next_pos.map_file;
+        system_.next_pos.map_file.clear();
+
+        load_map_from_binary(stage_file_.c_str(), system_.map);
+
+        fs::path agt = fs::path(stage_file_).branch_path()/"action_game.agt-yh";
+        if (fs::exists(agt))
+        {
+            load_transfer_infos(
+                agt.file_string().c_str(), system_.transfer_table);
+        }
+
+        player_->x = static_cast<float>(system_.next_pos.x);
+        player_->y = static_cast<float>(system_.next_pos.y);
+        scroll_->move_routine(&system_, scroll_.get());
+
+        system_.characters.clear();
+        system_.characters.push_back(player_);
+        system_.characters.push_back(scroll_);
+
+        int min_x = static_cast<int>(scroll_->x) - 32*3;
+        int max_x = static_cast<int>(scroll_->x) + system_.screen_width + 32*3;
+        int map_height = system_.map.height;
+
+        typedef map_elements::nth_index<0>::type x_y_index_t;
+        typedef x_y_index_t::iterator iter_type;
+
+        const x_y_index_t& x_y = system_.map.elements.get<0>();
+        iter_type beg = x_y.lower_bound(std::make_pair(min_x, 0));
+        iter_type end = x_y.upper_bound(std::make_pair(max_x, map_height));
+
+        for ( ; beg != end; ++beg)
+        {
+            const map_element& e = *beg;
+            if ((e.y >= 0) && (e.y < map_height))
+                add_character(e);
+        }
+
+        system_.characters.sort(character_ptr_z_greator());
+    }
+
     void process_input_impl()
     {
         character_list& ls = system_.characters;
 
         if (system_.command.reset)
         {
+            stage_file_ = project_.start_map;
             reset_characters();
             return;
+        }
+        else if (!system_.next_pos.map_file.empty())
+        {
+            if (stage_file_ != system_.next_pos.map_file)
+            {
+                change_map();
+                return;
+            }
         }
 
         if (system_.effect)
@@ -819,6 +867,17 @@ private:
         }
 
         int old_scroll_x = static_cast<int>(scroll_->x);
+
+        if (!system_.next_pos.map_file.empty())
+        {
+            system_.next_pos.map_file.clear();
+
+            player_->x = static_cast<float>(system_.next_pos.x);
+            player_->y = static_cast<float>(system_.next_pos.y);
+
+            // FIXME: HACK for the first move()
+            player_->vy = -system_.gravity;
+        }
 
         std::for_each(
             boost::make_indirect_iterator(ls.begin()),

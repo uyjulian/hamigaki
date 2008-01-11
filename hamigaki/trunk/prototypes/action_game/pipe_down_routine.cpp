@@ -42,7 +42,7 @@ private:
 class pipe_down_routine_impl
 {
 public:
-    pipe_down_routine_impl(float x, float y) : x_(x), y_(y)
+    explicit pipe_down_routine_impl(const transfer_info& info) : info_(info)
     {
     }
 
@@ -58,24 +58,19 @@ public:
         while (enter(game, c))
             boost::tie(game,c) = self.yield(true);
 
-        c->x = x_;
-        c->y = y_;
-
-        // FIXME: HACK for the first move()
-        c->vy = -game->gravity;
+        game->next_pos = info_;
 
         return false;
     }
 
 private:
-    float x_;
-    float y_;
+    transfer_info info_;
 };
 
 } // namespace
 
-pipe_down_routine::pipe_down_routine(float x, float y)
-    : coroutine_(pipe_down_routine_impl(x, y))
+pipe_down_routine::pipe_down_routine(const transfer_info& info)
+    : coroutine_(pipe_down_routine_impl(info))
 {
 }
 
