@@ -43,6 +43,9 @@ struct game_system
     transfer_info_table transfer_table;
     sprite_info_cache sprites;
 
+    character_ptr player;
+    character_ptr camera;
+
     character_list characters;
     character_list new_characters;
 

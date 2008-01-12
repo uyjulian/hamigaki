@@ -23,7 +23,7 @@ typedef hamigaki::coroutines::shared_coroutine<
 class scoped_change_z_order : private boost::noncopyable
 {
 public:
-    explicit scoped_change_z_order(game_character* c, float z)
+    scoped_change_z_order(game_character* c, float z)
         : ptr_(c), z_(ptr_->z)
     {
         ptr_->z = z;
@@ -37,6 +37,24 @@ public:
 private:
     game_character* ptr_;
     float z_;
+};
+
+class scoped_color_guard : private boost::noncopyable
+{
+public:
+    explicit scoped_color_guard(game_character* c)
+        : ptr_(c), color_(ptr_->color)
+    {
+    }
+
+    ~scoped_color_guard()
+    {
+        ptr_->color = color_;
+    }
+
+private:
+    game_character* ptr_;
+    unsigned long color_;
 };
 
 class pipe_down_routine_impl
@@ -58,7 +76,20 @@ public:
         while (enter(game, c))
             boost::tie(game,c) = self.yield(true);
 
+        scoped_color_guard color_guard(c);
+        for (unsigned long i = 0; i < 16; ++i)
+        {
+            game->camera->color = (i*0x11ul) << 24;
+            boost::tie(game,c) = self.yield(true);
+        }
+
         game->next_pos = info_;
+
+        for (unsigned long i = 0; i < 16; ++i)
+        {
+            game->camera->color = ((15-i)*0x11ul) << 24;
+            boost::tie(game,c) = self.yield(true);
+        }
 
         return false;
     }

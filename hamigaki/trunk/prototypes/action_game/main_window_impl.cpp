@@ -621,8 +621,6 @@ private:
     int fps_count_;
 #endif
     std::string stage_file_;
-    character_ptr player_;
-    character_ptr scroll_;
 
     character_iterator find_enemy(const map_element& e)
     {
@@ -641,7 +639,7 @@ private:
         if (find_enemy(e) != system_.characters.end())
             return;
 
-        bool back = player_->x <= static_cast<float>(e.x);
+        bool back = system_.player->x <= static_cast<float>(e.x);
 
         if (e.type == player_id)
             return;
@@ -693,7 +691,7 @@ private:
 
     void erase_old_characters()
     {
-        float scroll_x1 = scroll_->x;
+        float scroll_x1 = system_.camera->x;
         float scroll_x2 = scroll_x1 + system_.screen_width;
 
         character_iterator next;
@@ -742,37 +740,39 @@ private:
                 agt.file_string().c_str(), system_.transfer_table);
         }
 
-        player_.reset(new game_character);
-        player_->move_routine = &player_routine;
-        player_->speed_routine = user_control_routine();
-        player_->on_collide_block_side = &stop;
-        player_->sprite_infos = &system_.sprites["boy.ags-yh"];
-        player_->attrs.set(char_attr::player);
-        player_->back = false;
+        system_.player.reset(new game_character);
+        system_.player->move_routine = &player_routine;
+        system_.player->speed_routine = user_control_routine();
+        system_.player->on_collide_block_side = &stop;
+        system_.player->sprite_infos = &system_.sprites["boy.ags-yh"];
+        system_.player->attrs.set(char_attr::player);
+        system_.player->back = false;
 
         std::pair<int,int> pos = system_.map.player_position;
 
         const sprite_group& grp =
-            player_->sprite_infos->get_group(player_->form);
+            system_.player->sprite_infos->get_group(system_.player->form);
 
-        player_->x = static_cast<float>(pos.first);
-        player_->y = static_cast<float>(pos.second);
-        player_->z = layer::player;
-        player_->width = static_cast<float>(grp.bound_width);
-        player_->height = static_cast<float>(grp.bound_height);
+        system_.player->x = static_cast<float>(pos.first);
+        system_.player->y = static_cast<float>(pos.second);
+        system_.player->z = layer::player;
+        system_.player->width = static_cast<float>(grp.bound_width);
+        system_.player->height = static_cast<float>(grp.bound_height);
 
         system_.characters.clear();
-        system_.characters.push_back(player_);
+        system_.characters.push_back(system_.player);
 
-        scroll_.reset(new game_character);
-        scroll_->move_routine = side_scrolling_routine(player_);
-        scroll_->z = layer::hidden;
-        system_.characters.push_back(scroll_);
+        system_.camera.reset(new game_character);
+        system_.camera->move_routine = side_scrolling_routine(system_.player);
+        system_.camera->z = layer::hidden;
+        system_.camera->color = 0x00000000ul;
+        system_.characters.push_back(system_.camera);
 
-        scroll_->move_routine(&system_, scroll_.get());
+        system_.camera->move_routine(&system_, system_.camera.get());
 
-        int min_x = static_cast<int>(scroll_->x) - 32*3;
-        int max_x = static_cast<int>(scroll_->x) + system_.screen_width + 32*3;
+        int min_x = static_cast<int>(system_.camera->x) - 32*3;
+        int max_x =
+            static_cast<int>(system_.camera->x) + system_.screen_width + 32*3;
         int map_height = system_.map.height;
 
         typedef map_elements::nth_index<0>::type x_y_index_t;
@@ -808,16 +808,17 @@ private:
                 agt.file_string().c_str(), system_.transfer_table);
         }
 
-        player_->x = static_cast<float>(system_.next_pos.x);
-        player_->y = static_cast<float>(system_.next_pos.y);
-        scroll_->move_routine(&system_, scroll_.get());
+        system_.player->x = static_cast<float>(system_.next_pos.x);
+        system_.player->y = static_cast<float>(system_.next_pos.y);
+        system_.camera->move_routine(&system_, system_.camera.get());
 
         system_.characters.clear();
-        system_.characters.push_back(player_);
-        system_.characters.push_back(scroll_);
+        system_.characters.push_back(system_.player);
+        system_.characters.push_back(system_.camera);
 
-        int min_x = static_cast<int>(scroll_->x) - 32*3;
-        int max_x = static_cast<int>(scroll_->x) + system_.screen_width + 32*3;
+        int min_x = static_cast<int>(system_.camera->x) - 32*3;
+        int max_x =
+            static_cast<int>(system_.camera->x) + system_.screen_width + 32*3;
         int map_height = system_.map.height;
 
         typedef map_elements::nth_index<0>::type x_y_index_t;
@@ -837,85 +838,9 @@ private:
         system_.characters.sort(character_ptr_z_greator());
     }
 
-    void process_input_impl()
+    void scroll(int old_scroll_x)
     {
-        character_list& ls = system_.characters;
-
-        if (system_.command.reset)
-        {
-            stage_file_ = project_.start_map;
-            reset_characters();
-            return;
-        }
-        else if (!system_.next_pos.map_file.empty())
-        {
-            if (stage_file_ != system_.next_pos.map_file)
-            {
-                change_map();
-                return;
-            }
-        }
-
-        if (system_.effect)
-        {
-            // Note:
-            // This copy guarantees the lifetime until the call is completed.
-            effect_type e = system_.effect;
-            if (!e(&system_, system_.effect_target))
-                system_.effect.clear();
-            return;
-        }
-
-        int old_scroll_x = static_cast<int>(scroll_->x);
-
-        if (!system_.next_pos.map_file.empty())
-        {
-            system_.next_pos.map_file.clear();
-
-            player_->x = static_cast<float>(system_.next_pos.x);
-            player_->y = static_cast<float>(system_.next_pos.y);
-
-            // FIXME: HACK for the first move()
-            player_->vy = -system_.gravity;
-        }
-
-        std::for_each(
-            boost::make_indirect_iterator(ls.begin()),
-            boost::make_indirect_iterator(ls.end()),
-            boost::bind(&game_character::move, _1, boost::ref(system_))
-        );
-
-        std::for_each(
-            boost::make_indirect_iterator(ls.begin()),
-            boost::make_indirect_iterator(ls.end()),
-            boost::bind(&process_collisions, boost::ref(system_), _1)
-        );
-
-        if (!system_.new_characters.empty())
-            ls.splice(ls.end(), system_.new_characters);
-
-        if ((player_->form == miss_form) && player_->effect.empty())
-        {
-            reset_characters();
-            return;
-        }
-        else if (player_->y < - player_->height - 32.0f)
-        {
-            if (player_->form != miss_form)
-            {
-                system_.sound.stop_bgm();
-                player_->change_sprite(system_.sprites["boy.ags-yh"]);
-                player_->change_form(miss_form);
-                player_->effect = wait_se_routine("miss.ogg");
-            }
-            player_->y = -player_->height - 32.0f;
-            player_->move_routine.clear();
-        }
-
-        if (game_character* ptr = scroll_.get())
-            ptr->move(system_);
-
-        int scroll_x = static_cast<int>(scroll_->x);
+        int scroll_x = static_cast<int>(system_.camera->x);
         if (scroll_x > old_scroll_x)
         {
             int min_x = old_scroll_x + system_.screen_width + 32*3;
@@ -960,10 +885,102 @@ private:
         erase_old_characters();
     }
 
+    void process_input_impl()
+    {
+        character_list& ls = system_.characters;
+
+        if (system_.command.reset)
+        {
+            stage_file_ = project_.start_map;
+            reset_characters();
+            return;
+        }
+        else if (!system_.next_pos.map_file.empty())
+        {
+            if (stage_file_ != system_.next_pos.map_file)
+            {
+                change_map();
+                return;
+            }
+            else
+            {
+                system_.next_pos.map_file.clear();
+
+                int old_scroll_x = static_cast<int>(system_.camera->x);
+                system_.player->x = static_cast<float>(system_.next_pos.x);
+                system_.player->y = static_cast<float>(system_.next_pos.y);
+                system_.camera->move(system_);
+
+                scroll(old_scroll_x);
+                return;
+            }
+        }
+
+        if (system_.effect)
+        {
+            // Note:
+            // This copy guarantees the lifetime until the call is completed.
+            effect_type e = system_.effect;
+            if (!e(&system_, system_.effect_target))
+                system_.effect.clear();
+            return;
+        }
+
+        int old_scroll_x = static_cast<int>(system_.camera->x);
+
+        std::for_each(
+            boost::make_indirect_iterator(ls.begin()),
+            boost::make_indirect_iterator(ls.end()),
+            boost::bind(&game_character::move, _1, boost::ref(system_))
+        );
+
+        std::for_each(
+            boost::make_indirect_iterator(ls.begin()),
+            boost::make_indirect_iterator(ls.end()),
+            boost::bind(&process_collisions, boost::ref(system_), _1)
+        );
+
+        if (!system_.new_characters.empty())
+            ls.splice(ls.end(), system_.new_characters);
+
+        if ((system_.player->form == miss_form) &&
+            system_.player->effect.empty() )
+        {
+            reset_characters();
+            return;
+        }
+        else if (system_.player->y < - system_.player->height - 32.0f)
+        {
+            if (system_.player->form != miss_form)
+            {
+                system_.sound.stop_bgm();
+                system_.player->change_sprite(system_.sprites["boy.ags-yh"]);
+                system_.player->change_form(miss_form);
+                system_.player->effect = wait_se_routine("miss.ogg");
+            }
+            system_.player->y = -system_.player->height - 32.0f;
+            system_.player->move_routine.clear();
+        }
+
+        scroll(old_scroll_x);
+    }
+
     void draw_character(const game_character& c)
     {
         if (!c.sprite_infos)
+        {
+            if ((c.color & 0xFF000000ul) != 0ul)
+            {
+                ::draw_rectangle(
+                    device_, 0.0f, 0.0f, 0.0f,
+                    static_cast<float>(system_.screen_width),
+                    static_cast<float>(system_.screen_height),
+                    c.color
+                );
+            }
+
             return;
+        }
 
         const sprite_info_set& infos = *(c.sprite_infos);
 
@@ -972,7 +989,7 @@ private:
 
         const rect& tr = c.texture_rect();
 
-        float x = tr.x - scroll_->x;
+        float x = tr.x - system_.camera->x;
         float y = system_.screen_height - tr.y - tr.ly;
 
         const std::string& texture = infos.texture;
