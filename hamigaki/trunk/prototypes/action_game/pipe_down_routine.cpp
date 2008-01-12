@@ -70,6 +70,7 @@ public:
         scoped_change_z_order z_gurad(c, 1.0f);
         c->vx = 0.0f;
         c->vy = 0.0f;
+        c->change_form(sprite_form::normal);
 
         int count = static_cast<int>(std::ceil(c->height/2.0f));
         pop_up_routine enter(-2.0f, count);
