@@ -33,6 +33,7 @@
 #include "vanish_routine.hpp"
 #include "velocity_routine.hpp"
 #include "wait_se_routine.hpp"
+#include <boost/filesystem/convenience.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/iterator/indirect_iterator.hpp>
@@ -405,12 +406,6 @@ void transfer(
     const rect& r2 = target->bounds();
 
     transfer_info info = it->second;
-    if (info.leave_dir == transfer_info::up)
-        info.y -= static_cast<int>(target->height);
-    else if (info.leave_dir == transfer_info::left)
-        info.x += static_cast<int>(target->width);
-    else if (info.leave_dir == transfer_info::right)
-        info.x -= static_cast<int>(target->width);
 
     if (info.enter_dir == transfer_info::down)
     {
@@ -444,6 +439,14 @@ void transfer(
         if ((r.y > r2.y) || (r2.y+r2.ly > r.y+r.ly) || (r2.x + r2.lx != r.x))
             return;
     }
+
+    target->change_form(sprite_form::normal);
+    if (info.leave_dir == transfer_info::up)
+        info.y -= static_cast<int>(target->height);
+    else if (info.leave_dir == transfer_info::left)
+        info.x += static_cast<int>(target->width);
+    else if (info.leave_dir == transfer_info::right)
+        info.x -= static_cast<int>(target->width);
 
     game->effect = pipe_routine(info);
     game->effect_target = target;
@@ -766,12 +769,14 @@ private:
 
         load_map_from_binary(stage_file_.c_str(), system_.map);
 
-        fs::path agt = fs::path(stage_file_).branch_path()/"action_game.agt-yh";
+        fs::path agt = fs::change_extension(stage_file_, ".agt-yh");
         if (fs::exists(agt))
         {
             load_transfer_infos(
                 agt.file_string().c_str(), system_.transfer_table);
         }
+        else
+            system_.transfer_table.clear();
 
         system_.player.reset(new game_character);
         system_.player->move_routine = &player_routine;
@@ -834,12 +839,14 @@ private:
 
         load_map_from_binary(stage_file_.c_str(), system_.map);
 
-        fs::path agt = fs::path(stage_file_).branch_path()/"action_game.agt-yh";
+        fs::path agt = fs::change_extension(stage_file_, ".agt-yh");
         if (fs::exists(agt))
         {
             load_transfer_infos(
                 agt.file_string().c_str(), system_.transfer_table);
         }
+        else
+            system_.transfer_table.clear();
 
         system_.player->x = static_cast<float>(system_.next_pos.x);
         system_.player->y = static_cast<float>(system_.next_pos.y);

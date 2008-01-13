@@ -1,4 +1,4 @@
-// pipe_down_routine.cpp: the routine for down pipes
+// pipe_routine.cpp: the routine for pipes
 
 // Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
@@ -7,10 +7,9 @@
 
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
-#include "pipe_down_routine.hpp"
+#include "pipe_routine.hpp"
 #include "game_character.hpp"
 #include "game_system.hpp"
-#include "pop_up_routine.hpp"
 #include <cmath>
 
 namespace
@@ -57,10 +56,48 @@ private:
     unsigned long color_;
 };
 
-class pipe_down_routine_impl
+void auto_move(
+    coroutine_type::self& self, game_character* c, transfer_info::direction dir)
+{
+    int count = 0;
+    float vx = 0.0f;
+    float vy = 0.0f;
+
+    if (dir == transfer_info::left)
+    {
+        count = static_cast<int>(std::ceil(c->width/2.0f));
+        vx = -2.0f;
+        c->back = true;
+    }
+    else if (dir == transfer_info::right)
+    {
+        count = static_cast<int>(std::ceil(c->width/2.0f));
+        vx = 2.0f;
+        c->back = false;
+    }
+    else if (dir == transfer_info::down)
+    {
+        count = static_cast<int>(std::ceil(c->height/2.0f));
+        vy = -2.0f;
+    }
+    else if (dir == transfer_info::up)
+    {
+        count = static_cast<int>(std::ceil(c->height/2.0f));
+        vy = 2.0f;
+    }
+
+    for (int i = 0; i < count; ++i)
+    {
+        c->x += vx;
+        c->y += vy;
+        self.yield(true);
+    }
+}
+
+class pipe_routine_impl
 {
 public:
-    explicit pipe_down_routine_impl(const transfer_info& info) : info_(info)
+    explicit pipe_routine_impl(const transfer_info& info) : info_(info)
     {
     }
 
@@ -70,12 +107,10 @@ public:
         scoped_change_z_order z_gurad(c, 1.0f);
         c->vx = 0.0f;
         c->vy = 0.0f;
-        c->change_form(sprite_form::normal);
 
-        int count = static_cast<int>(std::ceil(c->height/2.0f));
-        pop_up_routine enter(-2.0f, count);
-        while (enter(game, c))
-            boost::tie(game,c) = self.yield(true);
+        game->sound.play_se("pipe.ogg");
+
+        auto_move(self, c, info_.enter_dir);
 
         scoped_color_guard color_guard(c);
         for (unsigned long i = 0; i < 16; ++i)
@@ -84,6 +119,9 @@ public:
             boost::tie(game,c) = self.yield(true);
         }
 
+        while (game->sound.playing_se())
+            boost::tie(game,c) = self.yield(true);
+
         game->next_pos = info_;
 
         for (unsigned long i = 0; i < 16; ++i)
@@ -91,6 +129,11 @@ public:
             game->camera->color = ((15-i)*0x11ul) << 24;
             boost::tie(game,c) = self.yield(true);
         }
+
+        if (info_.leave_dir != transfer_info::none)
+            game->sound.play_se("pipe.ogg");
+
+        auto_move(self, c, info_.leave_dir);
 
         return false;
     }
@@ -101,12 +144,12 @@ private:
 
 } // namespace
 
-pipe_down_routine::pipe_down_routine(const transfer_info& info)
-    : coroutine_(pipe_down_routine_impl(info))
+pipe_routine::pipe_routine(const transfer_info& info)
+    : coroutine_(pipe_routine_impl(info))
 {
 }
 
-bool pipe_down_routine::operator()(game_system* game, game_character* c) const
+bool pipe_routine::operator()(game_system* game, game_character* c) const
 {
     return coroutine_(game, c);
 }

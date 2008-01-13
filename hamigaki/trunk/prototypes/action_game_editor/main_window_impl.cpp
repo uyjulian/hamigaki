@@ -19,6 +19,7 @@
 #include "transfer_info.hpp"
 #include <hamigaki/iterator/first_iterator.hpp>
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/filesystem/convenience.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/assert.hpp>
@@ -85,12 +86,15 @@ void save_char_classes(
     }
 }
 
-void load_maps(const fs::path& dir, std::map<std::string,stage_map>& table)
+void load_maps(
+    const fs::path& dir, std::map<std::string,stage_map>& table,
+    std::map<std::string,transfer_info_table>& transfers)
 {
     fs::directory_iterator it(dir);
     fs::directory_iterator end;
 
     std::map<std::string,stage_map> tmp;
+    std::map<std::string,transfer_info_table> tmp2;
     std::locale loc("");
     for ( ; it != end; ++it)
     {
@@ -101,13 +105,23 @@ void load_maps(const fs::path& dir, std::map<std::string,stage_map>& table)
             stage_map& m = tmp[leaf];
             load_map_from_binary(ph.file_string().c_str(), m);
             m.modified = false;
+
+            const fs::path& ph2 = fs::change_extension(ph, ".agt-yh");
+            if (fs::exists(ph2))
+            {
+                std::string agt = ph2.leaf();
+                load_transfer_infos(agt.c_str(), tmp2[agt]);
+            }
         }
     }
 
     table.swap(tmp);
+    transfers.swap(tmp2);
 }
 
-void save_maps(const fs::path& dir, std::map<std::string,stage_map>& table)
+void save_maps(
+    const fs::path& dir, std::map<std::string,stage_map>& table,
+    const std::map<std::string,transfer_info_table>& transfers)
 {
     typedef std::map<std::string,stage_map>::iterator iter_type;
 
@@ -119,6 +133,18 @@ void save_maps(const fs::path& dir, std::map<std::string,stage_map>& table)
             const fs::path& ph = dir / i->first;
             save_map_to_binary(ph.file_string().c_str(), m);
             m.modified = false;
+
+            typedef std::map<
+                std::string,transfer_info_table
+            >::const_iterator iter2_type;
+
+            const fs::path& ph2 = fs::change_extension(ph, ".agt-yh");
+            std::string agt = ph2.leaf();
+            iter2_type it = transfers.find(agt);
+            if ((it != transfers.end()) && (!it->second.empty()))
+                save_transfer_infos(agt.c_str(), it->second);
+            else
+                fs::remove(ph2);
         }
     }
 }
@@ -220,12 +246,15 @@ public:
     {
         const std::pair<int,int> pos(x,y);
 
+        std::string agt_name = stage_name();
+        agt_name.replace(agt_name.size()-7, 7, ".agt-yh");
+
         game_character_class dummy;
         dummy.id = get_selected_char(char_sel_window_);
 
         if (dummy.id.is_null())
         {
-            transfer_table_.erase(pos);
+            transfer_table_[agt_name].erase(pos);
             return;
         }
 
@@ -247,10 +276,10 @@ public:
             params.info.y = y;
 
             if (get_transfer_info(handle_, params))
-                transfer_table_[pos] = params.info;
+                transfer_table_[agt_name][pos] = params.info;
         }
         else
-            transfer_table_.erase(pos);
+            transfer_table_[agt_name].erase(pos);
     }
 
     void new_project(const std::string& filename, const game_project& proj)
@@ -267,11 +296,7 @@ public:
         project_info(proj);
 
         load_char_classes(dir, char_table_);
-        load_maps(dir, map_table_);
-
-        fs::path agt = dir / "action_game.agt-yh";
-        if (fs::exists(agt))
-            load_transfer_infos(agt.file_string().c_str(), transfer_table_);
+        load_maps(dir, map_table_, transfer_table_);
 
         setup_map_list(map_sel_window_, dir);
         map_edit_window_set(map_window_, 0);
@@ -316,13 +341,7 @@ public:
         save_game_project(project_file_.c_str(), project_);
 
         save_char_classes(dir, char_table_);
-        save_maps(dir, map_table_);
-
-        fs::path agt = dir / "action_game.agt-yh";
-        if (!transfer_table_.empty())
-            save_transfer_infos(agt.file_string().c_str(), transfer_table_);
-        else
-            fs::remove(agt);
+        save_maps(dir, map_table_, transfer_table_);
 
         char_select_window_modified(char_sel_window_, false);
         modified_ = false;
@@ -451,7 +470,7 @@ private:
     std::string project_file_;
     std::set<game_character_class> char_table_;
     std::map<std::string,stage_map> map_table_;
-    transfer_info_table transfer_table_;
+    std::map<std::string,transfer_info_table> transfer_table_;
     ::HWND char_sel_window_;
     ::HWND map_window_;
     ::HWND map_sel_window_;
