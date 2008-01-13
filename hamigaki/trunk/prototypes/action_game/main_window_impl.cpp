@@ -256,6 +256,8 @@ void to_man(game_system* game, game_character* c, game_character* target)
         game->effect = wait_se_routine("power_up.ogg");
         game->effect_target = target;
     }
+    else
+        game->sound.play_se("power_up.ogg");
 
     c->removed = true;
 }
@@ -271,6 +273,8 @@ void to_fire_man(game_system* game, game_character* c, game_character* target)
         game->effect = wait_se_routine("power_up.ogg");
         game->effect_target = target;
     }
+    else
+        game->sound.play_se("power_up.ogg");
 
     c->removed = true;
 }
