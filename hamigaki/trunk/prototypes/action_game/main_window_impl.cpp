@@ -23,7 +23,7 @@
 #include "lift_routine.hpp"
 #include "player_routine.hpp"
 #include "png_loader.hpp"
-#include "pipe_down_routine.hpp"
+#include "pipe_routine.hpp"
 #include "pop_up_routine.hpp"
 #include "side_scrolling_routine.hpp"
 #include "sprite.hpp"
@@ -393,27 +393,60 @@ void hit(game_system* game, game_character* c, game_character* target)
         c->vx = -c->vx;
 }
 
-void transfer_down(
+void transfer(
     game_system* game, game_character* c, game_character* target)
 {
-    if ((game->command.x != 0.0f) || (game->command.y >= 0.0f))
+    transfer_info_table::iterator it =
+        game->transfer_table.find(std::make_pair(c->origin.x, c->origin.y));
+    if (it == game->transfer_table.end())
         return;
 
     const rect& r = c->bounds();
     const rect& r2 = target->bounds();
 
-    if ((r.x <= r2.x) && (r2.x+r2.lx <= r.x+r.lx) && (r2.y == r.y + r.ly))
+    transfer_info info = it->second;
+    if (info.leave_dir == transfer_info::up)
+        info.y -= static_cast<int>(target->height);
+    else if (info.leave_dir == transfer_info::left)
+        info.x += static_cast<int>(target->width);
+    else if (info.leave_dir == transfer_info::right)
+        info.x -= static_cast<int>(target->width);
+
+    if (info.enter_dir == transfer_info::down)
     {
-        transfer_info_table::iterator it =
-            game->transfer_table.find(std::make_pair(c->origin.x, c->origin.y));
-        if (it == game->transfer_table.end())
+        if ((game->command.x != 0.0f) || (game->command.y >= 0.0f))
             return;
 
-        game->effect = pipe_down_routine(it->second);
-        game->effect_target = target;
-
-        game->sound.play_se("pipe.ogg");
+        if ((r.x > r2.x) || (r2.x+r2.lx > r.x+r.lx) || (r2.y != r.y + r.ly))
+            return;
     }
+    else if (info.enter_dir == transfer_info::up)
+    {
+        if (game->command.y <= 0.0f)
+            return;
+
+        if ((r.x > r2.x) || (r2.x+r2.lx > r.x+r.lx) || (r2.y + r2.ly != r.y))
+            return;
+    }
+    else if (info.enter_dir == transfer_info::left)
+    {
+        if (game->command.x >= 0.0f)
+            return;
+
+        if ((r.y > r2.y) || (r2.y+r2.ly > r.y+r.ly) || (r2.x != r.x + r.lx))
+            return;
+    }
+    else if (info.enter_dir == transfer_info::right)
+    {
+        if (game->command.x <= 0.0f)
+            return;
+
+        if ((r.y > r2.y) || (r2.y+r2.ly > r.y+r.ly) || (r2.x + r2.lx != r.x))
+            return;
+    }
+
+    game->effect = pipe_routine(info);
+    game->effect_target = target;
 }
 
 const hamigaki::uuid
@@ -433,7 +466,7 @@ const hamigaki::uuid secret_block_id("52cdb853-e6f3-48ca-a12a-9de6e7f6e76b");
 const hamigaki::uuid stomp_id("122ab3e8-c2e5-429f-8088-0c8b7b7107bb");
 const hamigaki::uuid to_fragments_id("3cb2edaf-4af1-498b-8025-9527a8b13808");
 const hamigaki::uuid to_used_block_id("c2209d0a-811e-4f31-8066-24f4cd998296");
-const hamigaki::uuid transfer_down_id("31aaa83d-5a2d-45e0-910d-74afe0e173f4");
+const hamigaki::uuid transfer_id("31aaa83d-5a2d-45e0-910d-74afe0e173f4");
 const hamigaki::uuid turn_id("796cff8f-1db7-4d80-b7bd-ac2ed12ecca0");
 
 move_routine_type find_move_routine(const hamigaki::uuid& id)
@@ -474,8 +507,8 @@ collision_event_type find_collision_event(const hamigaki::uuid& id)
         return &to_fragments;
     else if (id == to_used_block_id)
         return &to_used_block;
-    else if (id == transfer_down_id)
-        return &transfer_down;
+    else if (id == transfer_id)
+        return &transfer;
     else if (id == turn_id)
         return &turn;
     else

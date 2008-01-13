@@ -48,7 +48,7 @@ exe action_game
     main_window_impl.cpp
     player_routine.cpp
     png_loader.cpp
-    pipe_down_routine.cpp
+    pipe_routine.cpp
     pop_up_routine.cpp
     side_scrolling_routine.cpp
     sound_engine.cpp

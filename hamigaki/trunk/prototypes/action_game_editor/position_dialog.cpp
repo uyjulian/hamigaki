@@ -18,7 +18,8 @@ namespace
 {
 
 void setup_map_list(
-    ::HWND hwnd, const std::map<std::string,stage_map>& map_table)
+    ::HWND hwnd, const std::map<std::string,stage_map>& map_table,
+    const std::string& filename)
 {
     send_msg(hwnd, LB_RESETCONTENT);
 
@@ -26,7 +27,12 @@ void setup_map_list(
     for (iter_type i = map_table.begin(), end = map_table.end(); i != end; ++i)
         send_msg(hwnd, LB_ADDSTRING, 0, i->first);
 
-    send_msg(hwnd, LB_SETCURSEL, 0);
+    if (!filename.empty())
+    {
+        int index = send_msg(hwnd, LB_FINDSTRINGEXACT, 0, filename);
+        if (index != CB_ERR)
+            send_msg(hwnd, LB_SETCURSEL, index);
+    }
 }
 
 std::string get_selected_string(::HWND hwnd)
@@ -64,17 +70,14 @@ std::string get_selected_string(::HWND hwnd)
         if (uMsg == WM_INITDIALOG)
         {
             ::HWND sel_hwnd = ::GetDlgItem(hwndDlg, HAMIGAKI_IDC_MAP_SEL);
-            setup_map_list(sel_hwnd, *info->map_table);
+            setup_map_list(sel_hwnd, *info->map_table, info->filename);
 
             ::HWND map_hwnd = ::GetDlgItem(hwndDlg, HAMIGAKI_IDC_MAP);
-
-            typedef std::map<std::string,stage_map>::iterator iter_type;
-            iter_type beg = info->map_table->begin();
-            info->filename = beg->first;
-
-            position_select_window_set(map_hwnd, &beg->second);
+            position_select_window_set(
+                map_hwnd, &(*info->map_table)[info->filename]);
             position_select_window_set_char_list(map_hwnd, info->chars);
             position_select_window_set_bg_color(map_hwnd, info->bg_color);
+            position_select_window_selected_pos(map_hwnd, info->x, info->y);
 
             return 1;
         }

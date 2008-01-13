@@ -213,3 +213,14 @@ std::pair<int,int> position_select_window_selected_pos(::HWND hwnd)
     else
         return std::pair<int,int>();
 }
+
+void position_select_window_selected_pos(::HWND hwnd, int x, int y)
+{
+    map_edit_window* pimpl =
+        reinterpret_cast<map_edit_window*>(
+            GetWindowLongPtr(hwnd, GWLP_USERDATA)
+        );
+
+    if (pimpl != 0)
+        pimpl->selected_pos(x, y);
+}

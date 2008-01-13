@@ -13,9 +13,9 @@
 #include "game_project_io.hpp"
 #include "map_edit_window.hpp"
 #include "msg_utilities.hpp"
-#include "position_dialog.hpp"
 #include "stage_map_load.hpp"
 #include "stage_map_save.hpp"
+#include "transfer_dialog.hpp"
 #include "transfer_info.hpp"
 #include <hamigaki/iterator/first_iterator.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -237,20 +237,17 @@ public:
         game_character_class& c = *it;
         if (c.on_touch_player == hamigaki::uuid(warp_routines[0]))
         {
-            map_position_info info;
+            transfer_info_params params;
 
-            info.map_table = &map_table_;
-            info.chars = &char_table_;
-            info.bg_color = project_.bg_color;
+            params.map_table = &map_table_;
+            params.chars = &char_table_;
+            params.bg_color = project_.bg_color;
+            params.info.map_file = stage_name();
+            params.info.x = x;
+            params.info.y = y;
 
-            if (get_map_position(handle_, info))
-            {
-                transfer_info tmp;
-                tmp.x = info.x;
-                tmp.y = info.y;
-                tmp.map_file = info.filename;
-                transfer_table_[pos] = tmp;
-            }
+            if (get_transfer_info(handle_, params))
+                transfer_table_[pos] = params.info;
         }
         else
             transfer_table_.erase(pos);

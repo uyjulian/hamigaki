@@ -14,19 +14,33 @@
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/utility.hpp>
+#include <boost/serialization/version.hpp>
 #include <map>
 #include <string>
 
 struct transfer_info
 {
+    enum direction
+    {
+        none,
+        left,
+        right,
+        down,
+        up
+    };
+
     std::string map_file;
     int x;
     int y;
+    direction enter_dir;
+    direction leave_dir;
 
-    transfer_info() : x(0), y(0)
+    transfer_info() : x(0), y(0), enter_dir(down), leave_dir(none)
     {
     }
 };
+
+BOOST_CLASS_VERSION(transfer_info, 1);
 
 typedef std::map<std::pair<int,int>,transfer_info> transfer_info_table;
 
@@ -44,6 +58,12 @@ inline void serialize(
     ar & make_nvp("x", t.x);
     ar & make_nvp("y", t.y);
     ar & make_nvp("map-file", t.map_file);
+
+    if (file_version > 0)
+    {
+        ar & make_nvp("enter-dir", t.enter_dir);
+        ar & make_nvp("leave-dir", t.leave_dir);
+    }
 }
 
 } } // End namespaces serialization, boost.

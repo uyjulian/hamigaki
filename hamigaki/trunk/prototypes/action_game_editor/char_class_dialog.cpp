@@ -80,7 +80,7 @@ const char* collision_routine_names[] =
     "Stomp",
     "To Fragments",
     "To Used Block",
-    "Transfer Down",
+    "Transfer",
     "Turn"
 };
 

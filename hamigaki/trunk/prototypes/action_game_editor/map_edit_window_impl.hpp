@@ -34,6 +34,7 @@ public:
     void vert_scroll_pos(int pos);
     void cursor_pos(int x, int y);
     std::pair<int,int> selected_pos() const;
+    void selected_pos(int x, int y);
     void select_char(const hamigaki::uuid& c);
     void put_char();
     bool modified() const;

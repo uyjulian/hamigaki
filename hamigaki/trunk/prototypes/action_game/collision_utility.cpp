@@ -150,7 +150,16 @@ void process_collisions(game_system& game, game_character& c)
                 if (c.on_collide_player)
                     c.on_collide_player(&game, &c, c2);
             }
-            else if (r2.y == r.y + r.ly)
+            else if (
+                (r2.x < r.x + r.lx) && (r2.x + r2.lx > r.x) &&
+                ((r2.y == r.y + r.ly) || (r2.y + r2.ly == r.y)) )
+            {
+                if (c.on_touch_player)
+                    c.on_touch_player(&game, &c, c2);
+            }
+            else if (
+                (r2.y < r.y + r.ly) && (r2.y + r2.ly > r.y) &&
+                ((r2.x == r.x + r.lx) || (r2.x + r2.lx == r.x)) )
             {
                 if (c.on_touch_player)
                     c.on_touch_player(&game, &c, c2);

@@ -246,6 +246,36 @@ public:
         return std::make_pair(x, y);
     }
 
+    void selected_pos(int x, int y)
+    {
+        int x_block = (x-16)/16;
+        int y_block = y/16;
+
+        int map_width = map_ ? map_->width : 0;
+        int map_height = map_ ? map_->height : 0;
+
+        ::RECT cr;
+        ::GetClientRect(handle_, &cr);
+        int page_width = cr.right / 16;
+        int page_height = cr.bottom / 16;
+
+        int horz_max = (std::max)(map_width/16 - page_width, 0);
+        int scroll_x = x_block;
+        if (scroll_x > horz_max)
+            scroll_x = horz_max;
+        ::SetScrollPos(handle_, SB_HORZ, scroll_x, TRUE);
+
+        int vert_max = (std::max)(map_height/16 - page_height, 0);
+        int scroll_y = y_block;
+        if (scroll_y > vert_max)
+            scroll_y = vert_max;
+        ::SetScrollPos(handle_, SB_VERT, vert_max-scroll_y, TRUE);
+
+        int offset_x = x_block - scroll_x;
+        int offset_y = y_block - scroll_y;
+        cursor_pos(offset_x, offset_y);
+    }
+
     void select_char(const hamigaki::uuid& c)
     {
         selected_char_ = c;
@@ -499,6 +529,11 @@ void map_edit_window::cursor_pos(int x, int y)
 std::pair<int,int> map_edit_window::selected_pos() const
 {
     return pimpl_->selected_pos();
+}
+
+void map_edit_window::selected_pos(int x, int y)
+{
+    pimpl_->selected_pos(x, y);
 }
 
 void map_edit_window::select_char(const hamigaki::uuid& c)
