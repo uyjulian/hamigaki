@@ -1,6 +1,6 @@
 # Regression test status reporting tools build Jamfile
 
-# Copyright Takeshi Mouri 2007.
+# Copyright Takeshi Mouri 2007, 2008.
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
@@ -10,9 +10,8 @@
 exe process_jam_log
     :
     ../process_jam_log.cpp ../detail/tiny_xml.cpp
-    /boost/filesystem//boost_filesystem
+    /boost-lib//boost_filesystem
     :
-    <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
     :
     release
     ;
@@ -20,9 +19,8 @@ exe process_jam_log
 exe compiler_status
     :
     ../compiler_status.cpp ../detail/tiny_xml.cpp
-    /boost/filesystem//boost_filesystem
+    /boost-lib//boost_filesystem
     :
-    <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
     :
     release
     ;
