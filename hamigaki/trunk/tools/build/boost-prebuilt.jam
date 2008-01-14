@@ -1,6 +1,6 @@
 # generator for prebuilt Boost libraries
 
-# Copyright Takeshi Mouri 2007.
+# Copyright Takeshi Mouri 2007, 2008.
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
@@ -14,19 +14,19 @@ import project ;
 import targets ;
 import type ;
 
-type.register BOOST_PREBUILT : : SEARCHED_LIB ;
+type.register BOOST_PREBUILT : : LIB ;
 
 feature boost-layout : versioned system : propagated optional ;
 feature boost-build-id : : free ;
 
-class boost-prebuilt-generator : searched-lib-generator
+class boost-prebuilt-generator : lib-generator
 {
     import boost-version ;
     import common ;
 
     rule __init__ ( )
     {
-        generator.__init__ boost-prebuilt-generator : : BOOST_PREBUILT ;
+        lib-generator.__init__ boost-prebuilt-generator : : BOOST_PREBUILT ;
     }
 
     rule run ( project name ? : property-set : sources * )
@@ -60,10 +60,10 @@ class boost-prebuilt-generator : searched-lib-generator
                 : $(name) : $(type) : $(property-set) ] ;
         }
 
-        properties += <name>$(lib_name) ;
-        property-set = [ property-set.create $(properties) ] ;
+        local boost-libpath = [ modules.peek : BOOST_LIBPATH ] ;
+        local path = $(lib_name:R=$(boost-libpath)) ;
 
-        searched-lib-generator.run $(project) $(name) : $(property-set) : $(sources) ;
+        return [ new file-target $(path) : $(type) : $(project) : : $(path) ] ;
     }
 }
 
