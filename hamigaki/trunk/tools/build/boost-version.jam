@@ -1,6 +1,6 @@
 # Boost version detection utilities
 
-# Copyright Takeshi Mouri 2007.
+# Copyright Takeshi Mouri 2007, 2008.
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
@@ -24,13 +24,17 @@ else
 
 local rule get-boost-version ( )
 {
-    local boost-root =  [ modules.peek : BOOST_ROOT ] ;
-    if ! $(boost-root)
+    local boost-include =  [ modules.peek : BOOST_INCLUDE ] ;
+    if ! $(boost-include)
     {
-        errors.error "BOOST_ROOT is not defined" ;
+        boost-include =  [ modules.peek : BOOST_ROOT ] ;
+    }
+    if ! $(boost-include)
+    {
+        errors.error "Please define BOOST_INCLUDE or BOOST_ROOT" ;
     }
 
-    local ph = [ path.native $(boost-root)/boost/version.hpp ] ;
+    local ph = [ path.native $(boost-include)/boost/version.hpp ] ;
     local version.hpp = [ SHELL "$(CATENATE) $(ph)" ] ;
     local pattern = "#define BOOST_LIB_VERSION \"([_0-9]+)\"" ;
     return [ MATCH $(pattern) : $(version.hpp) ] ;
