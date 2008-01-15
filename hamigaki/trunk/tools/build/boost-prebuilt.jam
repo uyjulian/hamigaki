@@ -23,6 +23,7 @@ class boost-prebuilt-generator : lib-generator
 {
     import boost-version ;
     import common ;
+    import os ;
 
     rule __init__ ( )
     {
@@ -40,7 +41,14 @@ class boost-prebuilt-generator : lib-generator
         local type = STATIC_LIB ;
         if <link>shared in $(properties)
         {
-            type = SHARED_LIB ;
+            if [ os.on-windows ]
+            {
+                type = IMPORT_LIB ;
+            }
+            else
+            {
+                type = SHARED_LIB ;
+            }
         }
 
         local lib_name ;
