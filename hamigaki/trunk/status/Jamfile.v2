@@ -1,6 +1,6 @@
 # Hamigaki Library Regression Test Jamfile
 
-# Copyright Takeshi Mouri 2007.
+# Copyright Takeshi Mouri 2007, 2008.
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
@@ -26,6 +26,7 @@ build-project ../libs/iostreams/test ;
 build-project ../libs/iterator/test ;
 build-project ../libs/math/test ;
 build-project ../libs/process/test ;
+build-project ../libs/system/test ;
 build-project ../libs/type_traits/test ;
 build-project ../libs/uuid/test ;
 
