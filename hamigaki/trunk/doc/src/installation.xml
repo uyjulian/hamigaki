@@ -4,7 +4,7 @@
 <!--
   Hamigaki Library Document Source
 
-  Copyright Takeshi Mouri 2006, 2007.
+  Copyright Takeshi Mouri 2006-2008.
   Distributed under the Boost Software License, Version 1.0.
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
@@ -39,33 +39,42 @@
   </para>
   <para>また、ビルド済みBoostライブラリを使用する場合は、site-config.jamまたはuser-config.jamで次のグローバル変数を定義する。</para>
   <informaltable frame="all">
-    <tgroup cols="2">
+    <tgroup cols="3">
       <thead>
         <row>
           <entry>変数</entry>
           <entry>意味</entry>
+          <entry>規定値</entry>
         </row>
       </thead>
       <tbody>
         <row>
           <entry>NO_BOOST_STD_LIB_NAME</entry>
           <entry>真(1)に設定するとBoostのライブラリ名にコンパイラ名とBoostのバージョンを含めない (オプション)</entry>
+          <entry>-</entry>
+        </row>
+        <row>
+          <entry>NO_DEBUG_BOOST</entry>
+          <entry>真(1)に設定するとリリースビルドのライブラリだけを使う (オプション)</entry>
+          <entry>-</entry>
         </row>
         <row>
           <entry>BOOST_INCLUDE</entry>
-          <entry>Boostのヘッダファイルのあるディレクトリ</entry>
+          <entry>Boostのヘッダファイルのあるディレクトリ (必須)</entry>
+          <entry>$(BOOST_ROOT)</entry>
         </row>
         <row>
           <entry>BOOST_LIBPATH</entry>
-          <entry>Boostのライブラリファイルのあるディレクトリ</entry>
+          <entry>Boostのライブラリファイルのあるディレクトリ (必須)</entry>
+          <entry>-</entry>
         </row>
       </tbody>
     </tgroup>
   </informaltable>
   <para>NO_BOOST_STD_LIB_NAMEは、Boostを--layout=systemオプションでインストールした場合、1に設定する。</para>
-  <para>Boostがコンパイラ既定のディレクトリへインストールされている場合、BOOST_INCLUDEとBOOST_LIBPATHの設定は必要ない。</para>
+  <para>NO_DEBUG_BOOSTは一部のパッケージシステムにおいて有用であるが、ABIの不一致や単一定義規則(ODR)の違反となるかもしれない。</para>
   <para>ライブラリ固有の変数に関しては、各ライブラリのドキュメントを参照すること。</para>
-  <para>ツールセット毎にソースからのビルドとビルド済みライブラリを使い分けたい等の細かい制御が必要な場合は、site-config.jamまたはuser-config.jamで次のbjamターゲットを定義する。</para>
+  <para>ツールセット毎にソースからのビルドとビルド済みライブラリを使い分けたい等の細かな制御が必要な場合は、site-config.jamまたはuser-config.jamで次のbjamターゲットを定義する。</para>
   <informaltable frame="all">
     <tgroup cols="2">
       <thead>
@@ -100,6 +109,14 @@
           <entry>Boost.Iostreamsライブラリ</entry>
         </row>
         <row>
+          <entry>/boost-lib//boost_serialization</entry>
+          <entry>Boost.Serializationライブラリ (ナロー文字版)</entry>
+        </row>
+        <row>
+          <entry>/boost-lib//boost_system</entry>
+          <entry>Boost.Systemライブラリ (Boost 1.35以降)</entry>
+        </row>
+        <row>
           <entry>/boost-lib//boost_thread</entry>
           <entry>Boost.Threadライブラリ</entry>
         </row>
@@ -107,15 +124,23 @@
           <entry>/boost-lib//boost_unit_test_framework</entry>
           <entry>Boost.TestのUnit Test Frameworkライブラリ</entry>
         </row>
+        <row>
+          <entry>/boost-lib//boost_wserialization</entry>
+          <entry>Boost.Serializationライブラリ (ワイド文字版)</entry>
+        </row>
       </tbody>
     </tgroup>
   </informaltable>
   <para>なお、ビルド済みBoostライブラリを参照するには、付属のboost-prebuiltモジュールを使用するとよい。</para>
-  <programlisting><![CDATA[#BOOST_BUILD_PATHにディレクトリを追加する
-module
+  <programlisting><![CDATA[module
 {
+    # BOOST_BUILD_PATHにディレクトリを追加する
     BOOST_BUILD_PATH += C:/Hamigaki/tools/build ;
     modules.poke .ENVIRON : BOOST_BUILD_PATH : $(BOOST_BUILD_PATH) ;
+
+    # boost-prebuiltルールに必要
+    BOOST_INCLUDE = C:/Boost/include/boost-1_34_1 ;
+    BOOST_LIBPATH = C:/Boost/lib ;
 }
 
 module boost-lib
@@ -130,11 +155,11 @@ module boost-lib
 
     import boost-prebuilt ;
 
-    alias headers : : : : <include>C:/Boost/include/boost-1_34 ;
-    boost-prebuilt boost_filesystem : <search>C:/Boost/lib ;
+    alias headers : : : : <include>$(BOOST_INCLUDE) ;
+    boost-prebuilt boost_filesystem ;
 
     # --layout=systemオプション付きでビルドしている場合
-    # boost-prebuilt boost_filesystem : <search>C:/Boost/lib <boost-layout>system ;
+    # boost-prebuilt boost_filesystem : <boost-layout>system ;
 }
 ]]></programlisting>
 </chapter>
