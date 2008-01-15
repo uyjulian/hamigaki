@@ -57,6 +57,10 @@ if ! [ project.find /boost-lib : . ]
             {
                 requirements += <boost-layout>system ;
             }
+            if [ modules.peek : NO_DEBUG_BOOST ]
+            {
+                requirements += <variant>release ;
+            }
 
             boost-prebuilt boost_filesystem : $(requirements) ;
             boost-prebuilt boost_regex : $(requirements) ;
