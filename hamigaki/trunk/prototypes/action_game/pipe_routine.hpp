@@ -1,4 +1,4 @@
-// pipe_down_routine.hpp: the routine for down pipes
+// pipe_routine.hpp: the routine for pipes
 
 // Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
@@ -7,8 +7,8 @@
 
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
-#ifndef PIPE_DOWN_ROUTINE_HPP
-#define PIPE_DOWN_ROUTINE_HPP
+#ifndef PIPE_ROUTINE_HPP
+#define PIPE_ROUTINE_HPP
 
 #include "transfer_info.hpp"
 #include <hamigaki/coroutine/shared_coroutine.hpp>
@@ -16,10 +16,10 @@
 struct game_character;
 struct game_system;
 
-class pipe_down_routine
+class pipe_routine
 {
 public:
-    explicit pipe_down_routine(const transfer_info& info);
+    explicit pipe_routine(const transfer_info& info);
     bool operator()(game_system* game, game_character* c) const;
 
 private:
@@ -28,4 +28,4 @@ private:
     > coroutine_;
 };
 
-#endif // PIPE_DOWN_ROUTINE_HPP
+#endif // PIPE_ROUTINE_HPP
