@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE chapter PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
   "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
 <!--
   Hamigaki Library Document Source
@@ -9,8 +9,8 @@
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
 -->
-<chapter id="installation">
-  <title>インストール</title>
+<section id="installation.hamigaki">
+  <title>Hamigakiライブラリのインストール</title>
   <para>いくつかのHamigakiライブラリはライブラリのビルドを必要とする。ビルドにはBoost.BuildのVersion 2 (以下、BBv2) を使用する。BBv2の動作には次のいずれかの環境変数(またはbjamの-sオプションによるグローバル変数)を設定する必要がある。</para>
   <informaltable frame="all">
     <tgroup cols="3">
@@ -35,8 +35,7 @@
       </tbody>
     </tgroup>
   </informaltable>
-  <para>ただし、Boostのプロジェクトを参照してソースからビルドする場合は必ずBOOST_ROOT変数を設定しなければならない。
-  </para>
+  <para>ただし、Boostのプロジェクトを参照してソースからビルドする場合は必ずBOOST_ROOT変数を設定しなければならない。</para>
   <para>また、ビルド済みBoostライブラリを使用する場合は、site-config.jamまたはuser-config.jamで次のグローバル変数を定義する。</para>
   <informaltable frame="all">
     <tgroup cols="3">
@@ -162,4 +161,4 @@ module boost-lib
     # boost-prebuilt boost_filesystem : <boost-layout>system ;
 }
 ]]></programlisting>
-</chapter>
+</section>
