@@ -4,7 +4,7 @@
 <!--
   Hamigaki.Archivers Library Document Source
 
-  Copyright Takeshi Mouri 2006, 2007.
+  Copyright Takeshi Mouri 2006-2008.
   Distributed under the Boost Software License, Version 1.0.
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
@@ -77,7 +77,6 @@
       <listitem>パディング・フィールド ("PD" System Use Entry)</listitem>
       <listitem>System Use Sharing Protocol 終端 ("ST" System Use Entry)</listitem>
       <listitem>拡張の選択 ("ES" System Use Entry)</listitem>
-      <listitem>スパース・ファイル ("SF" System Use Entry)</listitem>
     </itemizedlist>
   </section>
 
