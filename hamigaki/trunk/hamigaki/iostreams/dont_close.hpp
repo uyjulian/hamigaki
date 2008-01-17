@@ -1,6 +1,6 @@
 // dont_close.hpp: a view with empty close()
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -10,9 +10,9 @@
 #ifndef HAMIGAKI_IOSTREAMS_DONT_CLOSE_HPP
 #define HAMIGAKI_IOSTREAMS_DONT_CLOSE_HPP
 
+#include <hamigaki/iostreams/detail/device_adapter.hpp>
 #include <hamigaki/iostreams/catable.hpp>
 #include <boost/iostreams/categories.hpp>
-#include <boost/iostreams/detail/adapter/basic_adapter.hpp>
 #include <boost/iostreams/detail/ios.hpp>
 #include <boost/iostreams/flush.hpp>
 #include <boost/iostreams/read.hpp>
@@ -24,9 +24,9 @@ namespace hamigaki { namespace iostreams {
 
 template<class Device>
 class dont_close_device
-    : public boost::iostreams::detail::basic_adapter<Device>
+    : public HAMIGAKI_IOSTREAMS_DEVICE_ADAPTER<Device>
 {
-    typedef boost::iostreams::detail::basic_adapter<Device> base_type;
+    typedef HAMIGAKI_IOSTREAMS_DEVICE_ADAPTER<Device> base_type;
 
 public:
     typedef typename boost::iostreams::
