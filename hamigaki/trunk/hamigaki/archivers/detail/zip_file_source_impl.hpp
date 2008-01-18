@@ -1,6 +1,6 @@
 // zip_file_source_impl.hpp: ZIP file source implementation
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -130,6 +130,7 @@ public:
         : raw_(src)
         , zlib_(make_zlib_params())
     {
+        header_.method = zip::method::store;
     }
 
     void password(const std::string& pswd)
@@ -192,6 +193,8 @@ private:
 
     void prepare_reading()
     {
+        boost::uint16_t old_method = header_.method;
+
         header_ = raw_.header();
 
         if ((header_.method != zip::method::deflate) &&
@@ -204,9 +207,11 @@ private:
         }
 
         crc32_.reset();
-        boost::iostreams::close(zlib_, boost::ref(raw_), BOOST_IOS::in);
+        if (old_method == zip::method::deflate)
+            boost::iostreams::close(zlib_, boost::ref(raw_), BOOST_IOS::in);
 #if !defined(HAMIGAKI_ARCHIVERS_NO_BZIP2)
-        boost::iostreams::close(bzip2_, boost::ref(raw_), BOOST_IOS::in);
+        if (old_method == zip::method::bzip2)
+            boost::iostreams::close(bzip2_, boost::ref(raw_), BOOST_IOS::in);
 #endif
 
         if (filesystem::file_permissions::is_symlink(header_.permissions))
