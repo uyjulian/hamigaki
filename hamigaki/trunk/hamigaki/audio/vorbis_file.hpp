@@ -1,6 +1,6 @@
 // vorbis_file.hpp: vorbis_file device adaptor
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -20,7 +20,6 @@
 #include <hamigaki/iostreams/catable.hpp>
 #include <hamigaki/iostreams/traits.hpp>
 #include <boost/iostreams/detail/adapter/direct_adapter.hpp>
-#include <boost/iostreams/detail/closer.hpp>
 #include <boost/iostreams/detail/ios.hpp>
 #include <boost/iostreams/detail/select.hpp>
 #include <boost/iostreams/traits.hpp>

@@ -1,6 +1,6 @@
 // vorbis_encoder.hpp: vorbisenc device adaptor
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -16,9 +16,9 @@
 #include <hamigaki/audio/detail/auto_link/vorbis.hpp>
 #include <hamigaki/audio/detail/auto_link/vorbisenc.hpp>
 #include <hamigaki/audio/detail/auto_link/vorbisfile.hpp>
+#include <hamigaki/audio/detail/closer.hpp>
 #include <hamigaki/iostreams/device/file.hpp>
 #include <hamigaki/iostreams/arbitrary_positional_facade.hpp>
-#include <boost/iostreams/detail/closer.hpp>
 #include <boost/iostreams/close.hpp>
 #include <boost/iostreams/write.hpp>
 #include <boost/noncopyable.hpp>
@@ -79,7 +79,7 @@ private:
 
     std::streamsize write_blocks(const float* s, std::streamsize n);
 
-#if BOOST_WORKAROUND(_MSC_VER, <= 1400)
+#if BOOST_WORKAROUND(_MSC_VER, <= 1500)
     std::streamsize read_blocks(float* s, std::streamsize n)
     {
         BOOST_ASSERT(false);
@@ -129,18 +129,8 @@ public:
     void close()
     {
         bool nothrow = false;
-        boost::iostreams::detail::
-            external_closer<Sink> close_sink(sink_, BOOST_IOS::out, nothrow);
-
-        try
-        {
-            base_.close();
-        }
-        catch (...)
-        {
-            nothrow = true;
-            throw;
-        }
+        detail::device_closer<Sink> close_sink(sink_, nothrow);
+        detail::device_closer<vorbis_encoder_base> close_base(base_, nothrow);
     }
 
     std::streamsize write(const char_type* s, std::streamsize n)

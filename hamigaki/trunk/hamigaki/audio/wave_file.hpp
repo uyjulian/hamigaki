@@ -1,6 +1,6 @@
 // wave_file.hpp: WAVE file device
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -136,11 +136,11 @@ public:
     void close()
     {
         bool nothrow = false;
-        boost::iostreams::detail::
-            external_closer<Sink> close_sink(sink_, BOOST_IOS::out, nothrow);
+        detail::device_closer<Sink> close_sink(sink_, nothrow);
 
-        boost::iostreams::detail::external_closer<iff_file_sink<Sink,little> >
-            close_iff(iff_, BOOST_IOS::out, nothrow);
+        detail::device_closer<
+            iff_file_sink<Sink,little>
+        > close_iff(iff_, nothrow);
     }
 
 private:

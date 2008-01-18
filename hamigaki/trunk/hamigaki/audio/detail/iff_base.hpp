@@ -1,6 +1,6 @@
 // iff_base.hpp: IFF/RIFF base classes
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -10,8 +10,8 @@
 #ifndef HAMIGAKI_AUDIO_DETAIL_IFF_BASE_HPP
 #define HAMIGAKI_AUDIO_DETAIL_IFF_BASE_HPP
 
+#include <hamigaki/audio/detail/closer.hpp>
 #include <hamigaki/binary/endian.hpp>
-#include <boost/iostreams/detail/closer.hpp>
 #include <boost/iostreams/detail/ios.hpp>
 #include <boost/iostreams/categories.hpp>
 #include <boost/iostreams/close.hpp>
@@ -542,10 +542,8 @@ public:
     void close()
     {
         bool nothrow = false;
-        boost::iostreams::detail::external_closer<chunk_type>
-            close_root(root_, BOOST_IOS::out, nothrow);
-        boost::iostreams::detail::external_closer<iff_type>
-            close_iff(iff_, BOOST_IOS::out, nothrow);
+        detail::device_closer<chunk_type> close_root(root_, nothrow);
+        detail::device_closer<iff_type> close_iff(iff_, nothrow);
     }
 
 private:
