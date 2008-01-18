@@ -1,6 +1,6 @@
 // background_copy.hpp: copy operations by the other thread
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -9,6 +9,19 @@
 
 #ifndef HAMIGAKI_IOSTREAMS_BACKGROUND_COPY_HPP
 #define HAMIGAKI_IOSTREAMS_BACKGROUND_COPY_HPP
+
+#include <boost/config.hpp>
+
+#ifdef BOOST_MSVC
+    #pragma warning(push)
+    #pragma warning(disable : 4251)
+#endif
+
+#include <boost/thread/thread.hpp>
+
+#ifdef BOOST_MSVC
+    #pragma warning(pop)
+#endif
 
 #include <hamigaki/thread/exception_storage.hpp>
 #include <boost/iostreams/detail/buffer.hpp>
@@ -19,7 +32,6 @@
 #include <boost/iostreams/traits.hpp> 
 #include <boost/iostreams/write.hpp>
 #include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
 #include <boost/assert.hpp>
 #include <boost/bind.hpp>
 #include <boost/noncopyable.hpp>

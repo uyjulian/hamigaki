@@ -1,6 +1,6 @@
 // headers.hpp: ISO 9660 headers
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -106,7 +106,7 @@ private:
 
         boost::uint16_t mask =
             static_cast<boost::uint16_t>(
-                ~filesystem::file_permissions::type_mask);
+                ~filesystem::file_permissions::type_mask & 0xFFFFu);
         attributes->permissions = type | (attributes->permissions & mask);
     }
 };
