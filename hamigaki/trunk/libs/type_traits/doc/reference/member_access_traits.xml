@@ -4,7 +4,7 @@
 <!--
   Hamigaki.TypeTraits Library Document Source
 
-  Copyright Takeshi Mouri 2006, 2007.
+  Copyright Takeshi Mouri 2006-2008.
   Distributed under the Boost Software License, Version 1.0.
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
@@ -22,6 +22,19 @@
       <purpose><simpara>cv修飾のメンバ変数への伝播を模倣する</simpara></purpose>
 
       <description>
+        <para>C++ではオブジェクトのcv(<code>const</code>/<code>volatile</code>)修飾がメンバ変数へのアクセスに伝播される。<code>member_access_traits</code>クラステンプレートはこのcv修飾の伝播を模倣し、メンバ変数にアクセスした際の型を返す一種のメタ関数である。このクラステンプレートは次のようなメンバ変数を返す関数テンプレートを作成するのに役に立つ。</para>
+
+        <informalexample><programlisting><![CDATA[template<class T>
+typename hamigaki::member_access_traits<
+    T,
+    typename T::value_type
+>::reference
+front(T& x)
+{
+    return *(x.begin());
+}
+]]></programlisting></informalexample>
+
         <para>
           メンバの意味は次の通り。
           <informaltable frame="all">
