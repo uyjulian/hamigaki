@@ -4,7 +4,7 @@
 <!--
   Hamigaki.Checksum Library Document Source
 
-  Copyright Takeshi Mouri 2007.
+  Copyright Takeshi Mouri 2007, 2008.
   Distributed under the Boost Software License, Version 1.0.
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
@@ -15,10 +15,10 @@
   <title>紹介</title>
   <para>Hamigaki.Checksumライブラリは次のチェックサムを計算するクラスを提供する。</para>
   <itemizedlist>
-    <listitem>MD5</listitem>
-    <listitem>SHA-1</listitem>
-    <listitem>sum8</listitem>
-    <listitem>sum16</listitem>
-    <listitem>xor8</listitem>
+    <listitem><link linkend="hamigaki.checksum.md5">MD5</link></listitem>
+    <listitem><link linkend="hamigaki.checksum.sha1">SHA-1</link></listitem>
+    <listitem><link linkend="hamigaki.checksum.sum8">sum8</link></listitem>
+    <listitem><link linkend="hamigaki.checksum.sum16">sum16</link></listitem>
+    <listitem><link linkend="hamigaki.checksum.xor8">xor8</link></listitem>
   </itemizedlist>
 </section>

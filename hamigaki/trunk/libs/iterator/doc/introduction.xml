@@ -4,7 +4,7 @@
 <!--
   Hamigaki.Iterator Library Document Source
 
-  Copyright Takeshi Mouri 2006, 2007.
+  Copyright Takeshi Mouri 2006-2008.
   Distributed under the Boost Software License, Version 1.0.
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
@@ -13,11 +13,14 @@
 -->
 <section id="iterator.introduction">
   <title>紹介</title>
+  <using-namespace name="hamigaki"/>
   <para>Hamigaki.Iteratorライブラリは標準ライブラリやBoost.Iteratorライブラリには含まれないが有用であると思われるIteratorやHamigakiライブラリの他のコンポーネントの実装に使用されるIteratorを提供する。Hamigaki.Iteratorライブラリは以下のIteratorが含まれる。</para>
   <itemizedlist>
-    <listitem>出力回数を数えるIterator</listitem>
-    <listitem>pairのfirst/secondを抽出するIterator</listitem>
-    <listitem>行単位の入力を扱うIterator</listitem>
-    <listitem>最後のデリミタを出力しないostream_iterator</listitem>
+    <listitem>出力回数を数える<classname>counting_output_iterator</classname></listitem>
+    <listitem>pairのfirst/secondを抽出する<classname>first_iterator</classname>/<classname>second_iterator</classname></listitem>
+    <listitem>行単位の入力を扱う<classname>istream_line_iterator</classname></listitem>
+    <listitem>Iteratorに行のカウント機能を追加する<classname>line_counting_iterator</classname></listitem>
+    <listitem>前方反復子の無効状態を同値に扱う<classname>optional_iterator</classname></listitem>
+    <listitem>最後のデリミタを出力しない<classname>ostream_iterator</classname></listitem>
   </itemizedlist>
 </section>
