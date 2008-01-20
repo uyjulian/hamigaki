@@ -148,6 +148,11 @@
         </thead>
         <tbody>
           <row>
+            <entry>--build-type=<replaceable>&lt;type&gt;</replaceable></entry>
+            <entry>minimalならリリースバージョンのみビルドする。completeなら全てビルドする。</entry>
+            <entry>minimal</entry>
+          </row>
+          <row>
             <entry>--builddir=<replaceable>DIR</replaceable></entry>
             <entry>ビルドに使用するディレクトリ</entry>
             <entry>$(HAMIGAKI_ROOT)/bin.v2</entry>
