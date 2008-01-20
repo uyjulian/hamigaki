@@ -14,7 +14,7 @@
 <section id="audio.installation">
   <title>インストール</title>
   <para>Hamigaki.Audioを利用する場合、ライブラリのビルドが必要になる。ビルドにはBoost.BuildのVersion 2 (以下、BBv2) を使用する。</para>
-  <para>BBv2でビルドする際は、site-config.jamまたはuser-config.jamで次のグローバル変数を定義する。</para>
+  <para>BBv2でビルドする際は、bjamの<link linkend="bbv2.projects.configuration">環境設定ファイル</link>で次の<link linkend="bbv2.modules.globals">グローバル変数</link>を定義する。</para>
   <informaltable frame="all">
     <tgroup cols="3">
       <thead>
@@ -139,7 +139,7 @@ module
 }
 ]]></programlisting>
   </informalexample>
-  <para>ツールセット毎にライブラリを使い分けたい等の細かい制御が必要な場合は、site-config.jamまたはuser-config.jamで次のbjamターゲットを定義する。</para>
+  <para>ツールセット毎にライブラリを使い分けたい等の細かい制御が必要な場合は、<link linkend="bbv2.projects.configuration">環境設定ファイル</link>で次のbjamターゲットを定義する。</para>
   <informaltable frame="all">
     <tgroup cols="2">
       <thead>
