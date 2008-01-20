@@ -271,7 +271,7 @@ if ! [ project.find /boost-lib : . ]
     }
 }
 
-# for DirectX
+#for DirectX
 
 import directx ;
 

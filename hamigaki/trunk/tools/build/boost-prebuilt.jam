@@ -77,6 +77,8 @@ class boost-prebuilt-generator : lib-generator
 
 generators.register [ new boost-prebuilt-generator ] ;
 
+# Make a target of the pre-built Boost library
+#
 rule boost-prebuilt ( name : requirements * : default-build * : usage-requirements * )
 {
     local project = [ project.current ] ;

@@ -77,6 +77,8 @@ class hamigaki-prebuilt-generator : lib-generator
 
 generators.register [ new hamigaki-prebuilt-generator ] ;
 
+# Make a target of the pre-built Hamigaki library
+#
 rule hamigaki-prebuilt ( name : requirements * : default-build * : usage-requirements * )
 {
     local project = [ project.current ] ;

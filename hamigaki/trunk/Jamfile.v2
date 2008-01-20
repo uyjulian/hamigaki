@@ -21,7 +21,7 @@
 #
 #   bjam [options] [install|stage]
 #
-#   Builds and installs Boost.
+#   Builds and installs Hamigaki.
 #
 # Targets and Related Options:
 #
@@ -29,7 +29,7 @@
 #   =======                 configured locations (below).
 #
 #   --prefix=<PREFIX>       Install architecture independent files here.
-#                           Default; C:\Boost on Win32
+#                           Default; C:\Hamigaki on Win32
 #                           Default; /usr/local on Unix. Linux, etc.
 #
 #   --exec-prefix=<EPREFIX> Install architecture dependent files here.
@@ -54,26 +54,26 @@
 #
 #   --toolset=toolset       Indicates the toolset to build with.
 #
-#   --show-libraries        Displays the list of Boost libraries that require
+#   --show-libraries        Displays the list of Hamigaki libraries that require
 #                           build and installation steps, then exit.
 #
 #   --layout=<layout>       Determines whether to choose library names 
 #                           and header locations such that multiple 
-#                           versions of Boost or multiple compilers can
+#                           versions of Hamigaki or multiple compilers can
 #                           be used on the same system.
 #
 #                               versioned (default) - Names of hamigaki
-#                               binaries include the Boost version
+#                               binaries include the Hamigaki version
 #                               number and the name and version of the
-#                               compiler.  Boost headers are installed
+#                               compiler.  Hamigaki headers are installed
 #                               in a subdirectory of <HDRDIR> whose
-#                               name contains the Boost version
+#                               name contains the Hamigaki version
 #                               number.
 #
 #                               system - Binaries names do not include
-#                               the Boost version number or the name
+#                               the Hamigaki version number or the name
 #                               and version number of the compiler.
-#                               Boost headers are installed directly
+#                               Hamigaki headers are installed directly
 #                               into <HDRDIR>.  This option is
 #                               intended for system integrators who
 #                               are building distribution packages.
@@ -91,7 +91,6 @@
 #                           <library>. By default, all libraries are built.
 
 # TODO:
-#  - handle hamigaki version
 #  - handle python options such as pydebug
 
 import modules ;

@@ -46,6 +46,8 @@ local rule get-hamigaki-version ( )
 
 .lib-version = [ get-hamigaki-version ] ;
 
+# Get the version number of the Hamigaki whose form is "0.40.1".
+#
 rule version ( )
 {
     local v = [ MATCH ^([0-9]+)_([0-9]+)_?([0-9]*)$ : $(.lib-version) ] ;
@@ -56,6 +58,8 @@ rule version ( )
     return $(v:J=.) ;
 }
 
+# Get the version number of the Hamigaki whose form is "0_40".
+#
 rule lib-version ( )
 {
     return $(.lib-version) ;
