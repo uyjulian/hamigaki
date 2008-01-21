@@ -1,0 +1,92 @@
+# Jamfile for an action game of the prototype
+
+# Copyright Takeshi Mouri 2007, 2008.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/ for library home page.
+
+import boost-version ;
+import exec ;
+
+rule user-interface-gui ( properties * )
+{
+    if <toolset>gcc in $(properties)
+    {
+        return <linkflags>-mwindows ;
+    }
+    else
+    {
+        return <user-interface>gui ;
+    }
+}
+
+local requirements = ;
+if [ boost-version.version ] >= 1.35.0
+{
+    requirements += <library>/boost-lib//boost_system ;
+}
+
+exe action_game
+    :
+    action_game.cpp
+    blink_effect.cpp
+    bounce_routine.cpp
+    character_repository.cpp
+    collision_utility.cpp
+    fire_man_routine.cpp
+    game_character.cpp
+    game_project_io.cpp
+    knock_back_routine.cpp
+    hop_routine.cpp
+    hop_step_jump_routine.cpp
+    input_engine.cpp
+    item_box_routine.cpp
+    lift_routine.cpp
+    main_window.cpp
+    main_window_impl.cpp
+    player_routine.cpp
+    png_loader.cpp
+    pipe_routine.cpp
+    pop_up_routine.cpp
+    side_scrolling_routine.cpp
+    sound_engine.cpp
+    sprite_info.cpp
+    sprite_info_cache.cpp
+    stage_map_load.cpp
+    texture_cache.cpp
+    transfer_info.cpp
+    turn_routine.cpp
+    vanish_routine.cpp
+    velocity_routine.cpp
+    wait_se_routine.cpp
+    /directx//d3d9
+    /directx//dxerr9
+    /boost-lib//boost_filesystem
+    /boost-lib//boost_iostreams
+    /boost-lib//boost_serialization
+    /boost-lib//boost_thread
+    /hamigaki/audio//hamigaki_audio
+    /hamigaki/input//hamigaki_input
+    /hamigaki/png//hamigaki_png
+    :
+    <find-static-library>user32
+    <conditional>@user-interface-gui
+    <threading>multi
+    <define>NOMINMAX=1
+    $(requirements)
+    ;
+
+exec.register-exec-all ;
+alias run : action_game-run ;
+
+install dist-bin
+    :
+    action_game
+    :
+    <install-type>EXE
+    <location>../../dist/bin
+    ;
+
+explicit dist-bin ;
