@@ -80,6 +80,7 @@ exe action_game
 
 exec.register-exec-all ;
 alias run : action_game-run ;
+explicit run ;
 
 install dist-bin
     :
