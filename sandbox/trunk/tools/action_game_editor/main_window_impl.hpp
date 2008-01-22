@@ -34,6 +34,7 @@ public:
     void save_project();
     game_project project_info() const;
     void project_info(const game_project& info);
+    void edit_project_info();
     bool new_stage(const std::string& filename, int width, int height);
     int stage_count() const;
     std::string stage_name() const;
