@@ -10,7 +10,6 @@
 #include "project_config_dialog.hpp"
 #include "folder_select_dialog.hpp"
 #include "msg_utilities.hpp"
-#include "position_dialog.hpp"
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/lexical_cast.hpp>
@@ -58,7 +57,7 @@ private:
 struct dialog_data
 {
     game_project info;
-    project_info_params* params;
+    const std::vector<std::string>* map_names;
     std::string old_name;
     solid_brush brush;
 };
@@ -105,19 +104,6 @@ inline bool get_dialog_item_int(::HWND hwnd, int id, int& value)
     return res != FALSE;
 }
 
-std::string make_position_string(const game_project& info)
-{
-    std::ostringstream os;
-    os.imbue(std::locale::classic());
-    // TODO
-#if 0
-    os << info.map_file << " (" << info.x << ", " << info.y << ')';
-#else
-    os << info.start_map << " (" << 0 << ", " << 0 << ')';
-#endif
-    return os.str();
-}
-
 ::INT_PTR CALLBACK proj_cfg_dialog_proc(
     ::HWND hwndDlg, ::UINT uMsg, ::WPARAM wParam, ::LPARAM lParam)
 {
@@ -159,11 +145,20 @@ std::string make_position_string(const game_project& info)
             set_dialog_item_text(hwndDlg, HAMIGAKI_IDC_GRAVITY, info.gravity);
             set_dialog_item_text(hwndDlg, HAMIGAKI_IDC_MIN_VY, info.min_vy);
 
-            ::HWND start_hwnd = ::GetDlgItem(hwndDlg, HAMIGAKI_IDC_START);
-            if (data->params)
+            ::HWND map_hwnd = ::GetDlgItem(hwndDlg, HAMIGAKI_IDC_START_MAP);
+            if (data->map_names)
             {
-                ::SetWindowTextA(
-                    start_hwnd, make_position_string(info).c_str());
+                const std::vector<std::string>& v = *(data->map_names);
+                for (std::size_t i = 0; i < v.size(); ++i)
+                    send_msg(map_hwnd, CB_ADDSTRING, 0, v[i]);
+
+                if (!info.start_map.empty())
+                {
+                    int index = send_msg(
+                        map_hwnd, CB_FINDSTRINGEXACT, 0, info.start_map);
+                    if (index != CB_ERR)
+                        send_msg(map_hwnd, CB_SETCURSEL, index);
+                }
 
                 ::EnableWindow(
                     ::GetDlgItem(hwndDlg, HAMIGAKI_IDC_FOLDER), FALSE);
@@ -173,12 +168,7 @@ std::string make_position_string(const game_project& info)
                     ::GetDlgItem(hwndDlg, HAMIGAKI_IDC_DIR_SEL), FALSE);
             }
             else
-            {
-                ::EnableWindow(start_hwnd, FALSE);
-
-                ::EnableWindow(
-                    ::GetDlgItem(hwndDlg, HAMIGAKI_IDC_START_SEL), FALSE);
-            }
+                ::EnableWindow(map_hwnd, FALSE);
 
             data->old_name = name;
             return 1;
@@ -205,6 +195,8 @@ std::string make_position_string(const game_project& info)
                     get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_GRAVITY);
                 info.min_vy =
                     get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_MIN_VY);
+                info.start_map =
+                    get_dialog_item_text(hwndDlg, HAMIGAKI_IDC_START_MAP);
 
                 boost::lexical_cast<float>(info.gravity);
                 boost::lexical_cast<float>(info.min_vy);
@@ -301,30 +293,6 @@ std::string make_position_string(const game_project& info)
                 }
                 return 1;
             }
-            else if (id == HAMIGAKI_IDC_START_SEL)
-            {
-                game_project& info = data->info;
-
-                map_position_info tmp;
-                tmp.map_table = data->params->map_table;
-                tmp.chars = data->params->chars;
-                tmp.bg_color = info.bg_color;
-                tmp.filename = info.start_map;
-                tmp.x = 0; // TODO
-                tmp.y = 0; // TODO
-
-                if (get_map_position(hwndDlg, tmp))
-                {
-                    info.start_map = tmp.filename;
-                    tmp.x; // TODO
-                    tmp.y; // TODO
-
-                    ::SetDlgItemTextA(
-                        hwndDlg, HAMIGAKI_IDC_START,
-                        make_position_string(info).c_str()
-                    );
-                }
-            }
         }
         else
             return 0;
@@ -337,14 +305,14 @@ std::string make_position_string(const game_project& info)
 }
 
 bool get_project_info_impl(
-    ::HWND hwnd, game_project& info, project_info_params* params)
+    ::HWND hwnd, game_project& info, const std::vector<std::string>* map_names)
 {
     // FIXME
     ::HINSTANCE module =
         reinterpret_cast< ::HINSTANCE>(::GetModuleHandle(0));
 
     dialog_data data;
-    data.params = params;
+    data.map_names = map_names;
     data.info = info;
 
     {
@@ -369,9 +337,9 @@ bool get_project_info_impl(
 } // namespace
 
 bool get_project_info(
-    ::HWND hwnd, game_project& info, project_info_params& params)
+    ::HWND hwnd, game_project& info, const std::vector<std::string>& map_names)
 {
-    return get_project_info_impl(hwnd, info, &params);
+    return get_project_info_impl(hwnd, info, &map_names);
 }
 
 bool get_project_info(::HWND hwnd, game_project& info)

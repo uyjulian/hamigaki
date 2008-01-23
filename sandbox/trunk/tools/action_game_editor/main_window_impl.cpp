@@ -13,7 +13,6 @@
 #include "game_project_io.hpp"
 #include "map_edit_window.hpp"
 #include "msg_utilities.hpp"
-#include "project_config_dialog.hpp"
 #include "stage_map_load.hpp"
 #include "stage_map_save.hpp"
 #include "transfer_dialog.hpp"
@@ -371,17 +370,6 @@ public:
         char_select_window_set_bg_color(char_sel_window_, project_.bg_color);
     }
 
-    void edit_project_info()
-    {
-        project_info_params params;
-        params.map_table = &map_table_;
-        params.chars = &char_table_;
-
-        game_project info = project_;
-        if (get_project_info(handle_, info, params))
-            project_ = info;
-    }
-
     bool new_stage(const std::string& filename, int width, int height)
     {
         fs::path ph = fs::path(project_file_).branch_path() / filename;
@@ -572,11 +560,6 @@ game_project main_window::project_info() const
 void main_window::project_info(const game_project& info)
 {
     pimpl_->project_info(info);
-}
-
-void main_window::edit_project_info()
-{
-    pimpl_->edit_project_info();
 }
 
 bool main_window::new_stage(const std::string& filename, int width, int height)

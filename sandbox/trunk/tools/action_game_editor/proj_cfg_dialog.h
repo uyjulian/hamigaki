@@ -17,5 +17,4 @@
 #define HAMIGAKI_IDC_BG            1307
 #define HAMIGAKI_IDC_GRAVITY       1308
 #define HAMIGAKI_IDC_MIN_VY        1309
-#define HAMIGAKI_IDC_START         1310
-#define HAMIGAKI_IDC_START_SEL     1311
+#define HAMIGAKI_IDC_START_MAP     1310
