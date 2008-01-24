@@ -10,9 +10,11 @@
 #include <windows.h>
 #include "accelerators.h"
 #include "char_dialog.h"
+#include "custom_types.h"
 #include "icon_dialog.h"
 #include "map_cfg_dialog.h"
 #include "menus.h"
+#include "png_images.h"
 #include "pos_dialog.h"
 #include "popup_menus.h"
 #include "proj_cfg_dialog.h"
@@ -199,3 +201,5 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,90,78,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,144,78,50,14
 END
+
+HAMIGAKI_IDP_START      HAMIGAKI_RT_PNG         "start.png"

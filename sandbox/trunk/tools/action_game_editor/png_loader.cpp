@@ -1,6 +1,6 @@
 // png_loader.cpp: PNG loader
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -8,6 +8,9 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "png_loader.hpp"
+#include <boost/iostreams/device/array.hpp>
+#include <boost/iostreams/stream.hpp>
+#include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/scoped_array.hpp>
 #include <csetjmp>
@@ -18,6 +21,10 @@
 #if !defined(NDEBUG)
     #include <windows.h>
 #endif
+
+#include "custom_types.h"
+
+namespace io = boost::iostreams;
 
 namespace
 {
@@ -186,21 +193,9 @@ private:
     png_reader_base base_;
 };
 
-} // namespace
-
 direct3d_texture9
-create_png_texture(direct3d_device9& device, const std::string& filename)
+create_png_texture_impl(direct3d_device9& device, std::istream& is)
 {
-    std::ifstream is(filename.c_str(), std::ios_base::binary);
-    if (!is)
-    {
-        std::string msg;
-        msg = "cannot open file '";
-        msg += filename;
-        msg += "'";
-        throw std::runtime_error(msg);
-    }
-
     png_reader png(is);
 
     std::size_t width = png.width();
@@ -231,4 +226,39 @@ create_png_texture(direct3d_device9& device, const std::string& filename)
     }
 
     return texture;
+}
+
+} // namespace
+
+direct3d_texture9
+create_png_texture(direct3d_device9& device, const std::string& filename)
+{
+    std::ifstream is(filename.c_str(), std::ios_base::binary);
+    if (!is)
+    {
+        std::string msg;
+        msg = "cannot open file '";
+        msg += filename;
+        msg += "'";
+        throw std::runtime_error(msg);
+    }
+
+    return create_png_texture_impl(device, is);
+}
+
+direct3d_texture9 create_png_texture(
+    direct3d_device9& device, ::HMODULE module, const char* name)
+{
+    ::HRSRC rs =
+        ::FindResourceA(module, name, MAKEINTRESOURCE(HAMIGAKI_RT_PNG));
+    if (rs == 0)
+        throw std::runtime_error("cannot find resource");
+
+    ::DWORD size = ::SizeofResource(module, rs);
+    void* ptr = ::LockResource(::LoadResource(module, rs));
+    BOOST_ASSERT(ptr != 0);
+
+    io::stream<io::array_source> is(static_cast<char*>(ptr), size);
+
+    return create_png_texture_impl(device, is);
 }

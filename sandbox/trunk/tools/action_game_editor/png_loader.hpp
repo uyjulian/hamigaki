@@ -1,6 +1,6 @@
 // png_loader.hpp: PNG loader
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -15,5 +15,8 @@
 
 direct3d_texture9
 create_png_texture(direct3d_device9& device, const std::string& filename);
+
+direct3d_texture9 create_png_texture(
+    direct3d_device9& device, ::HMODULE module, const char* name);
 
 #endif // PNG_LOADER_HPP
