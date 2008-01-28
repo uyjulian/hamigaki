@@ -8,6 +8,7 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #if defined(__GNUC__)
+#include <cassert>
 #include <cstddef>
 #include <cstring>
 #include <exception>
@@ -48,8 +49,8 @@ struct my_cxa_exception
     void (*destroy)(void*); 
     std::unexpected_handler on_unexpected;
     std::terminate_handler on_terminate;
-    my_cxa_exception* next;
-    int dummy0;
+    __cxxabiv1::__cxa_exception* next;
+    int count;
     int dummy1;
     const unsigned char* dummy2;
     const unsigned char* dummy3;
@@ -75,8 +76,8 @@ my_cxa_exception* release_exception()
     my_cxa_exception* tmp =
         reinterpret_cast<my_cxa_exception*>(g->list);
 
-    g->list = 0;
-    g->count = 0;
+    assert(tmp->count == 1);
+    tmp->count = -1;
 
     return tmp;
 }
@@ -292,7 +293,7 @@ private:
     #error "Sorry, unsupported compiler"
 #endif
 
-int main()
+void work()
 {
     try
     {
@@ -306,5 +307,31 @@ int main()
     catch (...)
     {
         std::cout << "unknown exception" << std::endl;
+    }
+}
+
+struct my_exception{};
+
+int main()
+{
+    try
+    {
+        try
+        {
+            throw my_exception();
+        }
+        catch (...)
+        {
+            work();
+            throw;
+        }
+    }
+    catch (const my_exception&)
+    {
+        std::cout << "OK" << std::endl;
+    }
+    catch (...)
+    {
+        std::cout << "NG" << std::endl;
     }
 }
