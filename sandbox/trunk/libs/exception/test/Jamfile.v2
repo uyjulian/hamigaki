@@ -9,4 +9,11 @@
 
 using testing ;
 
-run propagate_test.cpp /boost-lib//boost_thread ;
+project
+    : requirements
+      <library>/boost-lib//boost_unit_test_framework/<link>static
+    ;
+
+test-suite exception :
+    [ run transport_test.cpp ]
+    ;
