@@ -15,5 +15,6 @@ project
     ;
 
 test-suite exception :
+    [ run copy_failed_test.cpp ]
     [ run transport_test.cpp ]
     ;

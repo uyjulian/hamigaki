@@ -12,6 +12,7 @@
 
 #include <boost/shared_array.hpp>
 #include <cstring>
+#include <new>
 #include <malloc.h>
 
 extern "C"
@@ -44,7 +45,7 @@ struct exception_record
     const ::_s__ThrowInfo* info;
 };
 
-inline void call_pmfn0(_PMFN f, void* p)
+inline void call_pmfn0(::_PMFN f, void* p)
 {
     __asm
     {
@@ -53,7 +54,7 @@ inline void call_pmfn0(_PMFN f, void* p)
     }
 }
 
-inline void call_pmfn1(_PMFN f, void* p0, void* p1)
+inline void call_pmfn1(::_PMFN f, void* p0, const void* p1)
 {
     __asm
     {
@@ -63,7 +64,7 @@ inline void call_pmfn1(_PMFN f, void* p0, void* p1)
     }
 }
 
-inline void call_pmfn2(_PMFN f, void* p0, void* p1, int p2)
+inline void call_pmfn2(::_PMFN f, void* p0, const void* p1, int p2)
 {
     __asm
     {
@@ -72,6 +73,20 @@ inline void call_pmfn2(_PMFN f, void* p0, void* p1, int p2)
         push p1
         call f
     }
+}
+
+inline
+void copy_construct(void* dst, const void* src, const ::_s__CatchableType* t)
+{
+    if (t->copyFunction)
+    {
+        if ((t->properties & 0x04) != 0)
+            call_pmfn2(t->copyFunction, dst, src, 1);
+        else
+            call_pmfn1(t->copyFunction, dst, src);
+    }
+    else
+        std::memcpy(dst, src, t->sizeOrOffset);
 }
 
 class exception_ptr
@@ -83,25 +98,25 @@ public:
 
     exception_ptr(void* data, const ::_s__ThrowInfo* info) : info_(info)
     {
-        const ::_s__CatchableType* t =
-            info->pCatchableTypeArray->arrayOfCatchableTypes[0];
-
-        data_.reset(new char[t->sizeOrOffset]);
-        if (t->copyFunction)
+        try
         {
-            if ((t->properties & 0x04) != 0)
-                call_pmfn2(t->copyFunction, data_.get(), data, 1);
-            else
-                call_pmfn1(t->copyFunction, data_.get(), data);
+            const ::_s__CatchableType* t =
+                info->pCatchableTypeArray->arrayOfCatchableTypes[0];
+
+            data_.reset(new char[t->sizeOrOffset]);
+            copy_construct(data_.get(), data, t);
         }
-        else
-            std::memcpy(data_.get(), data, t->sizeOrOffset);
+        catch (...)
+        {
+            data_.reset(0);
+            info_ = reinterpret_cast<const ::_s__ThrowInfo*>(~0);
+        }
     }
 
     ~exception_ptr()
     {
         // FIXME: use_count() is for debugging
-        if (data_.use_count() == 1)
+        if ((data_.get() != 0) && (data_.use_count() == 1))
         {
             if (::_PMFN d = info_->pmfnUnwind)
                 call_pmfn0(d, data_.get());
@@ -110,7 +125,7 @@ public:
 
     bool operator==(const exception_ptr& rhs) const
     {
-        return data_ == rhs.data_;
+        return (data_ == rhs.data_) && (info_ == rhs.info_);
     }
 
     bool operator!=(const exception_ptr& rhs) const
@@ -120,24 +135,16 @@ public:
 
     void rethrow()
     {
+        if ((data_.get() == 0) && (info_ != 0))
+            throw std::bad_alloc();
+
         const ::_s__CatchableType* t =
             info_->pCatchableTypeArray->arrayOfCatchableTypes[0];
         int sz = t->sizeOrOffset;
-        ::_PMFN cp = t->copyFunction;
-        bool is_virtual = (t->properties & 0x04) != 0;
         void* data = data_.get();
         void* e = _alloca(sz);
 
-        if (cp)
-        {
-            if (is_virtual)
-                call_pmfn2(cp, e, data, 1);
-            else
-                call_pmfn1(cp, e, data);
-        }
-        else
-            std::memcpy(e, data, sz);
-
+        copy_construct(e, data, t);
         ::_CxxThrowException(e, info_);
 
         throw;
