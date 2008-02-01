@@ -48,7 +48,7 @@ void copy_failed_test()
 
         try
         {
-            rethrow_exception(p);
+            hamigaki::rethrow_exception(p);
         }
         catch (const std::bad_alloc&)
         {
@@ -95,7 +95,7 @@ void copy_failed_test2()
 
         try
         {
-            rethrow_exception(p);
+            hamigaki::rethrow_exception(p);
         }
         catch (const std::bad_alloc&)
         {

@@ -18,7 +18,7 @@ void rethrow_test()
 {
     hamigaki::exception_ptr p = hamigaki::copy_exception(my_exception());
 
-    BOOST_CHECK_THROW(rethrow_exception(p), my_exception);
+    BOOST_CHECK_THROW(hamigaki::rethrow_exception(p), my_exception);
 }
 
 ut::test_suite* init_unit_test_suite(int, char* [])
