@@ -7,6 +7,15 @@
 
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
+// Original
+// http://www.pdimov.com/cpp/N2179/exception_ptr.cpp
+// ===========================================================================>
+// Copyright (c) 2007 Peter Dimov
+//
+// Distributed under the Boost Software License, Version 1.0.
+// http://www.boost.org/LICENSE_1_0.txt
+// <===========================================================================
+
 #ifndef HAMIGAKI_EXCEPTION_COMMON_EXCEPTION_HPP
 #define HAMIGAKI_EXCEPTION_COMMON_EXCEPTION_HPP
 
@@ -43,10 +52,6 @@ template<class E>
 class exception_impl : public exception_base
 {
 public:
-    exception_impl()
-    {
-    }
-
     explicit exception_impl(const E& e) : e_(e)
     {
     }
