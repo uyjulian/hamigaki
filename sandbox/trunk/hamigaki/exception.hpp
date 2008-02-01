@@ -12,12 +12,10 @@
 
 #include <boost/config.hpp>
 
-#if defined(__GNUC__)
-    #include <hamigaki/exception/gcc/exception.hpp>
-#elif defined(BOOST_MSVC)
+#if defined(BOOST_MSVC)
     #include <hamigaki/exception/msvc/exception.hpp>
 #else
-    #error "Sorry, unsupported compiler"
+    #include <hamigaki/exception/common/exception.hpp>
 #endif
 
 #endif // HAMIGAKI_EXCEPTION_HPP
