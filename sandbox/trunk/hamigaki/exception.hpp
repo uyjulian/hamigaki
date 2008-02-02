@@ -15,7 +15,7 @@
 #if defined(BOOST_MSVC)
     #include <hamigaki/exception/msvc/exception.hpp>
 #else
-    #include <hamigaki/exception/common/exception.hpp>
+    #include <hamigaki/exception/general/exception.hpp>
 #endif
 
 #endif // HAMIGAKI_EXCEPTION_HPP
