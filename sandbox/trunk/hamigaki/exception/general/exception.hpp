@@ -16,8 +16,8 @@
 // http://www.boost.org/LICENSE_1_0.txt
 // <===========================================================================
 
-#ifndef HAMIGAKI_EXCEPTION_COMMON_EXCEPTION_HPP
-#define HAMIGAKI_EXCEPTION_COMMON_EXCEPTION_HPP
+#ifndef HAMIGAKI_EXCEPTION_GENERAL_EXCEPTION_HPP
+#define HAMIGAKI_EXCEPTION_GENERAL_EXCEPTION_HPP
 
 #include <boost/shared_ptr.hpp>
 #include <exception>
@@ -52,6 +52,10 @@ template<class E>
 class exception_impl : public exception_base
 {
 public:
+    exception_impl()
+    {
+    }
+
     explicit exception_impl(const E& e) : e_(e)
     {
     }
@@ -65,6 +69,16 @@ private:
     }
 };
 
+template<int dummy>
+struct bad_alloc_storage
+{
+    static boost::shared_ptr<exception_base> instance;
+};
+
+template<int dummy>
+boost::shared_ptr<exception_base>
+bad_alloc_storage<dummy>::instance(new exception_impl<std::bad_alloc>);
+
 } // namespace eh_detail
 
 typedef boost::shared_ptr<eh_detail::exception_base> exception_ptr;
@@ -72,7 +86,14 @@ typedef boost::shared_ptr<eh_detail::exception_base> exception_ptr;
 template<class E>
 inline exception_ptr copy_exception(E e)
 {
-    return exception_ptr(new eh_detail::exception_impl<E>(e));
+    try
+    {
+        return exception_ptr(new eh_detail::exception_impl<E>(e));
+    }
+    catch (...)
+    {
+        return eh_detail::bad_alloc_storage<0>::instance;
+    }
 }
 
 inline exception_ptr current_exception()
@@ -167,4 +188,4 @@ inline void rethrow_exception(exception_ptr p)
 
 } // namespace hamigaki
 
-#endif // HAMIGAKI_EXCEPTION_COMMON_EXCEPTION_HPP
+#endif // HAMIGAKI_EXCEPTION_GENERAL_EXCEPTION_HPP

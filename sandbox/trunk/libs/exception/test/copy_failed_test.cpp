@@ -36,6 +36,8 @@ struct my_exception{};
 
 void copy_failed_test()
 {
+    hamigaki::exception_ptr p;
+#if defined(BOOST_MSVC)
     try
     {
         throw my_exception();
@@ -43,23 +45,28 @@ void copy_failed_test()
     catch (...)
     {
         allocatable = false;
-        hamigaki::exception_ptr p = hamigaki::current_exception();
+        p = hamigaki::current_exception();
         allocatable = true;
+    }
+#else
+    allocatable = false;
+    p = hamigaki::copy_exception(my_exception());
+    allocatable = true;
+#endif
 
-        try
-        {
-            hamigaki::rethrow_exception(p);
-        }
-        catch (const std::bad_alloc&)
-        {
-        }
-        catch (const my_exception&)
-        {
-        }
-        catch (...)
-        {
-            BOOST_ERROR("catch other");
-        }
+    try
+    {
+        hamigaki::rethrow_exception(p);
+    }
+    catch (const std::bad_alloc&)
+    {
+    }
+    catch (const my_exception&)
+    {
+    }
+    catch (...)
+    {
+        BOOST_ERROR("catch other");
     }
 }
 
@@ -83,6 +90,9 @@ struct some_exception
 void copy_failed_test2()
 {
     allocatable = true;
+
+    hamigaki::exception_ptr p;
+#if defined(BOOST_MSVC)
     try
     {
         throw some_exception();
@@ -90,23 +100,28 @@ void copy_failed_test2()
     catch (...)
     {
         copyable = false;
-        hamigaki::exception_ptr p = hamigaki::current_exception();
+        p = hamigaki::current_exception();
         copyable = true;
+    }
+#else
+    copyable = false;
+    p = hamigaki::copy_exception(some_exception());
+    copyable = true;
+#endif
 
-        try
-        {
-            hamigaki::rethrow_exception(p);
-        }
-        catch (const std::bad_alloc&)
-        {
-        }
-        catch (const some_exception&)
-        {
-        }
-        catch (...)
-        {
-            BOOST_ERROR("catch other");
-        }
+    try
+    {
+        hamigaki::rethrow_exception(p);
+    }
+    catch (const std::bad_alloc&)
+    {
+    }
+    catch (const some_exception&)
+    {
+    }
+    catch (...)
+    {
+        BOOST_ERROR("catch other");
     }
 }
 
