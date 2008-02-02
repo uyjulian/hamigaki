@@ -1,6 +1,6 @@
 // char_select_window_impl.hpp: the window implementation for character select
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -27,6 +27,7 @@ public:
     void render();
     void cursor_pos(int x, int y);
     game_character_class* selected_char() const;
+    hamigaki::uuid selected_char_id() const;
     bool modified() const;
     void modified(bool value);
     bool insert(const game_character_class& c);

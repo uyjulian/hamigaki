@@ -24,6 +24,17 @@
 #include <boost/optional.hpp>
 #include <algorithm>
 
+#include "png_images.h"
+
+namespace
+{
+
+const ::GUID player_guid =
+{ 0xD5D26CC5, 0xD8BD, 0x40A4, {0x83,0x9E,0xE3,0xC7,0xFA,0x57,0x0F,0x66} };
+const hamigaki::uuid player_id(player_guid);
+
+} // namespace
+
 class map_edit_window::impl
 {
 private:
@@ -360,6 +371,7 @@ private:
     unsigned long bg_color_;
     stage_map* map_;
     direct3d_texture9 cursor_texture_;
+    direct3d_texture9 start_texture_;
     texture_cache textures_;
     std::set<game_character_class>* chars_;
     sprite_info_cache sprites_;
@@ -380,6 +392,8 @@ private:
             D3DCREATE_HARDWARE_VERTEXPROCESSING, params);
 
         cursor_texture_ = create_cursor_texture(device_, 32, 32);
+        start_texture_ = create_png_texture(
+            device_, ::GetModuleHandle(0), MAKEINTRESOURCE(HAMIGAKI_IDP_START));
     }
 
     void draw_box(int x, int y, unsigned long color)
@@ -401,18 +415,24 @@ private:
         if (chars_ == 0)
             return;
 
-        game_character_class dummy;
-        dummy.id = type;
-        iter_type pos = chars_->find(dummy);
-        if (pos == chars_->end())
-            return;
-
         ::RECT cr;
         ::GetClientRect(handle_, &cr);
 
         float left = static_cast<float>(x * 16);
         float bottom = static_cast<float>(cr.bottom - y * 16);
         float top = bottom - 32.0f;
+
+        if (type == player_id)
+        {
+            draw_sprite(device_, left, top, 0.0f, start_texture_);
+            return;
+        }
+
+        game_character_class dummy;
+        dummy.id = type;
+        iter_type pos = chars_->find(dummy);
+        if (pos == chars_->end())
+            return;
 
         if (pos->icon.empty())
         {

@@ -1,6 +1,6 @@
 // char_select_window_impl.cpp: the window implementation for character select
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -19,6 +19,17 @@
 #include "texture_cache.hpp"
 #include <boost/lambda/bind.hpp>
 #include <boost/lambda/lambda.hpp>
+
+#include "png_images.h"
+
+namespace
+{
+
+const ::GUID player_guid =
+{ 0xD5D26CC5, 0xD8BD, 0x40A4, {0x83,0x9E,0xE3,0xC7,0xFA,0x57,0x0F,0x66} };
+const hamigaki::uuid player_id(player_guid);
+
+} // namespace
 
 class char_select_window::impl
 {
@@ -82,10 +93,12 @@ public:
             device_.set_texture_stage_state(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
             device_.set_texture_stage_state(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
 
+            draw_sprite(device_, 32.0f, 0.0f, 0.0f, start_texture_);
+
             if (chars_)
             {
                 typedef std::set<game_character_class>::iterator iter_type;
-                int index = 1;
+                int index = 2;
                 iter_type end = chars_->end();
                 for (iter_type i = chars_->begin(); i != end; ++i)
                 {
@@ -159,15 +172,37 @@ public:
         std::size_t index =
             static_cast<std::size_t>(cursor_pos_.first + cursor_pos_.second*4);
 
-        if ((index != 0) && (chars_ != 0) && (--index < chars_->size()))
+        if (index < 2)
+            return 0;
+        else if ((chars_ != 0) && (index-2 < chars_->size()))
         {
             typedef std::set<game_character_class>::iterator iter_type;
             iter_type pos = chars_->begin();
-            std::advance(pos, index);
+            std::advance(pos, index-2);
             return &*pos;
         }
         else
             return 0;
+    }
+
+    hamigaki::uuid selected_char_id() const
+    {
+        std::size_t index =
+            static_cast<std::size_t>(cursor_pos_.first + cursor_pos_.second*4);
+
+        if (index == 0)
+            return hamigaki::uuid();
+        else if (index == 1)
+            return player_id;
+        else if ((chars_ != 0) && (index-2 < chars_->size()))
+        {
+            typedef std::set<game_character_class>::iterator iter_type;
+            iter_type pos = chars_->begin();
+            std::advance(pos, index-2);
+            return pos->id;
+        }
+        else
+            return hamigaki::uuid();
     }
 
     bool modified() const
@@ -207,6 +242,7 @@ private:
     unsigned long bg_color_;
     std::set<game_character_class>* chars_;
     direct3d_texture9 cursor_texture_;
+    direct3d_texture9 start_texture_;
     texture_cache textures_;
     std::pair<int,int> cursor_pos_;
     sprite_info_cache sprites_;
@@ -225,6 +261,8 @@ private:
             D3DCREATE_HARDWARE_VERTEXPROCESSING, params);
 
         cursor_texture_ = create_cursor_texture(device_, 32, 32);
+        start_texture_ = create_png_texture(
+            device_, ::GetModuleHandle(0), MAKEINTRESOURCE(HAMIGAKI_IDP_START));
     }
 };
 
@@ -259,6 +297,11 @@ void char_select_window::cursor_pos(int x, int y)
 game_character_class* char_select_window::selected_char() const
 {
     return pimpl_->selected_char();
+}
+
+hamigaki::uuid char_select_window::selected_char_id() const
+{
+    return pimpl_->selected_char_id();
 }
 
 bool char_select_window::modified() const
