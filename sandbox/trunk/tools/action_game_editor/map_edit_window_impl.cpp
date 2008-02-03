@@ -20,6 +20,7 @@
 #include "stage_map_load.hpp"
 #include "stage_map_save.hpp"
 #include "texture_cache.hpp"
+#include <hamigaki/iterator/second_iterator.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/optional.hpp>
 #include <algorithm>
@@ -306,7 +307,18 @@ public:
         typedef map_elements::iterator iter_type;
         map_elements& x_y = map_->elements;
 
-        if (!selected_char_.is_null())
+        if (selected_char_ == player_id)
+        {
+            iter_type i = std::find(
+                hamigaki::make_second_iterator(x_y.begin()),
+                hamigaki::make_second_iterator(x_y.end()),
+                player_id
+            ).base();
+
+            if (i != x_y.end())
+                x_y.erase(i);
+        }
+        else if (!selected_char_.is_null())
         {
             std::pair<int,int> pos(x, y);
             iter_type beg = x_y.lower_bound(std::make_pair(x-31, y-31));
