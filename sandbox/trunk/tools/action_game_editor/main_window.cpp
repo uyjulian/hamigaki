@@ -42,6 +42,16 @@ std::string get_documents_path()
     return buf;
 }
 
+fs::path get_game_exe_path()
+{
+    char buf[MAX_PATH];
+    ::GetModuleFileNameA(::GetModuleHandle(0), buf, sizeof(buf));
+    fs::path ph(buf);
+    ph.remove_leaf();
+    ph /= "action_game.exe";
+    return ph;
+}
+
 void enable_project_menu(::HWND hwnd, bool value)
 {
     ::HMENU menu = ::GetMenu(hwnd);
@@ -52,6 +62,11 @@ void enable_project_menu(::HWND hwnd, bool value)
     ::EnableMenuItem(menu, HAMIGAKI_ID_FILE_SAVE,  flags);
     ::EnableMenuItem(menu, HAMIGAKI_ID_EDIT_DEL,   flags);
     ::EnableMenuItem(menu, HAMIGAKI_ID_GAME_PROP,  flags);
+
+    ::DWORD test_flags = flags;
+    if (value && fs::exists(get_game_exe_path()))
+        test_flags = MF_ENABLED;
+    ::EnableMenuItem(menu, HAMIGAKI_ID_GAME_TEST,  flags);
 }
 
 bool get_open_file_name(::HWND hwnd, std::string& filename)
@@ -77,7 +92,7 @@ bool get_open_file_name(::HWND hwnd, std::string& filename)
     return true;
 }
 
-bool close_project(main_window* pimpl, ::HWND hwnd)
+bool save_project(main_window* pimpl, ::HWND hwnd)
 {
     if (pimpl->modified())
     {
@@ -90,6 +105,13 @@ bool close_project(main_window* pimpl, ::HWND hwnd)
         else if (res == IDYES)
             pimpl->save_project();
     }
+    return true;
+}
+
+bool close_project(main_window* pimpl, ::HWND hwnd)
+{
+    if (!save_project(pimpl, hwnd))
+        return false;
 
     pimpl->close_project();
     enable_project_menu(hwnd, false);
@@ -252,6 +274,20 @@ std::string get_drop_filename(::HDROP drop)
 
                 if (res == IDYES)
                     pimpl->delete_stage();
+            }
+            else if (id == HAMIGAKI_ID_GAME_TEST)
+            {
+                if (!save_project(pimpl, hwnd))
+                    return 0;
+
+                const fs::path& exe = get_game_exe_path();
+
+                game_project proj = pimpl->project_info();
+                const fs::path& agp = fs::path(proj.dir)/"action_game.agp-yh";
+
+                ::ShellExecuteA(hwnd, 0,
+                    exe.file_string().c_str(),
+                    agp.file_string().c_str(), 0, SW_SHOWNORMAL);
             }
             else if (id == HAMIGAKI_ID_GAME_PROP)
             {
