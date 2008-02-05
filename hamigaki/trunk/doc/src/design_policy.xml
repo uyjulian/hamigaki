@@ -23,11 +23,11 @@
         <listitem>単一スレッドからの書き込み (非constメソッドの呼び出し)</listitem>
         <listitem>複数スレッドからの読み出し (constメソッドの呼び出し)</listitem>
       </itemizedlist>
-      のどちらかの操作しか行われないことをライブラリユーザーが保証する限り、マルチスレッド環境でも正しく動作する。</listitem>
+      のうち高々一方の操作しか行われないことをライブラリユーザーが保証する限り、マルチスレッド環境でも正しく動作する。</listitem>
     </varlistentry>
     <varlistentry>
       <term>例外安全性</term>
-      <listitem>Hamigakiライブラリは、Bjarne Stroustrup著『The C++ Programming Language, Special Edition』のAppendix E「<ulink url="http://www.research.att.com/~bs/3rd_safe.pdf">Standard-Library Exception Safety </ulink>」で語られる「基本的な保証(Basic guarantee)」を常に満たすよう設計されている。</listitem>
+      <listitem>Hamigakiライブラリは、Bjarne Stroustrup著『The C++ Programming Language, Special Edition』の付録E「<ulink url="http://www.research.att.com/~bs/3rd_safe.pdf">Standard-Library Exception Safety</ulink>」で語られる例外安全の「基本的な保証(Basic guarantee)」を常に満たすよう設計されている。</listitem>
     </varlistentry>
     <varlistentry>
       <term>再利用性</term>
