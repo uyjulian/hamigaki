@@ -79,6 +79,7 @@ exe action_game_editor
     <conditional>@user-interface-gui
     <threading>multi
     <define>NOMINMAX=1
+    <variant>debug:<source>bjam_dll_path.cpp
     $(requirements)
     ;
 

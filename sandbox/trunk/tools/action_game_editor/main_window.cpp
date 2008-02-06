@@ -42,17 +42,7 @@ std::string get_documents_path()
     return buf;
 }
 
-fs::path get_game_exe_path()
-{
-    char buf[MAX_PATH];
-    ::GetModuleFileNameA(::GetModuleHandle(0), buf, sizeof(buf));
-    fs::path ph(buf);
-    ph.remove_leaf();
-    ph /= "action_game.exe";
-    return ph;
-}
-
-void enable_project_menu(::HWND hwnd, bool value)
+void enable_project_menu(main_window* pimpl, ::HWND hwnd, bool value)
 {
     ::HMENU menu = ::GetMenu(hwnd);
 
@@ -64,7 +54,7 @@ void enable_project_menu(::HWND hwnd, bool value)
     ::EnableMenuItem(menu, HAMIGAKI_ID_GAME_PROP,  flags);
 
     ::DWORD test_flags = flags;
-    if (value && fs::exists(get_game_exe_path()))
+    if (value && pimpl->has_test_runner())
         test_flags = MF_ENABLED;
     ::EnableMenuItem(menu, HAMIGAKI_ID_GAME_TEST,  flags);
 }
@@ -114,7 +104,7 @@ bool close_project(main_window* pimpl, ::HWND hwnd)
         return false;
 
     pimpl->close_project();
-    enable_project_menu(hwnd, false);
+    enable_project_menu(pimpl, hwnd, false);
     return true;
 }
 
@@ -189,7 +179,7 @@ std::string get_drop_filename(::HDROP drop)
                 return 0;
 
             pimpl->load_project(filename);
-            enable_project_menu(hwnd, true);
+            enable_project_menu(pimpl, hwnd, true);
         }
         else if (uMsg == WM_COMMAND)
         {
@@ -216,7 +206,7 @@ std::string get_drop_filename(::HDROP drop)
                     fs::create_directories(fs::path(proj.dir));
                     fs::path ph = fs::path(proj.dir) / "action_game.agp-yh";
                     pimpl->new_project(ph.file_string(), proj);
-                    enable_project_menu(hwnd, true);
+                    enable_project_menu(pimpl, hwnd, true);
                 }
             }
             else if (id == HAMIGAKI_ID_FILE_OPEN)
@@ -228,7 +218,7 @@ std::string get_drop_filename(::HDROP drop)
                 if (get_open_file_name(hwnd, filename))
                 {
                     pimpl->load_project(filename);
-                    enable_project_menu(hwnd, true);
+                    enable_project_menu(pimpl, hwnd, true);
                 }
             }
             else if (id == HAMIGAKI_ID_FILE_CLOSE)
@@ -280,14 +270,7 @@ std::string get_drop_filename(::HDROP drop)
                 if (!save_project(pimpl, hwnd))
                     return 0;
 
-                const fs::path& exe = get_game_exe_path();
-
-                game_project proj = pimpl->project_info();
-                const fs::path& agp = fs::path(proj.dir)/"action_game.agp-yh";
-
-                ::ShellExecuteA(hwnd, 0,
-                    exe.file_string().c_str(),
-                    agp.file_string().c_str(), 0, SW_SHOWNORMAL);
+                pimpl->test_play();
             }
             else if (id == HAMIGAKI_ID_GAME_PROP)
             {

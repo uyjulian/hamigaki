@@ -19,6 +19,7 @@
 #include "transfer_info.hpp"
 #include <hamigaki/iterator/first_iterator.hpp>
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
@@ -27,6 +28,12 @@
 #include <boost/scoped_array.hpp>
 #include <map>
 #include <set>
+
+#if !defined(NDEBUG)
+    #include "bjam_dll_path.hpp"
+    #include <hamigaki/detail/environment.hpp>
+    #include <boost/algorithm/string/case_conv.hpp>
+#endif
 
 #include <hamigaki/system/windows_error.hpp>
 #include "popup_menus.h"
@@ -198,6 +205,32 @@ private:
     ::HMENU handle_;
 };
 
+std::string get_exe_filename()
+{
+    char buf[MAX_PATH];
+    ::GetModuleFileNameA(::GetModuleHandle(0), buf, sizeof(buf));
+    return std::string(buf);
+}
+
+fs::path get_game_exe_path()
+{
+    const std::string& exe = get_exe_filename();
+
+    fs::path ph(exe);
+    ph.remove_leaf();
+    ph /= "action_game.exe";
+    if (fs::exists(ph))
+        return ph;
+
+#if !defined(NDEBUG)
+    ph = algo::replace_all_copy(exe, "action_game_editor", "action_game");
+    if (fs::exists(ph))
+        return ph;
+#endif
+
+    return fs::path();
+}
+
 } // namespace
 
 class main_window::impl
@@ -207,7 +240,12 @@ public:
         : handle_(handle), modified_(false)
         , menu_(get_parent_module(handle_), MAKEINTRESOURCE(HAMIGAKI_IDR_POPUP))
         , char_sel_window_(0), map_window_(0), map_sel_window_(0)
+        , runner_(get_game_exe_path())
     {
+#if !defined(NDEBUG)
+        if (!runner_.empty())
+            dll_paths_ = get_bjam_dll_paths(runner_.file_string());
+#endif
     }
 
     ~impl()
@@ -464,6 +502,93 @@ public:
             menu_.popup(0, x, y, handle_);
     }
 
+    bool has_test_runner() const
+    {
+        return !runner_.empty();
+    }
+
+    void test_play()
+    {
+#if !defined(NDEBUG)
+        if (!dll_paths_.empty())
+        {
+            boost::scoped_array<char> args(new char[project_file_.size()+1]);
+            project_file_.copy(&args[0], project_file_.size());
+            args[project_file_.size()] = '\0';
+
+            typedef std::map<std::string,std::string>::iterator iter_type;
+            std::map<std::string,std::string> env_table;
+            hamigaki::detail::get_environment_variables(env_table);
+
+            std::size_t env_size = 1;
+            bool found_path = false;
+            for (iter_type i = env_table.begin(); i != env_table.end(); ++i)
+            {
+                env_size += i->first.size();
+                ++env_size;
+                env_size += i->second.size();
+                ++env_size;
+
+                if (algo::to_upper_copy(i->first) == "PATH")
+                {
+                    env_size += (dll_paths_.size() + 1);
+                    found_path = true;
+                }
+            }
+
+            if (!found_path)
+                env_size += (sizeof("Path=")-1 + (dll_paths_.size()+1));
+
+            boost::scoped_array<char> env(new char[env_size]);
+            std::size_t env_pos = 0;
+            for (iter_type i = env_table.begin(); i != env_table.end(); ++i)
+            {
+                const std::string& name = i->first;
+                const std::string& value = i->second;
+
+                env_pos += name.copy(&env[env_pos], name.size());
+                env[env_pos++] = '=';
+
+                if (algo::to_upper_copy(i->first) == "PATH")
+                {
+                    env_pos +=
+                        dll_paths_.copy(&env[env_pos], dll_paths_.size());
+                    env[env_pos++] = ';';
+                }
+
+                env_pos += value.copy(&env[env_pos], value.size());
+                env[env_pos++] = '\0';
+            }
+            if (!found_path)
+            {
+                std::strcpy(&env[env_pos], "Path=");
+                env_pos += sizeof("Path=")-1;
+                env_pos += dll_paths_.copy(&env[env_pos], dll_paths_.size());
+                env[env_pos++] = '\0';
+            }
+            env[env_pos] = '\0';
+
+            ::STARTUPINFOA startup = {};
+            startup.cb = sizeof(startup);
+
+            ::PROCESS_INFORMATION info;
+            if (::CreateProcessA(
+                runner_.file_string().c_str(),
+                &args[0],
+                0, 0, FALSE, 0, env.get(), 0, &startup, &info) != FALSE)
+            {
+                ::CloseHandle(info.hProcess);
+                ::CloseHandle(info.hThread);
+            }
+            return;
+        }
+#endif
+
+        ::ShellExecuteA(handle_, 0,
+            runner_.file_string().c_str(),
+            project_file_.c_str(), 0, SW_SHOWNORMAL);
+    }
+
 private:
     ::HWND handle_;
     game_project project_;
@@ -476,6 +601,10 @@ private:
     ::HWND map_sel_window_;
     bool modified_;
     menu menu_;
+    fs::path runner_;
+#if !defined(NDEBUG)
+    std::string dll_paths_;
+#endif
 
     void create_child_windows()
     {
@@ -600,4 +729,14 @@ bool main_window::modified()
 void main_window::track_popup_menu(::HWND hwnd, int x, int y)
 {
     pimpl_->track_popup_menu(hwnd, x, y);
+}
+
+bool main_window::has_test_runner() const
+{
+    return pimpl_->has_test_runner();
+}
+
+void main_window::test_play()
+{
+    pimpl_->test_play();
 }

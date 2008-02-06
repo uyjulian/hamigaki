@@ -42,6 +42,8 @@ public:
     void change_stage();
     bool modified();
     void track_popup_menu(::HWND hwnd, int x, int y);
+    bool has_test_runner() const;
+    void test_play();
 
 private:
     class impl;
