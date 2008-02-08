@@ -1,6 +1,6 @@
 // environment.hpp: an utility for environment variables
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -20,7 +20,13 @@
 
 namespace hamigaki { namespace detail {
 
-inline void get_environment_variables(std::map<std::string,std::string>& table)
+#if defined(BOOST_WINDOWS)
+typedef windows::environment_type environment_type;
+#elif defined(BOOST_HAS_UNISTD_H)
+typedef posix::environment_type environment_type;
+#endif
+
+inline void get_environment_variables(environment_type& table)
 {
 #if defined(BOOST_WINDOWS)
     ::hamigaki::detail::windows::get_environment_variables(table);

@@ -1,6 +1,6 @@
 // environment.hpp: an utility for POSIX environment variables
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -29,7 +29,9 @@
 
 namespace hamigaki { namespace detail { namespace posix {
 
-inline void get_environment_variables(std::map<std::string,std::string>& table)
+typedef std::map<std::string,std::string> environment_type;
+
+inline void get_environment_variables(environment_type& table)
 {
     for (char** p = environ; *p; ++p)
     {

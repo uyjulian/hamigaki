@@ -1,6 +1,6 @@
 // environment.hpp: an utility for Windows environment variables
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -16,7 +16,20 @@
 
 namespace hamigaki { namespace detail { namespace windows {
 
-inline void get_environment_variables(std::map<std::string,std::string>& table)
+struct iless
+{
+    bool operator()(const std::string& lhs, const std::string& rhs) const
+    {
+        return ::CompareStringA(
+            LOCALE_USER_DEFAULT, NORM_IGNORECASE,
+            lhs.c_str(), lhs.size(), rhs.c_str(), rhs.size()
+        ) == CSTR_LESS_THAN;
+    }
+};
+
+typedef std::map<std::string,std::string,iless> environment_type;
+
+inline void get_environment_variables(environment_type& table)
 {
     // Note: GetEnvironmentStringsA is macro for GetEnvironmentStrings
     boost::shared_ptr<void> env(

@@ -1,6 +1,6 @@
 // predefined_variables.cpp: bjam pre-defined variables
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -124,7 +124,7 @@ HAMIGAKI_BJAM_DECL void set_predefined_variables(context& ctx)
     }
 #endif
 
-    typedef std::map<std::string,std::string> table_type;
+    typedef hamigaki::detail::environment_type table_type;
     typedef table_type::const_iterator iter_type;
 
     table_type env;
