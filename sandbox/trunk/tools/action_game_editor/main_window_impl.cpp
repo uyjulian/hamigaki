@@ -516,28 +516,25 @@ public:
             project_file_.copy(&args[0], project_file_.size());
             args[project_file_.size()] = '\0';
 
-            typedef std::map<std::string,std::string>::iterator iter_type;
-            std::map<std::string,std::string> env_table;
+            typedef hamigaki::detail::environment_type table_type;
+            typedef table_type::iterator iter_type;
+            table_type env_table;
             hamigaki::detail::get_environment_variables(env_table);
 
+            std::string old_path = env_table["PATH"];
+            if (old_path.empty())
+                env_table["PATH"] = dll_paths_;
+            else
+                env_table["PATH"] = dll_paths_ + ";" + old_path;
+
             std::size_t env_size = 1;
-            bool found_path = false;
             for (iter_type i = env_table.begin(); i != env_table.end(); ++i)
             {
                 env_size += i->first.size();
                 ++env_size;
                 env_size += i->second.size();
                 ++env_size;
-
-                if (algo::to_upper_copy(i->first) == "PATH")
-                {
-                    env_size += (dll_paths_.size() + 1);
-                    found_path = true;
-                }
             }
-
-            if (!found_path)
-                env_size += (sizeof("Path=")-1 + (dll_paths_.size()+1));
 
             boost::scoped_array<char> env(new char[env_size]);
             std::size_t env_pos = 0;
@@ -549,21 +546,7 @@ public:
                 env_pos += name.copy(&env[env_pos], name.size());
                 env[env_pos++] = '=';
 
-                if (algo::to_upper_copy(i->first) == "PATH")
-                {
-                    env_pos +=
-                        dll_paths_.copy(&env[env_pos], dll_paths_.size());
-                    env[env_pos++] = ';';
-                }
-
                 env_pos += value.copy(&env[env_pos], value.size());
-                env[env_pos++] = '\0';
-            }
-            if (!found_path)
-            {
-                std::strcpy(&env[env_pos], "Path=");
-                env_pos += sizeof("Path=")-1;
-                env_pos += dll_paths_.copy(&env[env_pos], dll_paths_.size());
                 env[env_pos++] = '\0';
             }
             env[env_pos] = '\0';
