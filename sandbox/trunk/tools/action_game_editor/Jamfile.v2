@@ -80,6 +80,7 @@ exe action_game_editor
     <threading>multi
     <define>NOMINMAX=1
     <variant>debug:<source>bjam_dll_path.cpp
+    <variant>debug:<library>/hamigaki/process//hamigaki_process
     $(requirements)
     ;
 

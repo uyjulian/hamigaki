@@ -31,8 +31,8 @@
 
 #if !defined(NDEBUG)
     #include "bjam_dll_path.hpp"
-    #include <hamigaki/detail/environment.hpp>
-    #include <boost/algorithm/string/case_conv.hpp>
+    #include <hamigaki/process/child.hpp>
+    #include <hamigaki/process/environment.hpp>
 #endif
 
 #include <hamigaki/system/windows_error.hpp>
@@ -512,57 +512,22 @@ public:
 #if !defined(NDEBUG)
         if (!dll_paths_.empty())
         {
-            boost::scoped_array<char> args(new char[project_file_.size()+1]);
-            project_file_.copy(&args[0], project_file_.size());
-            args[project_file_.size()] = '\0';
+            namespace proc = hamigaki::process;
 
-            typedef hamigaki::detail::environment_type table_type;
-            typedef table_type::iterator iter_type;
-            table_type env_table;
-            hamigaki::detail::get_environment_variables(env_table);
-
-            std::string old_path = env_table["PATH"];
-            if (old_path.empty())
-                env_table["PATH"] = dll_paths_;
+            proc::environment env;
+            if (const char* old_paths = env.get("PATH"))
+            {
+                std::string new_paths = dll_paths_;
+                new_paths += ';';
+                new_paths += old_paths;
+                env.set("PATH", new_paths);
+            }
             else
-                env_table["PATH"] = dll_paths_ + ";" + old_path;
+                env.set("PATH", dll_paths_);
 
-            std::size_t env_size = 1;
-            for (iter_type i = env_table.begin(); i != env_table.end(); ++i)
-            {
-                env_size += i->first.size();
-                ++env_size;
-                env_size += i->second.size();
-                ++env_size;
-            }
-
-            boost::scoped_array<char> env(new char[env_size]);
-            std::size_t env_pos = 0;
-            for (iter_type i = env_table.begin(); i != env_table.end(); ++i)
-            {
-                const std::string& name = i->first;
-                const std::string& value = i->second;
-
-                env_pos += name.copy(&env[env_pos], name.size());
-                env[env_pos++] = '=';
-
-                env_pos += value.copy(&env[env_pos], value.size());
-                env[env_pos++] = '\0';
-            }
-            env[env_pos] = '\0';
-
-            ::STARTUPINFOA startup = {};
-            startup.cb = sizeof(startup);
-
-            ::PROCESS_INFORMATION info;
-            if (::CreateProcessA(
-                runner_.file_string().c_str(),
-                &args[0],
-                0, 0, FALSE, 0, env.get(), 0, &startup, &info) != FALSE)
-            {
-                ::CloseHandle(info.hProcess);
-                ::CloseHandle(info.hThread);
-            }
+            std::vector<std::string> args;
+            args.push_back(project_file_);
+            proc::launch_detached(runner_.file_string(), args, env);
             return;
         }
 #endif
