@@ -426,20 +426,26 @@ public:
 
     ~impl()
     {
-        terminate();
-
-        ::CloseHandle(handle_);
+        if (handle_ != INVALID_HANDLE_VALUE)
+        {
+            terminate();
+            ::WaitForSingleObject(handle_, INFINITE);
+            ::CloseHandle(handle_);
+        }
     }
 
     status wait()
     {
+        BOOST_ASSERT(handle_ != INVALID_HANDLE_VALUE);
+
         ::WaitForSingleObject(handle_, INFINITE);
 
         ::DWORD code;
-        if (::GetExitCodeProcess(handle_, &code) == FALSE)
-            throw std::runtime_error("GetExitCodeProcess() failed");
-
+        ::GetExitCodeProcess(handle_, &code);
         BOOST_ASSERT(code != STILL_ACTIVE);
+
+        ::CloseHandle(handle_);
+        handle_ = INVALID_HANDLE_VALUE;
 
         return status(static_cast<unsigned>(code));
     }
@@ -449,10 +455,7 @@ public:
         ::DWORD code;
         ::GetExitCodeProcess(handle_, &code);
         if (code == STILL_ACTIVE)
-        {
             ::TerminateProcess(handle_, 1);
-            ::WaitForSingleObject(handle_, INFINITE);
-        }
     }
 
     pipe_sink& stdin_sink()
@@ -694,7 +697,11 @@ public:
 
     ~impl()
     {
-        terminate();
+        if (handle_ != static_cast< ::pid_t>(-1))
+        {
+            terminate();
+            ::waitpid(handle_, 0, 0);
+        }
     }
 
     status wait()
@@ -737,10 +744,7 @@ public:
     void terminate()
     {
         if (handle_ != static_cast< ::pid_t>(-1))
-        {
             ::kill(handle_, SIGKILL);
-            wait();
-        }
     }
 
     pipe_sink& stdin_sink()
