@@ -85,6 +85,10 @@
           <notes>POSIX環境では、このコンストラクタの呼び出し中に環境変数を変更してはならない。</notes>
         </constructor>
 
+        <destructor>
+          <effects>wait()を呼び出していない場合、子プロセスを強制終了させる。</effects>
+        </destructor>
+
         <method-group name="modifiers">
           <method name="wait">
             <type>status</type>
@@ -123,6 +127,47 @@
           </method>
         </method-group>
       </class>
+
+      <overloaded-function name="launch_detached">
+        <signature>
+          <type>void</type>
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+          <parameter name="args">
+            <paramtype>const std::vector&lt;std::string&gt;&amp;</paramtype>
+          </parameter>
+          <parameter name="env">
+            <paramtype>const <classname>environment</classname>&amp;</paramtype>
+          </parameter>
+        </signature>
+        <signature>
+          <type>void</type>
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+          <parameter name="args">
+            <paramtype>const std::vector&lt;std::string&gt;&amp;</paramtype>
+          </parameter>
+        </signature>
+        <signature>
+          <type>void</type>
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+          <parameter name="env">
+            <paramtype>const <classname>environment</classname>&amp;</paramtype>
+          </parameter>
+        </signature>
+        <signature>
+          <type>void</type>
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+        </signature>
+        <effects>パス<code>path</code>で示される実行ファイルを引数<code>args</code>、環境変数<code>env</code>で実行する。生成されたプロセスは親プロセスの制御から切り離される。</effects>
+        <notes>この関数で生成されたプロセスは、現在のプロセスに終了を通知することはない。</notes>
+      </overloaded-function>
     </namespace>
   </namespace>
 </header>

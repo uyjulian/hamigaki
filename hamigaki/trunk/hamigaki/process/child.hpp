@@ -1,6 +1,6 @@
 // child.hpp: child process
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -69,6 +69,20 @@ private:
     class impl;
     boost::shared_ptr<impl> pimpl_;
 };
+
+HAMIGAKI_PROCESS_DECL
+void launch_detached(
+    const std::string& path, const std::vector<std::string>& args,
+    const environment& env
+);
+
+HAMIGAKI_PROCESS_DECL void
+launch_detached(const std::string& path, const std::vector<std::string>& args);
+
+HAMIGAKI_PROCESS_DECL
+void launch_detached(const std::string& path, const environment& env);
+
+HAMIGAKI_PROCESS_DECL void launch_detached(const std::string& path);
 
 } } // End namespaces process, hamigaki.
 

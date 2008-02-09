@@ -1,6 +1,6 @@
 // child.cpp: child process
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -477,6 +477,31 @@ private:
     pipe_source stdout_;
     pipe_source stderr_;
 };
+
+void launch_detached_impl(
+    const std::string& path, const std::string& cmd, environment* env_ptr)
+{
+    std::vector<char> cmd_buf(cmd.c_str(), cmd.c_str()+cmd.size()+1);
+
+    void* env = 0;
+    if (env_ptr)
+        env = env_ptr->data();
+
+    ::STARTUPINFOA startup = {};
+    startup.cb = sizeof(startup);
+
+    ::PROCESS_INFORMATION proc_info;
+    if (::CreateProcessA(
+        path.c_str(),
+        &cmd_buf[0],
+        0, 0, FALSE, CREATE_NEW_CONSOLE, env, 0, &startup, &proc_info) == FALSE)
+    {
+        throw std::runtime_error("CreateProcessA() failed");
+    }
+
+    ::CloseHandle(proc_info.hProcess);
+    ::CloseHandle(proc_info.hThread);
+}
 #else // not defined(BOOST_WINDOWS)
 namespace
 {
@@ -740,6 +765,79 @@ private:
     pipe_source stdout_;
     pipe_source stderr_;
 };
+
+void launch_detached_impl(
+    const std::string& path, const std::vector<std::string>& args,
+    environment* env_ptr
+)
+{
+    boost::scoped_array<char*> argv(new char*[args.size()+1]);
+
+    std::size_t argv_size = 0;
+    for (std::size_t i = 0; i < args.size(); ++i)
+        argv_size += (args[i].size() + 1);
+
+    boost::scoped_array<char> argv_buf(new char[argv_size]);
+    char* p = argv_buf.get();
+    for (std::size_t i = 0; i < args.size(); ++i)
+    {
+        const std::string& arg = args[i];
+        arg.copy(p, arg.size());
+        p[arg.size()] = '\0';
+        argv[i] = p;
+        p += static_cast<std::ptrdiff_t>(arg.size() + 1);
+    }
+    argv[args.size()] = 0;
+
+    boost::scoped_array<char*> env;
+    if (env_ptr)
+    {
+        env.reset(new char*[env_ptr->size()+1]);
+        char* p = env_ptr->data();
+        std::size_t i = 0;
+        while (*p)
+        {
+            BOOST_ASSERT(i < env_ptr->size());
+            env[i++] = p;
+            p += (std::strlen(p) + 1);
+        }
+        BOOST_ASSERT(i == env_ptr->size());
+        env[i] = 0;
+    }
+
+    const char* ph = path.c_str();
+    char* const* a = (char* const*)argv.get();
+    char* const* e = (char* const*)env.get();
+
+    int open_max = static_cast<int>(::sysconf(_SC_OPEN_MAX));
+    if (open_max == -1)
+        open_max = 256;
+
+    int handle = ::fork();
+    if (handle == 0)
+    {
+        handle = ::fork();
+        if (handle == 0)
+        {
+            for (int i = 0; i < open_max; ++i)
+                ::close(i);
+
+            if (::execve(ph, a, e ? e : (char* const*)environ) == -1)
+                ::_exit(127);
+        }
+        else
+            ::_exit(handle != static_cast< ::pid_t>(-1) ? 0 : 127);
+    }
+    else
+    {
+        if (handle == static_cast< ::pid_t>(-1))
+            throw std::runtime_error("fork() failed");
+
+        int st;
+        if (::waitpid(handle, &st, 0) == -1)
+            throw std::runtime_error("waitpid() failed");
+    }
+}
 #endif // not defined(BOOST_WINDOWS)
 
 child::child(
@@ -828,6 +926,58 @@ pipe_source& child::stdout_source()
 pipe_source& child::stderr_source()
 {
     return pimpl_->stderr_source();
+}
+
+HAMIGAKI_PROCESS_DECL
+void launch_detached(
+    const std::string& path, const std::vector<std::string>& args,
+    const environment& env
+)
+{
+    environment tmp_env(env);
+
+#if defined(BOOST_WINDOWS)
+    process::launch_detached_impl(path, make_command_line(args), &tmp_env);
+#else
+    process::launch_detached_impl(path, args, &tmp_env);
+#endif
+}
+
+HAMIGAKI_PROCESS_DECL void
+launch_detached(const std::string& path, const std::vector<std::string>& args)
+{
+#if defined(BOOST_WINDOWS)
+    process::launch_detached_impl(path, make_command_line(args), 0);
+#else
+    process::launch_detached_impl(path, args, 0);
+#endif
+}
+
+HAMIGAKI_PROCESS_DECL
+void launch_detached(const std::string& path, const environment& env)
+{
+    environment tmp_env(env);
+
+#if defined(BOOST_WINDOWS)
+    process::launch_detached_impl(path, "", &tmp_env);
+#else
+    std::vector<std::string> args;
+    args.push_back(path);
+
+    process::launch_detached_impl(path, args, &tmp_env);
+#endif
+}
+
+HAMIGAKI_PROCESS_DECL void launch_detached(const std::string& path)
+{
+#if defined(BOOST_WINDOWS)
+    process::launch_detached_impl(path, "", 0);
+#else
+    std::vector<std::string> args;
+    args.push_back(path);
+
+    process::launch_detached_impl(path, args, 0);
+#endif
 }
 
 } } // End namespaces process, hamigaki.

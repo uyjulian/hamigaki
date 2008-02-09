@@ -1,6 +1,6 @@
 // child_test.cpp: test case for child processes
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -102,11 +102,45 @@ void env_test()
     BOOST_CHECK_EQUAL(st.code(), 0u);
 }
 
+#if 0
+void detach_test()
+{
+#if defined(BOOST_WINDOWS)
+    proc::launch_detached("C:\\WINDOWS\\system32\\notepad.exe");
+#elif defined(__CYGWIN__)
+    proc::launch_detached("/cygdrive/c/WINDOWS/system32/notepad.exe");
+#else
+    std::vector<std::string> args;
+    args.push_back("sleep");
+    args.push_back("10");
+    proc::launch_detached(find_exe("sleep"), args);
+#endif
+}
+#else
+void detach_test()
+{
+#if defined(BOOST_WINDOWS)
+    std::vector<std::string> args;
+    args.push_back("cmd");
+    args.push_back("/c");
+    args.push_back("dir");
+
+    proc::launch_detached("C:\\WINDOWS\\system32\\cmd.exe", args);
+#else
+    std::vector<std::string> args;
+    args.push_back("sleep");
+    args.push_back("10");
+    proc::launch_detached(find_exe("sleep"), args);
+#endif
+}
+#endif
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("child process test");
     test->add(BOOST_TEST_CASE(&sort_test));
     test->add(BOOST_TEST_CASE(&terminate_test));
     test->add(BOOST_TEST_CASE(&env_test));
+    test->add(BOOST_TEST_CASE(&detach_test));
     return test;
 }
