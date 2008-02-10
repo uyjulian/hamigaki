@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2008.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<section id="bbv2.reference.targets">
+  <title>targetsモジュール</title>
+  <synopsis><emphasis role="bold">class</emphasis> <link linkend="bbv2.reference.targets.abstract-target">abstract-target</link> { }
+<emphasis role="bold">class</emphasis> <link linkend="bbv2.reference.targets.project-target">project-target</link> { }
+<emphasis role="bold">module</emphasis> targets {
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.create-typed-target">create-typed-target</link> ( type : project : name : sources * : requirements * : default-build * : usage-requirements * ) { }
+}
+</synopsis>
+  <refentry id="bbv2.reference.targets.abstract-target">
+    <refmeta>
+      <refentrytitle>Class abstract-target</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>abstract-target</refname>
+      <refpurpose><simpara>抽象ターゲットを表現するクラス</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">class</emphasis> abstract-target {
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.abstract-target.__init__">__init__</link> ( name : project-module ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.abstract-target.name">name</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.abstract-target.project">project</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.abstract-target.location">location</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.abstract-target.full-name">full-name</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.abstract-target.generate">generate</link> ( property-set ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.abstract-target.rename">rename</link> ( new-name ) { }
+}</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <orderedlist>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.abstract-target.__init__"/>__init__ ( name : project-module )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Effects:</term>
+              <listitem>抽象ターゲットを作成する</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.abstract-target.name"/>name ( )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Returns:</term>
+              <listitem>ターゲットの名前</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.abstract-target.project"/>project ( )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Returns:</term>
+              <listitem>ターゲットのプロジェクト</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.abstract-target.location"/>location ( )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Returns:</term>
+              <listitem>ターゲットの宣言されている位置</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.abstract-target.full-name"/>full-name ( )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Returns:</term>
+              <listitem>ターゲットのユーザー可読な名前</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.abstract-target.generate"/>generate ( property-set )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Effects:</term>
+              <listitem><code>property-set</code>で指定したプロパティに対して、仮想ターゲットを生成する</listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Returns:</term>
+              <listitem>usage-requirementsのproperty-setと生成された仮想ターゲットのリスト</listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Notes:</term>
+              <listitem>このルールは派生クラスで必ずオーバーライドしなければならない。</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.abstract-target.rename"/>rename ( new-name )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Effects:</term>
+              <listitem>ターゲットの名前を<code>new-name</code>に変更する</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </orderedlist>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.targets.project-target">
+    <refmeta>
+      <refentrytitle>Class project-target</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>project-target</refname>
+      <refpurpose><simpara>プロジェクト用の抽象ターゲットクラス</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">class</emphasis> project-target : <link linkend="bbv2.reference.targets.abstract-target">abstract-target</link> {
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.project-target.__init__">__init__</link> ( name : project-module parent-project ? : requirements * : default-build * ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.project-target.project-module">project-module</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.project-target.get">get</link> ( attribute ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.project-target.build-dir">build-dir</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.project-target.generate">generate</link> ( property-set * ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.project-target.targets-to-build">targets-to-build</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.project-target.mark-target-as-explicit">mark-target-as-explicit</link> ( target-name ) { }
+}</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <orderedlist>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.project-target.__init__"/>__init__ ( name : project-module parent-project ? : requirements * : default-build * )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Effects:</term>
+              <listitem>プロジェクト用の抽象ターゲットを作成する</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.project-target.project-module"/>project-module ( )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Returns:</term>
+              <listitem>ターゲットのプロジェクトモジュール</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.project-target.get"/>get ( attribute )</literallayout></para>
+          <simpara>ターゲットのプロジェクトモジュールに対して属性<code>attribute</code>を問い合わせる。</simpara>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Returns:</term>
+              <listitem>プロジェクトモジュールの属性</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.project-target.build-dir"/>build-dir ( )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Returns:</term>
+              <listitem>ターゲットのビルドディレクトリ</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.project-target.generate"/>generate ( property-set * )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Effects:</term>
+              <listitem><code>property-set</code>で指定したプロパティに対して、仮想ターゲットを生成する</listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Returns:</term>
+              <listitem>usage-requirementsのproperty-setと生成された仮想ターゲットのリスト</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.project-target.targets-to-build"/>targets-to-build ( )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Returns:</term>
+              <listitem>このプロジェクトをビルドするためにビルドする必要のあるターゲットのリスト</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.project-target.mark-target-as-explicit"/>generate ( target-name )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Effects:</term>
+              <listitem><code>target-name</code>で識別されるターゲットを明示的にビルドする必要があるターゲットのリストに追加する</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </orderedlist>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.targets.create-typed-target">
+    <refmeta>
+      <refentrytitle>create-typed-target</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>targets.create-typed-target</refname>
+      <refpurpose><simpara>型付けされたターゲットを生成する</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> create-typed-target ( type : project : name : sources * : requirements * : default-build * : usage-requirements * )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <para>型付けされたターゲットを生成する。</para>
+    </refsection>
+  </refentry>
+</section>
