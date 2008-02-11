@@ -42,6 +42,29 @@
       <orderedlist>
         <listitem>
           <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.abstract-target.__init__"/>__init__ ( name : project-module )</literallayout></para>
+          <informaltable frame="all">
+            <tgroup cols="3">
+              <thead>
+                <row>
+                  <entry>引数</entry>
+                  <entry>型</entry>
+                  <entry>意味</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>name</entry>
+                  <entry>文字列</entry>
+                  <entry>ターゲットの名前</entry>
+                </row>
+                <row>
+                  <entry>project-module</entry>
+                  <entry><link linkend="bbv2.reference.targets.project-target">project-target</link></entry>
+                  <entry>ターゲットのプロジェクト</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
           <variablelist spacing="compact">
             <varlistentry>
               <term>Effects:</term>
@@ -63,7 +86,24 @@
           <variablelist spacing="compact">
             <varlistentry>
               <term>Returns:</term>
-              <listitem>ターゲットのプロジェクト</listitem>
+              <listitem>
+                <informaltable frame="all">
+                  <tgroup cols="2">
+                    <thead>
+                      <row>
+                        <entry>型</entry>
+                        <entry>意味</entry>
+                      </row>
+                    </thead>
+                    <tbody>
+                      <row>
+                        <entry><link linkend="bbv2.reference.targets.project-target">project-target</link></entry>
+                        <entry>ターゲットのプロジェクト</entry>
+                      </row>
+                    </tbody>
+                  </tgroup>
+                </informaltable>
+              </listitem>
             </varlistentry>
           </variablelist>
         </listitem>
@@ -87,14 +127,56 @@
         </listitem>
         <listitem>
           <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.abstract-target.generate"/>generate ( property-set )</literallayout></para>
+          <informaltable frame="all">
+            <tgroup cols="3">
+              <thead>
+                <row>
+                  <entry>引数</entry>
+                  <entry>型</entry>
+                  <entry>意味</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>property-set</entry>
+                  <entry>property-set</entry>
+                  <entry>仮想ターゲットを生成するのに使用するプロパティセット</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
           <variablelist spacing="compact">
             <varlistentry>
               <term>Effects:</term>
-              <listitem><code>property-set</code>で指定したプロパティに対して、仮想ターゲットを生成する</listitem>
+              <listitem><code>property-set</code>で指定したプロパティセットに対して、仮想ターゲットを生成する</listitem>
             </varlistentry>
             <varlistentry>
               <term>Returns:</term>
-              <listitem>usage-requirementsのproperty-setと生成された仮想ターゲットのリスト</listitem>
+              <listitem>
+                <informaltable frame="all">
+                  <tgroup cols="3">
+                    <thead>
+                      <row>
+                        <entry>インデックス</entry>
+                        <entry>型</entry>
+                        <entry>意味</entry>
+                      </row>
+                    </thead>
+                    <tbody>
+                      <row>
+                        <entry>1</entry>
+                        <entry>property-set</entry>
+                        <entry>usage-requirements</entry>
+                      </row>
+                      <row>
+                        <entry>2-</entry>
+                        <entry>virtual-targetのリスト</entry>
+                        <entry>生成された仮想ターゲットのリスト</entry>
+                      </row>
+                    </tbody>
+                  </tgroup>
+                </informaltable>
+              </listitem>
             </varlistentry>
             <varlistentry>
               <term>Notes:</term>
@@ -132,6 +214,10 @@
   <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.project-target.generate">generate</link> ( property-set * ) { }
   <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.project-target.targets-to-build">targets-to-build</link> ( ) { }
   <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.project-target.mark-target-as-explicit">mark-target-as-explicit</link> ( target-name ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.project-target.add-alternative">add-alternative</link> ( target-instance ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.project-target.main-target">main-target</link> ( name ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.project-target.has-main-target">has-main-target</link> ( name ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.project-target.find">find</link> ( id : no-error ? ) { }
 }</programlisting>
     </refsynopsisdiv>
     <refsection>
@@ -139,6 +225,44 @@
       <orderedlist>
         <listitem>
           <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.project-target.__init__"/>__init__ ( name : project-module parent-project ? : requirements * : default-build * )</literallayout></para>
+          <informaltable frame="all">
+            <tgroup cols="3">
+              <thead>
+                <row>
+                  <entry>引数</entry>
+                  <entry>型</entry>
+                  <entry>意味</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>name</entry>
+                  <entry>文字列</entry>
+                  <entry>ターゲットの名前</entry>
+                </row>
+                <row>
+                  <entry>project-module</entry>
+                  <entry>文字列</entry>
+                  <entry>プロジェクトモジュールの名前</entry>
+                </row>
+                <row>
+                  <entry>parent-project</entry>
+                  <entry><link linkend="bbv2.reference.targets.project-target">project-target</link></entry>
+                  <entry>親プロジェクト</entry>
+                </row>
+                <row>
+                  <entry>requirements</entry>
+                  <entry>property-set</entry>
+                  <entry>requirements</entry>
+                </row>
+                <row>
+                  <entry>default-build</entry>
+                  <entry>property-set</entry>
+                  <entry>default-build</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
           <variablelist spacing="compact">
             <varlistentry>
               <term>Effects:</term>
@@ -151,7 +275,7 @@
           <variablelist spacing="compact">
             <varlistentry>
               <term>Returns:</term>
-              <listitem>ターゲットのプロジェクトモジュール</listitem>
+              <listitem>プロジェクトモジュールの名前</listitem>
             </varlistentry>
           </variablelist>
         </listitem>
@@ -178,12 +302,8 @@
           <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.project-target.generate"/>generate ( property-set * )</literallayout></para>
           <variablelist spacing="compact">
             <varlistentry>
-              <term>Effects:</term>
-              <listitem><code>property-set</code>で指定したプロパティに対して、仮想ターゲットを生成する</listitem>
-            </varlistentry>
-            <varlistentry>
-              <term>Returns:</term>
-              <listitem>usage-requirementsのproperty-setと生成された仮想ターゲットのリスト</listitem>
+              <term>Overrides:</term>
+              <listitem><code><link linkend="bbv2.reference.targets.abstract-target.generate">abstract-target.generate</link></code></listitem>
             </varlistentry>
           </variablelist>
         </listitem>
@@ -197,11 +317,92 @@
           </variablelist>
         </listitem>
         <listitem>
-          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.project-target.mark-target-as-explicit"/>generate ( target-name )</literallayout></para>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.project-target.mark-target-as-explicit"/>mark-target-as-explicit ( target-name )</literallayout></para>
           <variablelist spacing="compact">
             <varlistentry>
               <term>Effects:</term>
               <listitem><code>target-name</code>で識別されるターゲットを明示的にビルドする必要があるターゲットのリストに追加する</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.project-target.add-alternative"/>add-alternative ( target-instance )</literallayout></para>
+          <informaltable frame="all">
+            <tgroup cols="3">
+              <thead>
+                <row>
+                  <entry>引数</entry>
+                  <entry>型</entry>
+                  <entry>意味</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>target-instance</entry>
+                  <entry><link linkend="bbv2.reference.targets.abstract-target">abstract-target</link></entry>
+                  <entry>追加するターゲット</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Effects:</term>
+              <listitem><code>target-instance</code>をプロジェクトの選択肢に追加する</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.project-target.main-target"/>main-target ( name )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Returns:</term>
+              <listitem><code>name</code>に対応するメインターゲット</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.project-target.has-main-target"/>has-main-target ( name )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Returns:</term>
+              <listitem><code>name</code>に対応するメインターゲットがあれば真、なければ偽</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.project-target.find"/>find ( id : no-error ? )</literallayout></para>
+          <informaltable frame="all">
+            <tgroup cols="3">
+              <thead>
+                <row>
+                  <entry>引数</entry>
+                  <entry>型</entry>
+                  <entry>意味</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>id</entry>
+                  <entry>文字列</entry>
+                  <entry>ターゲットのID</entry>
+                </row>
+                <row>
+                  <entry>no-error</entry>
+                  <entry>真偽値</entry>
+                  <entry>エラーを無視するかどうか</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Returns:</term>
+              <listitem><code>id</code>に対応するターゲット</listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Errors:</term>
+              <listitem>ターゲットが見つからず、かつ<code>no-error</code>が偽の場合</listitem>
             </varlistentry>
           </variablelist>
         </listitem>
@@ -215,14 +416,62 @@
     </refmeta>
     <refnamediv>
       <refname>targets.create-typed-target</refname>
-      <refpurpose><simpara>型付けされたターゲットを生成する</simpara></refpurpose>
+      <refpurpose><simpara><code>typed-target</code>を生成する</simpara></refpurpose>
     </refnamediv>
     <refsynopsisdiv>
       <programlisting><emphasis role="bold">rule</emphasis> create-typed-target ( type : project : name : sources * : requirements * : default-build * : usage-requirements * )</programlisting>
     </refsynopsisdiv>
     <refsection>
       <title>Description</title>
-      <para>型付けされたターゲットを生成する。</para>
+      <informaltable frame="all">
+        <tgroup cols="3">
+          <thead>
+            <row>
+              <entry>引数</entry>
+              <entry>型</entry>
+              <entry>意味</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>type</entry>
+              <entry>文字列</entry>
+              <entry>ターゲットの種別</entry>
+            </row>
+            <row>
+              <entry>project</entry>
+              <entry><link linkend="bbv2.reference.targets.project-target">project-target</link></entry>
+              <entry>ターゲットのプロジェクト</entry>
+            </row>
+            <row>
+              <entry>name</entry>
+              <entry>文字列</entry>
+              <entry>ターゲットの名前</entry>
+            </row>
+            <row>
+              <entry>sources</entry>
+              <entry>文字列のリスト</entry>
+              <entry>sources</entry>
+            </row>
+            <row>
+              <entry>requirements</entry>
+              <entry>property-set</entry>
+              <entry>requirements</entry>
+            </row>
+            <row>
+              <entry>default-build</entry>
+              <entry>property-set</entry>
+              <entry>default-build</entry>
+            </row>
+            <row>
+              <entry>usage-requirements</entry>
+              <entry>property-set</entry>
+              <entry>usage-requirements</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+      <para><code>typed-target</code>を生成する。</para>
     </refsection>
   </refentry>
 </section>
