@@ -173,25 +173,34 @@ public:
                 << " { }";
         }
 
-        for (std::size_t i = 0; i < rules_.size(); ++i)
+        if (!rules_.empty())
         {
-            const rule_definition& rule = rules_[i];
-
-            if (!classes_.empty() || (i != 0))
+            if (!classes_.empty())
                 os << '\n';
 
-            os << "<emphasis role=\"bold\">rule</emphasis> ";
-
             os
-                << "<link linkend=\"bbv2.reference."
-                << module << '.' << rule.name << "\">"
-                << rule.name
-                << "</link>"
-                << " ";
+                << "<emphasis role=\"bold\">module</emphasis> "
+                << module << " {\n";
 
-            ::print_rule_params(os, rule.parameters);
+            for (std::size_t i = 0; i < rules_.size(); ++i)
+            {
+                const rule_definition& rule = rules_[i];
 
-            os << " { }";
+                os << "  <emphasis role=\"bold\">rule</emphasis> ";
+
+                os
+                    << "<link linkend=\"bbv2.reference."
+                    << module << '.' << rule.name << "\">"
+                    << rule.name
+                    << "</link>"
+                    << " ";
+
+                ::print_rule_params(os, rule.parameters);
+
+                os << " { }\n";
+            }
+
+            os << "}\n";
         }
 
         os << "</synopsis>\n";
@@ -219,12 +228,7 @@ public:
             os << "    <refsynopsisdiv>\n";
 
             os << "      <programlisting>";
-            os
-                << "<emphasis role=\"bold\">class</emphasis> "
-                << "<link linkend=\"bbv2.reference."
-                << module << '.' << def.name << "\">"
-                << def.name
-                << "</link>";
+            os << "<emphasis role=\"bold\">class</emphasis> " << def.name;
             if (!def.base.empty())
             {
                 os
@@ -282,6 +286,7 @@ public:
                 os << "        </listitem>\n";
             }
 
+            os << "      </orderedlist>\n";
             os << "    </refsection>\n";
             os << "  </refentry>\n";
         }
@@ -303,7 +308,10 @@ public:
             os << "    </refmeta>\n";
 
             os << "    <refnamediv>\n";
-            os << "      <refname>" << rule.name << "</refname>\n";
+            os
+                << "      <refname>"
+                << module << '.' << rule.name
+                << "</refname>\n";
             os << "      <refpurpose><simpara>TODO</simpara></refpurpose>\n";
             os << "    </refnamediv>\n";
 
@@ -311,7 +319,7 @@ public:
 
             os
                 << "      <programlisting>"
-                << "<emphasis role=\"bold\">rule</emphasis>"
+                << "<emphasis role=\"bold\">rule</emphasis> "
                 << rule.name << ' ';
 
             ::print_rule_params(os, rule.parameters);
