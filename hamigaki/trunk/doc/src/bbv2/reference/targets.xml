@@ -30,7 +30,7 @@
     </refnamediv>
     <refsynopsisdiv>
       <programlisting><emphasis role="bold">class</emphasis> abstract-target {
-  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.abstract-target.__init__">__init__</link> ( name : project-module ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.abstract-target.__init__">__init__</link> ( name : project-target ) { }
   <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.abstract-target.name">name</link> ( ) { }
   <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.abstract-target.project">project</link> ( ) { }
   <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.abstract-target.location">location</link> ( ) { }
@@ -43,7 +43,7 @@
       <title>Description</title>
       <orderedlist>
         <listitem>
-          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.abstract-target.__init__"/>__init__ ( name : project-module )</literallayout></para>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.targets.abstract-target.__init__"/>__init__ ( name : project-target )</literallayout></para>
           <informaltable frame="all">
             <tgroup cols="3">
               <thead>
@@ -60,7 +60,7 @@
                   <entry>ターゲットの名前</entry>
                 </row>
                 <row>
-                  <entry>project-module</entry>
+                  <entry>project-target</entry>
                   <entry><link linkend="bbv2.reference.targets.project-target">project-target</link></entry>
                   <entry>ターゲットのプロジェクト</entry>
                 </row>
