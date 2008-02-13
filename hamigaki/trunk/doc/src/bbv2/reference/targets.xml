@@ -621,7 +621,7 @@
               <tbody>
                 <row>
                   <entry>subvariant</entry>
-                  <entry>virtual-target</entry>
+                  <entry>subvariant</entry>
                   <entry>対象となるターゲット</entry>
                 </row>
               </tbody>
