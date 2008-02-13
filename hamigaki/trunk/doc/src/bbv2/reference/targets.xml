@@ -16,6 +16,11 @@
 <emphasis role="bold">class</emphasis> <link linkend="bbv2.reference.targets.basic-target">basic-target</link> { }
 <emphasis role="bold">class</emphasis> <link linkend="bbv2.reference.targets.typed-target">typed-target</link> { }
 <emphasis role="bold">module</emphasis> targets {
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.main-target-sources">main-target-sources</link> ( sources * : main-target-name : no-renaming ? ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.main-target-requirements">main-target-requirements</link> ( specification * : project ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.main-target-usage-requirements">main-target-usage-requirements</link> ( specification * : project ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.main-target-default-build">main-target-default-build</link> ( specification * : project ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.main-target-alternative">main-target-alternative</link> ( target ) { }
   <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.targets.create-typed-target">create-typed-target</link> ( type : project : name : sources * : requirements * : default-build * : usage-requirements * ) { }
 }
 </synopsis>
@@ -341,7 +346,7 @@
               <tbody>
                 <row>
                   <entry>target-instance</entry>
-                  <entry><link linkend="bbv2.reference.targets.abstract-target">abstract-target</link></entry>
+                  <entry><link linkend="bbv2.reference.targets.basic-target">basic-target</link></entry>
                   <entry>追加するターゲット</entry>
                 </row>
               </tbody>
@@ -811,6 +816,276 @@
       </orderedlist>
     </refsection>
   </refentry>
+  <refentry id="bbv2.reference.targets.main-target-sources">
+    <refmeta>
+      <refentrytitle>Rule main-target-sources</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>targets.main-target-sources</refname>
+      <refpurpose><simpara>メインターゲット形式のsourcesを作成する</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> main-target-sources ( sources * : main-target-name : no-renaming ? )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <informaltable frame="all">
+        <tgroup cols="3">
+          <thead>
+            <row>
+              <entry>引数</entry>
+              <entry>型</entry>
+              <entry>意味</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>sources</entry>
+              <entry>文字列のリスト</entry>
+              <entry>メインターゲットルール形式のsources</entry>
+            </row>
+            <row>
+              <entry>main-target-name</entry>
+              <entry>文字列</entry>
+              <entry>メインターゲットの名前</entry>
+            </row>
+            <row>
+              <entry>no-renaming</entry>
+              <entry>真偽値</entry>
+              <entry>sourcesに含まれるオブジェクトを文字列に変形させるかどうか</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+      <para>メインターゲットルール形式のsourcesからメインターゲット形式のsourcesを作成する。</para>
+      <para><code>no-renaming</code>が真ならば、sourcesに含まれるオブジェクトは「<replaceable>メインターゲットの名前</replaceable>__<replaceable>オブジェクトの名前</replaceable>」という形式に変形される。</para>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.targets.main-target-requirements">
+    <refmeta>
+      <refentrytitle>Rule main-target-requirements</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>targets.main-target-requirements</refname>
+      <refpurpose><simpara>メインターゲット形式のrequirementsを作成する</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> main-target-requirements ( specification * : project )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <informaltable frame="all">
+        <tgroup cols="3">
+          <thead>
+            <row>
+              <entry>引数</entry>
+              <entry>型</entry>
+              <entry>意味</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>specification</entry>
+              <entry>文字列のリスト</entry>
+              <entry>メインターゲットルール形式のrequirements</entry>
+            </row>
+            <row>
+              <entry>project</entry>
+              <entry><link linkend="bbv2.reference.targets.project-target">project-target</link></entry>
+              <entry>メインターゲットのプロジェクト</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+      <para>メインターゲットルール形式のrequirementsからメインターゲット形式のrequirementsを作成する。</para>
+      <variablelist spacing="compact">
+        <varlistentry>
+          <term>Returns:</term>
+          <listitem>
+            <informaltable frame="all">
+              <tgroup cols="2">
+                <thead>
+                  <row>
+                    <entry>型</entry>
+                    <entry>意味</entry>
+                  </row>
+                </thead>
+                <tbody>
+                  <row>
+                    <entry>property-set</entry>
+                    <entry>メインターゲット形式のrequirements</entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </informaltable>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.targets.main-target-usage-requirements">
+    <refmeta>
+      <refentrytitle>Rule main-target-usage-requirements</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>targets.main-target-usage-requirements</refname>
+      <refpurpose><simpara>メインターゲット形式のusage-requirementsを作成する</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> main-target-usage-requirements ( specification * : project )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <informaltable frame="all">
+        <tgroup cols="3">
+          <thead>
+            <row>
+              <entry>引数</entry>
+              <entry>型</entry>
+              <entry>意味</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>specification</entry>
+              <entry>文字列のリスト</entry>
+              <entry>メインターゲットルール形式のusage-requirements</entry>
+            </row>
+            <row>
+              <entry>project</entry>
+              <entry><link linkend="bbv2.reference.targets.project-target">project-target</link></entry>
+              <entry>メインターゲットのプロジェクト</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+      <para>メインターゲットルール形式のusage-requirementsからメインターゲット形式のusage-requirementsを作成する。</para>
+      <variablelist spacing="compact">
+        <varlistentry>
+          <term>Returns:</term>
+          <listitem>
+            <informaltable frame="all">
+              <tgroup cols="2">
+                <thead>
+                  <row>
+                    <entry>型</entry>
+                    <entry>意味</entry>
+                  </row>
+                </thead>
+                <tbody>
+                  <row>
+                    <entry>property-set</entry>
+                    <entry>メインターゲット形式のusage-requirements</entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </informaltable>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.targets.main-target-default-build">
+    <refmeta>
+      <refentrytitle>Rule main-target-default-build</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>targets.main-target-default-build</refname>
+      <refpurpose><simpara>メインターゲット形式のdefault-buildを作成する</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> main-target-default-build ( specification * : project )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <informaltable frame="all">
+        <tgroup cols="3">
+          <thead>
+            <row>
+              <entry>引数</entry>
+              <entry>型</entry>
+              <entry>意味</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>specification</entry>
+              <entry>文字列のリスト</entry>
+              <entry>メインターゲットルール形式のdefault-build</entry>
+            </row>
+            <row>
+              <entry>project</entry>
+              <entry><link linkend="bbv2.reference.targets.project-target">project-target</link></entry>
+              <entry>メインターゲットのプロジェクト</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+      <para>メインターゲットルール形式のdefault-buildからメインターゲット形式のdefault-buildを作成する。</para>
+      <variablelist spacing="compact">
+        <varlistentry>
+          <term>Returns:</term>
+          <listitem>
+            <informaltable frame="all">
+              <tgroup cols="2">
+                <thead>
+                  <row>
+                    <entry>型</entry>
+                    <entry>意味</entry>
+                  </row>
+                </thead>
+                <tbody>
+                  <row>
+                    <entry>property-set</entry>
+                    <entry>メインターゲット形式のdefault-build</entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </informaltable>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.targets.main-target-alternative">
+    <refmeta>
+      <refentrytitle>Rule main-target-alternative</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>targets.main-target-alternative</refname>
+      <refpurpose><simpara>ターゲットをプロジェクトの選択肢に追加する</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> main-target-alternative ( target )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <informaltable frame="all">
+        <tgroup cols="3">
+          <thead>
+            <row>
+              <entry>引数</entry>
+              <entry>型</entry>
+              <entry>意味</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>target</entry>
+              <entry><link linkend="bbv2.reference.targets.basic-target">basic-target</link></entry>
+              <entry>追加するターゲット</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+      <para>ターゲットを自身の所属するプロジェクトの選択肢に追加する。</para>
+    </refsection>
+  </refentry>
   <refentry id="bbv2.reference.targets.create-typed-target">
     <refmeta>
       <refentrytitle>create-typed-target</refentrytitle>
@@ -857,17 +1132,17 @@
             </row>
             <row>
               <entry>requirements</entry>
-              <entry>property-set</entry>
+              <entry>文字列のリスト</entry>
               <entry>requirements</entry>
             </row>
             <row>
               <entry>default-build</entry>
-              <entry>property-set</entry>
+              <entry>文字列のリスト</entry>
               <entry>default-build</entry>
             </row>
             <row>
               <entry>usage-requirements</entry>
-              <entry>property-set</entry>
+              <entry>文字列のリスト</entry>
               <entry>usage-requirements</entry>
             </row>
           </tbody>
