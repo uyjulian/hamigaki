@@ -154,6 +154,63 @@ public:
         os << "<section id=\"bbv2.reference." << module << "\">\n";
         os << "  <title>" << module << " module</title>\n";
 
+        this->print_synopsis(os, module);
+        this->print_classes(os, module);
+        this->print_rules(os, module);
+
+        os << "</section>\n";
+    }
+
+private:
+    std::vector<class_definition> classes_;
+    std::vector<rule_definition> rules_;
+
+    void parse_class(std::istream& is, class_definition& class_def)
+    {
+        class_definition def;
+        is >> def.name;
+
+        typedef std::char_traits<char> tr;
+        if (!tr::eq_int_type(is.peek(), tr::to_int_type('\n')))
+        {
+            ::assert_token(is, ":");
+            is >> def.base;
+        }
+
+        class_def.swap(def);
+    }
+
+    void parse_rule(std::istream& is, std::vector<rule_definition>& rules)
+    {
+        rule_definition rule;
+        is >> rule.name;
+
+        std::vector<std::string> param;
+        std::string s;
+        is >> s;
+        if (s == "(")
+        {
+            while (is >> s)
+            {
+                if (s[0] == '#')
+                    ::skip_to(is, '\n');
+                else if (s == ")")
+                    break;
+                else if (s == ":")
+                    ::push_back_move(rule.parameters, param);
+                else
+                    param.push_back(s);
+            }
+
+            if (!param.empty())
+                ::push_back_move(rule.parameters, param);
+        }
+
+        ::push_back_move(rules, rule);
+    }
+
+    void print_synopsis(std::ostream& os, const std::string& module) const
+    {
         os << "  <synopsis>";
 
         for (std::size_t i = 0; i < classes_.size(); ++i)
@@ -204,7 +261,10 @@ public:
         }
 
         os << "</synopsis>\n";
+    }
 
+    void print_classes(std::ostream& os, const std::string& module) const
+    {
         for (std::size_t i = 0; i < classes_.size(); ++i)
         {
             const class_definition& def = classes_[i];
@@ -290,11 +350,13 @@ public:
             os << "    </refsection>\n";
             os << "  </refentry>\n";
         }
+    }
 
+    void print_rules(std::ostream& os, const std::string& module) const
+    {
         for (std::size_t i = 0; i < rules_.size(); ++i)
         {
             const rule_definition& rule = rules_[i];
-
 
             os
                 << "  <refentry id=\"bbv2.reference."
@@ -336,56 +398,6 @@ public:
 
             os << "  </refentry>\n";
         }
-
-        os << "</section>\n";
-    }
-
-private:
-    std::vector<class_definition> classes_;
-    std::vector<rule_definition> rules_;
-
-    void parse_class(std::istream& is, class_definition& class_def)
-    {
-        class_definition def;
-        is >> def.name;
-
-        typedef std::char_traits<char> tr;
-        if (!tr::eq_int_type(is.peek(), tr::to_int_type('\n')))
-        {
-            ::assert_token(is, ":");
-            is >> def.base;
-        }
-
-        class_def.swap(def);
-    }
-
-    void parse_rule(std::istream& is, std::vector<rule_definition>& rules)
-    {
-        rule_definition rule;
-        is >> rule.name;
-
-        std::vector<std::string> param;
-        std::string s;
-        is >> s;
-        if (s == "(")
-        {
-            while (is >> s)
-            {
-                if (s[0] == '#')
-                    ::skip_to(is, '\n');
-                else if (s == ")")
-                    break;
-                else if (s == ":")
-                    ::push_back_move(rule.parameters, param);
-                else
-                    param.push_back(s);
-            }
-
-            if (!param.empty())
-                ::push_back_move(rule.parameters, param);
-        }
-
-        ::push_back_move(rules, rule);
     }
 };
 
