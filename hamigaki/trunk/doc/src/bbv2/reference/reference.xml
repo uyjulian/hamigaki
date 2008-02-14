@@ -17,4 +17,5 @@
   <xi:include href="set.xml"/>
   <xi:include href="targets.xml"/>
   <xi:include href="toolset.xml"/>
+  <xi:include href="virtual-target.xml"/>
 </section>

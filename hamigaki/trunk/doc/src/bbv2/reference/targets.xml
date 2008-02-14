@@ -33,7 +33,7 @@
     </refmeta>
     <refnamediv>
       <refname>abstract-target</refname>
-      <refpurpose><simpara>抽象ターゲットを表現するクラス</simpara></refpurpose>
+      <refpurpose><simpara>ターゲットを表現する抽象クラス</simpara></refpurpose>
     </refnamediv>
     <refsynopsisdiv>
       <programlisting><emphasis role="bold">class</emphasis> abstract-target {
@@ -69,7 +69,7 @@
                 <row>
                   <entry>project-target</entry>
                   <entry><link linkend="bbv2.reference.targets.project-target">project-target</link></entry>
-                  <entry>ターゲットのプロジェクト</entry>
+                  <entry>ターゲットの属するプロジェクト</entry>
                 </row>
               </tbody>
             </tgroup>
@@ -77,7 +77,7 @@
           <variablelist spacing="compact">
             <varlistentry>
               <term>Effects:</term>
-              <listitem>抽象ターゲットを作成する</listitem>
+              <listitem>ターゲットを作成する</listitem>
             </varlistentry>
           </variablelist>
         </listitem>
@@ -107,7 +107,7 @@
                     <tbody>
                       <row>
                         <entry><link linkend="bbv2.reference.targets.project-target">project-target</link></entry>
-                        <entry>ターゲットのプロジェクト</entry>
+                        <entry>ターゲットの属するプロジェクト</entry>
                       </row>
                     </tbody>
                   </tgroup>
@@ -179,7 +179,7 @@
                       </row>
                       <row>
                         <entry>2-</entry>
-                        <entry>virtual-targetのリスト</entry>
+                        <entry><link linkend="bbv2.reference.virtual-target.virtual-target">virtual-target</link>のリスト</entry>
                         <entry>生成された仮想ターゲットのリスト</entry>
                       </row>
                     </tbody>
@@ -212,7 +212,7 @@
     </refmeta>
     <refnamediv>
       <refname>project-target</refname>
-      <refpurpose><simpara>プロジェクト用の抽象ターゲットクラス</simpara></refpurpose>
+      <refpurpose><simpara>プロジェクト用のターゲットクラス</simpara></refpurpose>
     </refnamediv>
     <refsynopsisdiv>
       <programlisting><emphasis role="bold">class</emphasis> project-target : <link linkend="bbv2.reference.targets.abstract-target">abstract-target</link> {
@@ -275,7 +275,7 @@
           <variablelist spacing="compact">
             <varlistentry>
               <term>Effects:</term>
-              <listitem>プロジェクト用の抽象ターゲットを作成する</listitem>
+              <listitem>プロジェクト用のターゲットを作成する</listitem>
             </varlistentry>
           </variablelist>
         </listitem>
@@ -519,7 +519,7 @@
     </refmeta>
     <refnamediv>
       <refname>file-reference</refname>
-      <refpurpose><simpara>ファイルを参照する抽象ターゲットクラス</simpara></refpurpose>
+      <refpurpose><simpara>ファイルを参照するターゲットクラス</simpara></refpurpose>
     </refnamediv>
     <refsynopsisdiv>
       <programlisting><emphasis role="bold">class</emphasis> file-reference : <link linkend="bbv2.reference.targets.abstract-target">abstract-target</link> {
@@ -552,7 +552,7 @@
                 <row>
                   <entry>project-target</entry>
                   <entry><link linkend="bbv2.reference.targets.project-target">project-target</link></entry>
-                  <entry>ターゲットのプロジェクト</entry>
+                  <entry>ターゲットの属するプロジェクト</entry>
                 </row>
               </tbody>
             </tgroup>
@@ -560,7 +560,7 @@
           <variablelist spacing="compact">
             <varlistentry>
               <term>Effects:</term>
-              <listitem>ファイルを参照する抽象ターゲットを作成する</listitem>
+              <listitem>ファイルを参照するターゲットを作成する</listitem>
             </varlistentry>
             <varlistentry>
               <term>Postconditions:</term>
@@ -605,7 +605,7 @@
     </refmeta>
     <refnamediv>
       <refname>basic-target</refname>
-      <refpurpose><simpara>標準的な抽象ターゲットを表現するクラス</simpara></refpurpose>
+      <refpurpose><simpara>標準的なターゲットを表現するクラス</simpara></refpurpose>
     </refnamediv>
     <refsynopsisdiv>
       <programlisting><emphasis role="bold">class</emphasis> basic-target : <link linkend="bbv2.reference.targets.abstract-target">abstract-target</link> {
@@ -642,7 +642,7 @@
                 <row>
                   <entry>project</entry>
                   <entry><link linkend="bbv2.reference.targets.project-target">project-target</link></entry>
-                  <entry>ターゲットのプロジェクト</entry>
+                  <entry>ターゲットの属するプロジェクト</entry>
                 </row>
                 <row>
                   <entry>sources</entry>
@@ -869,7 +869,7 @@
               </tbody>
             </tgroup>
           </informaltable>
-          <simpara>この抽象ターゲットに対する仮想ターゲットと依存グラフを作成する。</simpara>
+          <simpara>このターゲットに対する仮想ターゲットと依存グラフを作成する。</simpara>
           <variablelist spacing="compact">
             <varlistentry>
               <term>Returns:</term>
@@ -884,7 +884,7 @@
                     </thead>
                     <tbody>
                       <row>
-                        <entry>virtual-targetのリスト</entry>
+                        <entry><link linkend="bbv2.reference.virtual-target.virtual-target">virtual-target</link>のリスト</entry>
                         <entry>作成された仮想ターゲット</entry>
                       </row>
                     </tbody>
@@ -908,7 +908,7 @@
     </refmeta>
     <refnamediv>
       <refname>typed-target</refname>
-      <refpurpose><simpara>型付けされた抽象ターゲットを表現するクラス</simpara></refpurpose>
+      <refpurpose><simpara>型付けされたターゲットを表現するクラス</simpara></refpurpose>
     </refnamediv>
     <refsynopsisdiv>
       <programlisting><emphasis role="bold">class</emphasis> typed-target : <link linkend="bbv2.reference.targets.basic-target">basic-target</link> {
@@ -940,7 +940,7 @@
                 <row>
                   <entry>project</entry>
                   <entry><link linkend="bbv2.reference.targets.project-target">project-target</link></entry>
-                  <entry>ターゲットのプロジェクト</entry>
+                  <entry>ターゲットの属するプロジェクト</entry>
                 </row>
                 <row>
                   <entry>type</entry>
@@ -1076,7 +1076,7 @@
             <row>
               <entry>project</entry>
               <entry><link linkend="bbv2.reference.targets.project-target">project-target</link></entry>
-              <entry>メインターゲットのプロジェクト</entry>
+              <entry>メインターゲットの属するプロジェクト</entry>
             </row>
           </tbody>
         </tgroup>
@@ -1139,7 +1139,7 @@
             <row>
               <entry>project</entry>
               <entry><link linkend="bbv2.reference.targets.project-target">project-target</link></entry>
-              <entry>メインターゲットのプロジェクト</entry>
+              <entry>メインターゲットの属するプロジェクト</entry>
             </row>
           </tbody>
         </tgroup>
@@ -1202,7 +1202,7 @@
             <row>
               <entry>project</entry>
               <entry><link linkend="bbv2.reference.targets.project-target">project-target</link></entry>
-              <entry>メインターゲットのプロジェクト</entry>
+              <entry>メインターゲットの属するプロジェクト</entry>
             </row>
           </tbody>
         </tgroup>
@@ -1300,7 +1300,7 @@
             <row>
               <entry>project</entry>
               <entry><link linkend="bbv2.reference.targets.project-target">project-target</link></entry>
-              <entry>ターゲットのプロジェクト</entry>
+              <entry>ターゲットの属するプロジェクト</entry>
             </row>
             <row>
               <entry>name</entry>
