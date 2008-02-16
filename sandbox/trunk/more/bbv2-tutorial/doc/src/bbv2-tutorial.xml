@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+  "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<!--
+  BBv2 Tutorial Source
+
+  Copyright Takeshi Mouri 200 8.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<article>
+  <artheader>
+    <title>Boost.Build バージョン2 チュートリアル</title>
+    <author role="first-last">
+      <firstname>Takeshi</firstname>
+      <surname>Mouri</surname>
+    </author>
+    <copyright>
+      <year>2008</year>
+      <holder>Takeshi Mouri</holder>
+    </copyright>
+  </artheader>
+  <section id="introduction">
+    <title>はじめに</title>
+    <para><application class="software">Boost.Build</application> バージョン2 (BBv2)は「Boost C++ Libraries」で利用されているビルドシステムで、<application class="software">Boost.Jam</application>(bjam)ツールとそのモジュール群から成ります。</para>
+    <para>BBv2には次のような特徴があります。</para>
+    <itemizedlist>
+      <listitem><simpara>マルチコンパイラ/マルチプラットフォーム</simpara></listitem>
+      <listitem><simpara>表現力の高いJam言語によるスクリプティング</simpara></listitem>
+      <listitem><simpara>モジュールによる機能拡張</simpara></listitem>
+    </itemizedlist>
+  </section>
+  <section id="jam-language">
+    <title>Jam言語</title>
+    <para><application class="software">Boost.Jam</application>はJam言語に基づくインタプリタです。次のコードはJam言語におけるHelloWorldプログラムです。</para>
+    <programlisting>EXIT Hello, world! ;</programlisting>
+    <para>このプログラムを実行するには、プログラムを<filename>hello.jam</filename>という名前で保存して、コマンドラインから次のコマンドを入力します。</para>
+    <programlisting><command>bjam <option>-f</option> <filename>hello.jam</filename></command></programlisting>
+    <para>結果は次のように出力されます。</para>
+    <screen>Hello, world!</screen>
+    <para>メッセージを出力するのに<computeroutput>EXIT</computeroutput>というコマンド(Jam言語ではルールと呼びます)を用いているのが奇妙に思えるかもしれません。実は、<computeroutput>EXIT</computeroutput>はメッセージを出力してスクリプトの実行を終了するルールで、単にメッセージを表示する<computeroutput>ECHO</computeroutput>というルールもあるのですが、これを用いると次のようなエラーメッセージが表示されることになります。</para>
+    <screen><![CDATA[Hello, world!
+don't know how to make all
+...found 1 target...
+...can't find 1 target...]]></screen>
+    <para>これは<application class="software">Boost.Jam</application>がビルドツールであるためで、Jamスクリプトが正常に終了するとビルド処理に移るのですが、既定のビルドターゲット<computeroutput>all</computeroutput>のビルド方法を指定していないため、ビルドに失敗しているのです。</para>
+    <para>先ほどの例では、<computeroutput>EXIT</computeroutput>ルールによってスクリプトの実行が中断され、ビルド処理が実行されなかったのでした。</para>
+  </section>
+</article>
