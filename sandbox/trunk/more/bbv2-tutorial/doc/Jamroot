@@ -1,0 +1,34 @@
+# BBv2 Tutorial Jamroot
+
+# Copyright Takeshi Mouri 2008.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+import boostbook ;
+import common ;
+import notfile ;
+import path ;
+import xsltproc ;
+
+notfile doc : @docbook-to-html : src/bbv2-tutorial.xml ;
+
+rule docbook-to-html ( targets * : sources * : properties * )
+{
+    local docbook-xsl-dir = [ boostbook.docbook-xsl-dir ] ;
+    local stylesheet = [ path.native $(docbook-xsl-dir)/xhtml/chunk.xsl ] ;
+
+    local docbook-dtd-dir = [ boostbook.docbook-dtd-dir ] ;
+    local catalog = [ path.native $(docbook-dtd-dir)/catalog.xml ] ;
+
+    STYLESHEET on $(targets) = $(stylesheet) ;
+    FLAGS on $(targets) = --nonet --param use.id.as.filename 1 ;
+    NAME on $(targets) = [ modules.peek xsltproc : .xsltproc ] ;
+    CATALOG on $(targets) =
+        [ common.variable-setting-command XML_CATALOG_FILES : $(catalog) ] ;
+}
+
+actions docbook-to-html
+{
+$(CATALOG) "$(NAME:E=xsltproc)" $(FLAGS) -o "html/" "$(STYLESHEET)" "$(>)"
+}
