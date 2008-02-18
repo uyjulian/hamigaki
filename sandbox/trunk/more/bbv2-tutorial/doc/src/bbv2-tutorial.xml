@@ -180,4 +180,109 @@ HELLO_DECL void hello()
     <para>今度はスタティックリンク/ダイナミックリンク両対応なので、<command>bjam</command>のオプションで<computeroutput>link=static</computeroutput>を指定するとスタティックリンクに、<computeroutput>link=shared</computeroutput>を指定するとダイナミックリンクになります。どちらも指定しなければ、通常はダイナミックリンクになります。</para>
     <para>Boostのガイドライン「<ulink url="http://www.boost.org/more/separate_compilation.html" lang="en">Guidelines for Authors of Boost Libraries Containing Separate Source</ulink>」も見てください。</para>
   </section>
+  <section id="linking-libraries">
+    <title>ライブラリのリンク</title>
+    <para>前の節で作成したライブラリhelloを利用するプログラムを考えます。</para>
+    <example>
+      <title><filename>main.cpp</filename></title>
+      <programlisting><![CDATA[#include "hello.hpp"
+
+int main()
+{
+    hello();
+}
+]]></programlisting>
+    </example>
+    <para>これをビルドするには、次のようなJamスクリプトを<filename>Jamroot</filename>に追加します。</para>
+    <programlisting><![CDATA[exe main
+    :
+    main.cpp
+    hello
+    :
+    <include>C:/Boost/boost_1_34_1
+    <link>shared:<define>HELLO_DYN_LINK
+    ;
+]]></programlisting>
+    <para>ソースファイルにライブラリhelloを追加することで、このライブラリをリンクすることができます。</para>
+    <para>また、<filename>main.cpp</filename>が<filename>main.hpp</filename>をインクルードしているので、ライブラリhelloと同じインクルードディレクトリとマクロ定義が必要になります。このような設定をライブラリ利用者側で行うのは面倒です。この問題を解決するには、<computeroutput>lib</computeroutput>ルールの呼び出しにusage-requirementsと呼ばれる引数を追加します。</para>
+    <programlisting><![CDATA[lib hello
+    :
+    hello.cpp
+    :
+    <include>C:/Boost/boost_1_34_1
+    <link>shared:<define>HELLO_DYN_LINK
+    :
+    :
+    <include>C:/Boost/boost_1_34_1
+    <link>shared:<define>HELLO_DYN_LINK
+    ;
+
+exe main : main.cpp hello ;
+]]></programlisting>
+    <para>同じ設定が並んでいるので分かりにくいですが、下に追加した引数がusage-requirementsで、このライブラリを利用するターゲットのビルド設定に自動的に追加されます。</para>
+  </section>
+  <section id="sub-projects">
+    <title>サブプロジェクト</title>
+    <para>前の節ではライブラリと実行ファイルのビルドを一つの<filename>Jamroot</filename>で行っていました。今度はこの二つを分離してみます。ディレクトリ階層は次のように変更します。</para>
+    <screen><![CDATA[top/
+  |
+  +-- Jamroot
+  |
+  +-- exe/
+  |    |
+  |    +-- Jamfile
+  |    +-- main.cpp
+  |
+  +-- lib/
+       |
+       +-- Jamfile
+       +-- hello.cpp
+       +-- hello.hpp
+]]></screen>
+    <para>これまで使ってきた<filename>Jamroot</filename>はプロジェクトに一つだけ存在し、名前の示す通りプロジェクトのルートディレクトリに配置します。個々のディレクトリ(サブプロジェクト)では代わりに<filename>Jamfile</filename>という名前のファイルを使用します。</para>
+    <example>
+      <title><filename>exe/Jamfile</filename></title>
+      <programlisting>exe main : main.cpp ../lib//hello ;</programlisting>
+    </example>
+    <para>実行ファイルのビルドではライブラリの指定方法が変わっています。他のプロジェクトのターゲットを参照するには、「<replaceable>プロジェクトのパス</replaceable>//<replaceable>ターゲット名</replaceable>」という形式を使用します。</para>
+    <example>
+      <title><filename>lib/Jamfile</filename></title>
+      <programlisting><![CDATA[lib hello
+    :
+    hello.cpp
+    :
+    <include>C:/Boost/boost_1_34_1
+    <link>shared:<define>HELLO_DYN_LINK
+    :
+    :
+    <include>.
+    <include>C:/Boost/boost_1_34_1
+    <link>shared:<define>HELLO_DYN_LINK
+    ;
+]]></programlisting>
+    </example>
+    <para><filename>hello.hpp</filename>のパスが変更されたため、ライブラリのビルドではusage-requirementsに<computeroutput><![CDATA[<include>.]]></computeroutput>が追加されています。ここでディレクトリ「<filename class="directory">.</filename>」は、<filename class="directory">exe</filename>ではなく<filename class="directory">lib</filename>を意味します。</para>
+    <para>また、<filename>Jamroot</filename>は空ファイルで構いませんが、プロジェクトのルートディレクトリを示すために必要です。</para>
+    <para>なお、ビルドの際は依存するターゲットも自動的にビルドされます。<filename class="directory">exe</filename>でビルドした場合の出力例を示します。</para>
+    <screen><![CDATA[...found 54 targets...
+...updating 13 targets...
+MkDir1 bin
+MkDir1 bin\msvc-8.0
+MkDir1 bin\msvc-8.0\debug
+MkDir1 bin\msvc-8.0\debug\threading-multi
+compile-c-c++ bin\msvc-8.0\debug\threading-multi\main.obj
+main.cpp
+MkDir1 ..\lib\bin
+MkDir1 ..\lib\bin\msvc-8.0
+MkDir1 ..\lib\bin\msvc-8.0\debug
+MkDir1 ..\lib\bin\msvc-8.0\debug\threading-multi
+compile-c-c++ ..\lib\bin\msvc-8.0\debug\threading-multi\hello.obj
+hello.cpp
+msvc.link.dll ..\lib\bin\msvc-8.0\debug\threading-multi\hello.dll
+   ライブラリ ..\lib\bin\msvc-8.0\debug\threading-multi\hello.lib とオブジェクト
+ ..\lib\bin\msvc-8.0\debug\threading-multi\hello.exp を作成中
+msvc.link bin\msvc-8.0\debug\threading-multi\main.exe
+...updated 13 targets...
+]]></screen>
+  </section>
 </article>
