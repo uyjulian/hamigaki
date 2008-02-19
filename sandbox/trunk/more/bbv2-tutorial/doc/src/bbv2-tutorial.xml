@@ -4,7 +4,7 @@
 <!--
   BBv2 Tutorial Source
 
-  Copyright Takeshi Mouri 200 8.
+  Copyright Takeshi Mouri 2008.
   Distributed under the Boost Software License, Version 1.0.
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
@@ -23,8 +23,8 @@
   </artheader>
   <section id="introduction">
     <title>はじめに</title>
-    <para><application class="software">Boost.Build</application> バージョン2 (BBv2)は「<ulink href="http://www.boost.org/" lang="en">Boost C++ Libraries</ulink>」で利用されているビルドシステムで、<application class="software">Boost.Jam</application>(bjam)ツールとそのモジュール群から成ります。</para>
-    <para>BBv2には次のような特徴があります。</para>
+    <para><application class="software" lang="en">Boost.Build</application> バージョン2 (<abbrev lang="en">BBv2</abbrev>)は「<ulink href="http://www.boost.org/" lang="en">Boost C++ Libraries</ulink>」で利用されているビルドシステムで、<application class="software" lang="en">Boost.Jam</application>(<abbrev lang="en">bjam</abbrev>)ツールとそのモジュール群から成ります。</para>
+    <para><abbrev lang="en">BBv2</abbrev>には次のような特徴があります。</para>
     <itemizedlist>
       <listitem><simpara>マルチコンパイラ/マルチプラットフォーム</simpara></listitem>
       <listitem><simpara>表現力の高いJam言語によるスクリプティング</simpara></listitem>
@@ -33,7 +33,7 @@
   </section>
   <section id="jam-language">
     <title>Jam言語</title>
-    <para><application class="software">Boost.Jam</application>はJam言語に基づくインタプリタです。次のコードはJam言語におけるHelloWorldプログラムです。</para>
+    <para><application class="software" lang="en">Boost.Jam</application>はJam言語に基づくインタプリタです。次のコードはJam言語におけるHelloWorldプログラムです。</para>
     <programlisting>EXIT Hello, world! ;</programlisting>
     <para>Jam言語にはC/C++のような区切り文字の概念はないので、セミコロンの前の空白は必須です。このプログラムを実行するには、プログラムを<filename>hello.jam</filename>という名前で保存して、コマンドラインから次のコマンドを入力します。</para>
     <programlisting><command>bjam</command> <option>-f</option> <filename>hello.jam</filename></programlisting>
@@ -44,18 +44,18 @@
 don't know how to make all
 ...found 1 target...
 ...can't find 1 target...]]></screen>
-    <para>これは<application class="software">Boost.Jam</application>がビルドツールであるためで、Jamスクリプトが正常に終了するとビルド処理に移るのですが、既定のビルドターゲット<computeroutput>all</computeroutput>のビルド方法を指定していないため、ビルドに失敗しているのです。</para>
+    <para>これは<application class="software" lang="en">Boost.Jam</application>がビルドツールであるためで、Jamスクリプトが正常に終了するとビルド処理に移るのですが、既定のビルドターゲット<computeroutput>all</computeroutput>のビルド方法を指定していないため、ビルドに失敗しているのです。</para>
     <para>先ほどの例では、<computeroutput>EXIT</computeroutput>ルールによってスクリプトの実行が中断され、ビルド処理が実行されなかったのでした。</para>
     <para>Jam言語の文法に関しては、<ulink url="http://hamigaki.sourceforge.jp/" lang="en">Hamigaki C++ Libraries</ulink>の付録A「<ulink url="http://hamigaki.sourceforge.jp/doc/html/bbv2.html">Boost.Buildについて</ulink>」も参考にしてください。</para>
   </section>
   <section id="configuration">
     <title>環境設定</title>
-    <para>先ほどは<application class="software">Boost.Jam</application>をスクリプトエンジンとして利用しましたが、通常は<option>-f</option>オプションを使用せずに組み込みのスクリプトを利用します。この場合、いくつかの設定をする必要があります。</para>
+    <para>先ほどは<application class="software" lang="en">Boost.Jam</application>をスクリプトエンジンとして利用しましたが、通常は<option>-f</option>オプションを使用せずに組み込みのスクリプトを利用します。この場合、いくつかの設定をする必要があります。</para>
     <variablelist>
       <varlistentry>
         <term><ulink url="http://www.google.co.jp/search?hl=ja&amp;q=%E7%92%B0%E5%A2%83%E5%A4%89%E6%95%B0">環境変数</ulink><envar>BOOST_BUILD_PATH</envar></term>
         <listitem>
-          <para>BBv2のインストール先ディレクトリ(<filename>boost-build.jam</filename>があるディレクトリ)を指定します。指定されていない場合は環境変数<envar>BOOST_ROOT</envar>が使用されます。</para>
+          <para><abbrev lang="en">BBv2</abbrev>のインストール先ディレクトリ(<filename>boost-build.jam</filename>があるディレクトリ)を指定します。指定されていない場合は環境変数<envar>BOOST_ROOT</envar>が使用されます。</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -84,7 +84,7 @@ using gcc : 3.4.5 : C:/MinGW/bin/g++.exe ;</programlisting>
     <title>簡単な使い方</title>
     <para>次のJamスクリプトは、C++ソースファイル<filename>hello.cpp</filename>から実行ファイル<filename>hello</filename>を作成するものです。</para>
     <programlisting>exe hello : hello.cpp ;</programlisting>
-    <para>これを<filename>Jamroot</filename>という名前でソースファイルと同じディレクトリに保存します。実際にビルドするには<command>bjam</command>コマンドをオプションを付けずに実行するだけです。<application class="software">Microsoft Visual C++ 2005</application>での実行結果を示します。</para>
+    <para>これを<filename>Jamroot</filename><footnote><simpara><filename>Jamroot</filename>の代わりに<filename>Jamroot.jam</filename>も使用できます。先頭は小文字でも構いません。また、グローバル変数<varname>JAMROOT</varname>でファイル名を指定することもできます。</simpara></footnote>という名前でソースファイルと同じディレクトリに保存します。実際にビルドするには<command>bjam</command>コマンドをオプションを付けずに実行するだけです。<application class="software">Microsoft Visual C++ 2005</application>での実行結果を示します。</para>
     <screen><![CDATA[...found 10 targets...
 ...updating 6 targets...
 MkDir1 bin
@@ -239,7 +239,7 @@ exe main : main.cpp hello ;
        +-- hello.cpp
        +-- hello.hpp
 ]]></screen>
-    <para>これまで使ってきた<filename>Jamroot</filename>はプロジェクトに一つだけ存在し、名前の示す通りプロジェクトのルートディレクトリに配置します。個々のディレクトリ(サブプロジェクト)では代わりに<filename>Jamfile</filename>という名前のファイルを使用します。</para>
+    <para>これまで使ってきた<filename>Jamroot</filename>はプロジェクトに一つだけ存在し、名前の示す通りプロジェクトのルートディレクトリに配置します。個々のディレクトリ(サブプロジェクト)では代わりに<filename>Jamfile</filename><footnote><simpara><filename>Jamfile</filename>の代わりに<filename>Build.jam</filename>、<filename>Jamfile.v2</filename>、<filename>Jamfile.jam</filename>も使用できます。先頭は小文字でも構いません。また、グローバル変数<varname>JAMFILE</varname>でファイル名を指定することもできます。</simpara></footnote>という名前のファイルを使用します。</para>
     <example>
       <title><filename>exe/Jamfile</filename></title>
       <programlisting>exe main : main.cpp ../lib//hello ;</programlisting>
@@ -284,5 +284,76 @@ msvc.link.dll ..\lib\bin\msvc-8.0\debug\threading-multi\hello.dll
 msvc.link bin\msvc-8.0\debug\threading-multi\main.exe
 ...updated 13 targets...
 ]]></screen>
+  </section>
+  <section id="project-settings">
+    <title>プロジェクト設定</title>
+    <para>前の節でプロジェクトを分割したため、ビルドディレクトリが２つに分離してしまいました。これを一箇所にまとめるには<filename>Jamroot</filename>に以下のJamスクリプトを追加します。</para>
+    <programlisting><![CDATA[project : build-dir bin ;
+]]></programlisting>
+    <para>これでビルドディレクトリはプロジェクトのルートディレクトリ配下の<filename class="directory">bin</filename>ディレクトリが利用されるようになります。</para>
+    <para><computeroutput>project</computeroutput>ルールで設定できるのはビルドディレクトリだけではありません。次のJamスクリプトはBoostのヘッダファイルをプロジェクト全体で利用できるようにします。</para>
+    <programlisting><![CDATA[project
+    : build-dir bin
+    : requirements <include>C:/Boost/boost_1_34_1
+    ;
+]]></programlisting>
+    <para><computeroutput>project</computeroutput>ルールで設定できるオプションには次のようなものがあります。</para>
+    <table frame="all">
+      <title><computeroutput>project</computeroutput>ルールのオプション</title>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>オプション名</entry>
+            <entry>意味</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>source-location</entry>
+            <entry>ソースファイルのディレクトリ位置</entry>
+          </row>
+          <row>
+            <entry>requirements</entry>
+            <entry>ビルドに必要な設定</entry>
+          </row>
+          <row>
+            <entry>default-build</entry>
+            <entry>既定のビルド設定</entry>
+          </row>
+          <row>
+            <entry>build-dir</entry>
+            <entry>ビルドファイルの出力先ディレクトリ</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <para>オプションの指定順に決まりはありませんが、オプションの名前と値を対にして設定する必要があります。</para>
+    <para>また、これらの設定はサブプロジェクトでも行えます。</para>
+  </section>
+  <section id="installing-targets">
+    <title>ターゲットのインストール</title>
+    <para>ここまでは実行ファイルとライブラリのビルドのみを行ってきました。BBv2でビルドしたプログラムを実行するにはどうすればよいでしょうか？</para>
+    <para>スタティックリンクの場合は簡単です。ビルドディレクトリに生成された実行ファイルを起動するだけです。</para>
+    <para>一方、ダイナミックリンクの場合は環境変数の変更が必要です。例えば、次のようになるでしょう。</para>
+    <screen><![CDATA[cd exe
+bjam
+setlocal
+set Path=..\bin\lib\msvc-8.0\debug\threading-multi;%Path%
+..\bin\exe\msvc-8.0\debug\threading-multi\main.exe
+endlocal
+]]></screen>
+    <para>この方法では非常に不便です。このような場合は<computeroutput>install</computeroutput>ルールを使って、実行ファイルとダイナミックリンクライブラリを同じディレクトリにコピーすると便利です。<filename>Jamfile</filename>に次のJamスクリプトを追加します。</para>
+    <programlisting><![CDATA[install dist
+    :
+    main
+    :
+    <install-dependencies>on
+    <install-type>EXE
+    <install-type>LIB
+    <location>../dist
+    ;
+]]></programlisting>
+    <para>これで<filename class="directory">dist</filename>ディレクトリに<filename>hello.exe</filename>と<filename>hello.dll</filename>、<filename>hello.lib</filename>がコピーされます。Windowsでは実行ファイルと同じディレクトリのDLLは環境変数<envar>PATH</envar>に関係なく参照できるので、そのまま実行できるようになります。</para>
+    <para>なお、UNIX系のOSではBBv2が規定で共有ライブラリのパスを実行ファイルに埋め込むので、そのまま実行できます。逆に<computeroutput>install</computeroutput>ルールでコピーする際は共有ライブラリのパスを埋め込まない形で再リンクされるため、別途環境変数(<envar>LD_LIBRARY_PATH</envar>等)を設定する必要があります。</para>
   </section>
 </article>
