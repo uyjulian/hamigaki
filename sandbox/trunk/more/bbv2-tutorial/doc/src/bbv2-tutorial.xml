@@ -355,5 +355,84 @@ endlocal
 ]]></programlisting>
     <para>これで<filename class="directory">dist</filename>ディレクトリに<filename>hello.exe</filename>と<filename>hello.dll</filename>、<filename>hello.lib</filename>がコピーされます。Windowsでは実行ファイルと同じディレクトリのDLLは環境変数<envar>PATH</envar>に関係なく参照できるので、そのまま実行できるようになります。</para>
     <para>なお、UNIX系のOSではBBv2が規定で共有ライブラリのパスを実行ファイルに埋め込むので、そのまま実行できます。逆に<computeroutput>install</computeroutput>ルールでコピーする際は共有ライブラリのパスを埋め込まない形で再リンクされるため、別途環境変数(<envar>LD_LIBRARY_PATH</envar>等)を設定する必要があります。</para>
+    <para>常にインストールされるのが不便であれば、次のJamスクリプトを追加してください。</para>
+    <programlisting>explicit dist ;</programlisting>
+    <para><computeroutput>explicit</computeroutput>ルールはターゲットが暗黙的にビルドされないようにします。よって、インストールしたい場合は明示的に行う必要があります。</para>
+    <programlisting><command>bjam</command> dist</programlisting>
+  </section>
+  <section id="unit-testing">
+    <title>単体テスト</title>
+    <para>BBv2でプログラムを直接実行することも出来ます。この場合、<computeroutput>exe</computeroutput>ルールの代わりに<computeroutput>unit-test</computeroutput>ルールを使用します。</para>
+    <programlisting><![CDATA[import testing ;
+unit-test main : main.cpp ../lib//hello ;
+]]></programlisting>
+    <para><computeroutput>unit-test</computeroutput>ルールを呼び出す前に<computeroutput><![CDATA[import testing ;]]></computeroutput>が必要なことに注意してください。<computeroutput>import</computeroutput>ルールはモジュールを読み込むためのルールです。<computeroutput>unit-test</computeroutput>ルールは<computeroutput>testing</computeroutput>モジュールで定義されているので、この読み込みが必要となります。</para>
+    <para>ビルド結果の例を示します。</para>
+    <screen><![CDATA[...found 55 targets...
+...updating 15 targets...
+MkDir1 ..\bin
+MkDir1 ..\bin\exe
+MkDir1 ..\bin\exe\msvc-8.0
+MkDir1 ..\bin\exe\msvc-8.0\debug
+MkDir1 ..\bin\exe\msvc-8.0\debug\threading-multi
+compile-c-c++ ..\bin\exe\msvc-8.0\debug\threading-multi\main.obj
+main.cpp
+MkDir1 ..\bin\lib
+MkDir1 ..\bin\lib\msvc-8.0
+MkDir1 ..\bin\lib\msvc-8.0\debug
+MkDir1 ..\bin\lib\msvc-8.0\debug\threading-multi
+compile-c-c++ ..\bin\lib\msvc-8.0\debug\threading-multi\hello.obj
+hello.cpp
+msvc.link.dll ..\bin\lib\msvc-8.0\debug\threading-multi\hello.dll
+   ライブラリ ..\bin\lib\msvc-8.0\debug\threading-multi\hello.lib とオブジェクト
+ ..\bin\lib\msvc-8.0\debug\threading-multi\hello.exp を作成中
+msvc.link ..\bin\exe\msvc-8.0\debug\threading-multi\main.exe
+testing.unit-test ..\bin\exe\msvc-8.0\debug\threading-multi\main.passed
+Hello, world!
+...updated 15 targets...
+]]></screen>
+    <para>そのほか、<computeroutput>testing</computeroutput>モジュールには次のようなルールが含まれています。</para>
+    <table frame="all">
+      <title><computeroutput>testing</computeroutput>モジュールのルール</title>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>ルール</entry>
+            <entry>意味</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>rule compile ( sources + : requirements * : target-name ? )</entry>
+            <entry>コンパイルに成功することを確認する</entry>
+          </row>
+          <row>
+            <entry>rule compile-fail ( sources + : requirements * : target-name ? )</entry>
+            <entry>コンパイルに失敗することを確認する</entry>
+          </row>
+          <row>
+            <entry>rule link ( sources + : requirements * : target-name ? )</entry>
+            <entry>コンパイル、リンクに成功することを確認する</entry>
+          </row>
+          <row>
+            <entry>rule link-fail ( sources + : requirements * : target-name ? )</entry>
+            <entry>コンパイルに成功し、リンクに失敗することを確認する</entry>
+          </row>
+          <row>
+            <entry>rule run ( sources + : args * : input-files * : requirements * : target-name ? : default-build * )</entry>
+            <entry>コンパイル、リンク、実行に成功することを確認する</entry>
+          </row>
+          <row>
+            <entry>rule run-fail ( sources + : args * : input-files * : requirements * : target-name ? : default-build * )</entry>
+            <entry>コンパイル、リンクに成功し、実行に失敗することを確認する</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <para>先ほどの例を<computeroutput>run</computeroutput>を使って書き直すとこうなります。</para>
+    <programlisting><![CDATA[import testing ;
+run main.cpp ../lib//hello ;
+]]></programlisting>
+    <para>なお、<computeroutput>run</computeroutput>/<computeroutput>run-fail</computeroutput>ルールはテストに成功した場合、プログラムの出力が見れません。成否を問わず結果を見たい場合は<command>bjam</command>に<option>--verbose-test</option>オプションを渡します。</para>
   </section>
 </article>
