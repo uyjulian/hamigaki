@@ -435,4 +435,183 @@ run main.cpp ../lib//hello ;
 ]]></programlisting>
     <para>なお、<computeroutput>run</computeroutput>/<computeroutput>run-fail</computeroutput>ルールはテストに成功した場合、プログラムの出力が見れません。成否を問わず結果を見たい場合は<command>bjam</command>に<option>--verbose-test</option>オプションを渡します。</para>
   </section>
+  <section id="using-project">
+    <title>プロジェクトの利用</title>
+    <para>次のC++コードはBoost.Testライブラリの単体テストフレームワークを利用した簡単なプログラムです。</para>
+    <programlisting><![CDATA[#define BOOST_TEST_MAIN
+#include <boost/test/unit_test.hpp>
+
+BOOST_AUTO_TEST_CASE(test)
+{
+    BOOST_CHECK(1 + 1 == 2);
+}
+]]></programlisting>
+    <para>これをビルドするには次のようなJamスクリプトを使用します。</para>
+    <programlisting><![CDATA[import testing ;
+
+use-project /boost : C:/Boost/boost_1_34_1 ;
+
+run test.cpp
+    :
+    :
+    :
+    <define>BOOST_ALL_NO_LIB=1
+    <library>/boost/test//boost_unit_test_framework
+    ;
+]]></programlisting>
+    <para><computeroutput>use-project</computeroutput>ルールは現在のプロジェクト階層とは別のプロジェクトを参照するためのルールです。ここでは、<filename class="directory">C:/Boost/boost_1_34_1</filename>にあるプロジェクトを<computeroutput>/boost</computeroutput>という名前で参照できるようにしています。</para>
+    <para><computeroutput><![CDATA[<library>/boost/test//boost_unit_test_framework]]></computeroutput>は単体テストフレームワークのライブラリをリンクすることを意味しています。マクロ<varname>BOOST_ALL_NO_LIB</varname>はWindows用コンパイラで利用されるオートリンク機能を無効にするためのもので、BBv2は必要に応じてライブラリをビルド/リンクするので、通常は<varname>BOOST_ALL_NO_LIB</varname>を1に定義します。</para>
+    <para>参考までにBoost 1.34.1におけるライブラリターゲットの一覧を載せておきます。</para>
+    <table frame="all">
+      <title>Boostのライブラリターゲット</title>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>ターゲット</entry>
+            <entry>意味</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>/boost//headers</entry>
+            <entry>Boostのヘッダファイルのみ</entry>
+          </row>
+          <row>
+            <entry>/boost/date_time//boost_date_time</entry>
+            <entry>Boost.Date_Time</entry>
+          </row>
+          <row>
+            <entry>/boost/filesystem//boost_filesystem</entry>
+            <entry>Boost.Filesystem</entry>
+          </row>
+          <row>
+            <entry>/boost/graph//boost_graph</entry>
+            <entry>Boost.Graph</entry>
+          </row>
+          <row>
+            <entry>/boost/iostreams//boost_zlib</entry>
+            <entry>zlib</entry>
+          </row>
+          <row>
+            <entry>/boost/iostreams//boost_bzip2</entry>
+            <entry>bzip2</entry>
+          </row>
+          <row>
+            <entry>/boost/iostreams//boost_iostreams</entry>
+            <entry>Boost.Iostreams</entry>
+          </row>
+          <row>
+            <entry>/boost/program_options//boost_program_options</entry>
+            <entry>Boost.Program_options</entry>
+          </row>
+          <row>
+            <entry>/boost/python//boost_python</entry>
+            <entry>Boost.Python</entry>
+          </row>
+          <row>
+            <entry>/boost/regex//boost_regex</entry>
+            <entry>Boost.Regex</entry>
+          </row>
+          <row>
+            <entry>/boost/serialization//boost_serialization </entry>
+            <entry>Boost.Serialization(ナロー文字版)</entry>
+          </row>
+          <row>
+            <entry>/boost/serialization//boost_wserialization </entry>
+            <entry>Boost.Serialization(ワイド文字版)</entry>
+          </row>
+          <row>
+            <entry>/boost/signals//boost_signals</entry>
+            <entry>Boost.Signals</entry>
+          </row>
+          <row>
+            <entry>/boost/test//boost_prg_exec_monitor</entry>
+            <entry>Boost.Testのプログラム実行モニタ</entry>
+          </row>
+          <row>
+            <entry>/boost/test//boost_test_exec_monitor</entry>
+            <entry>Boost.Testのテスト実行モニタ</entry>
+          </row>
+          <row>
+            <entry>/boost/test//boost_unit_test_framework</entry>
+            <entry>Boost.Testの単体テストフレームワーク</entry>
+          </row>
+          <row>
+            <entry>/boost/thread//boost_thread</entry>
+            <entry>Boost.Thread</entry>
+          </row>
+          <row>
+            <entry>/boost/wave//boost_wave</entry>
+            <entry>Boost.Wave</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </section>
+  <section id="prebuilt-libraries">
+    <title>ビルド済みライブラリ</title>
+    <para>BBv2でビルド済みのライブラリを参照するには二つの方法があります。</para>
+    <variablelist>
+      <varlistentry>
+        <term>名前で検索する方法</term>
+        <listitem>
+          <para>一つ目の方法は、ライブラリの名前を指定してライブラリパスから検索する方法です。</para>
+          <programlisting><![CDATA[lib foo : : <name>foo0 <search>C:/tools/lib ;]]></programlisting>
+          <para>この例では、<filename class="directory">C:\tools\lib</filename>から<computeroutput>foo0</computeroutput>という名前のライブラリを検索します。</para>
+          <para><computeroutput><![CDATA[<name>]]></computeroutput>プロパティが指定されない場合は<computeroutput>lib</computeroutput>ルールのターゲット名が使用されます。また、<computeroutput><![CDATA[<search>]]></computeroutput>プロパティが指定されない場合はプロジェクトの既定ライブラリパスから検索されます。なお、このターゲットを参照したライブラリまで名前で検索する方式になってしまうため、usage-requirementsに<computeroutput><![CDATA[<search>]]></computeroutput>プロパティを含めてはいけません。そのような場合は代わりに<computeroutput><![CDATA[<library-path>]]></computeroutput>プロパティを使用します。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>ファイル名を指定する方法</term>
+        <listitem>
+          <para>もう一つの方法は、ライブラリのパスを直接指定する方法です。</para>
+          <programlisting><![CDATA[lib bar : : <file>C:/tools/lib/bar.lib ;]]></programlisting>
+          <para>これは説明の必要がないでしょう。</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+    <para>Boostのようにビルドオプションによってライブラリが異なる場合は、条件を追加した上で同名のライブラリターゲットを定義します。</para>
+    <programlisting><![CDATA[import testing ;
+
+project
+    : build-dir bin
+    : requirements
+      <define>BOOST_ALL_NO_LIB=1
+      <include>C:/Boost/include/boost-1_34_1
+    ;
+
+lib utf : :
+    <variant>debug
+    <link>shared
+    <file>C:/Boost/lib/boost_unit_test_framework-vc80-mt-gd.lib
+    : :
+    <define>BOOST_TEST_DYN_LINK=1
+    <dll-path>C:/Boost/lib
+    ;
+
+lib utf : :
+    <variant>release
+    <link>shared
+    <file>C:/Boost/lib/boost_unit_test_framework-vc80-mt.lib
+    : :
+    <define>BOOST_TEST_DYN_LINK=1
+    <dll-path>C:/Boost/lib
+    ;
+
+lib utf : :
+    <variant>debug
+    <link>static
+    <file>C:/Boost/lib/libboost_unit_test_framework-vc80-mt-gd.lib
+    ;
+
+lib utf : :
+    <variant>release
+    <link>static
+    <file>C:/Boost/lib/libboost_unit_test_framework-vc80-mt.lib
+    ;
+
+run test.cpp utf ;
+]]></programlisting>
+    <para>ダイナミックリンクの場合は、usage-requirementsにマクロ(ここでは<varname>BOOST_TEST_DYN_LINK</varname>)の定義と<computeroutput><![CDATA[<dll-path>]]></computeroutput>プロパティが必要なことに注意してください。<computeroutput><![CDATA[<dll-path>]]></computeroutput>プロパティは実行時に参照されるDLLのパスを設定するオプションです。</para>
+  </section>
 </article>

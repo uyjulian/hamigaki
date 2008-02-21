@@ -1,0 +1,47 @@
+# BBv2 Tutorial: use pre-built Boost.Test
+
+# Copyright Takeshi Mouri 2008.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+import testing ;
+
+project
+    : build-dir bin
+    : requirements
+      <define>BOOST_ALL_NO_LIB=1
+      <include>C:/Boost/include/boost-1_34_1
+    ;
+
+lib utf : :
+    <variant>debug
+    <link>shared
+    <file>C:/Boost/lib/boost_unit_test_framework-vc80-mt-gd.lib
+    : :
+    <define>BOOST_TEST_DYN_LINK=1
+    <dll-path>C:/Boost/lib
+    ;
+
+lib utf : :
+    <variant>release
+    <link>shared
+    <file>C:/Boost/lib/boost_unit_test_framework-vc80-mt.lib
+    : :
+    <define>BOOST_TEST_DYN_LINK=1
+    <dll-path>C:/Boost/lib
+    ;
+
+lib utf : :
+    <variant>debug
+    <link>static
+    <file>C:/Boost/lib/libboost_unit_test_framework-vc80-mt-gd.lib
+    ;
+
+lib utf : :
+    <variant>release
+    <link>static
+    <file>C:/Boost/lib/libboost_unit_test_framework-vc80-mt.lib
+    ;
+
+run test.cpp utf ;
