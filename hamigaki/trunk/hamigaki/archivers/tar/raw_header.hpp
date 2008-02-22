@@ -1,6 +1,6 @@
 // raw_header.hpp: tar header
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -43,7 +43,7 @@ struct raw_header
     char devminor[8];
     char prefix[prefix_size];
 
-    static std::size_t round_up_block_size(std::size_t size)
+    static boost::uint64_t round_up_block_size(boost::uint64_t size)
     {
         return ((size + block_size - 1) / block_size) * block_size;
     }
