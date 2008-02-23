@@ -1,6 +1,6 @@
 // tar_file_sink_impl.hpp: POSIX tar file sink implementation
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -98,14 +98,20 @@ public:
 
         tar::header local = head;
 
-        const std::string& leaf = head.path.leaf();
-        const path& branch = head.path.branch_path();
-        const std::string prefix = branch.string();
+        std::string name = head.path.string();
+        std::string prefix;
+        if ((head.format != tar::gnu) &&
+            (name.size() > tar::raw_header::name_size) )
+        {
+            name = head.path.leaf();
+            prefix = head.path.branch_path().string();
+        }
+
         std::string long_link = head.link_path.string();
         if (head.format == tar::pax)
         {
             std::string ex;
-            if ((leaf.size() > tar::raw_header::name_size) ||
+            if ((name.size() > tar::raw_header::name_size) ||
                 (prefix.size() > tar::raw_header::prefix_size))
             {
                 std::string long_name = head.path.string();
@@ -191,8 +197,7 @@ public:
         }
         else if (head.format == tar::gnu)
         {
-            if ((leaf.size() > tar::raw_header::name_size) ||
-                (prefix.size() > tar::raw_header::prefix_size))
+            if (name.size() > tar::raw_header::name_size)
             {
                 std::string long_name = head.path.string();
                 if (head.type_flag == tar::type_flag::directory)

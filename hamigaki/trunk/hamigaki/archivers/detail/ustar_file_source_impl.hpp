@@ -1,6 +1,6 @@
 // ustar_file_source_impl.hpp: POSIX.1-1988 tar file source implementation
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -102,11 +102,22 @@ inline tar::header read_tar_header(const char* block)
     if (!detail::is_valid(raw.uname) || !detail::is_valid(raw.gname))
         throw BOOST_IOSTREAMS_FAILURE("invalid tar header");
 
-    const path leaf(detail::read_string(raw.name), no_check);
-    const path branch(detail::read_string(raw.prefix), no_check);
+    const path name(detail::read_string(raw.name), no_check);
+    const path prefix(detail::read_string(raw.prefix), no_check);
 
     tar::header head;
-    head.path = branch / leaf;
+
+    if (raw.magic[5] == ' ')
+    {
+        head.format = tar::gnu;
+        head.path = name;
+    }
+    else
+    {
+        head.format = tar::ustar;
+        head.path = prefix / name;
+    }
+
     head.permissions = detail::read_oct<boost::uint16_t>(raw.mode);
     head.uid = detail::read_oct<boost::int32_t>(raw.uid);
     head.gid = detail::read_oct<boost::int32_t>(raw.gid);
@@ -121,11 +132,6 @@ inline tar::header read_tar_header(const char* block)
 
     head.type_flag = raw.typeflag ? raw.typeflag : '0';
     head.link_path = detail::read_string(raw.linkname);
-
-    if (raw.magic[5] == ' ')
-        head.format = tar::gnu;
-    else
-        head.format = tar::ustar;
 
     head.user_name = detail::read_c_string(raw.uname);
     head.group_name = detail::read_c_string(raw.gname);

@@ -1,6 +1,6 @@
 // ustar_file_sink_impl.hpp: POSIX.1-1988 tar file sink implementation
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -124,23 +124,55 @@ inline std::string make_ex_header_name(const boost::filesystem::path& ph)
     return buf;
 }
 
+inline void split_path(
+    const boost::filesystem::path& ph, std::string& prefix, std::string& name)
+{
+    name = ph.string();
+    prefix.clear();
+    if (name.size() > tar::raw_header::name_size)
+    {
+        boost::filesystem::path::iterator beg = ph.begin();
+        boost::filesystem::path::iterator end = ph.end();
+        prefix = *(beg++);
+        for ( ; beg != end; ++beg)
+        {
+            const std::string& s = *beg;
+            if (prefix.size() + 1 + s.size() > tar::raw_header::prefix_size)
+                break;
+            prefix += '/';
+            prefix += s;
+        }
+
+        name.clear();
+        for ( ; beg != end; ++beg)
+        {
+            if (!name.empty())
+                name += '/';
+            name += *beg;
+        }
+    }
+}
+
 inline void write_tar_header(char* block, const tar::header& head)
 {
     using namespace boost::filesystem;
 
-    const std::string& leaf = head.path.leaf();
-    std::string branch = head.path.branch_path().string();
     std::string linkname = head.link_path.string();
 
     tar::raw_header raw;
     std::memset(&raw, 0, sizeof(raw));
 
+    std::string prefix;
     if (head.is_long())
         detail::write_string(raw.name, "././@LongLink");
     else if (head.type_flag == tar::type_flag::extended)
         detail::write_string(raw.name, detail::make_ex_header_name(head.path));
     else
-        detail::write_string(raw.name, leaf);
+    {
+        std::string name;
+        split_path(head.path, prefix, name);
+        detail::write_string(raw.name, name);
+    }
 
     detail::write_oct(raw.mode, head.permissions);
     detail::write_oct(raw.uid, head.uid);
@@ -174,7 +206,7 @@ inline void write_tar_header(char* block, const tar::header& head)
     if ((head.format != tar::gnu) || (head.dev_minor != 0))
         detail::write_oct(raw.devminor, head.dev_minor);
 
-    detail::write_string(raw.prefix, branch);
+    detail::write_string(raw.prefix, prefix);
 
     std::memset(block, 0, tar::raw_header::block_size);
     hamigaki::binary_write(block, raw);
