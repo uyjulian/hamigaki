@@ -4,7 +4,7 @@
 <!--
   Hamigaki Library Document Source
 
-  Copyright Takeshi Mouri 2007.
+  Copyright Takeshi Mouri 2007, 2008.
   Distributed under the Boost Software License, Version 1.0.
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
@@ -15,7 +15,7 @@
   <itemizedlist>
     <listitem>Microsoft Windows 2000以降またはPOSIX準拠のオペレーティングシステム</listitem>
     <listitem>ANSI/ISO C++準拠のコンパイラ</listitem>
-    <listitem><ulink url="http://www.boost.org/">Boost C++ ライブラリ</ulink> バージョン 1.34以降</listitem>
+    <listitem><ulink url="http://www.boost.org/">Boost C++ ライブラリ</ulink> バージョン 1.34.1以降</listitem>
   </itemizedlist>
   <para>加えて、ライブラリによってはシステムヘッダファイルや他の外部ライブラリが必要になることがある。</para>
   <para>Hamigakiライブラリは以下の環境でテストされている。</para>
@@ -23,14 +23,15 @@
     <title>Windows Vista (x86)</title>
     <listitem>Microsoft Visual C++ 7.1</listitem>
     <listitem>Microsoft Visual C++ 8.0</listitem>
-    <listitem>GNU C++ 3.4.2</listitem>
+    <listitem>Microsoft Visual C++ 9.0 Express</listitem>
+    <listitem>GNU C++ 3.4.5</listitem>
   </itemizedlist>
   <itemizedlist>
-    <title>Cygwin 1.5.24</title>
+    <title>Cygwin 1.5.25</title>
     <listitem>GNU C++ 3.4.4</listitem>
   </itemizedlist>
   <itemizedlist>
-    <title>Fedora 7 (x86)</title>
+    <title>Fedora 8 (x86)</title>
     <listitem>GNU C++ 4.1.2</listitem>
   </itemizedlist>
   <itemizedlist>
