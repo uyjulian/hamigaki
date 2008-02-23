@@ -158,8 +158,6 @@ int main(int argc, char* argv[])
         ::make_zip_archive(std::cout, ver);
         ::make_iso_image(std::cout, ver);
 
-        fs_ex::remove_all(dir);
-
         return 0;
     }
     catch (const std::exception& e)
