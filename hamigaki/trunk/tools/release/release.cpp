@@ -8,6 +8,7 @@
 // See http://hamigaki.sourceforge.jp/tools/release/ for library home page.
 
 #include "make_iso.hpp"
+#include "make_tbz.hpp"
 #include "make_zip.hpp"
 #include <hamigaki/filesystem/operations.hpp>
 #include <hamigaki/process/context.hpp>
@@ -70,11 +71,19 @@ void wait_child(proc::child& c, const std::string& name)
     }
 }
 
-void export_hamigaki()
+struct eol_type
+{
+    enum values { lf, crlf };
+};
+
+void export_hamigaki(eol_type::values eol)
 {
     std::string cmd;
     cmd += "svn export ";
-    cmd += "--native-eol CRLF ";
+    if (eol == eol_type::lf)
+        cmd += "--native-eol LF ";
+    else
+        cmd += "--native-eol CRLF ";
     cmd += "http://svn.sourceforge.jp/svnroot/hamigaki/hamigaki/trunk ";
     cmd += "hamigaki";
 
@@ -123,18 +132,33 @@ int main(int argc, char* argv[])
 {
     try
     {
-        fs::initial_path<fs::path>();
+        const fs::path root = fs::initial_path<fs::path>();
 
-        export_hamigaki();
+        fs_ex::remove_all(root/"hamigaki");
+        export_hamigaki(eol_type::lf);
         build_documents();
-        fs_ex::remove_all(fs::initial_path<fs::path>() / "hamigaki/bin.v2");
+        fs_ex::remove_all(root/"hamigaki/bin.v2");
         update_regression_logs();
-
         const std::string& ver = get_hamigaki_version();
-        fs::rename("hamigaki", "hamigaki_" + ver);
+        fs::path dir = root / ("hamigaki_"+ver);
+        fs_ex::remove_all(dir);
+        fs::rename(root/"hamigaki", dir);
+
+        ::make_tbz2_archive(std::cout, ver);
+
+        export_hamigaki(eol_type::crlf);
+        build_documents();
+        fs_ex::remove_all(root/"hamigaki/bin.v2");
+        update_regression_logs();
+        if (get_hamigaki_version() != ver)
+            throw std::runtime_error("version mismatch");
+        fs_ex::remove_all(dir);
+        fs::rename(root/"hamigaki", dir);
 
         ::make_zip_archive(std::cout, ver);
         ::make_iso_image(std::cout, ver);
+
+        fs_ex::remove_all(dir);
 
         return 0;
     }

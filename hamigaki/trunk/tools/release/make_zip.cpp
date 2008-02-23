@@ -7,6 +7,8 @@
 
 // See http://hamigaki.sourceforge.jp/tools/release/ for library home page.
 
+#include "make_zip.hpp"
+#include "file_types.hpp"
 #include <hamigaki/archivers/zip_file.hpp>
 #include <hamigaki/filesystem/operations.hpp>
 #include <boost/filesystem/convenience.hpp>
@@ -54,6 +56,9 @@ void make_zip_archive(std::ostream& logs, const std::string& ver)
 
         if (s.has_permissions())
             head.permissions = s.permissions();
+
+        if (fs_ex::is_regular(s) && is_executable(fs::extension(ph)))
+            head.permissions |= 0111;
 
         zip.create_entry(head);
 

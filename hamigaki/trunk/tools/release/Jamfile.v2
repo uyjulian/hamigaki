@@ -13,7 +13,9 @@ import testing ;
 exe release
     :
     release.cpp
+    file_types.cpp
     make_iso.cpp
+    make_tbz.cpp
     make_zip.cpp
     /boost-lib//boost_bzip2
     /boost-lib//boost_zlib
