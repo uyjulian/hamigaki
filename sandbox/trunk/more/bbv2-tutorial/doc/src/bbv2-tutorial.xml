@@ -46,7 +46,20 @@ don't know how to make all
 ...can't find 1 target...]]></screen>
     <para>これは<application class="software" lang="en">Boost.Jam</application>がビルドツールであるためで、Jamスクリプトが正常に終了するとビルド処理に移るのですが、既定のビルドターゲット<computeroutput>all</computeroutput>のビルド方法を指定していないため、ビルドに失敗しているのです。</para>
     <para>先ほどの例では、<computeroutput>EXIT</computeroutput>ルールによってスクリプトの実行が中断され、ビルド処理が実行されなかったのでした。</para>
-    <para>Jam言語の文法に関しては、<ulink url="http://hamigaki.sourceforge.jp/" lang="en">Hamigaki C++ Libraries</ulink>の付録A「<ulink url="http://hamigaki.sourceforge.jp/doc/html/bbv2.html">Boost.Buildについて</ulink>」も参考にしてください。</para>
+    <para>続いて変数の使い方を示します。</para>
+    <programlisting><![CDATA[name = Taro ;
+EXIT "Hello $(name)." ;
+]]></programlisting>
+    <para>一行目が変数への代入です。代入された値を参照するには「$(<replaceable>変数名</replaceable>)」とします。実行結果は次のようになります。</para>
+    <screen>Hello Taro.</screen>
+    <para>Jam言語で使用するデータ型は文字列のリストだけです。よって変数にも複数の文字列を代入できます。</para>
+    <programlisting><![CDATA[name = Taro Hanako ;
+EXIT "Hello $(name)." ;
+]]></programlisting>
+    <para>このプログラムの出力は興味深いものです。</para>
+    <screen>Hello Taro. Hello Hanako.</screen>
+    <para>このように、リストを連結する際は直積になります。</para>
+    <para>その他、Jam言語の文法に関しては、<ulink url="http://hamigaki.sourceforge.jp/" lang="en">Hamigaki C++ Libraries</ulink>の付録A「<ulink url="http://hamigaki.sourceforge.jp/doc/html/bbv2.html">Boost.Buildについて</ulink>」も参考にしてください。</para>
   </section>
   <section id="configuration">
     <title>環境設定</title>
