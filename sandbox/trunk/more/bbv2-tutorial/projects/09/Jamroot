@@ -5,9 +5,12 @@
 # (See accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
 
+import os ;
 import testing ;
 
-use-project /boost : C:/Boost/boost_1_34_1 ;
+BOOST_ROOT = [ os.environ BOOST_ROOT ] ;
+
+use-project /boost : $(BOOST_ROOT) ;
 
 run test.cpp
     :

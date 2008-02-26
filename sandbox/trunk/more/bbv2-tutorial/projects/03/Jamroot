@@ -5,10 +5,14 @@
 # (See accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
 
+import os ;
+
+BOOST_INCLUDE = [ os.environ BOOST_INCLUDE ] ;
+
 lib hello
     :
     hello.cpp
     :
-    <include>C:/Boost/boost_1_34_1
+    <include>$(BOOST_INCLUDE)
     <link>shared:<define>HELLO_DYN_LINK
     ;

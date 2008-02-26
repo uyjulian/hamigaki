@@ -5,43 +5,47 @@
 # (See accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
 
+import os ;
 import testing ;
+
+BOOST_INCLUDE = [ os.environ BOOST_INCLUDE ] ;
+BOOST_LIBPATH = [ os.environ BOOST_LIBPATH ] ;
 
 project
     : build-dir bin
     : requirements
       <define>BOOST_ALL_NO_LIB=1
-      <include>C:/Boost/include/boost-1_34_1
+      <include>$(BOOST_INCLUDE)
     ;
 
 lib utf : :
     <variant>debug
     <link>shared
-    <file>C:/Boost/lib/boost_unit_test_framework-vc80-mt-gd.lib
+    <file>$(BOOST_LIBPATH)/boost_unit_test_framework-vc80-mt-gd.lib
     : :
     <define>BOOST_TEST_DYN_LINK=1
-    <dll-path>C:/Boost/lib
+    <dll-path>$(BOOST_LIBPATH)
     ;
 
 lib utf : :
     <variant>release
     <link>shared
-    <file>C:/Boost/lib/boost_unit_test_framework-vc80-mt.lib
+    <file>$(BOOST_LIBPATH)/boost_unit_test_framework-vc80-mt.lib
     : :
     <define>BOOST_TEST_DYN_LINK=1
-    <dll-path>C:/Boost/lib
+    <dll-path>$(BOOST_LIBPATH)
     ;
 
 lib utf : :
     <variant>debug
     <link>static
-    <file>C:/Boost/lib/libboost_unit_test_framework-vc80-mt-gd.lib
+    <file>$(BOOST_LIBPATH)/libboost_unit_test_framework-vc80-mt-gd.lib
     ;
 
 lib utf : :
     <variant>release
     <link>static
-    <file>C:/Boost/lib/libboost_unit_test_framework-vc80-mt.lib
+    <file>$(BOOST_LIBPATH)/libboost_unit_test_framework-vc80-mt.lib
     ;
 
 run test.cpp utf ;

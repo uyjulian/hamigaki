@@ -30,6 +30,7 @@
       <listitem><simpara>表現力の高いJam言語によるスクリプティング</simpara></listitem>
       <listitem><simpara>モジュールによる機能拡張</simpara></listitem>
     </itemizedlist>
+    <para>文法やモジュールに関しては、<ulink url="http://hamigaki.sourceforge.jp/" lang="en">Hamigaki C++ Libraries</ulink>の付録A「<ulink url="http://hamigaki.sourceforge.jp/doc/html/bbv2.html">Boost.Buildについて</ulink>」も参考にしてください。</para>
   </section>
   <section id="jam-language">
     <title>Jam言語</title>
@@ -46,6 +47,9 @@ don't know how to make all
 ...can't find 1 target...]]></screen>
     <para>これは<application class="software" lang="en">Boost.Jam</application>がビルドツールであるためで、Jamスクリプトが正常に終了するとビルド処理に移るのですが、既定のビルドターゲット<computeroutput>all</computeroutput>のビルド方法を指定していないため、ビルドに失敗しているのです。</para>
     <para>先ほどの例では、<computeroutput>EXIT</computeroutput>ルールによってスクリプトの実行が中断され、ビルド処理が実行されなかったのでした。</para>
+  </section>
+  <section id="variables">
+    <title>変数</title>
     <para>続いて変数の使い方を示します。</para>
     <programlisting><![CDATA[name = Taro ;
 EXIT "Hello $(name)." ;
@@ -59,16 +63,66 @@ EXIT "Hello $(name)." ;
     <para>このプログラムの出力は興味深いものです。</para>
     <screen>Hello Taro. Hello Hanako.</screen>
     <para>このように、リストを連結する際は直積になります。</para>
-    <para>その他、Jam言語の文法に関しては、<ulink url="http://hamigaki.sourceforge.jp/" lang="en">Hamigaki C++ Libraries</ulink>の付録A「<ulink url="http://hamigaki.sourceforge.jp/doc/html/bbv2.html">Boost.Buildについて</ulink>」も参考にしてください。</para>
+  </section>
+  <section id="rules">
+    <title>ルール</title>
+    <para>ルールは他のプログラミング言語における関数に相当する機能です。</para>
+    <programlisting><![CDATA[rule hello
+{
+    ECHO Hello, world ;
+}
+
+hello ;
+EXIT ;
+]]></programlisting>
+    <para>キーワード<computeroutput>rule</computeroutput>がルールを定義することを示します。その後ろにルールの名前、ルール本体と続きます。こうして定義したルールは組み込みのルールと同様に使用することができます。</para>
+    <para>次のJamスクリプトは引数を使った例です。</para>
+    <programlisting><![CDATA[rule greet
+{
+    ECHO "Hello, $(1)-$(2)." ;
+}
+
+greet Taro : kun ;
+greet Hanako : san ;
+EXIT ;
+]]></programlisting>
+    <para>Jam言語ではルール呼び出しの際に引数を「:」で区切ります。ルール側では順に「$(1)、$(2)、…、$(9)」として参照できます。<footnote><simpara>引数の数は9個が最大です。</simpara></footnote></para>
+    <para><application class="software" lang="en">Boost.Jam</application>の拡張として、仮引数に名前を付けることも出来ます。</para>
+    <programlisting><![CDATA[rule greet ( name : postfix )
+{
+    ECHO "Hello, $(name)-$(postfix)." ;
+}
+]]></programlisting>
+    <para>戻り値は<computeroutput>return</computeroutput>文で設定します。また、戻り値が必要な箇所ではルールの呼び出しを「[」と「]」で囲みます。</para>
+    <programlisting><![CDATA[rule greet-msg ( name : postfix )
+{
+    return "Hello, $(name)-$(postfix)." ;
+}
+
+EXIT [ greet-msg Taro : kun ] ;
+]]></programlisting>
+    <para>なお、Jam言語の<computeroutput>return</computeroutput>文は戻り値を設定するだけでフロー制御は行わないので、ルールの実行が継続されることに注意してください。<footnote><simpara>Jamのオリジナル実装である<application class="software" lang="en">Perforce Jam</application>のバージョン2.5以降では<computeroutput>return</computeroutput>文にフロー制御が追加され、ルールの実行が中断されるようになりました。しかし、<application class="software" lang="en">Boost.Jam</application>はバージョン2.4を基にしているため、このフロー制御の機能を持っていません。</simpara></footnote></para>
   </section>
   <section id="configuration">
     <title>環境設定</title>
-    <para>先ほどは<application class="software" lang="en">Boost.Jam</application>をスクリプトエンジンとして利用しましたが、通常は<option>-f</option>オプションを使用せずに組み込みのスクリプトを利用します。この場合、いくつかの設定をする必要があります。</para>
+    <para>ここまでは<application class="software" lang="en">Boost.Jam</application>をスクリプトエンジンとして利用しましたが、通常は<option>-f</option>オプションを使用せずに組み込みのスクリプトを利用します。この場合、いくつかの設定をする必要があります。</para>
     <variablelist>
       <varlistentry>
         <term><ulink url="http://www.google.co.jp/search?hl=ja&amp;q=%E7%92%B0%E5%A2%83%E5%A4%89%E6%95%B0">環境変数</ulink><envar>BOOST_BUILD_PATH</envar></term>
         <listitem>
           <para><abbrev lang="en">BBv2</abbrev>のインストール先ディレクトリ(<filename>boost-build.jam</filename>があるディレクトリ)を指定します。指定されていない場合は環境変数<envar>BOOST_ROOT</envar>が使用されます。</para>
+          <example>
+            <title><filename>boost-build-2.0-m12.zip</filename>を<filename class="directory">C:\tools\boost-build</filename>に展開した場合</title>
+            <programlisting>set BOOST_BUILD_PATH=C:\tools\boost-build</programlisting>
+          </example>
+          <example>
+            <title><filename>boost_1_34_1.zip</filename>を<filename class="directory">C:\Boost\boost_1_34_1</filename>に展開した場合</title>
+            <programlisting>set BOOST_ROOT=C:\Boost\boost_1_34_1</programlisting>
+          </example>
+          <example>
+            <title><filename>boost_1_34_1.zip</filename>を<filename class="directory">C:\tools\boost_1_34_1</filename>に展開し、<filename class="directory">C:\tools\hamigaki_0_40_1</filename>に展開したHamigakiライブラリ付属モジュールも使用する場合</title>
+            <programlisting>set BOOST_BUILD_PATH=C:\tools\boost_1_34_1\tools\build\v2;C:\tools\hamigaki_0_40_1\tools\build</programlisting>
+          </example>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -181,15 +235,20 @@ HELLO_DECL void hello()
 ]]></programlisting>
     </example>
     <para><filename>hello.hpp</filename>でマクロ<varname>HELLO_DYN_LINK</varname>をダイナミックリンクするかどうかの判定に使用しているので、<filename>Jamroot</filename>でこれを定義します。また、Boostのヘッダファイルを使用しているので、インクルードディレクトリの設定も必要です。</para>
-    <programlisting><![CDATA[lib hello
+    <programlisting><![CDATA[import os ;
+
+BOOST_INCLUDE = [ os.environ BOOST_INCLUDE ] ;
+
+lib hello
     :
     hello.cpp
     :
-    <include>C:/Boost/boost_1_34_1
+    <include>$(BOOST_INCLUDE)
     <link>shared:<define>HELLO_DYN_LINK
     ;
 ]]></programlisting>
-    <para>「<computeroutput><![CDATA[<include>C:/Boost/boost_1_34_1]]></computeroutput>」がインクルードディレクトリの指定、「<computeroutput><![CDATA[<link>shared:<define>HELLO_DYN_LINK]]></computeroutput>」がダイナミックリンクの場合のみマクロ<varname>HELLO_DYN_LINK</varname>を定義するという意味です。</para>
+    <para>ここではインクルードディレクトリを環境変数<envar>BOOST_INCLUDE</envar>で指定することにしています。環境変数を調べるには、<computeroutput>os.environ</computeroutput>ルールを使用します。<computeroutput>os.environ</computeroutput>ルールを呼び出す前に<computeroutput><![CDATA[import os ;]]></computeroutput>が必要なことに注意してください。<computeroutput>import</computeroutput>ルールはモジュールを読み込むためのルールです。<computeroutput>os.environ</computeroutput>ルールは<computeroutput>os</computeroutput>モジュールで定義されているので、この読み込みが必要となります。</para>
+    <para>「<computeroutput><![CDATA[<include>$(BOOST_INCLUDE)]]></computeroutput>」がインクルードディレクトリの指定、「<computeroutput><![CDATA[<link>shared:<define>HELLO_DYN_LINK]]></computeroutput>」がダイナミックリンクの場合のみマクロ<varname>HELLO_DYN_LINK</varname>を定義するという意味です。</para>
     <para>今度はスタティックリンク/ダイナミックリンク両対応なので、<command>bjam</command>のオプションで<computeroutput>link=static</computeroutput>を指定するとスタティックリンクに、<computeroutput>link=shared</computeroutput>を指定するとダイナミックリンクになります。どちらも指定しなければ、通常はダイナミックリンクになります。</para>
     <para>Boostのガイドライン「<ulink url="http://www.boost.org/more/separate_compilation.html" lang="en">Guidelines for Authors of Boost Libraries Containing Separate Source</ulink>」も見てください。</para>
   </section>
@@ -207,26 +266,34 @@ int main()
 ]]></programlisting>
     </example>
     <para>これをビルドするには、次のようなJamスクリプトを<filename>Jamroot</filename>に追加します。</para>
-    <programlisting><![CDATA[exe main
+    <programlisting><![CDATA[import os ;
+
+BOOST_INCLUDE = [ os.environ BOOST_INCLUDE ] ;
+
+exe main
     :
     main.cpp
     hello
     :
-    <include>C:/Boost/boost_1_34_1
+    <include>$(BOOST_INCLUDE)
     <link>shared:<define>HELLO_DYN_LINK
     ;
 ]]></programlisting>
     <para>ソースファイルにライブラリhelloを追加することで、このライブラリをリンクすることができます。</para>
     <para>また、<filename>main.cpp</filename>が<filename>main.hpp</filename>をインクルードしているので、ライブラリhelloと同じインクルードディレクトリとマクロ定義が必要になります。このような設定をライブラリ利用者側で行うのは面倒です。この問題を解決するには、<computeroutput>lib</computeroutput>ルールの呼び出しにusage-requirementsと呼ばれる引数を追加します。</para>
-    <programlisting><![CDATA[lib hello
+    <programlisting><![CDATA[import os ;
+
+BOOST_INCLUDE = [ os.environ BOOST_INCLUDE ] ;
+
+lib hello
     :
     hello.cpp
     :
-    <include>C:/Boost/boost_1_34_1
+    <include>$(BOOST_INCLUDE)
     <link>shared:<define>HELLO_DYN_LINK
     :
     :
-    <include>C:/Boost/boost_1_34_1
+    <include>$(BOOST_INCLUDE)
     <link>shared:<define>HELLO_DYN_LINK
     ;
 
@@ -260,16 +327,20 @@ exe main : main.cpp hello ;
     <para>実行ファイルのビルドではライブラリの指定方法が変わっています。他のプロジェクトのターゲットを参照するには、「<replaceable>プロジェクトのパス</replaceable>//<replaceable>ターゲット名</replaceable>」という形式を使用します。</para>
     <example>
       <title><filename>lib/Jamfile</filename></title>
-      <programlisting><![CDATA[lib hello
+      <programlisting><![CDATA[import os ;
+
+BOOST_INCLUDE = [ os.environ BOOST_INCLUDE ] ;
+
+lib hello
     :
     hello.cpp
     :
-    <include>C:/Boost/boost_1_34_1
+    <include>$(BOOST_INCLUDE)
     <link>shared:<define>HELLO_DYN_LINK
     :
     :
     <include>.
-    <include>C:/Boost/boost_1_34_1
+    <include>$(BOOST_INCLUDE)
     <link>shared:<define>HELLO_DYN_LINK
     ;
 ]]></programlisting>
@@ -305,9 +376,13 @@ msvc.link bin\msvc-8.0\debug\threading-multi\main.exe
 ]]></programlisting>
     <para>これでビルドディレクトリはプロジェクトのルートディレクトリ配下の<filename class="directory">bin</filename>ディレクトリが利用されるようになります。</para>
     <para><computeroutput>project</computeroutput>ルールで設定できるのはビルドディレクトリだけではありません。次のJamスクリプトはBoostのヘッダファイルをプロジェクト全体で利用できるようにします。</para>
-    <programlisting><![CDATA[project
+    <programlisting><![CDATA[import os ;
+
+BOOST_INCLUDE = [ os.environ BOOST_INCLUDE ] ;
+
+project
     : build-dir bin
-    : requirements <include>C:/Boost/boost_1_34_1
+    : requirements <include>$(BOOST_INCLUDE)
     ;
 ]]></programlisting>
     <para><computeroutput>project</computeroutput>ルールで設定できるオプションには次のようなものがあります。</para>
@@ -379,7 +454,7 @@ endlocal
     <programlisting><![CDATA[import testing ;
 unit-test main : main.cpp ../lib//hello ;
 ]]></programlisting>
-    <para><computeroutput>unit-test</computeroutput>ルールを呼び出す前に<computeroutput><![CDATA[import testing ;]]></computeroutput>が必要なことに注意してください。<computeroutput>import</computeroutput>ルールはモジュールを読み込むためのルールです。<computeroutput>unit-test</computeroutput>ルールは<computeroutput>testing</computeroutput>モジュールで定義されているので、この読み込みが必要となります。</para>
+    <para><computeroutput>unit-test</computeroutput>ルールは<computeroutput>testing</computeroutput>モジュールで定義されているので、インポートが必要です。</para>
     <para>ビルド結果の例を示します。</para>
     <screen><![CDATA[...found 55 targets...
 ...updating 15 targets...
@@ -460,9 +535,12 @@ BOOST_AUTO_TEST_CASE(test)
 }
 ]]></programlisting>
     <para>これをビルドするには次のようなJamスクリプトを使用します。</para>
-    <programlisting><![CDATA[import testing ;
+    <programlisting><![CDATA[import os ;
+import testing ;
 
-use-project /boost : C:/Boost/boost_1_34_1 ;
+BOOST_ROOT = [ os.environ BOOST_ROOT ] ;
+
+use-project /boost : $(BOOST_ROOT) ;
 
 run test.cpp
     :
@@ -472,7 +550,7 @@ run test.cpp
     <library>/boost/test//boost_unit_test_framework
     ;
 ]]></programlisting>
-    <para><computeroutput>use-project</computeroutput>ルールは現在のプロジェクト階層とは別のプロジェクトを参照するためのルールです。ここでは、<filename class="directory">C:/Boost/boost_1_34_1</filename>にあるプロジェクトを<computeroutput>/boost</computeroutput>という名前で参照できるようにしています。</para>
+    <para><computeroutput>use-project</computeroutput>ルールは現在のプロジェクト階層とは別のプロジェクトを参照するためのルールです。ここでは、環境変数<envar>BOOST_ROOT</envar>で指定したディレクトリにあるプロジェクトを<computeroutput>/boost</computeroutput>という名前で参照できるようにしています。</para>
     <para><computeroutput><![CDATA[<library>/boost/test//boost_unit_test_framework]]></computeroutput>は単体テストフレームワークのライブラリをリンクすることを意味しています。マクロ<varname>BOOST_ALL_NO_LIB</varname>はWindows用コンパイラで利用されるオートリンク機能を無効にするためのもので、BBv2は必要に応じてライブラリをビルド/リンクするので、通常は<varname>BOOST_ALL_NO_LIB</varname>を1に定義します。</para>
     <para>参考までにBoost 1.34.1におけるライブラリターゲットの一覧を載せておきます。</para>
     <table frame="all">
@@ -584,47 +662,65 @@ run test.cpp
       </varlistentry>
     </variablelist>
     <para>Boostのようにビルドオプションによってライブラリが異なる場合は、条件を追加した上で同名のライブラリターゲットを定義します。</para>
-    <programlisting><![CDATA[import testing ;
+    <programlisting><![CDATA[import os ;
+import testing ;
+
+BOOST_INCLUDE = [ os.environ BOOST_INCLUDE ] ;
+BOOST_LIBPATH = [ os.environ BOOST_LIBPATH ] ;
 
 project
     : build-dir bin
     : requirements
       <define>BOOST_ALL_NO_LIB=1
-      <include>C:/Boost/include/boost-1_34_1
+      <include>$(BOOST_INCLUDE)
     ;
 
 lib utf : :
     <variant>debug
     <link>shared
-    <file>C:/Boost/lib/boost_unit_test_framework-vc80-mt-gd.lib
+    <file>$(BOOST_LIBPATH)/boost_unit_test_framework-vc80-mt-gd.lib
     : :
     <define>BOOST_TEST_DYN_LINK=1
-    <dll-path>C:/Boost/lib
+    <dll-path>$(BOOST_LIBPATH)
     ;
 
 lib utf : :
     <variant>release
     <link>shared
-    <file>C:/Boost/lib/boost_unit_test_framework-vc80-mt.lib
+    <file>$(BOOST_LIBPATH)/boost_unit_test_framework-vc80-mt.lib
     : :
     <define>BOOST_TEST_DYN_LINK=1
-    <dll-path>C:/Boost/lib
+    <dll-path>$(BOOST_LIBPATH)
     ;
 
 lib utf : :
     <variant>debug
     <link>static
-    <file>C:/Boost/lib/libboost_unit_test_framework-vc80-mt-gd.lib
+    <file>$(BOOST_LIBPATH)/libboost_unit_test_framework-vc80-mt-gd.lib
     ;
 
 lib utf : :
     <variant>release
     <link>static
-    <file>C:/Boost/lib/libboost_unit_test_framework-vc80-mt.lib
+    <file>$(BOOST_LIBPATH)/libboost_unit_test_framework-vc80-mt.lib
     ;
 
 run test.cpp utf ;
 ]]></programlisting>
     <para>ダイナミックリンクの場合は、usage-requirementsにマクロ(ここでは<varname>BOOST_TEST_DYN_LINK</varname>)の定義と<computeroutput><![CDATA[<dll-path>]]></computeroutput>プロパティが必要なことに注意してください。<computeroutput><![CDATA[<dll-path>]]></computeroutput>プロパティは実行時に参照されるDLLのパスを設定するオプションです。</para>
+  </section>
+  <section id="custom-commands">
+    <title>カスタムコマンド</title>
+    <para>BBv2は多くのツールに対応していますが、未対応のツールを利用できる手段が用意されています。次のJamスクリプトはsortコマンドを用いてソートした結果を別ファイルに出力する例です。</para>
+    <programlisting><![CDATA[import make ;
+
+actions sort
+{
+    sort $(2) > $(1)
+}
+
+make out.txt : in.txt : @sort ;
+]]></programlisting>
+    <para><computeroutput>make</computeroutput>ルールの第一引数は出力ファイル名、第二引数は入力ファイル名、第三引数がビルドに使用するアクションです。アクションとはBjamスクリプトの実行後、実際のビルドに利用されるコマンドを定義するものです。アクションを定義するには<computeroutput>actions</computeroutput>キーワードに続いて、アクション名と波カッコで囲んだコマンド文字列を記述します。<computeroutput>make</computeroutput>ルールの第一、第二引数がそれぞれ<computeroutput>$(1)</computeroutput>、<computeroutput>$(2)</computeroutput>で渡されます。</para>
   </section>
 </article>

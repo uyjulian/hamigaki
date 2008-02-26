@@ -5,7 +5,11 @@
 # (See accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
 
+import os ;
+
+BOOST_INCLUDE = [ os.environ BOOST_INCLUDE ] ;
+
 project
     : build-dir bin
-    : requirements <include>C:/Boost/boost_1_34_1
+    : requirements <include>$(BOOST_INCLUDE)
     ;
