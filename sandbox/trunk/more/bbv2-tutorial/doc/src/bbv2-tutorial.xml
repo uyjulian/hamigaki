@@ -711,7 +711,7 @@ run test.cpp utf ;
   </section>
   <section id="custom-commands">
     <title>カスタムコマンド</title>
-    <para>BBv2は多くのツールに対応していますが、未対応のツールを利用できる手段が用意されています。次のJamスクリプトはsortコマンドを用いてソートした結果を別ファイルに出力する例です。</para>
+    <para>BBv2は多くのツールに対応していますが、未対応のツールを利用できる手段が用意されています。次のJamスクリプトはsortコマンドを用いて<filename>in.txt</filename>をソートした結果を<filename>out.txt</filename>に出力する例です。</para>
     <programlisting><![CDATA[import make ;
 
 actions sort
@@ -721,6 +721,22 @@ actions sort
 
 make out.txt : in.txt : @sort ;
 ]]></programlisting>
-    <para><computeroutput>make</computeroutput>ルールの第一引数は出力ファイル名、第二引数は入力ファイル名、第三引数がビルドに使用するアクションです。アクションとはBjamスクリプトの実行後、実際のビルドに利用されるコマンドを定義するものです。アクションを定義するには<computeroutput>actions</computeroutput>キーワードに続いて、アクション名と波カッコで囲んだコマンド文字列を記述します。<computeroutput>make</computeroutput>ルールの第一、第二引数がそれぞれ<computeroutput>$(1)</computeroutput>、<computeroutput>$(2)</computeroutput>で渡されます。</para>
+    <para><computeroutput>make</computeroutput>ルールの第一引数は出力ファイル名、第二引数は入力ファイル名、第三引数がビルドに使用するアクションです。アクションとはBjamスクリプトの実行後、実際のビルドに利用されるコマンドを定義するものです。アクションを定義するには<computeroutput>actions</computeroutput>キーワードに続いて、アクション名と波カッコで囲んだコマンド文字列を記述します。出力ファイル名、入力ファイル名がそれぞれ<computeroutput>$(1)</computeroutput>、<computeroutput>$(2)</computeroutput>で渡されます。</para>
+    <para>出力するファイルがない場合は代わりに<computeroutput>notfile</computeroutput>ルールを使用します。次の例は、ソースファイルの名前<filename>in.cpp</filename>を画面に出力します。</para>
+    <programlisting><![CDATA[import notfile ;
+
+actions echo
+{
+    echo $(2)
+}
+
+notfile echo-souces : @echo : in.cpp ;
+]]></programlisting>
+    <para><computeroutput>make</computeroutput>ルールと違い、<computeroutput>notfile</computeroutput>ルールのソースファイルにはBBv2に登録された拡張子のファイルしか使用できないので注意してください。<footnote>
+      <simpara>拡張子をBBv2登録することで、他の拡張子も使用できる。</simpara>
+      <programlisting><![CDATA[import type ;
+type.register TXT : txt ;
+]]></programlisting>
+    </footnote></para>
   </section>
 </article>
