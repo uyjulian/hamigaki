@@ -87,12 +87,53 @@ greet Hanako : san ;
 EXIT ;
 ]]></programlisting>
     <para>Jam言語ではルール呼び出しの際に引数を「:」で区切ります。ルール側では順に「$(1)、$(2)、…、$(9)」として参照できます。<footnote><simpara>引数の数は9個が最大です。</simpara></footnote></para>
-    <para><application class="software" lang="en">Boost.Jam</application>の拡張として、仮引数に名前を付けることも出来ます。</para>
+    <para><application class="software" lang="en">Boost.Jam</application>の拡張として、仮引数に名前を付けることもできます。</para>
     <programlisting><![CDATA[rule greet ( name : postfix )
 {
     ECHO "Hello, $(name)-$(postfix)." ;
 }
 ]]></programlisting>
+    <para>また、仮引数の名前の次に「?」、「*」、「+」を置くことで、リストのサイズを制限することもできます。</para>
+    <programlisting><![CDATA[rule example ( targets + : sources * : option ? ) { }
+
+example a ;
+example a : b ;
+example a : b : c ;
+example a : : b ;
+example a b c : d e : f ;
+
+EXIT ;
+]]></programlisting>
+    <para>各シンボルの意味は次のようになります。</para>
+    <table frame="all">
+      <title>仮引数の制約</title>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>シンボル</entry>
+            <entry>リストのサイズ</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>?</entry>
+            <entry>0または1</entry>
+          </row>
+          <row>
+            <entry>*</entry>
+            <entry>0以上</entry>
+          </row>
+          <row>
+            <entry>+</entry>
+            <entry>1以上</entry>
+          </row>
+          <row>
+            <entry>なし</entry>
+            <entry>1</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
     <para>戻り値は<computeroutput>return</computeroutput>文で設定します。また、戻り値が必要な箇所ではルールの呼び出しを「[」と「]」で囲みます。</para>
     <programlisting><![CDATA[rule greet-msg ( name : postfix )
 {
@@ -101,7 +142,105 @@ EXIT ;
 
 EXIT [ greet-msg Taro : kun ] ;
 ]]></programlisting>
-    <para>なお、Jam言語の<computeroutput>return</computeroutput>文は戻り値を設定するだけでフロー制御は行わないので、ルールの実行が継続されることに注意してください。<footnote><simpara>Jamのオリジナル実装である<application class="software" lang="en">Perforce Jam</application>のバージョン2.5以降では<computeroutput>return</computeroutput>文にフロー制御が追加され、ルールの実行が中断されるようになりました。しかし、<application class="software" lang="en">Boost.Jam</application>はバージョン2.4を基にしているため、このフロー制御の機能を持っていません。</simpara></footnote></para>
+    <para>なお、Jam言語の<computeroutput>return</computeroutput>文は戻り値を設定するだけで制御フローに影響しないので、<computeroutput>return</computeroutput>文が実行された後もルールの実行が継続されることに注意してください。<footnote><simpara>Jamのオリジナル実装である<application class="software" lang="en">Perforce Jam</application>のバージョン2.5以降では<computeroutput>return</computeroutput>文がルールの実行を中断するようになりました。しかし、<application class="software" lang="en">Boost.Jam</application>はバージョン2.4を基にしているため、この機能を持っていません。</simpara></footnote></para>
+  </section>
+  <section id="control-flow">
+    <title>制御フロー</title>
+    <para>Jam言語には制御構文として、<computeroutput>for</computeroutput>文、<computeroutput>if</computeroutput>文、<computeroutput>return</computeroutput>文、<computeroutput>switch</computeroutput>文、<computeroutput>while</computeroutput>文を持っています。ここでは<computeroutput>for</computeroutput>文と<computeroutput>if</computeroutput>文のみ説明します。</para>
+    <para>まず、<computeroutput>for</computeroutput>文の例を示します。</para>
+    <programlisting><![CDATA[for x in Taro Hanako Saburo
+{
+    ECHO Hello, $(x). ;
+}
+
+EXIT ;
+]]></programlisting>
+    <para>実行結果はこうなります。</para>
+    <screen><![CDATA[Hello, Taro.
+Hello, Hanako.
+Hello, Saburo.
+
+]]></screen>
+    <para>Jam言語の<computeroutput>for</computeroutput>文は、いわゆる<ulink url="http://ja.wikipedia.org/wiki/Foreach%E6%96%87">foreach文</ulink>で、指定した変数にリストの各要素を代入して順にブロックを評価します。</para>
+    <para>続いて、<computeroutput>if</computeroutput>文の例です。</para>
+    <programlisting><![CDATA[if $(OS) = NT
+{
+    EXIT Your system is Windows. ;
+}
+else
+{
+    EXIT Your system is not Windows. ;
+}
+]]></programlisting>
+    <para>Windows上で実行した場合の実行結果はこうなります。</para>
+    <screen><![CDATA[Your system is Windows.
+]]></screen>
+    <para>Windows以外ならこうなります。</para>
+    <screen><![CDATA[Your system is not Windows.
+]]></screen>
+    <para>「<computeroutput>$(OS) = NT</computeroutput>」が<computeroutput>if</computeroutput>文の条件で、変数<varname>OS</varname>の値が「NT」なら真となり、条件に続くブロックが評価されます。それ以外の場合は<computeroutput>else</computeroutput>に続くブロックが評価されます。なお、変数<varname>OS</varname>は実行環境のOS名を表す事前定義の変数です。</para>
+    <para>条件に使用できる演算子は以下の通りです。</para>
+    <table frame="all">
+      <title>演算子一覧</title>
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>条件式</entry>
+            <entry>評価値</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><replaceable>a</replaceable></entry>
+            <entry><replaceable>a</replaceable>に空でない文字列が含まれていれば真</entry>
+          </row>
+          <row>
+            <entry><replaceable>a</replaceable> = <replaceable>b</replaceable></entry>
+            <entry><replaceable>a</replaceable>と<replaceable>b</replaceable>の要素がすべて同じ場合に真</entry>
+          </row>
+          <row>
+            <entry><replaceable>a</replaceable> != <replaceable>b</replaceable></entry>
+            <entry><replaceable>a</replaceable>と<replaceable>b</replaceable>の要素に同じでないものが含まれる場合に真</entry>
+          </row>
+          <row>
+            <entry><replaceable>a</replaceable> &lt; <replaceable>b</replaceable></entry>
+            <entry>辞書順で<replaceable>a</replaceable>が<replaceable>b</replaceable>より小さい場合に真</entry>
+          </row>
+          <row>
+            <entry><replaceable>a</replaceable> &lt;= <replaceable>b</replaceable></entry>
+            <entry>辞書順で<replaceable>a</replaceable>が<replaceable>b</replaceable>以下の場合に真</entry>
+          </row>
+          <row>
+            <entry><replaceable>a</replaceable> &gt; <replaceable>b</replaceable></entry>
+            <entry>辞書順で<replaceable>a</replaceable>が<replaceable>b</replaceable>より大きい場合に真</entry>
+          </row>
+          <row>
+            <entry><replaceable>a</replaceable> &gt;= <replaceable>b</replaceable></entry>
+            <entry>辞書順で<replaceable>a</replaceable>が<replaceable>b</replaceable>以上の場合に真</entry>
+          </row>
+          <row>
+            <entry><replaceable>a</replaceable> in <replaceable>b</replaceable></entry>
+            <entry><replaceable>a</replaceable>の要素が全て<replaceable>b</replaceable>に含まれる場合に真</entry>
+          </row>
+          <row>
+            <entry>! <replaceable>cond</replaceable></entry>
+            <entry><replaceable>cond</replaceable>が偽の場合に真</entry>
+          </row>
+          <row>
+            <entry><replaceable>a</replaceable> &amp;&amp; <replaceable>b</replaceable></entry>
+            <entry><replaceable>a</replaceable>が真かつ<replaceable>b</replaceable>が真の場合に真</entry>
+          </row>
+          <row>
+            <entry><replaceable>a</replaceable> || <replaceable>b</replaceable></entry>
+            <entry><replaceable>a</replaceable>が真または<replaceable>b</replaceable>が真の場合に真</entry>
+          </row>
+          <row>
+            <entry>( <replaceable>cond</replaceable> )</entry>
+            <entry><replaceable>cond</replaceable>が真の場合に真</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
   </section>
   <section id="configuration">
     <title>環境設定</title>
@@ -450,7 +589,7 @@ endlocal
   </section>
   <section id="unit-testing">
     <title>単体テスト</title>
-    <para>BBv2でプログラムを直接実行することも出来ます。この場合、<computeroutput>exe</computeroutput>ルールの代わりに<computeroutput>unit-test</computeroutput>ルールを使用します。</para>
+    <para>BBv2でプログラムを直接実行することもできます。この場合、<computeroutput>exe</computeroutput>ルールの代わりに<computeroutput>unit-test</computeroutput>ルールを使用します。</para>
     <programlisting><![CDATA[import testing ;
 unit-test main : main.cpp ../lib//hello ;
 ]]></programlisting>

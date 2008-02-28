@@ -1,0 +1,15 @@
+# BBv2 Tutorial: an example about "if" statement
+
+# Copyright Takeshi Mouri 2008.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+if $(OS) = NT
+{
+    EXIT Your system is Windows. ;
+}
+else
+{
+    EXIT Your system is not Windows. ;
+}
