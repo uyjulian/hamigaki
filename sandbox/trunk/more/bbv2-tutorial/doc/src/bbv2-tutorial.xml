@@ -860,7 +860,7 @@ actions sort
 
 make out.txt : in.txt : @sort ;
 ]]></programlisting>
-    <para><computeroutput>make</computeroutput>ルールの第一引数は出力ファイル名、第二引数は入力ファイル名、第三引数がビルドに使用するアクションです。アクションとはBjamスクリプトの実行後、実際のビルドに利用されるコマンドを定義するものです。アクションを定義するには<computeroutput>actions</computeroutput>キーワードに続いて、アクション名と波カッコで囲んだコマンド文字列を記述します。出力ファイル名、入力ファイル名がそれぞれ<computeroutput>$(1)</computeroutput>、<computeroutput>$(2)</computeroutput>で渡されます。</para>
+    <para><computeroutput>make</computeroutput>ルールの第一引数は出力ファイル名、第二引数は入力ファイル名、第三引数がビルドに使用するアクションです。アクションとはJamスクリプトの実行後、実際のビルドに利用されるコマンドを定義するものです。アクションを定義するには<computeroutput>actions</computeroutput>キーワードに続いて、アクション名と波カッコで囲んだコマンド文字列を記述します。出力ファイル名、入力ファイル名がそれぞれ<computeroutput>$(1)</computeroutput>、<computeroutput>$(2)</computeroutput>で渡されます。</para>
     <para>出力するファイルがない場合は代わりに<computeroutput>notfile</computeroutput>ルールを使用します。次の例は、ソースファイルの名前<filename>in.cpp</filename>を画面に出力します。</para>
     <programlisting><![CDATA[import notfile ;
 
@@ -877,5 +877,41 @@ notfile echo-souces : @echo : in.cpp ;
 type.register TXT : txt ;
 ]]></programlisting>
     </footnote></para>
+    <para>今度はビルド設定に応じてコマンドに渡すオプションを変えることを考えます。</para>
+    <programlisting><![CDATA[import notfile ;
+
+actions echo-link-mode
+{
+    echo $(MSG)
+}
+
+notfile echo-default-link : @echo-link-mode ;
+]]></programlisting>
+    <para>ここで変数<varname>MSG</varname>をビルド設定がスタティックリンクかダイナミックリンクかで違うものにしたいとします。そこで、</para>
+    <programlisting>if <emphasis>スタティックリンクか？</emphasis>
+{
+    MSG = "static link" ;
+}
+else
+{
+    MSG = "dynamic link" ;
+}
+</programlisting>
+    <para>のようなコードを追加したとしても、</para>
+    <screen>bjam link=static link=shared</screen>
+    <para>のように二つのリンクモードを同時にビルドした際に正しく処理できません。変数<varname>MSG</varname>は実ターゲット毎に設定する必要があるわけです。これを実現するには、次のようなアクションと同名のルールを定義します。</para>
+    <programlisting><![CDATA[rule echo-link-mode ( targets * : sources * : properties * )
+{
+    if <link>static in $(properties)
+    {
+        MSG on $(targets) = "static link" ;
+    }
+    else
+    {
+        MSG on $(targets) = "dynamic link" ;
+    }
+}
+]]></programlisting>
+    <para>ここで注目すべき点は、「<computeroutput>MSG on $(targets)</computeroutput>」の部分です。これはターゲット変数と呼ばれるもので、ターゲット毎に異なる値を記録することができます。アクションの定義中ではターゲット変数が参照されるため、ターゲット毎に適切な値に展開されます。</para>
   </section>
 </article>

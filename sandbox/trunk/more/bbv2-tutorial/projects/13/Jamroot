@@ -1,0 +1,27 @@
+# BBv2 Tutorial: use the rule "notfile" with target variables
+
+# Copyright Takeshi Mouri 2008.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+import notfile ;
+
+rule echo-link-mode ( targets * : sources * : properties * )
+{
+    if <link>static in $(properties)
+    {
+        MSG on $(targets) = "static link" ;
+    }
+    else
+    {
+        MSG on $(targets) = "dynamic link" ;
+    }
+}
+
+actions echo-link-mode
+{
+    echo $(MSG)
+}
+
+notfile echo-default-link : @echo-link-mode ;
