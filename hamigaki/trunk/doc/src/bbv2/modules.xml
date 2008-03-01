@@ -117,10 +117,14 @@ os = [ modules.peek : OS ] ;
   </section>
   <section id="bbv2.modules.environ">
     <title>.ENVIRONモジュール</title>
-    <para>OSの環境変数は.ENVIRONモジュールの変数にマップされる。よって、標準モジュールmodulesの<link linkend="bbv2.reference.modules.peek">peek</link>/<link linkend="bbv2.reference.modules.poke">poke</link>ルールを通してアクセスすることができる。</para>
+    <para>OSの環境変数は.ENVIRONモジュールの変数にマップされる。よって、標準モジュールmodulesの<link linkend="bbv2.reference.modules.peek">peek</link>/<link linkend="bbv2.reference.modules.poke">poke</link>ルールを通してアクセスすることができる。また、標準モジュールosの<link linkend="bbv2.reference.os.environ">environ</link>ルールも利用できる。</para>
+    <informalexample>
       <programlisting><![CDATA[# 変数homeに環境変数HOMEの値を代入
 home = [ modules.peek .ENVIRON : HOME ] ;
+# 上と同じ効果
+home = [ os.environ : HOME ] ;
 ]]></programlisting>
+    </informalexample>
   </section>
   <section id="bbv2.modules.globals" xreflabel="グローバル変数">
     <title>グローバル変数</title>
