@@ -4,13 +4,13 @@
 <!--
   Hamigaki Library Document Source
 
-  Copyright Takeshi Mouri 2007.
+  Copyright Takeshi Mouri 2007, 2008.
   Distributed under the Boost Software License, Version 1.0.
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
 -->
 <section id="bbv2.control">
-  <title>フロー制御</title>
+  <title>制御フロー</title>
   <section id="bbv2.control.condition">
     <title>条件式</title>
     <para>BBv2で使用される条件式には以下のようなものがある。</para>
