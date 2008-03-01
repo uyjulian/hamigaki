@@ -11,6 +11,7 @@
 #define NOMINMAX
 #include <hamigaki/bjam/bjam_context.hpp>
 #include <hamigaki/bjam/bjam_version.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/none.hpp>
 #include <boost/tokenizer.hpp>
@@ -74,7 +75,9 @@ string_list split_env_values(const std::string& name, const std::string& value)
 
     const char* delim = " ";
 
-    if ((name == "PATH") || (name == "Path") || (name == "path"))
+    if (boost::algorithm::ends_with(name, "PATH") ||
+        boost::algorithm::ends_with(name, "Path") ||
+        boost::algorithm::ends_with(name, "path") )
     {
 #if defined(BOOST_WINDOWS) && !defined(__CYGWIN__)
         delim = ";";
