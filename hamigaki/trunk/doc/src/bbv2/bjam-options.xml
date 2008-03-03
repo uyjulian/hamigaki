@@ -29,13 +29,47 @@
       <varlistentry>
         <term><replaceable>properties</replaceable></term>
         <listitem>
-          <para><link linkend="bbv2.properties.property">プロパティ</link>を「<replaceable>フィーチャー</replaceable>=<replaceable>値</replaceable>」の形式で設定する。</para>
+          <para><link linkend="bbv2.properties.property">プロパティ</link>を「<replaceable>フィーチャー</replaceable>=<replaceable>値</replaceable>」の形式で設定する。toolsetやvariantのようなimplicitフィーチャーは「<replaceable>フィーチャー</replaceable>=」を省略できる。また、値を複数設定する場合は「,」で区切る。</para>
+          <para>さらに、「<replaceable>プロパティA</replaceable>/<replaceable>プロパティB</replaceable>」のようにすることで、<replaceable>プロパティA</replaceable>が使用される場合のみ<replaceable>プロパティB</replaceable>を設定するよう指定できる。</para>
+          <informaltable frame="all">
+            <tgroup cols="2">
+              <thead>
+                <row>
+                  <entry>プロパティ</entry>
+                  <entry>意味</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>gcc debug</entry>
+                  <entry>gccでデバッグビルドを行う。</entry>
+                </row>
+                <row>
+                  <entry>link=static/shared</entry>
+                  <entry>スタティックライブラリと共有ライブラリを共にビルドする。</entry>
+                </row>
+                <row>
+                  <entry>gcc/debug/threading=multi</entry>
+                  <entry>gccでマルチスレッド用にデバッグビルドを行う。</entry>
+                </row>
+                <row>
+                  <entry>gcc/debug msvc/release</entry>
+                  <entry>gccでデバッグビルドを、VisualC++でリリースビルドを行う。</entry>
+                </row>
+                <row>
+                  <entry>gcc/toolset-gcc:flavor=mingw,cygwin</entry>
+                  <entry>MInGWとCygwinのgccでビルドする。</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
         </listitem>
       </varlistentry>
       <varlistentry>
         <term><replaceable>targets</replaceable></term>
         <listitem>
-          <para>ビルドするターゲットを指定する。既定ではexplicit指定されていない全てのターゲットをビルドする。</para>
+          <para>ビルドするターゲットを<link linkend="bbv2.targets.id">ターゲットID</link>で指定する。既定ではexplicit指定されていない全てのターゲットをビルドする。</para>
+          <para>ターゲットcleanは<link linkend="bbv2.bjam-options.bbv2.clean">--clean</link>オプションと同じ働きを持つ。</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -142,9 +176,15 @@
     <title>BBv2のオプション</title>
     <variablelist>
       <varlistentry>
-        <term>--clean</term>
+        <term id="bbv2.bjam-options.bbv2.clean">--clean</term>
         <listitem>
-          <para>全てのターゲットを削除する。</para>
+          <para>ターゲットをビルドする代わりに削除する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--clean-all</term>
+        <listitem>
+          <para>外部プロジェクトも含め、全てのターゲットを削除する。</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -157,6 +197,54 @@
         <term>--help</term>
         <listitem>
           <para>ヘルプメッセージを表示し、終了する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--help <replaceable>module-name</replaceable></term>
+        <listitem>
+          <para>モジュール<replaceable>module-name</replaceable>のヘルプコメントを表示し、終了する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--help <replaceable>module-name</replaceable>.<replaceable>rule-name</replaceable></term>
+        <listitem>
+          <para>ルール<replaceable>module-name</replaceable>.<replaceable>rule-name</replaceable>のヘルプコメントを表示し、終了する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--debug-configuration</term>
+        <listitem>
+          <para>モジュールの設定に関するデバッグメッセージを表示する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--test-config=<replaceable>file</replaceable></term>
+        <listitem>
+          <para><filename>site-config.jam</filename>と<filename>user-config.jam</filename>の代わりに<replaceable>file</replaceable>を使用する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--site-config=<replaceable>file</replaceable></term>
+        <listitem>
+          <para><filename>site-config.jam</filename>の代わりに<replaceable>file</replaceable>を使用する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--user-config=<replaceable>file</replaceable></term>
+        <listitem>
+          <para><filename>user-config.jam</filename>の代わりに<replaceable>file</replaceable>を使用する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--toolset=<replaceable>name</replaceable></term>
+        <listitem>
+          <para>ツールセット<replaceable>name</replaceable>を自動設定して、ビルドに使用する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--verbose-test</term>
+        <listitem>
+          <para>unit-testモジュールを利用した単体テストで成功時にも標準出力/エラー出力の内容を表示する。</para>
         </listitem>
       </varlistentry>
     </variablelist>
