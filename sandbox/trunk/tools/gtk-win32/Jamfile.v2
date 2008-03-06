@@ -1,0 +1,74 @@
+# Jamfile for OpenGL test program for GTK+2/Win32
+
+# Copyright Takeshi Mouri 2008.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/ for library home page.
+
+import exec ;
+
+local gtk-root = [ modules.peek : GTK_ROOT ] ;
+local gtk-inc = $(gtk-root)/include ;
+local gtk-lib = $(gtk-root)/lib $(gtk-root)/bin ;
+
+lib gtk-win32-2.0 : : <search>$(gtk-lib) ;
+lib gdk-win32-2.0 : : <search>$(gtk-lib) ;
+lib gdi32 imm32 shell32 ole32 ;
+lib atk-1.0 : : <search>$(gtk-lib) ;
+lib gdk_pixbuf-2.0 : : <search>$(gtk-lib) ;
+lib pangowin32-1.0 : : <search>$(gtk-lib) ;
+lib pangocairo-1.0 : : <search>$(gtk-lib) ;
+lib pango-1.0 : : <search>$(gtk-lib) ;
+lib cairo : : <search>$(gtk-lib) ;
+lib gobject-2.0 : : <search>$(gtk-lib) ;
+lib gmodule-2.0 : : <search>$(gtk-lib) ;
+lib glib-2.0 : : <search>$(gtk-lib) ;
+lib intl : : <search>$(gtk-lib) ;
+lib iconv : : <search>$(gtk-lib) ;
+
+
+alias gtk
+    :
+    gtk-win32-2.0
+    gdk-win32-2.0
+    gdi32
+    imm32
+    shell32
+    ole32
+    atk-1.0
+    gdk_pixbuf-2.0
+    pangowin32-1.0
+    pangocairo-1.0
+    pango-1.0
+    cairo
+    gobject-2.0
+    gmodule-2.0
+    glib-2.0
+    intl
+    iconv
+    :
+    :
+    :
+    <include>$(gtk-inc)/gtk-2.0
+    <include>$(gtk-lib)/gtk-2.0/include
+    <include>$(gtk-inc)/atk-1.0
+    <include>$(gtk-inc)/cairo
+    <include>$(gtk-inc)/pango-1.0
+    <include>$(gtk-inc)/glib-2.0
+    <include>$(gtk-lib)/glib-2.0/include
+    <toolset>gcc:<cxxflags>-mms-bitfields
+    ;
+
+exe gl_test
+    :
+    gl_test.cpp
+    gtk
+    :
+    <find-static-library>opengl32
+    ;
+
+exec.register-exec-all ;
+alias run : gl_test-run ;
+explicit run ;
