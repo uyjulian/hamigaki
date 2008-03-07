@@ -14,17 +14,15 @@
 class scoped_dc
 {
 public:
-    explicit scoped_dc(::GtkWidget* widget)
-        : window_(widget->window), gc_(0), hdc_(0)
+    scoped_dc(::GtkWidget* widget, ::GdkGC* gc)
+        : window_(widget->window), gc_(gc), hdc_(0)
     {
-        gc_ = ::gdk_gc_new(window_);
         hdc_ = ::gdk_win32_hdc_get(window_, gc_, ::GdkGCValuesMask());
     }
 
     ~scoped_dc()
     {
         ::gdk_win32_hdc_release(window_, gc_, ::GdkGCValuesMask());
-        ::gdk_gc_unref(gc_);
     }
 
     ::HDC get() const
@@ -45,13 +43,14 @@ class gl_window_data
 {
 public:
     explicit gl_window_data(::GtkWidget* widget)
-        : widget_(widget), hrc_(0)
+        : widget_(widget), gc_(0), hrc_(0)
     {
     }
 
     void create_gl_context()
     {
-        scoped_dc dc(widget_);
+        gc_ = ::gdk_gc_new(widget_->window);
+        scoped_dc dc(widget_, gc_);
 
         ::PIXELFORMATDESCRIPTOR pfd = {};
         pfd.nSize = sizeof(pfd);
@@ -73,6 +72,7 @@ public:
     {
         ::wglMakeCurrent(0, 0);
         ::wglDeleteContext(hrc_);
+        ::gdk_gc_unref(gc_);
         hrc_ = 0;
     }
 
@@ -81,7 +81,7 @@ public:
         if (!hrc_)
             return;
 
-        scoped_dc dc(widget_);
+        scoped_dc dc(widget_, gc_);
         ::wglMakeCurrent(dc.get(), hrc_);
         ::SwapBuffers(dc.get());
     }
@@ -97,6 +97,7 @@ public:
 
 private:
     ::GtkWidget* widget_;
+    ::GdkGC* gc_;
     ::HGLRC hrc_;
 
     gl_window_data(const gl_window_data&);
@@ -137,7 +138,7 @@ int main(int argc, char* argv[])
     gl_window_data data(window);
     data.create_gl_context();
 
-    ::g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(destroy), NULL);
+    ::g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(destroy), 0);
 
     ::g_signal_connect(
         G_OBJECT(window), "delete-event", G_CALLBACK(delete_event), &data);
