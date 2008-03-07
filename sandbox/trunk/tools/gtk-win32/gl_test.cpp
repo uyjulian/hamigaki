@@ -10,6 +10,7 @@
 #include <gdk/gdkwin32.h>
 #include <gtk/gtk.h>
 #include <GL/gl.h>
+                        #include <iostream>
 
 class scoped_dc
 {
@@ -109,13 +110,16 @@ void destroy(GtkWidget* widget, gpointer user_data)
     ::gtk_main_quit();
 }
 
-::gboolean
-delete_event(::GtkWidget* widget, ::GdkEvent* event, ::gpointer user_data)
+void realize(::GtkWidget* widget, ::gpointer user_data)
+{
+    gl_window_data& data = *static_cast<gl_window_data*>(user_data);
+    data.create_gl_context();
+}
+
+void unrealize(::GtkWidget* widget, ::gpointer user_data)
 {
     gl_window_data& data = *static_cast<gl_window_data*>(user_data);
     data.destroy_gl_context();
-
-    return FALSE;
 }
 
 ::gboolean draw(::gpointer user_data)
@@ -127,24 +131,26 @@ delete_event(::GtkWidget* widget, ::GdkEvent* event, ::gpointer user_data)
     return TRUE;
 }
 
+template<class Widget, class Arg>
+inline ::gulong connect_signal(
+    Widget* w, const char* sig, ::GCallback func, Arg* arg)
+{
+    return ::g_signal_connect(G_OBJECT(w), sig, func, arg);
+}
+
 int main(int argc, char* argv[])
 {
     ::gtk_init(&argc, &argv);
 
     ::GtkWidget* window = ::gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
-    ::gtk_widget_show(window);
-
     gl_window_data data(window);
-    data.create_gl_context();
-
-    ::g_signal_connect(G_OBJECT(window), "destroy", G_CALLBACK(destroy), 0);
-
-    ::g_signal_connect(
-        G_OBJECT(window), "delete-event", G_CALLBACK(delete_event), &data);
-
+    connect_signal(window, "destroy", G_CALLBACK(destroy), &data);
+    connect_signal(window, "realize", G_CALLBACK(realize), &data);
+    connect_signal(window, "unrealize", G_CALLBACK(unrealize), &data);
     ::g_idle_add(&draw, &data);
 
+    ::gtk_widget_show(window);
     ::gtk_main();
 
     return 0;
