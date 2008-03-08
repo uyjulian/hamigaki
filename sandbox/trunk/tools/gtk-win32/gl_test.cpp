@@ -7,52 +7,74 @@
 
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
+#include <cassert>
+#include <stdexcept>
 #include <gdk/gdkwin32.h>
 #include <gtk/gtk.h>
 #include <GL/gl.h>
-                        #include <iostream>
 
-class scoped_dc
+class graphic_context
 {
 public:
-    scoped_dc(::GtkWidget* widget, ::GdkGC* gc)
-        : window_(widget->window), gc_(gc), hdc_(0)
+    explicit graphic_context(::GdkWindow* window)
+        : handle_(::gdk_gc_new(window))
     {
-        hdc_ = ::gdk_win32_hdc_get(window_, gc_, ::GdkGCValuesMask());
+        if (handle_ == 0)
+            throw std::runtime_error("gdk_gc_new() failed");
     }
 
-    ~scoped_dc()
+    ~graphic_context()
     {
-        ::gdk_win32_hdc_release(window_, gc_, ::GdkGCValuesMask());
+        ::gdk_gc_unref(handle_);
+    }
+
+    ::GdkGC* get() const
+    {
+        return handle_;
+    }
+
+private:
+    ::GdkGC* handle_;
+
+    graphic_context(const graphic_context&);
+    graphic_context& operator=(const graphic_context&);
+};
+
+class device_context
+{
+public:
+    explicit device_context(::GdkWindow* window)
+        : window_(window), gc_(window), handle_(0)
+    {
+        handle_ = ::gdk_win32_hdc_get(window_, gc_.get(), ::GdkGCValuesMask());
+        if (handle_ == 0)
+            throw std::runtime_error("gdk_win32_hdc_get() failed");
+    }
+
+    ~device_context()
+    {
+        ::gdk_win32_hdc_release(window_, gc_.get(), ::GdkGCValuesMask());
     }
 
     ::HDC get() const
     {
-        return hdc_;
+        return handle_;
     }
 
 private:
     ::GdkWindow* window_;
-    ::GdkGC* gc_;
-    ::HDC hdc_;
+    graphic_context gc_;
+    ::HDC handle_;
 
-    scoped_dc(const scoped_dc&);
-    scoped_dc& operator=(const scoped_dc&);
+    device_context(const device_context&);
+    device_context& operator=(const device_context&);
 };
 
-class gl_window_data
+class render_context
 {
 public:
-    explicit gl_window_data(::GtkWidget* widget)
-        : widget_(widget), gc_(0), hrc_(0)
+    explicit render_context(::GdkWindow* window) : dc_(window), handle_(0)
     {
-    }
-
-    void create_gl_context()
-    {
-        gc_ = ::gdk_gc_new(widget_->window);
-        scoped_dc dc(widget_, gc_);
-
         ::PIXELFORMATDESCRIPTOR pfd = {};
         pfd.nSize = sizeof(pfd);
         pfd.nVersion = 1;
@@ -62,71 +84,124 @@ public:
         pfd.cDepthBits = 16;
         pfd.iLayerType = PFD_MAIN_PLANE;
 
-        int fmt = ::ChoosePixelFormat(dc.get(), &pfd);
-        ::SetPixelFormat(dc.get(), fmt, &pfd);
+        int fmt = ::ChoosePixelFormat(dc_.get(), &pfd);
+        if (fmt == 0)
+            throw std::runtime_error("ChoosePixelFormat() failed");
+        ::SetPixelFormat(dc_.get(), fmt, &pfd);
 
-        hrc_ = ::wglCreateContext(dc.get());
-        ::wglMakeCurrent(dc.get(), hrc_);
+        handle_ = ::wglCreateContext(dc_.get());
+        if (handle_ == 0)
+            throw std::runtime_error("wglCreateContext() failed");
     }
 
-    void destroy_gl_context()
+    ~render_context()
     {
+        ::wglDeleteContext(handle_);
+    }
+
+    void begin_scene()
+    {
+        assert(::wglGetCurrentDC() == 0);
+        assert(::wglGetCurrentContext() == 0);
+
+        ::wglMakeCurrent(dc_.get(), handle_);
+    }
+
+    void end_scene()
+    {
+        assert(::wglGetCurrentDC() == dc_.get());
+        assert(::wglGetCurrentContext() == handle_);
+
         ::wglMakeCurrent(0, 0);
-        ::wglDeleteContext(hrc_);
-        ::gdk_gc_unref(gc_);
-        hrc_ = 0;
     }
 
     void swap_buffers()
     {
-        if (!hrc_)
-            return;
+        assert(::wglGetCurrentDC() == dc_.get());
+        assert(::wglGetCurrentContext() == handle_);
 
-        scoped_dc dc(widget_, gc_);
-        ::wglMakeCurrent(dc.get(), hrc_);
-        ::SwapBuffers(dc.get());
+        ::SwapBuffers(dc_.get());
     }
 
-    void clear()
+    void clear(float r, float g, float b, float a)
     {
-        if (!hrc_)
-            return;
+        assert(::wglGetCurrentDC() == dc_.get());
+        assert(::wglGetCurrentContext() == handle_);
 
-        ::glClearColor(0.0, 0.0, 1.0, 0.0);
+        ::glClearColor(r, g, b, a);
         ::glClear(GL_COLOR_BUFFER_BIT);
     }
 
 private:
-    ::GtkWidget* widget_;
-    ::GdkGC* gc_;
-    ::HGLRC hrc_;
+    device_context dc_;
+    ::HGLRC handle_;
 
-    gl_window_data(const gl_window_data&);
-    gl_window_data& operator=(const gl_window_data&);
+    render_context(const render_context&);
+    render_context& operator=(const render_context&);
 };
 
-void destroy(GtkWidget* widget, gpointer user_data)
+class scoped_scene
+{
+public:
+    explicit scoped_scene(render_context& rc) : rc_(rc)
+    {
+        rc_.begin_scene();
+    }
+
+    ~scoped_scene()
+    {
+        rc_.end_scene();
+    }
+
+private:
+    render_context& rc_;
+
+    scoped_scene(const scoped_scene&);
+    scoped_scene& operator=(const scoped_scene&);
+};
+
+
+#include <iostream>
+
+void destroy(GtkWidget*, gpointer)
 {
     ::gtk_main_quit();
 }
 
 void realize(::GtkWidget* widget, ::gpointer user_data)
 {
-    gl_window_data& data = *static_cast<gl_window_data*>(user_data);
-    data.create_gl_context();
+    render_context*& pimpl = *static_cast<render_context**>(user_data);
+    try
+    {
+        pimpl = new render_context(widget->window);
+    }
+    catch (...)
+    {
+        pimpl = 0;
+    }
 }
 
-void unrealize(::GtkWidget* widget, ::gpointer user_data)
+void unrealize(::GtkWidget*, ::gpointer user_data)
 {
-    gl_window_data& data = *static_cast<gl_window_data*>(user_data);
-    data.destroy_gl_context();
+    render_context*& pimpl = *static_cast<render_context**>(user_data);
+    delete pimpl;
+    pimpl = 0;
 }
 
 ::gboolean draw(::gpointer user_data)
 {
-    gl_window_data& data = *static_cast<gl_window_data*>(user_data);
-    data.clear();
-    data.swap_buffers();
+    if (render_context*& pimpl = *static_cast<render_context**>(user_data))
+    {
+        try
+        {
+            scoped_scene scene(*pimpl);
+            pimpl->clear(0.0f, 0.0f, 1.0f, 1.0f);
+            pimpl->swap_buffers();
+        }
+        catch (...)
+        {
+        }
+    }
 
     return TRUE;
 }
@@ -135,23 +210,35 @@ template<class Widget, class Arg>
 inline ::gulong connect_signal(
     Widget* w, const char* sig, ::GCallback func, Arg* arg)
 {
-    return ::g_signal_connect(G_OBJECT(w), sig, func, arg);
+    ::gulong id = ::g_signal_connect(G_OBJECT(w), sig, func, arg);
+    if (id == 0)
+        throw std::runtime_error("g_signal_connect() failed");
+    return id;
 }
 
 int main(int argc, char* argv[])
 {
-    ::gtk_init(&argc, &argv);
+    try
+    {
+        ::gtk_init(&argc, &argv);
 
-    ::GtkWidget* window = ::gtk_window_new(GTK_WINDOW_TOPLEVEL);
+        ::GtkWidget* window = ::gtk_window_new(GTK_WINDOW_TOPLEVEL);
+        if (window == 0)
+            throw std::runtime_error("gtk_window_new() failed");
 
-    gl_window_data data(window);
-    connect_signal(window, "destroy", G_CALLBACK(destroy), &data);
-    connect_signal(window, "realize", G_CALLBACK(realize), &data);
-    connect_signal(window, "unrealize", G_CALLBACK(unrealize), &data);
-    ::g_idle_add(&draw, &data);
+        render_context* pimpl = 0;
+        connect_signal(window, "destroy", G_CALLBACK(destroy), &pimpl);
+        connect_signal(window, "realize", G_CALLBACK(realize), &pimpl);
+        connect_signal(window, "unrealize", G_CALLBACK(unrealize), &pimpl);
+        ::g_idle_add(&draw, &pimpl);
 
-    ::gtk_widget_show(window);
-    ::gtk_main();
+        ::gtk_widget_show(window);
+        ::gtk_main();
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << e.what() << std::endl;
+    }
 
     return 0;
 }
