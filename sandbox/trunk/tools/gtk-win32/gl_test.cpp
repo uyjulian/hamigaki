@@ -160,6 +160,116 @@ private:
     scoped_scene& operator=(const scoped_scene&);
 };
 
+class texture
+{
+public:
+    explicit texture(render_context& rc) : rc_(rc), handle_(0)
+    {
+        scoped_scene scene(rc_);
+        ::glGenTextures(1, &handle_);
+        if (::glGetError() != GL_NO_ERROR)
+            throw std::runtime_error("glGenTextures() failed");
+    }
+
+    ~texture()
+    {
+        scoped_scene scene(rc_);
+        ::glDeleteTextures(1, &handle_);
+    }
+
+    void set_image(int width, int height, void* data)
+    {
+        scoped_scene scene(rc_);
+        ::glBindTexture(GL_TEXTURE_2D, handle_);
+        ::glPixelStorei (GL_UNPACK_ALIGNMENT, 1);
+        ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        ::glTexImage2D(
+            GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
+            GL_RGBA, GL_UNSIGNED_BYTE, data);
+        ::glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    void bind()
+    {
+        ::glBindTexture(GL_TEXTURE_2D, handle_);
+    }
+
+    void unbind()
+    {
+        ::glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+private:
+    render_context& rc_;
+    ::GLuint handle_;
+
+    texture(const texture&);
+    texture& operator=(const texture&);
+};
+
+class main_window_data
+{
+public:
+    explicit main_window_data(::GdkWindow* window) : rc_(window), texture_(rc_)
+    {
+        unsigned char r_table[] = { 0xFF, 0x00, 0x00, 0xFF };
+        unsigned char g_table[] = { 0x00, 0xFF, 0x00, 0xFF };
+        unsigned char b_table[] = { 0x00, 0x00, 0xFF, 0xFF };
+        unsigned char a_table[] = { 0xFF, 0xFF, 0xFF, 0xFF };
+
+        unsigned char data[4*64*64];
+        unsigned offset = 0;
+        for (unsigned y = 0; y < 64; ++y)
+        {
+            for (unsigned x = 0; x < 64; ++x)
+            {
+                unsigned type =
+                    static_cast<unsigned>(x >= 32) +
+                    (static_cast<unsigned>(y >= 32) << 1);
+
+                data[offset++] = r_table[type];
+                data[offset++] = g_table[type];
+                data[offset++] = b_table[type];
+                data[offset++] = a_table[type];
+            }
+        }
+        texture_.set_image(64, 64, data);
+    }
+
+    void render()
+    {
+        scoped_scene scene(rc_);
+
+        rc_.clear(0.0f, 0.0f, 1.0f, 1.0f);
+
+        ::glEnable (GL_TEXTURE_2D);
+        texture_.bind();
+
+        ::glBegin(GL_QUADS);
+        ::glTexCoord2f(0.0f,0.0f);
+        ::glVertex3f(-0.75f, -0.75f, 0.0f);
+        ::glTexCoord2f(1.0f, 0.0f);
+        ::glVertex3f(0.75f, -0.75f, 0.0f);
+        ::glTexCoord2f(1.0f, 1.0f);
+        ::glVertex3f(0.75f, 0.75f, 0.0f);
+        ::glTexCoord2f(0.0f, 1.0f);
+        ::glVertex3f(-0.75f, 0.75f, 0.0f);
+        ::glEnd();
+
+        texture_.unbind();
+        ::glDisable(GL_TEXTURE_2D);
+
+        rc_.swap_buffers();
+    }
+
+private:
+    render_context rc_;
+    texture texture_;
+
+    main_window_data(const main_window_data&);
+    main_window_data& operator=(const main_window_data&);
+};
+
 
 #include <iostream>
 
@@ -170,10 +280,10 @@ void destroy(GtkWidget*, gpointer)
 
 void realize(::GtkWidget* widget, ::gpointer user_data)
 {
-    render_context*& pimpl = *static_cast<render_context**>(user_data);
+    main_window_data*& pimpl = *static_cast<main_window_data**>(user_data);
     try
     {
-        pimpl = new render_context(widget->window);
+        pimpl = new main_window_data(widget->window);
     }
     catch (...)
     {
@@ -183,20 +293,18 @@ void realize(::GtkWidget* widget, ::gpointer user_data)
 
 void unrealize(::GtkWidget*, ::gpointer user_data)
 {
-    render_context*& pimpl = *static_cast<render_context**>(user_data);
+    main_window_data*& pimpl = *static_cast<main_window_data**>(user_data);
     delete pimpl;
     pimpl = 0;
 }
 
 ::gboolean draw(::gpointer user_data)
 {
-    if (render_context*& pimpl = *static_cast<render_context**>(user_data))
+    if (main_window_data*& pimpl = *static_cast<main_window_data**>(user_data))
     {
         try
         {
-            scoped_scene scene(*pimpl);
-            pimpl->clear(0.0f, 0.0f, 1.0f, 1.0f);
-            pimpl->swap_buffers();
+            pimpl->render();
         }
         catch (...)
         {
@@ -226,7 +334,7 @@ int main(int argc, char* argv[])
         if (window == 0)
             throw std::runtime_error("gtk_window_new() failed");
 
-        render_context* pimpl = 0;
+        main_window_data* pimpl = 0;
         connect_signal(window, "destroy", G_CALLBACK(destroy), &pimpl);
         connect_signal(window, "realize", G_CALLBACK(realize), &pimpl);
         connect_signal(window, "unrealize", G_CALLBACK(unrealize), &pimpl);
