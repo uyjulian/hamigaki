@@ -99,25 +99,13 @@ public:
         ::wglDeleteContext(handle_);
     }
 
-    void begin_scene()
+    void select()
     {
-        assert(::wglGetCurrentDC() == 0);
-        assert(::wglGetCurrentContext() == 0);
-
         ::wglMakeCurrent(dc_.get(), handle_);
-    }
-
-    void end_scene()
-    {
-        assert(::wglGetCurrentDC() == dc_.get());
-        assert(::wglGetCurrentContext() == handle_);
-
-        ::wglMakeCurrent(0, 0);
     }
 
     void swap_buffers()
     {
-        assert(::wglGetCurrentDC() == dc_.get());
         assert(::wglGetCurrentContext() == handle_);
 
         ::SwapBuffers(dc_.get());
@@ -125,7 +113,6 @@ public:
 
     void clear(float r, float g, float b, float a)
     {
-        assert(::wglGetCurrentDC() == dc_.get());
         assert(::wglGetCurrentContext() == handle_);
 
         ::glClearColor(r, g, b, a);
@@ -140,32 +127,12 @@ private:
     render_context& operator=(const render_context&);
 };
 
-class scoped_scene
-{
-public:
-    explicit scoped_scene(render_context& rc) : rc_(rc)
-    {
-        rc_.begin_scene();
-    }
-
-    ~scoped_scene()
-    {
-        rc_.end_scene();
-    }
-
-private:
-    render_context& rc_;
-
-    scoped_scene(const scoped_scene&);
-    scoped_scene& operator=(const scoped_scene&);
-};
-
 class texture
 {
 public:
-    explicit texture(render_context& rc) : rc_(rc), handle_(0)
+    explicit texture(render_context& rc) : handle_(0)
     {
-        scoped_scene scene(rc_);
+        rc.select();
         ::glGenTextures(1, &handle_);
         if (::glGetError() != GL_NO_ERROR)
             throw std::runtime_error("glGenTextures() failed");
@@ -173,15 +140,13 @@ public:
 
     ~texture()
     {
-        scoped_scene scene(rc_);
         ::glDeleteTextures(1, &handle_);
     }
 
     void set_image(int width, int height, void* data)
     {
-        scoped_scene scene(rc_);
         ::glBindTexture(GL_TEXTURE_2D, handle_);
-        ::glPixelStorei (GL_UNPACK_ALIGNMENT, 1);
+        ::glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         ::glTexImage2D(
             GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
@@ -194,13 +159,7 @@ public:
         ::glBindTexture(GL_TEXTURE_2D, handle_);
     }
 
-    void unbind()
-    {
-        ::glBindTexture(GL_TEXTURE_2D, 0);
-    }
-
 private:
-    render_context& rc_;
     ::GLuint handle_;
 
     texture(const texture&);
@@ -212,6 +171,8 @@ class main_window_data
 public:
     explicit main_window_data(::GdkWindow* window) : rc_(window), texture_(rc_)
     {
+        rc_.select();
+
         unsigned char r_table[] = { 0xFF, 0x00, 0x00, 0xFF };
         unsigned char g_table[] = { 0x00, 0xFF, 0x00, 0xFF };
         unsigned char b_table[] = { 0x00, 0x00, 0xFF, 0xFF };
@@ -238,25 +199,23 @@ public:
 
     void render()
     {
-        scoped_scene scene(rc_);
-
+        rc_.select();
         rc_.clear(0.0f, 0.0f, 1.0f, 1.0f);
 
-        ::glEnable (GL_TEXTURE_2D);
+        ::glEnable(GL_TEXTURE_2D);
         texture_.bind();
 
         ::glBegin(GL_QUADS);
-        ::glTexCoord2f(0.0f,0.0f);
-        ::glVertex3f(-0.75f, -0.75f, 0.0f);
-        ::glTexCoord2f(1.0f, 0.0f);
-        ::glVertex3f(0.75f, -0.75f, 0.0f);
-        ::glTexCoord2f(1.0f, 1.0f);
-        ::glVertex3f(0.75f, 0.75f, 0.0f);
-        ::glTexCoord2f(0.0f, 1.0f);
+        ::glTexCoord2f(0.0f, 0.0f);
         ::glVertex3f(-0.75f, 0.75f, 0.0f);
+        ::glTexCoord2f(1.0f, 0.0f);
+        ::glVertex3f(0.75f, 0.75f, 0.0f);
+        ::glTexCoord2f(1.0f, 1.0f);
+        ::glVertex3f(0.75f, -0.75f, 0.0f);
+        ::glTexCoord2f(0.0f, 1.0f);
+        ::glVertex3f(-0.75f, -0.75f, 0.0f);
         ::glEnd();
 
-        texture_.unbind();
         ::glDisable(GL_TEXTURE_2D);
 
         rc_.swap_buffers();
@@ -285,8 +244,9 @@ void realize(::GtkWidget* widget, ::gpointer user_data)
     {
         pimpl = new main_window_data(widget->window);
     }
-    catch (...)
+    catch (const std::exception& e)
     {
+        std::cerr << "Error: " << e.what() << std::endl;
         pimpl = 0;
     }
 }
@@ -306,8 +266,9 @@ void unrealize(::GtkWidget*, ::gpointer user_data)
         {
             pimpl->render();
         }
-        catch (...)
+        catch (const std::exception& e)
         {
+            std::cerr << "Error: " << e.what() << std::endl;
         }
     }
 
@@ -345,7 +306,7 @@ int main(int argc, char* argv[])
     }
     catch (const std::exception& e)
     {
-        std::cerr << e.what() << std::endl;
+        std::cerr << "Error: " << e.what() << std::endl;
     }
 
     return 0;
