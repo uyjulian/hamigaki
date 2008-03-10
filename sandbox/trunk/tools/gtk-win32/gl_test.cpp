@@ -258,6 +258,20 @@ void unrealize(::GtkWidget*, ::gpointer user_data)
     pimpl = 0;
 }
 
+gboolean key_press(
+    ::GtkWidget* widget, ::GdkEventKey* event, ::gpointer user_data)
+{
+    std::cout << "+ " << event->hardware_keycode << std::endl;
+    return TRUE;
+}
+
+gboolean key_release(
+    ::GtkWidget* widget, ::GdkEventKey* event, ::gpointer user_data)
+{
+    std::cout << "- " << event->hardware_keycode << std::endl;
+    return TRUE;
+}
+
 ::gboolean draw(::gpointer user_data)
 {
     if (main_window_data*& pimpl = *static_cast<main_window_data**>(user_data))
@@ -289,19 +303,36 @@ int main(int argc, char* argv[])
 {
     try
     {
+        ::gtk_set_locale();
         ::gtk_init(&argc, &argv);
 
         ::GtkWidget* window = ::gtk_window_new(GTK_WINDOW_TOPLEVEL);
         if (window == 0)
             throw std::runtime_error("gtk_window_new() failed");
 
+        ::gtk_window_set_default_size(GTK_WINDOW(window), 320, 240);
+
         main_window_data* pimpl = 0;
         connect_signal(window, "destroy", G_CALLBACK(destroy), &pimpl);
         connect_signal(window, "realize", G_CALLBACK(realize), &pimpl);
         connect_signal(window, "unrealize", G_CALLBACK(unrealize), &pimpl);
+
+        connect_signal(
+            window, "key-press-event", G_CALLBACK(key_press), &pimpl);
+        connect_signal(
+            window, "key-release-event", G_CALLBACK(key_release), &pimpl);
+
         ::g_idle_add(&draw, &pimpl);
 
-        ::gtk_widget_show(window);
+        ::gtk_widget_show_all(window);
+
+        ::GdkWMDecoration decs =
+            static_cast< ::GdkWMDecoration>(
+                GDK_DECOR_BORDER | GDK_DECOR_TITLE |
+                GDK_DECOR_MENU | GDK_DECOR_MINIMIZE
+            );
+        ::gdk_window_set_decorations(window->window, decs);
+
         ::gtk_main();
     }
     catch (const std::exception& e)
