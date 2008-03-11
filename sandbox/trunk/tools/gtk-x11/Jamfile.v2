@@ -8,16 +8,23 @@
 # See http://hamigaki.sourceforge.jp/ for library home page.
 
 import exec ;
+import string ;
 
 local gtk-cflags = [ SHELL "pkg-config --cflags gtk+-2.0" ] ;
+gtk-cflags = [ string.words $(gtk-cflags) ] ;
+gtk-cflags = $(gtk-cflags:J=" ") ;
+
 local gtk-ldflags = [ SHELL "pkg-config --libs gtk+-2.0" ] ;
+gtk-ldflags = [ string.words $(gtk-ldflags) ] ;
+gtk-ldflags = $(gtk-ldflags:J=" ") ;
 
 alias gtk
     :
     :
     :
     :
-    <compileflags>$(gtk-cflags)
+    <cflags>$(gtk-cflags)
+    <cxxflags>$(gtk-cflags)
     <linkflags>$(gtk-ldflags)
     ;
 
@@ -26,7 +33,7 @@ exe gl_test
     gl_test.cpp
     gtk
     :
-    <find-library>GL
+    <find-shared-library>GL
     ;
 
 exec.register-exec-all ;
