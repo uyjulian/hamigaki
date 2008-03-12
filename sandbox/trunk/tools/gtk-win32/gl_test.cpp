@@ -13,47 +13,20 @@
 #include <gtk/gtk.h>
 #include <GL/gl.h>
 
-class graphic_context
-{
-public:
-    explicit graphic_context(::GdkWindow* window)
-        : handle_(::gdk_gc_new(window))
-    {
-        if (handle_ == 0)
-            throw std::runtime_error("gdk_gc_new() failed");
-    }
-
-    ~graphic_context()
-    {
-        ::gdk_gc_unref(handle_);
-    }
-
-    ::GdkGC* get() const
-    {
-        return handle_;
-    }
-
-private:
-    ::GdkGC* handle_;
-
-    graphic_context(const graphic_context&);
-    graphic_context& operator=(const graphic_context&);
-};
-
 class device_context
 {
 public:
     explicit device_context(::GdkWindow* window)
-        : window_(window), gc_(window), handle_(0)
+        : hwnd_(reinterpret_cast< ::HWND>(GDK_WINDOW_HWND(window)))
+        , handle_(::GetDC(hwnd_))
     {
-        handle_ = ::gdk_win32_hdc_get(window_, gc_.get(), ::GdkGCValuesMask());
         if (handle_ == 0)
-            throw std::runtime_error("gdk_win32_hdc_get() failed");
+            throw std::runtime_error("GetDC() failed");
     }
 
     ~device_context()
     {
-        ::gdk_win32_hdc_release(window_, gc_.get(), ::GdkGCValuesMask());
+        ::ReleaseDC(hwnd_, handle_);
     }
 
     ::HDC get() const
@@ -62,8 +35,7 @@ public:
     }
 
 private:
-    ::GdkWindow* window_;
-    graphic_context gc_;
+    ::HWND hwnd_;
     ::HDC handle_;
 
     device_context(const device_context&);
@@ -109,14 +81,6 @@ public:
         assert(::wglGetCurrentContext() == handle_);
 
         ::SwapBuffers(dc_.get());
-    }
-
-    void clear(float r, float g, float b, float a)
-    {
-        assert(::wglGetCurrentContext() == handle_);
-
-        ::glClearColor(r, g, b, a);
-        ::glClear(GL_COLOR_BUFFER_BIT);
     }
 
 private:
@@ -200,7 +164,9 @@ public:
     void render()
     {
         rc_.select();
-        rc_.clear(0.0f, 0.0f, 1.0f, 1.0f);
+
+        ::glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+        ::glClear(GL_COLOR_BUFFER_BIT);
 
         ::glEnable(GL_TEXTURE_2D);
         texture_.bind();
@@ -232,7 +198,7 @@ private:
 
 #include <iostream>
 
-void destroy(GtkWidget*, gpointer)
+void destroy(::GtkWidget*, ::gpointer)
 {
     ::gtk_main_quit();
 }

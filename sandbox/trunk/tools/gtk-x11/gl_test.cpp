@@ -40,43 +40,16 @@ private:
     scoped_x_ptr& operator=(const scoped_x_ptr&);
 };
 
-class graphic_context
-{
-public:
-    explicit graphic_context(::GdkWindow* window)
-        : handle_(::gdk_gc_new(window))
-    {
-        if (handle_ == 0)
-            throw std::runtime_error("gdk_gc_new() failed");
-    }
-
-    ~graphic_context()
-    {
-        ::gdk_gc_unref(handle_);
-    }
-
-    ::GdkGC* get() const
-    {
-        return handle_;
-    }
-
-private:
-    ::GdkGC* handle_;
-
-    graphic_context(const graphic_context&);
-    graphic_context& operator=(const graphic_context&);
-};
-
 class render_context
 {
 public:
-    explicit render_context(::GdkWindow* window)
-        : window_(window), gc_(window), handle_(0)
+    explicit render_context(::GtkWindow* window)
+        : window_(window), handle_(0)
     {
-        ::Display* dpy = ::gdk_x11_gc_get_xdisplay(gc_.get());
-        ::Window win = GDK_WINDOW_XID(window_);
+        ::Window win = window_id();
 
-        ::GdkScreen* scr = ::gdk_drawable_get_screen(window_);
+        ::GdkScreen* scr = ::gtk_window_get_screen(window_);
+        ::Display* dpy = GDK_SCREEN_XDISPLAY(scr);
         int scr_num = ::gdk_screen_get_number(scr);
 
         int attrs[] = { GLX_RGBA, GLX_DEPTH_SIZE, 16, GLX_DOUBLEBUFFER, 0 };
@@ -92,38 +65,34 @@ public:
 
     ~render_context()
     {
-        ::Display* dpy = ::gdk_x11_gc_get_xdisplay(gc_.get());
-        ::glXDestroyContext(dpy, handle_);
+        ::glXDestroyContext(display(), handle_);
     }
 
     void select()
     {
-        ::Display* dpy = ::gdk_x11_gc_get_xdisplay(gc_.get());
-        ::Window win = GDK_WINDOW_XID(window_);
-        ::glXMakeCurrent(dpy, win, handle_);
+        ::glXMakeCurrent(display(), window_id(), handle_);
     }
 
     void swap_buffers()
     {
         assert(::glXGetCurrentContext() == handle_);
 
-        ::Display* dpy = ::gdk_x11_gc_get_xdisplay(gc_.get());
-        ::Window win = GDK_WINDOW_XID(window_);
-        ::glXSwapBuffers(dpy, win);
-    }
-
-    void clear(float r, float g, float b, float a)
-    {
-        assert(::glXGetCurrentContext() == handle_);
-
-        ::glClearColor(r, g, b, a);
-        ::glClear(GL_COLOR_BUFFER_BIT);
+        ::glXSwapBuffers(display(), window_id());
     }
 
 private:
-    ::GdkWindow* window_;
-    graphic_context gc_;
+    ::GtkWindow* window_;
     ::GLXContext handle_;
+
+    ::Window window_id() const
+    {
+        return GDK_WINDOW_XID(GTK_WIDGET(window_)->window);
+    }
+
+    ::Display* display() const
+    {
+        return GDK_SCREEN_XDISPLAY(::gtk_window_get_screen(window_));
+    }
 
     render_context(const render_context&);
     render_context& operator=(const render_context&);
@@ -171,7 +140,7 @@ private:
 class main_window_data
 {
 public:
-    explicit main_window_data(::GdkWindow* window) : rc_(window), texture_(rc_)
+    explicit main_window_data(::GtkWindow* window) : rc_(window), texture_(rc_)
     {
         rc_.select();
 
@@ -202,7 +171,9 @@ public:
     void render()
     {
         rc_.select();
-        rc_.clear(0.0f, 0.0f, 1.0f, 1.0f);
+
+        ::glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+        ::glClear(GL_COLOR_BUFFER_BIT);
 
         ::glEnable(GL_TEXTURE_2D);
         texture_.bind();
@@ -221,6 +192,12 @@ public:
         ::glDisable(GL_TEXTURE_2D);
 
         rc_.swap_buffers();
+    }
+
+    void resize(int width, int height)
+    {
+        rc_.select();
+        ::glViewport(0, 0, width, height);
     }
 
 private:
@@ -244,7 +221,7 @@ void realize(::GtkWidget* widget, ::gpointer user_data)
     main_window_data*& pimpl = *static_cast<main_window_data**>(user_data);
     try
     {
-        pimpl = new main_window_data(widget->window);
+        pimpl = new main_window_data(GTK_WINDOW(widget));
     }
     catch (const std::exception& e)
     {
@@ -271,6 +248,20 @@ gboolean key_release(
     ::GtkWidget* widget, ::GdkEventKey* event, ::gpointer user_data)
 {
     std::cout << "- " << event->hardware_keycode << std::endl;
+    return TRUE;
+}
+
+::gboolean
+expose(::GtkWidget* widget, ::GdkEventExpose* event, ::gpointer user_data)
+{
+    if (main_window_data*& pimpl = *static_cast<main_window_data**>(user_data))
+    {
+        ::gint width;
+        ::gint height;
+        gtk_window_get_size(GTK_WINDOW(widget), &width, &height);
+        pimpl->resize(width, height);
+    }
+
     return TRUE;
 }
 
@@ -323,6 +314,8 @@ int main(int argc, char* argv[])
             window, "key-press-event", G_CALLBACK(key_press), &pimpl);
         connect_signal(
             window, "key-release-event", G_CALLBACK(key_release), &pimpl);
+
+        connect_signal(window, "expose-event", G_CALLBACK(expose), &pimpl);
 
         ::g_idle_add(&draw, &pimpl);
 

@@ -67,6 +67,7 @@ exe gl_test
     gtk
     :
     <find-static-library>opengl32
+    <find-static-library>user32
     ;
 
 exec.register-exec-all ;
