@@ -1,6 +1,6 @@
 // symlink.cpp: the symbolic link operations
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -211,7 +211,7 @@ public:
         const std::wstring& ws =
             to_wide(system_complete(p).native_file_string());
         if ((ws.size() > 2) && (ws[0] == L'\\') && (ws[1] == L'\\'))
-            sub_name += L"UNC\\";
+            sub_name += L"UNC";
         sub_name += ws;
 
         const std::size_t top_hedaer_size =
