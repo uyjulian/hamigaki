@@ -1,6 +1,6 @@
 # Hamigaki Coroutine Library Test Jamfile
 
-# Copyright Takeshi Mouri 2007.
+# Copyright Takeshi Mouri 2007, 2008.
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
@@ -22,6 +22,7 @@ test-suite "coroutine" :
     [ run coro_copy_test.cpp ]
     [ run coroutine_test.cpp : : : <test-info>always_show_run_output ]
     [ run exception_test.cpp ]
+    [ run exit_other_test.cpp ]
     [ run processor_test.cpp : : : <test-info>always_show_run_output ]
     [ run restart_test.cpp ]
     [ run yield_to_test.cpp : : : <test-info>always_show_run_output ]

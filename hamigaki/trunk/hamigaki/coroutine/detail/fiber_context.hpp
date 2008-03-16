@@ -1,6 +1,6 @@
 // fiber_context.hpp: Win32 fiber based context implementation
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -61,14 +61,21 @@ public:
     {
         if (is_fiber())
         {
+            bool need_reset = false;
             if (from.context_ == 0)
+            {
                 from.context_ = get_current_fiber();
+                need_reset = true;
+            }
             from.switch_to(to);
+            if (need_reset)
+                from.context_ = 0;
         }
         else
         {
             from.context_ = ::ConvertThreadToFiber(0);
             from.switch_to(to);
+            from.context_ = 0;
         }
     }
 
