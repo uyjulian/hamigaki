@@ -33,6 +33,7 @@
       <title>Hamigaki.Coroutine</title>
       <listitem>SjLj例外の環境での例外フレームのメモリリークを修正</listitem>
       <listitem>コルーチンを一度も呼ばずにexit()した場合にクラッシュする問題を修正</listitem>
+      <listitem>コルーチン内で別のコルーチンをexit()させた場合にクラッシュする問題を修正</listitem>
       <listitem>exit_exceptionをstd::exceptionから派生しないように変更</listitem>
     </itemizedlist>
     <itemizedlist>
