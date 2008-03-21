@@ -136,4 +136,66 @@ int main()
     <para><classname>generator</classname>のコンストラクタにコルーチンの本体を渡すことでジェネレータを作成する。省略時初期化された<classname>generator</classname>は終端を表すために利用される。</para>
     <para><classname>generator</classname>は入力反復子の要件を満たすので、入力反復子を受け取るアルゴリズムに渡すことができる。</para>
   </section>
+  <section id="coroutine.tutorial.callbacks">
+    <title>コールバック関数</title>
+    <para>C言語でオブジェクトを列挙する場合、主に次のインタフェースが利用される。</para>
+    <itemizedlist>
+      <listitem><simpara>列挙用のハンドルを通して、順次問い合わせる(プル型)</simpara></listitem>
+      <listitem><simpara>各要素に対し、コールバック関数を呼ぶ(プッシュ型)</simpara></listitem>
+    </itemizedlist>
+    <para>前者の例としては、POSIXの<code>opendir()</code>/<code>readdir()</code>/<code>closedir()</code>を用いたディレクトリの走査が挙げられる。このインタフェースは列挙を進めることも中断することも自由に行うことができるため、反復子で表現するのが容易である。</para>
+    <para>一方、後者のインタフェースはMicrosoft Windowsで頻繁に用いられるものである。このインタフェースの列挙の主体がユーザー側にないため、反復子で表現するのが困難である。しかし、Hamigaki.Coroutineを用いることで反復子を作成することができる。</para>
+    <para>例として、<code>EnumWindows()</code>関数を反復子で表現することを考える。</para>
+    <programlisting><![CDATA[
+#include <hamigaki/coroutine/generator.hpp>
+#include <algorithm>
+#include <iostream>
+#include <windows.h>
+
+namespace coro = hamigaki::coroutines;
+
+typedef coro::generator<HWND> enum_windows_iterator;
+
+BOOL CALLBACK enum_windows_callback(HWND hwnd, LPARAM lParam)
+{
+    try
+    {
+        enum_windows_iterator::self& self =
+            *reinterpret_cast<enum_windows_iterator::self*>(lParam);
+
+        self.yield(hwnd);
+        return TRUE;
+    }
+    catch (...)
+    {
+    }
+    return FALSE;
+}
+
+HWND enum_windows_body(enum_windows_iterator::self& self)
+{
+    ::EnumWindows(&enum_windows_callback, reinterpret_cast<LPARAM>(&self));
+    self.exit();
+}
+]]></programlisting>
+    <para><code>enum_windows_body()</code>がコルーチンの本体である。<code>EnumWindows()</code>はこの中で呼び出す。<code>EnumWindows()</code>には各ウィンドウハンドル毎に呼び出すコールバック関数とそれに渡すデータを引数として渡すようになっている。コールバック関数<code>enum_windows_callback()</code>は<code>self</code>を必要とするので、ここではそのポインタを渡している。</para>
+    <para><code>enum_windows_callback()</code>では、<code>yield()</code>でウィンドウハンドルを返し、制御を呼び出し側に戻す。</para>
+    <para>反復子が進められると処理がコルーチン側に戻り、コールバック関数からは<code>TRUE</code>が返される。これは列挙の継続を意味している。</para>
+    <para>反復子を末尾まで進めることなく破棄した場合は、<code>yield()</code>が例外を投げるので、補足した後<code>FALSE</code>を返す。これで列挙も中断される。</para>
+    <para><code>enum_windows_iterator</code>は入力反復子なので、次のように利用できる。</para>
+    <programlisting><![CDATA[
+void print_hwnd(HWND hwnd)
+{
+    std::cout << static_cast<void*>(hwnd) << std::endl;
+}
+
+int main()
+{
+    std::for_each(
+        enum_windows_iterator(enum_windows_body), enum_windows_iterator(),
+        print_hwnd
+    );
+}
+]]></programlisting>
+  </section>
 </section>
