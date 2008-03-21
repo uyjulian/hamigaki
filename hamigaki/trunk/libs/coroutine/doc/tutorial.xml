@@ -16,7 +16,7 @@
   <using-namespace name="hamigaki::coroutines"/>
   <section id="coroutine.tutorial.coroutines">
     <title>コルーチン</title>
-    <para>コルーチンとは、処理を中断したり、再開することのできるサブルーチンの変種である。</para>
+    <para>コルーチンとは、処理を中断したり、再開したりすることのできるサブルーチンの変種である。</para>
     <para>Hamigaki.Coroutineはコルーチンを作成するためのクラステンプレート<classname alt="coroutineN">coroutine</classname>を提供している。ここでは<classname alt="coroutineN">coroutine</classname>を用いて掛け算九九の答えを表示するプログラムを考える。</para>
     <programlisting><![CDATA[#include <hamigaki/coroutine/coroutine.hpp>]]></programlisting>
     <para>これは<classname alt="coroutineN">coroutine</classname>を使用するために必要である。</para>
@@ -97,5 +97,43 @@ int main()
     }
 }
 ]]></programlisting>
+  </section>
+  <section id="coroutine.tutorial.generators">
+    <title>ジェネレータ</title>
+    <para>オブジェクトの列を生成し、一要素ずつ順に返すサブルーチンをジェネレータと呼ぶ。</para>
+    <para>Hamigaki.Coroutineはジェネレータを作成するためにクラステンプレート<classname>generator</classname>を提供しており、これはコルーチンを用いて実装されている。今度は、先ほどの九九のプログラムをジェネレータを用いて書き直すことを考える。</para>
+    <programlisting><![CDATA[#include <hamigaki/coroutine/generator.hpp>]]></programlisting>
+    <para>これは<classname>generator</classname>を使用するために必要である。</para>
+    <programlisting><![CDATA[namespace coro = hamigaki::coroutines;
+
+typedef coro::generator<int> generator_type;
+]]></programlisting>
+    <para><classname>generator</classname>のテンプレート引数はコルーチンの型ではなく、戻り値の型である。</para>
+    <programlisting><![CDATA[int kuku_body(generator_type::self& self)
+{
+    for (int i = 1; i <= 9; ++i)
+        for (int j = 1; j <= 9; ++j)
+            self.yield(i*j);
+
+    self.exit();
+}
+]]></programlisting>
+    <para>関数<code>kuku_body()</code>はコルーチンの本体である。これは<classname alt="coroutineN">coroutine</classname>が<classname>generator</classname>に置き換わっただけである。</para>
+    <para>メインプログラムは次のように書ける。</para>
+    <programlisting><![CDATA[
+#include <algorithm>
+#include <iostream>
+#include <iterator>
+
+int main()
+{
+    std::copy(
+        generator_type(kuku_body), generator_type(),
+        std::ostream_iterator<int>(std::cout, "\n")
+    );
+}
+]]></programlisting>
+    <para><classname>generator</classname>のコンストラクタにコルーチンの本体を渡すことでジェネレータを作成する。省略時初期化された<classname>generator</classname>は終端を表すために利用される。</para>
+    <para><classname>generator</classname>は入力反復子の要件を満たすので、入力反復子を受け取るアルゴリズムに渡すことができる。</para>
   </section>
 </section>
