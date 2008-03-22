@@ -35,6 +35,7 @@
       <listitem>コルーチンを一度も呼ばずにexit()した場合にクラッシュする問題を修正</listitem>
       <listitem>コルーチン内で別のコルーチンをexit()させた場合にクラッシュする問題を修正</listitem>
       <listitem>exit_exceptionをstd::exceptionから派生しないように変更</listitem>
+      <listitem>ドキュメントにチュートリアルを追加</listitem>
     </itemizedlist>
     <itemizedlist>
       <title>Hamigaki.Process</title>
