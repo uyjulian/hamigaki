@@ -1,6 +1,6 @@
 // windows_error_test.cpp: test case for windows_error
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -30,7 +30,7 @@ void msg_test()
 void error_test()
 {
     sys::windows_error e(ERROR_CRC, "error_test()");
-    BOOST_CHECK_EQUAL(e.code(), ERROR_CRC);
+    BOOST_CHECK_EQUAL(e.code(), static_cast<unsigned long>(ERROR_CRC));
 
     std::string s(e.what());
     BOOST_CHECK_EQUAL(s.substr(0, 14), std::string("error_test(): "));
@@ -40,7 +40,7 @@ void error_test()
 void empty_test()
 {
     sys::windows_error e;
-    BOOST_CHECK_EQUAL(e.code(), 0);
+    BOOST_CHECK_EQUAL(e.code(), 0ul);
 
     std::string s(e.what());
     BOOST_CHECK_EQUAL(s, traits_type::message(0));
