@@ -9,34 +9,75 @@
 <td><img border="0" src="../hamigaki.png" width="96" height="72"></td>
 <td>
 <h1>Compiler Status: Cygwin</h1>
-<b>Run Date:</b> 09:34:43 UTC, Sunday 22 July 2007
+<b>Run Date:</b> 09:09:23 UTC, Saturday 22 March 2008
 </td>
 </table>
 <br>
-<h2><a name="config-config_info-gcc">config - config_info - gcc</a></h2>
+<h2><a name="config-config_info-gcc-3.4.4">config - config_info - gcc-3.4.4</a></h2>
 <h3>Run output:</h3><pre>
 GNU C++ version 3.4.4 (cygming special, gdc 0.12, using dmd 0.125)
 Detected Platform: Cygwin
 
 EXIT STATUS: 0
 </pre>
-<h2><a name="audio-ds_enum_test-gcc">audio - ds_enum_test - gcc</a></h2>
+<h2><a name="audio-ds_enum_test-gcc-3.4.4">audio - ds_enum_test - gcc-3.4.4</a></h2>
 <h3>Run output:</h3><pre>
 Running 2 test cases...
 The installed DirectSound drivers:
 プライマリ サウンド ドライバ
-Creative Sound Blaster PCI
+スピーカー (SoundMAX Integrated Digital Audio)
 
 The installed DirectSoundCapture drivers:
 プライマリ サウンド キャプチャ ドライバ
-Creative Sound Blaster PCI
+マイク (SoundMAX Integrated Digita
+ライン入力 (SoundMAX Integrated Digi
 
 
 *** No errors detected
 
 EXIT STATUS: 0
 </pre>
-<h2><a name="coroutine-coroutine_test-gcc">coroutine - coroutine_test - gcc</a></h2>
+<h2><a name="bjam-bjam_test-gcc-3.4.4">bjam - bjam_test - gcc-3.4.4</a></h2>
+<h3>Run output:</h3><pre>
+Running 16 test cases...
+unknown location(0): fatal error in "include_test": std::exception: cannot open file: C:\home\hamigaki\src\hamigaki\libs\bjam\test\include_test.jam
+C:\cygwin\home\hamigaki\src\hamigaki\libs\bjam\test\bjam_test.cpp(463): last checkpoint
+unknown location(0): fatal error in "back_trace_test": std::exception: cannot open file: C:\home\hamigaki\src\hamigaki\libs\bjam\test\back_trace_test.jam
+C:\cygwin\home\hamigaki\src\hamigaki\libs\bjam\test\bjam_test.cpp(479): last checkpoint
+
+*** 2 failures detected in test suite "Master Test Suite"
+
+EXIT STATUS: 201
+</pre>
+<h2><a name="bjam-builtin_rules_test-gcc-3.4.4">bjam - builtin_rules_test - gcc-3.4.4</a></h2>
+<h3>Run output:</h3><pre>
+Running 37 test cases...
+
+C:/cygwin/home/hamigaki/src/hamigaki/libs/bjam/test/builtin_rules_test.cpp(65): error in "echo_test": check buf.str() == std::string("\n") failed [ != 
+]
+a
+C:/cygwin/home/hamigaki/src/hamigaki/libs/bjam/test/builtin_rules_test.cpp(69): error in "echo_test": check buf.str() == std::string("a\n") failed [ != a
+]
+a b
+C:/cygwin/home/hamigaki/src/hamigaki/libs/bjam/test/builtin_rules_test.cpp(74): error in "echo_test": check buf.str() == std::string("a b\n") failed [ != a b
+]
+
+*** 3 failures detected in test suite "Master Test Suite"
+
+EXIT STATUS: 201
+</pre>
+<h2><a name="bjam-glob_test-gcc-3.4.4">bjam - glob_test - gcc-3.4.4</a></h2>
+<h3>Run output:</h3><pre>
+Running 2 test cases...
+C:/cygwin/home/hamigaki/src/hamigaki/libs/bjam/test/glob_test.cpp(35): error in "glob_test": check std::find(result.begin(),result.end(),expect) != result.end() failed
+C:/cygwin/home/hamigaki/src/hamigaki/libs/bjam/test/glob_test.cpp(40): error in "glob_test": check std::find(result.begin(),result.end(),expect) != result.end() failed
+C:/cygwin/home/hamigaki/src/hamigaki/libs/bjam/test/glob_test.cpp(67): error in "glob_recursive_test": check std::find(result.begin(),result.end(),expect) != result.end() failed
+
+*** 3 failures detected in test suite "Master Test Suite"
+
+EXIT STATUS: 201
+</pre>
+<h2><a name="coroutine-coroutine_test-gcc-3.4.4">coroutine - coroutine_test - gcc-3.4.4</a></h2>
 <h3>Run output:</h3><pre>
 Running 1 test case...
 hello
@@ -79,7 +120,7 @@ s22
 
 EXIT STATUS: 0
 </pre>
-<h2><a name="coroutine-coro_config_test-gcc">coroutine - coro_config_test - gcc</a></h2>
+<h2><a name="coroutine-coro_config_test-gcc-3.4.4">coroutine - coro_config_test - gcc-3.4.4</a></h2>
 <h3>Run output:</h3><pre>
 Running 1 test case...
 use POSIX thread
@@ -88,7 +129,7 @@ use POSIX thread
 
 EXIT STATUS: 0
 </pre>
-<h2><a name="coroutine-generator_test-gcc">coroutine - generator_test - gcc</a></h2>
+<h2><a name="coroutine-generator_test-gcc-3.4.4">coroutine - generator_test - gcc-3.4.4</a></h2>
 <h3>Run output:</h3><pre>
 *** No errors detected
 Running 1 test case...
@@ -105,7 +146,7 @@ Running 1 test case...
 
 EXIT STATUS: 0
 </pre>
-<h2><a name="coroutine-processor_test-gcc">coroutine - processor_test - gcc</a></h2>
+<h2><a name="coroutine-processor_test-gcc-3.4.4">coroutine - processor_test - gcc-3.4.4</a></h2>
 <h3>Run output:</h3><pre>
 Running 1 test case...
 0
@@ -123,7 +164,7 @@ Running 1 test case...
 
 EXIT STATUS: 0
 </pre>
-<h2><a name="coroutine-yield_to_arg_test-gcc">coroutine - yield_to_arg_test - gcc</a></h2>
+<h2><a name="coroutine-yield_to_arg_test-gcc-3.4.4">coroutine - yield_to_arg_test - gcc-3.4.4</a></h2>
 <h3>Run output:</h3><pre>
 Running 1 test case...
 A(10)
@@ -139,7 +180,7 @@ OK
 
 EXIT STATUS: 0
 </pre>
-<h2><a name="coroutine-yield_to_res_test-gcc">coroutine - yield_to_res_test - gcc</a></h2>
+<h2><a name="coroutine-yield_to_res_test-gcc-3.4.4">coroutine - yield_to_res_test - gcc-3.4.4</a></h2>
 <h3>Run output:</h3><pre>
 Running 1 test case...
 A
@@ -159,7 +200,7 @@ OK
 
 EXIT STATUS: 0
 </pre>
-<h2><a name="coroutine-yield_to_test-gcc">coroutine - yield_to_test - gcc</a></h2>
+<h2><a name="coroutine-yield_to_test-gcc-3.4.4">coroutine - yield_to_test - gcc-3.4.4</a></h2>
 <h3>Run output:</h3><pre>
 Running 1 test case...
 A
@@ -174,6 +215,34 @@ OK
 *** No errors detected
 
 EXIT STATUS: 0
+</pre>
+<h2><a name="filesystem-remove_all_test-gcc-3.4.4">filesystem - remove_all_test - gcc-3.4.4</a></h2>
+<h3>Linker output:</h3><pre>
+Info: resolving boost::filesystem::detail::not_found_error      by linking to __imp___ZN5boost10filesystem6detail15not_found_errorE (auto-import)
+</pre>
+<h3>Run output:</h3><pre>
+Running 4 test cases...
+C:/cygwin/home/hamigaki/src/hamigaki/libs/filesystem/test/remove_all_test.cpp(67): error in "remove_symlink_test": check fs_ex::remove_all(link) == 1ul failed [0 != 1]
+C:/cygwin/home/hamigaki/src/hamigaki/libs/filesystem/test/remove_all_test.cpp(69): error in "remove_symlink_test": check !fs_ex::exists(link) failed
+
+*** 2 failures detected in test suite "Master Test Suite"
+
+EXIT STATUS: 201
+</pre>
+<h2><a name="system-windows_error_test-gcc-3.4.4">system - windows_error_test - gcc-3.4.4</a></h2>
+<h3>Compiler output:</h3><pre>
+/home/hamigaki/Boost/boost_1_34_1/boost/test/test_tools.hpp: In function `boost::test_tools::predicate_result boost::test_tools::tt_detail::equal_impl(const Left&amp;, const Right&amp;) [with Left = long unsigned int, Right = long int]':
+/home/hamigaki/Boost/boost_1_34_1/boost/test/test_tools.hpp:499:   instantiated from `boost::test_tools::predicate_result boost::test_tools::tt_detail::equal_impl_frwd::call_impl(const Left&amp;, const Right&amp;, mpl_::false_) const [with Left = long unsigned int, Right = long int]'
+/home/hamigaki/Boost/boost_1_34_1/boost/test/test_tools.hpp:514:   instantiated from `boost::test_tools::predicate_result boost::test_tools::tt_detail::equal_impl_frwd::operator()(const Left&amp;, const Right&amp;) const [with Left = long unsigned int, Right = long int]'
+/home/hamigaki/Boost/boost_1_34_1/boost/test/test_tools.hpp:460:   instantiated from `void boost::test_tools::tt_detail::check_frwd(Pred, boost::wrap_stringstream&amp;, boost::test_tools::const_string, size_t, boost::test_tools::tt_detail::tool_level, boost::test_tools::tt_detail::check_type, const Arg0&amp;, const char*, const Arg1&amp;, const char*) [with Pred = boost::test_tools::tt_detail::equal_impl_frwd, Arg0 = long unsigned int, Arg1 = long int]'
+C:\cygwin\home\hamigaki\src\hamigaki\libs\system\test\windows_error_test.cpp:33:   instantiated from here
+/home/hamigaki/Boost/boost_1_34_1/boost/test/test_tools.hpp:473: warning: comparison between signed and unsigned integer expressions
+/home/hamigaki/Boost/boost_1_34_1/boost/test/test_tools.hpp: In function `boost::test_tools::predicate_result boost::test_tools::tt_detail::equal_impl(const Left&amp;, const Right&amp;) [with Left = long unsigned int, Right = int]':
+/home/hamigaki/Boost/boost_1_34_1/boost/test/test_tools.hpp:499:   instantiated from `boost::test_tools::predicate_result boost::test_tools::tt_detail::equal_impl_frwd::call_impl(const Left&amp;, const Right&amp;, mpl_::false_) const [with Left = long unsigned int, Right = int]'
+/home/hamigaki/Boost/boost_1_34_1/boost/test/test_tools.hpp:514:   instantiated from `boost::test_tools::predicate_result boost::test_tools::tt_detail::equal_impl_frwd::operator()(const Left&amp;, const Right&amp;) const [with Left = long unsigned int, Right = int]'
+/home/hamigaki/Boost/boost_1_34_1/boost/test/test_tools.hpp:460:   instantiated from `void boost::test_tools::tt_detail::check_frwd(Pred, boost::wrap_stringstream&amp;, boost::test_tools::const_string, size_t, boost::test_tools::tt_detail::tool_level, boost::test_tools::tt_detail::check_type, const Arg0&amp;, const char*, const Arg1&amp;, const char*) [with Pred = boost::test_tools::tt_detail::equal_impl_frwd, Arg0 = long unsigned int, Arg1 = int]'
+C:\cygwin\home\hamigaki\src\hamigaki\libs\system\test\windows_error_test.cpp:43:   instantiated from here
+/home/hamigaki/Boost/boost_1_34_1/boost/test/test_tools.hpp:473: warning: comparison between signed and unsigned integer expressions
 </pre>
 </body>
 </html>
