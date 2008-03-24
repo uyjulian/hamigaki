@@ -9,7 +9,7 @@
 <td><img border="0" src="../hamigaki.png" width="96" height="72"></td>
 <td>
 <h1>Compiler Status: Cygwin</h1>
-<b>Run Date:</b> 14:07:26 UTC, Saturday 22 March 2008
+<b>Run Date:</b> 14:31:14 UTC, Monday 24 March 2008
 </td>
 </table>
 <br>
@@ -17,6 +17,7 @@
 <h3>Run output:</h3><pre>
 GNU C++ version 3.4.4 (cygming special, gdc 0.12, using dmd 0.125)
 Detected Platform: Cygwin
+Boost version 103401
 
 EXIT STATUS: 0
 </pre>
@@ -25,17 +26,33 @@ EXIT STATUS: 0
 Running 2 test cases...
 The installed DirectSound drivers:
 プライマリ サウンド ドライバ
-スピーカー (SoundMAX Integrated Digital Audio)
+Creative Sound Blaster PCI
 
 The installed DirectSoundCapture drivers:
 プライマリ サウンド キャプチャ ドライバ
-マイク (SoundMAX Integrated Digita
-ライン入力 (SoundMAX Integrated Digi
+Creative Sound Blaster PCI
 
 
 *** No errors detected
 
 EXIT STATUS: 0
+</pre>
+<h2><a name="bjam-builtin_rules_test-gcc-3.4.4">bjam - builtin_rules_test - gcc-3.4.4</a></h2>
+<h3>Run output:</h3><pre>
+Running 37 test cases...
+
+C:/cygwin/home/hamigaki/src/hamigaki/libs/bjam/test/builtin_rules_test.cpp(65): error in "echo_test": check buf.str() == std::string("\n") failed [ != 
+]
+a
+C:/cygwin/home/hamigaki/src/hamigaki/libs/bjam/test/builtin_rules_test.cpp(69): error in "echo_test": check buf.str() == std::string("a\n") failed [ != a
+]
+a b
+C:/cygwin/home/hamigaki/src/hamigaki/libs/bjam/test/builtin_rules_test.cpp(74): error in "echo_test": check buf.str() == std::string("a b\n") failed [ != a b
+]
+
+*** 3 failures detected in test suite "Master Test Suite"
+
+EXIT STATUS: 201
 </pre>
 <h2><a name="coroutine-coroutine_test-gcc-3.4.4">coroutine - coroutine_test - gcc-3.4.4</a></h2>
 <h3>Run output:</h3><pre>
