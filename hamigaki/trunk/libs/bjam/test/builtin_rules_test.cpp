@@ -1,6 +1,6 @@
 // builtin_rules_test.cpp: test case for bjam builtin rules
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -11,12 +11,10 @@
 #include <hamigaki/bjam/bjam_exceptions.hpp>
 #include <hamigaki/bjam/builtin_rules.hpp>
 #include <boost/assign/list_of.hpp>
-#include <boost/io/ios_state.hpp>
 #include <boost/range/empty.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/none.hpp>
 #include <cstdlib>
-#include <iostream>
 
 namespace bjam = hamigaki::bjam;
 namespace ut = boost::unit_test;
@@ -44,33 +42,27 @@ void depends_test()
     BOOST_CHECK(table.find("t2") != table.end());
 }
 
-bjam::string_list capture_echo(
-    bjam::context& ctx, const bjam::list_of_list& args, std::stringbuf& buf)
-{
-    boost::io::ios_rdbuf_saver save(std::cout);
-
-    buf.str(std::string());
-    std::cout.rdbuf(&buf);
-
-    return ctx.invoke_rule("ECHO", args);
-}
-
 void echo_test()
 {
+    std::ostringstream buf;
+
     bjam::context ctx;
     bjam::list_of_list args;
-    std::stringbuf buf;
 
-    BOOST_CHECK(capture_echo(ctx, args, buf).empty());
+	ctx.output_stream(buf);
+
+    BOOST_CHECK(ctx.invoke_rule("ECHO", args).empty());
     BOOST_CHECK_EQUAL(buf.str(), std::string("\n"));
 
+    buf.str(std::string());
     args.push_back(boost::assign::list_of("a"));
-    BOOST_CHECK(capture_echo(ctx, args, buf).empty());
+    BOOST_CHECK(ctx.invoke_rule("ECHO", args).empty());
     BOOST_CHECK_EQUAL(buf.str(), std::string("a\n"));
 
+    buf.str(std::string());
     args.clear();
     args.push_back(boost::assign::list_of("a")("b"));
-    BOOST_CHECK(capture_echo(ctx, args, buf).empty());
+    BOOST_CHECK(ctx.invoke_rule("ECHO", args).empty());
     BOOST_CHECK_EQUAL(buf.str(), std::string("a b\n"));
 }
 

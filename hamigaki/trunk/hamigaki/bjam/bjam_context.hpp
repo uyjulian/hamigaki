@@ -1,6 +1,6 @@
 // bjam_context.hpp: the context information for bjam
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -14,6 +14,7 @@
 #include <hamigaki/bjam/util/frame.hpp>
 #include <hamigaki/bjam/util/target.hpp>
 #include <list>
+#include <ostream>
 
 #ifdef BOOST_HAS_ABI_HEADERS
     #include BOOST_ABI_PREFIX
@@ -119,6 +120,16 @@ public:
         working_directory_ = dir;
     }
 
+    std::ostream& output_stream() const
+    {
+        return *os_;
+    }
+
+    void output_stream(std::ostream& os)
+    {
+        os_ = &os;
+    }
+
 private:
     module root_module_;
     std::map<std::string,module> modules_;
@@ -126,6 +137,7 @@ private:
     string_list targets_to_update_;
     frame_stack frames_;
     std::string working_directory_;
+    std::ostream* os_;
 };
 
 class scoped_change_module : private boost::noncopyable

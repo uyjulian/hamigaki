@@ -1,6 +1,6 @@
 // builtin_rules.cpp: bjam builtin rules
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -26,7 +26,6 @@
 #include <boost/next_prior.hpp>
 #include <boost/regex.hpp>
 #include <cstdlib>
-#include <iostream>
 #include <locale>
 #include <sstream>
 
@@ -95,11 +94,13 @@ HAMIGAKI_BJAM_DECL string_list echo(context& ctx)
     const list_of_list& args = f.arguments();
     const string_list& arg1 = args[0];
 
+	std::ostream& os = ctx.output_stream();
+
     std::copy(
         arg1.begin(), arg1.end(),
-        hamigaki::ostream_iterator<std::string>(std::cout, " ")
+        hamigaki::ostream_iterator<std::string>(os, " ")
     );
-    std::cout << '\n';
+    os << '\n';
 
     return string_list();
 }

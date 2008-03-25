@@ -1,6 +1,6 @@
 // bjam_context.cpp: the context information for bjam
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -12,6 +12,7 @@
 #include <hamigaki/bjam/grammars/bjam_grammar_gen.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
+#include <iostream>
 #include <locale>
 #include <sstream>
 
@@ -159,6 +160,7 @@ void set_rule_argument(
 
 context::context()
     : working_directory_(fs::current_path().native_directory_string())
+    , os_(&std::cout)
 {
     frames_.push_back(frame(root_module_));
     set_predefined_variables(*this);
