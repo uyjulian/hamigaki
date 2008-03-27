@@ -101,7 +101,7 @@ private:
 	    return TRUE;
 	}
 
-	static gboolean key_press_callback(
+	static gboolean key_release_callback(
 		GtkWidget* widget, GdkEventKey* event, keyboard* this_ptr)
 	{
 		this_ptr->release_key(event->hardware_keycode);
