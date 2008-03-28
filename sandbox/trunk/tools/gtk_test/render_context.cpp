@@ -63,8 +63,8 @@ private:
 class render_context::impl
 {
 public:
-	explicit impl(GtkWindow* window)
-		: dc_(GTK_WIDGET(window)->window), handle_(0)
+	explicit impl(GtkWidget* widget)
+		: dc_(widget->window), handle_(0)
 	{
 		PIXELFORMATDESCRIPTOR pfd = {};
 		pfd.nSize = sizeof(pfd);
@@ -144,11 +144,11 @@ private:
 class render_context::impl
 {
 public:
-	explicit impl(GtkWindow* window) : window_(window), handle_(0)
+	explicit impl(GtkWidget* widget) : widget_(widget), handle_(0)
 	{
 		Window win = window_id();
 
-		GdkScreen* scr = ::gtk_window_get_screen(window_);
+		GdkScreen* scr = ::gtk_widget_get_screen(widget_);
 		Display* dpy = GDK_SCREEN_XDISPLAY(scr);
 		int scr_num = ::gdk_screen_get_number(scr);
 
@@ -181,17 +181,17 @@ public:
 	}
 
 private:
-	GtkWindow* window_;
+	GtkWidget* widget_;
 	GLXContext handle_;
 
 	Window window_id() const
 	{
-		return GDK_WINDOW_XID(GTK_WIDGET(window_)->window);
+		return GDK_WINDOW_XID(widget_->window);
 	}
 
 	Display* display() const
 	{
-		return GDK_SCREEN_XDISPLAY(::gtk_window_get_screen(window_));
+		return GDK_DISPLAY_XDISPLAY(::gtk_widget_get_display(widget_));
 	}
 
 	impl(const impl&);
@@ -199,7 +199,7 @@ private:
 };
 #endif // !defined(BOOST_WINDOWS)
 
-render_context::render_context(GtkWindow* window) : pimpl_(new impl(window))
+render_context::render_context(GtkWidget* widget) : pimpl_(new impl(widget))
 {
 }
 

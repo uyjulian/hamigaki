@@ -21,7 +21,7 @@
 class main_window_data
 {
 public:
-	explicit main_window_data(GtkWindow* window) : rc_(window)
+	explicit main_window_data(GtkWidget* widget) : rc_(widget)
 	{
 	}
 
@@ -52,7 +52,7 @@ void realize(GtkWidget* widget, gpointer user_data)
 	main_window_data*& pimpl = *static_cast<main_window_data**>(user_data);
 	try
 	{
-		pimpl = new main_window_data(GTK_WINDOW(widget));
+		pimpl = new main_window_data(widget);
 	}
 	catch (const std::exception& e)
 	{

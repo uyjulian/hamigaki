@@ -19,7 +19,7 @@ namespace hamigaki
 class render_context
 {
 public:
-	explicit render_context(GtkWindow* window);
+	explicit render_context(GtkWidget* widget);
 	~render_context();
 	void select();
 	void swap_buffers();
