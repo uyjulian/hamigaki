@@ -66,6 +66,11 @@ alias gtk
     <toolset>gcc:<cxxflags>-mms-bitfields
     ;
 
+lib opengl32 ;
+lib user32 ;
+
+alias open-gl : opengl32 user32 ;
+
 }
 else
 {
@@ -86,12 +91,24 @@ alias gtk
     <linkflags>$(gtk-ldflags)
     ;
 
+lib GL ;
+
+alias open-gl : GL ;
+
 }
 
 exe keyboard_test
     :
     keyboard_test.cpp
     gtk
+    ;
+
+exe render_context_test
+    :
+    render_context_test.cpp
+    render_context.cpp
+    gtk
+    open-gl
     ;
 
 exec.register-exec-all ;
