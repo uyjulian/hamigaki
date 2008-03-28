@@ -11,6 +11,7 @@
 
 #include "render_context.hpp"
 #include <iostream>
+#include <stdexcept>
 
 #if defined(BOOST_WINDOWS)
 	#include <windows.h>

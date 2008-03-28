@@ -16,6 +16,10 @@
 #include <stdexcept>
 #include <gtk/gtk.h>
 
+#if !defined(BOOST_WINDOWS)
+	#include <gdk/gdkx.h>
+#endif
+
 namespace hamigaki
 {
 
@@ -72,7 +76,7 @@ public:
 #if defined(BOOST_WINDOWS)
 		return table_.test(static_cast<std::size_t>(vkey));
 #else
-		Display* dpy = GDK_SCREEN_XDISPLAY(::gtk_window_get_screen(widget_);
+		Display* dpy = GDK_DISPLAY_XDISPLAY(::gtk_widget_get_display(widget_));
 		int key = ::XKeysymToKeycode(dpy, vkey);
 		return table_.test(static_cast<std::size_t>(key));
 #endif

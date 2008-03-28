@@ -16,7 +16,7 @@
 	#include <windows.h>
 	#define HAMIGAKI_KEY_CODE(w,x) ((int)(w))
 #else
-	#include <X11/keysymdef.h>
+	#include <X11/keysym.h>
 	#define HAMIGAKI_KEY_CODE(w,x) (x)
 #endif
 
