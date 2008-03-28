@@ -20,7 +20,7 @@ public:
 
     void update()
     {
-		std::cout << keyboard_.pushed(hamigaki::key_a) << std::endl;
+        std::cout << keyboard_.pushed(hamigaki::key_a) << std::endl;
     }
 
 private:

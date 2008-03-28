@@ -14,111 +14,111 @@
 #include <stdexcept>
 
 #if defined(BOOST_WINDOWS)
-	#include <windows.h>
+    #include <windows.h>
 #endif
 #include <GL/gl.h>
 
 class main_window_data
 {
 public:
-	explicit main_window_data(GtkWidget* widget) : rc_(widget)
-	{
-	}
+    explicit main_window_data(GtkWidget* widget) : rc_(widget)
+    {
+    }
 
-	void render()
-	{
-		rc_.select();
+    void render()
+    {
+        rc_.select();
 
-		::glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
-		::glClear(GL_COLOR_BUFFER_BIT);
+        ::glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+        ::glClear(GL_COLOR_BUFFER_BIT);
 
-		rc_.swap_buffers();
-	}
+        rc_.swap_buffers();
+    }
 
 private:
-	hamigaki::render_context rc_;
+    hamigaki::render_context rc_;
 
-	main_window_data(const main_window_data&);
-	main_window_data& operator=(const main_window_data&);
+    main_window_data(const main_window_data&);
+    main_window_data& operator=(const main_window_data&);
 };
 
 void destroy(GtkWidget*, gpointer)
 {
-	::gtk_main_quit();
+    ::gtk_main_quit();
 }
 
 void realize(GtkWidget* widget, gpointer user_data)
 {
-	main_window_data*& pimpl = *static_cast<main_window_data**>(user_data);
-	try
-	{
-		pimpl = new main_window_data(widget);
-	}
-	catch (const std::exception& e)
-	{
-		std::cerr << "Error: " << e.what() << std::endl;
-		pimpl = 0;
-	}
+    main_window_data*& pimpl = *static_cast<main_window_data**>(user_data);
+    try
+    {
+        pimpl = new main_window_data(widget);
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error: " << e.what() << std::endl;
+        pimpl = 0;
+    }
 }
 
 void unrealize(GtkWidget*, gpointer user_data)
 {
-	main_window_data*& pimpl = *static_cast<main_window_data**>(user_data);
-	delete pimpl;
-	pimpl = 0;
+    main_window_data*& pimpl = *static_cast<main_window_data**>(user_data);
+    delete pimpl;
+    pimpl = 0;
 }
 
 gboolean render(gpointer user_data)
 {
-	if (main_window_data*& pimpl = *static_cast<main_window_data**>(user_data))
-	{
-		try
-		{
-			pimpl->render();
-		}
-		catch (const std::exception& e)
-		{
-			std::cerr << "Error: " << e.what() << std::endl;
-		}
-	}
+    if (main_window_data*& pimpl = *static_cast<main_window_data**>(user_data))
+    {
+        try
+        {
+            pimpl->render();
+        }
+        catch (const std::exception& e)
+        {
+            std::cerr << "Error: " << e.what() << std::endl;
+        }
+    }
 
-	return TRUE;
+    return TRUE;
 }
 
 template<class Widget, class Arg>
 inline gulong connect_signal(
-	Widget* w, const char* sig, GCallback func, Arg* arg)
+    Widget* w, const char* sig, GCallback func, Arg* arg)
 {
-	gulong id = ::g_signal_connect(G_OBJECT(w), sig, func, arg);
-	if (id == 0)
-		throw std::runtime_error("g_signal_connect() failed");
-	return id;
+    gulong id = ::g_signal_connect(G_OBJECT(w), sig, func, arg);
+    if (id == 0)
+        throw std::runtime_error("g_signal_connect() failed");
+    return id;
 }
 
 int main(int argc, char* argv[])
 {
-	try
-	{
-		::gtk_set_locale();
-		::gtk_init(&argc, &argv);
+    try
+    {
+        ::gtk_set_locale();
+        ::gtk_init(&argc, &argv);
 
-		GtkWidget* window = ::gtk_window_new(GTK_WINDOW_TOPLEVEL);
-		if (window == 0)
-			throw std::runtime_error("gtk_window_new() failed");
+        GtkWidget* window = ::gtk_window_new(GTK_WINDOW_TOPLEVEL);
+        if (window == 0)
+            throw std::runtime_error("gtk_window_new() failed");
 
-		main_window_data* pimpl = 0;
-		connect_signal(window, "destroy", G_CALLBACK(destroy), &pimpl);
-		connect_signal(window, "realize", G_CALLBACK(realize), &pimpl);
-		connect_signal(window, "unrealize", G_CALLBACK(unrealize), &pimpl);
-		::g_timeout_add(16, &render, &pimpl);
+        main_window_data* pimpl = 0;
+        connect_signal(window, "destroy", G_CALLBACK(destroy), &pimpl);
+        connect_signal(window, "realize", G_CALLBACK(realize), &pimpl);
+        connect_signal(window, "unrealize", G_CALLBACK(unrealize), &pimpl);
+        ::g_timeout_add(16, &render, &pimpl);
 
-		::gtk_widget_show_all(window);
-		::gtk_main();
-	}
-	catch (const std::exception& e)
-	{
-		std::cerr << "Error: " << e.what() << std::endl;
-	}
+        ::gtk_widget_show_all(window);
+        ::gtk_main();
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
 
-	return 0;
+    return 0;
 }

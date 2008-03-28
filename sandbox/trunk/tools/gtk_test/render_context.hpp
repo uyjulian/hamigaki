@@ -19,14 +19,14 @@ namespace hamigaki
 class render_context
 {
 public:
-	explicit render_context(GtkWidget* widget);
-	~render_context();
-	void select();
-	void swap_buffers();
+    explicit render_context(GtkWidget* widget);
+    ~render_context();
+    void select();
+    void swap_buffers();
 
 private:
-	class impl;
-	boost::shared_ptr<impl> pimpl_;
+    class impl;
+    boost::shared_ptr<impl> pimpl_;
 };
 
 } // namespace hamigaki
