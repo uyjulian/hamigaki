@@ -49,7 +49,7 @@ void echo_test()
     bjam::context ctx;
     bjam::list_of_list args;
 
-	ctx.output_stream(buf);
+    ctx.output_stream(buf);
 
     BOOST_CHECK(ctx.invoke_rule("ECHO", args).empty());
     BOOST_CHECK_EQUAL(buf.str(), std::string("\n"));

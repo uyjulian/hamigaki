@@ -94,7 +94,7 @@ HAMIGAKI_BJAM_DECL string_list echo(context& ctx)
     const list_of_list& args = f.arguments();
     const string_list& arg1 = args[0];
 
-	std::ostream& os = ctx.output_stream();
+    std::ostream& os = ctx.output_stream();
 
     std::copy(
         arg1.begin(), arg1.end(),

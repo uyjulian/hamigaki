@@ -20,25 +20,25 @@ typedef coro::coroutine<int(coroutine_type1*)> coroutine_type2;
 
 void body1(coroutine_type1::self& self)
 {
-	while (true)
-		self.yield();
+    while (true)
+        self.yield();
 }
 
 int body2(coroutine_type2::self& self, coroutine_type1* coroutine1)
 {
-	coroutine1->exit();
-	while (true)
-		self.yield(0);
-	HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(0)
+    coroutine1->exit();
+    while (true)
+        self.yield(0);
+    HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(0)
 }
 
 void exit_other_test()
 {
-	coroutine_type1 coroutine1(body1);
-	coroutine1();
+    coroutine_type1 coroutine1(body1);
+    coroutine1();
 
-	coroutine_type2 coroutine2(body2);
-	coroutine2(&coroutine1);
+    coroutine_type2 coroutine2(body2);
+    coroutine2(&coroutine1);
 }
 
 ut::test_suite* init_unit_test_suite(int, char* [])
