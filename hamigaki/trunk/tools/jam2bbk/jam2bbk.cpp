@@ -57,7 +57,7 @@ void push_back_move(C& c, typename C::value_type& x)
 
 std::istream& skip_to(std::istream& is, char c)
 {
-    return is.ignore(std::numeric_limits<std::streamsize>::max(), c);
+    return is.ignore((std::numeric_limits<std::streamsize>::max)(), c);
 }
 
 std::istream& assert_token(std::istream& is, const char* s)
