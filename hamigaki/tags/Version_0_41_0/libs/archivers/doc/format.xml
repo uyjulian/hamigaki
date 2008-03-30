@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2006-2008.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<section id="archivers.format">
+  <title>フォーマット</title>
+  <using-namespace name="hamigaki::archivers"/>
+
+  <section id="archivers.format.cpio">
+    <title>cpio</title>
+
+    <itemizedlist>
+      <title>クラス</title>
+      <listitem><classname>basic_cpio_file_sink</classname></listitem>
+      <listitem><classname>basic_cpio_file_source</classname></listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <title>サポートされるフォーマット</title>
+      <listitem>POSIX.1-1998 cpio フォーマット</listitem>
+      <listitem>GNU cpio互換 バイナリーフォーマット</listitem>
+      <listitem>SVR4 フォーマット</listitem>
+      <listitem>チェックサム付きSVR4 フォーマット</listitem>
+    </itemizedlist>
+  </section>
+
+  <section id="archivers.format.iso">
+    <title>ISO イメージファイル</title>
+
+    <itemizedlist>
+      <title>クラス</title>
+      <listitem><classname>basic_iso_file_sink</classname></listitem>
+      <listitem><classname>basic_iso_file_source</classname></listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <title>サポートされる機能</title>
+      <listitem>ISO 9660:1988 Level 1 / Level 2 / Level 3</listitem>
+      <listitem>ISO 9660:1999</listitem>
+      <listitem>Joliet 拡張</listitem>
+      <listitem>System Use Sharing Protocol (IEEE P1281)</listitem>
+      <listitem>Rock Ridge Interchange Protocol (RRIP 1991A / IEEE P1282)</listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <title>サポートされるSystem Use Entry</title>
+      <listitem>継続エリア (CE)</listitem>
+      <listitem>System Use Sharing Protocol 標識 (SP)</listitem>
+      <listitem>拡張の出典 (ER)</listitem>
+      <listitem>POSIX ファイル属性 (PX)</listitem>
+      <listitem>POSIX デバイス番号 (PN)</listitem>
+      <listitem>シンボリックリンク (SL)</listitem>
+      <listitem>代替名 (NM)</listitem>
+      <listitem>子リンク (CL)</listitem>
+      <listitem>親リンク (PL)</listitem>
+      <listitem>再配置ディレクトリ (RE)</listitem>
+      <listitem>タイムスタンプ (TF)</listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <title>未実装の機能</title>
+      <listitem>CD-ROM XA</listitem>
+      <listitem>ボリューム区画記述子</listitem>
+      <listitem>起動レコード</listitem>
+      <listitem>拡張属性レコード</listitem>
+      <listitem>インタリーブモード</listitem>
+      <listitem>スパース・ファイル ("SF" System Use Entry)</listitem>
+      <listitem>パディング・フィールド ("PD" System Use Entry)</listitem>
+      <listitem>System Use Sharing Protocol 終端 ("ST" System Use Entry)</listitem>
+      <listitem>拡張の選択 ("ES" System Use Entry)</listitem>
+    </itemizedlist>
+  </section>
+
+  <section id="archivers.format.lzh">
+    <title>LZH</title>
+
+    <itemizedlist>
+      <title>クラス</title>
+      <listitem><classname>basic_lzh_file_sink</classname></listitem>
+      <listitem><classname>basic_lzh_file_source</classname></listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <title>サポートされる機能</title>
+      <listitem>Level 0 (h0) / Level 1 (h1) / Level 2 (h2) ヘッダ</listitem>
+      <listitem>lh0 (非圧縮) / lhd (ディレクトリ) / lh4 / lh5 / lh6 / lh7 メソッド</listitem>
+      <listitem>ラージファイルサポート(64ビット)</listitem>
+      <listitem>LHa for UNIX 互換シンボリックリンク</listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <title>サポートされる拡張ヘッダ</title>
+      <listitem>共通ヘッダ (0x00)</listitem>
+      <listitem>ファイル名ヘッダ (0x01)</listitem>
+      <listitem>パス名ヘッダ (0x02)</listitem>
+      <listitem>コメントヘッダ (0x03)</listitem>
+      <listitem>属性ヘッダ (0x40)</listitem>
+      <listitem>タイムスタンプヘッダ (0x41)</listitem>
+      <listitem>ファイルサイズヘッダ (0x42)</listitem>
+      <listitem>コードページヘッダ (0x46)</listitem>
+      <listitem>ファイル許可属性ヘッダ (0x50)</listitem>
+      <listitem>GID/UID ヘッダ (0x51)</listitem>
+      <listitem>グループ名ヘッダ (0x52)</listitem>
+      <listitem>ユーザー名ヘッダ (0x53)</listitem>
+      <listitem>更新日時ヘッダ (0x54)</listitem>
+    </itemizedlist>
+  </section>
+
+  <section id="archivers.format.tar">
+    <title>tar</title>
+
+    <itemizedlist>
+      <title>クラス</title>
+      <listitem><classname>basic_tar_file_sink</classname></listitem>
+      <listitem><classname>basic_tar_file_source</classname></listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <title>サポートされるフォーマット</title>
+      <listitem>POSIX.1-1998 ustar フォーマット</listitem>
+      <listitem>POSIX.1-2001 pax フォーマット</listitem>
+      <listitem>GNU tar 拡張フォーマット</listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <title>サポートされるpax拡張ヘッダ</title>
+      <listitem>最終アクセス時間ヘッダ (atime)</listitem>
+      <listitem>コメントヘッダ (comment)</listitem>
+      <listitem>グループIDヘッダ (gid)</listitem>
+      <listitem>グループ名ヘッダ (gname)</listitem>
+      <listitem>リンク先パス名ヘッダ (linkpath)</listitem>
+      <listitem>最終更新時間ヘッダ (mtime)</listitem>
+      <listitem>パス名ヘッダ (path)</listitem>
+      <listitem>サイズヘッダ (size)</listitem>
+      <listitem>ユーザーIDヘッダ (uid)</listitem>
+      <listitem>ユーザー名ヘッダ (uname)</listitem>
+      <listitem>最終状態変更時間ヘッダ (ctime)</listitem>
+    </itemizedlist>
+  </section>
+
+  <section id="archivers.format.zip">
+    <title>ZIP</title>
+
+    <itemizedlist>
+      <title>クラス</title>
+      <listitem><classname>basic_zip_file_sink</classname></listitem>
+      <listitem><classname>basic_zip_file_source</classname></listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <title>サポートされる機能</title>
+      <listitem>store (非圧縮) / deflate / bzip2 メソッド</listitem>
+      <listitem>PKZIP 2.0互換 Traditional ZIP パスワード暗号</listitem>
+      <listitem>ラージファイルサポート (Zip64)</listitem>
+      <listitem>Info-ZIP 互換シンボリックリンク</listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <title>サポートされる拡張フィールド</title>
+      <listitem>Zip64フィールド (0x0001)</listitem>
+      <listitem>拡張タイムスタンプフィールド (0x5455)</listitem>
+      <listitem>Info-ZIP互換 新UNIXフィールド (0x7855)</listitem>
+    </itemizedlist>
+  </section>
+</section>

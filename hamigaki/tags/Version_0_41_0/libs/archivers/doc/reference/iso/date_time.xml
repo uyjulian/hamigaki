@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<header name="hamigaki/archivers/iso/date_time.hpp">
+  <namespace name="hamigaki">
+    <namespace name="archivers">
+      <namespace name="iso">
+        <struct name="date_time">
+          <constructor>
+            <effects><simpara>構造体を空に設定する</simpara></effects>
+            <postconditions><code>empty() == true</code></postconditions>
+          </constructor>
+
+          <method-group name="queries">
+            <method name="empty" cv="const">
+              <type>bool</type>
+              <returns><simpara>空であれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
+            </method>
+          </method-group>
+
+          <method-group name="conversions">
+            <method name="to_timestamp" cv="const">
+              <type>boost::optional&lt;<classname>filesystem::timestamp</classname>&gt;</type>
+              <returns><simpara><code>date_time</code>の保持する時間を<code>timestamp</code>で表現した値</simpara></returns>
+            </method>
+
+            <method name="from_timestamp" specifiers="static">
+              <type>date_time</type>
+              <parameter name="ts">
+                <paramtype>const <classname>filesystem::timestamp</classname>&amp;</paramtype>
+              </parameter>
+              <returns><simpara><code>ts</code>の保持する時間を表現する<code>date_time</code></simpara></returns>
+            </method>
+          </method-group>
+
+          <data-member name="year[4]">
+            <type>char</type>
+          </data-member>
+
+          <data-member name="month[2]">
+            <type>char</type>
+          </data-member>
+
+          <data-member name="day[2]">
+            <type>char</type>
+          </data-member>
+
+          <data-member name="hour[2]">
+            <type>char</type>
+          </data-member>
+
+          <data-member name="minute[2]">
+            <type>char</type>
+          </data-member>
+
+          <data-member name="second[2]">
+            <type>char</type>
+          </data-member>
+
+          <data-member name="centisecond[2]">
+            <type>char</type>
+          </data-member>
+
+          <data-member name="timezone">
+            <type>boost::int8_t</type>
+          </data-member>
+
+          <description>
+            <para>
+              <informaltable frame="all">
+                <tgroup cols="2">
+                  <thead>
+                    <row>
+                      <entry>メンバ変数</entry>
+                      <entry>意味</entry>
+                    </row>
+                  </thead>
+                  <tbody>
+                    <row>
+                      <entry>year</entry>
+                      <entry>年</entry>
+                    </row>
+                    <row>
+                      <entry>month</entry>
+                      <entry>月</entry>
+                    </row>
+                    <row>
+                      <entry>day</entry>
+                      <entry>日</entry>
+                    </row>
+                    <row>
+                      <entry>hour</entry>
+                      <entry>時</entry>
+                    </row>
+                    <row>
+                      <entry>minute</entry>
+                      <entry>分</entry>
+                    </row>
+                    <row>
+                      <entry>second</entry>
+                      <entry>秒</entry>
+                    </row>
+                    <row>
+                      <entry>centisecond</entry>
+                      <entry>1/100秒</entry>
+                    </row>
+                    <row>
+                      <entry>timezone</entry>
+                      <entry>タイムゾーンオフセット (1/4時間単位)</entry>
+                    </row>
+                  </tbody>
+                </tgroup>
+              </informaltable>
+            </para>
+          </description>
+        </struct>
+
+        <struct name="binary_date_time">
+          <constructor>
+            <effects><simpara>構造体を空に設定する</simpara></effects>
+            <postconditions><code>empty() == true</code></postconditions>
+          </constructor>
+
+          <method-group name="queries">
+            <method name="empty" cv="const">
+              <type>bool</type>
+              <returns><simpara>空であれば<code>true</code>、それ以外なら<code>false</code></simpara></returns>
+            </method>
+          </method-group>
+
+          <method-group name="conversions">
+            <method name="to_timestamp" cv="const">
+              <type>boost::optional&lt;<classname>filesystem::timestamp</classname>&gt;</type>
+              <returns><simpara><code>binary_date_time</code>の保持する時間を<code>timestamp</code>で表現した値</simpara></returns>
+            </method>
+
+            <method name="from_timestamp" specifiers="static">
+              <type>binary_date_time</type>
+              <parameter name="ts">
+                <paramtype>const <classname>filesystem::timestamp</classname>&amp;</paramtype>
+              </parameter>
+              <returns><simpara><code>ts</code>の保持する時間を表現する<code>binary_date_time</code></simpara></returns>
+            </method>
+
+            <method name="to_date_time" cv="const">
+              <type><classname>date_time</classname></type>
+              <returns><simpara><code>binary_date_time</code>の保持する時間を<classname>date_time</classname>で表現した値</simpara></returns>
+            </method>
+
+            <method name="from_date_time" specifiers="static">
+              <type>binary_date_time</type>
+              <parameter name="ds">
+                <paramtype>const <classname>date_time</classname>&amp;</paramtype>
+              </parameter>
+              <returns><simpara><code>ds</code>の保持する時間を表現する<code>binary_date_time</code></simpara></returns>
+            </method>
+          </method-group>
+
+          <data-member name="year">
+            <type>boost::uint8_t</type>
+          </data-member>
+
+          <data-member name="month">
+            <type>boost::uint8_t</type>
+          </data-member>
+
+          <data-member name="day">
+            <type>boost::uint8_t</type>
+          </data-member>
+
+          <data-member name="hour">
+            <type>boost::uint8_t</type>
+          </data-member>
+
+          <data-member name="minute">
+            <type>boost::uint8_t</type>
+          </data-member>
+
+          <data-member name="second">
+            <type>boost::uint8_t</type>
+          </data-member>
+
+          <data-member name="timezone">
+            <type>boost::int8_t</type>
+          </data-member>
+
+          <description>
+            <para>
+              <informaltable frame="all">
+                <tgroup cols="2">
+                  <thead>
+                    <row>
+                      <entry>メンバ変数</entry>
+                      <entry>意味</entry>
+                    </row>
+                  </thead>
+                  <tbody>
+                    <row>
+                      <entry>year</entry>
+                      <entry>年</entry>
+                    </row>
+                    <row>
+                      <entry>month</entry>
+                      <entry>月</entry>
+                    </row>
+                    <row>
+                      <entry>day</entry>
+                      <entry>日</entry>
+                    </row>
+                    <row>
+                      <entry>hour</entry>
+                      <entry>時</entry>
+                    </row>
+                    <row>
+                      <entry>minute</entry>
+                      <entry>分</entry>
+                    </row>
+                    <row>
+                      <entry>second</entry>
+                      <entry>秒</entry>
+                    </row>
+                    <row>
+                      <entry>timezone</entry>
+                      <entry>タイムゾーンオフセット (1/4時間単位)</entry>
+                    </row>
+                  </tbody>
+                </tgroup>
+              </informaltable>
+            </para>
+          </description>
+        </struct>
+      </namespace>
+    </namespace>
+  </namespace>
+</header>

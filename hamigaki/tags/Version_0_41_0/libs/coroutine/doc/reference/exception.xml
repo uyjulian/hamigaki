@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Coroutine Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/coroutine for library home page.
+-->
+<header name="hamigaki/coroutine/exception.hpp">
+  <namespace name="hamigaki">
+    <namespace name="coroutines">
+      <class name="exit_exception">
+        <purpose><para>コルーチンが終了する際に内部で使用される例外クラス</para></purpose>
+        <description>
+          <para>この例外はコルーチンが終了する際にスタックの巻き戻しのためにHamigaki.Coroutineが内部で利用するクラスであり、深刻なエラーを示すものではない。コルーチンの呼び出し元に送出されることもない。</para>
+          <para>std::exceptionの派生クラスではないため、Visual Studio等のデバッガで例外の送出に対してブレークポイントを設定する場合、捕捉する例外をstd::exceptionとその派生クラスに限定することで効率的にデバッグを行うことができる。</para>
+        </description>
+      </class>
+
+      <class name="exception_base">
+        <inherit access="public">std::exception</inherit>
+      </class>
+
+      <class name="coroutine_exited">
+        <inherit access="public"><classname>exception_base</classname></inherit>
+        <purpose><para>コルーチンが終了したために結果が返されなかったことを示す例外クラス</para></purpose>
+      </class>
+
+      <class name="unknown_exception_tag"/>
+
+      <class name="abnormal_exit">
+        <inherit access="public">std::exception</inherit>
+        <purpose><para>未捕捉例外のためコルーチンが異常終了したことを示す例外クラス</para></purpose>
+
+        <constructor specifiers="explicit">
+          <parameter name="p">
+            <paramtype>const std::type_info*</paramtype>
+            <default>0</default>
+          </parameter>
+          <throws>なし</throws>
+          <postconditions><code>type_ptr() == p</code></postconditions>
+        </constructor>
+
+        <method-group name="queries">
+          <method name="what" specifiers="virtual" cv="const throw()">
+            <type>const char*</type>
+            <returns><simpara>未捕捉例外が<code>std::exception</code>かその派生クラスであれば、<code>type().name()</code>を返す。それ以外の場合は、その旨を示す文字列を返す。</simpara></returns>
+            <throws>なし</throws>
+          </method>
+
+          <method name="type" cv="const">
+            <type>const std::type_info&amp;</type>
+            <returns><simpara>未捕捉例外が<code>std::exception</code>かその派生クラスであれば、その型情報を返す。それ以外の場合は、<classname>unknown_exception_tag</classname>の型情報を返す。</simpara></returns>
+            <throws>なし</throws>
+          </method>
+
+          <method name="type_ptr" cv="const">
+            <type>const std::type_info*</type>
+            <returns><simpara>未捕捉例外が<code>std::exception</code>かその派生クラスであれば、その型情報のポインタを返す。それ以外の場合は、0を返す。</simpara></returns>
+            <throws>なし</throws>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

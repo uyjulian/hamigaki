@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<concept name="Archiver" category="Archivers">
+  <param name="A" role="device-type"/>
+
+  <associated-type name="header_type">
+    <get-member-type name="header_type">
+      <type name="A"/>
+    </get-member-type>
+    <description><simpara>ヘッダ情報を保持する型</simpara></description>
+  </associated-type>
+
+  <refines const="no" concept="Sink"/>
+
+  <notation variables="a">
+    <sample-value>
+      <type name="A"/>
+    </sample-value>
+  </notation>
+
+  <notation variables="head">
+    <sample-value>
+      <type name="const header_type"/>
+    </sample-value>
+  </notation>
+
+  <valid-expression name="Create entry">
+    <apply-method name="create_entry">
+      <sample-value><reference-to><type name="A"/></reference-to></sample-value>
+      <sample-value><reference-to><type name="const header_type"/></reference-to></sample-value>
+    </apply-method>
+    <return-type><require-same-type><type name="void"/></require-same-type></return-type>
+    <semantics><code>a</code>にヘッダ情報<code>head</code>を設定した新しいエントリを作成する。</semantics>
+    <postcondition><code>a</code>は書き込み可能な状態になる。</postcondition>
+  </valid-expression>
+
+  <valid-expression name="Rewind entry">
+    <apply-method name="rewind_entry">
+      <sample-value><reference-to><type name="A"/></reference-to></sample-value>
+    </apply-method>
+    <return-type><require-same-type><type name="void"/></require-same-type></return-type>
+    <semantics><code>a</code>の現在の圧縮メソッドを無圧縮に設定し、書き込み位置をエントリの先頭に戻す。</semantics>
+  </valid-expression>
+
+  <valid-expression name="Close archive">
+    <apply-method name="close_archive">
+      <sample-value><reference-to><type name="A"/></reference-to></sample-value>
+    </apply-method>
+    <return-type><require-same-type><type name="void"/></require-same-type></return-type>
+    <semantics><code>a</code>にフッタ情報を書き込み、デバイスをクローズする。</semantics>
+  </valid-expression>
+</concept>

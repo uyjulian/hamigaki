@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.TypeTraits Library Document Source
+
+  Copyright Takeshi Mouri 2006-2008.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/type_traits for library home page.
+-->
+<header name="hamigaki/type_traits/member_access_traits.hpp">
+  <namespace name="hamigaki">
+    <struct name="member_access_traits">
+      <template>
+        <template-type-parameter name="T"/>
+        <template-type-parameter name="U"/>
+      </template>
+
+      <purpose><simpara>cv修飾のメンバ変数への伝播を模倣する</simpara></purpose>
+
+      <description>
+        <para>C++ではオブジェクトのcv(<code>const</code>/<code>volatile</code>)修飾がメンバ変数へのアクセスに伝播される。<code>member_access_traits</code>クラステンプレートはこのcv修飾の伝播を模倣し、メンバ変数にアクセスした際の型を返す一種のメタ関数である。このクラステンプレートは次のようなメンバ変数を返す関数テンプレートを作成するのに役に立つ。</para>
+
+        <informalexample><programlisting><![CDATA[template<class T>
+typename hamigaki::member_access_traits<
+    T,
+    typename T::value_type
+>::reference
+front(T& x)
+{
+    return *(x.begin());
+}
+]]></programlisting></informalexample>
+
+        <para>
+          メンバの意味は次の通り。
+          <informaltable frame="all">
+            <tgroup cols="2">
+              <thead>
+                <row>
+                  <entry>メンバ</entry>
+                  <entry>説明</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry><code>member_access_traits&lt;T, U&gt;::value_type</code></entry>
+                  <entry><code>U</code></entry>
+                </row>
+                <row>
+                  <entry><code>member_access_traits&lt;T, U&gt;::reference</code></entry>
+                  <entry>型<code>T</code>のオブジェクトから型<code>U</code>のメンバへアクセスした場合の参照型</entry>
+                </row>
+                <row>
+                  <entry><code>member_access_traits&lt;T, U&gt;::pointer</code></entry>
+                  <entry>型<code>T</code>のオブジェクトから型<code>U</code>のメンバへアクセスした場合のポインタ型</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+          <code>reference</code>と<code>pointer</code>は次のようになる。
+          <informaltable frame="all">
+            <tgroup cols="4">
+              <thead>
+                <row>
+                  <entry><code>T</code></entry>
+                  <entry><code>U</code></entry>
+                  <entry><code>reference</code></entry>
+                  <entry><code>pointer</code></entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry><code>foo</code></entry>
+                  <entry><code>bar</code></entry>
+                  <entry><code>bar&amp;</code></entry>
+                  <entry><code>bar*</code></entry>
+                </row>
+                <row>
+                  <entry><code>const foo</code></entry>
+                  <entry><code>bar</code></entry>
+                  <entry><code>const bar&amp;</code></entry>
+                  <entry><code>const bar*</code></entry>
+                </row>
+                <row>
+                  <entry><code>const foo</code></entry>
+                  <entry><code>bar&amp;</code></entry>
+                  <entry><code>bar&amp;</code></entry>
+                  <entry><code>bar*</code></entry>
+                </row>
+                <row>
+                  <entry><code>foo</code></entry>
+                  <entry><code>const bar</code></entry>
+                  <entry><code>const bar&amp;</code></entry>
+                  <entry><code>const bar*</code></entry>
+                </row>
+                <row>
+                  <entry><code>volatile foo</code></entry>
+                  <entry><code>const bar</code></entry>
+                  <entry><code>const volatile bar&amp;</code></entry>
+                  <entry><code>const volatile bar*</code></entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+        </para>
+      </description>
+
+      <typedef name="value_type">
+        <type>U</type>
+      </typedef>
+
+      <typedef name="reference">
+        <type><emphasis>/* see below */</emphasis></type>
+      </typedef>
+
+      <typedef name="pointer">
+        <type><emphasis>/* see below */</emphasis></type>
+      </typedef>
+    </struct>
+  </namespace>
+</header>

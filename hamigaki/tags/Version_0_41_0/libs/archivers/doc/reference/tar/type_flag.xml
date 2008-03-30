@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<header name="hamigaki/archivers/tar/type_flag.hpp">
+  <namespace name="hamigaki">
+    <namespace name="archivers">
+      <namespace name="tar">
+        <struct name="type_flag">
+          <static-constant name="regular">
+            <type>char</type>
+            <default>'0'</default>
+            <purpose>通常のファイル</purpose>
+          </static-constant>
+
+          <static-constant name="link">
+            <type>char</type>
+            <default>'1'</default>
+            <purpose>ハードリンク</purpose>
+          </static-constant>
+
+          <static-constant name="symbolic_link">
+            <type>char</type>
+            <default>'2'</default>
+            <purpose>シンボリックリンク</purpose>
+          </static-constant>
+
+          <static-constant name="char_device">
+            <type>char</type>
+            <default>'3'</default>
+            <purpose>キャラクタデバイス</purpose>
+          </static-constant>
+
+          <static-constant name="block_device">
+            <type>char</type>
+            <default>'4'</default>
+            <purpose>ブロックデバイス</purpose>
+          </static-constant>
+
+          <static-constant name="directory">
+            <type>char</type>
+            <default>'5'</default>
+            <purpose>ディレクトリ</purpose>
+          </static-constant>
+
+          <static-constant name="fifo">
+            <type>char</type>
+            <default>'6'</default>
+            <purpose>名前付きパイプ</purpose>
+          </static-constant>
+
+          <static-constant name="reserved">
+            <type>char</type>
+            <default>'7'</default>
+            <purpose>予約 (regularと同様に扱われる)</purpose>
+          </static-constant>
+
+          <static-constant name="long_link">
+            <type>char</type>
+            <default>'K'</default>
+            <purpose>長いリンクパス名 (GNU tar 拡張)</purpose>
+          </static-constant>
+
+          <static-constant name="long_name">
+            <type>char</type>
+            <default>'L'</default>
+            <purpose>長いパス名 (GNU tar 拡張)</purpose>
+          </static-constant>
+
+          <static-constant name="global">
+            <type>char</type>
+            <default>'g'</default>
+            <purpose>pax グローバル拡張ヘッダ</purpose>
+          </static-constant>
+
+          <static-constant name="extended">
+            <type>char</type>
+            <default>'x'</default>
+            <purpose>pax 拡張ヘッダ</purpose>
+          </static-constant>
+        </struct>
+      </namespace>
+    </namespace>
+  </namespace>
+</header>

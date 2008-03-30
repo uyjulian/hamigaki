@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<section id="bbv2.targets">
+  <title>ターゲット</title>
+  <section id="bbv2.targets.id">
+    <title>ターゲットID</title>
+    <para>ビルドターゲットを識別するため、「<emphasis>プロジェクトID</emphasis>//<emphasis>ターゲット名</emphasis>」という形式の文字列を用いる。</para>
+    <informalexample>
+      <informaltable frame="all">
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>ターゲットID</entry>
+              <entry>意味</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>/boost</entry>
+              <entry>boostプロジェクト(サブプロジェクトを含まない)のターゲット全て</entry>
+            </row>
+            <row>
+              <entry>hello</entry>
+              <entry>現在のプロジェクトのhelloターゲット</entry>
+            </row>
+            <row>
+              <entry>/boost/filesystem//boost_filesystem</entry>
+              <entry>boost/filesystemプロジェクトのboost_filesystemターゲット</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </informalexample>
+  </section>
+  <section id="bbv2.targets.common" xreflabel="共通構文">
+    <title>共通構文</title>
+    <para>通常、ビルドターゲットを宣言するルールは次の<firstterm>共通構文</firstterm>の形式を取る。</para>
+    <informalexample>
+      <programlisting><![CDATA[rule ]]><emphasis>ルール名</emphasis><![CDATA[ (
+    main-target-name :
+    sources + :
+    requirements * :
+    default-build * :
+    usage-requirements * )
+]]></programlisting>
+    </informalexample>
+    <para>引数の意味は次の通り。</para>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>引数</entry>
+            <entry>意味</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>main-target-name</entry>
+            <entry>ターゲット名</entry>
+          </row>
+          <row>
+            <entry>sources</entry>
+            <entry>ソースファイル名、ソースターゲット名</entry>
+          </row>
+          <row>
+            <entry>requirements</entry>
+            <entry>ビルドに必要なプロパティ</entry>
+          </row>
+          <row>
+            <entry>default-build</entry>
+            <entry>コマンドラインや依存するターゲットのdefault-buildでの指定がない場合のみ使用されるプロパティ</entry>
+          </row>
+          <row>
+            <entry>usage-requirements</entry>
+            <entry>このターゲットに依存するターゲットのビルドに必要なプロパティ</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+  <section id="bbv2.targets.exe">
+    <title>exe</title>
+    <para>標準ルールexeは、実行ファイルターゲットを宣言するルールであり、<xref linkend="bbv2.targets.common"/>の形式を取る。</para>
+    <informalexample>
+      <programlisting><![CDATA[# hello.cppから実行ファイルhelloを生成させる
+exe hello : hello.cpp ;
+
+# my_ls.cppとBoost.FileSystemのライブラリから実行ファイルmy_lsを生成させる
+exe my_ls : my_ls.cpp /boost/filesystem//boost_filesystem ;
+]]></programlisting>
+    </informalexample>
+  </section>
+  <section id="bbv2.targets.lib">
+    <title>lib</title>
+    <para>標準ルールlibは、ライブラリターゲットを宣言するルールであり、<xref linkend="bbv2.targets.common"/>の形式を取る。</para>
+    <informalexample>
+      <programlisting><![CDATA[# hello.cppからライブラリhelloを生成させる
+lib hello : hello.cpp ;
+
+# 既定のライブラリパスから探索されるzという名前のライブラリを参照する
+lib z : : <name>z ;
+
+# /usr/local/libから探索されるbzipという名前のライブラリを参照する
+lib bzip : : <name>bzip <search>/usr/local/lib ;
+
+# /usr/local/lib/foo.aをライブラリとして参照する
+lib foo : : <file>/usr/local/lib/foo.a ;
+]]></programlisting>
+    </informalexample>
+  </section>
+  <section id="bbv2.targets.alias">
+    <title>alias</title>
+    <para>標準ルールaliasは、ターゲットの別名を宣言するルールであり、<xref linkend="bbv2.targets.common"/>の形式を取る。</para>
+    <informalexample>
+      <programlisting><![CDATA[# ターゲットaとbを参照するターゲットa&bを宣言する
+alias a&b : a b ;
+
+# ヘッダのみのライブラリheadersを宣言する
+alias headers : : : : <include>$(BOOST_ROOT) ;
+]]></programlisting>
+    </informalexample>
+  </section>
+</section>

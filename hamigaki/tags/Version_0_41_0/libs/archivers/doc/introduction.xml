@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<section id="archivers.introduction">
+  <title>紹介</title>
+  <para>Hamigaki.Archiversライブラリはアーカイブ(書庫)を操作する機能を提供する。アーカイブに対する読み書きはBoost.Iostreamsのコンセプトに従っている。</para>
+  <para>Hamigaki.Archiversは、以下のフォーマットをサポートする。</para>
+  <itemizedlist>
+    <listitem><link linkend="archivers.format.cpio">cpio</link></listitem>
+    <listitem><link linkend="archivers.format.lzh">LZH (LHA)</link></listitem>
+    <listitem><link linkend="archivers.format.tar">tar</link></listitem>
+    <listitem><link linkend="archivers.format.zip">ZIP</link></listitem>
+  </itemizedlist>
+  <para>また、アーカイブではないが、以下のフォーマットもサポートする。</para>
+  <itemizedlist>
+    <listitem><link linkend="archivers.format.iso">ISO イメージファイル</link></listitem>
+  </itemizedlist>
+</section>

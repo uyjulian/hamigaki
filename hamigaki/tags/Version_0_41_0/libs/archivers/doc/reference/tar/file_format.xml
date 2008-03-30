@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<header name="hamigaki/archivers/tar/file_format.hpp">
+  <namespace name="hamigaki">
+    <namespace name="archivers">
+      <namespace name="tar">
+        <enum name="file_format">
+          <enumvalue name="ustar" />
+          <enumvalue name="pax" />
+          <enumvalue name="gnu" />
+          <purpose><simpara>tarファイルのフォーマット</simpara></purpose>
+          <description>
+            <informaltable frame="all">
+              <tgroup cols="2">
+                <thead>
+                  <row>
+                    <entry>値</entry>
+                    <entry>意味</entry>
+                  </row>
+                </thead>
+                <tbody>
+                  <row>
+                    <entry>ustar</entry>
+                    <entry>POSIX.1-1998 ustar フォーマット</entry>
+                  </row>
+                  <row>
+                    <entry>pax</entry>
+                    <entry>POSIX.1-2001 pax フォーマット</entry>
+                  </row>
+                  <row>
+                    <entry>gnu</entry>
+                    <entry>GNU tar 拡張フォーマット</entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </informaltable>
+          </description>
+        </enum>
+      </namespace>
+    </namespace>
+  </namespace>
+</header>

@@ -1,0 +1,66 @@
+# Hamigaki version detection utilities
+
+# Copyright Takeshi Mouri 2007, 2008.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/ for library home page.
+
+import errors ;
+import modules ;
+import os ;
+import path ;
+
+local CATENATE ;
+if [ os.name ] = NT
+{
+    CATENATE = type ;
+}
+else
+{
+    CATENATE = cat ;
+}
+
+local rule get-hamigaki-version ( )
+{
+    local hamigaki-include =  [ modules.peek : HAMIGAKI_INCLUDE ] ;
+    if ! $(hamigaki-include)
+    {
+        hamigaki-include =  [ modules.peek : HAMIGAKI_ROOT ] ;
+    }
+    if ! $(hamigaki-include)
+    {
+        hamigaki-include =  [ modules.peek [ CALLER_MODULE ] : HAMIGAKI_ROOT ] ;
+    }
+    if ! $(hamigaki-include)
+    {
+        errors.error "Please define HAMIGAKI_INCLUDE or HAMIGAKI_ROOT" ;
+    }
+
+    local ph = [ path.native $(hamigaki-include)/hamigaki/version.hpp ] ;
+    local version.hpp = [ SHELL "$(CATENATE) $(ph)" ] ;
+    local pattern = "#define HAMIGAKI_LIB_VERSION \"([_0-9]+)\"" ;
+    return [ MATCH $(pattern) : $(version.hpp) ] ;
+}
+
+.lib-version = [ get-hamigaki-version ] ;
+
+# Get the version number of the Hamigaki whose form is "0.40.1".
+#
+rule version ( )
+{
+    local v = [ MATCH ^([0-9]+)_([0-9]+)_?([0-9]*)$ : $(.lib-version) ] ;
+    if ! $(v[3])
+    {
+        v = $(v[1-2]) 0 ;
+    }
+    return $(v:J=.) ;
+}
+
+# Get the version number of the Hamigaki whose form is "0_40".
+#
+rule lib-version ( )
+{
+    return $(.lib-version) ;
+}

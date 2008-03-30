@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Iostreams Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
+-->
+<header name="hamigaki/iostreams/repeat.hpp">
+  <namespace name="hamigaki">
+    <namespace name="iostreams">
+      <class name="repetition">
+        <template>
+          <template-type-parameter name="SeekableSource"/>
+        </template>
+
+        <purpose><para>クラステンプレート<code>repetition</code>は、SeekableSourceを受け取り、それを指定回数だけ繰り返し読み出すことのできるSourceを形成する。</para></purpose>
+
+        <typedef name="char_type">
+          <type>boost::iostreams::char_type_of&lt;SeekableSource&gt;::type</type>
+        </typedef>
+
+        <constructor>
+          <parameter name="src">
+            <paramtype>const SeekableSource&amp;</paramtype>
+          </parameter>
+          <parameter name="count">
+            <paramtype>int</paramtype>
+          </parameter>
+          <effects><simpara><code>src</code>の<code>count</code>回のループを形成する。<code>count == -1</code>の場合は、無限ループになる。</simpara></effects>
+        </constructor>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="read">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>char_type*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+
+          <method name="close">
+            <type>void</type>
+          </method>
+        </method-group>
+
+        <free-function-group name="creation">
+          <function name="repeat">
+            <type>repetition&lt;SeekableSource&gt;</type>
+            <template>
+              <template-type-parameter name="SeekableSource"/>
+            </template>
+            <parameter name="src">
+              <paramtype>const SeekableSource&amp;</paramtype>
+            </parameter>
+            <parameter name="count">
+              <paramtype>int</paramtype>
+            </parameter>
+            <returns><simpara><code><classname>repetition</classname>&lt;SeekableSource&gt;(src, count)</code></simpara></returns>
+          </function>
+        </free-function-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

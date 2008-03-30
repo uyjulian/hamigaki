@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<header name="hamigaki/archivers/msdos/attributes.hpp">
+  <namespace name="hamigaki">
+    <namespace name="archivers">
+      <namespace name="msdos">
+        <struct name="attributes">
+          <static-constant name="read_only">
+            <type>boost::uint16_t</type>
+            <default>0x0001</default>
+            <purpose>読み出し専用</purpose>
+          </static-constant>
+
+          <static-constant name="hidden">
+            <type>boost::uint16_t</type>
+            <default>0x0002</default>
+            <purpose>隠しファイル</purpose>
+          </static-constant>
+
+          <static-constant name="system">
+            <type>boost::uint16_t</type>
+            <default>0x0004</default>
+            <purpose>システムファイル</purpose>
+          </static-constant>
+
+          <static-constant name="volume_label">
+            <type>boost::uint16_t</type>
+            <default>0x0008</default>
+            <purpose>ボリュームラベル</purpose>
+          </static-constant>
+
+          <static-constant name="directory">
+            <type>boost::uint16_t</type>
+            <default>0x0010</default>
+            <purpose>ディレクトリ</purpose>
+          </static-constant>
+
+          <static-constant name="archive">
+            <type>boost::uint16_t</type>
+            <default>0x0020</default>
+            <purpose>アーカイブ</purpose>
+          </static-constant>
+
+          <static-constant name="mask">
+            <type>boost::uint16_t</type>
+            <default>0x003F</default>
+            <purpose>有効なフラグの和集合</purpose>
+          </static-constant>
+        </struct>
+      </namespace>
+    </namespace>
+  </namespace>
+</header>

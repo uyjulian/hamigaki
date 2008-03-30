@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE chapter PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2007, 2008.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<chapter id="requirements">
+  <title>システム要件</title>
+  <para>Hamigakiライブラリを使用するには下記のシステムが必要である。</para>
+  <itemizedlist>
+    <listitem>Microsoft Windows 2000以降またはPOSIX準拠のオペレーティングシステム</listitem>
+    <listitem>ANSI/ISO C++準拠のコンパイラ</listitem>
+    <listitem><ulink url="http://www.boost.org/">Boost C++ ライブラリ</ulink> バージョン 1.34.1以降</listitem>
+  </itemizedlist>
+  <para>加えて、ライブラリによってはシステムヘッダファイルや他の外部ライブラリが必要になることがある。</para>
+  <para>Hamigakiライブラリは以下の環境でテストされている。</para>
+  <itemizedlist>
+    <title>Windows Vista (x86)</title>
+    <listitem>Microsoft Visual C++ 7.1</listitem>
+    <listitem>Microsoft Visual C++ 8.0</listitem>
+    <listitem>Microsoft Visual C++ 9.0 Express Edition</listitem>
+    <listitem>GNU C++ 3.4.5</listitem>
+  </itemizedlist>
+  <itemizedlist>
+    <title>Cygwin 1.5.25</title>
+    <listitem>GNU C++ 3.4.4</listitem>
+  </itemizedlist>
+  <itemizedlist>
+    <title>Fedora 8 (x86)</title>
+    <listitem>GNU C++ 4.1.2</listitem>
+  </itemizedlist>
+  <itemizedlist>
+    <title>Mac OS X 10.5 (x86/ppc)</title>
+    <listitem>GNU C++ 4.0.1</listitem>
+  </itemizedlist>
+  <para>詳細な対応状況は、<ulink url="http://hamigaki.sourceforge.jp/status/">退行テストのログ</ulink>を参照せよ。</para>
+</chapter>

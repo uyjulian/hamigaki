@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Audio Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+-->
+<header name="hamigaki/audio/vorbis_file.hpp">
+  <namespace name="hamigaki">
+    <namespace name="audio">
+
+      <struct name="vorbis_info">
+        <data-member name="version">
+          <type>int</type>
+        </data-member>
+        <data-member name="channels">
+          <type>int</type>
+        </data-member>
+        <data-member name="rate">
+          <type>long</type>
+        </data-member>
+        <data-member name="bitrate_upper">
+          <type>long</type>
+        </data-member>
+        <data-member name="bitrate_nominal">
+          <type>long</type>
+        </data-member>
+        <data-member name="bitrate_lower">
+          <type>long</type>
+        </data-member>
+      </struct>
+
+      <class name="basic_vorbis_file_source">
+        <template>
+          <template-type-parameter name="Source"/>
+        </template>
+
+        <purpose><para>Ogg Vorbisファイルへの読み込み専用アクセスを提供するSourceモデル</para></purpose>
+
+        <description>
+          <para>Sourceを受け取り、Vorbisデコードした結果を読み出すことができる。</para>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Source</conceptname></member>
+              <member><conceptname>SeekableSource</conceptname>(<code>Source</code>が<conceptname>SeekableSource</conceptname>である場合)</member>
+              <member><conceptname>ClosableDevice</conceptname></member>
+              <member><conceptname>OptimallyBuffered</conceptname></member>
+          </simplelist></para>
+        </description>
+
+        <typedef name="char_type">
+          <type>float</type>
+        </typedef>
+
+        <typedef name="category">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <constructor specifiers="explicit">
+          <parameter name="src">
+            <paramtype>const Source&amp;</paramtype>
+          </parameter>
+          <effects><simpara>Vorbisデコーダを初期化し、<code>src</code>からヘッダ情報を読み込む。</simpara></effects>
+        </constructor>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="optimal_buffer_size" cv="const">
+            <type>std::streamsize</type>
+            <returns><simpara>200ミリ秒分のバッファサイズ</simpara></returns>
+          </method>
+
+          <method name="read">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>const float*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+
+          <method name="close">
+            <type>void</type>
+          </method>
+
+          <method name="seek">
+            <type>std::streampos</type>
+            <parameter name="off">
+              <paramtype>boost::iostreams::stream_offset</paramtype>
+            </parameter>
+            <parameter name="way">
+              <paramtype>std::ios_base::seekdir</paramtype>
+            </parameter>
+          </method>
+        </method-group>
+
+        <method-group name="queries">
+          <method name="comments" cv="const">
+            <type>std::pair&lt;const char**,const char**&gt;</type>
+            <returns><simpara>コメント文字列ポインタの配列の先頭要素のポインタとpast-the-end要素のポインタの対</simpara></returns>
+          </method>
+
+          <method name="vendor" cv="const">
+            <type>const char*</type>
+            <returns><simpara>ファイル作成者の情報</simpara></returns>
+          </method>
+
+          <method name="info" cv="const">
+            <type><classname>vorbis_info</classname></type>
+            <returns><simpara>フォーマット情報</simpara></returns>
+          </method>
+
+          <method name="total">
+            <type>boost::iostreams::stream_offset</type>
+            <returns><simpara>合計バイト数</simpara></returns>
+          </method>
+        </method-group>
+
+        <free-function-group name="creation">
+          <function name="make_vorbis_file_source">
+            <type>basic_vorbis_file_source&lt;Source&gt;</type>
+            <template>
+              <template-type-parameter name="Source"/>
+            </template>
+            <parameter name="src">
+              <paramtype>const Source&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code><classname>basic_vorbis_file_source</classname>&lt;Source&gt;(src)</code></simpara></returns>
+          </function>
+        </free-function-group>
+      </class>
+
+      <class name="vorbis_file_source">
+        <inherit access="public">
+          <type><classname>basic_vorbis_file_source</classname>&lt;<classname>hamigaki::iostreams::file_source</classname>&gt;</type>
+          <purpose>Exposition only</purpose>
+        </inherit>
+
+        <constructor specifiers="explicit">
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+        </constructor>
+      </class>
+    </namespace>
+  </namespace>
+</header>

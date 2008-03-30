@@ -1,0 +1,719 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2008.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<section id="bbv2.reference.virtual-target">
+  <title>virtual-target モジュール</title>
+  <synopsis><emphasis role="bold">class</emphasis> <link linkend="bbv2.reference.virtual-target.virtual-target">virtual-target</link> { }
+<emphasis role="bold">class</emphasis> <link linkend="bbv2.reference.virtual-target.abstract-file-target">abstract-file-target</link> { }
+<emphasis role="bold">class</emphasis> <link linkend="bbv2.reference.virtual-target.file-target">file-target</link> { }
+<emphasis role="bold">class</emphasis> <link linkend="bbv2.reference.virtual-target.notfile-target">notfile-target</link> { }
+<emphasis role="bold">class</emphasis> <link linkend="bbv2.reference.virtual-target.action">action</link> { }
+<emphasis role="bold">class</emphasis> <link linkend="bbv2.reference.virtual-target.null-action">null-action</link> { }
+<emphasis role="bold">class</emphasis> <link linkend="bbv2.reference.virtual-target.non-scanning-action">non-scanning-action</link> { }
+<emphasis role="bold">module</emphasis> virtual-target {
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.add-prefix-and-suffix">add-prefix-and-suffix</link> ( specified-name : type ? : property-set ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.from-file">from-file</link> ( file : file-loc : project ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.register">register</link> ( target ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.recent-targets">recent-targets</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.clear-recent-targets">clear-recent-targets</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.all-targets">all-targets</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.select-by-type">select-by-type</link> ( type : targets * ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.register-actual-name">register-actual-name</link> ( actual-name : virtual-target ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.traverse">traverse</link> ( target : include-roots ? : include-sources ? ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.clone-action">clone-action</link> ( action : new-project : new-action-name ? : new-properties ? ) { }
+}
+</synopsis>
+  <refentry id="bbv2.reference.virtual-target.virtual-target">
+    <refmeta>
+      <refentrytitle>Class virtual-target</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>virtual-target</refname>
+      <refpurpose><simpara>仮想ターゲットの抽象クラス</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">class</emphasis> virtual-target {
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.virtual-target.__init__">__init__</link> ( name : project ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.virtual-target.name">name</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.virtual-target.project">project</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.virtual-target.depends">depends</link> ( d + ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.virtual-target.dependencies">dependencies</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.virtual-target.actualize">actualize</link> ( scanner ? ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.virtual-target.actualize-action">actualize-action</link> ( target ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.virtual-target.actualize-location">actualize-location</link> ( target ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.virtual-target.path">path</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.virtual-target.actual-name">actual-name</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.virtual-target.actualize-no-scanner">actualize-no-scanner</link> ( ) { }
+}</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <orderedlist>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.virtual-target.__init__"/>__init__ ( name : project )</literallayout></para>
+          <informaltable frame="all">
+            <tgroup cols="3">
+              <thead>
+                <row>
+                  <entry>引数</entry>
+                  <entry>型</entry>
+                  <entry>意味</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>name</entry>
+                  <entry>文字列</entry>
+                  <entry>仮想ターゲットの名前</entry>
+                </row>
+                <row>
+                  <entry>project</entry>
+                  <entry><link linkend="bbv2.reference.targets.project-target">project-target</link></entry>
+                  <entry>仮想ターゲットの属するプロジェクト</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Effects:</term>
+              <listitem>仮想ターゲットを作成する</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.virtual-target.name"/>name ( )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Returns:</term>
+              <listitem>仮想ターゲットの名前</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.virtual-target.project"/>project ( )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Returns:</term>
+              <listitem>
+                <informaltable frame="all">
+                  <tgroup cols="2">
+                    <thead>
+                      <row>
+                        <entry>型</entry>
+                        <entry>意味</entry>
+                      </row>
+                    </thead>
+                    <tbody>
+                      <row>
+                        <entry><link linkend="bbv2.reference.targets.project-target">project-target</link></entry>
+                        <entry>仮想ターゲットのプロジェクト</entry>
+                      </row>
+                    </tbody>
+                  </tgroup>
+                </informaltable>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.virtual-target.depends"/>depends ( d + )</literallayout></para>
+          <informaltable frame="all">
+            <tgroup cols="3">
+              <thead>
+                <row>
+                  <entry>引数</entry>
+                  <entry>型</entry>
+                  <entry>意味</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>d</entry>
+                  <entry><link linkend="bbv2.reference.virtual-target.virtual-target">virtual-target</link>のリスト</entry>
+                  <entry>追加する仮想ターゲットのリスト</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Effects:</term>
+              <listitem><code>d</code>の各要素を、この仮想ターゲットが依存する仮想ターゲットのリストに追加する</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.virtual-target.dependencies"/>dependencies ( )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Returns:</term>
+              <listitem>
+                <informaltable frame="all">
+                  <tgroup cols="2">
+                    <thead>
+                      <row>
+                        <entry>型</entry>
+                        <entry>意味</entry>
+                      </row>
+                    </thead>
+                    <tbody>
+                      <row>
+                        <entry><link linkend="bbv2.reference.virtual-target.virtual-target">virtual-target</link>のリスト</entry>
+                        <entry>この仮想ターゲットが依存する仮想ターゲットのリスト</entry>
+                      </row>
+                    </tbody>
+                  </tgroup>
+                </informaltable>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.virtual-target.actualize"/>actualize ( scanner ? )</literallayout></para>
+          <informaltable frame="all">
+            <tgroup cols="3">
+              <thead>
+                <row>
+                  <entry>引数</entry>
+                  <entry>型</entry>
+                  <entry>意味</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>scanner</entry>
+                  <entry>scanner</entry>
+                  <entry>スキャナ</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Effects:</term>
+              <listitem>
+                <para>仮想ターゲットから実ターゲットを生成し、ビルドアクションを設定する。</para>
+                <para><code>scanner</code>が指定されていれば、そのスキャナを用いて依存する実ターゲットを設定する。</para>
+              </listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Returns:</term>
+              <listitem>生成された実ターゲットの名前</listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Notes:</term>
+              <listitem>通常、このルールはオーバーライドせずに<link linkend="bbv2.reference.virtual-target.virtual-target.actualize-no-scanner">actualize-no-scanner</link>をオーバーライドする。</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.virtual-target.actualize-action"/>actualize-action ( target )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Effects:</term>
+              <listitem><para>実ターゲット<code>target</code>に対するビルドアクションを生成する</para></listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Notes:</term>
+              <listitem>このルールは派生クラスで必ずオーバーライドしなければならない。</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.virtual-target.actualize-location"/>actualize-location ( target )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Effects:</term>
+              <listitem><para>実ターゲット<code>target</code>にディレクトリ位置を設定する</para></listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Notes:</term>
+              <listitem>このルールは派生クラスで必ずオーバーライドしなければならない。</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.virtual-target.path"/>path ( )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Returns:</term>
+              <listitem><para>生成されるファイルがあればそのパス名、なければ空</para></listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Notes:</term>
+              <listitem>このルールは派生クラスで必ずオーバーライドしなければならない。</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.virtual-target.actual-name"/>actual-name ( )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Returns:</term>
+              <listitem><para>実ターゲットの名前</para></listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Notes:</term>
+              <listitem>このルールは派生クラスで必ずオーバーライドしなければならない。</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.virtual-target.actualize-no-scanner"/>actualize-no-scanner ( )</literallayout></para>
+          <variablelist spacing="compact">
+            <varlistentry>
+              <term>Purpose:</term>
+              <listitem><para><link linkend="bbv2.reference.virtual-target.virtual-target.actualize">actualize</link>の動作を実装する</para></listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Effects:</term>
+              <listitem><para>仮想ターゲットから実ターゲットを生成し、ビルドアクションを設定する。</para></listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Returns:</term>
+              <listitem><para>生成された実ターゲットの名前</para></listitem>
+            </varlistentry>
+            <varlistentry>
+              <term>Notes:</term>
+              <listitem>このルールは派生クラスで必ずオーバーライドしなければならない。</listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </orderedlist>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.virtual-target.abstract-file-target">
+    <refmeta>
+      <refentrytitle>Class abstract-file-target</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>abstract-file-target</refname>
+      <refpurpose><simpara>TODO</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">class</emphasis> abstract-file-target : <link linkend="bbv2.reference.virtual-target.virtual-target">virtual-target</link> {
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.abstract-file-target.__init__">__init__</link> ( name exact ? : type ? : project : action ? ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.abstract-file-target.type">type</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.abstract-file-target.set-path">set-path</link> ( path ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.abstract-file-target.action">action</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.abstract-file-target.root">root</link> ( set ? ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.abstract-file-target.creating-subvariant">creating-subvariant</link> ( s ? ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.abstract-file-target.actualize-action">actualize-action</link> ( target ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.abstract-file-target.str">str</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.abstract-file-target.less">less</link> ( a ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.abstract-file-target.equal">equal</link> ( a ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.abstract-file-target.actual-name">actual-name</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.abstract-file-target.grist">grist</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.abstract-file-target._adjust-name">_adjust-name</link> ( specified-name ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.abstract-file-target.actualize-no-scanner">actualize-no-scanner</link> ( ) { }
+}</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <orderedlist>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.abstract-file-target.__init__"/>__init__ ( name exact ? : type ? : project : action ? )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.abstract-file-target.type"/>type ( )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.abstract-file-target.set-path"/>set-path ( path )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.abstract-file-target.action"/>action ( )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.abstract-file-target.root"/>root ( set ? )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.abstract-file-target.creating-subvariant"/>creating-subvariant ( s ? )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.abstract-file-target.actualize-action"/>actualize-action ( target )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.abstract-file-target.str"/>str ( )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.abstract-file-target.less"/>less ( a )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.abstract-file-target.equal"/>equal ( a )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.abstract-file-target.actual-name"/>actual-name ( )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.abstract-file-target.grist"/>grist ( )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.abstract-file-target._adjust-name"/>_adjust-name ( specified-name )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.abstract-file-target.actualize-no-scanner"/>actualize-no-scanner ( )</literallayout></para>
+        </listitem>
+      </orderedlist>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.virtual-target.file-target">
+    <refmeta>
+      <refentrytitle>Class file-target</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>file-target</refname>
+      <refpurpose><simpara>TODO</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">class</emphasis> file-target : <link linkend="bbv2.reference.virtual-target.abstract-file-target">abstract-file-target</link> {
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.file-target.__init__">__init__</link> ( name exact ? : type ? : project : action ? : path ? ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.file-target.clone-with-different-type">clone-with-different-type</link> ( new-type ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.file-target.actualize-location">actualize-location</link> ( target ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.file-target.path">path</link> ( ) { }
+}</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <orderedlist>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.file-target.__init__"/>__init__ ( name exact ? : type ? : project : action ? : path ? )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.file-target.clone-with-different-type"/>clone-with-different-type ( new-type )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.file-target.actualize-location"/>actualize-location ( target )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.file-target.path"/>path ( )</literallayout></para>
+        </listitem>
+      </orderedlist>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.virtual-target.notfile-target">
+    <refmeta>
+      <refentrytitle>Class notfile-target</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>notfile-target</refname>
+      <refpurpose><simpara>TODO</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">class</emphasis> notfile-target : <link linkend="bbv2.reference.virtual-target.abstract-file-target">abstract-file-target</link> {
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.notfile-target.__init__">__init__</link> ( name : project : action ? ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.notfile-target.path">path</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.notfile-target.actualize-location">actualize-location</link> ( target ) { }
+}</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <orderedlist>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.notfile-target.__init__"/>__init__ ( name : project : action ? )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.notfile-target.path"/>path ( )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.notfile-target.actualize-location"/>actualize-location ( target )</literallayout></para>
+        </listitem>
+      </orderedlist>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.virtual-target.action">
+    <refmeta>
+      <refentrytitle>Class action</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>action</refname>
+      <refpurpose><simpara>TODO</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">class</emphasis> action {
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.action.__init__">__init__</link> ( sources * : action-name + : property-set ? ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.action.add-targets">add-targets</link> ( targets * ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.action.targets">targets</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.action.sources">sources</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.action.action-name">action-name</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.action.properties">properties</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.action.actualize">actualize</link> ( ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.action.actualize-source-type">actualize-source-type</link> ( sources * : property-set ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.action.actualize-sources">actualize-sources</link> ( sources * : property-set ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.action.adjust-properties">adjust-properties</link> ( property-set ) { }
+}</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <orderedlist>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.action.__init__"/>__init__ ( sources * : action-name + : property-set ? )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.action.add-targets"/>add-targets ( targets * )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.action.targets"/>targets ( )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.action.sources"/>sources ( )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.action.action-name"/>action-name ( )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.action.properties"/>properties ( )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.action.actualize"/>actualize ( )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.action.actualize-source-type"/>actualize-source-type ( sources * : property-set )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.action.actualize-sources"/>actualize-sources ( sources * : property-set )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.action.adjust-properties"/>adjust-properties ( property-set )</literallayout></para>
+        </listitem>
+      </orderedlist>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.virtual-target.null-action">
+    <refmeta>
+      <refentrytitle>Class null-action</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>null-action</refname>
+      <refpurpose><simpara>TODO</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">class</emphasis> null-action : <link linkend="bbv2.reference.virtual-target.action">action</link> {
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.null-action.__init__">__init__</link> ( property-set ? ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.null-action.actualize">actualize</link> ( ) { }
+}</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <orderedlist>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.null-action.__init__"/>__init__ ( property-set ? )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.null-action.actualize"/>actualize ( )</literallayout></para>
+        </listitem>
+      </orderedlist>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.virtual-target.non-scanning-action">
+    <refmeta>
+      <refentrytitle>Class non-scanning-action</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>non-scanning-action</refname>
+      <refpurpose><simpara>TODO</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">class</emphasis> non-scanning-action : <link linkend="bbv2.reference.virtual-target.action">action</link> {
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.non-scanning-action.__init__">__init__</link> ( sources * : action-name + : property-set ? ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.virtual-target.non-scanning-action.actualize-source-type">actualize-source-type</link> ( sources * : property-set ) { }
+}</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <orderedlist>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.non-scanning-action.__init__"/>__init__ ( sources * : action-name + : property-set ? )</literallayout></para>
+        </listitem>
+        <listitem>
+          <para><literallayout class="monospaced"><emphasis role="bold">rule</emphasis> <anchor id="bbv2.reference.virtual-target.non-scanning-action.actualize-source-type"/>actualize-source-type ( sources * : property-set )</literallayout></para>
+        </listitem>
+      </orderedlist>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.virtual-target.add-prefix-and-suffix">
+    <refmeta>
+      <refentrytitle>Rule add-prefix-and-suffix</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>virtual-target.add-prefix-and-suffix</refname>
+      <refpurpose><simpara>TODO</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> add-prefix-and-suffix ( specified-name : type ? : property-set )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <para>TODO</para>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.virtual-target.from-file">
+    <refmeta>
+      <refentrytitle>Rule from-file</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>virtual-target.from-file</refname>
+      <refpurpose><simpara>TODO</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> from-file ( file : file-loc : project )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <para>TODO</para>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.virtual-target.register">
+    <refmeta>
+      <refentrytitle>Rule register</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>virtual-target.register</refname>
+      <refpurpose><simpara>TODO</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> register ( target )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <para>TODO</para>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.virtual-target.recent-targets">
+    <refmeta>
+      <refentrytitle>Rule recent-targets</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>virtual-target.recent-targets</refname>
+      <refpurpose><simpara>TODO</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> recent-targets ( )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <para>TODO</para>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.virtual-target.clear-recent-targets">
+    <refmeta>
+      <refentrytitle>Rule clear-recent-targets</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>virtual-target.clear-recent-targets</refname>
+      <refpurpose><simpara>TODO</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> clear-recent-targets ( )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <para>TODO</para>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.virtual-target.all-targets">
+    <refmeta>
+      <refentrytitle>Rule all-targets</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>virtual-target.all-targets</refname>
+      <refpurpose><simpara>TODO</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> all-targets ( )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <para>TODO</para>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.virtual-target.select-by-type">
+    <refmeta>
+      <refentrytitle>Rule select-by-type</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>virtual-target.select-by-type</refname>
+      <refpurpose><simpara>TODO</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> select-by-type ( type : targets * )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <para>TODO</para>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.virtual-target.register-actual-name">
+    <refmeta>
+      <refentrytitle>Rule register-actual-name</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>virtual-target.register-actual-name</refname>
+      <refpurpose><simpara>TODO</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> register-actual-name ( actual-name : virtual-target )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <para>TODO</para>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.virtual-target.traverse">
+    <refmeta>
+      <refentrytitle>Rule traverse</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>virtual-target.traverse</refname>
+      <refpurpose><simpara>TODO</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> traverse ( target : include-roots ? : include-sources ? )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <para>TODO</para>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.virtual-target.clone-action">
+    <refmeta>
+      <refentrytitle>Rule clone-action</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>virtual-target.clone-action</refname>
+      <refpurpose><simpara>TODO</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> clone-action ( action : new-project : new-action-name ? : new-properties ? )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <para>TODO</para>
+    </refsection>
+  </refentry>
+</section>

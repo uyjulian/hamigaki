@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Iterator Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/iterator for library home page.
+-->
+<header name="hamigaki/iterator/line_counting_iterator.hpp">
+  <namespace name="hamigaki">
+    <class name="line_counting_iterator">
+      <template>
+        <template-type-parameter name="Iterator"/>
+      </template>
+
+      <purpose><simpara>反復子に行数を数える機能を追加する</simpara></purpose>
+
+      <description>
+        <para><code>iterator_category</code>は、<code>typename std::iterator_traits&lt;Iterator&gt;::iterator_category</code>に応じて次のように決定される。</para>
+        <informaltable frame="all">
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry><code>iterator_traits&lt;Iterator&gt;::iterator_category</code></entry>
+                <entry><code>iterator_category</code></entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry><code>std::random_access_iterator_tag</code></entry>
+                <entry><code>std::bidirectional_iterator_tag</code></entry>
+              </row>
+              <row>
+                <entry><code>std::bidirectional_iterator_tag</code></entry>
+                <entry><code>std::bidirectional_iterator_tag</code></entry>
+              </row>
+              <row>
+                <entry><code>std::forward_iterator_tag</code></entry>
+                <entry><code>std::forward_iterator_tag</code></entry>
+              </row>
+              <row>
+                <entry><code>std::input_iterator_tag</code></entry>
+                <entry><code>std::input_iterator_tag</code></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </description>
+
+      <typedef name="value_type">
+        <type>typename std::iterator_traits&lt;Iterator&gt;::value_type</type>
+      </typedef>
+
+      <typedef name="reference">
+        <type>typename std::iterator_traits&lt;Iterator&gt;::reference</type>
+      </typedef>
+
+      <typedef name="pointer">
+        <type>typename std::iterator_traits&lt;Iterator&gt;::pointer</type>
+      </typedef>
+
+      <typedef name="difference_type">
+        <type>typename std::iterator_traits&lt;Iterator&gt;::difference_type</type>
+      </typedef>
+
+      <typedef name="iterator_category">
+        <type><emphasis>/* see below */</emphasis></type>
+      </typedef>
+
+      <constructor>
+        <effects><simpara><programlisting><![CDATA[current = Iterator();
+lines = -1;
+newline = '\n';
+]]></programlisting></simpara></effects>
+      </constructor>
+
+      <constructor>
+        <parameter name="it">
+          <paramtype>const Iterator&amp;</paramtype>
+        </parameter>
+        <effects><simpara><programlisting><![CDATA[current = it;
+lines = -1;
+newline = '\n';
+]]></programlisting></simpara></effects>
+      </constructor>
+
+      <constructor>
+        <parameter name="it">
+          <paramtype>const Iterator&amp;</paramtype>
+        </parameter>
+        <parameter name="line">
+          <paramtype>int</paramtype>
+        </parameter>
+        <effects><simpara><programlisting><![CDATA[current = it;
+lines = line;
+newline = '\n';
+]]></programlisting></simpara></effects>
+      </constructor>
+
+      <constructor>
+        <parameter name="it">
+          <paramtype>const Iterator&amp;</paramtype>
+        </parameter>
+        <parameter name="line">
+          <paramtype>int</paramtype>
+        </parameter>
+        <parameter name="nl">
+          <paramtype>value_type</paramtype>
+        </parameter>
+        <effects><simpara><programlisting><![CDATA[current = it;
+lines = line;
+newline = nl;
+]]></programlisting></simpara></effects>
+      </constructor>
+
+      <method-group name="operators">
+        <method name="operator*" cv="const">
+          <type>reference</type>
+          <returns><code>*current</code></returns>
+        </method>
+
+        <method name="operator++">
+          <type>line_counting_iterator&lt;Iterator&gt;&amp;</type>
+        <effects><simpara><programlisting><![CDATA[if (*current == newline)
+    ++lines;
+++current;
+]]></programlisting></simpara></effects>
+          <returns><simpara><code>*this</code></simpara></returns>
+        </method>
+
+        <method name="operator--">
+          <type>line_counting_iterator&lt;Iterator&gt;&amp;</type>
+        <effects><simpara><programlisting><![CDATA[--current;
+if (*current == newline)
+    --lines;
+]]></programlisting></simpara></effects>
+          <returns><simpara><code>*this</code></simpara></returns>
+        </method>
+      </method-group>
+
+      <method-group name="queries">
+        <method name="base" cv="const">
+          <type>const Iterator&amp;</type>
+          <returns><simpara><code>current</code></simpara></returns>
+        </method>
+
+        <method name="line" cv="const">
+          <type>int</type>
+          <returns><simpara><code>lines</code></simpara></returns>
+        </method>
+      </method-group>
+
+      <data-member name="current" specifiers="private:">
+        <type>Iterator</type>
+      </data-member>
+
+      <data-member name="lines" specifiers="private:">
+        <type>int</type>
+      </data-member>
+
+      <data-member name="newline" specifiers="private:">
+        <type>value_type</type>
+      </data-member>
+    </class>
+  </namespace>
+</header>

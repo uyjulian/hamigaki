@@ -1,0 +1,135 @@
+# Hamigaki vorbis Library Jamfile
+
+# Copyright Takeshi Mouri 2007.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/libs/vorbis for library home page.
+
+import project ;
+
+local vorbis-source = [ modules.peek : VORBIS_SOURCE ] ;
+local no-vorbis = [ modules.peek : NO_VORBIS ] ;
+
+if [ project.find /vorbis : . ]
+{
+    alias hamigaki_vorbis : /vorbis//vorbis ;
+    alias hamigaki_vorbisfile : /vorbis//vorbisfile ;
+    alias hamigaki_vorbisenc : /vorbis//vorbisenc ;
+}
+else if $(vorbis-source)
+{
+    project hamigaki/vorbis
+        : requirements
+          <include>$(vorbis-source)/include
+          <include>$(vorbis-source)/lib
+          <toolset>msvc:<cflags>-wd4244
+          <toolset>msvc:<cflags>-wd4305
+          <toolset>msvc-8.0:<cflags>-wd4819
+          <toolset>msvc-8.0:<cflags>-wd4996
+        : source-location $(vorbis-source)/lib
+        ;
+
+    local SOURCES =
+        analysis bitrate block codebook envelope
+        floor0 floor1 info lpc lsp mapping0
+        mdct psy registry res0 sharedbook smallft
+        synthesis window
+        ;
+
+    obj vorbisenc : vorbisenc.c : <library>/hamigaki/ogg//hamigaki_ogg ;
+
+    lib hamigaki_vorbis
+        :
+        $(SOURCES).c
+        :
+        <link>shared:<def-file>$(vorbis-source)/win32/vorbis.def
+        # Note: vorbis.dll includes vorbisenc.c
+        <os>NT,<link>shared:<source>vorbisenc
+        <library>/hamigaki/ogg//hamigaki_ogg
+        :
+        :
+        <include>$(vorbis-source)/include
+        <library>/hamigaki/ogg//hamigaki_ogg
+        ;
+
+    lib hamigaki_vorbisfile
+        :
+        vorbisfile.c
+        :
+        <link>shared:<def-file>$(vorbis-source)/win32/vorbisfile.def
+        <library>hamigaki_vorbis
+        :
+        :
+        <library>hamigaki_vorbis
+        ;
+
+    lib hamigaki_vorbisenc
+        :
+        vorbisenc
+        :
+        <link>shared:<def-file>$(vorbis-source)/win32/vorbisenc.def
+        <library>hamigaki_vorbis
+        :
+        :
+        <library>hamigaki_vorbis
+        ;
+
+    install dist-lib
+        :
+        hamigaki_vorbis
+        hamigaki_vorbisenc
+        hamigaki_vorbisfile
+        :
+        <install-type>LIB
+        <location>../../../dist/lib
+        ;
+
+    explicit dist-lib ;
+}
+else if ! $(no-vorbis)
+{
+    local vorbis-inc = [ modules.peek : VORBIS_INCLUDE ] ;
+    local vorbis-lib = [ modules.peek : VORBIS_LIBPATH ] ;
+    local vorbis-name = [ modules.peek : VORBIS_BINARY ] ;
+    local vorbisfile-name = [ modules.peek : VORBISFILE_BINARY ] ;
+    local vorbisenc-name = [ modules.peek : VORBISENC_BINARY ] ;
+
+    vorbis-name ?= vorbis ;
+    vorbisenc-name ?= vorbisenc ;
+    vorbisfile-name ?= vorbisfile ;
+
+    lib hamigaki_vorbis
+        :
+        :
+        <name>$(vorbis-name)
+        <library-path>$(vorbis-lib)
+        :
+        :
+        <include>$(vorbis-inc)
+        <library-path>$(vorbis-lib)
+        <link>shared:<dll-path>$(vorbis-lib)
+        <library>/hamigaki/ogg//hamigaki_ogg
+        ;
+
+    lib hamigaki_vorbisfile
+        :
+        :
+        <name>$(vorbisfile-name)
+        <library>hamigaki_vorbis
+        :
+        :
+        <library>hamigaki_vorbis
+        ;
+
+    lib hamigaki_vorbisenc
+        :
+        :
+        <name>$(vorbisenc-name)
+        <library>hamigaki_vorbis
+        :
+        :
+        <library>hamigaki_vorbis
+        ;
+}

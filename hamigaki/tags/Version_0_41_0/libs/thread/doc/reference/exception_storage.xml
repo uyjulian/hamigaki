@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Thread Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/thread for library home page.
+-->
+<header name="hamigaki/thread/exception_storage.hpp">
+  <namespace name="hamigaki">
+    <namespace name="thread">
+      <struct name="null_exception_storage">
+        <description>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>ExceptionStorage</conceptname></member>
+          </simplelist></para>
+        </description>
+
+        <method-group name="ExceptionStorage implementation">
+          <method name="clear" cv="const">
+            <type>void</type>
+            <effects><simpara>何もしない。</simpara></effects>
+          </method>
+
+          <method name="store" cv="const">
+            <type>void</type>
+            <effects><simpara>何もしない。</simpara></effects>
+          </method>
+
+          <method name="rethrow" cv="const">
+            <type>void</type>
+            <effects><simpara>何もしない。</simpara></effects>
+          </method>
+        </method-group>
+      </struct>
+
+      <class name="exception_storage">
+        <description>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>ExceptionStorage</conceptname></member>
+          </simplelist></para>
+        </description>
+
+        <method-group name="ExceptionStorage implementation">
+          <method name="clear">
+            <type>void</type>
+            <effects><simpara>保持している例外メッセージを破棄する。</simpara></effects>
+          </method>
+
+          <method name="store">
+            <type>void</type>
+            <effects><simpara>未捕捉例外<code>e</code>がstd::exceptionの派生クラスである場合、<code>e.what()</code>の返す文字列を保管する。</simpara></effects>
+          </method>
+
+          <method name="rethrow" cv="const">
+            <type>void</type>
+            <effects><simpara>保持している例外メッセージで<code>std::runtime_error</code>を初期化し、そのオブジェクトを例外として送出する。</simpara></effects>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Binary Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/binary for library home page.
+-->
+<section id="binary.introduction">
+  <title>紹介</title>
+  <para>バイナリとはコンピュータにおける情報の内部表現のことである。一般に、バイナリをディスク等に出力することをバイナリ出力と呼び、バイナリ出力からバイナリを復元することをバイナリ入力と呼ぶ。</para>
+  <para>バイナリ入出力の結果は、内部表現という性質上、プラットフォームやコンパイラに大きく依存する。このため、ある環境でバイナリ出力した情報を別の環境でバイナリ入力しても正しい結果が得られるとは限らない。</para>
+  <para>その一方で、バイナリ入出力は構造体のシリアライズに便利であることから、多くのファイルフォーマットで用いられており、実行環境とはエンディアンやデータアラインメントの違うデータの入出力を行わなければならないことは多い。</para>
+  <para>こうしたことを踏まえ、Hamigaki.Binaryライブラリは、エンディアンを指定した整数値の入出力や、オブジェクトの配置を明示した構造体の入出力の枠組みを提供している。</para>
+</section>

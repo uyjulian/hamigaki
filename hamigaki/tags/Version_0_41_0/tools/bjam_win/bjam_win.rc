@@ -1,0 +1,30 @@
+// bjam_win.rc: the resource script for bjam_win
+
+// Copyright Takeshi Mouri 2007.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
+
+// See http://hamigaki.sourceforge.jp/ library home page.
+
+#include <windows.h>
+#include "menus.h"
+
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+
+IDR_MENU MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Open...",            ID_FILE_LOAD
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",               ID_FILE_EXIT
+    END
+    POPUP "&Build"
+    BEGIN
+        MENUITEM "&Run",                ID_BUILD_RUN,   GRAYED
+        MENUITEM "&Clean",              ID_BUILD_CLEAN, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "&Stop",               ID_BUILD_STOP,  GRAYED
+    END
+END

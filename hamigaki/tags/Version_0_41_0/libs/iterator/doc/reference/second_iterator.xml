@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Iterator Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/iterator for library home page.
+-->
+<header name="hamigaki/iterator/second_iterator.hpp">
+  <namespace name="hamigaki">
+    <class name="second_iterator">
+      <template>
+        <template-type-parameter name="Iterator"/>
+      </template>
+
+      <purpose><simpara><code>pair</code>の反復子を基に<code>second</code>のみを反復する</simpara></purpose>
+
+      <description>
+        <para><classname>first_iterator</classname>の<code>second</code>版である。<code>value_type</code>、<code>reference</code>および<code>pointer</code>に関しては、<classname>first_iterator</classname>を参照のこと。</para>
+      </description>
+
+      <typedef name="value_type">
+        <type><emphasis>/* see below */</emphasis></type>
+      </typedef>
+
+      <typedef name="reference">
+        <type><emphasis>/* see below */</emphasis></type>
+      </typedef>
+
+      <typedef name="pointer">
+        <type><emphasis>/* see below */</emphasis></type>
+      </typedef>
+
+      <typedef name="difference_type">
+        <type><emphasis>implementation defined</emphasis></type>
+      </typedef>
+
+      <typedef name="iterator_category">
+        <type>typename std::iterator_traits&lt;Iterator&gt;::iterator_category</type>
+      </typedef>
+
+      <constructor>
+        <effects><simpara><code>current = Iterator()</code></simpara></effects>
+      </constructor>
+
+      <constructor>
+        <parameter name="x">
+          <paramtype>const Iterator&amp;</paramtype>
+        </parameter>
+
+        <effects><simpara><code>current = x</code></simpara></effects>
+      </constructor>
+
+      <method-group name="operators">
+        <method name="operator*" cv="const">
+          <type>reference</type>
+          <returns><code>current-&gt;second</code></returns>
+        </method>
+
+        <method name="operator++">
+          <type>second_iterator&lt;Iterator&gt;&amp;</type>
+          <effects><simpara><code>++current</code></simpara></effects>
+          <returns><simpara><code>*this</code></simpara></returns>
+        </method>
+      </method-group>
+
+      <method-group name="queries">
+        <method name="base" cv="const">
+          <type>const Iterator&amp;</type>
+          <returns><simpara><code>current</code></simpara></returns>
+        </method>
+      </method-group>
+
+      <free-function-group name="creation">
+        <function name="make_second_iterator">
+          <type>second_iterator&lt;Iterator&gt;</type>
+          <parameter name="x">
+            <paramtype>Iterator</paramtype>
+          </parameter>
+          <returns><simpara><code>second_iterator&lt;Iterator&gt;(x)</code></simpara></returns>
+        </function>
+      </free-function-group>
+
+      <data-member name="current" specifiers="private:">
+        <type>Iterator</type>
+      </data-member>
+    </class>
+  </namespace>
+</header>

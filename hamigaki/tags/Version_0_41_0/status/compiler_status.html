@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+    <title>Hamigaki Compiler Status Report</title>
+<!--
+Copyright Takeshi Mouri 2006, 2007.
+Distributed under the Boost Software License, Version 1.0.
+(See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+Original:
+http://www.boost.org/status/compiler_status.html
+-->
+  </head>
+  <body>
+    <h2>コンパイラ対応表</h2>
+    <a href="http://hamigaki.sourceforge.jp/status/">退行テストのログ</a>
+    <h3 name="test-type">テストの種類</h3>
+    <p>Boost.Buildの<i>Test Type</i>に基づく。詳細はBoostの<a href="http://boost.sourceforge.net/status/compiler_status.html">Compiler Status Tables</a>を参照のこと。</p>
+    <table border="1">
+      <tr>
+        <th>テストの種類</th>
+        <th>動作</th>
+        <th>Passになるための要件</th>
+      </tr>
+      <tr>
+        <td>compile</td>
+        <td>コンパイルのみ</td>
+        <td>コンパイラが0を返す。</td>
+      </tr>
+      <tr>
+        <td>compile-fail</td>
+        <td>コンパイルのみ</td>
+        <td>コンパイラが非0を返す。</td>
+      </tr>
+      <tr>
+        <td>link</td>
+        <td>コンパイル、リンク</td>
+        <td>コンパイラとリンカが0を返す。</td>
+      </tr>
+      <tr>
+        <td>link-fail</td>
+        <td>コンパイル、リンク</td>
+        <td>コンパイラかリンカが非0を返す。</td>
+      </tr>
+      <tr>
+        <td>run</td>
+        <td>コンパイル、リンク、実行</td>
+        <td>コンパイラとリンカと実行したプログラムが0を返す。</td>
+      </tr>
+      <tr>
+        <td>run-fail</td>
+        <td>コンパイル、リンク、実行</td>
+        <td>コンパイラとリンカが0を返し、実行したプログラムが非0を返す。</td>
+      </tr>
+    </table>
+  </body>
+</html>

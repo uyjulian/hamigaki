@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2007, 2008.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<section id="bbv2.reference.os">
+  <title>osモジュール</title>
+  <synopsis><emphasis role="bold">module</emphasis> os {
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.os.environ">environ</link> ( variable-names + ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.os.name">name</link> ( ) { }
+}
+</synopsis>
+  <refentry id="bbv2.reference.os.environ">
+    <refmeta>
+      <refentrytitle>environ</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>os.environ</refname>
+      <refpurpose><simpara>環境変数を取得する</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> environ ( variable-names + )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <para><code>variable-names</code>の各要素に対する環境変数の値を返す。</para>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.os.name">
+    <refmeta>
+      <refentrytitle>name</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>os.name</refname>
+      <refpurpose><simpara>OSの名前を取得する</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> name ( )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <para>OSの名前を返す。戻り値は以下の通り。</para>
+      <informaltable frame="all">
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>値</entry>
+              <entry>意味</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>NT</entry>
+              <entry>Microsoft Windows</entry>
+            </row>
+            <row>
+              <entry>LINUX</entry>
+              <entry>Linux</entry>
+            </row>
+            <row>
+              <entry>MACOSX</entry>
+              <entry>Mac OS X</entry>
+            </row>
+            <row>
+              <entry>CYGWIN</entry>
+              <entry>cygwin</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </refsection>
+  </refentry>
+</section>

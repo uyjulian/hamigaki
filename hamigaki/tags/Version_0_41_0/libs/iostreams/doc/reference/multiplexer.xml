@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Iostreams Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
+-->
+<header name="hamigaki/iostreams/multiplexer.hpp">
+  <namespace name="hamigaki">
+    <namespace name="iostreams">
+      <class name="basic_multiplexer">
+        <template>
+          <template-type-parameter name="CharT"/>
+        </template>
+
+        <purpose><simpara>複数のSourceを一つのSourceに多重化する。</simpara></purpose>
+
+        <description><simpara>多重化したいSourceは、<methodname>push</methodname>()で追加する。<code>basic_multiplexer</code>からの読み出しは、追加した各Sourceから順に1文字ずつ読み出される。</simpara></description>
+
+        <typedef name="char_type">
+          <type>boost::iostreams::char_type_of&lt;Device&gt;::type</type>
+        </typedef>
+
+        <constructor/>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="close">
+            <type>void</type>
+
+            <parameter name="which">
+              <paramtype>std::ios_base::openmode</paramtype>
+              <default>std::ios_base::in|std::ios_base::out</default>
+            </parameter>
+          </method>
+
+          <method name="read">
+            <type>std::streamsize</type>
+
+            <parameter name="s">
+              <paramtype>char_type*</paramtype>
+            </parameter>
+
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+        </method-group>
+
+        <method-group name="queries">
+          <method name="component" cv="const">
+            <template>
+              <template-type-parameter name="T"/>
+            </template>
+
+            <type>const T*</type>
+
+            <parameter name="n">
+              <paramtype>int</paramtype>
+            </parameter>
+          </method>
+        </method-group>
+
+        <method-group name="modifier">
+          <method name="push">
+            <template>
+              <template-type-parameter name="Source"/>
+            </template>
+
+            <type>void</type>
+
+            <parameter name="src">
+              <paramtype>const Source&amp;</paramtype>
+            </parameter>
+
+            <effects><simpara><code>push(src, src.block_size());</code></simpara></effects>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

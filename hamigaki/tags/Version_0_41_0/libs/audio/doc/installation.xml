@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Audio Library Document Source
+
+  Copyright Takeshi Mouri 2006-2008.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+-->
+<section id="audio.installation">
+  <title>インストール</title>
+  <para>Hamigaki.Audioを利用する場合、ライブラリのビルドが必要になる。ビルドにはBoost.BuildのVersion 2 (以下、BBv2) を使用する。</para>
+  <para>BBv2でビルドする際は、bjamの<link linkend="bbv2.projects.configuration">環境設定ファイル</link>で次の<link linkend="bbv2.modules.globals">グローバル変数</link>を定義する。</para>
+  <informaltable frame="all">
+    <tgroup cols="3">
+      <thead>
+        <row>
+          <entry>変数</entry>
+          <entry>意味</entry>
+          <entry>規定値</entry>
+        </row>
+      </thead>
+      <tbody>
+        <row>
+          <entry>NO_ASIO</entry>
+          <entry>1にするとASIOサポートを無効にする</entry>
+          <entry>-</entry>
+        </row>
+        <row>
+          <entry>HAVE_ASIO</entry>
+          <entry>1にするとASIOサポートを有効にする</entry>
+          <entry>-</entry>
+        </row>
+        <row>
+          <entry>ASIO_INCLUDE</entry>
+          <entry>ASIO SDKのヘッダファイルのあるディレクトリ</entry>
+          <entry>-</entry>
+        </row>
+        <row>
+          <entry>NO_DXSDK</entry>
+          <entry>1にするとDirectXサポートを無効にする</entry>
+          <entry>-</entry>
+        </row>
+        <row>
+          <entry>HAVE_DXSDK</entry>
+          <entry>1にするとDirectXサポートを有効にする</entry>
+          <entry>-</entry>
+        </row>
+        <row>
+          <entry>DXSDK_INCLUDE</entry>
+          <entry>DirectXのヘッダファイルのあるディレクトリ</entry>
+          <entry>-</entry>
+        </row>
+        <row>
+          <entry>DXSDK_LIBPATH</entry>
+          <entry>DirectXのライブラリファイルのあるディレクトリ</entry>
+          <entry>-</entry>
+        </row>
+        <row>
+          <entry>NO_OGG</entry>
+          <entry>1にするとOggサポートを無効にする</entry>
+          <entry>-</entry>
+        </row>
+        <row>
+          <entry>OGG_BINARY</entry>
+          <entry>liboggバイナリの拡張子を除いた名前。UNIXでは接頭辞libを省略する。</entry>
+          <entry>ogg</entry>
+        </row>
+        <row>
+          <entry>OGG_INCLUDE</entry>
+          <entry>liboggのヘッダファイルのあるディレクトリ</entry>
+          <entry>-</entry>
+        </row>
+        <row>
+          <entry>OGG_LIBPATH</entry>
+          <entry>liboggのライブラリファイルのあるディレクトリ</entry>
+          <entry>-</entry>
+        </row>
+        <row>   
+          <entry>OGG_SOURCE</entry>   
+          <entry>liboggのソースコードのあるディレクトリ(ソースからビルドする場合)</entry>   
+          <entry>-</entry>   
+        </row> 
+        <row>
+          <entry>NO_VORBIS</entry>
+          <entry>1にするとVorbisサポートを無効にする</entry>
+          <entry>-</entry>
+        </row>
+        <row>
+          <entry>VORBIS_BINARY</entry>
+          <entry>libvorbisバイナリの拡張子を除いた名前。UNIXでは接頭辞libを省略する。</entry>
+          <entry>vorbis</entry>
+        </row>
+        <row>
+          <entry>VORBISFILE_BINARY</entry>
+          <entry>libvorbisfileバイナリの拡張子を除いた名前。UNIXでは接頭辞libを省略する。</entry>
+          <entry>vorbisfile</entry>
+        </row>
+        <row>
+          <entry>VORBISENC_BINARY</entry>
+          <entry>libvorbisencバイナリの拡張子を除いた名前。UNIXでは接頭辞libを省略する。</entry>
+          <entry>vorbisenc</entry>
+        </row>
+        <row>
+          <entry>VORBIS_INCLUDE</entry>
+          <entry>libvorbisのヘッダファイルのあるディレクトリ</entry>
+          <entry>-</entry>
+        </row>
+        <row>
+          <entry>VORBIS_LIBPATH</entry>
+          <entry>libvorbisのライブラリファイルのあるディレクトリ</entry>
+          <entry>-</entry>
+        </row>
+        <row>   
+          <entry>VORBIS_SOURCE</entry>   
+          <entry>libvorbisのソースコードのあるディレクトリ(ソースからビルドする場合)</entry>   
+          <entry>-</entry>   
+        </row> 
+      </tbody>
+    </tgroup>
+  </informaltable>
+  <para>設定例は次のようになる。</para>
+  <informalexample>
+    <programlisting><![CDATA[# グローバル変数を設定するため、ルートモジュールに入る
+module
+{
+    HAVE_ASIO = 1 ;
+    HAVE_DXSDK = 1 ;
+
+    ASIO_INCLUDE = C:/tools/asiosdk2.1/common ;
+    OGG_INCLUDE = C:/tools/libogg-1.1.3/include ;
+    OGG_LIBPATH = C:/tools/lib ;
+    VORBIS_INCLUDE = C:/tools/libvorbis-1.1.2/include ;
+    VORBIS_LIBPATH = C:/tools/lib ;
+}
+]]></programlisting>
+  </informalexample>
+  <para>ツールセット毎にライブラリを使い分けたい等の細かい制御が必要な場合は、<link linkend="bbv2.projects.configuration">環境設定ファイル</link>で次のbjamターゲットを定義する。</para>
+  <informaltable frame="all">
+    <tgroup cols="2">
+      <thead>
+        <row>
+          <entry>ターゲットID</entry>
+          <entry>意味</entry>
+        </row>
+      </thead>
+      <tbody>
+        <row>
+          <entry>/asio//headers</entry>
+          <entry>ASIOヘッダファイル</entry>
+        </row>
+        <row>
+          <entry>/directx//sdk</entry>
+          <entry>DirectX SDK(ヘッダとライブラリのパス)</entry>
+        </row>
+        <row>
+          <entry>/directx//dsound</entry>
+          <entry>DirectSoundライブラリ</entry>
+        </row>
+        <row>
+          <entry>/ogg//ogg</entry>
+          <entry>liboggライブラリ</entry>
+        </row>
+        <row>
+          <entry>/vorbis//vorbis</entry>
+          <entry>libvorbisライブラリ</entry>
+        </row>
+        <row>
+          <entry>/vorbis//vorbisenc</entry>
+          <entry>libvorbisencライブラリ</entry>
+        </row>
+        <row>
+          <entry>/vorbis//vorbisfile</entry>
+          <entry>libvorbisfileライブラリ</entry>
+        </row>
+      </tbody>
+    </tgroup>
+  </informaltable>
+  <para>なお、MinGWおよびcygwin用のDirectXヘッダーファイルとインポートライブラリは<ulink url="http://www.libsdl.org/extras/win32/">SDLのサイト</ulink>から入手できる。</para>
+</section>

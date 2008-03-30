@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2006-2008.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<section id="installation.hamigaki">
+  <title>Hamigaki C++ライブラリのインストール</title>
+  <para>いくつかのHamigakiライブラリはライブラリのビルドを必要とする。ビルドにはBoost.BuildのVersion 2 (以下、BBv2) を使用する。</para>
+  <section id="installation.hamigaki.settings">
+    <title>設定</title>
+    <para>BBv2の動作には次のいずれかの環境変数(またはbjamの-sオプションによる<link linkend="bbv2.modules.globals">グローバル変数</link>)を設定する必要がある。</para>
+    <informaltable frame="all">
+      <tgroup cols="3">
+        <thead>
+          <row>
+            <entry>変数</entry>
+            <entry>意味</entry>
+            <entry>規定値</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>BOOST_BUILD_PATH</entry>
+            <entry>BBv2のインストールされたディレクトリ</entry>
+            <entry>/usr/share/boost-build (UNIXのみ)</entry>
+          </row>
+          <row>
+            <entry>BOOST_ROOT</entry>
+            <entry>Boost C++ Librariesの配布パッケージの展開されたディレクトリ</entry>
+            <entry>-</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>ただし、Boostのプロジェクトを参照してソースからビルドする場合は必ずBOOST_ROOT変数を設定しなければならない。</para>
+    <para>また、ビルド済みBoostライブラリを使用する場合は、bjamの<link linkend="bbv2.projects.configuration">環境設定ファイル</link>で次の<link linkend="bbv2.modules.globals">グローバル変数</link>を定義する。</para>
+    <informaltable frame="all">
+      <tgroup cols="3">
+        <thead>
+          <row>
+            <entry>変数</entry>
+            <entry>意味</entry>
+            <entry>規定値</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>NO_BOOST_STD_LIB_NAME</entry>
+            <entry>真(1)に設定するとBoostのライブラリ名にコンパイラ名とBoostのバージョンを含めない (オプション)</entry>
+            <entry>-</entry>
+          </row>
+          <row>
+            <entry>NO_DEBUG_BOOST</entry>
+            <entry>真(1)に設定するとリリースビルドのライブラリだけを使う (オプション)</entry>
+            <entry>-</entry>
+          </row>
+          <row>
+            <entry>BOOST_INCLUDE</entry>
+            <entry>Boostのヘッダファイルのあるディレクトリ (必須)</entry>
+            <entry>$(BOOST_ROOT)</entry>
+          </row>
+          <row>
+            <entry>BOOST_LIBPATH</entry>
+            <entry>Boostのライブラリファイルのあるディレクトリ (必須)</entry>
+            <entry>-</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>NO_BOOST_STD_LIB_NAMEは、Boostを--layout=systemオプションでインストールした場合、1に設定する。</para>
+    <para>NO_DEBUG_BOOSTは一部のパッケージシステムにおいて有用であるが、ABIの不一致や単一定義規則(ODR)の違反となるかもしれない。</para>
+    <para>ライブラリ固有の変数に関しては、各ライブラリのドキュメントを参照すること。</para>
+  </section>
+  <section id="installation.hamigaki.build">
+    <title>ビルド</title>
+    <para>実際にビルドするにはHamigakiライブラリのルートディレクトリ(以下、HAMIGAKI_ROOT)でbjamを実行する。bjamに指定するオプションはBoostをビルドする場合と同じである。</para>
+    <cmdsynopsis>
+      <command>bjam</command>
+      <arg choice="opt"><replaceable>options</replaceable></arg>
+      <group choice="opt">
+        <arg choice="plain">install</arg>
+        <arg choice="plain">stage</arg>
+      </group>
+    </cmdsynopsis>
+    <para>installコマンドはライブラリをビルドし、ヘッダファイルとライブラリファイルを指定されたディレクトリへコピーする。次表に示すオプションはinstallコマンドでのみ有効である。</para>
+    <informaltable frame="all">
+      <tgroup cols="3">
+        <thead>
+          <row>
+            <entry>オプション</entry>
+            <entry>意味</entry>
+            <entry>規定値</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>--prefix=<replaceable>&lt;PREFIX&gt;</replaceable></entry>
+            <entry>インストール先ディレクトリ</entry>
+            <entry>C:\Hamigaki (Windows)、/usr/local (UNIX)</entry>
+          </row>
+          <row>
+            <entry>--lib-dir=<replaceable>&lt;DIR&gt;</replaceable></entry>
+            <entry>ライブラリファイルのインストール先ディレクトリ</entry>
+            <entry><replaceable>&lt;PREFIX&gt;</replaceable>/lib</entry>
+          </row>
+          <row>
+            <entry>--includedir=<replaceable>&lt;HDRDIR&gt;</replaceable></entry>
+            <entry>ヘッダファイルのインストール先ディレクトリ</entry>
+            <entry><replaceable>&lt;PREFIX&gt;</replaceable>/include</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>stageコマンドはライブラリをビルドし、ライブラリファイルを指定されたディレクトリへコピーする。次表に示すオプションはstageコマンドでのみ有効である。</para>
+    <informaltable frame="all">
+      <tgroup cols="3">
+        <thead>
+          <row>
+            <entry>オプション</entry>
+            <entry>意味</entry>
+            <entry>規定値</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>--stagedir=<replaceable>&lt;STAGEDIR&gt;</replaceable></entry>
+            <entry>ライブラリファイルのインストール先ディレクトリ</entry>
+            <entry>./stage</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>その他のオプションはコマンドに依存しない。</para>
+    <informaltable frame="all">
+      <tgroup cols="3">
+        <thead>
+          <row>
+            <entry>オプション</entry>
+            <entry>意味</entry>
+            <entry>規定値</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>--build-type=<replaceable>&lt;type&gt;</replaceable></entry>
+            <entry>minimalならリリースバージョンのみビルドする。completeなら全てビルドする。</entry>
+            <entry>minimal</entry>
+          </row>
+          <row>
+            <entry>--builddir=<replaceable>DIR</replaceable></entry>
+            <entry>ビルドに使用するディレクトリ</entry>
+            <entry>$(HAMIGAKI_ROOT)/bin.v2</entry>
+          </row>
+          <row>
+            <entry>--toolset=<replaceable>&lt;ツールセット名&gt;</replaceable></entry>
+            <entry>ビルドに使用するツールセットの名前</entry>
+            <entry>msvc (Windows)、gcc (UNIX)</entry>
+          </row>
+          <row>
+            <entry>--show-libraries</entry>
+            <entry>ビルドの必要なライブラリの一覧を表示し、終了する。</entry>
+            <entry>-</entry>
+          </row>
+          <row>
+            <entry>--layout=<replaceable>&lt;layout&gt;</replaceable></entry>
+            <entry>ライブラリの名前とヘッダファイルの位置を選択する。versionedならばライブラリの名前とヘッダファイルのインストールディレクトリにHamigakiライブラリのバージョン番号が付加される。systemならばバージョン番号は付加されない。</entry>
+            <entry>versioned</entry>
+          </row>
+          <row>
+            <entry>--buildid=<replaceable>ID</replaceable></entry>
+            <entry>ライブラリ名に<replaceable>ID</replaceable>を付加する</entry>
+            <entry>-</entry>
+          </row>
+          <row>
+            <entry>--help</entry>
+            <entry>ヘルプを表示して、終了する。</entry>
+            <entry>-</entry>
+          </row>
+          <row>
+            <entry>--with-<replaceable>&lt;library&gt;</replaceable></entry>
+            <entry><replaceable>&lt;library&gt;</replaceable>だけビルドする。複数指定可。</entry>
+            <entry>-</entry>
+          </row>
+          <row>
+            <entry>--without-<replaceable>&lt;library&gt;</replaceable></entry>
+            <entry><replaceable>&lt;library&gt;</replaceable>をビルドしない。複数指定可。</entry>
+            <entry>-</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+</section>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Thread Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/thread for library home page.
+-->
+<header name="hamigaki/thread/utc_time.hpp">
+  <namespace name="hamigaki">
+    <namespace name="thread">
+      <struct name="seconds"/>
+
+      <struct name="nanoseconds">
+        <free-function-group name="creation">
+          <function name="microseconds">
+            <type>nanoseconds</type>
+            <parameter name="usec">
+              <paramtype>int</paramtype>
+            </parameter>
+            <returns><simpara><code><classname>nanoseconds</classname>(usec*1000)</code></simpara></returns>
+          </function>
+
+          <function name="microseconds">
+            <type>nanoseconds</type>
+            <parameter name="msec">
+              <paramtype>int</paramtype>
+            </parameter>
+            <returns><simpara><code><classname>nanoseconds</classname>(msec*1000000)</code></simpara></returns>
+          </function>
+        </free-function-group>
+      </struct>
+
+      <struct name="utc_time">
+        <inherit access="public"><ulink url="http://www.boost.org/doc/html/xtime.html">boost::xtime</ulink></inherit>
+
+        <constructor>
+          <effects><simpara><code>boost::xtime_get(this, boost::TIME_UTC)</code></simpara></effects>
+        </constructor>
+
+        <method-group name="operators">
+          <method name="operator+=">
+            <type>utc_time&amp;</type>
+
+            <parameter name="n">
+              <paramtype>const <classname>seconds</classname>&amp;</paramtype>
+            </parameter>
+
+            <effects><simpara>保持している時間を<code>n</code>秒進める。</simpara></effects>
+
+            <returns><simpara><code>*this</code></simpara></returns>
+          </method>
+
+          <method name="operator+=">
+            <type>utc_time&amp;</type>
+
+            <parameter name="n">
+              <paramtype>const <classname>nanoseconds</classname>&amp;</paramtype>
+            </parameter>
+
+            <effects><simpara>保持している時間を<code>n</code>ナノ秒進める。</simpara></effects>
+
+            <returns><simpara><code>*this</code></simpara></returns>
+          </method>
+        </method-group>
+      </struct>
+    </namespace>
+  </namespace>
+</header>

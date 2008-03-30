@@ -1,0 +1,17 @@
+rule 10 ( ) return 10 ;
+
+rule back_trace ( )
+{
+    module bt_test
+    {
+        result =
+        [
+            BACKTRACE
+            [
+                10
+            ]
+        ] ;
+    }
+}
+
+back_trace ;

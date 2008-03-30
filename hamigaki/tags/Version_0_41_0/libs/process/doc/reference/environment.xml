@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Process Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/process for library home page.
+-->
+<header name="hamigaki/process/environment.hpp">
+  <namespace name="hamigaki">
+    <namespace name="process">
+      <class name="environment">
+        <purpose>
+          <simpara>子プロセスに渡す環境変数を保持する。</simpara>
+        </purpose>
+
+        <constructor>
+          <effects>プロセスの現在の環境変数で初期化する。</effects>
+          <notes>POSIX環境では、このコンストラクタの呼び出し中に環境変数を変更してはならない。</notes>
+        </constructor>
+
+        <method-group name="modifiers">
+          <method name="clear">
+            <type>void</type>
+            <effects>環境変数をクリアする。</effects>
+          </method>
+
+          <method name="set">
+            <type>void</type>
+            <parameter name="name">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+            <parameter name="value">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+            <effects><code>name</code>の値を<code>value</code>に設定する。</effects>
+          </method>
+
+          <method name="unset">
+            <type>void</type>
+            <parameter name="name">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+            <effects><code>name</code>の値を削除する。</effects>
+          </method>
+        </method-group>
+
+        <method-group name="queries">
+          <method name="get" cv="const">
+            <type>const char*</type>
+            <parameter name="name">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+            <returns><code>name</code>のエントリがあればその値、なければ0</returns>
+          </method>
+
+          <method name="size" cv="const">
+            <type>std::size_t</type>
+            <returns>環境変数のエントリ数</returns>
+          </method>
+
+          <method name="data">
+            <type>char*</type>
+            <effects>環境変数を「<emphasis>名前</emphasis>=<emphasis>値</emphasis>」形式で名前の辞書順に並べ、ヌル文字で区切った文字列を返す。終端は２つの連続するヌル文字で示される。</effects>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

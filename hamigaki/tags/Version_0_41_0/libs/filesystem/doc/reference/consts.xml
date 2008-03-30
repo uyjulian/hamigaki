@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Filesystem Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/filesystem for library home page.
+-->
+<header name="hamigaki/filesystem/consts.hpp">
+  <namespace name="hamigaki">
+    <namespace name="filesystem">
+      <enum name="file_type">
+        <enumvalue name="status_unknown" />
+        <enumvalue name="file_not_found" />
+        <enumvalue name="regular_file" />
+        <enumvalue name="directory_file" />
+        <enumvalue name="symlink_file" />
+        <enumvalue name="block_file" />
+        <enumvalue name="character_file" />
+        <enumvalue name="fifo_file" />
+        <enumvalue name="socket_file" />
+        <enumvalue name="type_unknown" />
+        <purpose><simpara>ファイルの種類。</simpara></purpose>
+        <description>
+          <informaltable frame="all">
+            <tgroup cols="2">
+              <thead>
+                <row>
+                  <entry>値</entry>
+                  <entry>意味</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>status_unknown</entry>
+                  <entry>エラー等の理由により、ファイルの種類が分からない</entry>
+                </row>
+                <row>
+                  <entry>file_not_found</entry>
+                  <entry>ファイルが存在しない</entry>
+                </row>
+                <row>
+                  <entry>regular_file</entry>
+                  <entry>通常のファイル</entry>
+                </row>
+                <row>
+                  <entry>directory_file</entry>
+                  <entry>ディレクトリ</entry>
+                </row>
+                <row>
+                  <entry>symlink_file</entry>
+                  <entry>シンボリックリンク(NTFSリパースポイントを含む)</entry>
+                </row>
+                <row>
+                  <entry>block_file</entry>
+                  <entry>ブロックデバイス</entry>
+                </row>
+                <row>
+                  <entry>character_file</entry>
+                  <entry>キャラクタデバイス</entry>
+                </row>
+                <row>
+                  <entry>fifo_file</entry>
+                  <entry>名前付きパイプ</entry>
+                </row>
+                <row>
+                  <entry>socket_file</entry>
+                  <entry>ソケット</entry>
+                </row>
+                <row>
+                  <entry>type_unknown</entry>
+                  <entry>未知のファイル</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+        </description>
+      </enum>
+
+      <struct name="file_attributes">
+        <typedef name="value_type">
+          <type>unsigned long</type>
+        </typedef>
+
+        <static-constant name="read_only">
+          <type>value_type</type>
+          <default>0x00000001ul</default>
+          <purpose>読み出し専用</purpose>
+        </static-constant>
+
+        <static-constant name="hidden">
+          <type>value_type</type>
+          <default>0x00000002ul</default>
+          <purpose>隠しファイル</purpose>
+        </static-constant>
+
+        <static-constant name="system">
+          <type>value_type</type>
+          <default>0x00000004ul</default>
+          <purpose>システムファイル</purpose>
+        </static-constant>
+
+        <static-constant name="directory">
+          <type>value_type</type>
+          <default>0x00000010ul</default>
+          <purpose>ディレクトリ</purpose>
+        </static-constant>
+
+        <static-constant name="archive">
+          <type>value_type</type>
+          <default>0x00000020ul</default>
+          <purpose>アーカイブフラグ</purpose>
+        </static-constant>
+
+        <static-constant name="device">
+          <type>value_type</type>
+          <default>0x00000040ul</default>
+          <purpose>予約済み</purpose>
+        </static-constant>
+
+        <static-constant name="temporary">
+          <type>value_type</type>
+          <default>0x00000100ul</default>
+          <purpose>一時ファイル</purpose>
+        </static-constant>
+
+        <static-constant name="sparse">
+          <type>value_type</type>
+          <default>0x00000200ul</default>
+          <purpose>スパースファイル</purpose>
+        </static-constant>
+
+        <static-constant name="reparse_point">
+          <type>value_type</type>
+          <default>0x00000400ul</default>
+          <purpose>リパースポイント</purpose>
+        </static-constant>
+
+        <static-constant name="compressed">
+          <type>value_type</type>
+          <default>0x00000800ul</default>
+          <purpose>圧縮ファイル</purpose>
+        </static-constant>
+
+        <static-constant name="offline">
+          <type>value_type</type>
+          <default>0x00001000ul</default>
+          <purpose>オフラインファイル</purpose>
+        </static-constant>
+
+        <static-constant name="not_indexed">
+          <type>value_type</type>
+          <default>0x00002000ul</default>
+          <purpose>インデックスサービスの対象としない</purpose>
+        </static-constant>
+
+        <static-constant name="encrypted">
+          <type>value_type</type>
+          <default>0x00004000ul</default>
+          <purpose>暗号化ファイル</purpose>
+        </static-constant>
+
+        <static-constant name="type_mask">
+          <type>value_type</type>
+          <default>0x00000450ul</default>
+          <purpose>ファイル種別を示すフラグの集合</purpose>
+        </static-constant>
+      </struct>
+
+      <struct name="file_permissions">
+        <typedef name="value_type">
+          <type>unsigned</type>
+        </typedef>
+
+        <static-constant name="socket">
+          <type>value_type</type>
+          <default>0140000</default>
+          <purpose>ソケット</purpose>
+        </static-constant>
+
+        <static-constant name="symlink">
+          <type>value_type</type>
+          <default>0120000</default>
+          <purpose>シンボリックリンク</purpose>
+        </static-constant>
+
+        <static-constant name="regular">
+          <type>value_type</type>
+          <default>0100000</default>
+          <purpose>通常のファイル</purpose>
+        </static-constant>
+
+        <static-constant name="block">
+          <type>value_type</type>
+          <default>0060000</default>
+          <purpose>ブロックデバイス</purpose>
+        </static-constant>
+
+        <static-constant name="directory  ">
+          <type>value_type</type>
+          <default>0040000</default>
+          <purpose>ディレクトリ</purpose>
+        </static-constant>
+
+        <static-constant name="character">
+          <type>value_type</type>
+          <default>0020000</default>
+          <purpose>キャラクタデバイス</purpose>
+        </static-constant>
+
+        <static-constant name="fifo">
+          <type>value_type</type>
+          <default>0010000</default>
+          <purpose>名前付きパイプ</purpose>
+        </static-constant>
+
+        <static-constant name="set_uid">
+          <type>value_type</type>
+          <default>04000</default>
+          <purpose>プロセスの実効ユーザーIDにファイルのユーザーIDを設定する</purpose>
+        </static-constant>
+
+        <static-constant name="set_gid">
+          <type>value_type</type>
+          <default>02000</default>
+          <purpose>プロセスの実効グループIDにファイルのグループIDを設定する</purpose>
+        </static-constant>
+
+        <static-constant name="sticky">
+          <type>value_type</type>
+          <default>01000</default>
+          <purpose>ディレクトリ配下のファイル/ディレクトの改名/削除を制限する</purpose>
+        </static-constant>
+
+        <static-constant name="user_read">
+          <type>value_type</type>
+          <default>00400</default>
+          <purpose>ファイル所有者による読み込みを許可する</purpose>
+        </static-constant>
+
+        <static-constant name="user_write">
+          <type>value_type</type>
+          <default>00200</default>
+          <purpose>ファイル所有者による書き込みを許可する</purpose>
+        </static-constant>
+
+        <static-constant name="user_execute">
+          <type>value_type</type>
+          <default>00100</default>
+          <purpose>ファイル所有者による実行を許可する</purpose>
+        </static-constant>
+
+        <static-constant name="group_read">
+          <type>value_type</type>
+          <default>00040</default>
+          <purpose>ファイル所有グループによる読み込みを許可する</purpose>
+        </static-constant>
+
+        <static-constant name="group_write">
+          <type>value_type</type>
+          <default>00020</default>
+          <purpose>ファイル所有グループによる書き込みを許可する</purpose>
+        </static-constant>
+
+        <static-constant name="group_execute">
+          <type>value_type</type>
+          <default>00010</default>
+          <purpose>ファイル所有グループによる実行を許可する</purpose>
+        </static-constant>
+
+        <static-constant name="other_read">
+          <type>value_type</type>
+          <default>00004</default>
+          <purpose>他のユーザーによる読み込みを許可する</purpose>
+        </static-constant>
+
+        <static-constant name="other_write">
+          <type>value_type</type>
+          <default>00002</default>
+          <purpose>他のユーザーによる書き込みを許可する</purpose>
+        </static-constant>
+
+        <static-constant name="other_execute">
+          <type>value_type</type>
+          <default>00001</default>
+          <purpose>他のユーザーによる実行を許可する</purpose>
+        </static-constant>
+
+        <static-constant name="type_mask">
+          <type>value_type</type>
+          <default>0170000</default>
+          <purpose>ファイル種別を示すフラグの集合</purpose>
+        </static-constant>
+      </struct>
+    </namespace>
+  </namespace>
+</header>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE appendix PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2007, 2008.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<appendix id="bbv2" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>Boost.Buildについて</title>
+  <para>ここではBoostライブラリやHamigakiライブラリのビルドに使われるBoost.Buildシステム バージョン2(以下、BBv2)について解説する。</para>
+  <xi:include href="lexical.xml"/>
+  <xi:include href="data.xml"/>
+  <xi:include href="rules.xml"/>
+  <xi:include href="control.xml"/>
+  <xi:include href="modules.xml"/>
+  <xi:include href="properties.xml"/>
+  <xi:include href="projects.xml"/>
+  <xi:include href="targets.xml"/>
+  <xi:include href="builtins.xml"/>
+  <xi:include href="bjam-options.xml"/>
+  <xi:include href="reference/reference.xml"/>
+</appendix>

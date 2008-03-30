@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Coroutine Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/coroutine for library home page.
+-->
+<section id="coroutine.introduction">
+  <title>紹介</title>
+  <using-namespace name="hamigaki::coroutines"/>
+  <para>Hamigaki.Coroutineライブラリは、Boost.Coroutineライブラリ(2006年9月時点ではBoostの一部ではない)のインタフェースを元に作成されたコルーチンライブラリである。Boost.Coroutineのコンポーネントのうち、次のものを実装している。</para>
+  <itemizedlist>
+    <listitem>コピーするたびにコンテキストの所有権の移動する<classname alt="coroutineN">coroutine</classname>クラステンプレート</listitem>
+    <listitem>コピー間でコンテキストを共有する<classname alt="shared_coroutineN">shared_coroutine</classname>クラステンプレート</listitem>
+    <listitem>coroutineに対する入力反復子のラッパである<classname>generator</classname>クラステンプレート</listitem>
+  </itemizedlist>
+  <para>また、以下の拡張機能も提供する。</para>
+  <itemizedlist>
+    <listitem>coroutineに対する出力反復子のラッパである<classname>processor</classname>クラステンプレート</listitem>
+  </itemizedlist>
+</section>

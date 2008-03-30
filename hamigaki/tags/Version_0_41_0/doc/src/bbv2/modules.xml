@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2007, 2008.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<section id="bbv2.modules">
+  <title>モジュール</title>
+  <section id="bbv2.modules.module">
+    <title>モジュール</title>
+    <para>モジュールはC++の名前空間に相当する機能である。ただし、C++の名前空間と違い、モジュールは入れ子にすることができない。</para>
+    <informalexample>
+      <programlisting><![CDATA[# 最初はルートモジュール
+# モジュールfooに切り替える
+module foo
+{
+    # モジュールbarに切り替える
+    # モジュールfoo.barではない
+    module bar
+    {
+    }
+
+    # ルートモジュールに切り替える
+    module
+    {
+    }
+}
+]]></programlisting>
+    </informalexample>
+  </section>
+  <section id="bbv2.modules.rules">
+    <title>モジュールとルール</title>
+    <para>通常、他のモジュールのルールは呼び出せないが、ルートモジュールのルールは任意のモジュールから呼び出すことができる。</para>
+    <informalexample>
+      <programlisting><![CDATA[rule rule_a ( ) { }
+
+module foo
+{
+    rule rule_b ( ) { }
+}
+
+module bar
+{
+    # これらはエラー
+    # rule_b ;
+    # foo.rule_b ;
+
+    # これはOK
+    rule_a ;
+}
+]]></programlisting>
+    </informalexample>
+    <para>ルートモジュール以外のルールを使用したい場合は、組み込みルールIMPORTを用いる。</para>
+    <informalexample>
+      <programlisting><![CDATA[# 各ルールの定義は上の例と同じ
+
+module bar
+{
+    # モジュールfooのrule_bをモジュールbarに同名でインポート
+    IMPORT foo : rule_b : bar : rule_b ;
+    rule_b ; # OK
+
+    # モジュールfooのrule_bをモジュールbarにfoo.rule_bという名前でインポート
+    IMPORT foo : rule_b : bar : foo.rule_b ;
+    foo.rule_b ; # OK
+}
+]]></programlisting>
+    </informalexample>
+  </section>
+  <section id="bbv2.modules.file">
+    <title>モジュールファイル</title>
+    <para>通常、モジュールは「<emphasis>モジュール名</emphasis>.jam」という名前のファイルで定義される。このようなモジュールを使用するには、標準ルールimportを用いる。このルールで読み込まれたモジュール内のルールは、「<emphasis>モジュール名</emphasis>.<emphasis>ルール名</emphasis>」という名前でインポートされる。</para>
+    <informalexample>
+      <programlisting><![CDATA[# 標準モジュールerrorsをインポートする
+import errors ;
+
+# errorsモジュールのerrorルールを呼び出す
+errors.error Ooops! ;
+]]></programlisting>
+    </informalexample>
+    <para>importルールには、上記に加えインポートするルールに別名を指定できるオプションがある。</para>
+    <informalexample>
+      <programlisting><![CDATA[# os.nameをnameという名前でインポート
+import os : name ;
+
+# os.nameをos-nameという名前でインポート
+import os : name : os-name ;
+
+# osモジュール内のルールを全てそのままの名前でインポート
+import os : * ;
+]]></programlisting>
+    </informalexample>
+    <para>なお、importによって読み込まれたモジュールには「__name__」という名前の変数が定義され、これにはモジュールの名前が代入される。</para>
+  </section>
+  <section id="bbv2.modules.variables">
+    <title>モジュールと変数</title>
+    <para>他のモジュールの変数にアクセスするには、標準モジュールmodulesの<link linkend="bbv2.reference.modules.peek">peek</link>/<link linkend="bbv2.reference.modules.poke">poke</link>ルールを用いる。</para>
+    <informalexample>
+      <programlisting><![CDATA[# モジュールfooの変数Xの値を現在のモジュールの変数Yに代入
+Y = [ modules.peek foo : X ] ;
+
+# モジュールbarの変数Zに文字列123を代入
+modules.poke bar : Z : 123 ;
+]]></programlisting>
+    </informalexample>
+    <para>ルートモジュールの変数にアクセスするにも<link linkend="bbv2.reference.modules.peek">peek</link>/<link linkend="bbv2.reference.modules.poke">poke</link>ルールを用いなければならない。</para>
+    <informalexample>
+      <programlisting><![CDATA[# ルートモジュールの変数OSの値を現在のモジュールの変数osに代入
+os = [ modules.peek : OS ] ;
+]]></programlisting>
+    </informalexample>
+  </section>
+  <section id="bbv2.modules.environ">
+    <title>.ENVIRONモジュール</title>
+    <para>OSの環境変数は.ENVIRONモジュールの変数にマップされる。よって、標準モジュールmodulesの<link linkend="bbv2.reference.modules.peek">peek</link>/<link linkend="bbv2.reference.modules.poke">poke</link>ルールを通してアクセスすることができる。また、標準モジュールosの<link linkend="bbv2.reference.os.environ">environ</link>ルールも利用できる。</para>
+    <informalexample>
+      <programlisting><![CDATA[# 変数homeに環境変数HOMEの値を代入
+home = [ modules.peek .ENVIRON : HOME ] ;
+# 上と同じ効果
+home = [ os.environ : HOME ] ;
+]]></programlisting>
+    </informalexample>
+  </section>
+  <section id="bbv2.modules.globals" xreflabel="グローバル変数">
+    <title>グローバル変数</title>
+    <para>ルートモジュールの(ローカルでない)変数は特に<firstterm>グローバル変数</firstterm>と呼ぶことがある。bjamの<option>-s</option>オプションで設定できる変数はこれである。</para>
+    <para>また、旧バージョンとの互換性のため.ENVIRONモジュールと同じようにOSの環境変数がマップされる。</para>
+  </section>
+</section>

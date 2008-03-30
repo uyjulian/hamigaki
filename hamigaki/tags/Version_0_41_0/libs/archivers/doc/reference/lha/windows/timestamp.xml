@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<header name="hamigaki/archivers/lha/windows/timestamp.hpp">
+  <namespace name="hamigaki">
+    <namespace name="archivers">
+      <namespace name="lha">
+        <namespace name="windows">
+          <struct name="timestamp">
+            <purpose><para>Windowsタイムスタンプ拡張ヘッダ</para></purpose>
+
+            <data-member name="creation_time">
+              <type>boost::uint64_t</type>
+            </data-member>
+
+            <data-member name="last_write_time">
+              <type>boost::uint64_t</type>
+            </data-member>
+
+            <data-member name="last_access_time">
+              <type>boost::uint64_t</type>
+            </data-member>
+
+            <description>
+              <para>
+                <informaltable frame="all">
+                  <tgroup cols="2">
+                    <thead>
+                      <row>
+                        <entry>メンバ変数</entry>
+                        <entry>意味</entry>
+                      </row>
+                    </thead>
+                    <tbody>
+                      <row>
+                        <entry>creation_time</entry>
+                        <entry>ファイル作成時間</entry>
+                      </row>
+                      <row>
+                        <entry>last_write_time</entry>
+                        <entry>最終更新時間</entry>
+                      </row>
+                      <row>
+                        <entry>last_access_time</entry>
+                        <entry>最終アクセス時間</entry>
+                      </row>
+                    </tbody>
+                  </tgroup>
+                </informaltable>
+              </para>
+            </description>
+          </struct>
+        </namespace>
+      </namespace>
+    </namespace>
+  </namespace>
+</header>

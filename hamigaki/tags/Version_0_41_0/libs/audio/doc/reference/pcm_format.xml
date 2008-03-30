@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Audio Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+-->
+<header name="hamigaki/audio/pcm_format.hpp">
+  <namespace name="hamigaki">
+    <namespace name="audio">
+      <struct name="pcm_format">
+        <data-member name="type">
+          <type><enumname>sample_format_type</enumname></type>
+        </data-member>
+        <data-member name="channels">
+          <type>int</type>
+        </data-member>
+        <data-member name="rate">
+          <type>long</type>
+        </data-member>
+
+        <method-group name="queries">
+          <method name="bits" cv="const">
+            <type>int</type>
+            <returns><simpara>量子化ビット数。</simpara></returns>
+          </method>
+
+          <method name="block_size" cv="const">
+            <type>std::streamsize</type>
+            <returns><simpara>ブロックサイズ。16ビットステレオの場合、4。</simpara></returns>
+            <purpose><simpara>デバイスの読み書きやシーク操作の最小単位</simpara></purpose>
+          </method>
+
+          <method name="optimal_buffer_size" cv="const">
+            <type>std::streamsize</type>
+            <returns><simpara>200ミリ秒分のバッファサイズ。</simpara></returns>
+          </method>
+        </method-group>
+      </struct>
+    </namespace>
+  </namespace>
+</header>

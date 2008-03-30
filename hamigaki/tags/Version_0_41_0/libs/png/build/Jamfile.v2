@@ -1,0 +1,120 @@
+# Hamigaki PNG Library Jamfile
+
+# Copyright Takeshi Mouri 2007.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/libs/png for library home page.
+
+local png-source = [ modules.peek : PNG_SOURCE ] ;
+local no-png = [ modules.peek : NO_PNG ] ;
+
+if $(png-source)
+{
+    project hamigaki/png
+        : requirements
+          <link>shared:<define>PNG_BUILD_DLL=1
+          <library>/boost-lib//boost_zlib
+        : usage-requirements
+          <link>shared:<define>PNG_USE_DLL=1
+        : source-location $(png-source)
+        ;
+
+    local SOURCES =
+        png pngerror pngget pngmem pngpread
+        pngread pngrio pngrtran pngrutil pngset
+        pngtrans pngwio pngwrite pngwtran pngwutil
+        ;
+
+    rule optimization-check ( properties * )
+    {
+        if <toolset>gcc in $(properties)
+        {
+            local architecture = [ MATCH ^<architecture>\(.*\)$ : $(properties) ] ;
+            architecture ?= x86 ;
+            if $(architecture) = x86
+            {
+                return
+                    <define>PNG_USE_PNGGCRD
+                    <define>PNG_MMX_CODE_SUPPORTED
+                    <source>pnggccrd.c
+                    ;
+            }
+            else
+            {
+                return
+                    <define>PNG_NO_MMX_CODE
+                    ;
+            }
+        }
+        else if <toolset>msvc in $(properties)
+        {
+            return
+                <define>PNG_USE_PNGVCRD
+                <define>PNG_MMX_CODE_SUPPORTED
+                <source>pngvcrd.c
+                ;
+        }
+        else
+        {
+            return
+                <define>PNG_NO_MMX_CODE
+                ;
+        }
+    }
+
+    lib hamigaki_png
+        :
+        $(SOURCES).c
+        :
+        <link>shared:<def-file>$(png-source)/scripts/pngw32.def
+        <os>NT,<link>shared:<source>$(png-source)/scripts/pngw32.rc
+        <toolset>msvc:<cflags>-wd4114
+        <toolset>msvc-8.0:<cflags>-wd4996
+        <conditional>@optimization-check
+        :
+        :
+        <include>$(png-source)
+        ;
+
+    install dist-lib
+        :
+        hamigaki_png
+        :
+        <install-type>LIB
+        <location>../../../dist/lib
+        ;
+
+    explicit dist-lib ;
+}
+else if ! $(no-png)
+{
+    import os ;
+
+    local png-inc = [ modules.peek : PNG_INCLUDE ] ;
+    local png-lib = [ modules.peek : PNG_LIBPATH ] ;
+    local png-name = [ modules.peek : PNG_BINARY ] ;
+
+    if [ os.name ] = NT
+    {
+        png-name ?= libpng ;
+    }
+    else
+    {
+        png-name ?= png ;
+    }
+
+    lib hamigaki_png
+        :
+        :
+        <name>$(png-name)
+        <library-path>$(png-lib)
+        <library>/boost-lib//boost_zlib
+        :
+        :
+        <include>$(png-inc)
+        <library-path>$(png-lib)
+        <link>shared:<dll-path>$(png-lib)
+        ;
+}

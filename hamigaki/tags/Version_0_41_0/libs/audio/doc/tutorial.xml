@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Audio Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+-->
+<section id="audio.tutorial">
+  <title>チュートリアル</title>
+
+  <section>
+    <title>基本的な使い方</title>
+    <using-namespace name="hamigaki::audio"/>
+    <para>Hamigaki.Audioを使用した簡単な例として、WAVEファイルを再生するプログラムを紹介する。</para>
+
+    <programlisting><![CDATA[#include <hamigaki/audio/pcm_device.hpp>
+#include <hamigaki/audio/wave_file.hpp>
+#include <boost/iostreams/copy.hpp>
+
+namespace audio = hamigaki::audio;
+namespace io = boost::iostreams;
+
+int main()
+{
+    audio::wave_file_source wf("doremi.wav");
+    io::copy(wf, audio::pcm_sink(wf.format()));
+}
+]]></programlisting>
+
+    <para>Hamigaki.AudioにおけるオーディオデバイスはBoost.IostreamsのSource/Sinkのモデルとして実装されている。ここではSourceとして<classname>wave_file_source</classname>を、Sinkとして<classname>pcm_sink</classname>を使用している。</para>
+
+    <para><classname>wave_file_source</classname>はWAVEファイルを読み出すSourceである。コンストラクタの引数としてファイル名を指定する。</para>
+
+    <para><classname>pcm_sink</classname>はPCMデータを再生するためのSinkである。Source/Sink間のデータのやり取りは同じフォーマットで行う必要がある。そのため、<classname>pcm_sink</classname>のコンストラクタには<code>wave_file_source::format()</code>から取得した<classname>pcm_format</classname>を渡す。</para>
+
+    <para>Sourceからデータを読み取り、Sinkへ書き出すには<code>boost::iostreams::copy()</code>を用いる。もちろん、<code>boost::iostreams::read()</code>や<code>boost::iostreams::write()</code>も使用できる。</para>
+  </section>
+
+  <section>
+    <title>浮動小数点数ストリーム</title>
+    <using-namespace name="hamigaki::audio"/>
+    <para>PCMデータのバイトストリームは、1つのサンプルが複数バイトで表現されたり、一般に実行時までフォーマットが確定しないことから、データの加工を行いにくい性質がある。1つのサンプルをワイド文字1文字で表現できれば、データの加工が容易になる。これはマルチバイトエンコーディングの文字列の扱いに良く似ている。PCMデータの場合、通常ワイド文字にはfloatやdoubleのような浮動小数点数を用いる。これは多くの波形処理にとって都合が良いからである。</para>
+    <para>例として、440Hzの正弦波を再生するプログラムを示す。</para>
+
+    <programlisting><![CDATA[#include <hamigaki/audio/pcm_device.hpp>
+#include <hamigaki/audio/sine_wave.hpp>
+#include <hamigaki/audio/wide_adaptor.hpp>
+#include <boost/iostreams/copy.hpp>
+
+namespace audio = hamigaki::audio;
+namespace io = boost::iostreams;
+
+int main()
+{
+    audio::pcm_format fmt;
+    fmt.type = audio::int_le16;
+    fmt.channels = 1;
+    fmt.rate = 44100;
+
+    audio::basic_sine_wave_source<float> src(fmt.rate, 440.0f);
+    io::copy(src, audio::widen<float>(audio::pcm_sink(fmt)));
+}
+]]></programlisting>
+
+    <para><classname>basic_sine_wave_source</classname>は正弦波を生成するSourceである。コンストラクタの引数としてサンプリング周波数と正弦波の周波数を指定する。</para>
+
+    <para><classname>basic_sine_wave_source</classname>の文字型はfloatであり、<classname>pcm_sink</classname>の文字型charとは一致しないため、そのままではコピーを行うことができない。コピーを行うためには、Source/Sink間でやり取りする文字型をより「大きな」型に統一しなければならない。<functionname>widen</functionname>()はこのための関数であり、受け取ったデバイスの文字型をテンプレート引数で指定した型に変換したデバイスを返す。(実際には、write()メンバ関数の中で、float文字列をバイト列へと変換する)</para>
+
+    <para><classname>basic_sine_wave_source</classname>の出力は-1.0～1.0の範囲になる。これが、<functionname>widen</functionname>()によって-32768～32767にマッピングされる(フォーマットが16ビットの場合)。変換は単純に32768倍することで行われるため、変換元の値が1.0の場合に値が溢れてしまう。溢れた値は最大値に丸められるが、これが再生の際にノイズとなって現れる。これを防ぐためには、<functionname>amplify</functionname>()を使用して振幅を調整すると良い。</para>
+
+    <programlisting><![CDATA[#include <hamigaki/audio/amplify.hpp>
+#include <hamigaki/audio/pcm_device.hpp>
+#include <hamigaki/audio/sine_wave.hpp>
+#include <hamigaki/audio/wide_adaptor.hpp>
+#include <boost/iostreams/copy.hpp>
+
+namespace audio = hamigaki::audio;
+namespace io = boost::iostreams;
+
+int main()
+{
+    audio::pcm_format fmt;
+    fmt.type = audio::int_le16;
+    fmt.channels = 1;
+    fmt.rate = 44100;
+
+    audio::basic_sine_wave_source<float> src(fmt.rate, 440.0f);
+    io::copy(
+        audio::amplify(src, 0.5f),
+        audio::widen<float>(audio::pcm_sink(fmt)));
+}
+]]></programlisting>
+
+  </section>
+</section>

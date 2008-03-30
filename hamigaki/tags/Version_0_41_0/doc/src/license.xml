@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE chapter PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<chapter id="license">
+  <title>ライセンス</title>
+  <para>Hamigaki C++ ライブラリは、<ulink url="http://www.boost.org/LICENSE_1_0.txt">Boost Software License, Version 1.0</ulink>に基づいて提供される。以下は、その日本語参考訳である。</para>
+  <formalpara>
+    <title>Boostソフトウェアライセンス - バージョン 1.0 - 2003年8月17日</title>
+    <para>
+      <para>全ての人もしくは組織に対し、このライセンスで保護されたソフトウェアおよび添付されるドキュメント(以下「ソフトウェア」)のコピーを取得し、ソフトウェアを利用、複製、表示、頒布、実行、伝送すること、ソフトウェアの派生成果物を作成すること、ソフトウェアを提供された第三者に同様の権利を与えることに対する許可が無料でここに与えられる。全ては以下の条件に従う。</para>
+      <para>ソフトウェアとこの条文全ての著作権表記(上記のライセンス許可とこの制約、次の免責事項を含む)を、ソフトウェアの全体あるいは一部のあらゆるコピーあるいはソフトウェアの全ての派生成果物に含めなければならない。ただし、そのようなコピーあるいは派生成果物が、単にマシン上で実行可能なオブジェクトコードの形でソース言語処理器によって生成された場合は除く。</para>
+      <para><emphasis role="bold">ソフトウェアは「あるがまま」に提供され、いかなる保証もない。これには、明示的か暗黙的かを問わず、商業性の保証や特定の目的、タイトル、非侵害性に対する適合性も含まれるが、それに限定するものではない。契約、不法行為、その他に関わらず、著作権者あるいはソフトウェアを頒布するいかなるものもソフトウェアの使用やその他の扱いから発生または発展、関連する、一切の損害や他の法的責任に対する法的義務を負わないものとする。</emphasis></para>
+    </para>
+  </formalpara>
+</chapter>

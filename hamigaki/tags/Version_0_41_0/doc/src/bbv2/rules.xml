@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2007, 2008.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<section id="bbv2.rules">
+  <title>ルール</title>
+  <section id="bbv2.rules.definition">
+    <title>定義</title>
+    <para>ルールは他のプログラミング言語の関数に相当する機能である。</para>
+    <informalexample>
+      <programlisting><![CDATA[# ルールrule_aを定義する
+rule rule_a
+{
+}
+]]></programlisting>
+    </informalexample>
+    <para>ルールの戻り値はreturn文で設定する。</para>
+    <informalexample>
+      <programlisting><![CDATA[#「a」、「b」、「c」のリストを返すルール
+rule rule_b
+{
+    return a b c ;
+}
+]]></programlisting>
+    </informalexample>
+    <para>ルール名に続く括弧内で仮引数を持たせることができる。</para>
+    <informalexample>
+      <programlisting><![CDATA[# 二つの文字列aとbを引数にとるルール
+rule rule_c ( a b )
+{
+}
+
+# 任意サイズのリストaと空でないリストbとオプションの文字列cを引数に取るルール
+rule rule_d ( a * : b + : c ? )
+{
+}
+]]></programlisting>
+    </informalexample>
+  </section>
+  <section id="bbv2.rules.invocation">
+    <title>呼び出し</title>
+    <para>ルール名に続き、定義にマッチした引数を並べるとルールを呼び出すことができる。</para>
+    <informalexample>
+      <programlisting><![CDATA[rule rule_c ( a b )
+{
+}
+
+rule_c 1 2 ; # a = 1 , b = 2
+
+rule rule_d ( a * : b + : c ? )
+{
+}
+
+rule_d 1 2 : 1 2 : 1 ; # a = 1 2 , b = 1 2 , c = 1
+rule_d : 1 ; # a = , b = 1 , c =
+]]></programlisting>
+    </informalexample>
+    <para>戻り値を利用したい場合は、ルール呼び出しを「[」と「]」で囲む。</para>
+    <informalexample>
+      <programlisting><![CDATA[rule rule_e ( a b )
+{
+    return $(a)-$(b) ;
+}
+
+X = [ rule_e x y ] ; # X = x-y
+]]></programlisting>
+    </informalexample>
+  </section>
+</section>
