@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Iterator Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/iterator for library home page.
+-->
+<header name="hamigaki/iterator/istream_line_iterator.hpp">
+  <namespace name="hamigaki">
+    <class name="istream_line_iterator">
+      <template>
+        <template-type-parameter name="CharT"/>
+
+        <template-type-parameter name="Traits">
+          <default>std::char_traits&lt;CharT&gt;</default>
+        </template-type-parameter>
+
+        <template-type-parameter name="Allocator">
+          <default>std::allocator&lt;CharT&gt;</default>
+        </template-type-parameter>
+      </template>
+
+      <typedef name="char_type">
+        <type>CharT</type>
+      </typedef>
+
+      <typedef name="traits_type">
+        <type>Traits</type>
+      </typedef>
+
+      <typedef name="allocator_type">
+        <type>Allocator</type>
+      </typedef>
+
+      <typedef name="istream_type">
+        <type>std::basic_istream&lt;CharT,Traits&gt;</type>
+      </typedef>
+
+      <typedef name="string_type">
+        <type>std::basic_string&lt;CharT,Traits,Allocator&gt;</type>
+      </typedef>
+
+      <typedef name="value_type">
+        <type>std::basic_string&lt;CharT,Traits,Allocator&gt;</type>
+      </typedef>
+
+      <typedef name="reference">
+        <type>std::basic_string&lt;CharT,Traits,Allocator&gt;</type>
+      </typedef>
+
+      <typedef name="pointer">
+        <type>const std::basic_string&lt;CharT,Traits,Allocator&gt;*</type>
+      </typedef>
+
+      <typedef name="difference_type">
+        <type><emphasis>implementation defined</emphasis></type>
+      </typedef>
+
+      <typedef name="iterator_category">
+        <type>std::input_iterator_tag</type>
+      </typedef>
+
+      <constructor>
+        <effects><simpara>ストリーム終端反復子を構築する。</simpara></effects>
+      </constructor>
+
+      <constructor specifiers="explicit">
+        <parameter name="is">
+          <paramtype>istream_type&amp;</paramtype>
+        </parameter>
+
+        <effects><para><programlisting><![CDATA[in_stream = &is;
+delim = is.widen('\n');
+std::getline(*in_stream, value, delim);]]></programlisting></para></effects>
+      </constructor>
+
+      <constructor>
+        <parameter name="is">
+          <paramtype>istream_type&amp;</paramtype>
+        </parameter>
+
+        <parameter name="delimiter">
+          <paramtype>CharT</paramtype>
+        </parameter>
+
+        <effects><para><programlisting><![CDATA[in_stream = &is;
+delim = delimiter;
+std::getline(*in_stream, value, delim);]]></programlisting></para></effects>
+      </constructor>
+
+      <method-group name="operators">
+        <method name="operator*" cv="const">
+          <type><emphasis>implementation defined</emphasis></type>
+          <returns><simpara><code>value</code></simpara></returns>
+        </method>
+
+        <method name="operator++">
+          <type>istream_line_iterator&lt;CharT,Traits,Allocator&gt;&amp;</type>
+          <effects><simpara><code>std::getline(*in_stream, value, delim)</code></simpara></effects>
+          <returns><simpara><code>*this</code></simpara></returns>
+        </method>
+      </method-group>
+
+      <data-member name="in_stream" specifiers="private:">
+        <type>istream_type*</type>
+      </data-member>
+
+      <data-member name="delim" specifiers="private:">
+        <type>CharT</type>
+      </data-member>
+
+      <data-member name="value" specifiers="private:">
+        <type>value_type</type>
+      </data-member>
+    </class>
+  </namespace>
+</header>

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Iterator Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/iterator for library home page.
+-->
+<header name="hamigaki/iterator/optional_iterator.hpp">
+  <namespace name="hamigaki">
+    <class name="optional_iterator">
+      <template>
+        <template-type-parameter name="Iterator"/>
+      </template>
+
+      <purpose><simpara>無効状態を持つ反復子</simpara></purpose>
+
+      <description>
+        <para>前進反復子はデフォルトコンストラクタを持っている。しかし、これにより初期化された個々の反復子は同値であるとは限らない。<code>optional_iterator</code>はデフォルトコンストラクタで反復子を無効状態とし、この無効状態の反復子を全て同値に扱う。</para>
+      </description>
+
+      <typedef name="value_type">
+        <type>typename std::iterator_traits&lt;Iterator&gt;::value_type</type>
+      </typedef>
+
+      <typedef name="reference">
+        <type>typename std::iterator_traits&lt;Iterator&gt;::reference</type>
+      </typedef>
+
+      <typedef name="pointer">
+        <type>typename std::iterator_traits&lt;Iterator&gt;::pointer</type>
+      </typedef>
+
+      <typedef name="difference_type">
+        <type>typename std::iterator_traits&lt;Iterator&gt;::difference_type</type>
+      </typedef>
+
+      <typedef name="iterator_category">
+        <type>typename std::iterator_traits&lt;Iterator&gt;::iterator_category</type>
+      </typedef>
+
+      <constructor>
+        <effects><simpara><programlisting><![CDATA[valid = false;]]></programlisting></simpara></effects>
+      </constructor>
+
+      <constructor>
+        <parameter name="it">
+          <paramtype>const Iterator&amp;</paramtype>
+        </parameter>
+        <effects><simpara><programlisting><![CDATA[current = it;
+valid = true;
+]]></programlisting></simpara></effects>
+      </constructor>
+
+      <method-group name="operators">
+        <method name="operator*" cv="const">
+          <type>reference</type>
+          <precondition><code>valid == true</code></precondition>
+          <returns><code>*current</code></returns>
+        </method>
+
+        <method name="operator++">
+          <type>optional_iterator&lt;Iterator&gt;&amp;</type>
+          <effects><simpara><programlisting><![CDATA[++current;]]></programlisting></simpara></effects>
+          <returns><simpara><code>*this</code></simpara></returns>
+        </method>
+
+        <method name="operator==" cv="const">
+          <type>bool</type>
+          <parameter name="rhs">
+            <paramtype>const optional_iterator&lt;Iterator&gt;&amp;</paramtype>
+          </parameter>
+          <effects><simpara><programlisting><![CDATA[if (valid && rhs.valid)
+    return current == rhs.current;
+else if (!valid && !rhs.valid)
+    return true;
+else
+    return false;
+]]></programlisting></simpara></effects>
+        </method>
+
+        <method name="operator!=" cv="const">
+          <type>bool</type>
+          <parameter name="rhs">
+            <paramtype>const optional_iterator&lt;Iterator&gt;&amp;</paramtype>
+          </parameter>
+          <returns><simpara><code>!(*this == rhs)</code></simpara></returns>
+        </method>
+      </method-group>
+
+      <method-group name="queries">
+        <method name="base" cv="const">
+          <type>const Iterator&amp;</type>
+          <returns><simpara><code>current</code></simpara></returns>
+        </method>
+      </method-group>
+
+      <data-member name="current" specifiers="private:">
+        <type>Iterator</type>
+      </data-member>
+
+      <data-member name="valid" specifiers="private:">
+        <type>bool</type>
+      </data-member>
+    </class>
+  </namespace>
+</header>

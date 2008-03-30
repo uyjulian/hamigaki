@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<header name="hamigaki/archivers/lha/compress_method.hpp">
+  <namespace name="hamigaki">
+    <namespace name="archivers">
+      <namespace name="lha">
+        <struct name="compress_method">
+          <purpose><para>LZH圧縮メソッドを格納する</para></purpose>
+
+          <description>
+            <para>サポートされるメソッド以下の通り。</para>
+            <para>
+              <informaltable frame="all">
+                <tgroup cols="2">
+                  <thead>
+                    <row>
+                      <entry>メソッド</entry>
+                      <entry>意味</entry>
+                    </row>
+                  </thead>
+                  <tbody>
+                    <row>
+                      <entry>"-lh0-"</entry>
+                      <entry>非圧縮</entry>
+                    </row>
+                    <row>
+                      <entry>"-lhd-"</entry>
+                      <entry>ディレクトリ</entry>
+                    </row>
+                    <row>
+                      <entry>"-lh4-"</entry>
+                      <entry>LZHUF圧縮、辞書サイズ=4KB</entry>
+                    </row>
+                    <row>
+                      <entry>"-lh5-"</entry>
+                      <entry>LZHUF圧縮、辞書サイズ=8KB</entry>
+                    </row>
+                    <row>
+                      <entry>"-lh6-"</entry>
+                      <entry>LZHUF圧縮、辞書サイズ=32KB</entry>
+                    </row>
+                    <row>
+                      <entry>"-lh7-"</entry>
+                      <entry>LZHUF圧縮、辞書サイズ=64KB</entry>
+                    </row>
+                  </tbody>
+                </tgroup>
+              </informaltable>
+            </para>
+          </description>
+
+          <data-member name="id[5]">
+            <type>char</type>
+          </data-member>
+
+          <constructor>
+            <effects><simpara><code>id</code>を0で初期化する</simpara></effects>
+            <postconditions><code>empty() == true</code></postconditions>
+          </constructor>
+
+          <constructor specifiers="explicit">
+            <parameter name="s">
+              <paramtype>const char*</paramtype>
+            </parameter>
+            <effects><simpara><code>[s, s+5)</code>の文字列で<code>id</code>を初期化する</simpara></effects>
+          </constructor>
+
+          <copy-assignment>
+            <parameter name="s">
+              <paramtype>const char*</paramtype>
+            </parameter>
+            <effects><simpara><code>[s, s+5)</code>の文字列を<code>id</code>にコピーする</simpara></effects>
+          </copy-assignment>
+
+          <method-group name="queries">
+            <method name="empty" cv="const">
+              <type>bool</type>
+              <returns><simpara><code>id</code>が全て0ならば<code>true</code>、そうでなければ<code>false</code></simpara></returns>
+            </method>
+          </method-group>
+
+          <free-function-group name="comparisons">
+            <function name="operator==" cv="const">
+              <type>bool</type>
+              <parameter name="lhs">
+                <paramtype>const compress_method&amp;</paramtype>
+              </parameter>
+              <parameter name="rhs">
+                <paramtype>const compress_method&amp;</paramtype>
+              </parameter>
+              <returns><simpara><code>std::memcmp(lhs.id, rhs.id, 5) == 0</code></simpara></returns>
+            </function>
+
+            <function name="operator==" cv="const">
+              <type>bool</type>
+              <parameter name="lhs">
+                <paramtype>const compress_method&amp;</paramtype>
+              </parameter>
+              <parameter name="rhs">
+                <paramtype>const char*</paramtype>
+              </parameter>
+              <returns><simpara><code>std::memcmp(lhs.id, rhs, 5) == 0</code></simpara></returns>
+            </function>
+
+            <function name="operator==" cv="const">
+              <type>bool</type>
+              <parameter name="lhs">
+                <paramtype>const char*</paramtype>
+              </parameter>
+              <parameter name="rhs">
+                <paramtype>const compress_method&amp;</paramtype>
+              </parameter>
+              <returns><simpara><code>std::memcmp(lhs, rhs.id, 5) == 0</code></simpara></returns>
+            </function>
+
+            <function name="operator!=" cv="const">
+              <type>bool</type>
+              <parameter name="lhs">
+                <paramtype>const compress_method&amp;</paramtype>
+              </parameter>
+              <parameter name="rhs">
+                <paramtype>const compress_method&amp;</paramtype>
+              </parameter>
+              <returns><simpara><code>!(lhs == rhs)</code></simpara></returns>
+            </function>
+
+            <function name="operator!=" cv="const">
+              <type>bool</type>
+              <parameter name="lhs">
+                <paramtype>const compress_method&amp;</paramtype>
+              </parameter>
+              <parameter name="rhs">
+                <paramtype>const char*</paramtype>
+              </parameter>
+              <returns><simpara><code>!(lhs == rhs)</code></simpara></returns>
+            </function>
+
+            <function name="operator!=" cv="const">
+              <type>bool</type>
+              <parameter name="lhs">
+                <paramtype>const char*</paramtype>
+              </parameter>
+              <parameter name="rhs">
+                <paramtype>const compress_method&amp;</paramtype>
+              </parameter>
+              <returns><simpara><code>!(lhs == rhs)</code></simpara></returns>
+            </function>
+          </free-function-group>
+        </struct>
+      </namespace>
+    </namespace>
+  </namespace>
+</header>

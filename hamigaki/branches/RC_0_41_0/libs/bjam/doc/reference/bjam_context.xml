@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Bjam Library Document Source
+
+  Copyright Takeshi Mouri 2007, 2008.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
+-->
+<header name="hamigaki/bjam/bjam_context.hpp">
+  <namespace name="hamigaki">
+    <namespace name="bjam">
+      <class name="context">
+        <purpose>
+          <simpara>bjamのコンテキスト情報を保持するクラス。</simpara>
+        </purpose>
+
+        <constructor/>
+
+        <method-group name="frame functions">
+          <method name="current_frame">
+            <type><classname>frame</classname>&amp;</type>
+            <effects><simpara>現在のフレーム情報を返す</simpara></effects>
+          </method>
+
+          <method name="push_frame">
+            <type>void</type>
+            <parameter name="f">
+              <paramtype>const <classname>frame</classname>&amp;</paramtype>
+            </parameter>
+            <effects><simpara>フレーム情報をスタックに追加し、それを現在のフレーム情報とする</simpara></effects>
+          </method>
+
+          <method name="pop_frame">
+            <type>void</type>
+            <effects><simpara>現在のフレーム情報をスタックから削除し、直前のフレーム情報を現在のフレーム情報とする</simpara></effects>
+          </method>
+        </method-group>
+
+        <method-group name="module functions">
+          <method name="caller_module_name" cv="const">
+            <type>boost::optional&lt;std::string&gt;</type>
+            <parameter name="level">
+              <paramtype>std::size_t</paramtype>
+            </parameter>
+            <description><simpara>呼び出し元のモジュール名を返す。<code>level</code>は呼び出しの深さを指定するパラメータで、0が現在のフレームを意味する。</simpara></description>
+            <returns><simpara>呼び出し元のモジュール名</simpara></returns>
+          </method>
+
+          <method name="back_trace" cv="const">
+            <type><classname>string_list</classname></type>
+            <parameter name="level">
+              <paramtype>std::size_t</paramtype>
+            </parameter>
+            <parameter name="skip">
+              <paramtype>std::size_t</paramtype>
+              <default>0</default>
+            </parameter>
+            <description>
+              <simpara>呼び出しフレームのバックトレース情報を返す。<code>level</code>はバックトレースの深さ指定するパラメータで、0ならば全てのフレームが利用される。<code>skip</code>は、スキップするフレームの深さを指定するパラメータで、0なら現在のフレームから開始される。</simpara>
+              <simpara>返される各バックトレース情報は次の形式を取る。</simpara>
+              <informalexample><emphasis>jamファイル名</emphasis> <emphasis>行番号</emphasis> <emphasis>モジュール名</emphasis> <emphasis>ルール名</emphasis></informalexample>
+              <simpara>なお、<emphasis>モジュール名</emphasis>の末尾には「.」が付加される。</simpara>
+            </description>
+            <returns><simpara>バックトレース情報のリスト</simpara></returns>
+          </method>
+
+          <method name="get_module">
+            <type><classname>module</classname>&amp;</type>
+            <parameter name="name">
+              <paramtype>const boost::optional&lt;std::string&gt;&amp;</paramtype>
+            </parameter>
+            <effects><simpara>フレーム情報をスタックに追加し、それを現在のフレーム情報とする</simpara></effects>
+          </method>
+
+          <method name="get_module" cv="const">
+            <type>const <classname>module</classname>&amp;</type>
+            <parameter name="name">
+              <paramtype>const boost::optional&lt;std::string&gt;&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code>name</code>に対応するモジュール</simpara></returns>
+          </method>
+
+          <method name="module_entries" cv="const">
+            <type>std::pair&lt;module_iterator,module_iterator&gt;</type>
+            <returns><simpara>全モジュールを列挙する反復子のペア</simpara></returns>
+          </method>
+
+          <method name="is_defined_module" cv="const">
+            <type>bool</type>
+            <parameter name="name">
+              <paramtype>const boost::optional&lt;std::string&gt;&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code>name</code>に対応するモジュールが定義されているかどうか</simpara></returns>
+          </method>
+
+          <method name="change_module">
+            <type>bool</type>
+            <parameter name="name">
+              <paramtype>const boost::optional&lt;std::string&gt;&amp;</paramtype>
+            </parameter>
+            <effects><simpara>現在のフレームのモジュールを<code>name</code>で指定されたモジュールに変更する</simpara></effects>
+          </method>
+        </method-group>
+
+        <method-group name="target functions">
+          <method name="get_target">
+            <type><classname>target</classname>&amp;</type>
+            <parameter name="name">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code>name</code>に対応するターゲット</simpara></returns>
+          </method>
+
+          <method name="target_entries" cv="const">
+            <type>std::pair&lt;module_iterator,module_iterator&gt;</type>
+            <returns><simpara>全ターゲットを列挙する反復子のペア</simpara></returns>
+          </method>
+
+          <method name="targets_to_update" cv="const">
+            <type><classname>string_list</classname></type>
+            <returns><simpara>組み込みルール<code>UPDATE</code>で設定されたターゲット名のリスト</simpara></returns>
+          </method>
+
+          <method name="targets_to_update">
+            <type>void</type>
+            <parameter name="x">
+              <paramtype>const <classname>string_list</classname>&amp;</paramtype>
+            </parameter>
+            <effects><simpara>更新すべきターゲット名のリストを設定する。組み込みルール<code>UPDATE</code>から呼ばれる。</simpara></effects>
+          </method>
+        </method-group>
+
+        <method-group name="rule functions">
+          <method name="set_builtin_rule">
+            <type>void</type>
+            <parameter name="name">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+            <parameter name="params">
+              <paramtype>const <classname>list_of_list</classname>&amp;</paramtype>
+            </parameter>
+            <parameter name="func">
+              <paramtype>const boost::function1&lt;<classname>string_list</classname>,<classname>context</classname>&gt;&amp;</paramtype>
+            </parameter>
+            <parameter name="exported">
+              <paramtype>bool</paramtype>
+              <default>true</default>
+            </parameter>
+            <description>
+              <simpara>組み込み関数を登録する。引数の意味は次表の通り。</simpara>
+              <informaltable frame="all">
+                <tgroup cols="2">
+                  <thead>
+                    <row>
+                      <entry>引数</entry>
+                      <entry>意味</entry>
+                    </row>
+                  </thead>
+                  <tbody>
+                    <row>
+                      <entry>name</entry>
+                      <entry>ルール名</entry>
+                    </row>
+                    <row>
+                      <entry>params</entry>
+                      <entry>パラメタ宣言</entry>
+                    </row>
+                    <row>
+                      <entry>func</entry>
+                      <entry>組み込み関数の実装</entry>
+                    </row>
+                    <row>
+                      <entry>exported</entry>
+                      <entry>他のモジュールからアクセス可能か</entry>
+                    </row>
+                  </tbody>
+                </tgroup>
+              </informaltable>
+            </description>
+          </method>
+
+          <method name="get_rule_definition" cv="const">
+            <type><classname>rule_definition</classname></type>
+            <parameter name="name">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code>name</code>に対応した組み込み関数の定義</simpara></returns>
+          </method>
+
+          <method name="invoke_rule">
+            <type><classname>string_list</classname></type>
+            <parameter name="name">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+            <parameter name="args">
+              <paramtype>const <classname>list_of_list</classname>&amp;</paramtype>
+            </parameter>
+            <description><simpara>ルール<code>name</code>を引数<code>args</code>で呼び出す。</simpara></description>
+            <returns><simpara>ルールからの戻り値</simpara></returns>
+          </method>
+        </method-group>
+
+        <method-group name="directory functions">
+          <method name="working_directory" cv="const">
+            <type>std::string</type>
+            <returns><simpara>bjamの作業ディレクトリ</simpara></returns>
+          </method>
+
+          <method name="working_directory">
+            <type>void</type>
+            <parameter name="dir">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+            <effects><simpara>bjamの作業ディレクトリを<code>dir</code>に設定する。</simpara></effects>
+          </method>
+        </method-group>
+
+        <method-group name="stream functions">
+          <method name="output_stream" cv="const">
+            <type>std::ostream&amp;</type>
+            <returns><simpara>標準出力用のストリーム</simpara></returns>
+          </method>
+
+          <method name="output_stream">
+            <type>void</type>
+            <parameter name="os">
+              <paramtype>std::ostream&amp;</paramtype>
+            </parameter>
+            <effects><simpara>標準出力用のストリームを<code>os</code>に設定する。</simpara></effects>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

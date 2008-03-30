@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<section id="bbv2.reference.modules">
+  <title>modulesモジュール</title>
+  <synopsis><emphasis role="bold">module</emphasis> modules {
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.modules.peek">peek</link> ( module-name ? : variables + ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.modules.poke">poke</link> ( module-name ? : variables + : value * ) { }
+}
+</synopsis>
+  <refentry id="bbv2.reference.modules.peek">
+    <refmeta>
+      <refentrytitle>peek</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>modules.peek</refname>
+      <refpurpose><simpara>モジュール変数の値を取得する</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> peek ( module-name ? : variables + )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <para><code>module-name</code>で指定されたモジュール内の<code>variables</code>で指定される変数の値を返す。<code>module-name</code>が指定されていない場合はルートモジュールの変数が使用される。</para>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.modules.poke">
+    <refmeta>
+      <refentrytitle>poke</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>modules.poke</refname>
+      <refpurpose><simpara>モジュール変数の値を設定する</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> poke ( module-name ? : variables + : value * )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <para><code>module-name</code>で指定されたモジュール内の<code>variables</code>で指定される変数の値を<code>value</code>に設定する。<code>module-name</code>が指定されていない場合はルートモジュールの変数が使用される。</para>
+    </refsection>
+  </refentry>
+</section>

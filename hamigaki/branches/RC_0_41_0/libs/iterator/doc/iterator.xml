@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE library PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Iterator Library Document Source
+
+  Copyright Takeshi Mouri 2006-2008.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/iterator for library home page.
+-->
+<library name="Iterator" dirname="iterator" xmlns:XI="http://www.w3.org/2001/XInclude" id="iterator">
+
+  <libraryinfo>
+    <author role="first-last">
+      <firstname>Takeshi</firstname>
+      <surname>Mouri</surname>
+    </author>
+
+    <copyright>
+      <year>2006</year>
+      <year>2007</year>
+      <year>2008</year>
+      <holder>Takeshi Mouri</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Distributed under the Boost Software License, Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)</para>
+    </legalnotice>
+
+    <librarypurpose>
+      便利なIteratorを提供する
+    </librarypurpose> 
+
+    <librarycategory name="category:iterators"/>
+
+  </libraryinfo>
+
+  <title>Hamigaki.Iterator</title>
+
+  <!-- xi:include href="../libs/iterator/doc/introduction.xml" -->
+  <XI:include href="introduction.xml"/>
+  <!-- xi:include href="../libs/iterator/doc/reference/reference.xml" -->
+  <XI:include href="reference/reference.xml"/>
+  <!-- xi:include href="../libs/iterator/doc/rationale.xml" -->
+<!--
+  <XI:include href="rationale.xml"/>
+-->
+  <!-- xi:include href="../libs/iterator/doc/acknowledgements.xml" -->
+  <XI:include href="acknowledgements.xml"/>
+
+</library>

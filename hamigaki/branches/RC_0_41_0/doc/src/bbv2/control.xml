@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2007, 2008.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<section id="bbv2.control">
+  <title>制御フロー</title>
+  <section id="bbv2.control.condition">
+    <title>条件式</title>
+    <para>BBv2で使用される条件式には以下のようなものがある。</para>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>条件式</entry>
+            <entry>評価値</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><emphasis>a</emphasis></entry>
+            <entry>aに空でない文字列が含まれていれば真</entry>
+          </row>
+          <row>
+            <entry><emphasis>a</emphasis> = <emphasis>b</emphasis></entry>
+            <entry>aとbの要素がすべて同じ場合に真</entry>
+          </row>
+          <row>
+            <entry><emphasis>a</emphasis> != <emphasis>b</emphasis></entry>
+            <entry>aとbの要素に同じでないものが含まれる場合に真</entry>
+          </row>
+          <row>
+            <entry><emphasis>a</emphasis> &lt; <emphasis>b</emphasis></entry>
+            <entry>辞書順でaがbより小さい場合に真</entry>
+          </row>
+          <row>
+            <entry><emphasis>a</emphasis> &lt;= <emphasis>b</emphasis></entry>
+            <entry>辞書順でaがb以下の場合に真</entry>
+          </row>
+          <row>
+            <entry><emphasis>a</emphasis> &gt; <emphasis>b</emphasis></entry>
+            <entry>辞書順でaがbより大きい場合に真</entry>
+          </row>
+          <row>
+            <entry><emphasis>a</emphasis> &gt;= <emphasis>b</emphasis></entry>
+            <entry>辞書順でaがb以上の場合に真</entry>
+          </row>
+          <row>
+            <entry><emphasis>a</emphasis> in <emphasis>b</emphasis></entry>
+            <entry>aの要素が全てbに含まれる場合に真</entry>
+          </row>
+          <row>
+            <entry>! <emphasis>cond</emphasis></entry>
+            <entry>condが偽の場合に真</entry>
+          </row>
+          <row>
+            <entry><emphasis>a</emphasis> &amp;&amp; <emphasis>b</emphasis></entry>
+            <entry>aが真かつbが真の場合に真</entry>
+          </row>
+          <row>
+            <entry><emphasis>a</emphasis> || <emphasis>b</emphasis></entry>
+            <entry>aが真またはbが真の場合に真</entry>
+          </row>
+          <row>
+            <entry>( <emphasis>cond</emphasis> )</entry>
+            <entry>condが真の場合に真</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>ここで、<emphasis>a</emphasis>と<emphasis>b</emphasis>は文字列のリスト、変数、ルールの戻り値のいずれかであり、<emphasis>cond</emphasis>は条件式である。</para>
+    <para>なお、「=」、「!=」、「&lt;」、「&lt;=」、「&gt;」、「&gt;=」の６つの比較演算において、一方のリストのサイズが他方よりも短い場合、短いリストの後方に空文字列の要素続いているかのように振舞う。</para>
+    <para>演算子の優先順位は以下のようになっている。上の方ほど優先順位は高い。</para>
+    <itemizedlist>
+      <listitem>
+        <simplelist type="inline">
+          <member>in</member>
+          <member>( )</member>
+        </simplelist>
+      </listitem>
+      <listitem>
+        <simplelist type="inline">
+          <member>!</member>
+        </simplelist>
+      </listitem>
+      <listitem>
+        <simplelist type="inline">
+          <member>&lt;</member>
+          <member>&lt;=</member>
+          <member>&gt;</member>
+          <member>&gt;=</member>
+        </simplelist>
+      </listitem>
+      <listitem>
+        <simplelist type="inline">
+          <member>=</member>
+          <member>!=</member>
+        </simplelist>
+      </listitem>
+      <listitem>
+        <simplelist type="inline">
+          <member>&amp;&amp;</member>
+        </simplelist>
+      </listitem>
+      <listitem>
+        <simplelist type="inline">
+          <member>||</member>
+        </simplelist>
+      </listitem>
+    </itemizedlist>
+  </section>
+  <section id="bbv2.control.pattern" xreflabel="パターン">
+    <title>パターン</title>
+    <para>switch文や組み込みルールGLOBなどで行われるパターンマッチングには次に示す<firstterm>パターン</firstterm>の組み合わせが使われる。</para>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>パターン</entry>
+            <entry>意味</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>?</entry>
+            <entry>任意の1文字</entry>
+          </row>
+          <row>
+            <entry>*</entry>
+            <entry>サイズ0以上の任意の文字列</entry>
+          </row>
+          <row>
+            <entry>[<emphasis>文字クラス</emphasis>]</entry>
+            <entry>文字クラスにマッチする1文字</entry>
+          </row>
+          <row>
+            <entry>[^<emphasis>文字クラス</emphasis>]</entry>
+            <entry>文字クラスにマッチしない1文字</entry>
+          </row>
+          <row>
+            <entry>\<emphasis>c</emphasis></entry>
+            <entry>文字c</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>ここで文字クラスは以下の組み合わせである。</para>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>パターン</entry>
+            <entry>意味</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry><emphasis>c</emphasis></entry>
+            <entry>文字c</entry>
+          </row>
+          <row>
+            <entry><emphasis>a</emphasis>-<emphasis>b</emphasis></entry>
+            <entry>文字aから文字bまでの範囲</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+  <section id="bbv2.control.if">
+    <title>if</title>
+    <informalexample>
+      <programlisting><![CDATA[if $(X)
+{
+    # Xが真のときの処理
+}
+else
+{
+    # Xが偽のときの処理
+}
+]]></programlisting>
+    </informalexample>
+  </section>
+  <section id="bbv2.control.for">
+    <title>for</title>
+    <informalexample>
+      <programlisting><![CDATA[for a in $(X)
+{
+    # Xの各要素が変数aに代入されて、順に実行される
+}
+]]></programlisting>
+    </informalexample>
+  </section>
+  <section id="bbv2.control.while">
+    <title>while</title>
+    <informalexample>
+      <programlisting><![CDATA[while [ func_a ]
+{
+    # func_aの結果が真の間、実行される
+}
+]]></programlisting>
+    </informalexample>
+  </section>
+  <section id="bbv2.control.switch">
+    <title>switch</title>
+    <informalexample>
+      <programlisting><![CDATA[switch $(X)
+{
+    case a* :
+        # $(X)がaで始まる場合、ここが実行される
+    case [b-d]* :
+        # $(X)がb,c,dで始まる場合、ここが実行される
+}
+]]></programlisting>
+    </informalexample>
+  </section>
+</section>

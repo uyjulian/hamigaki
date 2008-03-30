@@ -1,0 +1,33 @@
+# Hamigaki Bjam Library Test Jamfile
+
+# Copyright Takeshi Mouri 2007.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
+
+import path ;
+import sequence ;
+using testing ;
+
+project
+    : requirements
+      <library>/boost-lib//boost_unit_test_framework/<link>static
+      <library>/hamigaki/bjam//hamigaki_bjam
+    ;
+
+test-suite bjam :
+    [ run arg_p_test.cpp ]
+    [ run bjam_test.cpp : $(HAMIGAKI_ROOT) ]
+    [ run builtin_rules_test.cpp ]
+    [ run expand_variable_test.cpp ]
+    [ run expression_test.cpp ]
+    [ run get_variable_values_test.cpp ]
+    [ run glob_test.cpp : $(HAMIGAKI_ROOT) ]
+    [ run keyword_p_test.cpp ]
+    [ run module_test.cpp ]
+    [ run non_punct_p_test.cpp ]
+    [ run path_test.cpp ]
+    [ run string_p_test.cpp ]
+    ;

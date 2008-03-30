@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Coroutine Library Document Source
+
+  Copyright Takeshi Mouri 2008.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/coroutine for library home page.
+-->
+<section id="coroutine.tutorial">
+  <title>チュートリアル</title>
+  <using-namespace name="hamigaki::coroutines"/>
+  <section id="coroutine.tutorial.coroutines">
+    <title>コルーチン</title>
+    <para>コルーチンとは、処理を中断したり、再開したりすることのできるサブルーチンの変種である。</para>
+    <para>Hamigaki.Coroutineはコルーチンを作成するためのクラステンプレート<classname alt="coroutineN">coroutine</classname>を提供している。ここでは<classname alt="coroutineN">coroutine</classname>を用いて掛け算九九の答えを表示するプログラムを考える。</para>
+    <programlisting><![CDATA[#include <hamigaki/coroutine/coroutine.hpp>]]></programlisting>
+    <para>これは<classname alt="coroutineN">coroutine</classname>を使用するために必要である。</para>
+    <programlisting><![CDATA[namespace coro = hamigaki::coroutines;
+
+typedef coro::coroutine<int()> coroutine_type;
+]]></programlisting>
+    <para><classname alt="coroutineN">coroutine</classname>は名前空間<code>hamigaki::coroutines</code>で定義される。唯一のテンプレート引数はコルーチンの型を指定するためのものである。ここでは<code>int</code>型の戻り値を持ち、引数を持たないコルーチンを使用する。</para>
+    <programlisting><![CDATA[int kuku_body(coroutine_type::self& self)
+{
+    for (int i = 1; i <= 9; ++i)
+        for (int j = 1; j <= 9; ++j)
+            self.yield(i*j);
+
+    self.exit();
+}
+]]></programlisting>
+    <para>関数<code>kuku_body()</code>はコルーチンの本体である。この関数の型は<classname alt="coroutineN">coroutine</classname>のテンプレート引数に指定したものに<code>coroutine_type::self&amp;</code>型の引数を追加したものになる。この追加された引数はコルーチンの制御を行うために使用される。</para>
+    <para>メンバ関数<code>yield()</code>はコルーチンの呼び出し側に制御を戻し、引数をコルーチンの計算結果として返す関数である。</para>
+    <para>また、メンバ関数<code>exit()</code>はコルーチンの実行を中断し、呼び出し側に制御を戻す関数である。</para>
+    <programlisting><![CDATA[#include <iostream>
+
+int main()
+{
+    try
+    {
+        coroutine_type kuku(kuku_body);
+        while (true)
+            std::cout << kuku() << std::endl;
+    }
+    catch (const coro::coroutine_exited&)
+    {
+    }
+}
+]]></programlisting>
+    <para><classname alt="coroutineN">coroutine</classname>のコンストラクタの引数にはコルーチンの本体を指定する。</para>
+    <para>作成された<classname alt="coroutineN">coroutine</classname>は関数オブジェクトとして機能する。コルーチンを呼び出すと、制御がコルーチン本体へと移る。コルーチン側は<code>yield()</code>が呼ばれるか、<code>return</code>されるまで実行され、その結果が呼び出し側に返される。再びコルーチンを呼び出すと、前回<code>yield()</code>を呼んだ箇所から実行が再開される。</para>
+    <para>メンバ関数<code>exit()</code>が呼ぶか、コルーチンから<code>return</code>すると、コルーチンは終了する。終了したコルーチンを呼び出すと、例外<classname>coroutine_exited</classname>が発生する。コルーチンはその性質上、呼び出すまで終了したかどうか分からないので、この例外を捕捉することで終了を検知する。</para>
+    <para>別の方法として、コルーチンの呼び出し時に<code>std::nothrow</code>を引数として指定することもできる。この場合、戻り値が<code>boost::optional</code>になり、終了を検知した場合は空となる。</para>
+    <programlisting><![CDATA[#include <iostream>
+
+int main()
+{
+    coroutine_type kuku(kuku_body);
+    while (boost::optional<int> next = kuku(std::nothrow))
+        std::cout << *next << std::endl;
+}
+]]></programlisting>
+    <para>完全なプログラムは以下のようになる。</para>
+    <programlisting><![CDATA[#include <hamigaki/coroutine/coroutine.hpp>
+
+namespace coro = hamigaki::coroutines;
+
+typedef coro::coroutine<int()> coroutine_type;
+
+int kuku_body(coroutine_type::self& self)
+{
+    for (int i = 1; i <= 9; ++i)
+        for (int j = 1; j <= 9; ++j)
+            self.yield(i*j);
+
+    self.exit();
+}
+
+
+#include <iostream>
+
+int main()
+{
+    try
+    {
+        coroutine_type kuku(kuku_body);
+        while (true)
+            std::cout << kuku() << std::endl;
+    }
+    catch (const coro::coroutine_exited&)
+    {
+    }
+}
+]]></programlisting>
+  </section>
+  <section id="coroutine.tutorial.generators">
+    <title>ジェネレータ</title>
+    <para>オブジェクトの列を生成し、一要素ずつ順に返すサブルーチンをジェネレータと呼ぶ。</para>
+    <para>Hamigaki.Coroutineはジェネレータを作成するためにクラステンプレート<classname>generator</classname>を提供しており、これはコルーチンを用いて実装されている。今度は、先程の九九のプログラムをジェネレータを用いて書き直すことを考える。</para>
+    <programlisting><![CDATA[#include <hamigaki/coroutine/generator.hpp>]]></programlisting>
+    <para>これは<classname>generator</classname>を使用するために必要である。</para>
+    <programlisting><![CDATA[namespace coro = hamigaki::coroutines;
+
+typedef coro::generator<int> generator_type;
+]]></programlisting>
+    <para><classname>generator</classname>のテンプレート引数はコルーチンの型ではなく、戻り値の型である。</para>
+    <programlisting><![CDATA[int kuku_body(generator_type::self& self)
+{
+    for (int i = 1; i <= 9; ++i)
+        for (int j = 1; j <= 9; ++j)
+            self.yield(i*j);
+
+    self.exit();
+}
+]]></programlisting>
+    <para>関数<code>kuku_body()</code>はコルーチンの本体である。これは<classname alt="coroutineN">coroutine</classname>が<classname>generator</classname>に置き換わっただけである。</para>
+    <para>メインプログラムは次のように書ける。</para>
+    <programlisting><![CDATA[
+#include <algorithm>
+#include <iostream>
+#include <iterator>
+
+int main()
+{
+    std::copy(
+        generator_type(kuku_body), generator_type(),
+        std::ostream_iterator<int>(std::cout, "\n")
+    );
+}
+]]></programlisting>
+    <para><classname>generator</classname>のコンストラクタにコルーチンの本体を渡すことでジェネレータを作成する。省略時初期化された<classname>generator</classname>は終端を表すために利用される。</para>
+    <para><classname>generator</classname>は入力反復子の要件を満たすので、入力反復子を受け取るアルゴリズムに渡すことができる。</para>
+  </section>
+  <section id="coroutine.tutorial.callbacks">
+    <title>コールバック関数</title>
+    <para>C言語でオブジェクトを列挙する場合、主に次のインタフェースが利用される。</para>
+    <itemizedlist>
+      <listitem><simpara>列挙用のハンドルを通して、順次問い合わせる(プル型)</simpara></listitem>
+      <listitem><simpara>各要素に対し、コールバック関数を呼ぶ(プッシュ型)</simpara></listitem>
+    </itemizedlist>
+    <para>前者の例としては、POSIXの<code>opendir()</code>/<code>readdir()</code>/<code>closedir()</code>を用いたディレクトリの走査が挙げられる。このインタフェースは列挙を進めることも中断することも自由に行うことができるため、反復子で表現するのが容易である。</para>
+    <para>一方、後者のインタフェースはMicrosoft Windowsで頻繁に用いられるものである。このインタフェースは、列挙の主体がユーザー側にないため、反復子で表現することは困難である。しかし、Hamigaki.Coroutineを用いることでこれが可能となる。</para>
+    <para>例として、ウィンドウハンドル(HWND)を列挙する<code>EnumWindows()</code>関数を反復子で表現することを考える。</para>
+    <programlisting><![CDATA[
+#include <hamigaki/coroutine/generator.hpp>
+#include <algorithm>
+#include <iostream>
+#include <windows.h>
+
+namespace coro = hamigaki::coroutines;
+
+typedef coro::generator<HWND> enum_windows_iterator;
+
+BOOL CALLBACK enum_windows_callback(HWND hwnd, LPARAM lParam)
+{
+    try
+    {
+        enum_windows_iterator::self& self =
+            *reinterpret_cast<enum_windows_iterator::self*>(lParam);
+
+        self.yield(hwnd);
+        return TRUE;
+    }
+    catch (...)
+    {
+    }
+    return FALSE;
+}
+
+HWND enum_windows_body(enum_windows_iterator::self& self)
+{
+    ::EnumWindows(&enum_windows_callback, reinterpret_cast<LPARAM>(&self));
+    self.exit();
+}
+]]></programlisting>
+    <para><code>enum_windows_body()</code>がコルーチンの本体である。<code>EnumWindows()</code>はこの中で呼び出す。<code>EnumWindows()</code>には各ウィンドウハンドル毎に呼び出すコールバック関数とそれに渡すデータを引数として渡すようになっている。コールバック関数<code>enum_windows_callback()</code>は<code>self</code>を必要とするので、ここではそのポインタを渡している。</para>
+    <para><code>enum_windows_callback()</code>では、<code>yield()</code>でウィンドウハンドルを返し、制御を呼び出し側に戻す。</para>
+    <para>反復子が進められると処理がコルーチン側に戻り、コールバック関数からは<code>TRUE</code>が返される。これは列挙の継続を意味している。</para>
+    <para>反復子を末尾まで進めることなく破棄した場合は、<code>yield()</code>が例外<classname>exit_exception</classname>を送出するので、これを捕捉した後に<code>FALSE</code>を返す。これにより列挙も中断される。</para>
+    <para><code>enum_windows_iterator</code>は入力反復子なので、次のように利用できる。</para>
+    <programlisting><![CDATA[
+void print_hwnd(HWND hwnd)
+{
+    std::cout << static_cast<void*>(hwnd) << std::endl;
+}
+
+int main()
+{
+    std::for_each(
+        enum_windows_iterator(enum_windows_body), enum_windows_iterator(),
+        print_hwnd
+    );
+}
+]]></programlisting>
+  </section>
+</section>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<header name="hamigaki/archivers/iso/rrip_type.hpp">
+  <namespace name="hamigaki">
+    <namespace name="archivers">
+      <namespace name="iso">
+        <enum name="rrip_type">
+          <enumvalue name="rrip_none" />
+          <enumvalue name="rrip_1991a" />
+          <enumvalue name="ieee_p1282" />
+          <purpose><simpara>Rock Ridge 拡張の種類</simpara></purpose>
+          <description>
+            <informaltable frame="all">
+              <tgroup cols="2">
+                <thead>
+                  <row>
+                    <entry>値</entry>
+                    <entry>意味</entry>
+                  </row>
+                </thead>
+                <tbody>
+                  <row>
+                    <entry>rrip_none</entry>
+                    <entry>なし</entry>
+                  </row>
+                  <row>
+                    <entry>rrip_1991a</entry>
+                    <entry>RRIP 1991A</entry>
+                  </row>
+                  <row>
+                    <entry>ieee_p1282</entry>
+                    <entry>IEEE P1282</entry>
+                  </row>
+                </tbody>
+              </tgroup>
+            </informaltable>
+          </description>
+        </enum>
+      </namespace>
+    </namespace>
+  </namespace>
+</header>

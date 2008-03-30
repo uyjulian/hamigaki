@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Filesystem Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/filesystem for library home page.
+-->
+<header name="hamigaki/filesystem/device_number.hpp">
+  <namespace name="hamigaki">
+    <namespace name="filesystem">
+      <struct name="device_number">
+        <purpose><para>デバイス番号を保持する</para></purpose>
+
+        <description><para><code>device_number</code>はデバイス番号を表現する構造体である。メンバ変数<code>major</code>と<code>minor</code>はそれぞれデバイスのメジャー番号とマイナー番号を表す。</para></description>
+
+        <typedef name="native_type">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <data-member name="major">
+          <type>boost::intmax_t</type>
+        </data-member>
+
+        <data-member name="minor">
+          <type>boost::intmax_t</type>
+        </data-member>
+
+        <constructor>
+          <effects><simpara><code>major = 0, minor = 0</code></simpara></effects>
+        </constructor>
+
+        <constructor>
+          <parameter name="maj">
+            <paramtype>boost::intmax_t</paramtype>
+          </parameter>
+
+          <parameter name="min">
+            <paramtype>boost::intmax_t</paramtype>
+          </parameter>
+
+          <effects><simpara><code>major = maj, minor = min</code></simpara></effects>
+        </constructor>
+
+        <method-group name="conversions">
+          <method name="to_native" cv="const">
+            <type>native_type</type>
+            <returns><simpara><code>device_number</code>の保持するメジャー番号とマイナー番号を元に実行環境の規則に従って計算されるデバイス番号</simpara></returns>
+          </method>
+
+          <method name="from_native" specifiers="static">
+            <type>device_number</type>
+            <parameter name="n">
+              <paramtype>native_type</paramtype>
+            </parameter>
+            <description><simpara>実行環境の規則に従い、デバイス番号<code>n</code>をメジャー番号とマイナー番号に分離し、対応する<code>device_number</code>を生成する。</simpara></description>
+            <returns><simpara>デバイス番号<code>n</code>に対応する<code>device_number</code></simpara></returns>
+          </method>
+        </method-group>
+      </struct>
+    </namespace>
+  </namespace>
+</header>

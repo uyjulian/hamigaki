@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Audio Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+-->
+<header name="hamigaki/audio/virtual_device.hpp">
+  <namespace name="hamigaki">
+    <namespace name="audio">
+      <class name="virtual_device">
+        <template>
+          <template-type-parameter name="Device"/>
+        </template>
+
+        <purpose><para>非オーディオデバイスにPCMフォーマット情報を追加する</para></purpose>
+
+        <description>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>PcmFormatRetrievable</conceptname></member>
+              <member><code>Device</code>がモデルとするコンセプト全て</member>
+          </simplelist></para>
+        </description>
+
+        <constructor>
+          <parameter name="dev">
+            <paramtype>const Device&amp;</paramtype>
+          </parameter>
+          <parameter name="fmt">
+            <paramtype>const pcm_format&amp;</paramtype>
+          </parameter>
+
+          <effects><simpara><code>dev</code>にフォーマット情報<code>fmt</code>を付加したデバイスを生成する。</simpara></effects>
+        </constructor>
+
+        <method-group name="queries">
+          <method name="format" cv="const">
+            <type><classname>pcm_format</classname></type>
+            <returns><simpara>フォーマット情報</simpara></returns>
+          </method>
+        </method-group>
+
+        <free-function-group name="creation">
+          <function name="make_virtual_device">
+            <type>virtual_device&lt;Device&gt;</type>
+            <template>
+              <template-type-parameter name="Device"/>
+            </template>
+            <parameter name="dev">
+              <paramtype>const Device&amp;</paramtype>
+            </parameter>
+            <parameter name="fmt">
+              <paramtype>const pcm_format&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code><classname>virtual_device</classname>&lt;Device&gt;(dev, fmt)</code></simpara></returns>
+          </function>
+        </free-function-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

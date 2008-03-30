@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<section id="archivers.installation">
+  <title>インストール</title>
+  <para>Hamigaki.Archiversはヘッダファイルのみによって提供されるため、ライブラリのビルドは必要ない。しかし、利用する機能ごとに外部ライブラリが必要になる。
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>機能</entry>
+            <entry>必要な外部ライブラリ</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>全般</entry>
+            <entry>Boost.Filesystem</entry>
+          </row>
+          <row>
+            <entry>ZIP (deflate)</entry>
+            <entry>zlib, Boost.Iostreams</entry>
+          </row>
+          <row>
+            <entry>ZIP (bzip2)</entry>
+            <entry>bzip2, Boost.Iostreams</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    また、次のマクロを定義することで動作をカスタマイズすることができる。
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>マクロ</entry>
+            <entry>意味</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>HAMIGAKI_ARCHIVERS_NO_BZIP2</entry>
+            <entry>bzip2のサポートを無効にする</entry>
+          </row>
+          <row>
+            <entry>HAMIGAKI_IOSTREAMS_USE_HASH</entry>
+            <entry>LZSSの辞書検索にハッシュ表を使う</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    マクロ<code>HAMIGAKI_IOSTREAMS_USE_HASH</code>を定義した場合のコードには(RFC 1951 の推奨するアルゴリズムに従っているものの)特許上の微妙な問題がある。リスクを理解した上で、自己の責任に基づいて使用すること。(しかしながら残念なことに、このマクロを使用しない場合のLZHUF圧縮には非常に時間がかかり、ある程度大きなファイルに対しては実用的でない)
+  </para>
+</section>

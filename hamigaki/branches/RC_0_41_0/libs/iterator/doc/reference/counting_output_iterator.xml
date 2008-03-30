@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Iterator Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/iterator for library home page.
+-->
+<header name="hamigaki/iterator/counting_output_iterator.hpp">
+  <namespace name="hamigaki">
+    <class name="counting_output_iterator">
+      <template>
+        <template-type-parameter name="Incrementable"/>
+      </template>
+
+      <typedef name="value_type">
+        <type>void</type>
+      </typedef>
+
+      <typedef name="reference">
+        <type>void</type>
+      </typedef>
+
+      <typedef name="pointer">
+        <type>void</type>
+      </typedef>
+
+      <typedef name="difference_type">
+        <type>void</type>
+      </typedef>
+
+      <typedef name="iterator_category">
+        <type>std::output_iterator_tag</type>
+      </typedef>
+
+      <constructor>
+        <effects><simpara><code>current = Incrementable()</code></simpara></effects>
+      </constructor>
+
+      <constructor>
+        <parameter name="x">
+          <paramtype>const Incrementable&amp;</paramtype>
+        </parameter>
+
+        <effects><simpara><code>current = x</code></simpara></effects>
+      </constructor>
+
+      <method-group name="operators">
+        <method name="operator*" cv="const">
+          <type><emphasis>implementation defined</emphasis></type>
+        </method>
+
+        <method name="operator++">
+          <type>counting_output_iterator&lt;Incrementable&gt;&amp;</type>
+          <effects><simpara><code>++current</code></simpara></effects>
+          <returns><simpara><code>*this</code></simpara></returns>
+        </method>
+      </method-group>
+
+      <method-group name="queries">
+        <method name="base" cv="const">
+          <type>const Incrementable&amp;</type>
+          <returns><simpara><code>current</code></simpara></returns>
+        </method>
+      </method-group>
+
+      <free-function-group name="creation">
+        <function name="make_counting_output_iterator">
+          <type>counting_output_iterator&lt;Incrementable&gt;</type>
+          <parameter name="x">
+            <paramtype>Incrementable</paramtype>
+          </parameter>
+          <returns><simpara><code>counting_output_iterator&lt;Incrementable&gt;(x)</code></simpara></returns>
+        </function>
+      </free-function-group>
+
+      <data-member name="current" specifiers="private:">
+        <type>Incrementable</type>
+      </data-member>
+    </class>
+  </namespace>
+</header>

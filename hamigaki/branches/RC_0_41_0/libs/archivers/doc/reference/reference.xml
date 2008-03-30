@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE library-reference PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<library-reference xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>リファレンス</title>
+  <xi:include href="cpio/file_format.xml"/>
+  <xi:include href="cpio/headers.xml"/>
+  <xi:include href="iso/posix/file_attributes.xml"/>
+  <xi:include href="iso/date_time.xml"/>
+  <xi:include href="iso/file_flags.xml"/>
+  <xi:include href="iso/headers.xml"/>
+  <xi:include href="iso/rrip_type.xml"/>
+  <xi:include href="lha/posix/gid_uid.xml"/>
+  <xi:include href="lha/windows/timestamp.xml"/>
+  <xi:include href="lha/compress_method.xml"/>
+  <xi:include href="lha/headers.xml"/>
+  <xi:include href="msdos/attributes.xml"/>
+  <xi:include href="tar/file_format.xml"/>
+  <xi:include href="tar/headers.xml"/>
+  <xi:include href="tar/type_flag.xml"/>
+  <xi:include href="zip/headers.xml"/>
+  <xi:include href="cpio_file.xml"/>
+  <xi:include href="error.xml"/>
+  <xi:include href="iso_file.xml"/>
+  <xi:include href="lzh_file.xml"/>
+  <xi:include href="raw_lzh_file.xml"/>
+  <xi:include href="raw_zip_file.xml"/>
+  <xi:include href="tar_file.xml"/>
+  <xi:include href="tbz2_file.xml"/>
+  <xi:include href="tgz_file.xml"/>
+  <xi:include href="zip_file.xml"/>
+</library-reference>

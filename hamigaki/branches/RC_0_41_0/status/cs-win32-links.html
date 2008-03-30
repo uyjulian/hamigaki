@@ -1,0 +1,747 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=Shift_JIS">
+<title>Hamigaki Compiler Status Error Log</title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<table border="0">
+<tr>
+<td><img border="0" src="../hamigaki.png" width="96" height="72"></td>
+<td>
+<h1>Compiler Status: Win32</h1>
+<b>Run Date:</b> 03:01:29 UTC, Saturday 29 March 2008
+</td>
+</table>
+<br>
+<h2><a name="config-config_info-gcc-mingw-3.4.5">config - config_info - gcc-mingw-3.4.5</a></h2>
+<h3>Run output:</h3><pre>
+GNU C++ version 3.4.5 (mingw special)
+Detected Platform: Win32
+Boost version 103500
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="config-config_info-msvc-8.0">config - config_info - msvc-8.0</a></h2>
+<h3>Run output:</h3><pre>
+Microsoft Visual C++ version 8.0
+Detected Platform: Win32
+Boost version 103500
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="config-config_info-msvc-9.0express">config - config_info - msvc-9.0express</a></h2>
+<h3>Run output:</h3><pre>
+Microsoft Visual C++ version 9.0
+Detected Platform: Win32
+Boost version 103500
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="audio-ds_enum_test-gcc-mingw-3.4.5">audio - ds_enum_test - gcc-mingw-3.4.5</a></h2>
+<h3>Run output:</h3><pre>
+Running 2 test cases...
+The installed DirectSound drivers:
+プライマリ サウンド ドライバ
+スピーカー (SoundMAX Integrated Digital Audio)
+
+The installed DirectSoundCapture drivers:
+プライマリ サウンド キャプチャ ドライバ
+マイク (SoundMAX Integrated Digita
+ライン入力 (SoundMAX Integrated Digi
+
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="audio-ds_enum_test-msvc-8.0">audio - ds_enum_test - msvc-8.0</a></h2>
+<h3>Run output:</h3><pre>
+Running 2 test cases...
+The installed DirectSound drivers:
+プライマリ サウンド ドライバ
+スピーカー (SoundMAX Integrated Digital Audio)
+
+The installed DirectSoundCapture drivers:
+プライマリ サウンド キャプチャ ドライバ
+マイク (SoundMAX Integrated Digita
+ライン入力 (SoundMAX Integrated Digi
+
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="audio-ds_enum_test-msvc-9.0express">audio - ds_enum_test - msvc-9.0express</a></h2>
+<h3>Run output:</h3><pre>
+Running 2 test cases...
+The installed DirectSound drivers:
+プライマリ サウンド ドライバ
+スピーカー (SoundMAX Integrated Digital Audio)
+
+The installed DirectSoundCapture drivers:
+プライマリ サウンド キャプチャ ドライバ
+マイク (SoundMAX Integrated Digita
+ライン入力 (SoundMAX Integrated Digi
+
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="bjam-glob_test-gcc-mingw-3.4.5">bjam - glob_test - gcc-mingw-3.4.5</a></h2>
+<h3>Compiler output:</h3><pre>
+C:/Boost/src/svn/boost/filesystem/path.hpp: In member function `String boost::filesystem::basic_path&lt;String, Traits&gt;::root_name() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]':
+C:/Boost/src/svn/boost/filesystem/operations.hpp:565:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, Path&gt;::type boost::filesystem::complete(const Path&amp;, const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:726:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:935: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/operations.hpp:565:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, Path&gt;::type boost::filesystem::complete(const Path&amp;, const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:726:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:935: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/operations.hpp:565:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, Path&gt;::type boost::filesystem::complete(const Path&amp;, const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:726:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:935: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp: In member function `const String boost::filesystem::basic_path&lt;String, Traits&gt;::file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]':
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1214: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1214: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1230: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1230: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1236: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1241: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp: In function `typename String::size_type boost::filesystem::detail::root_directory_start(const String&amp;, typename String::size_type) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]':
+C:/Boost/src/svn/boost/filesystem/path.hpp:1207:   instantiated from `const String boost::filesystem::basic_path&lt;String, Traits&gt;::file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:822: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:1207:   instantiated from `const String boost::filesystem::basic_path&lt;String, Traits&gt;::file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:822: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:1207:   instantiated from `const String boost::filesystem::basic_path&lt;String, Traits&gt;::file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:828: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:1207:   instantiated from `const String boost::filesystem::basic_path&lt;String, Traits&gt;::file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::fil...
+   (remainder deleted because of excessive size)
+</pre>
+<h2><a name="coroutine-coroutine_test-gcc-mingw-3.4.5">coroutine - coroutine_test - gcc-mingw-3.4.5</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+hello
+hello
+hello
+
+0
+2
+4
+6
+8
+10
+12
+14
+16
+18
+
+0
+1
+2
+1
+2
+3
+2
+3
+4
+
+s00
+s01
+s02
+s10
+s11
+s12
+s20
+s21
+s22
+
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-coroutine_test-msvc-8.0">coroutine - coroutine_test - msvc-8.0</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+hello
+hello
+hello
+
+0
+2
+4
+6
+8
+10
+12
+14
+16
+18
+
+0
+1
+2
+1
+2
+3
+2
+3
+4
+
+s00
+s01
+s02
+s10
+s11
+s12
+s20
+s21
+s22
+
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-coroutine_test-msvc-9.0express">coroutine - coroutine_test - msvc-9.0express</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+hello
+hello
+hello
+
+0
+2
+4
+6
+8
+10
+12
+14
+16
+18
+
+0
+1
+2
+1
+2
+3
+2
+3
+4
+
+s00
+s01
+s02
+s10
+s11
+s12
+s20
+s21
+s22
+
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-coro_config_test-gcc-mingw-3.4.5">coroutine - coro_config_test - gcc-mingw-3.4.5</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+use Win32 Fiber with SjLj-exceptions support
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-coro_config_test-msvc-8.0">coroutine - coro_config_test - msvc-8.0</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+use Win32 Fiber
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-coro_config_test-msvc-9.0express">coroutine - coro_config_test - msvc-9.0express</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+use Win32 Fiber
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-generator_test-gcc-mingw-3.4.5">coroutine - generator_test - gcc-mingw-3.4.5</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-generator_test-msvc-8.0">coroutine - generator_test - msvc-8.0</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-generator_test-msvc-9.0express">coroutine - generator_test - msvc-9.0express</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-processor_test-gcc-mingw-3.4.5">coroutine - processor_test - gcc-mingw-3.4.5</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-processor_test-msvc-8.0">coroutine - processor_test - msvc-8.0</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-processor_test-msvc-9.0express">coroutine - processor_test - msvc-9.0express</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-yield_to_arg_test-gcc-mingw-3.4.5">coroutine - yield_to_arg_test - gcc-mingw-3.4.5</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+A(10)
+B(11)
+
+A(20)
+B(21)
+A(22)
+
+OK
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-yield_to_arg_test-msvc-8.0">coroutine - yield_to_arg_test - msvc-8.0</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+A(10)
+B(11)
+
+A(20)
+B(21)
+A(22)
+
+OK
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-yield_to_arg_test-msvc-9.0express">coroutine - yield_to_arg_test - msvc-9.0express</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+A(10)
+B(11)
+
+A(20)
+B(21)
+A(22)
+
+OK
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-yield_to_res_test-gcc-mingw-3.4.5">coroutine - yield_to_res_test - gcc-mingw-3.4.5</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+A
+B
+
+A
+B
+A
+
+A
+B
+C
+
+OK
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-yield_to_res_test-msvc-8.0">coroutine - yield_to_res_test - msvc-8.0</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+A
+B
+
+A
+B
+A
+
+A
+B
+C
+
+OK
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-yield_to_res_test-msvc-9.0express">coroutine - yield_to_res_test - msvc-9.0express</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+A
+B
+
+A
+B
+A
+
+A
+B
+C
+
+OK
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-yield_to_test-gcc-mingw-3.4.5">coroutine - yield_to_test - gcc-mingw-3.4.5</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+A
+B
+
+A
+B
+A
+
+OK
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-yield_to_test-msvc-8.0">coroutine - yield_to_test - msvc-8.0</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+A
+B
+
+A
+B
+A
+
+OK
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-yield_to_test-msvc-9.0express">coroutine - yield_to_test - msvc-9.0express</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+A
+B
+
+A
+B
+A
+
+OK
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="filesystem-file_time_test-gcc-mingw-3.4.5">filesystem - file_time_test - gcc-mingw-3.4.5</a></h2>
+<h3>Compiler output:</h3><pre>
+C:/Boost/src/svn/boost/filesystem/path.hpp: In member function `String boost::filesystem::basic_path&lt;String, Traits&gt;::root_name() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]':
+C:/Boost/src/svn/boost/filesystem/operations.hpp:565:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, Path&gt;::type boost::filesystem::complete(const Path&amp;, const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:726:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:935: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/operations.hpp:565:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, Path&gt;::type boost::filesystem::complete(const Path&amp;, const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:726:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:935: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/operations.hpp:565:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, Path&gt;::type boost::filesystem::complete(const Path&amp;, const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:726:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:935: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp: In member function `const String boost::filesystem::basic_path&lt;String, Traits&gt;::file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]':
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1214: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1214: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1230: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1230: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1236: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1241: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp: In member function `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const typename String::value_type*) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]':
+C:/Boost/src/svn/boost/filesystem/path.hpp:185:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:147:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;::basic_path(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/fstream.hpp:55:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1038: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:185:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:147:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;::basic_path(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/fstream.hpp:55:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1038: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:185:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:147:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;::basic_path(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/fstream.hpp:55:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1038: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp: In function `typename String::size_type boost::filesystem::detail::root_directory_start(const String&amp;, typename String::size_type) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]':
+C:/Boost/src/svn/boost/filesystem/path.hpp:1207:   instantiated from `const String boost::filesystem::basic_path&lt;String, Traits&gt;::file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:822: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:1207:   instantiated from `const String boost::filesystem::basic_path&lt;String, Traits&gt;::file_string() co...
+   (remainder deleted because of excessive size)
+</pre>
+<h2><a name="filesystem-remove_all_test-gcc-mingw-3.4.5">filesystem - remove_all_test - gcc-mingw-3.4.5</a></h2>
+<h3>Compiler output:</h3><pre>
+C:/Boost/src/svn/boost/filesystem/path.hpp: In member function `String boost::filesystem::basic_path&lt;String, Traits&gt;::root_name() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]':
+C:/Boost/src/svn/boost/filesystem/operations.hpp:565:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, Path&gt;::type boost::filesystem::complete(const Path&amp;, const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:726:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:935: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/operations.hpp:565:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, Path&gt;::type boost::filesystem::complete(const Path&amp;, const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:726:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:935: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/operations.hpp:565:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, Path&gt;::type boost::filesystem::complete(const Path&amp;, const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:726:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:935: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp: In member function `const String boost::filesystem::basic_path&lt;String, Traits&gt;::file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]':
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1214: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1214: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1230: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1230: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1236: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1241: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp: In member function `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const typename String::value_type*) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]':
+C:/Boost/src/svn/boost/filesystem/path.hpp:185:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:147:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;::basic_path(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/fstream.hpp:55:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1038: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:185:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:147:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;::basic_path(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/fstream.hpp:55:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1038: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:185:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:147:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;::basic_path(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/fstream.hpp:55:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1038: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp: In function `typename String::size_type boost::filesystem::detail::root_directory_start(const String&amp;, typename String::size_type) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]':
+C:/Boost/src/svn/boost/filesystem/path.hpp:1207:   instantiated from `const String boost::filesystem::basic_path&lt;String, Traits&gt;::file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:822: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:1207:   instantiated from `const String boost::filesystem::basic_path&lt;String, Traits&gt;::file_string() co...
+   (remainder deleted because of excessive size)
+</pre>
+<h2><a name="filesystem-status_test-gcc-mingw-3.4.5">filesystem - status_test - gcc-mingw-3.4.5</a></h2>
+<h3>Compiler output:</h3><pre>
+C:/Boost/src/svn/boost/filesystem/path.hpp: In member function `String boost::filesystem::basic_path&lt;String, Traits&gt;::root_name() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]':
+C:/Boost/src/svn/boost/filesystem/operations.hpp:565:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, Path&gt;::type boost::filesystem::complete(const Path&amp;, const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:726:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:935: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/operations.hpp:565:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, Path&gt;::type boost::filesystem::complete(const Path&amp;, const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:726:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:935: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/operations.hpp:565:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, Path&gt;::type boost::filesystem::complete(const Path&amp;, const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:726:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:935: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp: In member function `const String boost::filesystem::basic_path&lt;String, Traits&gt;::file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]':
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1214: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1214: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1230: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1230: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1236: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1241: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp: In member function `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const typename String::value_type*) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]':
+C:/Boost/src/svn/boost/filesystem/path.hpp:185:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:147:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;::basic_path(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/fstream.hpp:55:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1038: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:185:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:147:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;::basic_path(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/fstream.hpp:55:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1038: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:185:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:147:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;::basic_path(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/fstream.hpp:55:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1038: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp: In function `typename String::size_type boost::filesystem::detail::root_directory_start(const String&amp;, typename String::size_type) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]':
+C:/Boost/src/svn/boost/filesystem/path.hpp:1207:   instantiated from `const String boost::filesystem::basic_path&lt;String, Traits&gt;::file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:207:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:249:   instantiated from `typename boost::enable_if&lt;boost::filesystem::is_basic_path&lt;Path&gt;, boost::filesystem::file_status&gt;::type boost::filesystem::status(const Path&amp;) [with Path = boost::filesystem::wpath]'
+C:/Boost/src/svn/boost/filesystem/operations.hpp:596:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:822: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:1207:   instantiated from `const String boost::filesystem::basic_path&lt;String, Traits&gt;::file_string() co...
+   (remainder deleted because of excessive size)
+</pre>
+</body>
+</html>

@@ -1,0 +1,69 @@
+# Hamigaki ogg Library Jamfile
+
+# Copyright Takeshi Mouri 2007.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/libs/ogg for library home page.
+
+import project ;
+
+local ogg-source = [ modules.peek : OGG_SOURCE ] ;
+local no-ogg = [ modules.peek : NO_OGG ] ;
+
+if [ project.find /ogg : . ]
+{
+    alias hamigaki_ogg : /ogg//ogg ;
+}
+else if $(ogg-source)
+{
+    project hamigaki/ogg
+        : source-location $(ogg-source)/src
+        ;
+
+    local SOURCES = bitwise framing ;
+
+    lib hamigaki_ogg
+        :
+        $(SOURCES).c
+        :
+        <include>$(ogg-source)/include
+        <link>shared:<def-file>$(ogg-source)/win32/ogg.def
+        <toolset>msvc-8.0:<cflags>-wd4819
+        <toolset>msvc-8.0:<cflags>-wd4996
+        :
+        :
+        <include>$(ogg-source)/include
+        ;
+
+    install dist-lib
+        :
+        hamigaki_ogg
+        :
+        <install-type>LIB
+        <location>../../../dist/lib
+        ;
+
+    explicit dist-lib ;
+}
+else if ! $(no-ogg)
+{
+    local ogg-inc = [ modules.peek : OGG_INCLUDE ] ;
+    local ogg-lib = [ modules.peek : OGG_LIBPATH ] ;
+    local ogg-name = [ modules.peek : OGG_BINARY ] ;
+
+    ogg-name ?= ogg ;
+
+    lib hamigaki_ogg
+        :
+        :
+        <name>$(ogg-name)
+        <library-path>$(ogg-lib)
+        :
+        :
+        <include>$(ogg-inc)
+        <library-path>$(ogg-lib)
+        <link>shared:<dll-path>$(ogg-lib)
+        ;
+}

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Process Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/process for library home page.
+-->
+<header name="hamigaki/process/status.hpp">
+  <namespace name="hamigaki">
+    <namespace name="process">
+      <class name="status">
+        <purpose>
+          <simpara>プロセスの終了状態を保持する。</simpara>
+        </purpose>
+
+        <typedef name="type">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <static-constant name="exited">
+          <type>type</type>
+          <default><emphasis>implementation defined</emphasis></default>
+          <purpose>exit()した、またはmain()関数からreturnした</purpose>
+        </static-constant>
+
+        <static-constant name="signaled">
+          <type>type</type>
+          <default><emphasis>implementation defined</emphasis></default>
+          <purpose>シグナルにより終了した</purpose>
+        </static-constant>
+
+        <static-constant name="stopped">
+          <type>type</type>
+          <default><emphasis>implementation defined</emphasis></default>
+          <purpose>シグナルにより停止した</purpose>
+        </static-constant>
+
+        <static-constant name="continued">
+          <type>type</type>
+          <default><emphasis>implementation defined</emphasis></default>
+          <purpose>シグナルにより再開した</purpose>
+        </static-constant>
+
+        <constructor>
+          <postconditions><code>get_type() == inherit</code></postconditions>
+        </constructor>
+
+        <constructor>
+          <parameter name="code">
+            <paramtype>unsigned</paramtype>
+            <default>0</default>
+          </parameter>
+          <postconditions><code>(get_type() == exited) &amp;&amp; (this->code() == code) &amp;&amp; (dumped_core() == false)</code></postconditions>
+        </constructor>
+
+        <constructor>
+          <parameter name="t">
+            <paramtype>type</paramtype>
+          </parameter>
+          <parameter name="code">
+            <paramtype>unsigned</paramtype>
+          </parameter>
+          <parameter name="core">
+            <paramtype>bool</paramtype>
+            <default>false</default>
+          </parameter>
+          <postconditions><code>(get_type() == t) &amp;&amp; (this->code() == code) &amp;&amp; (dumped_core() == core)</code></postconditions>
+        </constructor>
+
+        <method-group name="queries">
+          <method name="get_type" cv="const">
+            <type>type</type>
+            <returns>コンストラクタで設定された終了タイプ</returns>
+          </method>
+
+          <method name="code" cv="const">
+            <type>unsigned</type>
+            <returns>コンストラクタで設定された終了コードまたはシグナル番号</returns>
+          </method>
+
+          <method name="dumped_core" cv="const">
+            <type>bool</type>
+            <returns>coreファイルが作成されたかどうか</returns>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

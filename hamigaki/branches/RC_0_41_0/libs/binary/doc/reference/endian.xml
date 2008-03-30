@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Binary Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/binary for library home page.
+-->
+<header name="hamigaki/binary/endian.hpp">
+  <namespace name="hamigaki">
+    <enum name="endianness">
+      <enumvalue name="big" />
+      <enumvalue name="little" />
+      <enumvalue name="default_" />
+      <enumvalue name="native" />
+      <purpose><simpara>エンディアンの種類</simpara></purpose>
+      <description>
+        <informaltable frame="all">
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>値</entry>
+                <entry>意味</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>big</entry>
+                <entry>ビッグエンディアン</entry>
+              </row>
+              <row>
+                <entry>little</entry>
+                <entry>リトルエンディアン</entry>
+              </row>
+              <row>
+                <entry>default_</entry>
+                <entry>既定のエンディアン (外部から指定される規定値に従い、ビッグエンディアンとリトルエンディアンのどちらかに切り替える)</entry>
+              </row>
+              <row>
+                <entry>native</entry>
+                <entry>実行環境におけるエンディアン (<code>big</code>または<code>little</code>と同じ値を持つ)</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </description>
+    </enum>
+
+    <struct name="integer_encoding_traits">
+      <template>
+        <template-nontype-parameter name="Size">
+          <type>std::size_t</type>
+        </template-nontype-parameter>
+      </template>
+      <typedef name="int_type">
+         <type><emphasis>implementation defined</emphasis></type>
+      </typedef>
+      <typedef name="uint_type">
+         <type><emphasis>implementation defined</emphasis></type>
+      </typedef>
+      <description>
+        <para>構造体<code>integer_encoding_traits</code>は、<code>Size</code>バイトの文字列にエンコードされる整数をプログラム中で扱う際に使用する型を示している。</para>
+        <para><code>int_type</code>は符号付き整数、<code>uint_type</code>は符号なし整数である。</para>
+      </description>
+    </struct>
+
+    <free-function-group name="encoding/decoding functions">
+      <function name="encode_uint">
+        <template>
+          <template-nontype-parameter name="E">
+            <type>endianness</type>
+          </template-nontype-parameter>
+          <template-nontype-parameter name="Size">
+            <type>std::size_t</type>
+          </template-nontype-parameter>
+        </template>
+        <type>void</type>
+        <parameter name="s">
+          <paramtype>char*</paramtype>
+        </parameter>
+        <parameter name="n">
+          <paramtype>typename <classname>integer_encoding_traits</classname>&lt;Size&gt;::uint_type</paramtype>
+        </parameter>
+        <effects><simpara>符号なし整数<code>n</code>をエンディアン<code>E</code>でエンコードして範囲<code>[s, s+Size)</code>に書き出す。</simpara></effects>
+      </function>
+
+      <function name="encode_int">
+        <template>
+          <template-nontype-parameter name="E">
+            <type>endianness</type>
+          </template-nontype-parameter>
+          <template-nontype-parameter name="Size">
+            <type>std::size_t</type>
+          </template-nontype-parameter>
+        </template>
+        <type>void</type>
+        <parameter name="s">
+          <paramtype>char*</paramtype>
+        </parameter>
+        <parameter name="n">
+          <paramtype>typename <classname>integer_encoding_traits</classname>&lt;Size&gt;::int_type</paramtype>
+        </parameter>
+        <effects><simpara>符号付き整数<code>n</code>をエンディアン<code>E</code>でエンコードして範囲<code>[s, s+Size)</code>に書き出す。</simpara></effects>
+      </function>
+
+      <function name="decode_uint">
+        <template>
+          <template-nontype-parameter name="E">
+            <type>endianness</type>
+          </template-nontype-parameter>
+          <template-nontype-parameter name="Size">
+            <type>std::size_t</type>
+          </template-nontype-parameter>
+        </template>
+        <type>typename <classname>integer_encoding_traits</classname>&lt;Size&gt;::uint_type</type>
+        <parameter name="s">
+          <paramtype>const char*</paramtype>
+        </parameter>
+        <effects><simpara>範囲<code>[s, s+Size)</code>をエンディアン<code>E</code>で符号なし整数としてデコードする。</simpara></effects>
+        <returns><simpara>デコードされた整数値</simpara></returns>
+      </function>
+
+      <function name="decode_int">
+        <template>
+          <template-nontype-parameter name="E">
+            <type>endianness</type>
+          </template-nontype-parameter>
+          <template-nontype-parameter name="Size">
+            <type>std::size_t</type>
+          </template-nontype-parameter>
+        </template>
+        <type>typename <classname>integer_encoding_traits</classname>&lt;Size&gt;::int_type</type>
+        <parameter name="s">
+          <paramtype>const char*</paramtype>
+        </parameter>
+        <effects><simpara>範囲<code>[s, s+Size)</code>をエンディアン<code>E</code>で符号付き整数としてデコードする。</simpara></effects>
+        <returns><simpara>デコードされた整数値</simpara></returns>
+      </function>
+    </free-function-group>
+  </namespace>
+</header>

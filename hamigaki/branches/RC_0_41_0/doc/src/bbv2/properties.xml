@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<section id="bbv2.properties">
+  <title>プロパティ</title>
+  <section id="bbv2.properties.property">
+    <title>プロパティ</title>
+    <para>BBv2ではビルドの設定を「&lt;<emphasis>名前</emphasis>&gt;<emphasis>値</emphasis>」の形式で指定する。これを<firstterm>プロパティ</firstterm>と呼び、プロパティの名前(種類)を<firstterm>フィーチャー</firstterm>と呼ぶ。</para>
+  </section>
+  <section id="bbv2.properties.features">
+    <title>フィーチャー</title>
+    <para>よく使われるフィーチャーには以下のようなものがある。</para>
+    <informaltable frame="all">
+      <tgroup cols="3">
+        <thead>
+          <row>
+            <entry>フィーチャー</entry>
+            <entry>意味</entry>
+            <entry>値</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>toolset </entry>
+            <entry>ビルドに使用するツールセット</entry>
+            <entry>任意</entry>
+          </row>
+          <row>
+            <entry>variant </entry>
+            <entry>ビルド設定の典型的な組み合わせ</entry>
+            <entry><simplelist type="inline">
+              <member>debug</member>
+              <member>release</member>
+              <member>profile</member>
+            </simplelist></entry>
+          </row>
+          <row>
+            <entry>threading</entry>
+            <entry>スレッド環境</entry>
+            <entry><simplelist type="inline">
+              <member>single</member>
+              <member>multi</member>
+            </simplelist></entry>
+          </row>
+          <row>
+            <entry>link</entry>
+            <entry>生成されるライブラリのリンク方法</entry>
+            <entry><simplelist type="inline">
+              <member>shared</member>
+              <member>static</member>
+            </simplelist></entry>
+          </row>
+          <row>
+            <entry>runtime-link</entry>
+            <entry>標準ライブラリのリンク方法</entry>
+            <entry><simplelist type="inline">
+              <member>shared</member>
+              <member>static</member>
+            </simplelist></entry>
+          </row>
+          <row>
+            <entry>source</entry>
+            <entry>追加のソース</entry>
+            <entry>任意</entry>
+          </row>
+          <row>
+            <entry>library</entry>
+            <entry>追加のライブラリ</entry>
+            <entry>任意</entry>
+          </row>
+          <row>
+            <entry>include</entry>
+            <entry>追加のインクルードディレクトリ</entry>
+            <entry>任意</entry>
+          </row>
+          <row>
+            <entry>define</entry>
+            <entry>追加のマクロ定義</entry>
+            <entry>任意</entry>
+          </row>
+          <row>
+            <entry>library-path</entry>
+            <entry>追加のライブラリパス</entry>
+            <entry>任意</entry>
+          </row>
+          <row>
+            <entry>cflags</entry>
+            <entry>Cコンパイラに渡すオプション</entry>
+            <entry>任意</entry>
+          </row>
+          <row>
+            <entry>cxxflags</entry>
+            <entry>C++コンパイラに渡すオプション</entry>
+            <entry>任意</entry>
+          </row>
+          <row>
+            <entry>linkflags</entry>
+            <entry>リンカに渡すオプション</entry>
+            <entry>任意</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+</section>

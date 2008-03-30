@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Iostreams Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
+-->
+<header name="hamigaki/iostreams/device/file.hpp">
+  <namespace name="hamigaki">
+    <namespace name="iostreams">
+      <class name="file_source">
+        <typedef name="char_type">
+          <type>char</type>
+        </typedef>
+
+        <constructor/>
+
+        <constructor specifiers="explicit">
+          <parameter name="filename">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+
+          <parameter name="mode">
+            <paramtype>std::ios_base::openmode</paramtype>
+            <default>std::ios_base::in</default>
+          </parameter>
+        </constructor>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="open">
+            <type>void</type>
+
+            <parameter name="filename">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+
+            <parameter name="mode">
+              <paramtype>std::ios_base::openmode</paramtype>
+              <default>std::ios_base::in</default>
+            </parameter>
+          </method>
+
+          <method name="is_open" cv="const">
+            <type>bool</type>
+          </method>
+
+          <method name="read">
+            <type>std::streamsize</type>
+
+            <parameter name="s">
+              <paramtype>char*</paramtype>
+            </parameter>
+
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+
+          <method name="seek">
+            <type>std::streampos</type>
+
+            <parameter name="off">
+              <paramtype>boost::iostreams::stream_offset</paramtype>
+            </parameter>
+
+            <parameter name="way">
+              <paramtype>std::ios_base::seekdir</paramtype>
+            </parameter>
+          </method>
+
+          <method name="close">
+            <type>void</type>
+          </method>
+        </method-group>
+      </class>
+
+      <class name="file_sink">
+        <typedef name="char_type">
+          <type>char</type>
+        </typedef>
+
+        <constructor/>
+
+        <constructor specifiers="explicit">
+          <parameter name="filename">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+
+          <parameter name="mode">
+            <paramtype>std::ios_base::openmode</paramtype>
+            <default>std::ios_base::out</default>
+          </parameter>
+        </constructor>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="open">
+            <type>void</type>
+
+            <parameter name="filename">
+              <paramtype>const std::string&amp;</paramtype>
+            </parameter>
+
+            <parameter name="mode">
+              <paramtype>std::ios_base::openmode</paramtype>
+              <default>std::ios_base::out</default>
+            </parameter>
+          </method>
+
+          <method name="is_open" cv="const">
+            <type>bool</type>
+          </method>
+
+          <method name="write">
+            <type>std::streamsize</type>
+
+            <parameter name="s">
+              <paramtype>const char*</paramtype>
+            </parameter>
+
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+
+          <method name="seek">
+            <type>std::streampos</type>
+
+            <parameter name="off">
+              <paramtype>boost::iostreams::stream_offset</paramtype>
+            </parameter>
+
+            <parameter name="way">
+              <paramtype>std::ios_base::seekdir</paramtype>
+            </parameter>
+          </method>
+
+          <method name="close">
+            <type>void</type>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

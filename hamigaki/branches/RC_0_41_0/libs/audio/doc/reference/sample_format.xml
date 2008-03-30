@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Audio Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+-->
+<header name="hamigaki/audio/sample_format.hpp">
+  <namespace name="hamigaki">
+    <namespace name="audio">
+      <enum name="sample_format_type">
+        <enumvalue name="uint8" />
+        <enumvalue name="int8" />
+        <enumvalue name="int_le16" />
+        <enumvalue name="int_be16" />
+        <enumvalue name="int_le24" />
+        <enumvalue name="int_be24" />
+        <enumvalue name="int_le32" />
+        <enumvalue name="int_be32" />
+        <enumvalue name="int_a4_le16" />
+        <enumvalue name="int_a4_be16" />
+        <enumvalue name="int_a4_le18" />
+        <enumvalue name="int_a4_be18" />
+        <enumvalue name="int_a4_le20" />
+        <enumvalue name="int_a4_be20" />
+        <enumvalue name="int_a4_le24" />
+        <enumvalue name="int_a4_be24" />
+        <enumvalue name="float_le32" />
+        <enumvalue name="float_be32" />
+        <enumvalue name="float_le64" />
+        <enumvalue name="float_be64" />
+        <purpose><simpara>PCMデータのエンコーディング方式。</simpara></purpose>
+        <description>
+          <informaltable frame="all">
+            <tgroup cols="2">
+              <thead>
+                <row>
+                  <entry>値</entry>
+                  <entry>意味</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>uint8</entry>
+                  <entry>符号なし8ビット整数(バイアス=128)</entry>
+                </row>
+                <row>
+                  <entry>int8</entry>
+                  <entry>符号あり8ビット整数(2の補数表現)</entry>
+                </row>
+                <row>
+                  <entry>int_le<emphasis>N</emphasis></entry>
+                  <entry>符号あり<emphasis>N</emphasis>ビット整数(2の補数表現、リトルエンディアン)</entry>
+                </row>
+                <row>
+                  <entry>int_be<emphasis>N</emphasis></entry>
+                  <entry>符号あり<emphasis>N</emphasis>ビット整数(2の補数表現、ビッグエンディアン)</entry>
+                </row>
+                <row>
+                  <entry>int_a<emphasis>M</emphasis>_le<emphasis>N</emphasis></entry>
+                  <entry>符号あり<emphasis>N</emphasis>ビット整数(2の補数表現、リトルエンディアン、<emphasis>M</emphasis>バイト整列)</entry>
+                </row>
+                <row>
+                  <entry>int_a<emphasis>M</emphasis>_be<emphasis>N</emphasis></entry>
+                  <entry>符号あり<emphasis>N</emphasis>ビット整数(2の補数表現、ビッグエンディアン、<emphasis>M</emphasis>バイト整列)</entry>
+                </row>
+                <row>
+                  <entry>float_le<emphasis>N</emphasis></entry>
+                  <entry><emphasis>N</emphasis>ビット浮動小数点数(IEEE754形式、リトルエンディアン)</entry>
+                </row>
+                <row>
+                  <entry>float_be<emphasis>N</emphasis></entry>
+                  <entry><emphasis>N</emphasis>ビット浮動小数点数(IEEE754形式、ビッグエンディアン)</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+        </description>
+      </enum>
+
+      <function name="sample_bits">
+        <type>int</type>
+        <parameter name="type">
+          <paramtype><enumname>sample_format_type</enumname></paramtype>
+        </parameter>
+        <returns><simpara>量子化ビット数。</simpara></returns>
+      </function>
+
+      <function name="sample_size">
+        <type>std::streamsize</type>
+        <parameter name="type">
+          <paramtype><enumname>sample_format_type</enumname></paramtype>
+        </parameter>
+        <returns><simpara>1サンプルのバイト数。</simpara></returns>
+      </function>
+
+      <function name="sample_format_of">
+        <template>
+          <template-type-parameter name="T"/>
+        </template>
+        <type><enumname>sample_format_type</enumname></type>
+        <parameter name="t">
+          <paramtype>const T&amp;</paramtype>
+        </parameter>
+        <returns><simpara><code>T</code>のPCMデータのエンコーディング方式。</simpara></returns>
+      </function>
+    </namespace>
+  </namespace>
+</header>

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Coroutine Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/coroutine for library home page.
+-->
+<header name="hamigaki/coroutine/coroutine.hpp">
+  <namespace name="hamigaki">
+    <namespace name="coroutines">
+      <class name="selfN">
+        <template>
+          <template-type-parameter name="R"/>
+          <template-type-parameter name="T1"/>
+          <template-type-parameter name="T2"/>
+          <template-varargs/>
+          <template-type-parameter name="TN"/>
+        </template>
+
+        <method-group name="queries">
+          <method name="result">
+            <type>R</type>
+            <returns><simpara>前回の戻り値を返す</simpara></returns>
+          </method>
+        </method-group>
+
+        <method-group name="modifiers">
+          <method name="exit">
+            <type>void</type>
+            <effects><simpara>コルーチンの実行を中断し、終了させる。</simpara></effects>
+            <returns><simpara>決して戻らない</simpara></returns>
+            <throws><classname>exit_exception</classname></throws>
+          </method>
+
+          <method name="yield">
+            <type>boost::tuple&lt;T1,T2, ..., TN&gt;</type>
+            <parameter name="r"><paramtype>R</paramtype></parameter>
+            <effects><simpara>コルーチンの実行を一時中断し、呼び出し元にコンテキストを戻す。コルーチンの戻り値は<code>r</code>になる。</simpara></effects>
+            <returns><simpara>再度呼び出された際のコルーチンの引数</simpara></returns>
+          </method>
+
+          <method name="yield_to">
+            <template>
+              <template-type-parameter name="Coroutine"/>
+              <template-type-parameter name="U1"/>
+              <template-type-parameter name="U2"/>
+              <template-varargs/>
+              <template-type-parameter name="UM"/>
+            </template>
+            <type>boost::tuple&lt;T1,T2, ..., TN&gt;</type>
+            <parameter name="c"><paramtype>Coroutine</paramtype></parameter>
+            <parameter name="a1"><paramtype>U1</paramtype></parameter>
+            <parameter name="a2"><paramtype>U2</paramtype></parameter>
+            <parameter><paramtype>...</paramtype></parameter>
+            <parameter name="aM"><paramtype>UM</paramtype></parameter>
+            <effects><simpara>コルーチンの実行を一時中断し、コルーチン<code>c</code>にコンテキストを移動させる。コルーチン<code>c</code>の引数は<code>a1, a2, ..., aM</code>になる。</simpara></effects>
+            <returns><simpara>再度呼び出された際のコルーチンの引数</simpara></returns>
+          </method>
+        </method-group>
+      </class>
+
+      <class name="coroutineN">
+        <template>
+          <template-type-parameter name="R"/>
+          <template-type-parameter name="T1"/>
+          <template-type-parameter name="T2"/>
+          <template-varargs/>
+          <template-type-parameter name="TN"/>
+        </template>
+
+        <typedef name="self">
+          <type><classname>selfN</classname>&lt;R, T1, T2, ..., TN&gt;</type>
+        </typedef>
+
+        <constructor>
+          <effects><simpara>ファンクタを保持していない空のコルーチンを生成する。</simpara></effects>
+          <postconditions><code>empty()</code></postconditions>
+        </constructor>
+
+        <constructor>
+          <parameter name="x">
+            <paramtype>coroutineN&amp;</paramtype>
+          </parameter>
+          <effects><simpara><code>x</code>の保持するコルーチンの所有権を引き取る。</simpara></effects>
+          <postconditions><code>x.empty()</code></postconditions>
+        </constructor>
+
+        <constructor>
+          <template>
+            <template-type-parameter name="Functor"/>
+          </template>
+          <parameter name="f">
+            <paramtype>const Functor&amp;</paramtype>
+          </parameter>
+          <parameter name="stack_size">
+            <paramtype>std::ptrdiff_t</paramtype>
+            <default>-1</default>
+          </parameter>
+          <effects><simpara>スタックサイズが<code>stack_size</code>のコルーチンを生成する。ファンクタ<code>f</code>のコピーがコルーチンのエントリポイントに設定される。</simpara></effects>
+          <postconditions><code>!empty()</code></postconditions>
+        </constructor>
+
+        <method-group name="queries">
+          <method name="exited" cv="const">
+            <type>bool</type>
+            <returns><simpara>コルーチンの保持するファンクタが終了していれば、<code>true</code></simpara></returns>
+          </method>
+
+          <method name="empty" cv="const">
+            <type>bool</type>
+            <returns><simpara>コルーチンがコンテキストを保持していない場合、<code>true</code></simpara></returns>
+          </method>
+        </method-group>
+
+        <method-group name="modifiers">
+          <method name="exit">
+            <type>void</type>
+            <effects><simpara>コルーチンの実行を中断し、終了させる。</simpara></effects>
+            <postconditions><code>exited()</code></postconditions>
+          </method>
+        </method-group>
+
+        <method-group name="invocations">
+          <method name="operator()" cv="const">
+            <type>R</type>
+            <parameter name="a1"><paramtype>T1</paramtype></parameter>
+            <parameter name="a2"><paramtype>T2</paramtype></parameter>
+            <parameter><paramtype>...</paramtype></parameter>
+            <parameter name="aN"><paramtype>TN</paramtype></parameter>
+            <effects><simpara>コルーチンの実行を再開し、その結果を返す。</simpara></effects>
+            <returns><simpara>コルーチンの戻り値</simpara></returns>
+            <throws>
+              <simpara>コルーチンが<code><methodname alt="hamigaki::coroutines::selfN::exit">exit</methodname>()</code>により終了した場合には、<classname>coroutine_exited</classname>を送出する。</simpara>
+              <simpara>捕捉されない例外によりコルーチンが異常終了した場合は、その例外の型情報を保持する<classname>abnormal_exit</classname>を送出する。</simpara>
+            </throws>
+          </method>
+
+          <method name="operator()" cv="const">
+            <type>boost::optional&lt;R&gt;</type>
+            <parameter name=""><paramtype>std::nothrow_t</paramtype></parameter>
+            <parameter name="a1"><paramtype>T1</paramtype></parameter>
+            <parameter name="a2"><paramtype>T2</paramtype></parameter>
+            <parameter><paramtype>...</paramtype></parameter>
+            <parameter name="aN"><paramtype>TN</paramtype></parameter>
+            <effects><simpara>コルーチンの実行を再開し、その結果を返す。</simpara></effects>
+            <returns><simpara>コルーチンが終了した、あるいは未捕捉例外により異常終了して、戻り値がない場合は、<code>boost::optional&lt;R&gt;()</code>。それ以外の場合は、コルーチンの戻り値。</simpara></returns>
+            <throws>引数や戻り値のコピーコンストラクタが例外を送出する場合を除いて、いかなる例外も送出しない。</throws>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

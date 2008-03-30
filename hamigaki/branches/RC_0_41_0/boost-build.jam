@@ -1,0 +1,20 @@
+# Hamigaki Library build settings
+
+# Copyright Takeshi Mouri 2006-2008.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# Original Copyright
+# ============================================================================>
+#~ Copyright (C) 2002-2003, David Abrahams.
+#~ Copyright (C) 2002-2003, Vladimir Prus.
+#~ Copyright (C) 2003, Rene Rivera.
+#~ Use, modification and distribution are subject to the
+#~ Boost Software License, Version 1.0. (See accompanying file
+#~ LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+# <============================================================================
+
+HAMIGAKI_ROOT = $(.boost-build-file:D) ;
+JAMFILE = Jamfile.v2 Jamfile ;
+boost-build $(BOOST_ROOT)/tools/build/v2 ;

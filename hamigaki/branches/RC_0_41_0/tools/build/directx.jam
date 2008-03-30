@@ -1,0 +1,63 @@
+# DirectX SDK toolset
+
+# Copyright Takeshi Mouri 2007, 2008.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/ for library home page.
+
+import os ;
+import project ;
+
+project.initialize $(__name__) ;
+project directx ;
+
+.project = [ project.current ] ;
+
+# Initializes the DirectX SDK toolset.
+#
+rule init (
+    root ? # the install directory of DirectX SDK
+    : headers ? # the include path to DirectX headers
+    : libraries ? # the path to DirectX import libraries
+    : condition * # additional conditions which passed to <requirements>
+)
+{
+    project.push-current $(.project) ;
+
+    if ! $(.configured)
+    {
+        for local name in
+            d3dxof ddraw dinput dplayx dsetup dsound dxguid
+            d3d8 dinput8 dxerr8
+            d3d9 d3dx9d dxerr9
+        {
+            lib $(name) : sdk : <name>$(name) ;
+        }
+    }
+
+    .configured = true ;
+
+    root ?= [ os.environ DXSDK_DIR ] ;
+    if $(root)
+    {
+        path-constant DXSDK_DIR : $(root) ;
+        headers ?= $(DXSDK_DIR)/Include ;
+        libraries ?= $(DXSDK_DIR)/Lib/x86 ;
+    }
+
+    alias sdk
+        :
+        : $(condition)
+        :
+        : <include>$(headers) <library-path>$(libraries)
+        ;
+}
+
+# States whether DirectX SDK has bee configured.
+#
+rule configured ( )
+{
+    return $(.configured) ;
+}

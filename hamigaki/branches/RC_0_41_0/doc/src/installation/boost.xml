@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2008.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<section id="installation.boost">
+  <title>Boost C++ライブラリのインストール</title>
+  <para>HamigakiライブラリのビルドにはBoost C++ライブラリの準備が必要なので、「<ulink url="http://www.boost.org/more/getting_started/index.html">Getting Started</ulink>」を参考にBoostをインストールする必要がある。ここでは典型的な例をいくつか示す。</para>
+  <section id="installation.boost.installer">
+    <title>BoostPro Binary Installerを使用する場合</title>
+    <para>MicrosoftのVisual C++ 7.1 (2003)およびVisual C++ 8.0 (2005)を利用しているユーザーは、Boost Consultingの提供する<ulink url="http://www.boost-consulting.com/products/free">BoostPro Binary Installer</ulink>を利用することでインストールプロセスを簡略化できる。</para>
+    <para>HamigakiライブラリのビルドにはbjamとBoost.Buildが必要なので、コンポーネントの選択時に「Tools」と「Add to path」にチェックを入れること。</para>
+    <note>このインストーラーに含まれるビルド済みライブラリはlibbzip2/zlib等の外部ライブラリに依存する機能が無効になっている。このため、それらを利用するHamigaki.Archiversのbzip2/gzip/ZIPサポートが必要な場合は、このインストーラを使わず、ソースコードからビルドしなくてはならない。</note>
+  </section>
+  <section id="installation.boost.package">
+    <title>パッケージを使用する場合</title>
+    <para>いくつかのLinuxディストリビューションではBoostのバイナリパッケージが提供されているので、これを利用するとよい。しかし、大抵はbjamやBoost.Buildが含まれていないので、以下のアーカイブを展開して使用する。</para>
+    <itemizedlist>
+      <listitem><ulink url="http://sourceforge.net/project/showfiles.php?group_id=7586&amp;package_id=72941">bjam</ulink></listitem>
+      <listitem><ulink url="http://sourceforge.net/project/showfiles.php?group_id=7586&amp;package_id=80982">Boost.Build</ulink></listitem>
+    </itemizedlist>
+    <para>bjamはパスの通ったディレクトリへコピーすればよい。</para>
+    <para>Boost.Buildは適当なディレクトリ(<filename class="directory">/usr/share/boost-build</filename>や<filename class="directory">${HOME}/share/boost-build</filename>等)にコピーする。<filename class="directory">/usr/share/boost-build</filename>以外の場所にコピーした場合は、そのパスを環境変数<envar>BOOST_BUILD_PATH</envar>に設定する。</para>
+  </section>
+  <section id="installation.boost.source">
+    <title>bjamでソースコードからビルドする場合</title>
+    <para>一例として、MS Windows上のVisual C++ 8.0でビルドする手順を紹介する。</para>
+    <orderedlist>
+      <listitem>SourceForge.netの<ulink url="http://sourceforge.net/project/showfiles.php?group_id=7586&amp;package_id=8041">ダウンロードページ</ulink>から<filename>boost_1_34_1.zip</filename>をダウンロードし、適当なディレクトリ(ここでは<filename class="directory">C:\Boost\src\boost_1_34_1</filename>)に展開する。</listitem>
+      <listitem>
+        <simpara>bzip2やzlibのサポートを有効にする場合は、以下のライブラリも展開する。</simpara>
+        <itemizedlist>
+          <listitem><ulink url="http://www.bzip.org/">libbzip2</ulink></listitem>
+          <listitem><ulink url="http://www.zlib.net/">zlib</ulink></listitem>
+        </itemizedlist>
+        <simpara>ここではそれぞれ、<filename class="directory">C:\Boost\src\bzip</filename>、<filename class="directory">C:\Boost\src\zlib</filename>に展開したものとする。</simpara>
+      </listitem>
+      <listitem>
+        <simpara>スタートメニューから「コマンド プロンプト」を起動し、以下のコマンドを入力する。</simpara>
+        <screen>C:\WINDOWS> cd C:\Boost\src\boost_1_34_1\tools\jam\src
+C:\Boost\src\boost_1_34_1\tools\jam\src> build.bat
+</screen>
+      </listitem>
+      <listitem><filename>C:\Boost\src\boost_1_34_1\tools\jam\src\bin.ntx86\bjam.exe</filename>にbjamの実行ファイルが作成されるので、適当なディレクトリ(ここでは<filename class="directory">C:\Boost\bin</filename>)にコピーする。</listitem>
+      <listitem>
+        <simpara>ホームディレクトリに以下の内容で<filename>user-config.jam</filename>というファイルを作成する。</simpara>
+        <informalexample><programlisting><![CDATA[module
+{
+    BZIP2_SOURCE = C:/Boost/src/bzip ;
+    ZLIB_SOURCE = C:/Boost/src/zlib ;
+}
+
+import toolset : using ;
+using msvc : 8.0 ;
+]]></programlisting></informalexample>
+        <tip>通常、ホームディレクトリは、Windows 2000/XPでは<filename class="directory">C:\Documents and Settings\<replaceable>ユーザー名</replaceable></filename>であり、Windows Vistaでは<filename class="directory">C:\Users\<replaceable>ユーザー名</replaceable></filename>である。</tip>
+      </listitem>
+      <listitem>
+        <simpara>再び、「コマンド プロンプト」から次のコマンドを実行する。</simpara>
+        <screen>C:\WINDOWS> cd C:\Boost\src\boost_1_34_1
+C:\Boost\src\boost_1_34_1> C:\Boost\bin\bjam install
+</screen>
+      </listitem>
+      <listitem>これで、<filename class="directory">C:\Boost\include\boost-1_34_1</filename>にBoostのヘッダファイルが、<filename class="directory">C:\Boost\lib</filename>にビルドされたライブラリがインストールされる。</listitem>
+    </orderedlist>
+  </section>
+</section>

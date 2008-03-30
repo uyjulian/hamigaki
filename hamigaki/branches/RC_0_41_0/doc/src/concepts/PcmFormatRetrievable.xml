@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE concept PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<concept name="PcmFormatRetrievable" category="Audio">
+  <param name="T" role="pcm-format-retrievable-type"/>
+
+  <associated-type name="category">
+    <get-member-type name="type">
+      <apply-template name="boost::iostreams::category_of">
+        <type name="T"/>
+      </apply-template>
+    </get-member-type>
+    <description><simpara>フィルタまたはデバイスのカテゴリ</simpara></description>
+  </associated-type>
+
+  <notation variables="t">
+    <sample-value>
+      <type name="T"/>
+    </sample-value>
+  </notation>
+
+  <valid-type-expression name="Category tag">
+    <description/>
+    <type name="category"/>
+    <return-type>
+      <derived-from testable="yes">
+        <type name="hamigaki::audio::pcm_format_tag"/>
+      </derived-from>
+    </return-type>
+  </valid-type-expression>
+
+  <valid-expression name="PCM format">
+    <apply-method name="format">
+      <sample-value><reference-to><type name="T"/></reference-to></sample-value>
+    </apply-method>
+    <return-type><require-same-type><type name="hamigaki::audio::pcm_format"/></require-same-type></return-type>
+    <semantics>PCMフォーマット情報を返す。</semantics>
+  </valid-expression>
+</concept>

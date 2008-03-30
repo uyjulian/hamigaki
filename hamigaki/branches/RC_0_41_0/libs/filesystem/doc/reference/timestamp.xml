@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Filesystem Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/filesystem for library home page.
+-->
+<header name="hamigaki/filesystem/timestamp.hpp">
+  <namespace name="hamigaki">
+    <namespace name="filesystem">
+      <struct name="timestamp">
+        <purpose><para>タイムスタンプ情報を保持する</para></purpose>
+
+        <description><para><code>timestamp</code>は1970年1月1日0時(UTC)からの経過時間を保持する。</para></description>
+
+        <data-member name="seconds">
+          <type>boost::int64_t</type>
+        </data-member>
+
+        <data-member name="nanoseconds">
+          <type>boost::uint32_t</type>
+        </data-member>
+
+        <constructor>
+          <effects><simpara><code>seconds = 0, nanoseconds = 0</code></simpara></effects>
+        </constructor>
+
+        <constructor>
+          <parameter name="sec">
+            <paramtype>boost::int64_t</paramtype>
+          </parameter>
+
+          <parameter name="nsec">
+            <paramtype>boost::uint32_t</paramtype>
+          </parameter>
+
+          <effects><simpara><code>seconds = sec, nanoseconds = nsec</code></simpara></effects>
+        </constructor>
+
+        <method-group name="conversions">
+          <method name="to_time_t" cv="const">
+            <type>std::time_t</type>
+            <returns><simpara><code>timestamp</code>の保持する時間を<code>time_t</code>で表現した値</simpara></returns>
+          </method>
+
+          <method name="to_windows_file_time" cv="const">
+            <type>boost::uint64_t</type>
+            <returns><simpara><code>timestamp</code>の保持する時間を1601年1月1日0時（UTC)からの経過時間(100ナノ秒単位)で表現した値</simpara></returns>
+          </method>
+
+          <method name="from_time_t" specifiers="static">
+            <type>timestamp</type>
+            <parameter name="t">
+              <paramtype>std::time_t</paramtype>
+            </parameter>
+            <returns><simpara><code>t</code>の保持する時間を表現する<code>timestamp</code></simpara></returns>
+          </method>
+
+          <method name="from_windows_file_time" specifiers="static">
+            <type>timestamp</type>
+            <parameter name="ft">
+              <paramtype>boost::uint64_t</paramtype>
+            </parameter>
+            <returns><simpara><code>ft</code>の保持する時間を表現する<code>timestamp</code></simpara></returns>
+          </method>
+        </method-group>
+      </struct>
+    </namespace>
+  </namespace>
+</header>

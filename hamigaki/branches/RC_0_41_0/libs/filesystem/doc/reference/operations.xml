@@ -1,0 +1,429 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Filesystem Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/filesystem for library home page.
+-->
+<header name="hamigaki/filesystem/operations.hpp">
+  <namespace name="hamigaki">
+    <namespace name="filesystem">
+      <free-function-group name="status functions">
+        <function name="status">
+          <type><classname>file_status</classname></type>
+          <parameter name="p">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="ec">
+            <paramtype>int&amp;</paramtype>
+          </parameter>
+          <effects><simpara>パス<code>p</code>のファイル状態情報を調べる。ファイルが見つからない場合は、ファイルの種類は<code>file_not_found</code>になる。それ以外のエラーが発生した場合は、ファイルの種類は<code>status_unknown</code>になり、<code>ec</code>にシステム依存のエラーコードを設定する。</simpara></effects>
+          <returns><simpara>パス<code>p</code>のファイル状態情報</simpara></returns>
+        </function>
+
+        <function name="status">
+          <type><classname>file_status</classname></type>
+          <parameter name="p">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <effects><para><programlisting><![CDATA[int ec;
+file_status stat(status(p, ec));]]></programlisting></para></effects>
+          <throws><simpara><code>ec</code>が0でない場合、<code>boost::filesystem::filesystem_error</code></simpara></throws>
+          <returns><simpara><code>stat</code></simpara></returns>
+        </function>
+
+        <function name="symlink_status">
+          <type><classname>file_status</classname></type>
+          <parameter name="p">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="ec">
+            <paramtype>int&amp;</paramtype>
+          </parameter>
+          <effects><simpara>パス<code>p</code>がシンボリックである場合、シンボリックリンク自体のファイル状態情報を返す。それ以外の場合は、<code>status(p)</code>と同じ効果とする。</simpara></effects>
+          <returns><simpara>パス<code>p</code>のファイル状態情報</simpara></returns>
+        </function>
+
+        <function name="symlink_status">
+          <type><classname>file_status</classname></type>
+          <parameter name="p">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <effects><para><programlisting><![CDATA[int ec;
+file_status stat(symlink_status(p, ec));]]></programlisting></para></effects>
+          <throws><simpara><code>ec</code>が0でない場合、<code>boost::filesystem::filesystem_error</code></simpara></throws>
+          <returns><simpara><code>stat</code></simpara></returns>
+        </function>
+      </free-function-group>
+
+      <free-function-group name="predicate functions">
+        <function name="exists">
+          <type>bool</type>
+          <parameter name="p">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <returns><simpara><code>exists(status(p))</code></simpara></returns>
+        </function>
+
+        <function name="is_regular">
+          <type>bool</type>
+          <parameter name="p">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <returns><simpara><code>is_regular(status(p))</code></simpara></returns>
+        </function>
+
+        <function name="is_directory">
+          <type>bool</type>
+          <parameter name="p">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <returns><simpara><code>is_directory(status(p))</code></simpara></returns>
+        </function>
+
+        <function name="is_other">
+          <type>bool</type>
+          <parameter name="p">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <returns><simpara><code>is_other(status(p))</code></simpara></returns>
+        </function>
+
+        <function name="is_symlink">
+          <type>bool</type>
+          <parameter name="p">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <returns><simpara><code>is_symlink(symlink_status(p))</code></simpara></returns>
+        </function>
+      </free-function-group>
+
+      <free-function-group name="attribute functions">
+        <function name="symlink_target">
+          <type>boost::filesystem::path</type>
+          <parameter name="p">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <returns><simpara>パス<code>p</code>のシンボリックリンクのターゲットパス</simpara></returns>
+        </function>
+
+        <function name="last_write_time">
+          <type>void</type>
+          <parameter name="p">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="new_time">
+            <paramtype>const <classname>timestamp</classname>&amp;</paramtype>
+          </parameter>
+          <effects><simpara>パス<code>p</code>のファイル最終更新時間を<code>new_time</code>に変更する</simpara></effects>
+        </function>
+
+        <function name="last_access_time">
+          <type>void</type>
+          <parameter name="p">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="new_time">
+            <paramtype>const <classname>timestamp</classname>&amp;</paramtype>
+          </parameter>
+          <effects><simpara>パス<code>p</code>のファイル最終アクセス時間を<code>new_time</code>に変更する</simpara></effects>
+        </function>
+
+        <function name="creation_time">
+          <type>void</type>
+          <parameter name="p">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="new_time">
+            <paramtype>const <classname>timestamp</classname>&amp;</paramtype>
+          </parameter>
+          <effects><simpara>パス<code>p</code>のファイル作成時間を<code>new_time</code>に変更する</simpara></effects>
+        </function>
+      </free-function-group>
+
+      <free-function-group name="operations functions">
+        <function name="create_hard_link">
+          <type>int</type>
+          <parameter name="old_fp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="new_fp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="ec">
+            <paramtype>int&amp;</paramtype>
+          </parameter>
+          <effects><simpara>パス<code>new_fp</code>で、パス<code>old_fp</code>へのハードリンクを作成する。成功した場合は、<code>ec</code>には0が設定される。エラーが発生した場合は、<code>ec</code>にシステム依存のエラーコードを設定する。</simpara></effects>
+          <returns><simpara><code>ec</code></simpara></returns>
+        </function>
+
+        <function name="create_hard_link">
+          <type>void</type>
+          <parameter name="old_fp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="new_fp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <effects><para><programlisting><![CDATA[int ec;
+create_hard_link(old_fp, new_fp, ec);]]></programlisting></para></effects>
+          <throws><simpara><code>ec</code>が0でない場合、<code>boost::filesystem::filesystem_error</code></simpara></throws>
+        </function>
+
+        <function name="create_file_symlink">
+          <type>int</type>
+          <parameter name="old_fp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="new_fp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="ec">
+            <paramtype>int&amp;</paramtype>
+          </parameter>
+          <effects><simpara>パス<code>new_fp</code>で、ファイル<code>old_fp</code>へのシンボリックリンクを作成する。成功した場合は、<code>ec</code>には0が設定される。エラーが発生した場合は、<code>ec</code>にシステム依存のエラーコードを設定する。</simpara></effects>
+          <returns><simpara><code>ec</code></simpara></returns>
+        </function>
+
+        <function name="create_file_symlink">
+          <type>void</type>
+          <parameter name="old_fp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="new_fp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <effects><para><programlisting><![CDATA[int ec;
+create_file_symlink(old_fp, new_fp, ec);]]></programlisting></para></effects>
+          <throws><simpara><code>ec</code>が0でない場合、<code>boost::filesystem::filesystem_error</code></simpara></throws>
+        </function>
+
+        <function name="create_directory_symlink">
+          <type>int</type>
+          <parameter name="old_dp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="new_dp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="ec">
+            <paramtype>int&amp;</paramtype>
+          </parameter>
+          <effects><simpara>パス<code>new_dp</code>で、ディレクトリ<code>old_dp</code>へのシンボリックリンクを作成する。成功した場合は、<code>ec</code>には0が設定される。エラーが発生した場合は、<code>ec</code>にシステム依存のエラーコードを設定する。</simpara></effects>
+          <returns><simpara><code>ec</code></simpara></returns>
+        </function>
+
+        <function name="create_directory_symlink">
+          <type>void</type>
+          <parameter name="old_fp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="new_fp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <effects><para><programlisting><![CDATA[int ec;
+create_directory_symlink(old_fp, new_fp, ec);]]></programlisting></para></effects>
+          <throws><simpara><code>ec</code>が0でない場合、<code>boost::filesystem::filesystem_error</code></simpara></throws>
+        </function>
+
+        <function name="create_symlink">
+          <type>int</type>
+          <parameter name="old_fp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="new_fp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="ec">
+            <paramtype>int&amp;</paramtype>
+          </parameter>
+          <effects><simpara>POSIXでは、<code>create_file_symlink(old_fp, new_fp, ec)</code>と同じ効果とする。Windowsでは、パス<code>old_fp</code>がファイルであれば<code>create_file_symlink(old_fp, new_fp, ec)</code>、ディレクトリであれば<code>create_directory_symlink(old_fp, new_fp, ec)</code>を呼び出した場合と同じ効果とする。Windowsでパス<code>old_fp</code>が存在しない場合は、<code>ec</code>には<code>ERROR_PATH_NOT_FOUND</code>が設定される。</simpara></effects>
+          <returns><simpara><code>ec</code></simpara></returns>
+        </function>
+
+        <function name="create_symlink">
+          <type>void</type>
+          <parameter name="old_fp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="new_fp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <effects><para><programlisting><![CDATA[int ec;
+create_symlink(old_fp, new_fp, ec);]]></programlisting></para></effects>
+          <throws><simpara><code>ec</code>が0でない場合、<code>boost::filesystem::filesystem_error</code></simpara></throws>
+        </function>
+
+        <function name="change_attributes">
+          <type>void</type>
+          <parameter name="p">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="attr">
+            <paramtype><classname>file_attributes</classname>::value_type</paramtype>
+          </parameter>
+          <parameter name="ec">
+            <paramtype>int&amp;</paramtype>
+          </parameter>
+          <description><simpara>引数<code>attr</code>には、<classname>file_attributes</classname>構造体内の定数のいずれか、あるいはその組み合わせを指定する。但し、ファイル種別を示す<code>type_mask</code>部分は無視される。</simpara></description>
+          <effects><simpara>パス<code>p</code>のファイル属性を<code>attr</code>に変更する。成功した場合は、<code>ec</code>には0が設定される。エラーが発生した場合は、<code>ec</code>にシステム依存のエラーコードを設定する。</simpara></effects>
+        </function>
+
+        <function name="change_attributes">
+          <type>void</type>
+          <parameter name="p">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="attr">
+            <paramtype><classname>file_attributes</classname>::value_type</paramtype>
+          </parameter>
+          <effects><para><programlisting><![CDATA[int ec;
+change_attributes(p, attr, ec);]]></programlisting></para></effects>
+          <throws><simpara><code>ec</code>が0でない場合、<code>boost::filesystem::filesystem_error</code></simpara></throws>
+        </function>
+
+        <function name="change_permissions">
+          <type>void</type>
+          <parameter name="p">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="perm">
+            <paramtype><classname>file_permissions</classname>::value_type</paramtype>
+          </parameter>
+          <parameter name="ec">
+            <paramtype>int&amp;</paramtype>
+          </parameter>
+          <description><simpara>引数<code>perm</code>には、<classname>file_permissions</classname>構造体内の定数のいずれか、あるいはその組み合わせを指定する。但し、ファイル種別を示す<code>type_mask</code>部分は無視される。</simpara></description>
+          <effects><simpara>パス<code>p</code>のファイル許可属性を<code>perm</code>に変更する。成功した場合は、<code>ec</code>には0が設定される。エラーが発生した場合は、<code>ec</code>にシステム依存のエラーコードを設定する。</simpara></effects>
+        </function>
+
+        <function name="change_permissions">
+          <type>void</type>
+          <parameter name="p">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="perm">
+            <paramtype><classname>file_permissions</classname>::value_type</paramtype>
+          </parameter>
+          <effects><para><programlisting><![CDATA[int ec;
+change_permissions(p, perm, ec);]]></programlisting></para></effects>
+          <throws><simpara><code>ec</code>が0でない場合、<code>boost::filesystem::filesystem_error</code></simpara></throws>
+        </function>
+
+        <function name="change_owner">
+          <type>int</type>
+          <parameter name="p">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="new_uid">
+            <paramtype>const boost::optional&lt;boost::intmax_t&gt;&amp;</paramtype>
+          </parameter>
+          <parameter name="new_gid">
+            <paramtype>const boost::optional&lt;boost::intmax_t&gt;&amp;</paramtype>
+          </parameter>
+          <parameter name="ec">
+            <paramtype>int&amp;</paramtype>
+          </parameter>
+          <effects><simpara>パス<code>p</code>のオーナーを<code>new_uid</code>にグループを<code>new_gid</code>に変更する。成功した場合は、<code>ec</code>には0が設定される。エラーが発生した場合は、<code>ec</code>にシステム依存のエラーコードを設定する。</simpara></effects>
+          <returns><simpara><code>ec</code></simpara></returns>
+        </function>
+
+        <function name="change_owner">
+          <type>void</type>
+          <parameter name="p">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="new_uid">
+            <paramtype>const boost::optional&lt;boost::intmax_t&gt;&amp;</paramtype>
+          </parameter>
+          <parameter name="new_gid">
+            <paramtype>const boost::optional&lt;boost::intmax_t&gt;&amp;</paramtype>
+          </parameter>
+          <effects><para><programlisting><![CDATA[int ec;
+change_owner(p, new_uid, new_gid, ec);]]></programlisting></para></effects>
+          <throws><simpara><code>ec</code>が0でない場合、<code>boost::filesystem::filesystem_error</code></simpara></throws>
+        </function>
+
+        <function name="change_symlink_owner">
+          <type>int</type>
+          <parameter name="p">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="new_uid">
+            <paramtype>const boost::optional&lt;boost::intmax_t&gt;&amp;</paramtype>
+          </parameter>
+          <parameter name="new_gid">
+            <paramtype>const boost::optional&lt;boost::intmax_t&gt;&amp;</paramtype>
+          </parameter>
+          <parameter name="ec">
+            <paramtype>int&amp;</paramtype>
+          </parameter>
+          <effects><simpara>パス<code>p</code>がシンボリックリンクの場合にシンボリック自身に作用することを除き、<code>change_owner(p, new_uid, new_gid, ec)</code>と同じ効果とする。</simpara></effects>
+          <returns><simpara><code>ec</code></simpara></returns>
+        </function>
+
+        <function name="change_symlink_owner">
+          <type>void</type>
+          <parameter name="p">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="new_uid">
+            <paramtype>const boost::optional&lt;boost::intmax_t&gt;&amp;</paramtype>
+          </parameter>
+          <parameter name="new_gid">
+            <paramtype>const boost::optional&lt;boost::intmax_t&gt;&amp;</paramtype>
+          </parameter>
+          <effects><para><programlisting><![CDATA[int ec;
+change_symlink_owner(p, new_uid, new_gid, ec);]]></programlisting></para></effects>
+          <throws><simpara><code>ec</code>が0でない場合、<code>boost::filesystem::filesystem_error</code></simpara></throws>
+        </function>
+
+        <function name="remove_all">
+          <type>unsigned long</type>
+          <parameter name="p">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <effects><simpara>パス<code>p</code>以下のファイルを再帰的に削除する。</simpara></effects>
+          <notes><simpara>シンボリックリンクの削除にターゲットファイルは影響されない。</simpara></notes>
+          <returns><simpara>削除したファイル/ディレクトリの数</simpara></returns>
+        </function>
+      </free-function-group>
+
+      <free-function-group name="MS Windows specific functions">
+        <function name="create_shell_link">
+          <type>int</type>
+          <parameter name="old_fp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="new_fp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="ec">
+            <paramtype>int&amp;</paramtype>
+          </parameter>
+          <effects><simpara>パス<code>new_fp</code>で、パス<code>old_fp</code>へのシェルリンク(ショートカットファイル)を作成する。成功した場合は、<code>ec</code>には0が設定される。エラーが発生した場合は、<code>ec</code>にシステム依存のエラーコードを設定する。</simpara></effects>
+          <returns><simpara><code>ec</code></simpara></returns>
+        </function>
+
+        <function name="create_shell_link">
+          <type>void</type>
+          <parameter name="old_fp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <parameter name="new_fp">
+            <paramtype>const boost::filesystem::path&amp;</paramtype>
+          </parameter>
+          <effects><para><programlisting><![CDATA[int ec;
+create_shell_link(old_fp, new_fp, ec);]]></programlisting></para></effects>
+          <throws><simpara><code>ec</code>が0でない場合、<code>boost::filesystem::filesystem_error</code></simpara></throws>
+        </function>
+      </free-function-group>
+    </namespace>
+  </namespace>
+</header>

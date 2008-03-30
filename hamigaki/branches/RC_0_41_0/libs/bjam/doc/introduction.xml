@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Bjam Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
+-->
+<section id="bjam.introduction">
+  <title>紹介</title>
+  <para>Hamigaki.Bjamライブラリは<ulink url="http://www.boost.org/doc/html/jam.html">Boost.Jam</ulink>(bjam)互換のインタプリタライブラリである。このライブラリはjamファイルのパースと実行を行う機能を持っており、ユーザーはその結果の変数やモジュールの状態を調べることができる。</para>
+  <para>2007年7月現在、Binding/Updatingフェーズはサポートされておらず、依存関係に基づくビルド処理は実行されない。</para>
+</section>

@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Archivers Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/archivers for library home page.
+-->
+<section id="archivers.tutorial">
+  <title>チュートリアル</title>
+  <using-namespace name="hamigaki::archivers"/>
+
+  <section id="archivers.tutorial.tar">
+    <title>tarファイルの作成</title>
+    <using-class name="hamigaki::archivers::basic_tar_file_sink"/>
+
+    <para>次のプログラムはファイル<filename>foo.txt</filename>と<filename>bar.txt</filename>を含むtarファイル<filename>test.tar</filename>を作成する。</para>
+
+    <programlisting><![CDATA[#include <hamigaki/archivers/tar_file.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/iostreams/copy.hpp>
+
+namespace ar = hamigaki::archivers;
+namespace fs = boost::filesystem;
+namespace io = boost::iostreams;
+
+void append_file(ar::tar_file_sink& tar, const fs::path& ph)
+{
+    ar::tar::header head;
+    head.path = ph;
+    head.file_size = fs::file_size(ph);
+    tar.create_entry(head);
+
+    fs::ifstream file(ph, std::ios_base::binary);
+    io::copy(file, tar);
+}
+
+int main()
+{
+    ar::tar_file_sink tar("test.tar");
+
+    append_file(tar, "foo.txt");
+    append_file(tar, "bar.txt");
+
+    tar.close_archive();
+}
+]]></programlisting>
+
+    <para>tarファイルを作成するには、クラス<classname>tar_file_sink</classname>を用いる。コンストラクタの引数は、作成するtarファイルのパス名である。</para>
+
+    <para>アーカイブに追加する個々のファイルは(アーカイブ)エントリと呼ばれ、それぞれ個別のヘッダ情報を持つ。エントリを追加するには、適切な値を設定した構造体<classname>tar::header</classname>を引数にして、メンバ関数<methodname>create_entry</methodname>()を呼び出す。</para>
+
+    <para><classname>tar::header</classname>のメンバ変数の内、<code>path</code>(ファイルのパス名)と<code>file_size</code>(ファイルサイズ)は必須項目である。それ以外のメンバに関しては<link linkend="hamigaki.archivers.tar.header">ドキュメント</link>を参照せよ。</para>
+
+    <para><methodname>create_entry</methodname>()を呼び出すと、アーカイブは<conceptname>Sink</conceptname>として書き込み可能となる。</para>
+
+    <para>書き込みが完了したら、メンバ関数<methodname>close_archive</methodname>()でアーカイブを閉じる。アーカイブのフォーマットによっては、<methodname>close_archive</methodname>()の呼び出しを忘れると、フッタ情報のない不正なアーカイブができてしまうので注意すること。</para>
+
+  </section>
+
+  <section id="archivers.tutorial.untar">
+    <title>tarファイルの展開</title>
+    <using-class name="hamigaki::archivers::basic_tar_file_source"/>
+
+    <para>今度は、先ほど作成した<filename>test.tar</filename>をカレントディレクトリに展開するプログラムを作成する。</para>
+
+    <programlisting><![CDATA[#include <hamigaki/archivers/tar_file.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <boost/iostreams/copy.hpp>
+
+namespace ar = hamigaki::archivers;
+namespace fs = boost::filesystem;
+namespace io = boost::iostreams;
+
+void extract_file(ar::tar_file_source& tar)
+{
+    const ar::tar::header& head = tar.header();
+
+    fs::ofstream file(head.path, std::ios_base::binary);
+    io::copy(tar, file);
+}
+
+int main()
+{
+    ar::tar_file_source tar("test.tar");
+
+    while (tar.next_entry())
+      extract_file(tar);
+}
+]]></programlisting>
+
+    <para>tarファイルを読み込むには、クラス<classname>tar_file_source</classname>を用いる。コンストラクタの引数は、tarファイルのパス名である。</para>
+
+    <para>tarファイルのオープンに成功したら、メンバ関数<methodname>next_entry</methodname>()を呼び出し、次のエントリを確認する。この関数は未読のエントリがある場合<code>true</code>を返す。全てのエントリを読み終わり、これ以上のエントリが見つからない場合は<code>false</code>が返され、ループは終了する。</para>
+
+    <para><methodname>next_entry</methodname>()の呼び出しに成功したら、アーカイブは<conceptname>Source</conceptname>として読み出し可能である。また、メンバ関数<methodname>header</methodname>()を呼び出すことで、ヘッダ情報を取得することもできる。ここでは、ヘッダから取得したパス名と同名のファイルを作成し、エントリから読み出した内容を書き出している。</para>
+  </section>
+
+  <section id="archivers.tutorial.zip">
+    <title>ZIPファイルの作成</title>
+    <using-class name="hamigaki::archivers::basic_zip_file_sink"/>
+
+    <para><xref linkend="archivers.tutorial.tar"/>のプログラムをZIPフォーマット用に書き換えると、次のようになる。</para>
+
+    <programlisting><![CDATA[#include <hamigaki/archivers/zip_file.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/iostreams/copy.hpp>
+
+namespace ar = hamigaki::archivers;
+namespace fs = boost::filesystem;
+namespace io = boost::iostreams;
+
+void append_file(ar::zip_file_sink& zip, const fs::path& ph)
+{
+    ar::zip::header head;
+    head.path = ph;
+    head.file_size = fs::file_size(ph);
+    zip.create_entry(head);
+
+    fs::ifstream file(ph, std::ios_base::binary);
+    try
+    {
+        io::copy(file, zip);
+    }
+    catch (const ar::give_up_compression&)
+    {
+        file.clear();
+        file.seekg(0, std::ios_base::beg);
+        zip.rewind_entry();
+        io::copy(file, zip);
+    }
+}
+
+int main()
+{
+    ar::zip_file_sink zip("test.zip");
+
+    append_file(zip, "foo.txt");
+    append_file(zip, "bar.txt");
+
+    zip.close_archive();
+}
+]]></programlisting>
+
+    <para>ZIPファイルを作成するには、クラス<classname>zip_file_sink</classname>を用いる。コンストラクタの引数は、やはり、作成するzipファイルのパス名である。</para>
+
+    <para>ZIPフォーマットはtarフォーマットのようなアーカイバの機能に加え、ファイルを圧縮する機能を持っている。圧縮率はファイルの内容によって変化し、場合によっては元のサイズより大きくなってしまうこともある。Hamigaki.Archiversでは例外<classname>give_up_compression</classname>を送出することで、この状況を報告する。</para>
+
+    <para><classname>give_up_compression</classname>が送出されたら、これを捕捉し、非圧縮で出力をやり直す必要がある。メンバ関数<methodname>rewind_entry</methodname>()はこのためのものであり、ファイルの書き込み位置をエントリの先頭に戻し、圧縮メソッドを非圧縮に設定する。<methodname>rewind_entry</methodname>()の呼び出しに成功したら、再度出力を試みることになる。</para>
+  </section>
+</section>

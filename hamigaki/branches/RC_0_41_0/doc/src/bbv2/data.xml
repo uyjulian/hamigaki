@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2007, 2008.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<section id="bbv2.data">
+  <title>データ</title>
+  <section id="bbv2.data.type">
+    <title>データ型</title>
+    <para>BBv2で用いられるデータ型は文字列リストだけである。リストの要素は空白文字で区切られる。</para>
+    <informalexample>
+      <programlisting><![CDATA[foo
+foo bar
+1 2 3
+"if" ":" ";"
+]]></programlisting>
+    </informalexample>
+    <para>上記の各行は全て有効な文字列リストである。</para>
+  </section>
+  <section id="bbv2.data.variables">
+    <title>変数</title>
+    <para>変数は宣言なしに使用できる。変数の名前には制限はない。BBv2のキーワードを変数名に使う場合はクォーティングかエスケープ処理を施す。</para>
+    <informalexample>
+      <programlisting><![CDATA[# 変数aに文字列「1」を代入
+a = 1 ;
+
+# 変数bが空なら文字列「hoge」を代入
+b ?= hoge ;
+
+# 変数bに文字列「foo」と「bar」を追加
+b += foo bar ; 
+
+# 変数ifに文字列「else」を代入
+"if" = else ;
+]]></programlisting>
+    </informalexample>
+    <para>代入文の前にlocalを付けると、スコープ内でのみ有効なローカル変数を定義できる。</para>
+    <informalexample>
+      <programlisting><![CDATA[# ローカル変数aに文字列「1」を代入
+local a = 1 ;
+
+# ローカル変数には「?=」、「+=」は使えない
+#local b ?= hoge ;
+#local b += foo bar ; 
+]]></programlisting>
+    </informalexample>
+  </section>
+  <section id="bbv2.data.variable-expansion">
+    <title>変数展開</title>
+    <para>トークン中の「$(<emphasis>変数名</emphasis>)」は対応する変数の値に展開される。変数の値が複数ある場合、変数値と前後の文字列を連結した結果は直積になる。</para>
+    <informalexample>
+      <programlisting><![CDATA[A = a ;
+B = 1 2 ;
+C = x y z ;
+
+D = _$(A)_ ; # D = _a_ ;
+E = a$(B) ; # E = a1 a2 ;
+F = $(B)$(C) ; # F = 1x 2x 1y 2y 1z 2z ;
+]]></programlisting>
+    </informalexample>
+    <para>また次の表に示す修飾子を変数名の後ろに付けることで展開後の文字列を整形できる。</para>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>修飾子</entry>
+            <entry>効果</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>[<emphasis>n</emphasis>]</entry>
+            <entry><emphasis>n</emphasis>番目の要素のみ選択される</entry>
+          </row>
+          <row>
+            <entry>[<emphasis>n</emphasis>-<emphasis>m</emphasis>]</entry>
+            <entry><emphasis>n</emphasis>番目から<emphasis>m</emphasis>番目の要素のみ選択される</entry>
+          </row>
+          <row>
+            <entry>[<emphasis>n</emphasis>-]</entry>
+            <entry><emphasis>n</emphasis>番目以降の要素のみ選択される</entry>
+          </row>
+          <row>
+            <entry>:U</entry>
+            <entry>大文字にする</entry>
+          </row>
+          <row>
+            <entry>:L</entry>
+            <entry>小文字にする</entry>
+          </row>
+          <row>
+            <entry>:G</entry>
+            <entry>グリスト部分を選択する</entry>
+          </row>
+          <row>
+            <entry>:D</entry>
+            <entry>ディレクトリ部分を選択する</entry>
+          </row>
+          <row>
+            <entry>:P</entry>
+            <entry>親ディレクトリ部分を選択する</entry>
+          </row>
+          <row>
+            <entry>:B</entry>
+            <entry>ベース名部分を選択する</entry>
+          </row>
+          <row>
+            <entry>:S</entry>
+            <entry>拡張子部分を選択する</entry>
+          </row>
+          <row>
+            <entry>:M</entry>
+            <entry>アーカイブメンバ部分を選択する</entry>
+          </row>
+          <row>
+            <entry>:T</entry>
+            <entry>「\」を「/」に置換する</entry>
+          </row>
+          <row>
+            <entry>:W</entry>
+            <entry>CygwinのパスをWindowsのパスに変換する (Cygwinのみ)</entry>
+          </row>
+          <row>
+            <entry>:G=<emphasis>grist</emphasis></entry>
+            <entry>グリスト部分を<emphasis>grist</emphasis>に置換する</entry>
+          </row>
+          <row>
+            <entry>:R=<emphasis>root</emphasis></entry>
+            <entry>パスが絶対パスでなければ、<emphasis>root</emphasis>を先頭に追加する</entry>
+          </row>
+          <row>
+            <entry>:D=<emphasis>dir</emphasis></entry>
+            <entry>ディレクトリ部分を<emphasis>dir</emphasis>に置換する</entry>
+          </row>
+          <row>
+            <entry>:B=<emphasis>base</emphasis></entry>
+            <entry>ベース名部分を<emphasis>base</emphasis>に置換する</entry>
+          </row>
+          <row>
+            <entry>:S=<emphasis>suf</emphasis></entry>
+            <entry>拡張子部分を<emphasis>suf</emphasis>に置換する</entry>
+          </row>
+          <row>
+            <entry>:M=<emphasis>mem</emphasis></entry>
+            <entry>アーカイブメンバ部分を<emphasis>mem</emphasis>に置換する</entry>
+          </row>
+          <row>
+            <entry>:E=<emphasis>value</emphasis></entry>
+            <entry>変数の値が空の場合、<emphasis>value</emphasis>に置換する</entry>
+          </row>
+          <row>
+            <entry>:J=<emphasis>joinval</emphasis></entry>
+            <entry>変数の各値を<emphasis>joinval</emphasis>で区切って連結した文字列に置換する</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <informalexample>
+      <programlisting><![CDATA[X = a b c;
+A = X[2] ; # A = b
+B = X[1-2] ; # B = a b
+C = X[2-] ; # C = b c
+D = X[-1] ; # D = c
+J = $(X:J=-) ; # J = a-b-c ;
+
+X = ABCdef ;
+U = $(X:U) ; # U = ABCDEF
+L = $(X:L) ; # L = abcdef
+
+ph = <grist>dir/base.suf(mem) ;
+G = $(ph:G) ; # G = <grist>
+P = $(ph:P) ; # P = <grist>dir
+D = $(ph:D) ; # D = dir
+B = $(ph:B) ; # B = base
+S = $(ph:S) ; # S = .suf
+M = $(ph:M) ; # M = (mem)
+
+G = $(ph:G=g) ; # G = <g>dir/base.suf(mem)
+R = $(ph:R=/) ; # R = <grist>/dir/base.suf(mem)
+D = $(ph:D=d) ; # D = <grist>d/base.suf(mem)
+B = $(ph:B=b) ; # B = <grist>dir/b.suf(mem)
+S = $(ph:S=.s) ; # S = <grist>dir/base.s(mem)
+M = $(ph:M=m) ; # M = <grist>dir/base.suf(m)
+
+ph = C:\\Windows\\System32 ;
+T = $(ph:T) ; # T = C:/Windows/System32
+
+ph = /cygdrive/c/Windows
+W = $(ph:W) ; # W = C:\\Windows
+
+E = $(not_defined:E=default) ; # E = default
+]]></programlisting>
+    </informalexample>
+  </section>
+</section>

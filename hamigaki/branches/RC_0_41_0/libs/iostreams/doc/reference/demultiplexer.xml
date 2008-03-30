@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Iostreams Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/iostreams for library home page.
+-->
+<header name="hamigaki/iostreams/demultiplexer.hpp">
+  <namespace name="hamigaki">
+    <namespace name="iostreams">
+      <class name="basic_demultiplexer">
+        <template>
+          <template-type-parameter name="CharT"/>
+        </template>
+
+        <purpose><simpara>多重化されたストリームを複数のSinkに分配する。</simpara></purpose>
+
+        <description><simpara>分配先のSinkは、<methodname>push</methodname>()で追加する。<code>basic_demultiplexer</code>への書き込みは、追加した各Sinkへ順に1文字ずつ書き出される。</simpara></description>
+
+        <typedef name="char_type">
+          <type>boost::iostreams::char_type_of&lt;Device&gt;::type</type>
+        </typedef>
+
+        <constructor/>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="close">
+            <type>void</type>
+
+            <parameter name="which">
+              <paramtype>std::ios_base::openmode</paramtype>
+              <default>std::ios_base::in|std::ios_base::out</default>
+            </parameter>
+          </method>
+
+          <method name="write">
+            <type>std::streamsize</type>
+
+            <parameter name="s">
+              <paramtype>const char_type*</paramtype>
+            </parameter>
+
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+        </method-group>
+
+        <method-group name="queries">
+          <method name="component" cv="const">
+            <template>
+              <template-type-parameter name="T"/>
+            </template>
+
+            <type>const T*</type>
+
+            <parameter name="n">
+              <paramtype>int</paramtype>
+            </parameter>
+          </method>
+        </method-group>
+
+        <method-group name="modifier">
+          <method name="push">
+            <template>
+              <template-type-parameter name="Sink"/>
+            </template>
+
+            <type>void</type>
+
+            <parameter name="sink">
+              <paramtype>const Sink&amp;</paramtype>
+            </parameter>
+
+            <effects><simpara><code>push(sink, sink.block_size());</code></simpara></effects>
+          </method>
+        </method-group>
+      </class>
+    </namespace>
+  </namespace>
+</header>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Audio Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+-->
+<section id="audio.rationale">
+  <title>論拠</title>
+<!--
+  <section id="audio.rationale.repositional-stream">
+    <title>位置復元可能ストリームの論拠</title>
+    <para>
+      C++標準はストリームを位置指定能力に関して次の２つに分類している。
+      <variablelist>
+        <varlistentry>
+          <term>任意位置ストリーム(arbitrary-positional stream)</term>
+          <listitem>
+            <para>任意の整数値位置にシーク可能なストリーム [17.1.1]</para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>位置復元可能ストリーム(repositional stream)</term>
+          <listitem>
+            <para>以前に停止した位置に対してだけシーク可能なストリーム [17.1.16]</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+      一般に、オーディオデータの量子化ビット数は8ないし16ビットであり、これをチャンネル数分まとめた1サンプルがオーディオストリームの最小単位となる。これを8ビットchar型
+        <footnote>
+          <simpara>ここでは9ビットバイトのノネットマシンは考慮しない</simpara>
+        </footnote>
+      のストリームで表現すると、ストリームの位置はサンプルサイズの倍数の値しかとることができない。よって、サンプルが8ビットモノラルでない限り、Hamigaki.Audioライブラリの提供する入力ストリームは全て位置復元可能ストリームとなる。
+    </para>
+    <para>
+      ストリームの文字型としてサンプルサイズの型を選択することもできただろう。しかし、この方法には以下のような問題がある。
+      <itemizedlist>
+        <listitem><para>チャンネル数によっては、サンプルサイズに適した基本型がない場合がある。文字型を構造体にすると、パディングのため空間効率が悪くなったり、char配列とオブジェクト表現(object representation)が異なるためmemcpy()のような処理が行えなくなり、処理効率が落ちる可能性がある。</para></listitem>
+        <listitem><para>少なくとも現在のBoost.Iostreams実装では、std::char_traitsの特殊化に依存した箇所がある。std名前空間へ基本型に対するテンプレートの特殊化を追加した場合の動作は未定義とされている。[17.4.3.1]</para></listitem>
+        <listitem><para>通常、サンプルサイズはオーディオデータのヘッダ情報を解釈するまで確定しないので、テンプレート実引数としてコンパイル時にサンプルの型を指定することができない。</para></listitem>
+      </itemizedlist>
+      こうして位置復元可能ストリームが選択された。
+    </para>
+  </section>
+-->
+</section>

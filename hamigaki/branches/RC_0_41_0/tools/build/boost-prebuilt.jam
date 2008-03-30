@@ -1,0 +1,95 @@
+# generator for prebuilt Boost libraries
+
+# Copyright Takeshi Mouri 2007, 2008.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/ for library home page.
+
+import "class" : new ;
+import feature : feature ;
+import generators ;
+import project ;
+import targets ;
+import type ;
+
+type.register BOOST_PREBUILT : : LIB ;
+
+feature boost-layout : versioned system : propagated optional ;
+feature boost-build-id : : free ;
+
+class boost-prebuilt-generator : lib-generator
+{
+    import boost-version ;
+    import common ;
+    import os ;
+
+    rule __init__ ( )
+    {
+        lib-generator.__init__ boost-prebuilt-generator : : BOOST_PREBUILT ;
+    }
+
+    rule run ( project name ? : property-set : sources * )
+    {
+        local layout = [ $(property-set).get <boost-layout> ] ;
+        layout ?= versioned ;
+
+        local build-id = [ $(property-set).get <boost-build-id> ] ;
+
+        local properties = [ $(property-set).raw ] ;
+        local type = STATIC_LIB ;
+        if <link>shared in $(properties)
+        {
+            if [ os.on-windows ]
+            {
+                type = IMPORT_LIB ;
+            }
+            else
+            {
+                type = SHARED_LIB ;
+            }
+        }
+
+        local lib_name ;
+        if $(layout) = versioned
+        {
+            local version = [ boost-version.lib-version ] ;
+
+            lib_name = [ common.format-name
+                <base> <toolset> <threading> <runtime> -$(version)
+                -$(build-id)
+                : $(name) : $(type) : $(property-set) ] ;
+        }
+        else
+        {
+            lib_name = [ common.format-name
+                <base> <threading> <runtime> -$(build-id)
+                : $(name) : $(type) : $(property-set) ] ;
+        }
+
+        local boost-libpath = [ modules.peek : BOOST_LIBPATH ] ;
+        local path = $(lib_name:R=$(boost-libpath)) ;
+
+        return [ new file-target $(path) : $(type) : $(project) : : $(path) ] ;
+    }
+}
+
+generators.register [ new boost-prebuilt-generator ] ;
+
+# Make a target of the pre-built Boost library
+#
+rule boost-prebuilt ( name : requirements * : default-build * : usage-requirements * )
+{
+    local project = [ project.current ] ;
+
+    return [ targets.main-target-alternative
+      [ new typed-target $(name) : $(project) : BOOST_PREBUILT
+        : [ targets.main-target-sources : $(name) ] 
+        : [ targets.main-target-requirements $(requirements) : $(project) ] 
+        : [ targets.main-target-default-build $(default-build) : $(project) ]
+        : [ targets.main-target-usage-requirements $(usage-requirements) : $(project) ]
+     ] ] ;
+}
+
+IMPORT $(__name__) : boost-prebuilt : : boost-prebuilt ;

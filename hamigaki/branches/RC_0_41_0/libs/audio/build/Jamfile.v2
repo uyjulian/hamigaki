@@ -1,0 +1,118 @@
+# Hamigaki Audio Library Jamfile
+
+# Copyright Takeshi Mouri 2007.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+
+import directx ;
+import modules ;
+import os ;
+
+local NO_ASIO = [ modules.peek : NO_ASIO ] ;
+local NO_OGG = [ modules.peek : NO_OGG ] ;
+local NO_VORBIS = [ modules.peek : NO_VORBIS ] ;
+
+local rule make-project ( name )
+{
+    modules.poke $(name) : __name__ : $(name) ;
+    module $(name)
+    {
+        import project ;
+        project.initialize $(__name__) ;
+        project $(__name__) ;
+    }
+}
+
+if ! $(NO_ASIO) && ! [ project.find /asio : . ]
+{
+    if [ modules.peek : HAVE_ASIO ]
+    {
+        project.push-current [ project.current ] ;
+        make-project asio ;
+        module asio
+        {
+            local inc = [ modules.peek : ASIO_INCLUDE ] ;
+            alias headers : : : : <include>$(inc) ;
+        }
+        project.pop-current ;
+    }
+    else
+    {
+        NO_ASIO = 1 ;
+        modules.poke : NO_ASIO : 1 ;
+    }
+}
+
+project hamigaki/audio
+    : requirements
+      <link>shared:<define>HAMIGAKI_AUDIO_DYN_LINK=1
+    : usage-requirements
+      <link>shared:<define>HAMIGAKI_AUDIO_DYN_LINK=1
+    : source-location ../src
+    ;
+
+SOURCES =
+    pcm_device
+    ;
+
+LIBRARIES =
+    ;
+
+if ! $(NO_ASIO)
+{
+    SOURCES +=
+        asio
+        asio_drivers
+        ;
+
+    LIBRARIES += /asio//headers ;
+}
+
+if [ directx.configured ]
+{
+    SOURCES +=
+        direct_sound
+        direct_sound_capture
+        ;
+
+    LIBRARIES += /directx//dsound ;
+}
+
+if ! $(NO_OGG) && ! $(NO_VORBIS)
+{
+    SOURCES +=
+        vorbis_encoder
+        vorbis_file
+        ;
+
+    LIBRARIES +=
+        /hamigaki/vorbis//hamigaki_vorbisenc
+        /hamigaki/vorbis//hamigaki_vorbisfile
+        ;
+}
+
+lib hamigaki_audio
+    :
+    $(SOURCES).cpp
+    $(LIBRARIES)
+    :
+    <toolset>gcc,<os>NT:<find-static-library>ole32
+    <toolset>gcc,<os>NT:<find-static-library>winmm
+    <toolset>gcc,<os>CYGWIN:<find-static-library>ole32
+    <toolset>darwin:<framework>/System/Library/Frameworks/AudioToolbox.framework
+    <toolset>darwin:<framework>/System/Library/Frameworks/AudioUnit.framework
+    <toolset>darwin:<framework>/System/Library/Frameworks/CoreAudio.framework
+    <toolset>darwin:<framework>/System/Library/Frameworks/CoreServices.framework
+    :
+    :
+    <toolset>gcc,<os>NT:<find-static-library>ole32
+    <toolset>gcc,<os>NT:<find-static-library>winmm
+    <toolset>gcc,<os>CYGWIN:<find-static-library>ole32
+    <toolset>darwin:<framework>/System/Library/Frameworks/AudioToolbox.framework
+    <toolset>darwin:<framework>/System/Library/Frameworks/AudioUnit.framework
+    <toolset>darwin:<framework>/System/Library/Frameworks/CoreAudio.framework
+    <toolset>darwin:<framework>/System/Library/Frameworks/CoreServices.framework
+    ;

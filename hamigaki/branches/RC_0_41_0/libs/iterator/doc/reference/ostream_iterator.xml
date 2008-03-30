@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Iterator Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/iterator for library home page.
+-->
+<header name="hamigaki/iterator/ostream_iterator.hpp">
+  <namespace name="hamigaki">
+    <class name="ostream_iterator">
+      <template>
+        <template-type-parameter name="T"/>
+
+        <template-type-parameter name="CharT">
+          <default>char</default>
+        </template-type-parameter>
+
+        <template-type-parameter name="Traits">
+          <default>std::char_traits&lt;CharT&gt;</default>
+        </template-type-parameter>
+      </template>
+
+      <inherit access="public">
+        <code>std::iterator&lt;std::output_iterator_tag,void,void,void,void&gt;</code>
+      </inherit>
+
+      <purpose><simpara>最後にデリミタを出力しない<code>std::ostream_iterator</code></simpara></purpose>
+
+      <description>
+        <para><code>hamigaki::ostream_iterator</code>は、<code>std::ostream_iterator</code>改良版である。<code>std::ostream_iterator</code>は大変便利であるが、最後の値を出力した後にもデリミタが出力されてしまう。この動作はCSVの出力など多くの状況で好ましくない。<code>hamigaki::ostream_iterator</code>はこの問題を解決するためのもであり、１回目の出力の際にはデリミタを出力せず、２回目以降の出力の前にデリミタを出力する。</para>
+      </description>
+
+      <typedef name="char_type">
+        <type>CharT</type>
+      </typedef>
+
+      <typedef name="traits_type">
+        <type>Traits</type>
+      </typedef>
+
+      <typedef name="ostream_type">
+        <type>std::basic_ostream&lt;CharT,Traits&gt;</type>
+      </typedef>
+
+      <constructor specifiers="explicit">
+        <parameter name="s">
+          <paramtype>ostream_type&amp;</paramtype>
+        </parameter>
+
+        <effects><para><programlisting><![CDATA[out_stream = &s;
+delim = 0;]]></programlisting></para></effects>
+      </constructor>
+
+      <constructor>
+        <parameter name="s">
+          <paramtype>ostream_type&amp;</paramtype>
+        </parameter>
+
+        <parameter name="delimiter">
+          <paramtype>const CharT*</paramtype>
+        </parameter>
+
+        <effects><para><programlisting><![CDATA[out_stream = &s;
+delim = delimiter;]]></programlisting></para></effects>
+      </constructor>
+
+      <method-group name="operators">
+        <method name="operator=">
+          <type>ostream_iterator&lt;T,CharT,Traits&gt;&amp;</type>
+
+          <parameter name="value">
+            <paramtype>T</paramtype>
+          </parameter>
+
+          <effects><simpara><code>delim != 0</code>かつ初回呼び出しでない場合は<code>*out_stream &lt;&lt; delim</code>を実行する。その後、<code>*out_stream &lt;&lt; value</code>を実行する。</simpara></effects>
+
+          <returns><simpara><code>*this</code></simpara></returns>
+        </method>
+
+        <method name="operator*">
+          <type>ostream_iterator&lt;T,CharT,Traits&gt;&amp;</type>
+          <returns><simpara><code>*this</code></simpara></returns>
+        </method>
+
+        <method name="operator++">
+          <type>ostream_iterator&lt;T,CharT,Traits&gt;&amp;</type>
+          <returns><simpara><code>*this</code></simpara></returns>
+        </method>
+      </method-group>
+
+      <data-member name="out_stream" specifiers="private:">
+        <type>ostream_type*</type>
+      </data-member>
+
+      <data-member name="delim" specifiers="private:">
+        <type>const CharT*</type>
+      </data-member>
+    </class>
+  </namespace>
+</header>

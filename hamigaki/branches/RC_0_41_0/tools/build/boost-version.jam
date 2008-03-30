@@ -1,0 +1,62 @@
+# Boost version detection utilities
+
+# Copyright Takeshi Mouri 2007, 2008.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/ for library home page.
+
+import errors ;
+import modules ;
+import os ;
+import path ;
+
+local CATENATE ;
+if [ os.name ] = NT
+{
+    CATENATE = type ;
+}
+else
+{
+    CATENATE = cat ;
+}
+
+local rule get-boost-version ( )
+{
+    local boost-include =  [ modules.peek : BOOST_INCLUDE ] ;
+    if ! $(boost-include)
+    {
+        boost-include =  [ modules.peek : BOOST_ROOT ] ;
+    }
+    if ! $(boost-include)
+    {
+        errors.error "Please define BOOST_INCLUDE or BOOST_ROOT" ;
+    }
+
+    local ph = [ path.native $(boost-include)/boost/version.hpp ] ;
+    local version.hpp = [ SHELL "$(CATENATE) $(ph)" ] ;
+    local pattern = "#define BOOST_LIB_VERSION \"([_0-9]+)\"" ;
+    return [ MATCH $(pattern) : $(version.hpp) ] ;
+}
+
+.lib-version = [ get-boost-version ] ;
+
+# Get the version number of the Boost whose form is "1.34.1".
+#
+rule version ( )
+{
+    local v = [ MATCH ^([0-9]+)_([0-9]+)_?([0-9]*)$ : $(.lib-version) ] ;
+    if ! $(v[3])
+    {
+        v = $(v[1-2]) 0 ;
+    }
+    return $(v:J=.) ;
+}
+
+# Get the version number of the Boost whose form is "1_34".
+#
+rule lib-version ( )
+{
+    return $(.lib-version) ;
+}

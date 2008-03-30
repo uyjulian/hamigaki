@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE header PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.Audio Library Document Source
+
+  Copyright Takeshi Mouri 2006, 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+-->
+<header name="hamigaki/audio/sine_wave.hpp">
+  <namespace name="hamigaki">
+    <namespace name="audio">
+      <class name="basic_sine_wave_source">
+        <template>
+          <template-type-parameter name="CharT">
+            <default>float</default>
+          </template-type-parameter>
+        </template>
+
+        <purpose><para>正弦波を生成するSourceモデル</para></purpose>
+
+        <description>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Source</conceptname></member>
+          </simplelist></para>
+        </description>
+
+        <typedef name="char_type">
+          <type>CharT</type>
+        </typedef>
+
+        <typedef name="category">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <constructor>
+          <parameter name="rate">
+            <paramtype>long</paramtype>
+          </parameter>
+          <parameter name="freq">
+            <paramtype>CharT</paramtype>
+          </parameter>
+
+          <effects><simpara>サンプリング周波数=<code>rate</code>、正弦波の周波数=<code>freq</code>で初期化する。</simpara></effects>
+        </constructor>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="read">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>CharT*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+          </method>
+        </method-group>
+
+        <method-group name="queries">
+          <method name="rate" cv="const">
+            <type>long</type>
+            <returns><simpara>サンプリング周波数。</simpara></returns>
+          </method>
+
+          <method name="frequency" cv="const">
+            <type>CharT</type>
+            <returns><simpara>正弦波の周波数。</simpara></returns>
+          </method>
+        </method-group>
+      </class>
+
+      <typedef name="sine_wave_source">
+        <type>basic_sine_wave_source&lt;&gt;</type>
+      </typedef>
+    </namespace>
+  </namespace>
+</header>

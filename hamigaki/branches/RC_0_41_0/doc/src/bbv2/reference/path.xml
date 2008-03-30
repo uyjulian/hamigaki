@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<section id="bbv2.reference.path">
+  <title>pathモジュール</title>
+  <synopsis><emphasis role="bold">module</emphasis> path {
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.path.glob">glob</link> ( dirs * : patterns + : exclude-patterns * ) { }
+  <emphasis role="bold">rule</emphasis> <link linkend="bbv2.reference.path.glob-tree">glob-tree</link> ( roots * : patterns + : exclude-patterns * ) { }
+}
+</synopsis>
+  <refentry id="bbv2.reference.path.glob">
+    <refmeta>
+      <refentrytitle>glob</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>path.glob</refname>
+      <refpurpose><simpara>パターンに一致するファイル名のリストを取得する</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> glob ( dirs * : patterns + : exclude-patterns * )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <para><code>dirs</code>で指定された各ディレクトリから<code>patterns</code>にマッチし<code>exclude-patterns</code>にマッチしないファイルを検索し、そのファイル名のリストを返す。<code>patterns</code>および<code>exclude-patterns</code>はswitch文と同じ<xref linkend="bbv2.control.pattern"/>に従う。</para>
+    </refsection>
+  </refentry>
+  <refentry id="bbv2.reference.path.glob-tree">
+    <refmeta>
+      <refentrytitle>glob-tree</refentrytitle>
+      <manvolnum>7</manvolnum>
+    </refmeta>
+    <refnamediv>
+      <refname>path.glob-tree</refname>
+      <refpurpose><simpara>パターンに一致するファイル名のリストを再帰的に取得する</simpara></refpurpose>
+    </refnamediv>
+    <refsynopsisdiv>
+      <programlisting><emphasis role="bold">rule</emphasis> glob-tree ( roots * : patterns + : exclude-patterns * )</programlisting>
+    </refsynopsisdiv>
+    <refsection>
+      <title>Description</title>
+      <para><code>roots</code>で指定された各ディレクトリ配下から<code>patterns</code>にマッチし<code>exclude-patterns</code>にマッチしないファイルを再帰的に検索し、そのファイル名のリストを返す。<code>patterns</code>および<code>exclude-patterns</code>はswitch文と同じ<xref linkend="bbv2.control.pattern"/>に従う。</para>
+    </refsection>
+  </refentry>
+</section>

@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2008.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<section id="bbv2.bjam-options">
+  <title>Bjamのオプション</title>
+  <section id="bbv2.bjam-options.synopsis">
+    <title>書式</title>
+    <cmdsynopsis>
+      <command>bjam</command>
+      <arg choice="opt"><replaceable>options</replaceable></arg>
+      <arg choice="opt"><replaceable>properties</replaceable></arg>
+      <arg choice="opt"><replaceable>targets</replaceable></arg>
+    </cmdsynopsis>
+    <variablelist>
+      <varlistentry>
+        <term><replaceable>options</replaceable></term>
+        <listitem>
+          <para>「-<replaceable>x</replaceable>」形式のオプションは<link linkend="bbv2.bjam-options.bjam">Bjamコマンドのオプション</link>であり、「--<replaceable>name</replaceable>」形式のオプションは<link linkend="bbv2.bjam-options.bbv2">BBv2のオプション</link>である。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><replaceable>properties</replaceable></term>
+        <listitem>
+          <para><link linkend="bbv2.properties.property">プロパティ</link>を「<replaceable>フィーチャー</replaceable>=<replaceable>値</replaceable>」の形式で設定する。toolsetやvariantのようなimplicitフィーチャーは「<replaceable>フィーチャー</replaceable>=」を省略できる。また、値を複数設定する場合は「,」で区切る。</para>
+          <para>さらに、「<replaceable>プロパティA</replaceable>/<replaceable>プロパティB</replaceable>」のようにすることで、<replaceable>プロパティA</replaceable>が使用される場合のみ<replaceable>プロパティB</replaceable>を設定するよう指定できる。</para>
+          <informaltable frame="all">
+            <tgroup cols="2">
+              <thead>
+                <row>
+                  <entry>プロパティ</entry>
+                  <entry>意味</entry>
+                </row>
+              </thead>
+              <tbody>
+                <row>
+                  <entry>gcc debug</entry>
+                  <entry>gccでデバッグビルドを行う。</entry>
+                </row>
+                <row>
+                  <entry>link=static/shared</entry>
+                  <entry>スタティックライブラリと共有ライブラリを共にビルドする。</entry>
+                </row>
+                <row>
+                  <entry>gcc/debug/threading=multi</entry>
+                  <entry>gccでマルチスレッド用にデバッグビルドを行う。</entry>
+                </row>
+                <row>
+                  <entry>gcc/debug msvc/release</entry>
+                  <entry>gccでデバッグビルドを、VisualC++でリリースビルドを行う。</entry>
+                </row>
+                <row>
+                  <entry>gcc/toolset-gcc:flavor=mingw,cygwin</entry>
+                  <entry>MInGWとCygwinのgccでビルドする。</entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><replaceable>targets</replaceable></term>
+        <listitem>
+          <para>ビルドするターゲットを<link linkend="bbv2.targets.id">ターゲットID</link>で指定する。既定ではexplicit指定されていない全てのターゲットをビルドする。</para>
+          <para>ターゲットcleanは<link linkend="bbv2.bjam-options.bbv2.clean">--clean</link>オプションと同じ働きを持つ。</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </section>
+  <section id="bbv2.bjam-options.bjam">
+    <title>Bjamコマンドのオプション</title>
+    <variablelist>
+      <varlistentry>
+        <term>-a</term>
+        <listitem>
+          <para>全てのターゲットを再構築する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>-d <replaceable>n</replaceable></term>
+        <listitem>
+          <para>デバッグメッセージの出力レベルを<replaceable>n</replaceable>に設定する。</para>
+          <orderedlist numeration="arabic">
+            <listitem><para>非quiet属性のアクションを表示する(既定)</para></listitem>
+            <listitem><para>quiet属性のアクションとアクションのコマンド文字列を表示する</para></listitem>
+            <listitem><para>ターゲットの依存関係を表示する</para></listitem>
+            <listitem><para><varname>JAMSHELL</varname>変数に関するメッセージを出力する</para></listitem>
+            <listitem><para>Jamスクリプトの評価内容を出力する</para></listitem>
+            <listitem><para>ディレクトリやヘッダファイルの走査結果を出力する</para></listitem>
+            <listitem><para>変数の設定値を出力する</para></listitem>
+            <listitem><para>変数の展開結果を出力する</para></listitem>
+            <listitem><para>字句解析の結果を出力する</para></listitem>
+            <listitem><para>プロファイル情報を出力する</para></listitem>
+            <listitem><para>YACC(bison)のデバッグメッセージを出力する</para></listitem>
+            <listitem><para>依存関係の有向グラフを表示する</para></listitem>
+            <listitem><para>ターゲットの更新状態を表示する</para></listitem>
+          </orderedlist>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>-d +<replaceable>n</replaceable></term>
+        <listitem>
+          <para>出力レベル<replaceable>n</replaceable>のデバッグメッセージのみ出力する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>-d 0</term>
+        <listitem>
+          <para>デバッグメッセージの出力を抑制する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>-f <replaceable>jambase</replaceable></term>
+        <listitem>
+          <para>組み込みのビルドスクリプトを使用する代わりに、<replaceable>jambase</replaceable>を使用する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>-j <replaceable>n</replaceable></term>
+        <listitem>
+          <para><replaceable>n</replaceable>個のビルドコマンドを平行して実行する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>-l <replaceable>n</replaceable></term>
+        <listitem>
+          <para>ビルドコマンドの実行時間を<replaceable>n</replaceable>秒に制限する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>-n</term>
+        <listitem>
+          <para>実際にビルドを行う代わりにビルドコマンドを表示する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>-o <replaceable>file</replaceable></term>
+        <listitem>
+          <para>ビルドコマンドを<replaceable>file</replaceable>に出力する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>-q</term>
+        <listitem>
+          <para>ターゲットのビルドに失敗したら、他のターゲットのビルドを続行せずに終了する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>-s <replaceable>var</replaceable>=<replaceable>value</replaceable></term>
+        <listitem>
+          <para>グローバル変数<replaceable>var</replaceable>の値を<replaceable>value</replaceable>に設定する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>-t <replaceable>target</replaceable></term>
+        <listitem>
+          <para><replaceable>target</replaceable>とそれに依存するターゲットを再構築する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>-v</term>
+        <listitem>
+          <para>bjamのバージョンを出力して終了する。</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </section>
+  <section id="bbv2.bjam-options.bbv2">
+    <title>BBv2のオプション</title>
+    <variablelist>
+      <varlistentry>
+        <term id="bbv2.bjam-options.bbv2.clean">--clean</term>
+        <listitem>
+          <para>ターゲットをビルドする代わりに削除する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--clean-all</term>
+        <listitem>
+          <para>外部プロジェクトも含め、全てのターゲットを削除する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--version</term>
+        <listitem>
+          <para>BBv2とBjamのバージョンを表示し、終了する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--help</term>
+        <listitem>
+          <para>ヘルプメッセージを表示し、終了する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--help <replaceable>module-name</replaceable></term>
+        <listitem>
+          <para>モジュール<replaceable>module-name</replaceable>のヘルプコメントを表示し、終了する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--help <replaceable>module-name</replaceable>.<replaceable>rule-name</replaceable></term>
+        <listitem>
+          <para>ルール<replaceable>module-name</replaceable>.<replaceable>rule-name</replaceable>のヘルプコメントを表示し、終了する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--debug-configuration</term>
+        <listitem>
+          <para>モジュールの設定に関するデバッグメッセージを表示する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--test-config=<replaceable>file</replaceable></term>
+        <listitem>
+          <para><filename>site-config.jam</filename>と<filename>user-config.jam</filename>の代わりに<replaceable>file</replaceable>を使用する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--site-config=<replaceable>file</replaceable></term>
+        <listitem>
+          <para><filename>site-config.jam</filename>の代わりに<replaceable>file</replaceable>を使用する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--user-config=<replaceable>file</replaceable></term>
+        <listitem>
+          <para><filename>user-config.jam</filename>の代わりに<replaceable>file</replaceable>を使用する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--toolset=<replaceable>name</replaceable></term>
+        <listitem>
+          <para>ツールセット<replaceable>name</replaceable>を自動設定して、ビルドに使用する。</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>--verbose-test</term>
+        <listitem>
+          <para>unit-testモジュールを利用した単体テストで成功時にも標準出力/エラー出力の内容を表示する。</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </section>
+</section>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE chapter PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2008.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<chapter id="design-policy">
+  <title>設計方針</title>
+  <variablelist>
+    <varlistentry>
+      <term>Boostライブラリ要件/ガイドライン</term>
+      <listitem>HamigakiライブラリはBoostの一部ではないが、基本的に<ulink url="http://www.boost.org/more/lib_guide.htm">Boostライブラリ要件/ガイドライン</ulink>に従っている。ただし、ドキュメントにはUTF-8エンコーディングの日本語を用いている。</listitem>
+    </varlistentry>
+    <varlistentry>
+      <term>スレッド安全性</term>
+      <listitem>Hamigakiライブラリは、特に記述のない限り、スレッドセーフである。ここで言う「スレッドセーフ」とは、<ulink url="http://www.sgi.com/tech/stl/">SGI STL</ulink>の「<ulink url="http://www.sgi.com/tech/stl/thread_safety.html">Thread-safety for SGI STL</ulink>」のことである。すなわち、あるオブジェクトに対し、あらゆるタイミングで、
+      <itemizedlist>
+        <listitem>単一スレッドからの書き込み (非constメソッドの呼び出し)</listitem>
+        <listitem>複数スレッドからの読み出し (constメソッドの呼び出し)</listitem>
+      </itemizedlist>
+      のうち高々一方の操作しか行われないことをライブラリユーザーが保証する限り、マルチスレッド環境でも正しく動作する。</listitem>
+    </varlistentry>
+    <varlistentry>
+      <term>例外安全性</term>
+      <listitem>Hamigakiライブラリは、Bjarne Stroustrup著『The C++ Programming Language, Special Edition』の付録E「<ulink url="http://www.research.att.com/~bs/3rd_safe.pdf">Standard-Library Exception Safety</ulink>」で語られる例外安全の「基本的な保証(Basic guarantee)」を常に満たすよう設計されている。</listitem>
+    </varlistentry>
+    <varlistentry>
+      <term>再利用性</term>
+      <listitem>Hamigakiライブラリは、再利用性を高めるため、可能な限り原始的な機能を提供する。基本的にはそのような原始的なコンポーネントを組み合わせて利用することを想定しているが、大部分の要求を満たす簡易インタフェースを提供することで、段階的な学習が出来るように配慮されている。</listitem>
+    </varlistentry>
+  </variablelist>
+</chapter>

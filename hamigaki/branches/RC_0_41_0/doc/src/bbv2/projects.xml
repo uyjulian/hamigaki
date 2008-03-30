@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2007.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<section id="bbv2.projects">
+  <title>プロジェクト</title>
+  <section id="bbv2.projects.hierarchies">
+    <title>プロジェクト階層</title>
+    <para><filename>Jamroot</filename>または<filename>project-root.jam</filename>があるディレクトリがプロジェクトルートになり、その配下のディレクトリ階層がプロジェクトの階層に対応する。<filename class="directory">C:\Boost\boost_1_34_0</filename>に<filename>project-root.jam</filename>がある場合のプロジェクトboostの例を示す。</para>
+    <informalexample>
+      <informaltable frame="all">
+        <tgroup cols="3">
+          <thead>
+            <row>
+              <entry>プロジェクトID</entry>
+              <entry>パス</entry>
+              <entry>意味</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>/boost</entry>
+              <entry><filename class="directory">C:\Boost\boost_1_34_0</filename></entry>
+              <entry>boostプロジェクトのプロジェクトルート</entry>
+            </row>
+            <row>
+              <entry>/boost/doc</entry>
+              <entry><filename class="directory">C:\Boost\boost_1_34_0\doc</filename></entry>
+              <entry>boostプロジェクトのサブプロジェクトdoc</entry>
+            </row>
+            <row>
+              <entry>/boost/libs/filesystem/test</entry>
+              <entry><filename class="directory">C:\Boost\boost_1_34_0\libs\filesystem\test</filename></entry>
+              <entry>boostプロジェクトのサブプロジェクトlibs/filesystem/test</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </informalexample>
+  </section>
+  <section id="bbv2.projects.jamfile">
+    <title>Jamfile</title>
+    <para>プロジェクトの設定はプロジェクトのディレクトリ中の<filename>Jamfile</filename>で行う。このファイルは、「Jamfile&lt;<emphasis>プロジェクトのディレクトリ名</emphasis>&gt;」という名前のモジュールとして評価される。</para>
+    <para>現在のプロジェクトに別名を付けたり、プロジェクトとそのサブプロジェクトに共通の設定を行うには、標準ルールprojectを用いる。</para>
+    <informalexample>
+      <programlisting><![CDATA[rule project ( id ? : options * : * )]]></programlisting>
+    </informalexample>
+    <para>第一引数の<code>id</code>はプロジェクトの名前であり、第二引数以降はプロジェクト属性の名前とプロパティのリストを組にして指定する。プロジェクト属性には以下のようなものがある。</para>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>属性名</entry>
+            <entry>意味</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>source-location</entry>
+            <entry>ソースファイルの位置</entry>
+          </row>
+          <row>
+            <entry>requirements</entry>
+            <entry>ビルドに必要なプロパティ</entry>
+          </row>
+          <row>
+            <entry>default-build</entry>
+            <entry>コマンドラインや依存するターゲットのdefault-buildでの指定がない場合のみ使用されるプロパティ</entry>
+          </row>
+          <row>
+            <entry>build-dir</entry>
+            <entry>出力先ディレクトリ</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>プロジェクト属性の指定順序は自由である。</para>
+    <informalexample>
+      <programlisting><![CDATA[# あるプロジェクトの設定
+project project_a
+    : source-location src
+    : build-dir bin
+    ;
+
+# 別のプロジェクトの設定
+project project_b
+    : requirements <threading>multi
+    : build-dir bin.v2
+    : source-location src
+    ;
+]]></programlisting>
+    </informalexample>
+  </section>
+  <section id="bbv2.projects.constants" xreflabel="プロジェクト定数">
+    <title>プロジェクト定数</title>
+    <para>プロジェクト全体(サブプロジェクトを含む)で使用したい定数を設定するには標準ルールconstantを用いる。パスの定数を設定するのに便利なpath-constantルールもある。</para>
+    <informalexample>
+      <programlisting><![CDATA[# プロジェクト定数DEBUG_LEVELに5を設定する
+constant DEBUG_LEVEL : 5 ;
+# このプロジェクトとサブプロジェクトでは$(DEBUG_LEVEL)で値を取得できる
+
+# プロジェクト定数ROOTにカレントディレクトリを設定する
+path-constant ROOT : . ;
+# このプロジェクトとサブプロジェクトでは$(ROOT)で値を取得できる
+# 相対パスは設定時のプロジェクトのディレクトリを基点として絶対パスに変換される
+]]></programlisting>
+    </informalexample>
+  </section>
+  <section id="bbv2.projects.configuration">
+    <title>環境設定</title>
+    <para>全てのプロジェクトの親プロジェクトとして、site-configとuser-configの二つが使用される。(site-configはuser-configの親プロジェクトである。)</para>
+    <para>site-configとuser-configはそれぞれsite-config.jam、user-config.jamというファイルで定義される。これらのファイルは次表に示す順序に従い検索される。</para>
+    <informaltable frame="all">
+      <tgroup cols="3">
+        <thead>
+          <row>
+            <entry>プラットフォーム</entry>
+            <entry>site-config.jam</entry>
+            <entry>user-config.jam</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>POSIX</entry>
+            <entry><simplelist>
+              <member>/etc</member>
+              <member>$HOME</member>
+              <member>$BOOST_BUILD_PATH</member>
+            </simplelist></entry>
+            <entry><simplelist>
+              <member>$HOME</member>
+              <member>$BOOST_BUILD_PATH</member>
+            </simplelist></entry>
+          </row>
+          <row>
+            <entry>Windows</entry>
+            <entry><simplelist>
+              <member>%SystemRoot%</member>
+              <member>%HOMEDRIVE%%HOMEPATH%</member>
+              <member>%HOME%</member>
+              <member>%USERPROFILE%</member>
+              <member>%BOOST_BUILD_PATH%</member>
+            </simplelist></entry>
+            <entry><simplelist>
+              <member>%HOMEDRIVE%%HOMEPATH%</member>
+              <member>%HOME%</member>
+              <member>%USERPROFILE%</member>
+              <member>%BOOST_BUILD_PATH%</member>
+            </simplelist></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>これらのファイルで、<xref linkend="bbv2.modules.globals"/>や<xref linkend="bbv2.projects.constants"/>を設定することでBBv2の動作をカスタマイズすることができる。</para>
+  </section>
+</section>
