@@ -111,4 +111,13 @@ exe render_context_test
     open-gl
     ;
 
+exe texture_test
+    :
+    texture_test.cpp
+    render_context.cpp
+    texture.cpp
+    gtk
+    open-gl
+    ;
+
 exec.register-exec-all ;
