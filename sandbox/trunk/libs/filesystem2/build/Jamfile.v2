@@ -24,7 +24,7 @@ project hamigaki/filesystem2
 SOURCES =
     file_status
 #    shell_link
-#    symlink
+    symlink
     ;
 
 lib hamigaki_filesystem2
