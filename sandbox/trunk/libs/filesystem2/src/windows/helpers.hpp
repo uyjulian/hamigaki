@@ -285,9 +285,24 @@ creation_time_template(const String& ph, const timestamp& new_time)
 
 template<class String>
 inline error_code
+create_file_symlink_template(const String& to_ph, const String& from_ph)
+{
+#if defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
+    return create_symbolic_link(from_ph, to_ph, 0);
+#else
+    return make_error_code(ERROR_NOT_SUPPORTED);
+#endif
+}
+
+template<class String>
+inline error_code
 create_directory_symlink_template(const String& to_ph, const String& from_ph)
 {
 #if defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
+    error_code ec = create_symbolic_link(from_ph, to_ph, 1);
+    if (!ec || (ec != make_error_code(ERROR_NOT_SUPPORTED)))
+        return ec;
+
     if (!create_directory(from_ph.c_str()))
         return last_error();
 
@@ -299,7 +314,7 @@ create_directory_symlink_template(const String& to_ph, const String& from_ph)
         FILE_FLAG_BACKUP_SEMANTICS, 0)
     );
 
-    error_code ec = set_mount_point(f.get(), to_ph);
+    ec = set_mount_point(f.get(), to_ph);
     if (!ec)
         guard.release();
     return ec;
@@ -319,13 +334,7 @@ create_symlink_template(const String& to_ph, const String& from_ph)
         return ec;
 
     if (filesystem::is_directory(s))
-    {
-        ec = create_symbolic_link(from_ph, to_ph, 0);
-        if (ec && (ec == make_error_code(ERROR_NOT_SUPPORTED)))
-            return create_directory_symlink_template(to_ph, from_ph);
-        else
-            return ec;
-    }
+        return create_directory_symlink_template(to_ph, from_ph);
     else
         return create_symbolic_link(from_ph, to_ph, 0);
 #else

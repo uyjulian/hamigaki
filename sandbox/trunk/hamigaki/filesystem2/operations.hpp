@@ -63,6 +63,13 @@ creation_time_api(const std::wstring& ph, const timestamp& new_time);
 
 
 HAMIGAKI_FILESYSTEM_DECL error_code
+create_file_symlink_api(const std::wstring& to_ph, const std::wstring& from_ph);
+
+HAMIGAKI_FILESYSTEM_DECL error_code
+create_directory_symlink_api(
+    const std::wstring& to_ph, const std::wstring& from_ph);
+
+HAMIGAKI_FILESYSTEM_DECL error_code
 create_symlink_api(const std::wstring& to_ph, const std::wstring& from_ph);
 
 HAMIGAKI_FILESYSTEM_DECL
@@ -103,6 +110,13 @@ last_access_time_api(const std::string& ph, const timestamp& new_time);
 HAMIGAKI_FILESYSTEM_DECL error_code
 creation_time_api(const std::string& ph, const timestamp& new_time);
 
+
+HAMIGAKI_FILESYSTEM_DECL error_code
+create_file_symlink_api(const std::string& to_ph, const std::string& from_ph);
+
+HAMIGAKI_FILESYSTEM_DECL error_code
+create_directory_symlink_api(
+    const std::string& to_ph, const std::string& from_ph);
 
 HAMIGAKI_FILESYSTEM_DECL error_code
 create_symlink_api(const std::string& to_ph, const std::string& from_ph);
@@ -202,6 +216,48 @@ creation_time(const Path& ph, const timestamp& new_time)
     }
 }
 
+
+HAMIGAKI_FS_FUNC(void)
+create_file_symlink(const Path& to_ph, const Path& from_ph)
+{
+    const error_code& ec = detail::create_file_symlink_api(
+        to_ph.external_file_string(), from_ph.external_file_string());
+    if (ec)
+    {
+        throw boost::filesystem::basic_filesystem_error<Path>(
+            "hamigaki::filesystem::create_file_symlink",
+            to_ph, from_ph, ec);
+    }
+}
+
+HAMIGAKI_FS_FUNC(error_code)
+create_file_symlink(const Path& to_ph, const Path& from_ph, error_code& ec)
+{
+    ec = detail::create_file_symlink_api(
+        to_ph.external_file_string(), from_ph.external_file_string());
+    return ec;
+}
+
+HAMIGAKI_FS_FUNC(void)
+create_directory_symlink(const Path& to_ph, const Path& from_ph)
+{
+    const error_code& ec = detail::create_directory_symlink_api(
+        to_ph.external_directory_string(), from_ph.external_directory_string());
+    if (ec)
+    {
+        throw boost::filesystem::basic_filesystem_error<Path>(
+            "hamigaki::filesystem::create_directory_symlink",
+            to_ph, from_ph, ec);
+    }
+}
+
+HAMIGAKI_FS_FUNC(error_code)
+create_directory_symlink(const Path& to_ph, const Path& from_ph, error_code& ec)
+{
+    ec = detail::create_directory_symlink_api(
+        to_ph.external_directory_string(), from_ph.external_directory_string());
+    return ec;
+}
 
 HAMIGAKI_FS_FUNC(void) create_symlink(const Path& to_ph, const Path& from_ph)
 {
@@ -389,6 +445,48 @@ inline void creation_time(const wpath& ph, const timestamp& new_time)
     return hamigaki::filesystem::creation_time<wpath>(ph, new_time);
 }
 
+
+inline void create_file_symlink(const path& to_ph, const path& from_ph)
+{
+    hamigaki::filesystem::create_file_symlink<path>(to_ph, from_ph);
+}
+inline void create_file_symlink(const wpath& to_ph, const wpath& from_ph)
+{
+    hamigaki::filesystem::create_file_symlink<wpath>(to_ph, from_ph);
+}
+
+inline error_code
+create_file_symlink(const path& to_ph, const path& from_ph, error_code& ec)
+{
+    return hamigaki::filesystem::create_file_symlink<path>(to_ph, from_ph, ec);
+}
+inline error_code
+create_file_symlink(const wpath& to_ph, const wpath& from_ph, error_code& ec)
+{
+    return hamigaki::filesystem::create_file_symlink<wpath>(to_ph, from_ph, ec);
+}
+
+inline void create_directory_symlink(const path& to_ph, const path& from_ph)
+{
+    hamigaki::filesystem::create_directory_symlink<path>(to_ph, from_ph);
+}
+inline void create_directory_symlink(const wpath& to_ph, const wpath& from_ph)
+{
+    hamigaki::filesystem::create_directory_symlink<wpath>(to_ph, from_ph);
+}
+
+inline error_code
+create_directory_symlink(const path& to_ph, const path& from_ph, error_code& ec)
+{
+    return hamigaki::filesystem::
+        create_directory_symlink<path>(to_ph, from_ph, ec);
+}
+inline error_code create_directory_symlink(
+    const wpath& to_ph, const wpath& from_ph, error_code& ec)
+{
+    return hamigaki::filesystem::
+        create_directory_symlink<wpath>(to_ph, from_ph, ec);
+}
 
 inline void create_symlink(const path& to_ph, const path& from_ph)
 {

@@ -13,12 +13,39 @@ namespace hamigaki { namespace filesystem { namespace detail {
 
 #if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
 HAMIGAKI_FILESYSTEM_DECL error_code
+create_file_symlink_api(
+    const std::wstring& to_ph, const std::wstring& from_ph)
+{
+    return detail::create_file_symlink_template(to_ph, from_ph);
+}
+
+HAMIGAKI_FILESYSTEM_DECL error_code
+create_directory_symlink_api(
+    const std::wstring& to_ph, const std::wstring& from_ph)
+{
+    return detail::create_directory_symlink_template(to_ph, from_ph);
+}
+
+HAMIGAKI_FILESYSTEM_DECL error_code
 create_symlink_api(const std::wstring& to_ph, const std::wstring& from_ph)
 {
     return detail::create_symlink_template(to_ph, from_ph);
 }
-
 #endif
+
+HAMIGAKI_FILESYSTEM_DECL error_code
+create_file_symlink_api(
+    const std::string& to_ph, const std::string& from_ph)
+{
+    return detail::create_file_symlink_template(to_ph, from_ph);
+}
+
+HAMIGAKI_FILESYSTEM_DECL error_code
+create_directory_symlink_api(
+    const std::string& to_ph, const std::string& from_ph)
+{
+    return detail::create_directory_symlink_template(to_ph, from_ph);
+}
 
 HAMIGAKI_FILESYSTEM_DECL error_code
 create_symlink_api(const std::string& to_ph, const std::string& from_ph)
