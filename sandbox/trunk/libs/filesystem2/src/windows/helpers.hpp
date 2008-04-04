@@ -12,14 +12,27 @@
 
 #include <hamigaki/filesystem2/detail/config.hpp>
 #include <hamigaki/filesystem2/file_status.hpp>
-#include <boost/scoped_array.hpp>
 #include <windows.h>
 
 #if (_WIN32_WINNT >= 0x0500)
     #define HAMIGAKI_FILESYSTEM_USE_NTFS_CHANGE_TIME
     #define HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT
-    #include <winioctl.h>
 #endif
+
+#if defined(HAMIGAKI_FILESYSTEM_USE_NTFS_CHANGE_TIME)
+    #include "./ntfs.hpp"
+#endif
+
+#if defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
+    #include "./reparse_point.hpp"
+#endif
+
+#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+    #include "./wide_functions.hpp"
+#endif
+
+#include "./narrow_functions.hpp"
+#include "./error_code.hpp"
 
 namespace hamigaki { namespace filesystem { namespace detail {
 
@@ -68,298 +81,30 @@ private:
     object_handle& operator=(const object_handle&);
 };
 
-#if defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
-const DWORD mount_point_tag = 0xA0000003;
-
-struct reparse_data_header
+template<class String>
+class remove_directory_monitor
 {
-    DWORD tag;
-    WORD length;
-    WORD reserved;
+public:
+    explicit remove_directory_monitor(const String& ph)
+        : path_(ph), need_remove_(true)
+    {
+    }
+
+    ~remove_directory_monitor()
+    {
+        if (need_remove_)
+            detail::remove_directory(path_.c_str());
+    }
+
+    void release()
+    {
+        need_remove_ = false;
+    }
+
+private:
+    const String& path_;
+    bool need_remove_;
 };
-
-struct mount_point_header
-{
-    WORD sub_name_offset;
-    WORD sub_name_length;
-    WORD print_name_offset;
-    WORD print_name_length;
-};
-
-inline error_code set_mount_point(HANDLE handle,
-    const wchar_t* sub_name, std::size_t sub_name_length,
-    const wchar_t* print_name, std::size_t print_name_length)
-{
-    std::size_t full_size =
-        sizeof(reparse_data_header) + sizeof(mount_point_header) +
-        (sub_name_length+1 + print_name_length+1) * sizeof(wchar_t);
-
-    boost::scoped_array<char> buf(new char[full_size]);
-    char* buf_ptr = buf.get();
-
-    reparse_data_header top_head;
-    top_head.tag = mount_point_tag;
-    top_head.length = full_size - sizeof(top_head);
-    top_head.reserved = 0;
-    std::memcpy(buf_ptr, &top_head, sizeof(top_head));
-    buf_ptr += sizeof(top_head);
-
-    mount_point_header mt_head;
-    mt_head.sub_name_offset = 0;
-    mt_head.sub_name_length = sub_name_length * sizeof(wchar_t);
-    mt_head.print_name_offset = mt_head.sub_name_length + sizeof(wchar_t);
-    mt_head.print_name_length = print_name_length * sizeof(wchar_t);
-    std::memcpy(buf_ptr, &mt_head, sizeof(mt_head));
-    buf_ptr += sizeof(mt_head);
-
-    std::memcpy(buf_ptr, sub_name, sub_name_length * sizeof(wchar_t));
-    buf_ptr += sub_name_length * sizeof(wchar_t);
-    std::memset(buf_ptr, 0, sizeof(wchar_t));
-    buf_ptr += sizeof(wchar_t);
-
-    std::memcpy(buf_ptr, print_name, print_name_length * sizeof(wchar_t));
-    buf_ptr += print_name_length * sizeof(wchar_t);
-    std::memset(buf_ptr, 0, sizeof(wchar_t));
-
-    DWORD dummy = 0;
-    if (::DeviceIoControl(handle, FSCTL_SET_REPARSE_POINT,
-        buf.get(), full_size, 0, 0, &dummy, 0) == 0)
-    {
-        return make_error_code(static_cast<int>(::GetLastError()));
-    }
-
-    return error_code();
-}
-#endif // defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
-
-#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
-inline HANDLE create_file(
-    const wchar_t* ph, DWORD dwDesiredAccess, DWORD dwShareMode,
-    LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition,
-    DWORD dwFlagsAndAttributes, HANDLE hTemplateFile)
-{
-    return ::CreateFileW(
-        ph, dwDesiredAccess, dwShareMode, lpSecurityAttributes,
-        dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile
-    );
-}
-
-inline BOOL create_directory(const wchar_t* ph)
-{
-    return ::CreateDirectoryW(ph, 0);
-}
-
-inline BOOL remove_directory(const wchar_t* ph)
-{
-    return ::RemoveDirectoryW(ph);
-}
-
-inline BOOL get_file_attributes_ex(
-    const wchar_t* ph,
-    GET_FILEEX_INFO_LEVELS fInfoLevelId, LPVOID lpFileInformation)
-{
-    return ::GetFileAttributesExW(ph, fInfoLevelId, lpFileInformation);
-}
-
-inline DWORD get_file_attributes(const wchar_t* ph)
-{
-    return ::GetFileAttributesW(ph);
-}
-
-inline BOOL set_file_attributes(const wchar_t* ph, DWORD dwFileAttributes)
-{
-    return ::SetFileAttributesW(ph, dwFileAttributes);
-}
-
-#if defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
-inline error_code create_symbolic_link(
-    const std::wstring& from_ph, const std::wstring& to_ph, DWORD flags)
-{
-    typedef BOOL (APIENTRY * func_type)(LPCWSTR, LPCWSTR, DWORD);
-
-    const wchar_t* from_s = from_ph.c_str();
-    const wchar_t* to_s = to_ph.c_str();
-
-    error_code ec(ERROR_NOT_SUPPORTED, boost::system::get_system_category());
-    HMODULE dll(::LoadLibraryA("kernel32.dll"));
-    func_type func = reinterpret_cast<func_type>(
-        ::GetProcAddress(dll, "CreateSymbolicLinkW"));
-    if (func)
-    {
-        BOOL res = (*func)(from_s, to_s, flags);
-        if (res)
-            ec = error_code();
-        else
-            ec = make_error_code(static_cast<int>(::GetLastError()));
-    }
-    ::FreeLibrary(dll);
-    return ec;
-}
-
-inline error_code set_mount_point(HANDLE handle, const std::wstring& ph)
-{
-    std::wstring sub_name(L"\\\?\?\\");
-    if ((ph[0] == L'\\') && (ph[1] == L'\\'))
-        sub_name += L"UNC";
-    sub_name += ph;
-
-    return set_mount_point(
-        handle, sub_name.c_str(), sub_name.size(), ph.c_str(), ph.size());
-}
-#endif // defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
-
-#endif // !defined(BOOST_FILESYSTEM_NARROW_ONLY)
-
-#if defined(HAMIGAKI_FILESYSTEM_USE_NTFS_CHANGE_TIME)
-// from winternl.h
-struct io_status_block
-{
-    union
-    {
-        LONG status;
-        void* pointer;
-    };
-
-    ULONG_PTR information;
-};
-
-// from ntddk.h
-struct file_basic_information
-{
-    static const DWORD id = 4;
-
-    FILETIME creation_time;
-    FILETIME last_access_time;
-    FILETIME last_write_time;
-    FILETIME last_change_time;
-    ULONG file_attributes;
-    DWORD reserved;
-};
-
-inline bool query_information_file(
-    HANDLE FileHandle, io_status_block* IoStatusBlock,
-    void* FileInformation, ULONG Length, DWORD FileInformationClass)
-{
-    // from ZwQueryInformationFile in ntddk.h
-    typedef LONG (__stdcall *func_type)(
-        HANDLE, io_status_block*, void*, ULONG, DWORD);
-
-    bool result = false;
-
-    HMODULE dll(::LoadLibraryA("ntdll.dll"));
-    if (!dll)
-        return result;
-
-    func_type func = reinterpret_cast<func_type>(
-        ::GetProcAddress(dll, "NtQueryInformationFile"));
-    if (func)
-    {
-        LONG res = (*func)(
-            FileHandle, IoStatusBlock, FileInformation, Length,
-            FileInformationClass);
-
-        if (res == 0)
-            result = true;
-    }
-    ::FreeLibrary(dll);
-
-    return result;
-}
-#endif // defined(HAMIGAKI_FILESYSTEM_USE_NTFS_CHANGE_TIME)
-
-inline HANDLE create_file(
-    const char* ph, DWORD dwDesiredAccess, DWORD dwShareMode,
-    LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition,
-    DWORD dwFlagsAndAttributes, HANDLE hTemplateFile)
-{
-    return ::CreateFileA(
-        ph, dwDesiredAccess, dwShareMode, lpSecurityAttributes,
-        dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
-}
-
-inline BOOL create_directory(const char* ph)
-{
-    return ::CreateDirectoryA(ph, 0);
-}
-
-inline BOOL remove_directory(const char* ph)
-{
-    return ::RemoveDirectoryA(ph);
-}
-
-inline BOOL get_file_attributes_ex(
-    const char* ph,
-    GET_FILEEX_INFO_LEVELS fInfoLevelId, LPVOID lpFileInformation)
-{
-    return ::GetFileAttributesExA(ph, fInfoLevelId, lpFileInformation);
-}
-
-inline DWORD get_file_attributes(const char* ph)
-{
-    return ::GetFileAttributesA(ph);
-}
-
-inline BOOL set_file_attributes(const char* ph, DWORD dwFileAttributes)
-{
-    return ::SetFileAttributesA(ph, dwFileAttributes);
-}
-
-#if defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
-inline error_code create_symbolic_link(
-    const std::string& from_ph, const std::string& to_ph, DWORD flags)
-{
-    typedef BOOL (APIENTRY * func_type)(LPCSTR, LPCSTR, DWORD);
-
-    const char* from_s = from_ph.c_str();
-    const char* to_s = to_ph.c_str();
-
-    error_code ec(ERROR_NOT_SUPPORTED, boost::system::get_system_category());
-    HMODULE dll(::LoadLibraryA("kernel32.dll"));
-    func_type func = reinterpret_cast<func_type>(
-        ::GetProcAddress(dll, "CreateSymbolicLinkA"));
-    if (func)
-    {
-        BOOL res = (*func)(from_s, to_s, flags);
-        if (res)
-            ec = error_code();
-        else
-            ec = make_error_code(static_cast<int>(::GetLastError()));
-    }
-    ::FreeLibrary(dll);
-    return ec;
-}
-
-inline error_code set_mount_point(HANDLE handle, const std::string & ph)
-{
-    int w_size = ::MultiByteToWideChar(CP_ACP, 0, ph.c_str(), ph.size(), 0, 0);
-    if (w_size == 0)
-        return make_error_code(static_cast<int>(::GetLastError()));
-
-    bool is_unc = (ph[0] == '\\') && (ph[1] == '\\');
-
-    std::size_t prefix_length = is_unc ? 7 : 4;
-    std::size_t sub_name_length = prefix_length + w_size;
-
-    boost::scoped_array<wchar_t> sub_name(new wchar_t[sub_name_length]);
-
-    wchar_t * ptr = sub_name.get();
-    std::memcpy(ptr, L"\\\?\?\\", 4*sizeof(wchar_t));
-    ptr += 4;
-    if (is_unc)
-    {
-        std::memcpy(ptr, L"UNC", 3*sizeof(wchar_t));
-        ptr += 3;
-    }
-
-    w_size =
-        ::MultiByteToWideChar(CP_ACP, 0, ph.c_str(), ph.size(), ptr, w_size);
-    if (w_size == 0)
-        return make_error_code(static_cast<int>(::GetLastError()));
-
-    return set_mount_point(
-        handle, &sub_name[0], sub_name_length, ptr, w_size);
-}
-#endif // defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
 
 
 template<class String>
@@ -486,12 +231,13 @@ inline file_status status_template(const String& ph, error_code& ec)
 
 template<class String>
 inline error_code
-last_write_time_template(const String& ph, const timestamp& new_time)
+set_file_time_template(const String& ph, const FILETIME* lpCreationTime,
+    const FILETIME* lpLastAccessTime, const FILETIME* lpLastWriteTime)
 {
     DWORD attr = get_file_attributes(ph.c_str());
 
     if (attr == INVALID_FILE_ATTRIBUTES)
-        return make_error_code(static_cast<int>(::GetLastError()));
+        return last_error();
 
     DWORD flags = 0;
     if ((attr & FILE_ATTRIBUTE_DIRECTORY) != 0)
@@ -504,100 +250,38 @@ last_write_time_template(const String& ph, const timestamp& new_time)
         0, OPEN_EXISTING, flags, 0)
     );
 
-    FILETIME ft = to_file_time(new_time);
-    if (::SetFileTime(f.get(), 0, 0, &ft))
+    if (::SetFileTime(f.get(),lpCreationTime,lpLastAccessTime,lpLastWriteTime))
         return error_code();
 
     if ((attr & FILE_ATTRIBUTE_DIRECTORY) != 0)
         return error_code();
     else
-        return make_error_code(static_cast<int>(::GetLastError()));
+        return last_error();
+}
+
+template<class String>
+inline error_code
+last_write_time_template(const String& ph, const timestamp& new_time)
+{
+    FILETIME ft = to_file_time(new_time);
+    return detail::set_file_time_template(ph, 0, 0, &ft);
 }
 
 template<class String>
 inline error_code
 last_access_time_template(const String& ph, const timestamp& new_time)
 {
-    DWORD attr = get_file_attributes(ph.c_str());
-
-    if (attr == INVALID_FILE_ATTRIBUTES)
-        return make_error_code(static_cast<int>(::GetLastError()));
-
-    DWORD flags = 0;
-    if ((attr & FILE_ATTRIBUTE_DIRECTORY) != 0)
-        flags |= FILE_FLAG_BACKUP_SEMANTICS;
-    if ((attr & FILE_ATTRIBUTE_REPARSE_POINT) != 0)
-        flags |= FILE_FLAG_OPEN_REPARSE_POINT;
-
-    object_handle f(create_file(
-        ph.c_str(), FILE_WRITE_ATTRIBUTES, FILE_SHARE_READ|FILE_SHARE_WRITE,
-        0, OPEN_EXISTING, flags, 0)
-    );
-
     FILETIME ft = to_file_time(new_time);
-    if (::SetFileTime(f.get(), 0, &ft, 0))
-        return error_code();
-
-    if ((attr & FILE_ATTRIBUTE_DIRECTORY) != 0)
-        return error_code();
-    else
-        return make_error_code(static_cast<int>(::GetLastError()));
+    return detail::set_file_time_template(ph, 0, &ft, 0);
 }
 
 template<class String>
 inline error_code
 creation_time_template(const String& ph, const timestamp& new_time)
 {
-    DWORD attr = get_file_attributes(ph.c_str());
-
-    if (attr == INVALID_FILE_ATTRIBUTES)
-        return make_error_code(static_cast<int>(::GetLastError()));
-
-    DWORD flags = 0;
-    if ((attr & FILE_ATTRIBUTE_DIRECTORY) != 0)
-        flags |= FILE_FLAG_BACKUP_SEMANTICS;
-    if ((attr & FILE_ATTRIBUTE_REPARSE_POINT) != 0)
-        flags |= FILE_FLAG_OPEN_REPARSE_POINT;
-
-    object_handle f(create_file(
-        ph.c_str(), FILE_WRITE_ATTRIBUTES, FILE_SHARE_READ|FILE_SHARE_WRITE,
-        0, OPEN_EXISTING, flags, 0)
-    );
-
     FILETIME ft = to_file_time(new_time);
-    if (::SetFileTime(f.get(), &ft, 0, 0))
-        return error_code();
-
-    if ((attr & FILE_ATTRIBUTE_DIRECTORY) != 0)
-        return error_code();
-    else
-        return make_error_code(static_cast<int>(::GetLastError()));
+    return detail::set_file_time_template(ph, &ft, 0, 0);
 }
-
-template<class String>
-class remove_directory_monitor
-{
-public:
-    explicit remove_directory_monitor(const String & ph)
-        : path_(ph), need_remove_(true)
-    {
-    }
-
-    ~remove_directory_monitor()
-    {
-        if (need_remove_)
-            detail::remove_directory(path_.c_str());
-    }
-
-    void release()
-    {
-        need_remove_ = false;
-    }
-
-private:
-    const String& path_;
-    bool need_remove_;
-};
 
 template<class String>
 inline error_code
@@ -605,7 +289,7 @@ create_directory_symlink_template(const String& to_ph, const String& from_ph)
 {
 #if defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
     if (!create_directory(from_ph.c_str()))
-        return make_error_code(static_cast<int>(::GetLastError()));
+        return last_error();
 
     remove_directory_monitor<String> guard(from_ph);
 
@@ -656,7 +340,7 @@ change_attributes_template(const String& ph, file_attributes::value_type attr)
     if (set_file_attributes(ph.c_str(), static_cast<DWORD>(attr)))
         return error_code();
     else
-        return make_error_code(static_cast<int>(::GetLastError()));
+        return last_error();
 }
 
 } } } // End namespaces detail, filesystem, hamigaki.
