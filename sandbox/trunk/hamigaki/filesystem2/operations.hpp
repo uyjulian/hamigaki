@@ -13,6 +13,7 @@
 #include <hamigaki/filesystem2/detail/config.hpp>
 #include <hamigaki/filesystem2/detail/auto_link.hpp>
 #include <hamigaki/filesystem2/file_status.hpp>
+#include <hamigaki/filesystem2/shell_link_options.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -98,6 +99,13 @@ error_code change_symlink_owner_api(
     const boost::optional<boost::intmax_t>& new_uid,
     const boost::optional<boost::intmax_t>& new_gid);
 
+#if defined(BOOST_WINDOWS)
+HAMIGAKI_FILESYSTEM_DECL error_code
+create_shell_link_api(
+    const std::wstring& to_ph, const std::wstring& from_ph,
+    const wshell_link_options& options);
+#endif // defined(BOOST_WINDOWS)
+
 #endif // !defined(BOOST_FILESYSTEM_NARROW_ONLY)
 
 HAMIGAKI_FILESYSTEM_DECL file_status
@@ -152,6 +160,13 @@ error_code change_symlink_owner_api(
     const std::string& ph,
     const boost::optional<boost::intmax_t>& new_uid,
     const boost::optional<boost::intmax_t>& new_gid);
+
+#if defined(BOOST_WINDOWS)
+HAMIGAKI_FILESYSTEM_DECL error_code
+create_shell_link_api(
+    const std::string& to_ph, const std::string& from_ph,
+    const shell_link_options& options);
+#endif // defined(BOOST_WINDOWS)
 
 } // namespace detail
 
@@ -378,6 +393,74 @@ change_symlink_owner(
             "hamigaki::filesystem::change_symlink_owner", ph, ec);
     }
 }
+
+HAMIGAKI_FS_FUNC(unsigned long)
+remove_all(const Path& p)
+{
+    unsigned long n = 0;
+
+    const file_status& s = filesystem::symlink_status(p);
+
+    if (!is_symlink(s) && is_directory(s))
+    {
+        boost::filesystem::basic_directory_iterator<Path> it(p);
+        boost::filesystem::basic_directory_iterator<Path> end;
+
+        for ( ; it != end; ++it)
+            n += hamigaki::filesystem::remove_all(*it);
+    }
+
+    if (remove(p))
+        ++n;
+
+    return n;
+}
+
+#if defined(BOOST_WINDOWS)
+HAMIGAKI_FS_FUNC(void) create_shell_link(
+    const Path& to_ph, const Path& from_ph,
+    const basic_shell_link_options<
+        HAMIGAKI_FS_TYPENAME Path::external_string_type
+    >& options)
+{
+    const error_code& ec = detail::create_shell_link_api(
+        to_ph.external_file_string(), from_ph.external_file_string(), options);
+    if (ec)
+    {
+        throw boost::filesystem::basic_filesystem_error<Path>(
+            "hamigaki::filesystem::create_shell_link", to_ph, from_ph, ec);
+    }
+}
+
+HAMIGAKI_FS_FUNC(error_code)
+create_shell_link(
+    const Path& to_ph, const Path& from_ph,
+    const basic_shell_link_options<
+        HAMIGAKI_FS_TYPENAME Path::external_string_type
+    >& options, error_code& ec)
+{
+    ec = detail::create_shell_link_api(
+        to_ph.external_file_string(), from_ph.external_file_string(), options);
+    return ec;
+}
+
+HAMIGAKI_FS_FUNC(void) create_shell_link(const Path& to_ph, const Path& from_ph)
+{
+    basic_shell_link_options<
+        HAMIGAKI_FS_TYPENAME Path::external_string_type
+    > options;
+    filesystem::create_shell_link(to_ph, from_ph, options);
+}
+
+HAMIGAKI_FS_FUNC(error_code)
+create_shell_link(const Path& to_ph, const Path& from_ph, error_code& ec)
+{
+    basic_shell_link_options<
+        HAMIGAKI_FS_TYPENAME Path::external_string_type
+    > options;
+    return filesystem::create_shell_link(to_ph, from_ph, options, ec);
+}
+#endif // defined(BOOST_WINDOWS)
 
 #if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
 inline file_status status(const path& ph)
@@ -633,6 +716,64 @@ inline void change_symlink_owner(
     return hamigaki::filesystem::
         change_symlink_owner<wpath>(ph, new_uid, new_gid);
 }
+
+inline unsigned long remove_all(const path& p)
+{
+    return hamigaki::filesystem::remove_all<path>(p);
+}
+inline unsigned long remove_all(const wpath& p)
+{
+    return hamigaki::filesystem::remove_all<wpath>(p);
+}
+
+#if defined(BOOST_WINDOWS)
+inline void create_shell_link(
+    const path& to_ph, const path& from_ph, const shell_link_options& options)
+{
+    hamigaki::filesystem::create_shell_link<path>(to_ph, from_ph, options);
+}
+inline void create_shell_link(
+    const wpath& to_ph, const wpath& from_ph,
+    const wshell_link_options& options)
+{
+    hamigaki::filesystem::create_shell_link<wpath>(to_ph, from_ph, options);
+}
+
+inline error_code create_shell_link(
+    const path& to_ph, const path& from_ph,
+    const shell_link_options& options, error_code& ec)
+{
+    return hamigaki::filesystem::
+        create_shell_link<path>(to_ph, from_ph, options, ec);
+}
+inline error_code create_shell_link(
+    const wpath& to_ph, const wpath& from_ph,
+    const wshell_link_options& options, error_code& ec)
+{
+    return hamigaki::filesystem::
+        create_shell_link<wpath>(to_ph, from_ph, options, ec);
+}
+
+inline void create_shell_link(const path& to_ph, const path& from_ph)
+{
+    hamigaki::filesystem::create_shell_link<path>(to_ph, from_ph);
+}
+inline void create_shell_link(const wpath& to_ph, const wpath& from_ph)
+{
+    hamigaki::filesystem::create_shell_link<wpath>(to_ph, from_ph);
+}
+
+inline error_code
+create_shell_link(const path& to_ph, const path& from_ph, error_code& ec)
+{
+    return hamigaki::filesystem::create_shell_link<path>(to_ph, from_ph, ec);
+}
+inline error_code
+create_shell_link(const wpath& to_ph, const wpath& from_ph, error_code& ec)
+{
+    return hamigaki::filesystem::create_shell_link<wpath>(to_ph, from_ph, ec);
+}
+#endif // defined(BOOST_WINDOWS)
 
 #endif // defined(BOOST_FILESYSTEM_NARROW_ONLY)
 
