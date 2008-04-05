@@ -52,6 +52,13 @@ inline BOOL set_file_attributes(const wchar_t* ph, DWORD dwFileAttributes)
     return ::SetFileAttributesW(ph, dwFileAttributes);
 }
 
+#if (_WIN32_WINNT >= 0x500)
+inline BOOL create_hard_link(const wchar_t* from_ph, const wchar_t* to_ph)
+{
+    return ::CreateHardLinkW(from_ph, to_ph, 0);
+}
+#endif
+
 } } } // End namespaces detail, filesystem, hamigaki.
 
 #endif // HAMIGAKI_FILESYSTEM_WINDOWS_WIDE_FUNCTIONS_HPP

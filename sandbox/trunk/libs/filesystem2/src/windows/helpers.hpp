@@ -302,6 +302,20 @@ symlink_target_template(const String& ph, String& target)
 
 template<class String>
 inline error_code
+create_hard_link_template(const String& to_ph, const String& from_ph)
+{
+#if (_WIN32_WINNT >= 0x500)
+    if (detail::create_hard_link(from_ph.c_str(), to_ph.c_str()))
+        return error_code();
+    else
+        return last_error();
+#else
+    return make_error_code(ERROR_NOT_SUPPORTED);
+#endif
+}
+
+template<class String>
+inline error_code
 create_file_symlink_template(const String& to_ph, const String& from_ph)
 {
 #if defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)

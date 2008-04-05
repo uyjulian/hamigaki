@@ -66,6 +66,9 @@ creation_time_api(const std::wstring& ph, const timestamp& new_time);
 
 
 HAMIGAKI_FILESYSTEM_DECL error_code
+create_hard_link_api(const std::wstring& to_ph, const std::wstring& from_ph);
+
+HAMIGAKI_FILESYSTEM_DECL error_code
 create_file_symlink_api(const std::wstring& to_ph, const std::wstring& from_ph);
 
 HAMIGAKI_FILESYSTEM_DECL error_code
@@ -116,6 +119,9 @@ last_access_time_api(const std::string& ph, const timestamp& new_time);
 HAMIGAKI_FILESYSTEM_DECL error_code
 creation_time_api(const std::string& ph, const timestamp& new_time);
 
+
+HAMIGAKI_FILESYSTEM_DECL error_code
+create_hard_link_api(const std::string& to_ph, const std::string& from_ph);
 
 HAMIGAKI_FILESYSTEM_DECL error_code
 create_file_symlink_api(const std::string& to_ph, const std::string& from_ph);
@@ -238,6 +244,26 @@ creation_time(const Path& ph, const timestamp& new_time)
 
 
 HAMIGAKI_FS_FUNC(void)
+create_hard_link(const Path& to_ph, const Path& from_ph)
+{
+    const error_code& ec = detail::create_hard_link_api(
+        to_ph.external_file_string(), from_ph.external_file_string());
+    if (ec)
+    {
+        throw boost::filesystem::basic_filesystem_error<Path>(
+            "hamigaki::filesystem::create_hard_link", to_ph, from_ph, ec);
+    }
+}
+
+HAMIGAKI_FS_FUNC(error_code)
+create_hard_link(const Path& to_ph, const Path& from_ph, error_code& ec)
+{
+    ec = detail::create_hard_link_api(
+        to_ph.external_file_string(), from_ph.external_file_string());
+    return ec;
+}
+
+HAMIGAKI_FS_FUNC(void)
 create_file_symlink(const Path& to_ph, const Path& from_ph)
 {
     const error_code& ec = detail::create_file_symlink_api(
@@ -245,8 +271,7 @@ create_file_symlink(const Path& to_ph, const Path& from_ph)
     if (ec)
     {
         throw boost::filesystem::basic_filesystem_error<Path>(
-            "hamigaki::filesystem::create_file_symlink",
-            to_ph, from_ph, ec);
+            "hamigaki::filesystem::create_file_symlink", to_ph, from_ph, ec);
     }
 }
 
@@ -474,6 +499,26 @@ inline void creation_time(const wpath& ph, const timestamp& new_time)
     return hamigaki::filesystem::creation_time<wpath>(ph, new_time);
 }
 
+
+inline void create_hard_link(const path& to_ph, const path& from_ph)
+{
+    hamigaki::filesystem::create_hard_link<path>(to_ph, from_ph);
+}
+inline void create_hard_link(const wpath& to_ph, const wpath& from_ph)
+{
+    hamigaki::filesystem::create_hard_link<wpath>(to_ph, from_ph);
+}
+
+inline error_code
+create_hard_link(const path& to_ph, const path& from_ph, error_code& ec)
+{
+    return hamigaki::filesystem::create_hard_link<path>(to_ph, from_ph, ec);
+}
+inline error_code
+create_hard_link(const wpath& to_ph, const wpath& from_ph, error_code& ec)
+{
+    return hamigaki::filesystem::create_hard_link<wpath>(to_ph, from_ph, ec);
+}
 
 inline void create_file_symlink(const path& to_ph, const path& from_ph)
 {
