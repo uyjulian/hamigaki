@@ -12,6 +12,9 @@
 
 #include <hamigaki/filesystem2/detail/config.hpp>
 #include <boost/scoped_array.hpp>
+#include <cstring>
+#include <vector>
+#include <stdexcept>
 #include <winioctl.h>
 
 #include "./error_code.hpp"
@@ -19,6 +22,7 @@
 namespace hamigaki { namespace filesystem { namespace detail {
 
 const DWORD mount_point_tag = 0xA0000003;
+const DWORD symlink_tag = 0xA000000C;
 
 struct reparse_data_header
 {
@@ -34,6 +38,151 @@ struct mount_point_header
     WORD print_name_offset;
     WORD print_name_length;
 };
+
+struct symlink_header
+{
+    WORD sub_name_offset;
+    WORD sub_name_length;
+    WORD print_name_offset;
+    WORD print_name_length;
+    DWORD flags;
+};
+
+template<class Header>
+inline void parse_absolute_path(
+    const Header& head, const char* data, std::size_t data_size,
+    std::vector<wchar_t>& target)
+{
+    const wchar_t prefix[] = L"\\\?\?\\";
+    std::size_t prefix_size = sizeof(prefix)/sizeof(wchar_t) - 1;
+
+    std::size_t total = static_cast<std::size_t>(
+        head.sub_name_offset + head.sub_name_length);
+
+    if ((head.sub_name_length < prefix_size) ||
+        (head.sub_name_offset > data_size) ||
+        (total > data_size) )
+    {
+        throw std::runtime_error("bad reparse-data");
+    }
+
+    std::vector<wchar_t> buf(head.sub_name_length/sizeof(wchar_t));
+    if (buf.empty())
+    {
+        target.clear();
+        return;
+    }
+    std::memcpy(&buf[0], data+head.sub_name_offset, buf.size()*sizeof(wchar_t));
+
+    if (std::memcmp(&buf[0], prefix, prefix_size*sizeof(wchar_t)) != 0)
+        throw std::runtime_error("bad reparse-data");
+
+    wchar_t* src = &buf[prefix_size];
+    std::size_t src_size = buf.size() - prefix_size;
+
+    const wchar_t unc[] = L"UNC\\";
+    std::size_t unc_size = sizeof(unc)/sizeof(wchar_t) - 1;
+
+    if ((src_size > unc_size) && (std::wmemcmp(src, unc, unc_size) == 0))
+    {
+        src += (unc_size-2);
+        *src = '\\';
+        src_size -= (unc_size-2);
+    }
+
+    target.assign(src, src+src_size);
+}
+
+inline void parse_relative_path(
+    const symlink_header& head, const char* data, std::size_t data_size,
+    std::vector<wchar_t>& target)
+{
+    std::size_t total = static_cast<std::size_t>(
+        head.sub_name_offset + head.sub_name_length);
+
+    if ((head.sub_name_offset > data_size) || (total > data_size))
+        throw std::runtime_error("bad reparse-data");
+
+    std::vector<wchar_t> buf(head.sub_name_length/sizeof(wchar_t));
+    if (buf.empty())
+    {
+        target.clear();
+        return;
+    }
+    std::memcpy(&buf[0], data+head.sub_name_offset, buf.size()*sizeof(wchar_t));
+    target.swap(buf);
+}
+
+inline void parse_mount_point_data(
+    const char* p, std::size_t size, std::vector<wchar_t>& target)
+{
+    mount_point_header head;
+
+    if (size < sizeof(head))
+        throw std::runtime_error("bad reparse-data");
+
+    std::memcpy(&head, p, sizeof(head));
+
+    p += sizeof(head);
+    size -= sizeof(head);
+
+    parse_absolute_path(head, p, size, target);
+}
+
+inline void parse_symlink_data(
+    const char* p, std::size_t size, std::vector<wchar_t>& target)
+{
+    if (size < sizeof(symlink_header))
+        throw std::runtime_error("bad reparse-data");
+
+    symlink_header head;
+    std::memcpy(&head, p, sizeof(head));
+
+    p += sizeof(head);
+    size -= sizeof(head);
+
+    if ((head.flags & 1ul) != 0)
+        parse_relative_path(head, p, size, target);
+    else
+        parse_absolute_path(head, p, size, target);
+}
+
+inline error_code
+get_reparse_point(HANDLE handle, std::vector<wchar_t>& target)
+{
+    const std::size_t buf_size = 16*1024;
+    boost::scoped_array<char> buf(new char[buf_size]);
+
+    DWORD size = 0;
+    if (::DeviceIoControl(handle, FSCTL_GET_REPARSE_POINT,
+        0, 0, &buf[0], buf_size, &size, 0) == 0)
+    {
+        return last_error();
+    }
+
+    reparse_data_header head;
+    if (static_cast<std::size_t>(size) < sizeof(head))
+        throw std::runtime_error("bad reparse-data");
+
+    const char* p = &buf[0];
+    std::memcpy(&head, p, sizeof(head));
+    p += sizeof(head);
+
+    const std::size_t data_size =
+        static_cast<std::size_t>(size) - sizeof(reparse_data_header);
+
+    if (static_cast<std::size_t>(head.length) != data_size)
+        throw std::runtime_error("bad reparse-data");
+
+    if (head.tag == mount_point_tag)
+        parse_mount_point_data(p, data_size, target);
+    else if (head.tag == symlink_tag)
+        parse_symlink_data(p, data_size, target);
+    else
+        throw std::runtime_error("unsupported reparse-data");
+
+    return error_code();
+}
 
 inline error_code set_mount_point(HANDLE handle,
     const wchar_t* sub_name, std::size_t sub_name_length,
@@ -105,6 +254,15 @@ inline error_code create_symbolic_link(
     return ec;
 }
 
+inline error_code get_reparse_point(HANDLE handle, std::wstring& target)
+{
+    std::vector<wchar_t> buf;
+    error_code ec = get_reparse_point(handle, buf);
+    if (!ec)
+        target.assign(buf.begin(), buf.end());
+    return ec;
+}
+
 inline error_code set_mount_point(HANDLE handle, const std::wstring& ph)
 {
     std::wstring sub_name(L"\\\?\?\\");
@@ -138,6 +296,33 @@ inline error_code create_symbolic_link(
             ec = last_error();
     }
     ::FreeLibrary(dll);
+    return ec;
+}
+
+inline error_code get_reparse_point(HANDLE handle, std::string& target)
+{
+    std::vector<wchar_t> wbuf;
+    error_code ec = get_reparse_point(handle, wbuf);
+    if (!ec)
+    {
+        if (wbuf.empty())
+        {
+            target.clear();
+            return error_code();
+        }
+
+        int size = ::WideCharToMultiByte(
+            CP_ACP, 0, &wbuf[0], wbuf.size(), 0, 0, 0, 0);
+        if (size == 0)
+            return last_error();
+
+        boost::scoped_array<char> buf(new char[size]);
+        size = ::WideCharToMultiByte(
+            CP_ACP, 0, &wbuf[0], wbuf.size(), buf.get(), size, 0, 0);
+        if (size == 0)
+            return last_error();
+        target.assign(buf.get(), buf.get()+size);
+    }
     return ec;
 }
 

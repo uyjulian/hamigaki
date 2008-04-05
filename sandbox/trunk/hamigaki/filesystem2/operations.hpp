@@ -53,6 +53,9 @@ symlink_status_api(const std::wstring& ph, error_code& ec);
 
 
 HAMIGAKI_FILESYSTEM_DECL error_code
+symlink_target_api(const std::wstring& ph, std::wstring& target);
+
+HAMIGAKI_FILESYSTEM_DECL error_code
 last_write_time_api(const std::wstring& ph, const timestamp& new_time);
 
 HAMIGAKI_FILESYSTEM_DECL error_code
@@ -100,6 +103,9 @@ status_api(const std::string& ph, error_code& ec);
 HAMIGAKI_FILESYSTEM_DECL file_status
 symlink_status_api(const std::string& ph, error_code& ec);
 
+
+HAMIGAKI_FILESYSTEM_DECL error_code
+symlink_target_api(const std::string& ph, std::string& target);
 
 HAMIGAKI_FILESYSTEM_DECL error_code
 last_write_time_api(const std::string& ph, const timestamp& new_time);
@@ -179,6 +185,20 @@ symlink_status(const Path& ph, error_code& ec)
     return detail::symlink_status_api(ph.external_file_string(), ec);
 }
 
+
+HAMIGAKI_FS_FUNC(Path)
+symlink_target(const Path& ph)
+{
+    HAMIGAKI_FS_TYPENAME Path::external_string_type buf;
+    const error_code& ec =
+        detail::symlink_target_api(ph.external_file_string(), buf);
+    if (ec)
+    {
+        throw boost::filesystem::basic_filesystem_error<Path>(
+            "hamigaki::filesystem::symlink_target", ph, ec);
+    }
+    return Path(buf);
+}
 
 HAMIGAKI_FS_FUNC(void)
 last_write_time(const Path& ph, const timestamp& new_time)
@@ -417,6 +437,15 @@ inline bool is_symlink(const wpath& ph)
     return is_symlink(hamigaki::filesystem::symlink_status(ph));
 }
 
+
+inline path symlink_target(const path& ph)
+{
+    return hamigaki::filesystem::symlink_target<path>(ph);
+}
+inline wpath symlink_target(const wpath& ph)
+{
+    return hamigaki::filesystem::symlink_target<wpath>(ph);
+}
 
 inline void last_write_time(const path& ph, const timestamp& new_time)
 {

@@ -285,10 +285,27 @@ creation_time_template(const String& ph, const timestamp& new_time)
 
 template<class String>
 inline error_code
+symlink_target_template(const String& ph, String& target)
+{
+#if defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
+    object_handle f(create_file(
+        ph.c_str(), 0,
+        FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING,
+        FILE_FLAG_BACKUP_SEMANTICS|FILE_FLAG_OPEN_REPARSE_POINT, 0)
+    );
+
+    return detail::get_reparse_point(f.get(), target);
+#else
+    return make_error_code(ERROR_NOT_SUPPORTED);
+#endif
+}
+
+template<class String>
+inline error_code
 create_file_symlink_template(const String& to_ph, const String& from_ph)
 {
 #if defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
-    return create_symbolic_link(from_ph, to_ph, 0);
+    return detail::create_symbolic_link(from_ph, to_ph, 0);
 #else
     return make_error_code(ERROR_NOT_SUPPORTED);
 #endif
@@ -299,7 +316,7 @@ inline error_code
 create_directory_symlink_template(const String& to_ph, const String& from_ph)
 {
 #if defined(HAMIGAKI_FILESYSTEM_USE_REPARSE_POINT)
-    error_code ec = create_symbolic_link(from_ph, to_ph, 1);
+    error_code ec = detail::create_symbolic_link(from_ph, to_ph, 1);
     if (!ec || (ec != make_error_code(ERROR_NOT_SUPPORTED)))
         return ec;
 
@@ -314,7 +331,7 @@ create_directory_symlink_template(const String& to_ph, const String& from_ph)
         FILE_FLAG_BACKUP_SEMANTICS, 0)
     );
 
-    ec = set_mount_point(f.get(), to_ph);
+    ec = detail::set_mount_point(f.get(), to_ph);
     if (!ec)
         guard.release();
     return ec;
@@ -334,9 +351,9 @@ create_symlink_template(const String& to_ph, const String& from_ph)
         return ec;
 
     if (filesystem::is_directory(s))
-        return create_directory_symlink_template(to_ph, from_ph);
+        return detail::create_directory_symlink_template(to_ph, from_ph);
     else
-        return create_symbolic_link(from_ph, to_ph, 0);
+        return detail::create_symbolic_link(from_ph, to_ph, 0);
 #else
     return make_error_code(ERROR_NOT_SUPPORTED);
 #endif
