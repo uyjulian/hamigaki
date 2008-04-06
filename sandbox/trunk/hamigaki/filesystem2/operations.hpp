@@ -30,10 +30,12 @@
             r \
         >::type
     #define HAMIGAKI_FS_TYPENAME typename
+    #define HAMIGAKI_FS_SPEC <Path>
 #else
     #define HAMIGAKI_FS_FUNC(r) inline r
     typedef boost::filesystem::path Path;
     #define HAMIGAKI_FS_TYPENAME
+    #define HAMIGAKI_FS_SPEC
 #endif // defined(BOOST_FILESYSTEM_NARROW_ONLY)
 
 #if defined(BOOST_WINDOWS) && !defined(__GNUC__)
@@ -473,7 +475,7 @@ remove_all(const Path& p)
         boost::filesystem::basic_directory_iterator<Path> end;
 
         for ( ; it != end; ++it)
-            n += hamigaki::filesystem::remove_all(*it);
+            n += hamigaki::filesystem::remove_all HAMIGAKI_FS_SPEC (*it);
     }
 
     if (remove(p))

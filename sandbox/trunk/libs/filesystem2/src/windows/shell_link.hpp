@@ -159,7 +159,7 @@ template<class String>
 class shell_link
 {
 public:
-    typedef typename shell_link_traits<typename String::value_type> traits_type;
+    typedef shell_link_traits<typename String::value_type> traits_type;
     typedef typename traits_type::interface_type interface_type;
 
     shell_link() : ptr_(traits_type::create())
