@@ -207,6 +207,72 @@ symlink_status(const Path& ph, error_code& ec)
 }
 
 
+HAMIGAKI_FS_FUNC(bool) exists(const Path& ph)
+{
+    error_code ec;
+    const file_status& s =
+        detail::status_api(ph.external_file_string(), ec);
+    if (ec)
+    {
+        throw boost::filesystem::basic_filesystem_error<Path>(
+            "hamigaki::filesystem::exists", ph, ec);
+    }
+    return exists(s);
+}
+
+HAMIGAKI_FS_FUNC(bool) is_directory(const Path& ph)
+{
+    error_code ec;
+    const file_status& s =
+        detail::status_api(ph.external_file_string(), ec);
+    if (ec)
+    {
+        throw boost::filesystem::basic_filesystem_error<Path>(
+            "hamigaki::filesystem::is_directory", ph, ec);
+    }
+    return is_directory(s);
+}
+
+HAMIGAKI_FS_FUNC(bool) is_regular(const Path& ph)
+{
+    error_code ec;
+    const file_status& s =
+        detail::status_api(ph.external_file_string(), ec);
+    if (ec)
+    {
+        throw boost::filesystem::basic_filesystem_error<Path>(
+            "hamigaki::filesystem::is_regular", ph, ec);
+    }
+    return is_regular(s);
+}
+
+HAMIGAKI_FS_FUNC(bool) is_other(const Path& ph)
+{
+    error_code ec;
+    const file_status& s =
+        detail::status_api(ph.external_file_string(), ec);
+    if (ec)
+    {
+        throw boost::filesystem::basic_filesystem_error<Path>(
+            "hamigaki::filesystem::is_other", ph, ec);
+    }
+    return is_other(s);
+}
+
+HAMIGAKI_FS_FUNC(bool) is_symlink(const Path& ph)
+{
+    error_code ec;
+    const file_status& s =
+        detail::symlink_status_api(ph.external_file_string(), ec);
+    if (ec)
+    {
+        throw boost::filesystem::basic_filesystem_error<Path>(
+            "hamigaki::filesystem::is_symlink", ph, ec);
+    }
+    return is_symlink(s);
+}
+
+
 HAMIGAKI_FS_FUNC(Path)
 symlink_target(const Path& ph)
 {
@@ -502,47 +568,47 @@ inline file_status symlink_status(const wpath& ph, error_code& ec)
 
 inline bool exists(const path& ph)
 {
-    return exists(hamigaki::filesystem::status(ph));
+    return hamigaki::filesystem::exists<path>(ph);
 }
 inline bool exists(const wpath& ph)
 {
-    return exists(hamigaki::filesystem::status(ph));
+    return hamigaki::filesystem::exists<wpath>(ph);
 }
 
 inline bool is_directory(const path& ph)
 {
-    return is_directory(hamigaki::filesystem::status(ph));
+    return hamigaki::filesystem::is_directory<path>(ph);
 }
 inline bool is_directory(const wpath& ph)
 {
-    return is_directory(hamigaki::filesystem::status(ph));
+    return hamigaki::filesystem::is_directory<wpath>(ph);
 }
 
 inline bool is_regular(const path& ph)
 {
-    return is_regular(hamigaki::filesystem::status(ph));
+    return hamigaki::filesystem::is_regular<path>(ph);
 }
 inline bool is_regular(const wpath& ph)
 {
-    return is_regular(hamigaki::filesystem::status(ph));
+    return hamigaki::filesystem::is_regular<wpath>(ph);
 }
 
 inline bool is_other(const path& ph)
 {
-    return is_other(hamigaki::filesystem::status(ph));
+    return hamigaki::filesystem::is_other<path>(ph);
 }
 inline bool is_other(const wpath& ph)
 {
-    return is_other(hamigaki::filesystem::status(ph));
+    return hamigaki::filesystem::is_other<wpath>(ph);
 }
 
 inline bool is_symlink(const path& ph)
 {
-    return is_symlink(hamigaki::filesystem::symlink_status(ph));
+    return hamigaki::filesystem::is_symlink<path>(ph);
 }
 inline bool is_symlink(const wpath& ph)
 {
-    return is_symlink(hamigaki::filesystem::symlink_status(ph));
+    return hamigaki::filesystem::is_symlink<wpath>(ph);
 }
 
 
