@@ -91,18 +91,24 @@ if ! [ project.find /boost-lib : . ]
                     $(name)-include ?= $($(name)-source) ;
                     if ($(name)-source)
                     {
-                        boost-prebuilt boost_$(name) : $(requirements) ;
+                        boost-prebuilt boost_$(name)
+                            :
+                            $(requirements)
+                            :
+                            :
+                            <include>$($(name)-source)
+                            ;
                     }
                     else
                     {
                         lib boost_$(name)
                             :
                             :
-                            <name>$(bzip-binary)
+                            <name>$($(name)-binary)
                             <search>$($(name)-libpath)
                             :
                             :
-                            <include>$(bzip-include)
+                            <include>$($(name)-include)
                             ;
                     }
                     return <library>boost_$(name) ;
