@@ -418,6 +418,14 @@ change_attributes(const Path& ph, file_attributes::value_type attr)
     }
 }
 
+HAMIGAKI_FS_FUNC(error_code)
+change_attributes(
+    const Path& ph, file_attributes::value_type attr, error_code& ec)
+{
+    ec = detail::change_attributes_api(ph.external_file_string(), attr);
+    return ec;
+}
+
 HAMIGAKI_FS_FUNC(void)
 change_permissions(const Path& ph, file_permissions::value_type perm)
 {
@@ -428,6 +436,14 @@ change_permissions(const Path& ph, file_permissions::value_type perm)
         throw boost::filesystem::basic_filesystem_error<Path>(
             "hamigaki::filesystem::change_permissions", ph, ec);
     }
+}
+
+HAMIGAKI_FS_FUNC(error_code)
+change_permissions(
+    const Path& ph, file_permissions::value_type perm, error_code& ec)
+{
+    ec = detail::change_permissions_api(ph.external_file_string(), perm);
+    return ec;
 }
 
 HAMIGAKI_FS_FUNC(void)
@@ -445,6 +461,16 @@ change_owner(
     }
 }
 
+HAMIGAKI_FS_FUNC(error_code)
+change_owner(
+    const Path& ph,
+    const boost::optional<boost::intmax_t>& new_uid,
+    const boost::optional<boost::intmax_t>& new_gid, error_code& ec)
+{
+    ec = detail::change_owner_api(ph.external_file_string(), new_uid, new_gid);
+    return ec;
+}
+
 HAMIGAKI_FS_FUNC(void)
 change_symlink_owner(
     const Path& ph,
@@ -460,6 +486,17 @@ change_symlink_owner(
         throw boost::filesystem::basic_filesystem_error<Path>(
             "hamigaki::filesystem::change_symlink_owner", ph, ec);
     }
+}
+
+HAMIGAKI_FS_FUNC(error_code)
+change_symlink_owner(
+    const Path& ph,
+    const boost::optional<boost::intmax_t>& new_uid,
+    const boost::optional<boost::intmax_t>& new_gid, error_code& ec)
+{
+    ec = detail::change_symlink_owner_api(
+        ph.external_file_string(), new_uid, new_gid);
+    return ec;
 }
 
 HAMIGAKI_FS_FUNC(unsigned long)
@@ -625,29 +662,29 @@ inline wpath symlink_target(const wpath& ph)
 
 inline void last_write_time(const path& ph, const timestamp& new_time)
 {
-    return hamigaki::filesystem::last_write_time<path>(ph, new_time);
+    hamigaki::filesystem::last_write_time<path>(ph, new_time);
 }
 inline void last_write_time(const wpath& ph, const timestamp& new_time)
 {
-    return hamigaki::filesystem::last_write_time<wpath>(ph, new_time);
+    hamigaki::filesystem::last_write_time<wpath>(ph, new_time);
 }
 
 inline void last_access_time(const path& ph, const timestamp& new_time)
 {
-    return hamigaki::filesystem::last_write_time<path>(ph, new_time);
+    hamigaki::filesystem::last_write_time<path>(ph, new_time);
 }
 inline void last_access_time(const wpath& ph, const timestamp& new_time)
 {
-    return hamigaki::filesystem::last_write_time<wpath>(ph, new_time);
+    hamigaki::filesystem::last_write_time<wpath>(ph, new_time);
 }
 
 inline void creation_time(const path& ph, const timestamp& new_time)
 {
-    return hamigaki::filesystem::creation_time<path>(ph, new_time);
+    hamigaki::filesystem::creation_time<path>(ph, new_time);
 }
 inline void creation_time(const wpath& ph, const timestamp& new_time)
 {
-    return hamigaki::filesystem::creation_time<wpath>(ph, new_time);
+    hamigaki::filesystem::creation_time<wpath>(ph, new_time);
 }
 
 
@@ -735,22 +772,44 @@ create_symlink(const wpath& to_ph, const wpath& from_ph, error_code& ec)
 
 inline void change_attributes(const path& ph, file_attributes::value_type attr)
 {
-    return hamigaki::filesystem::change_attributes<path>(ph, attr);
+    hamigaki::filesystem::change_attributes<path>(ph, attr);
 }
 inline void change_attributes(const wpath& ph, file_attributes::value_type attr)
 {
-    return hamigaki::filesystem::change_attributes<wpath>(ph, attr);
+    hamigaki::filesystem::change_attributes<wpath>(ph, attr);
+}
+
+inline error_code change_attributes(
+    const path& ph, file_attributes::value_type attr, error_code& ec)
+{
+    return hamigaki::filesystem::change_attributes<path>(ph, attr, ec);
+}
+inline error_code change_attributes(
+    const wpath& ph, file_attributes::value_type attr, error_code& ec)
+{
+    return hamigaki::filesystem::change_attributes<wpath>(ph, attr, ec);
 }
 
 inline void change_permissions(
     const path& ph, file_permissions::value_type perm)
 {
-    return hamigaki::filesystem::change_permissions<path>(ph, perm);
+    hamigaki::filesystem::change_permissions<path>(ph, perm);
 }
 inline void change_permissions(
     const wpath& ph, file_permissions::value_type perm)
 {
-    return hamigaki::filesystem::change_permissions<wpath>(ph, perm);
+    hamigaki::filesystem::change_permissions<wpath>(ph, perm);
+}
+
+inline error_code change_permissions(
+    const path& ph, file_permissions::value_type perm, error_code& ec)
+{
+    return hamigaki::filesystem::change_permissions<path>(ph, perm, ec);
+}
+inline error_code change_permissions(
+    const wpath& ph, file_permissions::value_type perm, error_code& ec)
+{
+    return hamigaki::filesystem::change_permissions<wpath>(ph, perm, ec);
 }
 
 inline void change_owner(
@@ -758,14 +817,29 @@ inline void change_owner(
     const boost::optional<boost::intmax_t>& new_uid,
     const boost::optional<boost::intmax_t>& new_gid)
 {
-    return hamigaki::filesystem::change_owner<path>(ph, new_uid, new_gid);
+    hamigaki::filesystem::change_owner<path>(ph, new_uid, new_gid);
 }
 inline void change_owner(
     const wpath& ph,
     const boost::optional<boost::intmax_t>& new_uid,
     const boost::optional<boost::intmax_t>& new_gid)
 {
-    return hamigaki::filesystem::change_owner<wpath>(ph, new_uid, new_gid);
+    hamigaki::filesystem::change_owner<wpath>(ph, new_uid, new_gid);
+}
+
+inline error_code change_owner(
+    const path& ph,
+    const boost::optional<boost::intmax_t>& new_uid,
+    const boost::optional<boost::intmax_t>& new_gid, error_code& ec)
+{
+    return hamigaki::filesystem::change_owner<path>(ph, new_uid, new_gid, ec);
+}
+inline error_code change_owner(
+    const wpath& ph,
+    const boost::optional<boost::intmax_t>& new_uid,
+    const boost::optional<boost::intmax_t>& new_gid, error_code& ec)
+{
+    return hamigaki::filesystem::change_owner<wpath>(ph, new_uid, new_gid, ec);
 }
 
 inline void change_symlink_owner(
@@ -773,16 +847,31 @@ inline void change_symlink_owner(
     const boost::optional<boost::intmax_t>& new_uid,
     const boost::optional<boost::intmax_t>& new_gid)
 {
-    return hamigaki::filesystem::
-        change_symlink_owner<path>(ph, new_uid, new_gid);
+    hamigaki::filesystem::change_symlink_owner<path>(ph, new_uid, new_gid);
 }
 inline void change_symlink_owner(
     const wpath& ph,
     const boost::optional<boost::intmax_t>& new_uid,
     const boost::optional<boost::intmax_t>& new_gid)
 {
+    hamigaki::filesystem::change_symlink_owner<wpath>(ph, new_uid, new_gid);
+}
+
+inline error_code change_symlink_owner(
+    const path& ph,
+    const boost::optional<boost::intmax_t>& new_uid,
+    const boost::optional<boost::intmax_t>& new_gid, error_code& ec)
+{
     return hamigaki::filesystem::
-        change_symlink_owner<wpath>(ph, new_uid, new_gid);
+        change_symlink_owner<path>(ph, new_uid, new_gid, ec);
+}
+inline error_code change_symlink_owner(
+    const wpath& ph,
+    const boost::optional<boost::intmax_t>& new_uid,
+    const boost::optional<boost::intmax_t>& new_gid, error_code& ec)
+{
+    return hamigaki::filesystem::
+        change_symlink_owner<wpath>(ph, new_uid, new_gid, ec);
 }
 
 inline unsigned long remove_all(const path& p)
