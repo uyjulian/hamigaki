@@ -1,6 +1,6 @@
 // extract.cpp: multi-format extractor
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -390,7 +390,7 @@ int main(int argc, char* argv[])
             // Note:
             // The POSIX chown() clears S_ISUID/S_ISGID bits.
             // So, we must call owner() before calling change_permissions().
-            int ec = 0;
+            fs_ex::error_code ec;
             fs_ex::change_owner(e.path, e.uid, e.gid, ec);
 
             if (e.attributes)
