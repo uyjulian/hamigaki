@@ -1,6 +1,6 @@
 // lzh_file.hpp: LZH file device
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -91,11 +91,11 @@ private:
 };
 
 
-template<class Sink>
+template<class Sink, class Path=boost::filesystem::path>
 class basic_lzh_file_sink
 {
 private:
-    typedef detail::basic_lzh_file_sink_impl<Sink> impl_type;
+    typedef detail::basic_lzh_file_sink_impl<Sink,Path> impl_type;
 
 public:
     typedef char char_type;
@@ -106,7 +106,8 @@ public:
         , boost::iostreams::closable_tag
     {};
 
-    typedef lha::header header_type;
+    typedef Path path_type;
+    typedef lha::basic_header<Path> header_type;
 
     explicit basic_lzh_file_sink(const Sink& sink)
         : pimpl_(new impl_type(sink))
@@ -118,7 +119,7 @@ public:
         pimpl_->default_method(method);
     }
 
-    void create_entry(const lha::header& head)
+    void create_entry(const header_type& head)
     {
         pimpl_->create_entry(head);
     }
@@ -158,6 +159,7 @@ public:
         , boost::iostreams::closable_tag
     {};
 
+    typedef boost::filesystem::path path_type;
     typedef lha::header header_type;
 
     explicit lzh_file_sink(const std::string& filename)
@@ -196,8 +198,63 @@ public:
     }
 
 private:
-    basic_lzh_file_sink<iostreams::file_sink> impl_;
+    basic_lzh_file_sink<iostreams::file_sink,boost::filesystem::path> impl_;
 };
+
+#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+class wlzh_file_sink
+{
+public:
+    typedef char char_type;
+
+    struct category
+        : boost::iostreams::output
+        , boost::iostreams::device_tag
+        , boost::iostreams::closable_tag
+    {};
+
+    typedef boost::filesystem::wpath path_type;
+    typedef lha::wheader header_type;
+
+    explicit wlzh_file_sink(const std::string& filename)
+        : impl_(iostreams::file_sink(filename, BOOST_IOS::binary))
+    {
+    }
+
+    void default_method(const char* method)
+    {
+        impl_.default_method(method);
+    }
+
+    void create_entry(const lha::wheader& head)
+    {
+        impl_.create_entry(head);
+    }
+
+    void rewind_entry()
+    {
+        impl_.rewind_entry();
+    }
+
+    void close()
+    {
+        impl_.close();
+    }
+
+    std::streamsize write(const char* s, std::streamsize n)
+    {
+        return impl_.write(s, n);
+    }
+
+    void close_archive()
+    {
+        impl_.close_archive();
+    }
+
+private:
+    basic_lzh_file_sink<iostreams::file_sink,boost::filesystem::wpath> impl_;
+};
+#endif
 
 } } // End namespaces archivers, hamigaki.
 

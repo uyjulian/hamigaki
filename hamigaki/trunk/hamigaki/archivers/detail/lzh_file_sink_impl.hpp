@@ -1,6 +1,6 @@
 // lzh_file_sink_impl.hpp: LZH file sink implementation
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -17,13 +17,16 @@
 
 namespace hamigaki { namespace archivers { namespace detail {
 
-template<class Sink>
+template<class Sink, class Path>
 class basic_lzh_file_sink_impl
 {
 private:
-    typedef basic_raw_lzh_file_sink_impl<Sink> raw_type;
+    typedef basic_raw_lzh_file_sink_impl<Sink,Path> raw_type;
 
 public:
+    typedef Path path_type;
+    typedef lha::basic_header<Path> header_type;
+
     explicit basic_lzh_file_sink_impl(const Sink& sink)
         : raw_(sink), pos_(0), method_("-lh5-"), compressed_(false)
     {
@@ -34,9 +37,9 @@ public:
         method_  = method;
     }
 
-    void create_entry(const lha::header& head)
+    void create_entry(const header_type& head)
     {
-        lha::header header = head;
+        header_type header = head;
         if (header.compressed_size != -1)
             compressed_ = true;
         else if (header.is_directory() || header.is_symlink())

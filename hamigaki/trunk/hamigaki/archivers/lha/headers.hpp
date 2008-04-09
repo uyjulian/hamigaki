@@ -1,6 +1,6 @@
 // headers.hpp: LZH headers
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -24,16 +24,19 @@
 
 namespace hamigaki { namespace archivers { namespace lha {
 
-struct header
+template<class Path>
+struct basic_header
 {
+    typedef Path path_type;
+
     boost::uint8_t level;
     compress_method method;
     boost::int64_t compressed_size;
     boost::int64_t file_size;
     std::time_t update_time;
     boost::uint16_t attributes;
-    boost::filesystem::path path;
-    boost::filesystem::path link_path;
+    Path path;
+    Path link_path;
     boost::optional<boost::uint16_t> crc16_checksum;
     boost::optional<char> os;
     boost::optional<windows::timestamp> timestamp;
@@ -44,7 +47,7 @@ struct header
     std::string user_name;
     std::string comment;
 
-    header()
+    basic_header()
         : level(2), compressed_size(-1), file_size(-1), update_time(-1)
         , attributes(msdos::attributes::archive)
     {
@@ -77,6 +80,11 @@ struct header
             throw std::runtime_error("unsupported file type");
     }
 };
+
+typedef basic_header<boost::filesystem::path> header;
+#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+typedef basic_header<boost::filesystem::wpath> wheader;
+#endif
 
 } } } // End namespaces lha, archivers, hamigaki.
 

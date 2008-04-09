@@ -1,6 +1,6 @@
 // raw_lzh_file_sink_impl.hpp: raw LZH file sink implementation
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -24,6 +24,10 @@
 #include <sstream>
 #include <stdexcept>
 
+#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+    #include <hamigaki/archivers/detail/ucs2.hpp>
+#endif
+
 #if defined(BOOST_HAS_UNISTD_H)
     #define HAMIGAKI_ARCHIVERS_LHA_OS_TYPE 'U'
 #else
@@ -32,11 +36,13 @@
 
 namespace hamigaki { namespace archivers { namespace detail {
 
-template<class Sink>
+template<class Sink, class Path>
 class basic_raw_lzh_file_sink_impl
 {
 public:
     typedef char char_type;
+    typedef Path path_type;
+    typedef lha::basic_header<Path> header_type;
 
     struct category
         : boost::iostreams::output
@@ -49,7 +55,7 @@ public:
     {
     }
 
-    void create_entry(const lha::header& head)
+    void create_entry(const header_type& head)
     {
         if (overflow_)
             throw std::runtime_error("need to rewind the current entry");
@@ -128,9 +134,26 @@ public:
 private:
     Sink sink_;
     bool overflow_;
-    lha::header header_;
+    header_type header_;
     std::streampos header_pos_;
     boost::int64_t pos_;
+
+    static std::string to_narrow(const std::string& s)
+    {
+        return s;
+    }
+
+#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+    static std::string wide_to_narrow(const std::wstring& ws)
+    {
+        return detail::wide_to_narrow(ws.c_str());
+    }
+
+    static std::string to_narrow(const std::wstring& ws)
+    {
+        return detail::wide_to_narrow(ws.c_str());
+    }
+#endif
 
     static std::string convert_path_old(
         const boost::filesystem::path& ph, bool directory)
@@ -156,8 +179,47 @@ private:
         return os.str();
     }
 
+#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+    static std::string convert_path_old(
+        const boost::filesystem::wpath& ph, bool directory)
+    {
+        std::ostringstream os;
+        std::transform(ph.begin(), ph.end(),
+            std::ostream_iterator<std::string>(os, "\xFF"),
+            &basic_raw_lzh_file_sink_impl::wide_to_narrow);
+
+        std::string s(os.str());
+        if (!directory && !s.empty())
+            s.resize(s.size()-1);
+        return s;
+    }
+
+    static std::string convert_path(const boost::filesystem::wpath& ph)
+    {
+        if (ph.empty())
+            return std::string();
+
+        std::ostringstream os;
+        std::transform(ph.begin(), ph.end(),
+            std::ostream_iterator<std::string>(os, "\xFF"),
+            &basic_raw_lzh_file_sink_impl::wide_to_narrow);
+        return os.str();
+    }
+
+    static std::wstring convert_path_wide(const boost::filesystem::wpath& ph)
+    {
+        if (ph.empty())
+            return std::wstring();
+
+        std::wostringstream os;
+        std::copy(ph.begin(), ph.end(),
+            std::ostream_iterator<std::wstring,wchar_t>(os, L"\xFF"));
+        return os.str();
+    }
+#endif
+
     static std::pair<std::string,std::string>
-    make_filename_and_directory(const lha::header& head)
+    make_filename_and_directory(const header_type& head)
     {
         if (!head.link_path.empty())
         {
@@ -167,18 +229,19 @@ private:
                 *(dirname.rbegin()) = '|';
                 dirname += convert_path(head.link_path.branch_path());
 
-                return std::make_pair(head.link_path.leaf(), dirname);
+                return std::make_pair(
+                    to_narrow(head.link_path.leaf()), dirname);
             }
             else
             {
-                std::string filename = head.path.leaf();
+                std::string filename = to_narrow(head.path.leaf());
                 filename += '|';
-                filename += head.link_path.leaf();
+                filename += to_narrow(head.link_path.leaf());
 
 #if BOOST_WORKAROUND(__MWERKS__, BOOST_TESTED_AT(0x3003))
-                boost::filesystem::path ph = head.path.branch_path();
+                path_type ph = head.path.branch_path();
 #else
-                const boost::filesystem::path& ph = head.path.branch_path();
+                const path_type& ph = head.path.branch_path();
 #endif
                 return std::make_pair(filename, convert_path(ph));
             }
@@ -187,8 +250,9 @@ private:
             return std::make_pair(std::string(), convert_path(head.path));
         else
         {
-            const boost::filesystem::path& ph = head.path.branch_path();
-            return std::make_pair(head.path.leaf(), convert_path(ph));
+            const path_type& ph = head.path.branch_path();
+            return std::make_pair(
+                to_narrow(head.path.leaf()), convert_path(ph));
         }
     }
 
@@ -221,6 +285,46 @@ private:
         if (!s.empty())
             sink.write(s.c_str(), s.size());
     }
+
+#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+    template<class OtherSink>
+    static void write_extended_header(
+        OtherSink& sink, unsigned char type, const std::wstring& ws)
+    {
+        const std::string& s = wide_to_ucs2be(ws.c_str(), ws.size());
+        write_extended_header(sink, type, s);
+    }
+#endif
+
+    template<class OtherSink>
+    static void write_unicode_headers(OtherSink&, const lha::header&)
+    {
+    }
+
+#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+    template<class OtherSink>
+    static void write_unicode_headers(OtherSink& sink, const lha::wheader& head)
+    {
+        // TODO: symbolic link support
+
+        std::wstring filename;
+        std::wstring dirname;
+
+        if (head.is_directory())
+            dirname = convert_path_wide(head.path);
+        else
+        {
+            const path_type& ph = head.path.branch_path();
+            filename = head.path.leaf();
+            dirname = convert_path_wide(ph);
+        }
+
+        if (!filename.empty())
+            write_extended_header(sink, 0x44, filename);
+        if (!dirname.empty())
+            write_extended_header(sink, 0x45, dirname);
+    }
+#endif
 
     void write_lv0_header()
     {
@@ -365,6 +469,8 @@ private:
         if (header_.attributes != msdos::attributes::archive)
             write_extended_header<0x40>(tmp, header_.attributes);
 
+        write_unicode_headers(tmp, header_);
+
         if (header_.permissions)
             write_extended_header<0x50>(tmp, header_.permissions.get());
 
@@ -497,6 +603,8 @@ private:
 
         if (header_.timestamp)
             write_extended_header<0x41>(tmp, header_.timestamp.get());
+
+        write_unicode_headers(tmp, header_);
 
         if (header_.permissions)
             write_extended_header<0x50>(tmp, header_.permissions.get());
