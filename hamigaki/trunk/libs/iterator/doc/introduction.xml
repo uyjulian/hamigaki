@@ -14,7 +14,7 @@
 <section id="iterator.introduction">
   <title>紹介</title>
   <using-namespace name="hamigaki"/>
-  <para>Hamigaki.Iteratorライブラリは標準ライブラリやBoost.Iteratorライブラリには含まれないが有用であると思われるIteratorやHamigakiライブラリの他のコンポーネントの実装に使用されるIteratorを提供する。Hamigaki.Iteratorライブラリは以下のIteratorが含まれる。</para>
+  <para>Hamigaki.Iteratorライブラリは標準ライブラリやBoost.Iteratorライブラリには含まれないが有用であると思われるIteratorやHamigakiライブラリの他のコンポーネントの実装に使用されるIteratorを提供する。Hamigaki.Iteratorライブラリには以下のIteratorが含まれる。</para>
   <itemizedlist>
     <listitem>出力回数を数える<classname>counting_output_iterator</classname></listitem>
     <listitem>pairのfirst/secondを抽出する<classname>first_iterator</classname>/<classname>second_iterator</classname></listitem>
