@@ -1,6 +1,6 @@
 // ucs2.hpp: UCS-2 converter
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -76,6 +76,29 @@ inline std::string ucs2be_to_narrow(const std::string& data)
     return detail::ucs2be_to_narrow(data.c_str(), data.size());
 }
 
+inline std::size_t ucs2le_to_wide(wchar_t* pwcs, const char* s, std::size_t n)
+{
+    std::size_t size = n/2;
+    for (std::size_t i = 0; i < size; ++i)
+        pwcs[i] = hamigaki::decode_int<little,2>(s + i*2);
+    return size;
+}
+
+inline std::string ucs2le_to_narrow(const char* s, std::size_t n)
+{
+    std::size_t src_size = n/2;
+    boost::scoped_array<wchar_t> src(new wchar_t[src_size + 1]);
+    detail::ucs2le_to_wide(src.get(), s, n);
+    src[src_size] = 0;
+
+    return detail::wide_to_narrow(src.get());
+}
+
+inline std::string ucs2le_to_narrow(const std::string& data)
+{
+    return detail::ucs2le_to_narrow(data.c_str(), data.size());
+}
+
 
 inline std::size_t narrow_to_wide(wchar_t* pwcs, const char* s, std::size_t n)
 {
@@ -131,6 +154,37 @@ inline std::string narrow_to_ucs2be(const char* s)
 inline std::string narrow_to_ucs2be(const std::string& data)
 {
     return detail::narrow_to_ucs2be(data.c_str());
+}
+
+inline std::size_t wide_to_ucs2le(char* s, const wchar_t* pwcs, std::size_t n)
+{
+    for (std::size_t i = 0; i < n; ++i)
+    {
+        hamigaki::encode_int<little,2>(
+            s + i*2, static_cast<boost::int16_t>(pwcs[i]));
+    }
+    return n*2;
+}
+
+inline std::string wide_to_ucs2le(const wchar_t* pwcs, std::size_t n)
+{
+    std::size_t size = n*2;
+    boost::scoped_array<char> buf(new char[size]);
+    detail::wide_to_ucs2le(buf.get(), pwcs, n);
+    return std::string(buf.get(), size);
+}
+
+inline std::string narrow_to_ucs2le(const char* s)
+{
+    boost::scoped_array<wchar_t> buf;
+    std::size_t size = detail::narrow_to_wide(buf, s);
+
+    return wide_to_ucs2le(buf.get(), size);
+}
+
+inline std::string narrow_to_ucs2le(const std::string& data)
+{
+    return detail::narrow_to_ucs2le(data.c_str());
 }
 
 } } } // End namespaces detail, archivers, hamigaki.
