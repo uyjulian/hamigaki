@@ -213,7 +213,7 @@ private:
 
         std::wostringstream os;
         std::copy(ph.begin(), ph.end(),
-            std::ostream_iterator<std::wstring,wchar_t>(os, L"\xFF"));
+            std::ostream_iterator<std::wstring,wchar_t>(os, L"\uFFFF"));
         return os.str();
     }
 #endif
@@ -291,7 +291,7 @@ private:
     static void write_extended_header(
         OtherSink& sink, unsigned char type, const std::wstring& ws)
     {
-        const std::string& s = wide_to_ucs2be(ws.c_str(), ws.size());
+        const std::string& s = wide_to_ucs2le(ws.c_str(), ws.size());
         write_extended_header(sink, type, s);
     }
 #endif
