@@ -82,16 +82,19 @@ namespace cp_detail
 
 inline std::string make_cp_name(unsigned cp)
 {
-    if (cp == 65001)
-        return "UTF-8";
-    else if (cp == 65000)
-        return "UTF-7";
-    else if (cp == 20932)
-        return "EUC-JP";
-    else if (cp == 50220)
-        return "ISO-2022-JP";
-    else
-        return "CP" + hamigaki::to_dec<char>(cp);
+    switch (cp)
+    {
+        case 20932:
+            return "EUC-JP";
+        case 50220:
+            return "ISO-2022-JP";
+        case 65000:
+            return "UTF-7";
+        case 65001:
+            return "UTF-8";
+        default:
+            return "CP" + hamigaki::to_dec<char>(cp);
+    }
 }
 
 template<std::size_t CharSize>
