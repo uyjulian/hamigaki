@@ -238,7 +238,7 @@ inline error_code create_symbolic_link(
     const wchar_t* from_s = from_ph.c_str();
     const wchar_t* to_s = to_ph.c_str();
 
-    error_code ec(ERROR_NOT_SUPPORTED, boost::system::get_system_category());
+    error_code ec = make_error_code(ERROR_NOT_SUPPORTED);
     HMODULE dll(::LoadLibraryA("kernel32.dll"));
     func_type func = reinterpret_cast<func_type>(
         ::GetProcAddress(dll, "CreateSymbolicLinkW"));
@@ -283,7 +283,7 @@ inline error_code create_symbolic_link(
     const char* from_s = from_ph.c_str();
     const char* to_s = to_ph.c_str();
 
-    error_code ec(ERROR_NOT_SUPPORTED, boost::system::get_system_category());
+    error_code ec = make_error_code(ERROR_NOT_SUPPORTED);
     HMODULE dll(::LoadLibraryA("kernel32.dll"));
     func_type func = reinterpret_cast<func_type>(
         ::GetProcAddress(dll, "CreateSymbolicLinkA"));

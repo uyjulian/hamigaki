@@ -12,7 +12,6 @@
 
 #include <boost/filesystem/config.hpp>
 #include <boost/filesystem/path.hpp>
-#include <boost/system/system_error.hpp>
 #include <boost/version.hpp>
 
 #if defined(BOOST_HAS_DECLSPEC)
@@ -31,7 +30,11 @@
 
 namespace hamigaki { namespace filesystem {
 
-typedef boost::system::error_code error_code;
+#if BOOST_VERSION < 103500
+    typedef boost::filesystem::system_error_type error_code;
+#else
+    typedef boost::system::error_code error_code;
+#endif
 
 #if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
 typedef boost::filesystem::wpath wpath;
@@ -41,11 +44,18 @@ typedef boost::filesystem::path path;
 namespace detail
 {
 
+#if BOOST_VERSION < 103500
+inline error_code make_error_code(int code)
+{
+    return static_cast<error_code>(code);
+}
+#else
 inline error_code make_error_code(int code)
 {
     return boost::system::error_code(
         code, boost::system::get_system_category());
 }
+#endif
 
 } // namespace detail
 

@@ -39,6 +39,7 @@ if ! [ project.find /boost-lib : . ]
         module boost-lib
         {
             import boost-prebuilt ;
+            import boost-version ;
             import modules ;
             import os ;
 
@@ -61,14 +62,21 @@ if ! [ project.find /boost-lib : . ]
                 requirements += <variant>release ;
             }
 
-            boost-prebuilt boost_system
-                :
-                $(requirements)
-                :
-                :
-                <link>shared:<define>BOOST_SYSTEM_DYN_LINK=1
-                <link>static:<define>BOOST_SYSTEM_STATIC_LINK=1
-                ;
+            if [ boost-version.version ] >= 1.35.0
+            {
+                boost-prebuilt boost_system
+                    :
+                    $(requirements)
+                    :
+                    :
+                    <link>shared:<define>BOOST_SYSTEM_DYN_LINK=1
+                    <link>static:<define>BOOST_SYSTEM_STATIC_LINK=1
+                    ;
+            }
+            else
+            {
+                alias boost_system ;
+            }
 
             boost-prebuilt boost_filesystem
                 :
@@ -201,20 +209,28 @@ if ! [ project.find /boost-lib : . ]
         make-project boost-lib ;
         module boost-lib
         {
+            import boost-version ;
             import modules ;
             import os ;
 
             alias headers : /boost//headers ;
 
-            alias boost_system
-                :
-                /boost/system//boost_system
-                :
-                :
-                :
-                <link>shared:<define>BOOST_SYSTEM_DYN_LINK=1
-                <link>static:<define>BOOST_SYSTEM_STATIC_LINK=1
-                ;
+            if [ boost-version.version ] >= 1.35.0
+            {
+                alias boost_system
+                    :
+                    /boost/system//boost_system
+                    :
+                    :
+                    :
+                    <link>shared:<define>BOOST_SYSTEM_DYN_LINK=1
+                    <link>static:<define>BOOST_SYSTEM_STATIC_LINK=1
+                    ;
+            }
+            else
+            {
+                alias boost_system ;
+            }
 
             alias boost_filesystem
                 :

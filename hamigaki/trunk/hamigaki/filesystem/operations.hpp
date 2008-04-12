@@ -279,20 +279,19 @@ HAMIGAKI_FS_FUNC(Path)
 symlink_target(const Path& ph)
 {
     HAMIGAKI_FS_TYPENAME Path::external_string_type buf;
-    const error_code& ec =
-        detail::symlink_target_api(ph.external_file_string(), buf);
+    error_code ec = detail::symlink_target_api(ph.external_file_string(), buf);
     if (ec)
     {
         throw boost::filesystem::basic_filesystem_error<Path>(
             "hamigaki::filesystem::symlink_target", ph, ec);
     }
-    return Path(buf);
+    return Path(Path::traits_type::to_internal(buf));
 }
 
 HAMIGAKI_FS_FUNC(void)
 last_write_time(const Path& ph, const timestamp& new_time)
 {
-    const error_code& ec =
+    error_code ec =
         detail::last_write_time_api(ph.external_file_string(), new_time);
     if (ec)
     {
@@ -304,7 +303,7 @@ last_write_time(const Path& ph, const timestamp& new_time)
 HAMIGAKI_FS_FUNC(void)
 last_access_time(const Path& ph, const timestamp& new_time)
 {
-    const error_code& ec =
+    error_code ec =
         detail::last_access_time_api(ph.external_file_string(), new_time);
     if (ec)
     {
@@ -316,7 +315,7 @@ last_access_time(const Path& ph, const timestamp& new_time)
 HAMIGAKI_FS_FUNC(void)
 creation_time(const Path& ph, const timestamp& new_time)
 {
-    const error_code& ec =
+    error_code ec =
         detail::creation_time_api(ph.external_file_string(), new_time);
     if (ec)
     {
@@ -329,7 +328,7 @@ creation_time(const Path& ph, const timestamp& new_time)
 HAMIGAKI_FS_FUNC(void)
 create_hard_link(const Path& to_ph, const Path& from_ph)
 {
-    const error_code& ec = detail::create_hard_link_api(
+    error_code ec = detail::create_hard_link_api(
         to_ph.external_file_string(), from_ph.external_file_string());
     if (ec)
     {
@@ -349,7 +348,7 @@ create_hard_link(const Path& to_ph, const Path& from_ph, error_code& ec)
 HAMIGAKI_FS_FUNC(void)
 create_file_symlink(const Path& to_ph, const Path& from_ph)
 {
-    const error_code& ec = detail::create_file_symlink_api(
+    error_code ec = detail::create_file_symlink_api(
         to_ph.external_file_string(), from_ph.external_file_string());
     if (ec)
     {
@@ -369,7 +368,7 @@ create_file_symlink(const Path& to_ph, const Path& from_ph, error_code& ec)
 HAMIGAKI_FS_FUNC(void)
 create_directory_symlink(const Path& to_ph, const Path& from_ph)
 {
-    const error_code& ec = detail::create_directory_symlink_api(
+    error_code ec = detail::create_directory_symlink_api(
         to_ph.external_directory_string(), from_ph.external_directory_string());
     if (ec)
     {
@@ -389,7 +388,7 @@ create_directory_symlink(const Path& to_ph, const Path& from_ph, error_code& ec)
 
 HAMIGAKI_FS_FUNC(void) create_symlink(const Path& to_ph, const Path& from_ph)
 {
-    const error_code& ec = detail::create_symlink_api(
+    error_code ec = detail::create_symlink_api(
         to_ph.external_file_string(), from_ph.external_file_string());
     if (ec)
     {
@@ -409,7 +408,7 @@ create_symlink(const Path& to_ph, const Path& from_ph, error_code& ec)
 HAMIGAKI_FS_FUNC(void)
 change_attributes(const Path& ph, file_attributes::value_type attr)
 {
-    const error_code& ec =
+    error_code ec =
         detail::change_attributes_api(ph.external_file_string(), attr);
     if (ec)
     {
@@ -429,7 +428,7 @@ change_attributes(
 HAMIGAKI_FS_FUNC(void)
 change_permissions(const Path& ph, file_permissions::value_type perm)
 {
-    const error_code& ec =
+    error_code ec =
         detail::change_permissions_api(ph.external_file_string(), perm);
     if (ec)
     {
@@ -452,7 +451,7 @@ change_owner(
     const boost::optional<boost::intmax_t>& new_uid,
     const boost::optional<boost::intmax_t>& new_gid)
 {
-    const error_code& ec =
+    error_code ec =
         detail::change_owner_api(ph.external_file_string(), new_uid, new_gid);
     if (ec)
     {
@@ -477,7 +476,7 @@ change_symlink_owner(
     const boost::optional<boost::intmax_t>& new_uid,
     const boost::optional<boost::intmax_t>& new_gid)
 {
-    const error_code& ec =
+    error_code ec =
         detail::change_symlink_owner_api(
             ph.external_file_string(), new_uid, new_gid
         );
@@ -528,7 +527,7 @@ HAMIGAKI_FS_FUNC(void) create_shell_link(
         HAMIGAKI_FS_TYPENAME Path::external_string_type
     >& options)
 {
-    const error_code& ec = detail::create_shell_link_api(
+    error_code ec = detail::create_shell_link_api(
         to_ph.external_file_string(), from_ph.external_file_string(), options);
     if (ec)
     {
