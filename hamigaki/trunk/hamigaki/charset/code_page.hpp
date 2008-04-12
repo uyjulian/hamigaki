@@ -22,6 +22,12 @@
 #else
     #include <hamigaki/charset/detail/iconv.hpp>
     #include <errno.h>
+
+    #if defined(__CYGWIN__)
+        extern "C" __declspec(dllimport) unsigned __stdcall GetACP();
+    #else
+        #include <langinfo.h>
+    #endif
 #endif
 
 namespace hamigaki { namespace charset {
@@ -82,6 +88,18 @@ namespace cp_detail
 
 inline std::string make_cp_name(unsigned cp)
 {
+    if (cp == 0)
+    {
+#if defined(__CYGWIN__)
+        cp = ::GetACP();
+#elif defined(__GLIBC__) || defined(_LIBICONV_VERSION)
+        return "";
+#else
+        // FIXME: MT unsafe
+        return ::nl_langinfo(CODESET);
+#endif
+    }
+
     switch (cp)
     {
         case 20932:

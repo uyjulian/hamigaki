@@ -13,6 +13,17 @@
 namespace charset = hamigaki::charset;
 namespace ut = boost::unit_test;
 
+void acp_test()
+{
+    charset::wstring ws(L"Hello");
+    std::string s("Hello");
+
+    BOOST_CHECK_EQUAL(charset::to_code_page(ws, 0, "_"), s);
+
+    const charset::wstring& ws2 = charset::from_code_page(s, 0);
+    BOOST_CHECK_EQUAL_COLLECTIONS(ws2.begin(), ws2.end(), ws.begin(), ws.end());
+}
+
 void sjis_test()
 {
     charset::wstring ws(L"\u3053\u3093\u306B\u3061\u306F");
@@ -98,6 +109,7 @@ void surrogate_test()
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("code page test");
+    test->add(BOOST_TEST_CASE(&acp_test));
     test->add(BOOST_TEST_CASE(&sjis_test));
     test->add(BOOST_TEST_CASE(&jis_test));
     test->add(BOOST_TEST_CASE(&eucjp_test));
