@@ -90,12 +90,12 @@ void surrogate_test_impl(const size_tag<4>&)
 
 void surrogate_test_impl(const size_tag<2>&)
 {
-    charset::wstring ws(L"\U00029E3D");
+    charset::wstring ws(L"\xD867\xDE3D");
     BOOST_CHECK_EQUAL(charset::to_code_page(ws, 932, "_"), "__");
     BOOST_CHECK_EQUAL(
         charset::to_code_page(ws, 65001), "\xF0\xA9\xB8\xBD");
 
-    charset::wstring ws2(L"\U00029E3D.txt");
+    charset::wstring ws2(L"\xD867\xDE3D.txt");
     BOOST_CHECK_EQUAL(charset::to_code_page(ws2, 932, "_"), "__.txt");
     BOOST_CHECK_EQUAL(
         charset::to_code_page(ws2, 65001), "\xF0\xA9\xB8\xBD.txt");
