@@ -1,6 +1,6 @@
 // lzh_h0_test.cpp: test case for LZH with level-0 header
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -71,6 +71,34 @@ void h0_test()
     BOOST_CHECK(!src.next_entry());
 }
 
+void abs_path_test()
+{
+    ar::lha::header head;
+    head.level = 0;
+    head.update_time = std::time(0);
+    head.attributes = ar::msdos::attributes::directory;
+    head.path = "/dir/file";
+    head.os = '?';
+
+    io_ex::tmp_file archive;
+    ar::basic_lzh_file_sink<
+        io_ex::dont_close_device<io_ex::tmp_file>
+    > sink(io_ex::dont_close(archive));
+
+    sink.create_entry(head);
+    sink.close_archive();
+
+    io::seek(archive, 0, BOOST_IOS::beg);
+
+    ar::basic_lzh_file_source<io_ex::tmp_file> src(archive);
+
+    BOOST_CHECK(src.next_entry());
+
+    check_header(head, src.header());
+
+    BOOST_CHECK(!src.next_entry());
+}
+
 void symlink_test_aux(const fs::path& link, const fs::path& target, bool dir)
 {
     ar::lha::header head;
@@ -119,6 +147,7 @@ ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("LZH h0 test");
     test->add(BOOST_TEST_CASE(&h0_test));
+    test->add(BOOST_TEST_CASE(&abs_path_test));
     test->add(BOOST_TEST_CASE(&symlink_test));
     return test;
 }

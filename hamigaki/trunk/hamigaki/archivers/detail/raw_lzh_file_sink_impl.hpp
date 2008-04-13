@@ -159,8 +159,17 @@ private:
         const boost::filesystem::path& ph, bool directory)
     {
         std::ostringstream os;
-        std::copy(ph.begin(), ph.end(),
-            std::ostream_iterator<std::string>(os, "\\"));
+
+        boost::filesystem::path::const_iterator beg = ph.begin();
+        if (ph.has_root_name())
+            ++beg;
+        if (ph.has_root_directory())
+        {
+            ++beg;
+            os << "\\";
+        }
+
+        std::copy(beg, ph.end(), std::ostream_iterator<std::string>(os, "\\"));
 
         std::string s(os.str());
         if (!directory && !s.empty())
@@ -174,7 +183,17 @@ private:
             return std::string();
 
         std::ostringstream os;
-        std::copy(ph.begin(), ph.end(),
+
+        boost::filesystem::path::const_iterator beg = ph.begin();
+        if (ph.has_root_name())
+            ++beg;
+        if (ph.has_root_directory())
+        {
+            ++beg;
+            os << "\xFF";
+        }
+
+        std::copy(beg, ph.end(),
             std::ostream_iterator<std::string>(os, "\xFF"));
         return os.str();
     }
@@ -184,8 +203,18 @@ private:
         const boost::filesystem::wpath& ph, bool directory)
     {
         std::ostringstream os;
-        std::transform(ph.begin(), ph.end(),
-            std::ostream_iterator<std::string>(os, "\xFF"),
+
+        boost::filesystem::wpath::const_iterator beg = ph.begin();
+        if (ph.has_root_name())
+            ++beg;
+        if (ph.has_root_directory())
+        {
+            ++beg;
+            os << "\\";
+        }
+
+        std::transform(beg, ph.end(),
+            std::ostream_iterator<std::string>(os, "\\"),
             &basic_raw_lzh_file_sink_impl::wide_to_narrow);
 
         std::string s(os.str());
@@ -200,7 +229,17 @@ private:
             return std::string();
 
         std::ostringstream os;
-        std::transform(ph.begin(), ph.end(),
+
+        boost::filesystem::wpath::const_iterator beg = ph.begin();
+        if (ph.has_root_name())
+            ++beg;
+        if (ph.has_root_directory())
+        {
+            ++beg;
+            os << "\xFF";
+        }
+
+        std::transform(beg, ph.end(),
             std::ostream_iterator<std::string>(os, "\xFF"),
             &basic_raw_lzh_file_sink_impl::wide_to_narrow);
         return os.str();
@@ -212,7 +251,17 @@ private:
             return std::wstring();
 
         std::wostringstream os;
-        std::copy(ph.begin(), ph.end(),
+
+        boost::filesystem::wpath::const_iterator beg = ph.begin();
+        if (ph.has_root_name())
+            ++beg;
+        if (ph.has_root_directory())
+        {
+            ++beg;
+            os << L"\uFFFF";
+        }
+
+        std::copy(beg, ph.end(),
             std::ostream_iterator<std::wstring,wchar_t>(os, L"\uFFFF"));
         return os.str();
     }

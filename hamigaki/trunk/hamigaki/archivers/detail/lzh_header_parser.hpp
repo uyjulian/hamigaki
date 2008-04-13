@@ -1,6 +1,6 @@
 // lzh_header_parser.hpp: LZH header parser
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -108,6 +108,13 @@ inline boost::filesystem::path parse_path_old(const std::string& s)
 
     std::string::size_type pos = 0;
     std::string::size_type start = 0;
+
+    if (s[0] == '\\')
+    {
+        ph = "/";
+        start = ++pos;
+    }
+
     while (pos < s.size())
     {
         unsigned char uc = static_cast<unsigned char>(s[pos]);
@@ -139,6 +146,12 @@ inline boost::filesystem::path parse_path(const std::string& s)
 
     std::string::size_type pos = 0;
     std::string::size_type delim;
+
+    if (s[0] == '\xFF')
+    {
+        ph = "/";
+        ++pos;
+    }
 
     while (delim = s.find('\xFF', pos), delim != std::string::npos)
     {
