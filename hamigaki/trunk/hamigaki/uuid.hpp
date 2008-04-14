@@ -1,6 +1,6 @@
 // uuid.hpp: Universally Unique IDentifier class
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -11,6 +11,7 @@
 #include <boost/config.hpp>
 
 #include <hamigaki/hex_format.hpp>
+#include <hamigaki/static_widen.hpp>
 #include <boost/detail/endian.hpp>
 #include <boost/serialization/level.hpp>
 #include <boost/array.hpp>
@@ -28,18 +29,6 @@ namespace hamigaki {
 
 namespace detail
 {
-
-template<class CharT> struct uuid_delimiter;
-
-template<> struct uuid_delimiter<char>
-{
-    static const char value = '-';
-};
-
-template<> struct uuid_delimiter<wchar_t>
-{
-    static const wchar_t value = L'-';
-};
 
 template<class CharT, class Traits, class Allocator>
 inline void append_hex(
@@ -74,20 +63,18 @@ public:
         from_string_impl<char>(s);
     }
 
-#if !defined(BOOST_NO_STD_WSTRING)
     explicit uuid(const wchar_t* s)
     {
-        if (*s == '{')
+        if (*s == L'{')
         {
-            if (std::wcslen(s) != 38)
+            if (std::char_traits<wchar_t>::length(s) != 38)
                 invalid_uuid();
             ++s;
         }
-        else if (std::wcslen(s) != 36)
+        else if (std::char_traits<wchar_t>::length(s) != 36)
             invalid_uuid();
         from_string_impl<wchar_t>(s);
     }
-#endif
 
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
     uuid(const ::_GUID& id)
@@ -184,25 +171,23 @@ public:
         return s;
     }
 
-#if !defined(BOOST_NO_STD_WSTRING)
-    std::wstring to_wstring() const
+    std::basic_string<wchar_t> to_wstring() const
     {
-        std::wstring s;
+        std::basic_string<wchar_t> s;
         s.reserve(36);
         this->to_string_impl<wchar_t>(s, false);
         return s;
     }
 
-    std::wstring to_guid_wstring() const
+    std::basic_string<wchar_t> to_guid_wstring() const
     {
-        std::wstring s;
+        std::basic_string<wchar_t> s;
         s.reserve(38);
         s += L'{';
         this->to_string_impl<wchar_t>(s, true);
         s += L'}';
         return s;
     }
-#endif
 
 private:
     boost::array<boost::uint8_t,16> data_;
@@ -216,7 +201,7 @@ private:
             s += 2;
             if ((i == 3) || (i == 5) || (i == 7) || (i == 9))
             {
-                if (*s != detail::uuid_delimiter<CharT>::value)
+                if (*s != static_widen<CharT,'-'>::value)
                     invalid_uuid();
                 ++s;
             }
@@ -229,16 +214,16 @@ private:
     {
         for (std::size_t i = 0; i < 4; ++i)
             detail::append_hex(s, data_[i], is_upper);
-        s += detail::uuid_delimiter<CharT>::value;
+        s += static_widen<CharT,'-'>::value;
         detail::append_hex(s, data_[4], is_upper);
         detail::append_hex(s, data_[5], is_upper);
-        s += detail::uuid_delimiter<CharT>::value;
+        s += static_widen<CharT,'-'>::value;
         detail::append_hex(s, data_[6], is_upper);
         detail::append_hex(s, data_[7], is_upper);
-        s += detail::uuid_delimiter<CharT>::value;
+        s += static_widen<CharT,'-'>::value;
         detail::append_hex(s, data_[8], is_upper);
         detail::append_hex(s, data_[9], is_upper);
-        s += detail::uuid_delimiter<CharT>::value;
+        s += static_widen<CharT,'-'>::value;
         for (std::size_t i = 10; i < 16; ++i)
             detail::append_hex(s, data_[i], is_upper);
     }

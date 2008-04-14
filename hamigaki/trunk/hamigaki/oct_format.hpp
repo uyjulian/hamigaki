@@ -1,6 +1,6 @@
 // oct_format.hpp: octal formatting
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -8,6 +8,7 @@
 #ifndef HAMIGAKI_OCT_FORMAT_HPP
 #define HAMIGAKI_OCT_FORMAT_HPP
 
+#include <hamigaki/static_widen.hpp>
 #include <boost/detail/workaround.hpp>
 #include <boost/array.hpp>
 #include <boost/assert.hpp>
@@ -82,7 +83,7 @@ inline std::basic_string<CharT> to_oct(T n)
         s += oct_traits<CharT>::to_oct(static_cast<int>(n & 07));
         n >>= 3;
     }
-    s.push_back('0');
+    s.push_back(static_widen<CharT,'0'>::value);
     std::reverse(s.begin(), s.end());
     return s;
 }

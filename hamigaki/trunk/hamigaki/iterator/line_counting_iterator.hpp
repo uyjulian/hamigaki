@@ -1,6 +1,6 @@
 // line_counting_iterator.hpp: a line-counting adaptor for iterators
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -10,6 +10,7 @@
 #ifndef HAMIGAKI_ITERATOR_LINE_COUNTING_ITERATOR_HPP
 #define HAMIGAKI_ITERATOR_LINE_COUNTING_ITERATOR_HPP
 
+#include <hamigaki/static_widen.hpp>
 #include <boost/iterator/iterator_adaptor.hpp>
 #include <boost/iterator/iterator_traits.hpp>
 #include <boost/mpl/if.hpp>
@@ -37,22 +38,6 @@ struct select_line_counting_iter_category
     >::type type;
 };
 
-
-template<class CharT>
-struct default_newline;
-
-template<>
-struct default_newline<char>
-{
-    static const char value = '\n';
-};
-
-template<>
-struct default_newline<wchar_t>
-{
-    static const wchar_t value = L'\n';
-};
-
 } // namespace impl
 
 template<class Iterator>
@@ -77,13 +62,13 @@ public:
 
     explicit line_counting_iterator(Iterator it)
         : adaptor_type(it), line_(-1)
-        , nl_(impl::default_newline<typename adaptor_type::value_type>::value)
+        , nl_(static_widen<typename adaptor_type::value_type,'\n'>::value)
     {
     }
 
     line_counting_iterator(Iterator it, int line)
         : adaptor_type(it), line_(line)
-        , nl_(impl::default_newline<typename adaptor_type::value_type>::value)
+        , nl_(static_widen<typename adaptor_type::value_type,'\n'>::value)
     {
     }
 
