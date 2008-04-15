@@ -143,11 +143,52 @@ void symlink_test()
     }
 }
 
+void fname_size_test_aux(std::size_t size)
+{
+    ar::lha::header head;
+    head.level = 1;
+    head.update_time = std::time(0);
+    head.attributes = ar::msdos::attributes::read_only;
+    head.path = std::string(size, 'A');
+    head.os = 'M';
+
+    io_ex::tmp_file archive;
+    ar::basic_lzh_file_sink<
+        io_ex::dont_close_device<io_ex::tmp_file>
+    > sink(io_ex::dont_close(archive));
+
+    sink.create_entry(head);
+    sink.close();
+    sink.close_archive();
+
+    io::seek(archive, 0, BOOST_IOS::beg);
+
+    ar::basic_lzh_file_source<io_ex::tmp_file> src(archive);
+
+    BOOST_CHECK(src.next_entry());
+
+    check_header(head, src.header());
+
+    typedef std::char_traits<char> traits_type;
+    BOOST_CHECK(traits_type::eq_int_type(io::get(src), traits_type::eof()));
+
+    BOOST_CHECK(!src.next_entry());
+}
+
+void fname_size_test()
+{
+    fname_size_test_aux(232);
+    fname_size_test_aux(233);
+    fname_size_test_aux(255);
+    fname_size_test_aux(256);
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("LZH h1 test");
     test->add(BOOST_TEST_CASE(&h1_test));
     test->add(BOOST_TEST_CASE(&abs_path_test));
     test->add(BOOST_TEST_CASE(&symlink_test));
+    test->add(BOOST_TEST_CASE(&fname_size_test));
     return test;
 }

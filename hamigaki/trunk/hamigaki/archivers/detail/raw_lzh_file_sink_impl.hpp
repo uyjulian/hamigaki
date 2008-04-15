@@ -10,11 +10,13 @@
 #ifndef HAMIGAKI_ARCHIVERS_DETAIL_RAW_LZH_FILE_SINK_IMPL_HPP
 #define HAMIGAKI_ARCHIVERS_DETAIL_RAW_LZH_FILE_SINK_IMPL_HPP
 
+#include <hamigaki/archivers/detail/path.hpp>
 #include <hamigaki/archivers/lha/headers.hpp>
 #include <hamigaki/archivers/error.hpp>
 #include <hamigaki/checksum/sum8.hpp>
 #include <hamigaki/iostreams/binary_io.hpp>
 #include <hamigaki/iostreams/seek.hpp>
+#include <hamigaki/static_widen.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/iostreams/close.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -25,6 +27,7 @@
 #include <stdexcept>
 
 #if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+    #include <hamigaki/archivers/detail/code_page.hpp>
     #include <hamigaki/archivers/detail/ucs2.hpp>
 #endif
 
@@ -42,6 +45,7 @@ class basic_raw_lzh_file_sink_impl
 public:
     typedef char char_type;
     typedef Path path_type;
+    typedef typename Path::string_type string_type;
     typedef lha::basic_header<Path> header_type;
 
     struct category
@@ -138,20 +142,39 @@ private:
     std::streampos header_pos_;
     boost::int64_t pos_;
 
-    static std::string to_narrow(const std::string& s)
+
+    static Path make_linked_path_impl(const Path& path, const Path& link_path)
+    {
+        if (link_path.empty())
+            return path;
+
+        typename Path::string_type s;
+        s = path.string();
+        s += hamigaki::static_widen<typename Path::value_type,'|'>::value;
+        s += link_path.string();
+        return Path(s);
+    }
+
+    static Path make_linked_path(const Path& path, const Path& link_path)
+    {
+        if (link_path.empty())
+            return detail::remove_root_name(path);
+
+        return make_linked_path_impl(
+            detail::remove_root_name(path),
+            detail::remove_root_name(link_path)
+        );
+    }
+
+    static std::string to_narrow(const std::string& s, bool&)
     {
         return s;
     }
 
 #if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
-    static std::string wide_to_narrow(const std::wstring& ws)
+    static std::string to_narrow(const std::wstring& ws, bool& used_def_char)
     {
-        return detail::wide_to_narrow(ws.c_str());
-    }
-
-    static std::string to_narrow(const std::wstring& ws)
-    {
-        return detail::wide_to_narrow(ws.c_str());
+        return charset::to_code_page(ws, 0, "_", &used_def_char);
     }
 #endif
 
@@ -177,7 +200,7 @@ private:
         return s;
     }
 
-    static std::string convert_path(const boost::filesystem::path& ph)
+    static std::string convert_path(const boost::filesystem::path& ph, bool&)
     {
         if (ph.empty())
             return std::string();
@@ -215,7 +238,8 @@ private:
 
         std::transform(beg, ph.end(),
             std::ostream_iterator<std::string>(os, "\\"),
-            &basic_raw_lzh_file_sink_impl::wide_to_narrow);
+            detail::to_code_page(932, "_")
+        );
 
         std::string s(os.str());
         if (!directory && !s.empty())
@@ -223,7 +247,8 @@ private:
         return s;
     }
 
-    static std::string convert_path(const boost::filesystem::wpath& ph)
+    static std::string convert_path(
+        const boost::filesystem::wpath& ph, bool& used_def_char)
     {
         if (ph.empty())
             return std::string();
@@ -241,7 +266,8 @@ private:
 
         std::transform(beg, ph.end(),
             std::ostream_iterator<std::string>(os, "\xFF"),
-            &basic_raw_lzh_file_sink_impl::wide_to_narrow);
+            detail::to_code_page(0, "_", &used_def_char)
+        );
         return os.str();
     }
 
@@ -266,44 +292,6 @@ private:
         return os.str();
     }
 #endif
-
-    static std::pair<std::string,std::string>
-    make_filename_and_directory(const header_type& head)
-    {
-        if (!head.link_path.empty())
-        {
-            if (head.link_path.has_branch_path())
-            {
-                std::string dirname = convert_path(head.path);
-                *(dirname.rbegin()) = '|';
-                dirname += convert_path(head.link_path.branch_path());
-
-                return std::make_pair(
-                    to_narrow(head.link_path.leaf()), dirname);
-            }
-            else
-            {
-                std::string filename = to_narrow(head.path.leaf());
-                filename += '|';
-                filename += to_narrow(head.link_path.leaf());
-
-#if BOOST_WORKAROUND(__MWERKS__, BOOST_TESTED_AT(0x3003))
-                path_type ph = head.path.branch_path();
-#else
-                const path_type& ph = head.path.branch_path();
-#endif
-                return std::make_pair(filename, convert_path(ph));
-            }
-        }
-        else if (head.is_directory())
-            return std::make_pair(std::string(), convert_path(head.path));
-        else
-        {
-            const path_type& ph = head.path.branch_path();
-            return std::make_pair(
-                to_narrow(head.path.leaf()), convert_path(ph));
-        }
-    }
 
     template<unsigned char Type, class OtherSink>
     static void write_empty_extended_header(OtherSink& sink)
@@ -346,32 +334,29 @@ private:
 #endif
 
     template<class OtherSink>
-    static void write_unicode_headers(OtherSink&, const lha::header&)
+    static void write_wide_filename_header(OtherSink&, const std::string&)
+    {
+    }
+
+    template<class OtherSink>
+    static void write_wide_dirname_header(
+        OtherSink&, const boost::filesystem::path&)
     {
     }
 
 #if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
     template<class OtherSink>
-    static void write_unicode_headers(OtherSink& sink, const lha::wheader& head)
+    static void write_wide_filename_header(
+        OtherSink& sink, const std::wstring& filename)
     {
-        // TODO: symbolic link support
+        write_extended_header(sink, 0x44, filename);
+    }
 
-        std::wstring filename;
-        std::wstring dirname;
-
-        if (head.is_directory())
-            dirname = convert_path_wide(head.path);
-        else
-        {
-            const path_type& ph = head.path.branch_path();
-            filename = head.path.leaf();
-            dirname = convert_path_wide(ph);
-        }
-
-        if (!filename.empty())
-            write_extended_header(sink, 0x44, filename);
-        if (!dirname.empty())
-            write_extended_header(sink, 0x45, dirname);
+    template<class OtherSink>
+    static void write_wide_dirname_header(
+        OtherSink& sink, const boost::filesystem::wpath& ph)
+    {
+        write_extended_header(sink, 0x45, convert_path_wide(ph));
     }
 #endif
 
@@ -479,11 +464,25 @@ private:
         boost::iostreams::back_insert_device<std::string> tmp(buffer);
         iostreams::binary_write(tmp, lv1);
 
+        Path ph = make_linked_path(header_.path, header_.link_path);
+
         std::string filename;
         std::string dirname;
-        boost::tie(filename,dirname) = make_filename_and_directory(header_);
+        bool need_wfname = false;
+        bool need_wdname = false;
 
-        if (!filename.empty() && (filename.size() <= 0xFF))
+        if (header_.link_path.empty() && header_.is_directory())
+            dirname = convert_path(ph, need_wdname);
+        else
+        {
+            filename = to_narrow(ph.leaf(), need_wfname);
+            dirname = convert_path(ph.branch_path(), need_wdname);
+        }
+
+        std::size_t max_fname_size = 0xFF-binary_size<lha::lv1_header>::value-4;
+        bool use_fname_head = filename.size() > max_fname_size;
+
+        if (!filename.empty() && !use_fname_head)
         {
             iostreams::write_uint8<little>(
                 tmp, static_cast<boost::uint8_t>(filename.size()));
@@ -510,7 +509,7 @@ private:
         buffer[0] =
             static_cast<char>(static_cast<unsigned char>(basic_size));
 
-        if (filename.size() > 0xFF)
+        if (use_fname_head)
             write_extended_header(tmp, 0x01, filename);
         if (!dirname.empty())
             write_extended_header(tmp, 0x02, dirname);
@@ -518,7 +517,11 @@ private:
         if (header_.attributes != msdos::attributes::archive)
             write_extended_header<0x40>(tmp, header_.attributes);
 
-        write_unicode_headers(tmp, header_);
+        if (need_wfname)
+            write_wide_filename_header(tmp, ph.leaf());
+
+        if (need_wdname)
+            write_wide_dirname_header(tmp, ph.branch_path());
 
         if (header_.permissions)
             write_extended_header<0x50>(tmp, header_.permissions.get());
@@ -637,9 +640,21 @@ private:
             );
         }
 
+        Path ph = make_linked_path(header_.path, header_.link_path);
+
         std::string filename;
         std::string dirname;
-        boost::tie(filename,dirname) = make_filename_and_directory(header_);
+        bool need_wfname = false;
+        bool need_wdname = false;
+
+        if (header_.link_path.empty() && header_.is_directory())
+            dirname = convert_path(ph, need_wdname);
+        else
+        {
+            filename = to_narrow(ph.leaf(), need_wfname);
+            dirname = convert_path(ph.branch_path(), need_wdname);
+        }
+
         write_extended_header(tmp, 0x01, filename);
         if (!dirname.empty())
             write_extended_header(tmp, 0x02, dirname);
@@ -653,7 +668,11 @@ private:
         if (header_.timestamp)
             write_extended_header<0x41>(tmp, header_.timestamp.get());
 
-        write_unicode_headers(tmp, header_);
+        if (need_wfname)
+            write_wide_filename_header(tmp, ph.leaf());
+
+        if (need_wdname)
+            write_wide_dirname_header(tmp, ph.branch_path());
 
         if (header_.permissions)
             write_extended_header<0x50>(tmp, header_.permissions.get());
