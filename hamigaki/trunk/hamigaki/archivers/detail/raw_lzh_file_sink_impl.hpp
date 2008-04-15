@@ -28,7 +28,7 @@
 
 #if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
     #include <hamigaki/archivers/detail/code_page.hpp>
-    #include <hamigaki/archivers/detail/ucs2.hpp>
+    #include <hamigaki/charset/utf16.hpp>
 #endif
 
 #if defined(BOOST_HAS_UNISTD_H)
@@ -328,7 +328,9 @@ private:
     static void write_extended_header(
         OtherSink& sink, unsigned char type, const std::wstring& ws)
     {
-        const std::string& s = wide_to_ucs2le(ws.c_str(), ws.size());
+        std::string s = hamigaki::charset::to_utf16le(ws);
+        s.push_back('\0');
+        s.push_back('\0');
         write_extended_header(sink, type, s);
     }
 #endif
