@@ -55,7 +55,7 @@ local tests =
     [ run lzh_h0_test.cpp : ]
     [ run lzh_h1_test.cpp : ]
     [ run lzh_h2_test.cpp : ]
-    [ run lzh_update_test.cpp : ]
+    [ run lzh_replace_test.cpp : ]
     [ run rock_ridge_test.cpp : ]
     [ run tar_gnu_test.cpp : ]
     [ run tar_pax_test.cpp : ]
@@ -67,7 +67,7 @@ if ! $(NO_ZLIB)
     tests +=
         [ test-with-zlib zip_test.cpp : ]
         [ test-with-zlib zip_crypt_test.cpp : ]
-        [ test-with-zlib zip_update_test.cpp : ]
+        [ test-with-zlib zip_replace_test.cpp : ]
     ;
 
     if ! $(NO_BZIP2)

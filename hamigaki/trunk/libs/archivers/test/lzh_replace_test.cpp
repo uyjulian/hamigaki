@@ -1,6 +1,6 @@
-// lzh_update_test.cpp: test case for LZH update
+// lzh_replace_test.cpp: test case for LZH replace
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -32,7 +32,7 @@ void check_header(const ar::lha::header& old, const ar::lha::header& now)
     BOOST_CHECK_EQUAL(old.os, now.os);
 }
 
-void update_test()
+void replace_test()
 {
     std::string data_a(32u, 'a');
     std::string data_a2(33u, 'A');
@@ -123,7 +123,7 @@ void update_test()
 
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
-    ut::test_suite* test = BOOST_TEST_SUITE("LZH update test");
-    test->add(BOOST_TEST_CASE(&update_test));
+    ut::test_suite* test = BOOST_TEST_SUITE("LZH replace test");
+    test->add(BOOST_TEST_CASE(&replace_test));
     return test;
 }

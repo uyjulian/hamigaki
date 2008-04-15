@@ -1,6 +1,6 @@
-// zip_update_test.cpp: test case for ZIP update
+// zip_replace_test.cpp: test case for ZIP replace
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -35,7 +35,7 @@ void check_header(const ar::zip::header& old, const ar::zip::header& now)
     BOOST_CHECK_EQUAL(old.comment, now.comment);
 }
 
-void update_test_aux(bool encrypted)
+void replace_test_aux(bool encrypted)
 {
     std::string data_a(32u, 'a');
     std::string data_a2(33u, 'A');
@@ -130,20 +130,20 @@ void update_test_aux(bool encrypted)
     BOOST_CHECK(!src.next_entry());
 }
 
-void update_test()
+void replace_test()
 {
-    update_test_aux(false);
+    replace_test_aux(false);
 }
 
 void crypt_test()
 {
-    update_test_aux(true);
+    replace_test_aux(true);
 }
 
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
-    ut::test_suite* test = BOOST_TEST_SUITE("ZIP update test");
-    test->add(BOOST_TEST_CASE(&update_test));
+    ut::test_suite* test = BOOST_TEST_SUITE("ZIP replace test");
+    test->add(BOOST_TEST_CASE(&replace_test));
     test->add(BOOST_TEST_CASE(&crypt_test));
     return test;
 }
