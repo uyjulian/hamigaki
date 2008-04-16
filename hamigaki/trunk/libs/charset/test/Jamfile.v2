@@ -17,3 +17,4 @@ project
     ;
 
 run code_page_test.cpp ;
+run utf16_test.cpp ;
