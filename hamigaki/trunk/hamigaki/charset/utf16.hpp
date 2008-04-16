@@ -12,6 +12,7 @@
 
 #include <hamigaki/binary/endian.hpp>
 #include <hamigaki/charset/wstring.hpp>
+#include <stdexcept>
 
 namespace hamigaki { namespace charset {
 
@@ -35,11 +36,31 @@ struct utf16_impl<2>
         char buf[2];
         for (std::size_t i = 0; i < n; ++i)
         {
-            hamigaki::encode_int<E,2>(buf,static_cast<boost::uint16_t>(ws[i]));
+            hamigaki::encode_uint<E,2>(buf,static_cast<boost::uint16_t>(ws[i]));
             s.push_back(buf[0]);
             s.push_back(buf[1]);
         }
         return s;
+    }
+
+    template<hamigaki::endianness E>
+    static wstring from_utf16(const std::string& s)
+    {
+        std::size_t n = s.size();
+        if ((n % 2) != 0)
+            throw std::runtime_error("invalid UTF-16 string");
+
+        wstring ws;
+        ws.reserve(n/2);
+
+        char buf[2];
+        for (std::size_t i = 0; i < n; i += 2)
+        {
+            buf[0] = s[i];
+            buf[1] = s[i+1];
+            ws.push_back(static_cast<wchar_t>(hamigaki::decode_uint<E,2>(buf)));
+        }
+        return ws;
     }
 };
 
@@ -83,6 +104,46 @@ struct utf16_impl<4>
         }
         return s;
     }
+
+    template<hamigaki::endianness E>
+    static wstring from_utf16(const std::string& s)
+    {
+        std::size_t n = s.size();
+        if ((n % 2) != 0)
+            throw std::runtime_error("invalid UTF-16 string");
+
+        wstring ws;
+        ws.reserve(n/2);
+
+        char buf[2];
+        boost::uint16_t surrogate = 0;
+        for (std::size_t i = 0; i < n; i += 2)
+        {
+            buf[0] = s[i];
+            buf[1] = s[i+1];
+
+            boost::uint16_t u = hamigaki::decode_uint<E,2>(buf);
+            if (surrogate != 0)
+            {
+                boost::uint32_t tmp =
+                    static_cast<boost::uint32_t>(surrogate & 0x3FF) << 10 |
+                    static_cast<boost::uint32_t>(u & 0x3FF) ;
+                tmp += 0x10000;
+
+                ws.push_back(static_cast<wchar_t>(tmp));
+                surrogate = 0;
+            }
+            else if ((u & 0xF800) == 0xD800)
+                surrogate = u;
+            else
+                ws.push_back(static_cast<wchar_t>(u));
+        }
+
+        if (surrogate != 0)
+            throw std::runtime_error("invalid UTF-16 string");
+
+        return ws;
+    }
 };
 
 } // namespace utf16_detail
@@ -97,6 +158,18 @@ inline std::string to_utf16le(const wstring& ws)
 {
     typedef utf16_detail::utf16_impl<sizeof(wchar_t)> impl_type;
     return impl_type::to_utf16<hamigaki::little>(ws);
+}
+
+inline wstring from_utf16be(const std::string& s)
+{
+    typedef utf16_detail::utf16_impl<sizeof(wchar_t)> impl_type;
+    return impl_type::from_utf16<hamigaki::big>(s);
+}
+
+inline wstring from_utf16le(const std::string& s)
+{
+    typedef utf16_detail::utf16_impl<sizeof(wchar_t)> impl_type;
+    return impl_type::from_utf16<hamigaki::little>(s);
 }
 
 } } // End namespaces charset, hamigaki.
