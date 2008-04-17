@@ -262,14 +262,15 @@ inline boost::filesystem::wpath parse_path(const std::wstring& s)
     return ph;
 }
 
-inline boost::filesystem::wpath to_wide(const boost::filesystem::path& ph)
+inline boost::filesystem::wpath to_wide(
+    const boost::filesystem::path& ph, unsigned code_page)
 {
     boost::filesystem::wpath tmp;
 
     boost::filesystem::path::const_iterator beg = ph.begin();
     boost::filesystem::path::const_iterator end = ph.end();
     for ( ; beg != end; ++beg)
-        tmp /= charset::from_code_page(*beg, 0);
+        tmp /= charset::from_code_page(*beg, code_page);
 
     return tmp;
 }
@@ -278,8 +279,12 @@ inline void set_path(
     lha::wheader& head,
     const std::pair<boost::filesystem::path,boost::filesystem::path>& paths)
 {
-    head.path = lzh_detail::to_wide(paths.first);
-    head.link_path = lzh_detail::to_wide(paths.second);
+    unsigned code_page = 0;
+    if (head.code_page)
+        code_page = *head.code_page;
+
+    head.path = lzh_detail::to_wide(paths.first, code_page);
+    head.link_path = lzh_detail::to_wide(paths.second, code_page);
 }
 
 inline void set_path(
@@ -287,20 +292,24 @@ inline void set_path(
     std::string& filename, std::string& dirname,
     std::string& wfilename, std::string& wdirname)
 {
+    unsigned code_page = 0;
+    if (head.code_page)
+        code_page = *head.code_page;
+
     std::wstring fname;
     if (wfilename.empty())
     {
         if (filename.empty())
             fname = head.path.leaf();
         else
-            fname = charset::from_code_page(filename, 0);
+            fname = charset::from_code_page(filename, code_page);
     }
     else
         fname = charset::from_utf16le(wfilename);
 
     boost::filesystem::wpath dir;
     if (wdirname.empty())
-        dir = lzh_detail::to_wide(lzh_detail::parse_path(dirname));
+        dir = lzh_detail::to_wide(lzh_detail::parse_path(dirname), code_page);
     else
         dir = lzh_detail::parse_path(charset::from_utf16le(wdirname));
 

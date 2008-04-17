@@ -26,8 +26,8 @@ void check_header(const ar::lha::wheader& old, const ar::lha::wheader& now)
     BOOST_CHECK(old.level == now.level);
     BOOST_CHECK(old.update_time == now.update_time);
     BOOST_CHECK_EQUAL(old.attributes, now.attributes);
-    BOOST_CHECK(old.path.string() == now.path.string());
-    BOOST_CHECK(old.link_path.string() == now.link_path.string());
+    BOOST_CHECK(old.path == now.path);
+    BOOST_CHECK(old.link_path == now.link_path);
     BOOST_CHECK_EQUAL(old.os, now.os);
 }
 
@@ -57,6 +57,64 @@ void unicode_test()
     BOOST_CHECK(src.next_entry());
 
     check_header(head, src.header());
+
+    BOOST_CHECK(!src.next_entry());
+}
+
+void narrow_to_wide_test()
+{
+    ar::lha::header head;
+    head.level = 2;
+    head.code_page = 20932;
+    head.path =
+        "\xA4\xB3\xA4\xF3\xA4\xCB\xA4\xC1\xA4\xCF";
+
+    io_ex::tmp_file archive;
+    ar::basic_lzh_file_sink<
+        io_ex::dont_close_device<io_ex::tmp_file>,
+        fs::path
+    > sink(io_ex::dont_close(archive));
+
+    sink.create_entry(head);
+    sink.close();
+    sink.close_archive();
+
+    io::seek(archive, 0, BOOST_IOS::beg);
+
+    ar::basic_lzh_file_source<io_ex::tmp_file,fs::wpath> src(archive);
+
+    BOOST_CHECK(src.next_entry());
+
+    BOOST_CHECK(src.header().path == L"\u3053\u3093\u306B\u3061\u306F");
+
+    BOOST_CHECK(!src.next_entry());
+}
+
+void wide_to_narrow_test()
+{
+    ar::lha::wheader head;
+    head.level = 2;
+    head.code_page = 20932;
+    head.path = L"\u3053\u3093\u306B\u3061\u306F";
+
+    io_ex::tmp_file archive;
+    ar::basic_lzh_file_sink<
+        io_ex::dont_close_device<io_ex::tmp_file>,
+        fs::wpath
+    > sink(io_ex::dont_close(archive));
+
+    sink.create_entry(head);
+    sink.close();
+    sink.close_archive();
+
+    io::seek(archive, 0, BOOST_IOS::beg);
+
+    ar::basic_lzh_file_source<io_ex::tmp_file,fs::path> src(archive);
+
+    BOOST_CHECK(src.next_entry());
+
+    BOOST_CHECK(src.header().path ==
+        "\xA4\xB3\xA4\xF3\xA4\xCB\xA4\xC1\xA4\xCF");
 
     BOOST_CHECK(!src.next_entry());
 }
@@ -111,6 +169,8 @@ ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("LZH h2 wide test");
     test->add(BOOST_TEST_CASE(&unicode_test));
+    test->add(BOOST_TEST_CASE(&narrow_to_wide_test));
+    test->add(BOOST_TEST_CASE(&wide_to_narrow_test));
     test->add(BOOST_TEST_CASE(&symlink_test));
     return test;
 }

@@ -166,15 +166,16 @@ private:
         );
     }
 
-    static std::string to_narrow(const std::string& s, bool&)
+    static std::string to_narrow(const std::string& s, unsigned, bool&)
     {
         return s;
     }
 
 #if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
-    static std::string to_narrow(const std::wstring& ws, bool& used_def_char)
+    static std::string to_narrow(
+        const std::wstring& ws, unsigned code_page, bool& used_def_char)
     {
-        return charset::to_code_page(ws, 0, "_", &used_def_char);
+        return charset::to_code_page(ws, code_page, "_", &used_def_char);
     }
 #endif
 
@@ -200,7 +201,8 @@ private:
         return s;
     }
 
-    static std::string convert_path(const boost::filesystem::path& ph, bool&)
+    static std::string convert_path(
+        const boost::filesystem::path& ph, unsigned, bool&)
     {
         if (ph.empty())
             return std::string();
@@ -248,7 +250,8 @@ private:
     }
 
     static std::string convert_path(
-        const boost::filesystem::wpath& ph, bool& used_def_char)
+        const boost::filesystem::wpath& ph,
+        unsigned code_page, bool& used_def_char)
     {
         if (ph.empty())
             return std::string();
@@ -266,7 +269,7 @@ private:
 
         std::transform(beg, ph.end(),
             std::ostream_iterator<std::string>(os, "\xFF"),
-            detail::to_code_page(0, "_", &used_def_char)
+            detail::to_code_page(code_page, "_", &used_def_char)
         );
         return os.str();
     }
@@ -467,15 +470,18 @@ private:
 
         std::string filename;
         std::string dirname;
-        bool need_wfname = false;
-        bool need_wdname = false;
+        bool dummy = false;
+
+        unsigned code_page = 0;
+        if (header_.code_page)
+            code_page = header_.code_page.get();
 
         if (header_.link_path.empty() && header_.is_directory())
-            dirname = convert_path(ph, need_wdname);
+            dirname = convert_path(ph, code_page, dummy);
         else
         {
-            filename = to_narrow(ph.leaf(), need_wfname);
-            dirname = convert_path(ph.branch_path(), need_wdname);
+            filename = to_narrow(ph.leaf(), code_page, dummy);
+            dirname = convert_path(ph.branch_path(), code_page, dummy);
         }
 
         std::size_t max_fname_size = 0xFF-binary_size<lha::lv1_header>::value-4;
@@ -515,12 +521,6 @@ private:
 
         if (header_.attributes != msdos::attributes::archive)
             write_extended_header<0x40>(tmp, header_.attributes);
-
-        if (need_wfname)
-            write_wide_filename_header(tmp, ph.leaf());
-
-        if (need_wdname)
-            write_wide_dirname_header(tmp, ph.branch_path());
 
         if (header_.permissions)
             write_extended_header<0x50>(tmp, header_.permissions.get());
@@ -615,8 +615,12 @@ private:
         else
             boost::iostreams::put(tmp, HAMIGAKI_ARCHIVERS_LHA_OS_TYPE);
 
+        unsigned code_page = 0;
         if (header_.code_page)
-            write_extended_header<0x46>(tmp, header_.code_page.get());
+        {
+            code_page = header_.code_page.get();
+            write_extended_header<0x46>(tmp, code_page);
+        }
 
         bool need_size_hdr = false;
         if ((header_.compressed_size != -1) &&
@@ -647,11 +651,11 @@ private:
         bool need_wdname = false;
 
         if (header_.link_path.empty() && header_.is_directory())
-            dirname = convert_path(ph, need_wdname);
+            dirname = convert_path(ph, code_page, need_wdname);
         else
         {
-            filename = to_narrow(ph.leaf(), need_wfname);
-            dirname = convert_path(ph.branch_path(), need_wdname);
+            filename = to_narrow(ph.leaf(), code_page, need_wfname);
+            dirname = convert_path(ph.branch_path(), code_page, need_wdname);
         }
 
         write_extended_header(tmp, 0x01, filename);
