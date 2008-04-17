@@ -237,36 +237,6 @@ inline void set_path(
 }
 
 #if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
-inline boost::filesystem::wpath parse_path_old(const std::wstring& s)
-{
-    boost::filesystem::wpath ph;
-
-    std::wstring::size_type pos = 0;
-    std::wstring::size_type start = 0;
-
-    if (s[0] == L'\\')
-    {
-        ph = L"/";
-        start = ++pos;
-    }
-
-    while (pos < s.size())
-    {
-        if (s[pos] == L'\\')
-        {
-            ph /= s.substr(start, pos-start);
-            start = ++pos;
-        }
-        else
-            ++pos;
-    }
-
-    if (start != s.size())
-        ph /= s.substr(start);
-
-    return ph;
-}
-
 inline boost::filesystem::wpath parse_path(const std::wstring& s)
 {
     boost::filesystem::wpath ph;
