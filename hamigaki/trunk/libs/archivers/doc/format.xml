@@ -106,6 +106,8 @@
       <listitem>属性ヘッダ (0x40)</listitem>
       <listitem>タイムスタンプヘッダ (0x41)</listitem>
       <listitem>ファイルサイズヘッダ (0x42)</listitem>
+      <listitem>Unicode ファイル名ヘッダ (0x44)</listitem>
+      <listitem>Unicode パス名ヘッダ (0x45)</listitem>
       <listitem>コードページヘッダ (0x46)</listitem>
       <listitem>ファイル許可属性ヘッダ (0x50)</listitem>
       <listitem>GID/UID ヘッダ (0x51)</listitem>

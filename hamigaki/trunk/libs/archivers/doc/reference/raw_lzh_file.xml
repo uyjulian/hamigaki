@@ -4,7 +4,7 @@
 <!--
   Hamigaki.Archivers Library Document Source
 
-  Copyright Takeshi Mouri 2006, 2007.
+  Copyright Takeshi Mouri 2006-2008.
   Distributed under the Boost Software License, Version 1.0.
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
@@ -17,6 +17,9 @@
       <class name="basic_raw_lzh_file_source">
         <template>
           <template-type-parameter name="Source"/>
+          <template-type-parameter name="Path">
+            <default>boost::filesystem::path</default>
+          </template-type-parameter>
         </template>
 
         <purpose><para>生のLZHファイルへの読み込み専用アクセスを提供するSourceモデル</para></purpose>
@@ -36,8 +39,12 @@
           <type><emphasis>implementation defined</emphasis></type>
         </typedef>
 
+        <typedef name="path_type">
+          <type>Path</type>
+        </typedef>
+
         <typedef name="header_type">
-          <type><classname>lha::header</classname></type>
+          <type><classname>lha::basic_header</classname>&lt;Path&gt;</type>
         </typedef>
 
         <constructor specifiers="explicit">
@@ -67,7 +74,7 @@
           </method>
 
           <method name="header" cv="const">
-            <type><classname>lha::header</classname></type>
+            <type><classname>lha::basic_header</classname>&lt;Path&gt;</type>
             <returns><simpara>ヘッダ情報</simpara></returns>
           </method>
         </method-group>
@@ -80,6 +87,123 @@
         </inherit>
 
         <constructor specifiers="explicit">
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+        </constructor>
+      </class>
+
+      <class name="wraw_lzh_file_source">
+        <inherit access="public">
+          <type><classname>basic_raw_lzh_file_source</classname>&lt;<classname>hamigaki::iostreams::file_source</classname>, boost::filesystem::wpath&gt;</type>
+          <purpose>Exposition only</purpose>
+        </inherit>
+
+        <constructor specifiers="explicit">
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+        </constructor>
+      </class>
+
+      <class name="basic_raw_lzh_file_sink">
+        <template>
+          <template-type-parameter name="Sink"/>
+          <template-type-parameter name="Path">
+            <default>boost::filesystem::path</default>
+          </template-type-parameter>
+        </template>
+
+        <purpose><para>生のLZHファイルへの書き込み専用アクセスを提供するSinkモデル</para></purpose>
+
+        <description>
+          <para>受け取ったSinkへ複数の圧縮イメージをLZHファイルとして書き出すことができる。</para>
+          <para>モデルとなるコンセプト:<simplelist type='inline'>
+              <member><conceptname>Sink</conceptname></member>
+              <member><conceptname>ClosableDevice</conceptname></member>
+          </simplelist></para>
+        </description>
+
+        <typedef name="char_type">
+          <type>char</type>
+        </typedef>
+
+        <typedef name="category">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+
+        <typedef name="path_type">
+          <type>Path</type>
+        </typedef>
+
+        <typedef name="header_type">
+          <type><classname>lha::basic_header</classname>&lt;Path&gt;</type>
+        </typedef>
+
+        <constructor>
+          <parameter name="sink">
+            <paramtype>const Sink&amp;</paramtype>
+          </parameter>
+        </constructor>
+
+        <method-group name="Boost.Iostreams implementation">
+          <method name="write">
+            <type>std::streamsize</type>
+            <parameter name="s">
+              <paramtype>const char_type*</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>std::streamsize</paramtype>
+            </parameter>
+            <effects><simpara><code>create_entry()</code>に渡したヘッダの<code>method</code>で圧縮済みのデータを書き出す。</simpara></effects>
+          </method>
+
+          <method name="close">
+            <type>void</type>
+          </method>
+        </method-group>
+
+        <method-group name="Hamigaki.Archivers implementation">
+          <method name="create_entry">
+            <type>void</type>
+            <parameter name="head">
+              <paramtype>const <classname>lha::basic_header</classname>&lt;Path&gt;&amp;</paramtype>
+            </parameter>
+            <effects><simpara>新しいエントリを作成し、書き込みの対象とする</simpara></effects>
+          </method>
+
+          <method name="rewind_entry">
+            <type>void</type>
+            <effects><simpara>現在のエントリの圧縮メソッドを「-lh0-」に変更し、書き込み位置を先頭に戻す</simpara></effects>
+          </method>
+
+          <method name="close_archive">
+            <type>void</type>
+            <effects><simpara>LZHエンドマークを出力し、アーカイブを閉じる。出力先の外部Sinkも閉じられる。</simpara></effects>
+          </method>
+        </method-group>
+      </class>
+
+      <class name="raw_lzh_file_sink">
+        <inherit access="public">
+          <type><classname>basic_raw_lzh_file_sink</classname>&lt;<classname>hamigaki::iostreams::file_sink</classname>&gt;</type>
+          <purpose>Exposition only</purpose>
+        </inherit>
+
+        <constructor>
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+        </constructor>
+      </class>
+
+      <class name="wraw_lzh_file_sink">
+        <inherit access="public">
+          <type><classname>basic_raw_lzh_file_sink</classname>&lt;<classname>hamigaki::iostreams::file_sink</classname>, boost::filesystem::wpath&gt;</type>
+          <purpose>Exposition only</purpose>
+        </inherit>
+
+        <constructor>
           <parameter name="path">
             <paramtype>const std::string&amp;</paramtype>
           </parameter>
