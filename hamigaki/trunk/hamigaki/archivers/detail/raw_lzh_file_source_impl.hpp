@@ -1,6 +1,6 @@
 // raw_lzh_file_source_impl.hpp: raw LZH file source implementation
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -16,11 +16,14 @@
 
 namespace hamigaki { namespace archivers { namespace detail {
 
-template<class Source>
+template<class Source, class Path>
 class basic_raw_lzh_file_source_impl
 {
 public:
     typedef char char_type;
+    typedef Path path_type;
+    typedef typename Path::string_type string_type;
+    typedef lha::basic_header<Path> header_type;
 
     struct category
         : boost::iostreams::input
@@ -39,7 +42,7 @@ public:
             iostreams::skip(src_, rest);
         pos_ = 0;
 
-        lzh_header_parser<Source> parser(src_);
+        lzh_detail::lzh_header_parser<Source,Path> parser(src_);
         if (!parser.parse())
             return false;
 
@@ -47,7 +50,7 @@ public:
         return true;
     }
 
-    lha::header header() const
+    header_type header() const
     {
         return header_;
     }
@@ -67,7 +70,7 @@ public:
 
 private:
     Source src_;
-    lha::header header_;
+    header_type header_;
     boost::int64_t pos_;
 };
 

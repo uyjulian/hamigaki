@@ -22,7 +22,12 @@
 #include <algorithm>
 #include <stdexcept>
 
-namespace hamigaki { namespace archivers { namespace detail {
+#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+    #include <hamigaki/charset/code_page.hpp>
+    #include <hamigaki/charset/utf16.hpp>
+#endif
+
+namespace hamigaki { namespace archivers { namespace lzh_detail {
 
 inline boost::uint16_t parse_common(char* s, boost::uint32_t n)
 {
@@ -102,6 +107,12 @@ inline std::time_t parse_unix_timestamp(char* s, boost::uint32_t n)
     return static_cast<std::time_t>(hamigaki::decode_int<little,4>(s));
 }
 
+inline bool is_sjis_lead_byte(const char c)
+{
+    unsigned char uc = static_cast<unsigned char>(c);
+    return ((uc > 0x80) && (uc < 0xA0)) || ((uc >= 0xE0) && (uc < 0xFD));
+}
+
 inline boost::filesystem::path parse_path_old(const std::string& s)
 {
     boost::filesystem::path ph;
@@ -117,15 +128,14 @@ inline boost::filesystem::path parse_path_old(const std::string& s)
 
     while (pos < s.size())
     {
-        unsigned char uc = static_cast<unsigned char>(s[pos]);
-        if (((uc >  0x80) && (uc < 0xA0)) ||
-            ((uc >= 0xE0) && (uc < 0xFD)) )
+        char c = s[pos];
+        if (is_sjis_lead_byte(c))
         {
             if (++pos == s.size())
                 break;
             ++pos;
         }
-        else if (s[pos] == '\\')
+        else if (c == '\\')
         {
             ph /= s.substr(start, pos-start);
             start = ++pos;
@@ -196,6 +206,147 @@ read_path(Source& src)
     }
 }
 
+inline void set_path(
+    lha::header& head,
+    const std::pair<boost::filesystem::path,boost::filesystem::path>& paths)
+{
+    head.path = paths.first;
+    head.link_path = paths.second;
+}
+
+inline void set_path(
+    lha::header& head,
+    std::string& filename, std::string& dirname,
+    std::string&, std::string&)
+{
+    if (filename.empty())
+        filename = head.path.leaf();
+
+    if (!dirname.empty() && (dirname[dirname.size()-1] != '\xFF'))
+        dirname.push_back('\xFF');
+
+    std::string dir_file = dirname + filename;
+    std::string::size_type delim = dir_file.find('|');
+    if (delim != std::string::npos)
+    {
+        head.path = parse_path(dir_file.substr(0, delim));
+        head.link_path = parse_path(dir_file.substr(delim+1));
+    }
+    else
+        head.path = parse_path(dir_file);
+}
+
+#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+inline boost::filesystem::wpath parse_path_old(const std::wstring& s)
+{
+    boost::filesystem::wpath ph;
+
+    std::wstring::size_type pos = 0;
+    std::wstring::size_type start = 0;
+
+    if (s[0] == L'\\')
+    {
+        ph = L"/";
+        start = ++pos;
+    }
+
+    while (pos < s.size())
+    {
+        if (s[pos] == L'\\')
+        {
+            ph /= s.substr(start, pos-start);
+            start = ++pos;
+        }
+        else
+            ++pos;
+    }
+
+    if (start != s.size())
+        ph /= s.substr(start);
+
+    return ph;
+}
+
+inline boost::filesystem::wpath parse_path(const std::wstring& s)
+{
+    boost::filesystem::wpath ph;
+
+    std::wstring::size_type pos = 0;
+    std::wstring::size_type delim;
+
+    if (s[0] == L'\xFFFF')
+    {
+        ph = L"/";
+        ++pos;
+    }
+
+    while (delim = s.find(L'\xFFFF', pos), delim != std::wstring::npos)
+    {
+        ph /= s.substr(pos, delim-pos);
+        pos = delim + 1;
+    }
+
+    if (pos != s.size())
+        ph /= s.substr(pos);
+
+    return ph;
+}
+
+inline boost::filesystem::wpath to_wide(const boost::filesystem::path& ph)
+{
+    boost::filesystem::wpath tmp;
+
+    boost::filesystem::path::const_iterator beg = ph.begin();
+    boost::filesystem::path::const_iterator end = ph.end();
+    for ( ; beg != end; ++beg)
+        tmp /= charset::from_code_page(*beg, 0);
+
+    return tmp;
+}
+
+inline void set_path(
+    lha::wheader& head,
+    const std::pair<boost::filesystem::path,boost::filesystem::path>& paths)
+{
+    head.path = lzh_detail::to_wide(paths.first);
+    head.link_path = lzh_detail::to_wide(paths.second);
+}
+
+inline void set_path(
+    lha::wheader& head,
+    std::string& filename, std::string& dirname,
+    std::string& wfilename, std::string& wdirname)
+{
+    std::wstring fname;
+    if (wfilename.empty())
+    {
+        if (filename.empty())
+            fname = head.path.leaf();
+        else
+            fname = charset::from_code_page(filename, 0);
+    }
+    else
+        fname = charset::from_utf16le(wfilename);
+
+    boost::filesystem::wpath dir;
+    if (wdirname.empty())
+        dir = lzh_detail::to_wide(lzh_detail::parse_path(dirname));
+    else
+        dir = lzh_detail::parse_path(charset::from_utf16le(wdirname));
+
+    std::wstring dir_file = (dir/fname).string();
+
+    std::wstring::size_type delim = dir_file.find(L'|');
+    if (delim != std::string::npos)
+    {
+        head.path = parse_path(dir_file.substr(0, delim));
+        head.link_path = parse_path(dir_file.substr(delim+1));
+    }
+    else
+        head.path = parse_path(dir_file);
+}
+#endif // !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+
 template<class Source>
 inline boost::optional<boost::uint16_t> read_optional_crc16(Source& src)
 {
@@ -210,13 +361,16 @@ inline boost::optional<boost::uint16_t> read_optional_crc16(Source& src)
         return boost::optional<boost::uint16_t>();
 }
 
-template<class Source>
+template<class Source, class Path>
 class lzh_header_parser
 {
 private:
     typedef iostreams::relative_restriction<Source> restricted_type;
 
 public:
+    typedef Path path_type;
+    typedef lha::basic_header<Path> header_type;
+
     explicit lzh_header_parser(Source& src) : src_(src)
     {
     }
@@ -248,14 +402,14 @@ public:
         return true;
     }
 
-    lha::header header() const
+    header_type header() const
     {
         return header_;
     }
 
 private:
     Source& src_;
-    lha::header header_;
+    header_type header_;
     char buffer_[hamigaki::struct_size<lha::lv0_header>::value];
     boost::crc_16_type crc_;
 
@@ -289,7 +443,7 @@ private:
         header_.file_size = lv0.file_size;
         header_.update_time = lv0.update_date_time.to_time_t();
         header_.attributes = lv0.attributes;
-        boost::tie(header_.path, header_.link_path) = read_path(src);
+        lzh_detail::set_path(header_, lzh_detail::read_path(src));
         header_.crc16_checksum = read_optional_crc16(src);
     }
 
@@ -325,7 +479,7 @@ private:
         header_.file_size = lv1.file_size;
         header_.update_time = lv1.update_date_time.to_time_t();
 
-        boost::tie(header_.path, header_.link_path) = read_path(src);
+        lzh_detail::set_path(header_, lzh_detail::read_path(src));
         header_.crc16_checksum = iostreams::read_uint16<little>(src);
         header_.os = iostreams::blocking_get(src);
 
@@ -392,6 +546,8 @@ private:
 
         std::string filename;
         std::string dirname;
+        std::string wfilename;
+        std::string wdirname;
         boost::optional<boost::uint16_t> header_crc;
         while (next_size)
         {
@@ -421,6 +577,10 @@ private:
                 boost::tie(header_.compressed_size, header_.file_size)
                     = parse_file_size(data, size);
             }
+            else if (buf[0] == '\x44')
+                wfilename.assign(data, size);
+            else if (buf[0] == '\x45')
+                wdirname.assign(data, size);
             else if (buf[0] == '\x46')
                 header_.code_page = parse_code_page(data, size);
             else if (buf[0] == '\x50')
@@ -447,29 +607,12 @@ private:
                 throw std::runtime_error("LZH header CRC missmatch");
         }
 
-        if (!header_.path.empty() && !dirname.empty())
-            filename = header_.path.leaf();
-
-        if (!dirname.empty() && (dirname[dirname.size()-1] != '\xFF'))
-            dirname.push_back('\xFF');
-
-        std::string dir_file = dirname + filename;
-        if (!dir_file.empty())
-        {
-            std::string::size_type delim = dir_file.find('|');
-            if (delim != std::string::npos)
-            {
-                header_.path = parse_path(dir_file.substr(0, delim));
-                header_.link_path = parse_path(dir_file.substr(delim+1));
-            }
-            else
-                header_.path = parse_path(dir_file);
-        }
+        lzh_detail::set_path(header_, filename, dirname, wfilename, wdirname);
 
         return total;
     }
 };
 
-} } } // End namespaces detail, archivers, hamigaki.
+} } } // End namespaces lzh_detail, archivers, hamigaki.
 
 #endif // HAMIGAKI_ARCHIVERS_DETAIL_LZH_HEADER_PARSER_HPP

@@ -16,11 +16,11 @@
 
 namespace hamigaki { namespace archivers {
 
-template<class Source>
+template<class Source, class Path=boost::filesystem::path>
 class basic_lzh_file_source
 {
 private:
-    typedef detail::basic_lzh_file_source_impl<Source> impl_type;
+    typedef detail::basic_lzh_file_source_impl<Source,Path> impl_type;
 
 public:
     typedef char char_type;
@@ -29,7 +29,8 @@ public:
         boost::iostreams::input,
         boost::iostreams::device_tag {};
 
-    typedef lha::header header_type;
+    typedef Path path_type;
+    typedef lha::basic_header<Path> header_type;
 
     explicit basic_lzh_file_source(const Source& src)
         : pimpl_(new impl_type(src))
@@ -41,7 +42,7 @@ public:
         return pimpl_->next_entry();
     }
 
-    lha::header header() const
+    header_type header() const
     {
         return pimpl_->header();
     }
@@ -87,7 +88,7 @@ public:
     }
 
 private:
-    basic_lzh_file_source<iostreams::file_source> impl_;
+    basic_lzh_file_source<iostreams::file_source,boost::filesystem::path> impl_;
 };
 
 
@@ -202,6 +203,44 @@ private:
 };
 
 #if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+class wlzh_file_source
+{
+public:
+    typedef char char_type;
+
+    struct category :
+        boost::iostreams::input,
+        boost::iostreams::device_tag {};
+
+    typedef lha::wheader header_type;
+
+    explicit wlzh_file_source(const std::string& filename)
+        : impl_(iostreams::file_source(filename, BOOST_IOS::binary))
+    {
+    }
+
+    bool next_entry()
+    {
+        return impl_.next_entry();
+    }
+
+    lha::wheader header() const
+    {
+        return impl_.header();
+    }
+
+    std::streamsize read(char* s, std::streamsize n)
+    {
+        return impl_.read(s, n);
+    }
+
+private:
+    basic_lzh_file_source<
+        iostreams::file_source,
+        boost::filesystem::wpath
+    > impl_;
+};
+
 class wlzh_file_sink
 {
 public:
@@ -254,7 +293,7 @@ public:
 private:
     basic_lzh_file_sink<iostreams::file_sink,boost::filesystem::wpath> impl_;
 };
-#endif
+#endif // !defined(BOOST_FILESYSTEM_NARROW_ONLY)
 
 } } // End namespaces archivers, hamigaki.
 
