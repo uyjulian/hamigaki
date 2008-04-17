@@ -46,6 +46,8 @@ exe wlha
     : <toolset>gcc,<os>NT:<find-static-library>shell32
     ;
 
+exe wunlha : wunlha.cpp filesystems iostreams ;
+
 if ! $(NO_ZLIB)
 {
     exe archive : archive.cpp boost_iostreams filesystems ;
