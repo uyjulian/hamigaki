@@ -328,10 +328,7 @@ private:
     static void write_extended_header(
         OtherSink& sink, unsigned char type, const std::wstring& ws)
     {
-        std::string s = hamigaki::charset::to_utf16le(ws);
-        s.push_back('\0');
-        s.push_back('\0');
-        write_extended_header(sink, type, s);
+        write_extended_header(sink, type, hamigaki::charset::to_utf16le(ws));
     }
 #endif
 
