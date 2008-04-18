@@ -1,6 +1,6 @@
 // headers.hpp: ZIP headers
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -37,6 +37,7 @@ struct flags
 {
     static const boost::uint16_t encrypted      = 0x0001;
     static const boost::uint16_t has_data_dec   = 0x0008;
+    static const boost::uint16_t encoded_utf8   = 0x0800;
 };
 
 struct method
@@ -55,13 +56,18 @@ struct extra_field_id
 {
     static const boost::uint16_t zip64              = 0x0001;
     static const boost::uint16_t extended_timestamp = 0x5455;
+    static const boost::uint16_t info_zip_utf8_path = 0x7075;
     static const boost::uint16_t info_zip_unix2     = 0x7855;
 };
 
-struct header
+template<class Path>
+struct basic_header
 {
-    boost::filesystem::path path;
-    boost::filesystem::path link_path;
+    typedef Path path_type;
+    typedef typename Path::string_type string_type;
+
+    Path path;
+    Path link_path;
     boost::uint8_t version;
     bool encrypted;
     boost::uint16_t encryption_checksum;
@@ -72,7 +78,7 @@ struct header
     boost::uint64_t file_size;
     boost::uint16_t attributes;
     boost::uint16_t permissions;
-    std::string comment;
+    string_type comment;
 
     boost::optional<std::time_t> modified_time;
     boost::optional<std::time_t> access_time;
@@ -81,7 +87,7 @@ struct header
     boost::optional<boost::uint16_t> uid;
     boost::optional<boost::uint16_t> gid;
 
-    header()
+    basic_header()
         : version(20), encrypted(false), encryption_checksum(0)
         , method(zip::method::deflate), update_time(0), crc32_checksum(0)
         , compressed_size(0), file_size(0)
@@ -137,21 +143,33 @@ struct header
     }
 };
 
-class header_path_match
+typedef basic_header<boost::filesystem::path> header;
+#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+typedef basic_header<boost::filesystem::wpath> wheader;
+#endif
+
+template<class Path>
+class basic_header_path_match
 {
 public:
-    explicit header_path_match(const boost::filesystem::path& ph) : path_(ph)
+    explicit basic_header_path_match(const Path& ph) : path_(ph)
     {
     }
 
-    bool operator()(const header& head) const
+    bool operator()(const basic_header<Path>& head) const
     {
         return head.path == path_;
     }
 
 private:
-    boost::filesystem::path path_;
+    Path path_;
 };
+
+template<class Path>
+inline basic_header_path_match<Path> header_path_match(const Path& ph)
+{
+    return basic_header_path_match<Path>(ph);
+}
 
 } } } // End namespaces zip, archivers, hamigaki.
 

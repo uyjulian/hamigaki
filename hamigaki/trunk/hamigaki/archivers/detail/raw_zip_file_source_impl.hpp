@@ -1,6 +1,6 @@
 // raw_zip_file_source_impl.hpp: raw ZIP file source implementation
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -79,8 +79,8 @@ inline void seek_end_of_central_dir(Source& src)
     throw std::runtime_error("cannot find ZIP footer");
 }
 
-template<class Source>
-inline void read_local_extra_field(Source& src, zip::header& head)
+template<class Source, class Path>
+inline void read_local_extra_field(Source& src, zip::basic_header<Path>& head)
 {
     zip::extra_field_header ex_head;
     while (iostreams::binary_read(src, ex_head, std::nothrow))
@@ -145,8 +145,9 @@ inline void read_local_extra_field(Source& src, zip::header& head)
     }
 }
 
-template<class Source>
-inline void read_central_extra_field(Source& src, zip_internal_header& head)
+template<class Source, class Path>
+inline void
+read_central_extra_field(Source& src, zip_internal_header<Path>& head)
 {
     zip::extra_field_header ex_head;
     while (iostreams::binary_read(src, ex_head, std::nothrow))
@@ -197,11 +198,13 @@ inline void read_central_extra_field(Source& src, zip_internal_header& head)
     }
 }
 
-template<class Source>
+template<class Source, class Path=boost::filesystem::path>
 class basic_raw_zip_file_source_impl : private boost::noncopyable
 {
 public:
     typedef char char_type;
+    typedef Path path_type;
+    typedef zip::basic_header<Path> header_type;
 
     struct category
         : boost::iostreams::input
@@ -225,9 +228,9 @@ public:
         return true;
     }
 
-    void select_entry(const boost::filesystem::path& ph)
+    void select_entry(const Path& ph)
     {
-        typedef std::vector<zip_internal_header> headers_type;
+        typedef std::vector<zip_internal_header<Path> > headers_type;
         typedef headers_type::const_iterator iter_type;
 
         iter_type pos = std::find_if(
@@ -238,7 +241,7 @@ public:
         select_entry(pos - headers_.begin());
     }
 
-    zip::header header() const
+    header_type header() const
     {
         return header_;
     }
@@ -257,15 +260,15 @@ public:
 
 private:
     Source src_;
-    zip::header header_;
+    header_type header_;
     boost::uint64_t pos_;
     std::size_t next_index_;
-    std::vector<zip_internal_header> headers_;
+    std::vector<zip_internal_header<Path> > headers_;
 
     void read_central_dir()
     {
         using namespace boost::filesystem;
-        std::vector<zip_internal_header> tmp;
+        std::vector<zip_internal_header<Path> > tmp;
 
         detail::seek_end_of_central_dir(src_);
         iostreams::stream_offset footer_offset = iostreams::tell_offset(src_);
@@ -319,7 +322,7 @@ private:
             zip::file_header file_head;
             iostreams::binary_read(src_, file_head);
 
-            zip_internal_header head;
+            zip_internal_header<Path> head;
             head.version =
                 static_cast<boost::uint8_t>(file_head.needed_to_extract);
             if ((file_head.flags & zip::flags::encrypted) != 0)
@@ -390,7 +393,7 @@ private:
     {
         using namespace boost::filesystem;
 
-        zip_internal_header head = headers_[index];
+        zip_internal_header<Path> head = headers_[index];
         next_index_ = ++index;
 
         boost::iostreams::seek(

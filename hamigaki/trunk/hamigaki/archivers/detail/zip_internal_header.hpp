@@ -1,6 +1,6 @@
 // zip_internal_header.hpp: ZIP internal header
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -14,7 +14,8 @@
 
 namespace hamigaki { namespace archivers { namespace detail {
 
-struct zip_internal_header : public zip::header
+template<class Path>
+struct zip_internal_header : public zip::basic_header<Path>
 {
     boost::uint64_t offset;
 

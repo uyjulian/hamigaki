@@ -1,6 +1,6 @@
 // raw_zip_file.hpp: Phil Katz Zip file device (raw version)
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -16,11 +16,11 @@
 
 namespace hamigaki { namespace archivers {
 
-template<class Source>
+template<class Source, class Path=boost::filesystem::path>
 class basic_raw_zip_file_source
 {
 private:
-    typedef detail::basic_raw_zip_file_source_impl<Source> impl_type;
+    typedef detail::basic_raw_zip_file_source_impl<Source,Path> impl_type;
 
 public:
     typedef char char_type;
@@ -30,7 +30,8 @@ public:
         , boost::iostreams::device_tag
     {};
 
-    typedef zip::header header_type;
+    typedef Path path_type;
+    typedef zip::basic_header<Path> header_type;
 
     explicit basic_raw_zip_file_source(const Source& src)
         : pimpl_(new impl_type(src))
@@ -42,12 +43,12 @@ public:
         return pimpl_->next_entry();
     }
 
-    void select_entry(const boost::filesystem::path& ph)
+    void select_entry(const Path& ph)
     {
         pimpl_->select_entry(ph);
     }
 
-    zip::header header() const
+    header_type header() const
     {
         return pimpl_->header();
     }
@@ -71,6 +72,7 @@ public:
         , boost::iostreams::device_tag
     {};
 
+    typedef boost::filesystem::path path_type;
     typedef zip::header header_type;
 
     explicit raw_zip_file_source(const std::string& filename)
@@ -103,11 +105,11 @@ private:
 };
 
 
-template<class Sink>
+template<class Sink, class Path=boost::filesystem::path>
 class basic_raw_zip_file_sink
 {
 private:
-    typedef detail::basic_raw_zip_file_sink_impl<Sink> impl_type;
+    typedef detail::basic_raw_zip_file_sink_impl<Sink,Path> impl_type;
 
 public:
     typedef char char_type;
@@ -118,14 +120,15 @@ public:
         , boost::iostreams::closable_tag
     {};
 
-    typedef zip::header header_type;
+    typedef Path path_type;
+    typedef zip::basic_header<Path> header_type;
 
     explicit basic_raw_zip_file_sink(const Sink& sink)
         : pimpl_(new impl_type(sink))
     {
     }
 
-    void create_entry(const zip::header& head)
+    void create_entry(const header_type& head)
     {
         pimpl_->create_entry(head);
     }
@@ -168,6 +171,7 @@ public:
         , boost::iostreams::closable_tag
     {};
 
+    typedef boost::filesystem::path path_type;
     typedef zip::header header_type;
 
     explicit raw_zip_file_sink(const std::string& filename)
@@ -203,6 +207,59 @@ public:
 private:
     basic_raw_zip_file_sink<iostreams::file_sink> impl_;
 };
+
+#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+class wraw_zip_file_sink
+{
+private:
+    typedef basic_raw_zip_file_sink<iostreams::file_sink> base_type;
+
+public:
+    typedef char char_type;
+
+    struct category
+        : boost::iostreams::output
+        , boost::iostreams::device_tag
+        , boost::iostreams::closable_tag
+    {};
+
+    typedef boost::filesystem::wpath path_type;
+    typedef zip::wheader header_type;
+
+    explicit wraw_zip_file_sink(const std::string& filename)
+        : impl_(iostreams::file_sink(filename, BOOST_IOS::binary))
+    {
+    }
+
+    void create_entry(const zip::wheader& head)
+    {
+        impl_.create_entry(head);
+    }
+
+    void rewind_entry()
+    {
+        impl_.rewind_entry();
+    }
+
+    std::streamsize write(const char* s, std::streamsize n)
+    {
+        return impl_.write(s, n);
+    }
+
+    void close()
+    {
+        impl_.close();
+    }
+
+    void close_archive()
+    {
+        impl_.close_archive();
+    }
+
+private:
+    basic_raw_zip_file_sink<iostreams::file_sink,path_type> impl_;
+};
+#endif // !defined(BOOST_FILESYSTEM_NARROW_ONLY)
 
 } } // End namespaces archivers, hamigaki.
 

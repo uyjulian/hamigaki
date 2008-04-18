@@ -1,6 +1,6 @@
 // raw_zip_file_sink_impl.hpp: raw ZIP file sink implementation
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -17,14 +17,69 @@
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/iostreams/categories.hpp>
 #include <boost/iostreams/close.hpp>
+#include <boost/crc.hpp>
 #include <boost/noncopyable.hpp>
 #include <stdexcept>
 #include <vector>
 
+#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+    #include <hamigaki/charset/code_page.hpp>
+#endif
+
 namespace hamigaki { namespace archivers { namespace detail {
 
+inline std::string make_zip_path_string(const boost::filesystem::path& ph)
+{
+    return ph.string();
+}
+
+inline std::string make_zip_comment(const std::string& s)
+{
+    return s;
+}
+
 template<class Sink>
-inline void write_local_zip64(Sink& sink, const zip::header& head)
+inline void write_unicode_path(Sink&, const zip::header&)
+{
+}
+
+#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+inline std::string make_zip_path_string(const boost::filesystem::wpath& ph)
+{
+    return charset::to_code_page(ph.string(), 0);
+}
+
+inline std::string make_zip_comment(const std::wstring& s)
+{
+    return charset::to_code_page(s, 0);
+}
+
+template<class Sink>
+inline void write_unicode_path(Sink& sink, const zip::wheader& head)
+{
+    std::wstring ws = head.path.string();
+    if (head.is_directory())
+        ws += L'/';
+
+    std::string mbs = charset::to_code_page(ws, 0);
+    std::string utf8 = charset::to_code_page(ws, 65001);
+
+    zip::extra_field_header ex_head;
+    ex_head.id = zip::extra_field_id::info_zip_utf8_path;
+    ex_head.size = 1u + 4u + utf8.size();
+    iostreams::binary_write(sink, ex_head);
+
+    iostreams::write_uint8<little>(sink, 1u);
+    iostreams::write_uint32<little>(
+        sink,
+        boost::crc<32,0x04C11DB7,0,0,true,true>(mbs.c_str(), mbs.size())
+    );
+    iostreams::blocking_write(sink, utf8);
+}
+#endif
+
+template<class Sink, class Path>
+inline void write_local_zip64(Sink& sink, const zip::basic_header<Path>& head)
 {
     if ((head.file_size >= 0xFFFFFFFFull) ||
         (head.compressed_size >= 0xFFFFFFFFull) )
@@ -39,8 +94,9 @@ inline void write_local_zip64(Sink& sink, const zip::header& head)
     }
 }
 
-template<class Sink>
-inline void write_central_zip64(Sink& sink, const zip_internal_header& head)
+template<class Sink, class Path>
+inline void
+write_central_zip64(Sink& sink, const zip_internal_header<Path>& head)
 {
     zip::extra_field_header ex_head;
     ex_head.id = zip::extra_field_id::zip64;
@@ -65,8 +121,9 @@ inline void write_central_zip64(Sink& sink, const zip_internal_header& head)
     }
 }
 
-template<class Sink>
-inline void write_local_ex_timestamp(Sink& sink, const zip::header& head)
+template<class Sink, class Path>
+inline void
+write_local_ex_timestamp(Sink& sink, const zip::basic_header<Path>& head)
 {
     zip::extra_field_header ex_head;
     ex_head.id = zip::extra_field_id::extended_timestamp;
@@ -101,8 +158,9 @@ inline void write_local_ex_timestamp(Sink& sink, const zip::header& head)
     }
 }
 
-template<class Sink>
-inline void write_central_ex_timestamp(Sink& sink, const zip::header& head)
+template<class Sink, class Path>
+inline void
+write_central_ex_timestamp(Sink& sink, const zip::basic_header<Path>& head)
 {
     zip::extra_field_header ex_head;
     ex_head.id = zip::extra_field_id::extended_timestamp;
@@ -127,11 +185,13 @@ inline void write_central_ex_timestamp(Sink& sink, const zip::header& head)
     }
 }
 
-template<class Sink>
-inline void write_local_extra_field(Sink& sink, const zip::header& head)
+template<class Sink, class Path>
+inline void
+write_local_extra_field(Sink& sink, const zip::basic_header<Path>& head)
 {
     write_local_zip64(sink, head);
     write_local_ex_timestamp(sink, head);
+    write_unicode_path(sink, head);
 
     if (head.uid && head.gid)
     {
@@ -146,12 +206,13 @@ inline void write_local_extra_field(Sink& sink, const zip::header& head)
     }
 }
 
-template<class Sink>
+template<class Sink, class Path>
 inline void write_central_extra_field(
-    Sink& sink, const zip_internal_header& head)
+    Sink& sink, const zip_internal_header<Path>& head)
 {
     write_central_zip64(sink, head);
     write_central_ex_timestamp(sink, head);
+    write_unicode_path(sink, head);
 
     if (head.uid && head.gid)
     {
@@ -163,11 +224,13 @@ inline void write_central_extra_field(
     }
 }
 
-template<class Sink>
+template<class Sink, class Path>
 class basic_raw_zip_file_sink_impl : private boost::noncopyable
 {
 public:
     typedef char char_type;
+    typedef Path path_type;
+    typedef zip::basic_header<Path> header_type;
 
     struct category
         : boost::iostreams::output
@@ -180,7 +243,7 @@ public:
     {
     }
 
-    void create_entry(const zip::header& head)
+    void create_entry(const header_type& head)
     {
         if (overflow_)
             throw std::runtime_error("need to rewind the current entry");
@@ -188,7 +251,7 @@ public:
         if (size_ != header_.compressed_size)
             throw std::runtime_error("ZIP entry size mismatch");
 
-        static_cast<zip::header&>(header_) = head;
+        static_cast<header_type&>(header_) = head;
         if (header_.is_directory())
         {
             header_.method = zip::method::store;
@@ -281,9 +344,9 @@ public:
 
         for (std::size_t i = 0; i < headers_.size(); ++i)
         {
-            const zip_internal_header& head = headers_[i];
+            const zip_internal_header<Path>& head = headers_[i];
 
-            std::string filename = head.path.string();
+            std::string filename = detail::make_zip_path_string(head.path);
             if (head.is_directory())
                 filename += '/';
 
@@ -327,7 +390,10 @@ public:
                 iostreams::blocking_write(sink_, extra_field);
 
             if (!head.comment.empty())
-                iostreams::blocking_write(sink_, head.comment);
+            {
+                iostreams::blocking_write(
+                    sink_, detail::make_zip_comment(head.comment));
+            }
         }
 
         boost::uint64_t end_offset =
@@ -402,15 +468,15 @@ public:
 
 private:
     Sink sink_;
-    zip_internal_header header_;
+    zip_internal_header<Path> header_;
     boost::uint32_t size_;
     bool overflow_;
     bool zip64_;
-    std::vector<zip_internal_header> headers_;
+    std::vector<zip_internal_header<Path> > headers_;
 
-    void write_local_file_header(const zip::header& head)
+    void write_local_file_header(const header_type& head)
     {
-        std::string filename = head.path.string();
+        std::string filename = detail::make_zip_path_string(head.path);
         if (head.is_directory())
             filename += '/';
 

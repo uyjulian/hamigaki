@@ -1,6 +1,6 @@
 // zip_file_sink_impl.hpp: ZIP file sink implementation
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -41,14 +41,15 @@ inline boost::uint32_t make_random_seed()
     return static_cast<boost::uint32_t>(val);
 }
 
-template<class Sink>
+template<class Sink, class Path>
 class zip_encrypter
 {
 private:
-    typedef basic_raw_zip_file_sink_impl<Sink> raw_zip_type;
+    typedef basic_raw_zip_file_sink_impl<Sink,Path> raw_zip_type;
 
 public:
     typedef char char_type;
+    typedef zip::basic_header<Path> header_type;
 
     struct category
         : boost::iostreams::output
@@ -66,7 +67,7 @@ public:
         password_ = pswd;
     }
 
-    void create_entry(const zip::header& head)
+    void create_entry(const header_type& head)
     {
         header_ = head;
         raw_.create_entry(header_);
@@ -119,7 +120,7 @@ public:
 private:
     raw_zip_type raw_;
     boost::mt19937 rand_gen_;
-    zip::header header_;
+    header_type header_;
     std::string password_;
     boost::optional<zip_encryption_keys> keys_;
 
@@ -167,13 +168,15 @@ private:
     }
 };
 
-template<class Sink>
+template<class Sink, class Path>
 class basic_zip_file_sink_impl
 {
 private:
-    typedef zip_encrypter<Sink> raw_zip_type;
+    typedef zip_encrypter<Sink,Path> raw_zip_type;
 
 public:
+    typedef zip::basic_header<Path> header_type;
+
     explicit basic_zip_file_sink_impl(const Sink& sink)
         : raw_(sink), method_(zip::method::store), size_(0), compressed_(false)
         , zlib_(make_zlib_params())
@@ -185,11 +188,12 @@ public:
         raw_.password(pswd);
     }
 
-    void create_entry(const zip::header& head)
+    void create_entry(const header_type& head)
     {
-        zip::header header = head;
+        header_type header = head;
 
-        const std::string link_path = header.link_path.string();
+        const std::string link_path =
+            detail::make_zip_path_string(header.link_path);
 
         if (!link_path.empty())
         {
