@@ -54,7 +54,7 @@ int main()
 ]]></programlisting>
     <para><classname alt="coroutineN">coroutine</classname>のコンストラクタの引数にはコルーチンの本体を指定する。</para>
     <para>作成された<classname alt="coroutineN">coroutine</classname>は関数オブジェクトとして機能する。コルーチンを呼び出すと、制御がコルーチン本体へと移る。コルーチン側は<code>yield()</code>が呼ばれるか、<code>return</code>されるまで実行され、その結果が呼び出し側に返される。再びコルーチンを呼び出すと、前回<code>yield()</code>を呼んだ箇所から実行が再開される。</para>
-    <para>メンバ関数<code>exit()</code>が呼ぶか、コルーチンから<code>return</code>すると、コルーチンは終了する。終了したコルーチンを呼び出すと、例外<classname>coroutine_exited</classname>が発生する。コルーチンはその性質上、呼び出すまで終了したかどうか分からないので、この例外を捕捉することで終了を検知する。</para>
+    <para>メンバ関数<code>exit()</code>を呼ぶか、コルーチンから<code>return</code>すると、コルーチンは終了する。終了したコルーチンを呼び出すと、例外<classname>coroutine_exited</classname>が発生する。コルーチンはその性質上、呼び出すまで終了したかどうか分からないので、この例外を捕捉することで終了を検知する。</para>
     <para>別の方法として、コルーチンの呼び出し時に<code>std::nothrow</code>を引数として指定することもできる。この場合、戻り値が<code>boost::optional</code>になり、終了を検知した場合は空となる。</para>
     <programlisting><![CDATA[#include <iostream>
 
