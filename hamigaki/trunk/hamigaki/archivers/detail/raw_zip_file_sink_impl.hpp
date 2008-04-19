@@ -38,44 +38,28 @@ inline std::string make_zip_comment(const std::string& s)
     return s;
 }
 
-template<class Sink>
-inline void write_unicode_path(Sink&, const zip::header&)
+template<class Path>
+struct default_zip_flags
 {
-}
+    static const boost::uint16_t value = 0;
+};
 
 #if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
 inline std::string make_zip_path_string(const boost::filesystem::wpath& ph)
 {
-    return charset::to_code_page(ph.string(), 0);
+    return charset::to_code_page(ph.string(), 65001);
 }
 
 inline std::string make_zip_comment(const std::wstring& s)
 {
-    return charset::to_code_page(s, 0);
+    return charset::to_code_page(s, 65001);
 }
 
-template<class Sink>
-inline void write_unicode_path(Sink& sink, const zip::wheader& head)
+template<>
+struct default_zip_flags<boost::filesystem::wpath>
 {
-    std::wstring ws = head.path.string();
-    if (head.is_directory())
-        ws += L'/';
-
-    std::string mbs = charset::to_code_page(ws, 0);
-    std::string utf8 = charset::to_code_page(ws, 65001);
-
-    zip::extra_field_header ex_head;
-    ex_head.id = zip::extra_field_id::info_zip_utf8_path;
-    ex_head.size = 1u + 4u + utf8.size();
-    iostreams::binary_write(sink, ex_head);
-
-    iostreams::write_uint8<little>(sink, 1u);
-    iostreams::write_uint32<little>(
-        sink,
-        boost::crc<32,0x04C11DB7,0,0,true,true>(mbs.c_str(), mbs.size())
-    );
-    iostreams::blocking_write(sink, utf8);
-}
+    static const boost::uint16_t value = zip::flags::encoded_utf8;
+};
 #endif
 
 template<class Sink, class Path>
@@ -191,7 +175,6 @@ write_local_extra_field(Sink& sink, const zip::basic_header<Path>& head)
 {
     write_local_zip64(sink, head);
     write_local_ex_timestamp(sink, head);
-    write_unicode_path(sink, head);
 
     if (head.uid && head.gid)
     {
@@ -212,7 +195,6 @@ inline void write_central_extra_field(
 {
     write_central_zip64(sink, head);
     write_central_ex_timestamp(sink, head);
-    write_unicode_path(sink, head);
 
     if (head.uid && head.gid)
     {
@@ -358,9 +340,18 @@ public:
             zip::file_header file_head;
             file_head.made_by = 20;
             file_head.needed_to_extract = head.version;
+#if 0
             file_head.flags = head.encrypted
                 ? zip::flags::encrypted | zip::flags::has_data_dec
                 : 0;
+#else
+            file_head.flags = default_zip_flags<Path>::value;
+            if (head.encrypted)
+            {
+                file_head.flags |=
+                    zip::flags::encrypted | zip::flags::has_data_dec;
+            }
+#endif
             file_head.method = head.method;
             file_head.update_date_time = msdos::date_time(head.update_time);
             file_head.compressed_size = head.compressed_size;
@@ -486,9 +477,15 @@ private:
 
         zip::local_file_header local;
         local.needed_to_extract = head.version;
+#if 0
         local.flags = head.encrypted
             ? zip::flags::encrypted | zip::flags::has_data_dec
             : 0;
+#else
+        local.flags = default_zip_flags<Path>::value;
+        if (head.encrypted)
+            local.flags |= zip::flags::encrypted | zip::flags::has_data_dec;
+#endif
         local.method = head.method;
         local.update_date_time = msdos::date_time(head.update_time);
         local.crc32_checksum = head.crc32_checksum;
