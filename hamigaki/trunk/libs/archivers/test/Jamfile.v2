@@ -69,6 +69,7 @@ if ! $(NO_ZLIB)
         [ test-with-zlib zip_test.cpp : ]
         [ test-with-zlib zip_crypt_test.cpp : ]
         [ test-with-zlib zip_replace_test.cpp : ]
+        [ test-with-zlib zip_wide_test.cpp : ]
     ;
 
     if ! $(NO_BZIP2)
