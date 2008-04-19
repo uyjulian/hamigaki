@@ -16,11 +16,11 @@
 
 namespace hamigaki { namespace archivers {
 
-template<class Source>
+template<class Source, class Path=boost::filesystem::path>
 class basic_zip_file_source
 {
 private:
-    typedef detail::basic_zip_file_source_impl<Source> impl_type;
+    typedef detail::basic_zip_file_source_impl<Source,Path> impl_type;
 
 public:
     typedef char char_type;
@@ -30,7 +30,8 @@ public:
         , boost::iostreams::device_tag
     {};
 
-    typedef zip::header header_type;
+    typedef Path path_type;
+    typedef zip::basic_header<Path> header_type;
 
     explicit basic_zip_file_source(const Source& src)
         : pimpl_(new impl_type(src))
@@ -47,12 +48,12 @@ public:
         return pimpl_->next_entry();
     }
 
-    void select_entry(const boost::filesystem::path& ph)
+    void select_entry(const Path& ph)
     {
         pimpl_->select_entry(ph);
     }
 
-    zip::header header() const
+    header_type header() const
     {
         return pimpl_->header();
     }
@@ -76,6 +77,7 @@ public:
         , boost::iostreams::device_tag
     {};
 
+    typedef boost::filesystem::path path_type;
     typedef zip::header header_type;
 
     explicit zip_file_source(const std::string& filename)
@@ -224,6 +226,53 @@ private:
 };
 
 #if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+class wzip_file_source
+{
+public:
+    typedef char char_type;
+
+    struct category
+        : boost::iostreams::input
+        , boost::iostreams::device_tag
+    {};
+
+    typedef boost::filesystem::wpath path_type;
+    typedef zip::wheader header_type;
+
+    explicit wzip_file_source(const std::string& filename)
+        : impl_(iostreams::file_source(filename, BOOST_IOS::binary))
+    {
+    }
+
+    void password(const std::string& pswd)
+    {
+        impl_.password(pswd);
+    }
+
+    bool next_entry()
+    {
+        return impl_.next_entry();
+    }
+
+    void select_entry(const boost::filesystem::wpath& ph)
+    {
+        impl_.select_entry(ph);
+    }
+
+    zip::wheader header() const
+    {
+        return impl_.header();
+    }
+
+    std::streamsize read(char* s, std::streamsize n)
+    {
+        return impl_.read(s, n);
+    }
+
+private:
+    basic_zip_file_source<iostreams::file_source,path_type> impl_;
+};
+
 class wzip_file_sink
 {
 public:

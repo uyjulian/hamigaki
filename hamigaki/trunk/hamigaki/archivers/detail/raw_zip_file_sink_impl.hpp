@@ -58,7 +58,7 @@ inline std::string make_zip_comment(const std::wstring& s)
 template<>
 struct default_zip_flags<boost::filesystem::wpath>
 {
-    static const boost::uint16_t value = zip::flags::encoded_utf8;
+    static const boost::uint16_t value = zip::flags::utf8_encoded;
 };
 #endif
 
@@ -340,18 +340,16 @@ public:
             zip::file_header file_head;
             file_head.made_by = 20;
             file_head.needed_to_extract = head.version;
-#if 0
-            file_head.flags = head.encrypted
-                ? zip::flags::encrypted | zip::flags::has_data_dec
-                : 0;
-#else
+
             file_head.flags = default_zip_flags<Path>::value;
             if (head.encrypted)
             {
                 file_head.flags |=
                     zip::flags::encrypted | zip::flags::has_data_dec;
             }
-#endif
+
+            const std::string& comment = detail::make_zip_comment(head.comment);
+
             file_head.method = head.method;
             file_head.update_date_time = msdos::date_time(head.update_time);
             file_head.compressed_size = head.compressed_size;
@@ -359,7 +357,7 @@ public:
             file_head.file_size = head.file_size;
             file_head.file_name_length = filename.size();
             file_head.extra_field_length = extra_field.size();
-            file_head.comment_length = head.comment.size();
+            file_head.comment_length = comment.size();
             file_head.disk_number_start = 0; // TODO
             file_head.internal_attributes = 0; // TODO
             file_head.external_attributes =
@@ -380,11 +378,8 @@ public:
             if (!extra_field.empty())
                 iostreams::blocking_write(sink_, extra_field);
 
-            if (!head.comment.empty())
-            {
-                iostreams::blocking_write(
-                    sink_, detail::make_zip_comment(head.comment));
-            }
+            if (!comment.empty())
+                iostreams::blocking_write(sink_, comment);
         }
 
         boost::uint64_t end_offset =
@@ -477,15 +472,11 @@ private:
 
         zip::local_file_header local;
         local.needed_to_extract = head.version;
-#if 0
-        local.flags = head.encrypted
-            ? zip::flags::encrypted | zip::flags::has_data_dec
-            : 0;
-#else
+
         local.flags = default_zip_flags<Path>::value;
         if (head.encrypted)
             local.flags |= zip::flags::encrypted | zip::flags::has_data_dec;
-#endif
+
         local.method = head.method;
         local.update_date_time = msdos::date_time(head.update_time);
         local.crc32_checksum = head.crc32_checksum;

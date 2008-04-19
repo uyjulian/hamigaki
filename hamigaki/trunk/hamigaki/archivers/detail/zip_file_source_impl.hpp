@@ -22,11 +22,11 @@
 
 namespace hamigaki { namespace archivers { namespace detail {
 
-template<class Source>
+template<class Source, class Path>
 class zip_decrypter
 {
 private:
-    typedef basic_raw_zip_file_source_impl<Source> raw_type;
+    typedef basic_raw_zip_file_source_impl<Source,Path> raw_type;
 
 public:
     typedef char char_type;
@@ -35,6 +35,9 @@ public:
         : boost::iostreams::input
         , boost::iostreams::device_tag
     {};
+
+    typedef Path path_type;
+    typedef zip::basic_header<Path> header_type;
 
     explicit zip_decrypter(const Source& src)
         : raw_(src)
@@ -55,13 +58,13 @@ public:
         return true;
     }
 
-    void select_entry(const boost::filesystem::path& ph)
+    void select_entry(const Path& ph)
     {
         raw_.select_entry(ph);
         prepare_reading();
     }
 
-    zip::header header() const
+    header_type header() const
     {
         return header_;
     }
@@ -82,7 +85,7 @@ public:
 
 private:
     raw_type raw_;
-    zip::header header_;
+    header_type header_;
     std::string password_;
     char enc_header_[zip::consts::encryption_header_size];
     boost::optional<zip_encryption_keys> keys_;
@@ -119,13 +122,16 @@ private:
     }
 };
 
-template<class Source>
+template<class Source, class Path=boost::filesystem::path>
 class basic_zip_file_source_impl
 {
 private:
-    typedef zip_decrypter<Source> raw_type;
+    typedef zip_decrypter<Source,Path> raw_type;
 
 public:
+    typedef Path path_type;
+    typedef zip::basic_header<Path> header_type;
+
     explicit basic_zip_file_source_impl(const Source& src)
         : raw_(src)
         , zlib_(make_zlib_params())
@@ -147,13 +153,13 @@ public:
         return true;
     }
 
-    void select_entry(const boost::filesystem::path& ph)
+    void select_entry(const Path& ph)
     {
         raw_.select_entry(ph);
         prepare_reading();
     }
 
-    zip::header header() const
+    header_type header() const
     {
         return header_;
     }
@@ -170,7 +176,7 @@ public:
 
 private:
     raw_type raw_;
-    zip::header header_;
+    header_type header_;
     boost::crc_32_type crc32_;
     boost::iostreams::zlib_decompressor zlib_;
 #if !defined(HAMIGAKI_ARCHIVERS_NO_BZIP2)
@@ -216,13 +222,15 @@ private:
 
         if (filesystem::file_permissions::is_symlink(header_.permissions))
         {
-            using namespace boost::filesystem;
-
             boost::scoped_array<char> buf(new char[header_.file_size+1]);
             read(buf.get(), header_.file_size);
             buf[header_.file_size] = '\0';
 
-            header_.link_path = path(buf.get(), no_check);
+            header_.link_path =
+                zip_source_traits<Path>::make_path(
+                    buf.get(), header_.utf8_encoded
+                );
+
             header_.compressed_size = 0;
             header_.file_size = 0;
         }

@@ -22,7 +22,50 @@
 #include <stdexcept>
 #include <vector>
 
+#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+    #include <hamigaki/charset/code_page.hpp>
+#endif
+
 namespace hamigaki { namespace archivers { namespace detail {
+
+template<class Path>
+struct zip_source_traits
+{
+    typedef Path path_type;
+    typedef typename Path::string_type string_type;
+
+    static Path make_path(const char* s, bool)
+    {
+        return Path(s);
+    }
+
+    static string_type make_comment(const char* s, std::size_t size, bool)
+    {
+        return string_type(s, s + size);
+    }
+};
+
+#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+template<>
+struct zip_source_traits<boost::filesystem::wpath>
+{
+    typedef boost::filesystem::wpath path_type;
+    typedef path_type::string_type string_type;
+
+    static path_type make_path(const char* s, bool is_utf8)
+    {
+        unsigned code_page = is_utf8 ? 65001 : 0;
+        return path_type(charset::from_code_page(s, code_page));
+    }
+
+    static string_type
+    make_comment(const char* s, std::size_t size, bool is_utf8)
+    {
+        unsigned code_page = is_utf8 ? 65001 : 0;
+        return charset::from_code_page(std::string(s, s+size), code_page);
+    }
+};
+#endif
 
 inline const char* find_footer_signature(const char* start, const char* last)
 {
@@ -198,7 +241,7 @@ read_central_extra_field(Source& src, zip_internal_header<Path>& head)
     }
 }
 
-template<class Source, class Path=boost::filesystem::path>
+template<class Source, class Path>
 class basic_raw_zip_file_source_impl : private boost::noncopyable
 {
 public:
@@ -267,7 +310,6 @@ private:
 
     void read_central_dir()
     {
-        using namespace boost::filesystem;
         std::vector<zip_internal_header<Path> > tmp;
 
         detail::seek_end_of_central_dir(src_);
@@ -323,10 +365,16 @@ private:
             iostreams::binary_read(src_, file_head);
 
             zip_internal_header<Path> head;
+            head.os = static_cast<boost::uint8_t>(file_head.made_by >> 8);
+            // compatibility for Explzh and Archive Utility
+            if (head.os == zip::os::unix)
+                head.utf8_encoded = true;
             head.version =
                 static_cast<boost::uint8_t>(file_head.needed_to_extract);
             if ((file_head.flags & zip::flags::encrypted) != 0)
                 head.encrypted = true;
+            if ((file_head.flags & zip::flags::utf8_encoded) != 0)
+                head.utf8_encoded = true;
             head.method = file_head.method;
             head.update_time = file_head.update_date_time.to_time_t();
             head.compressed_size = file_head.compressed_size;
@@ -351,7 +399,11 @@ private:
                     filename[file_head.file_name_length-1] = '\0';
                     head.attributes |= msdos::attributes::directory;
                 }
-                head.path = path(&filename[0], no_check);
+
+                head.path =
+                    zip_source_traits<Path>::make_path(
+                        &filename[0], head.utf8_encoded
+                    );
             }
 
             if (file_head.extra_field_length)
@@ -378,8 +430,8 @@ private:
                     new char[file_head.comment_length]);
                 iostreams::blocking_read(
                     src_, &comment[0], file_head.comment_length);
-                head.comment = std::string(
-                    &comment[0], &comment[0]+file_head.comment_length);
+                head.comment = zip_source_traits<Path>::make_comment(
+                    &comment[0], file_head.comment_length, head.utf8_encoded);
             }
 
             tmp.push_back(head);
@@ -391,8 +443,6 @@ private:
 
     void select_entry(std::size_t index)
     {
-        using namespace boost::filesystem;
-
         zip_internal_header<Path> head = headers_[index];
         next_index_ = ++index;
 
@@ -412,6 +462,8 @@ private:
         head.version = static_cast<boost::uint8_t>(local.needed_to_extract);
         if ((local.flags & zip::flags::encrypted) != 0)
             head.encrypted = true;
+        if ((local.flags & zip::flags::utf8_encoded) != 0)
+            head.utf8_encoded = true;
         head.method = local.method;
         head.update_time = local.update_date_time.to_time_t();
         if ((local.flags & zip::flags::has_data_dec) != 0)
@@ -438,7 +490,11 @@ private:
                 filename[local.file_name_length-1] = '\0';
                 head.attributes |= msdos::attributes::directory;
             }
-            head.path = path(&filename[0], no_check);
+
+            head.path =
+                zip_source_traits<Path>::make_path(
+                    &filename[0], head.utf8_encoded
+                );
         }
 
         if (local.extra_field_length)

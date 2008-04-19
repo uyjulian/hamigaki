@@ -33,11 +33,18 @@ struct consts
     static const std::size_t encryption_header_size = 12;
 };
 
+struct os
+{
+    static const boost::uint8_t ms_dos     = 0x00; // NTFS for PKZIP
+    static const boost::uint8_t unix       = 0x03; // includes Mac OS X
+    static const boost::uint8_t winnt      = 0x0B; // used by Info-ZIP, MS
+};
+
 struct flags
 {
     static const boost::uint16_t encrypted      = 0x0001;
     static const boost::uint16_t has_data_dec   = 0x0008;
-    static const boost::uint16_t encoded_utf8   = 0x0800;
+    static const boost::uint16_t utf8_encoded   = 0x0800;
 };
 
 struct method
@@ -56,7 +63,6 @@ struct extra_field_id
 {
     static const boost::uint16_t zip64              = 0x0001;
     static const boost::uint16_t extended_timestamp = 0x5455;
-    static const boost::uint16_t info_zip_utf8_path = 0x7075;
     static const boost::uint16_t info_zip_unix2     = 0x7855;
 };
 
@@ -68,8 +74,10 @@ struct basic_header
 
     Path path;
     Path link_path;
+    boost::uint8_t os;
     boost::uint8_t version;
     bool encrypted;
+    bool utf8_encoded;
     boost::uint16_t encryption_checksum;
     boost::uint16_t method;
     std::time_t update_time;
@@ -88,7 +96,8 @@ struct basic_header
     boost::optional<boost::uint16_t> gid;
 
     basic_header()
-        : version(20), encrypted(false), encryption_checksum(0)
+        : os(0), version(20), encrypted(false), utf8_encoded(false)
+        , encryption_checksum(0)
         , method(zip::method::deflate), update_time(0), crc32_checksum(0)
         , compressed_size(0), file_size(0)
         , attributes(msdos::attributes::archive), permissions(0644)

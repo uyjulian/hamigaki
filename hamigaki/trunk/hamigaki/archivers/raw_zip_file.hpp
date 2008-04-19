@@ -209,6 +209,48 @@ private:
 };
 
 #if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+class wraw_zip_file_source
+{
+public:
+    typedef char char_type;
+
+    struct category
+        : boost::iostreams::input
+        , boost::iostreams::device_tag
+    {};
+
+    typedef boost::filesystem::wpath path_type;
+    typedef zip::wheader header_type;
+
+    explicit wraw_zip_file_source(const std::string& filename)
+        : impl_(iostreams::file_source(filename, BOOST_IOS::binary))
+    {
+    }
+
+    bool next_entry()
+    {
+        return impl_.next_entry();
+    }
+
+    void select_entry(const boost::filesystem::wpath& ph)
+    {
+        impl_.select_entry(ph);
+    }
+
+    zip::wheader header() const
+    {
+        return impl_.header();
+    }
+
+    std::streamsize read(char* s, std::streamsize n)
+    {
+        return impl_.read(s, n);
+    }
+
+private:
+    basic_raw_zip_file_source<iostreams::file_source,path_type> impl_;
+};
+
 class wraw_zip_file_sink
 {
 private:
