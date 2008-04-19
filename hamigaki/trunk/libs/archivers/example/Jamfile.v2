@@ -55,6 +55,7 @@ if ! $(NO_ZLIB)
     exe list_zip : list_zip.cpp boost_filesystem boost_iostreams iostreams ;
     exe unzip : unzip.cpp boost_iostreams filesystems iostreams ;
     exe zip : zip.cpp boost_iostreams filesystems iostreams ;
+    exe wunzip : wunzip.cpp boost_iostreams filesystems iostreams ;
 
     exe wzip
         : wzip.cpp boost_iostreams filesystems iostreams
