@@ -117,6 +117,9 @@
       <class name="basic_raw_zip_file_sink">
         <template>
           <template-type-parameter name="Sink"/>
+          <template-type-parameter name="Path">
+            <default>boost::filesystem::path</default>
+          </template-type-parameter>
         </template>
 
         <purpose><para>生のZIPファイルへの書き込み専用アクセスを提供するSinkモデル</para></purpose>
