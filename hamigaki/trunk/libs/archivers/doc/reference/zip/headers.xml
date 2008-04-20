@@ -4,7 +4,7 @@
 <!--
   Hamigaki.Archivers Library Document Source
 
-  Copyright Takeshi Mouri 2006, 2007.
+  Copyright Takeshi Mouri 2006-2008.
   Distributed under the Boost Software License, Version 1.0.
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
@@ -35,7 +35,11 @@
           </static-constant>
         </struct>
 
-        <struct name="header">
+        <struct name="basic_header">
+          <template>
+            <template-type-parameter name="Path"/>
+          </template>
+
           <method-group name="queries">
             <method name="is_regular" cv="const">
               <type>bool</type>
@@ -71,11 +75,19 @@
             <type>boost::filesystem::path</type>
           </data-member>
 
+          <data-member name="os">
+            <type>boost::uint8_t</type>
+          </data-member>
+
           <data-member name="version">
             <type>boost::uint8_t</type>
           </data-member>
 
           <data-member name="encrypted">
+            <type>bool</type>
+          </data-member>
+
+          <data-member name="utf8_encoded">
             <type>bool</type>
           </data-member>
 
@@ -158,6 +170,11 @@
                       <entry></entry>
                     </row>
                     <row>
+                      <entry>os</entry>
+                      <entry>作成環境のOS</entry>
+                      <entry><code>os::ms_dos</code></entry>
+                    </row>
+                    <row>
                       <entry>version</entry>
                       <entry>ZIPバージョン×10</entry>
                       <entry>20</entry>
@@ -165,6 +182,11 @@
                     <row>
                       <entry>encrypted</entry>
                       <entry>暗号化されているかどうか</entry>
+                      <entry>false</entry>
+                    </row>
+                    <row>
+                      <entry>utf8_encoded</entry>
+                      <entry>ファイル名とコメントがUTF-8エンコードされているかどうか</entry>
                       <entry>false</entry>
                     </row>
                     <row>
@@ -243,6 +265,15 @@
             </para>
           </description>
         </struct>
+
+        <typedef name="header">
+          <type><classname>basic_header</classname>&lt;boost::filesystem::path&gt;</type>
+        </typedef>
+
+        <typedef name="wheader">
+          <type><classname>basic_header</classname>&lt;boost::filesystem::wpath&gt;</type>
+        </typedef>
+
       </namespace>
     </namespace>
   </namespace>

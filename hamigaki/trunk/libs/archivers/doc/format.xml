@@ -164,6 +164,7 @@
       <listitem>PKZIP 2.0互換 Traditional ZIP パスワード暗号</listitem>
       <listitem>ラージファイルサポート (Zip64)</listitem>
       <listitem>Info-ZIP 互換シンボリックリンク</listitem>
+      <listitem>UTF-8 ファイル名 (Language encoding flag)</listitem>
     </itemizedlist>
 
     <itemizedlist>
