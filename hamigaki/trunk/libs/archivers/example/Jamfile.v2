@@ -41,6 +41,11 @@ exe uniso : uniso.cpp boost_filesystem ;
 exe unlha : unlha.cpp filesystems ;
 exe untar : untar.cpp filesystems ;
 
+exe wiso
+    : wiso.cpp filesystems iostreams
+    : <toolset>gcc,<os>NT:<find-static-library>shell32
+    ;
+
 exe wlha
     : wlha.cpp filesystems iostreams
     : <toolset>gcc,<os>NT:<find-static-library>shell32
