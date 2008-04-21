@@ -1,6 +1,6 @@
 // raw_iso_file_sink_impl.hpp: raw ISO file sink implementation
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -13,6 +13,7 @@
 #include <hamigaki/archivers/detail/iso_directory_record.hpp>
 #include <hamigaki/archivers/detail/iso_directory_writer.hpp>
 #include <hamigaki/archivers/detail/iso_logical_block_number.hpp>
+#include <hamigaki/archivers/detail/iso_string.hpp>
 #include <hamigaki/archivers/detail/joliet_directory_writer.hpp>
 #include <hamigaki/archivers/detail/rock_ridge_directory_writer.hpp>
 #include <hamigaki/archivers/detail/sl_components_composer.hpp>
@@ -29,6 +30,24 @@
 
 namespace hamigaki { namespace archivers { namespace detail {
 
+#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+template<std::size_t Size>
+inline void copy_iso9660_str(
+    char (&buf)[Size], const std::wstring& s, char fill=' ')
+{
+    std::memset(buf, fill, sizeof(buf));
+    charset::to_code_page(s,0,"_").copy(buf, sizeof(buf));
+}
+
+template<std::size_t Size>
+inline void copy_joliet_str(
+    char (&buf)[Size], const std::wstring& s)
+{
+    std::memset(buf, 0, sizeof(buf));
+    charset::to_utf16be(s).copy(buf, sizeof(buf));
+}
+#endif // !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+
 template<std::size_t Size>
 inline void copy_iso9660_str(
     char (&buf)[Size], const std::string& s, char fill=' ')
@@ -37,9 +56,8 @@ inline void copy_iso9660_str(
     s.copy(buf, sizeof(buf));
 }
 
-template<std::size_t Size>
-inline void copy_iso9660_path(
-    char (&buf)[Size], const boost::filesystem::path& ph)
+template<std::size_t Size, class Path>
+inline void copy_iso9660_path(char (&buf)[Size], const Path& ph)
 {
     detail::copy_iso9660_str(buf, ph.string());
 }
@@ -52,25 +70,32 @@ inline void copy_joliet_str(
     detail::narrow_to_ucs2be(s).copy(buf, sizeof(buf));
 }
 
-template<std::size_t Size>
-inline void copy_joliet_path(
-    char (&buf)[Size], const boost::filesystem::path& ph)
+template<std::size_t Size, class Path>
+inline void copy_joliet_path(char (&buf)[Size], const Path& ph)
 {
     detail::copy_joliet_str(buf, ph.string());
 }
 
-template<class Sink>
+template<class Path>
+inline boost::filesystem::path to_iso9660_path(const Path& ph)
+{
+    return detail::to_iso9660_string(ph.string());
+}
+
+template<class Sink, class Path>
 class basic_raw_iso_file_sink_impl : private boost::noncopyable
 {
 private:
-    typedef basic_raw_iso_file_sink_impl<Sink> self;
+    typedef basic_raw_iso_file_sink_impl<Sink,Path> self;
 
     static const std::size_t logical_sector_size = 2048;
 
-    typedef boost::filesystem::path path;
-    typedef std::vector<iso::header> directory_entries;
-
 public:
+    typedef Path path_type;
+    typedef iso::basic_header<Path> header_type;
+    typedef iso::basic_volume_desc<Path> volume_desc;
+    typedef std::vector<header_type> directory_entries;
+
     explicit basic_raw_iso_file_sink_impl(
             const Sink& sink, const iso::volume_info& info=iso::volume_info() )
         : sink_(sink), volume_info_(info)
@@ -81,16 +106,16 @@ public:
         for (int i = 0; i < 16; ++i)
             iostreams::blocking_write(sink_, block_);
 
-        dirs_[path()];
+        dirs_[Path()];
     }
 
-    void add_volume_desc(const iso::volume_desc& desc)
+    void add_volume_desc(const volume_desc& desc)
     {
         BOOST_ASSERT(!freeze_volume_descs_);
         volume_descs_.push_back(desc);
     }
 
-    void create_entry(const iso::header& head)
+    void create_entry(const header_type& head)
     {
         if (!freeze_volume_descs_)
             write_volume_descs_set_terminator();
@@ -98,7 +123,7 @@ public:
         if (head.file_size > 0xFFFFFFFFull)
             throw BOOST_IOSTREAMS_FAILURE("ISO 9660 file size too large");
 
-        iso::header h = head;
+        header_type h = head;
         h.path = head.path.leaf();
 
         if (h.is_directory())
@@ -109,7 +134,7 @@ public:
         if (!h.is_directory() && (h.version == 0))
             h.version = 1u;
 
-        path parent(head.path.branch_path());
+        Path parent(head.path.branch_path());
         dirs_[parent].push_back(h);
         if (h.is_directory())
             dirs_[head.path];
@@ -148,11 +173,11 @@ public:
 
         const std::size_t size = volume_descs_.size();
 
-        iso::header root;
+        header_type root;
         root.flags = iso::file_flags::directory;
         iso::posix::file_attributes attr;
         attr.permissions = 040755;
-        attr.links = 2u + this->count_directory(path());
+        attr.links = 2u + this->count_directory(Path());
         attr.uid = 0u;
         attr.gid = 0u;
         attr.serial_no = 0;
@@ -162,7 +187,7 @@ public:
 
         for (std::size_t i = 0; i < size; ++i)
         {
-            iso::volume_desc& desc = volume_descs_[i];
+            volume_desc& desc = volume_descs_[i];
             if (desc.is_joliet())
                 this->write_joliet_directory_descs(desc, root);
             else if (desc.is_rock_ridge())
@@ -177,7 +202,7 @@ public:
 
         for (std::size_t i = 0; i < size; ++i)
         {
-            iso::volume_desc& desc = volume_descs_[i];
+            volume_desc& desc = volume_descs_[i];
             if (desc.is_joliet())
                 this->write_joliet_volume_desc(desc);
             else
@@ -193,23 +218,36 @@ private:
     iso::volume_info volume_info_;
     boost::uint32_t lbn_shift_;
     bool freeze_volume_descs_;
-    std::vector<iso::volume_desc> volume_descs_;
-    std::map<path,directory_entries> dirs_;
+    std::vector<volume_desc> volume_descs_;
+    std::map<Path,directory_entries> dirs_;
 
     char block_[logical_sector_size];
     boost::uint32_t pos_;
     boost::uint32_t size_;
 
-    static iso_directory_record make_dir_record(const iso::header& head)
+    static iso_directory_record make_dir_record(const header_type& head)
     {
         iso_directory_record rec;
         rec.data_pos = head.data_pos;
         rec.data_size = head.file_size;
         rec.recorded_time = head.recorded_time;
         rec.flags = head.flags;
-        rec.file_id = head.path.leaf();
+        rec.file_id = detail::to_iso9660_string(head.path.leaf());
         rec.version = head.version;
-        rec.system_use = head.system_use;
+        rec.system_use = detail::to_iso9660_string(head.system_use);
+        return rec;
+    }
+
+    static iso_directory_record make_joliet_dir_record(const header_type& head)
+    {
+        iso_directory_record rec;
+        rec.data_pos = head.data_pos;
+        rec.data_size = head.file_size;
+        rec.recorded_time = head.recorded_time;
+        rec.flags = head.flags;
+        rec.file_id = detail::to_joliet_string(head.path.leaf());
+        rec.version = head.version;
+        rec.system_use = detail::to_joliet_string(head.system_use);
         return rec;
     }
 
@@ -237,7 +275,7 @@ private:
     }
 
     static iso_directory_record
-        make_rrip_dir_record(const iso::header& head, iso::rrip_type rrip)
+        make_rrip_dir_record(const header_type& head, iso::rrip_type rrip)
     {
         iso_directory_record rec = self::make_dir_record(head);
         if (rrip == iso::rrip_none)
@@ -355,10 +393,12 @@ private:
 
         if (!head.link_path.empty())
         {
+            typedef typename Path::const_iterator iter_type;
+
             sl_components_composer composer;
-            path::iterator end = head.link_path.end();
-            for (path::iterator i = head.link_path.begin(); i != end; ++i)
-                composer.compose(*i);
+            iter_type end = head.link_path.end();
+            for (iter_type i = head.link_path.begin(); i != end; ++i)
+                composer.compose(detail::to_iso9660_string(*i));
             rec.system_use.append(composer.entry_string());
         }
 
@@ -376,9 +416,9 @@ private:
         return n;
     }
 
-    std::size_t count_directory(const path& ph) const
+    std::size_t count_directory(const Path& ph) const
     {
-        typedef std::map<path,directory_entries>::const_iterator dirs_iter;
+        typedef std::map<Path,directory_entries>::const_iterator dirs_iter;
 
         dirs_iter it = dirs_.find(ph);
         if (it != dirs_.end())
@@ -387,11 +427,11 @@ private:
             return 0u;
     }
 
-    void count_directories(const path& ph, directory_entries& entries)
+    void count_directories(const Path& ph, directory_entries& entries)
     {
         for (std::size_t i = 0, size = entries.size(); i < size; ++i)
         {
-            iso::header& head = entries[i];
+            header_type& head = entries[i];
             if (head.attributes)
             {
                 if (head.is_directory())
@@ -407,7 +447,7 @@ private:
 
     void count_directories()
     {
-        typedef std::map<path,directory_entries>::iterator dirs_iter;
+        typedef std::map<Path,directory_entries>::iterator dirs_iter;
 
         for (dirs_iter i = dirs_.begin(), end = dirs_.end(); i != end; ++i)
             count_directories(i->first, i->second);
@@ -415,7 +455,7 @@ private:
 
     void make_dir_records(
         std::vector<iso_directory_record>& dst,
-        const std::vector<iso::header>& src, iso::rrip_type rrip)
+        const std::vector<header_type>& src, iso::rrip_type rrip)
     {
         std::vector<iso_directory_record> result;
         std::size_t size = src.size();
@@ -423,6 +463,20 @@ private:
 
         for (std::size_t i = 0; i < size; ++i)
             result.push_back(self::make_rrip_dir_record(src[i], rrip));
+
+        dst.swap(result);
+    }
+
+    void make_joliet_dir_records(
+        std::vector<iso_directory_record>& dst,
+        const std::vector<header_type>& src, iso::rrip_type rrip)
+    {
+        std::vector<iso_directory_record> result;
+        std::size_t size = src.size();
+        result.reserve(size);
+
+        for (std::size_t i = 0; i < size; ++i)
+            result.push_back(self::make_joliet_dir_record(src[i]));
 
         dst.swap(result);
     }
@@ -444,9 +498,9 @@ private:
         return false;
     }
 
-    void write_directory_descs(iso::volume_desc& desc, const iso::header& root)
+    void write_directory_descs(volume_desc& desc, const header_type& root)
     {
-        typedef std::map<path,directory_entries>::const_iterator dirs_iter;
+        typedef std::map<Path,directory_entries>::const_iterator dirs_iter;
 
         iso_directory_writer writer(
             lbn_shift_, self::make_dir_record(root), desc.level);
@@ -454,7 +508,7 @@ private:
         {
             std::vector<iso_directory_record> tmp;
             self::make_dir_records(tmp,i->second, iso::rrip_none);
-            writer.add(i->first, tmp);
+            writer.add(to_iso9660_path(i->first), tmp);
         }
 
         const iso_path_table_info& info = writer.write(sink_);
@@ -465,9 +519,9 @@ private:
     }
 
     void write_rock_ridge_directory_descs(
-        iso::volume_desc& desc, const iso::header& root)
+        volume_desc& desc, const header_type& root)
     {
-        typedef std::map<path,directory_entries>::const_iterator dirs_iter;
+        typedef std::map<Path,directory_entries>::const_iterator dirs_iter;
 
         rock_ridge_directory_writer writer(
             lbn_shift_, self::make_rrip_dir_record(root, desc.rrip),
@@ -476,7 +530,7 @@ private:
         {
             std::vector<iso_directory_record> tmp;
             self::make_dir_records(tmp,i->second, desc.rrip);
-            writer.add(i->first, tmp);
+            writer.add(to_iso9660_path(i->first), tmp);
         }
 
         const iso_path_table_info& info = writer.write(sink_);
@@ -487,16 +541,16 @@ private:
     }
 
     void write_joliet_directory_descs(
-        iso::volume_desc& desc, const iso::header& root)
+        volume_desc& desc, const header_type& root)
     {
-        typedef std::map<path,directory_entries>::const_iterator dirs_iter;
+        typedef std::map<Path,directory_entries>::const_iterator dirs_iter;
 
-        joliet_directory_writer writer(
+        joliet_directory_writer<Path> writer(
             lbn_shift_, self::make_rrip_dir_record(root, desc.rrip));
         for (dirs_iter i = dirs_.begin(), end = dirs_.end(); i != end; ++i)
         {
             std::vector<iso_directory_record> tmp;
-            self::make_dir_records(tmp,i->second, desc.rrip);
+            self::make_joliet_dir_records(tmp,i->second, desc.rrip);
             writer.add(i->first, tmp);
         }
 
@@ -520,7 +574,7 @@ private:
         raw.effective_time = volume_info_.effective_time;
     }
 
-    void write_volume_desc(const iso::volume_desc& desc)
+    void write_volume_desc(const volume_desc& desc)
     {
         iso::volume_descriptor raw;
         this->set_volume_info(raw);
@@ -554,7 +608,7 @@ private:
         iostreams::binary_write(sink_, raw);
     }
 
-    void write_joliet_volume_desc(const iso::volume_desc& desc)
+    void write_joliet_volume_desc(const volume_desc& desc)
     {
         iso::volume_descriptor raw;
         this->set_volume_info(raw);
@@ -591,7 +645,7 @@ private:
     void write_volume_descs_set_terminator()
     {
         if (!has_primary_volume_desc())
-            volume_descs_.push_back(iso::volume_desc());
+            volume_descs_.push_back(volume_desc());
 
         for (std::size_t i = 0; i < volume_descs_.size(); ++i)
             iostreams::blocking_write(sink_, block_);

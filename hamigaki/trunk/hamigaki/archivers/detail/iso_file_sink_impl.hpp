@@ -1,6 +1,6 @@
 // iso_file_sink_impl.hpp: ISO file sink implementation
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -14,16 +14,20 @@
 
 namespace hamigaki { namespace archivers { namespace detail {
 
-template<class Sink>
+template<class Sink, class Path=boost::filesystem::path>
 class basic_iso_file_sink_impl : private boost::noncopyable
 {
 private:
-    typedef basic_iso_file_sink_impl<Sink> self;
-    typedef basic_raw_iso_file_sink_impl<Sink> impl_type;
+    typedef basic_iso_file_sink_impl<Sink,Path> self;
+    typedef basic_raw_iso_file_sink_impl<Sink,Path> impl_type;
 
     static const std::size_t logical_sector_size = 2048;
 
 public:
+    typedef Path path_type;
+    typedef iso::basic_header<Path> header_type;
+    typedef iso::basic_volume_desc<Path> volume_desc;
+
     explicit basic_iso_file_sink_impl(
             const Sink& sink, const iso::volume_info& info=iso::volume_info(),
             boost::uint32_t max_extent_size = 0)
@@ -44,12 +48,12 @@ public:
         }
     }
 
-    void add_volume_desc(const iso::volume_desc& desc)
+    void add_volume_desc(const volume_desc& desc)
     {
         impl_.add_volume_desc(desc);
     }
 
-    void create_entry(const iso::header& head)
+    void create_entry(const header_type& head)
     {
         pos_ = 0;
         size_ = head.file_size;
@@ -128,7 +132,7 @@ public:
 
 private:
     impl_type impl_;
-    iso::header header_;
+    header_type header_;
     boost::uint64_t pos_;
     boost::uint64_t size_;
     boost::uint64_t max_single_extent_size_;

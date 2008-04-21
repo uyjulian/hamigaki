@@ -26,16 +26,20 @@
 
 namespace hamigaki { namespace archivers { namespace iso {
 
-struct header
+template<class Path>
+struct basic_header
 {
-    boost::filesystem::path path;
+    typedef Path path_type;
+    typedef typename Path::string_type string_type;
+
+    Path path;
     boost::uint16_t version;
-    boost::filesystem::path link_path;
+    Path link_path;
     boost::uint32_t data_pos;
     boost::uint64_t file_size;
     binary_date_time recorded_time;
     boost::uint8_t flags;
-    std::string system_use;
+    string_type system_use;
     boost::optional<posix::file_attributes> attributes;
     boost::optional<filesystem::device_number> device_number;
     date_time creation_time;
@@ -46,7 +50,7 @@ struct header
     date_time expiration_time;
     date_time effective_time;
 
-    header() : version(0), data_pos(0), file_size(0), flags(0)
+    basic_header() : version(0), data_pos(0), file_size(0), flags(0)
     {
     }
 
@@ -131,15 +135,19 @@ struct volume_info
     }
 };
 
-struct volume_desc
+template<class Path>
+struct basic_volume_desc
 {
+    typedef Path path_type;
+    typedef typename Path::string_type string_type;
+
     unsigned level;
     rrip_type rrip;
     boost::uint8_t type;
     boost::uint8_t version;
     boost::uint8_t flags;
-    std::string system_id;
-    std::string volume_id;
+    string_type system_id;
+    string_type volume_id;
     std::string escape_sequences;
     boost::uint32_t path_table_size;
     boost::uint32_t l_path_table_pos;
@@ -147,17 +155,17 @@ struct volume_desc
     boost::uint32_t m_path_table_pos;
     boost::uint32_t m_path_table_pos2;
     directory_record root_record;
-    std::string volume_set_id;
-    std::string publisher_id;
-    std::string data_preparer_id;
-    std::string application_id;
-    boost::filesystem::path copyright_file_id;
-    boost::filesystem::path abstract_file_id;
-    boost::filesystem::path bibliographic_file_id;
+    string_type volume_set_id;
+    string_type publisher_id;
+    string_type data_preparer_id;
+    string_type application_id;
+    Path copyright_file_id;
+    Path abstract_file_id;
+    Path bibliographic_file_id;
     boost::uint8_t file_structure_version;
     char application_use[512];
 
-    volume_desc()
+    basic_volume_desc()
         : level(1u), rrip(rrip_none), type(1u)
         , version(1u), flags(0u), path_table_size(0)
         , l_path_table_pos(0), l_path_table_pos2(0)
@@ -202,6 +210,13 @@ struct volume_desc
         return version == 2u;
     }
 };
+
+typedef basic_header<boost::filesystem::path> header;
+typedef basic_volume_desc<boost::filesystem::path> volume_desc;
+#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+typedef basic_header<boost::filesystem::wpath> wheader;
+typedef basic_volume_desc<boost::filesystem::wpath> wvolume_desc;
+#endif
 
 } } } // End namespaces iso, archivers, hamigaki.
 

@@ -1,6 +1,6 @@
 // joliet_directory_writer.hpp: Joliet directory extent writer
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -11,7 +11,7 @@
 #define HAMIGAKI_ARCHIVERS_DETAIL_JOLIET_DIRECTORY_WRITER_HPP
 
 #include <hamigaki/archivers/detail/iso_path_table.hpp>
-#include <hamigaki/archivers/detail/ucs2.hpp>
+#include <hamigaki/archivers/detail/iso_string.hpp>
 #include <hamigaki/archivers/iso/headers.hpp>
 #include <hamigaki/dec_format.hpp>
 #include <boost/filesystem/path.hpp>
@@ -24,24 +24,28 @@
 
 namespace hamigaki { namespace archivers { namespace detail {
 
-inline std::string make_joliet_dir_id(const std::string& s)
+template<class String>
+inline std::string make_joliet_dir_id(const String& s)
 {
     if (s.empty())
         return std::string(1, '\0');
     else
-        return detail::narrow_to_ucs2be(s);
+        return detail::to_joliet_string(s);
 }
 
+template<class Path>
 class joliet_directory_writer : private boost::noncopyable
 {
 private:
     static const std::size_t logical_sector_size = 2048;
 
-    typedef boost::filesystem::path path;
     typedef boost::ptr_vector<iso_path_table_record> path_table_records;
     typedef std::set<iso_directory_record> directory_entries;
 
 public:
+    typedef Path path_type;
+    typedef typename Path::string_type string_type;
+
     joliet_directory_writer(
         boost::uint32_t lbn_shift, const iso_directory_record& root
     )
@@ -49,7 +53,7 @@ public:
     {
     }
 
-    void add(const path& ph, const std::vector<iso_directory_record>& recs)
+    void add(const Path& ph, const std::vector<iso_directory_record>& recs)
     {
         directory_entries entries;
 
@@ -79,7 +83,7 @@ public:
             cur_dir.data_pos = 0;
             cur_dir.data_size = 0;
             cur_dir.flags = iso::file_flags::directory;
-            cur_dir.file_id = detail::narrow_to_ucs2be(ph.leaf());
+            cur_dir.file_id = detail::to_joliet_string(ph.leaf());
 
             cur_dir = *rec.entries.find(cur_dir);
             cur_dir.file_id.assign(1u, '\x00');
@@ -94,7 +98,7 @@ public:
         for (std::size_t i = 0; i < size; ++i)
         {
             iso_directory_record rec(recs[i]);
-            rec.file_id = detail::narrow_to_ucs2be(rec.file_id);
+            rec.file_id = rec.file_id;
             entries.insert(rec);
         }
 
@@ -184,7 +188,7 @@ private:
     }
 
     boost::uint16_t find_path(
-        std::size_t level, boost::uint16_t parent, const std::string& s) const
+        std::size_t level, boost::uint16_t parent, const string_type& s) const
     {
         const path_table_records& table = path_table_.at(level);
 
@@ -200,11 +204,13 @@ private:
         return i - table.begin();
     }
 
-    std::pair<std::size_t,boost::uint16_t> find_directory(const path& ph) const
+    std::pair<std::size_t,boost::uint16_t> find_directory(const Path& ph) const
     {
+        typedef typename Path::const_iterator iter_type;
+
         std::size_t level = 0;
         boost::uint16_t parent = 0;
-        for (path::iterator cur = ph.begin(), end = ph.end(); cur != end; ++cur)
+        for (iter_type cur = ph.begin(), end = ph.end(); cur != end; ++cur)
             parent = this->find_path(++level, parent, *cur);
 
         return std::make_pair(level, parent);
