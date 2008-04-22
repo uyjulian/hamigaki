@@ -30,7 +30,6 @@ template<class Path>
 struct basic_header
 {
     typedef Path path_type;
-    typedef typename Path::string_type string_type;
 
     Path path;
     boost::uint16_t version;
@@ -39,7 +38,7 @@ struct basic_header
     boost::uint64_t file_size;
     binary_date_time recorded_time;
     boost::uint8_t flags;
-    string_type system_use;
+    std::string system_use;
     boost::optional<posix::file_attributes> attributes;
     boost::optional<filesystem::device_number> device_number;
     date_time creation_time;

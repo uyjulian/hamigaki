@@ -18,11 +18,11 @@
 
 namespace hamigaki { namespace archivers {
 
-template<class Source>
+template<class Source, class Path=boost::filesystem::path>
 class basic_raw_iso_file_source
 {
 private:
-    typedef detail::basic_raw_iso_file_source_impl<Source> impl_type;
+    typedef detail::basic_raw_iso_file_source_impl<Source,Path> impl_type;
 
 public:
     typedef char char_type;
@@ -32,7 +32,9 @@ public:
         , boost::iostreams::device_tag
     {};
 
-    typedef iso::header header_type;
+    typedef Path path_type;
+    typedef iso::basic_header<Path> header_type;
+    typedef iso::basic_volume_desc<Path> volume_desc;
 
     explicit basic_raw_iso_file_source(const Source& src)
         : pimpl_(new impl_type(src))
@@ -44,12 +46,12 @@ public:
         return pimpl_->next_entry();
     }
 
-    iso::header header() const
+    header_type header() const
     {
         return pimpl_->header();
     }
 
-    const std::vector<iso::volume_desc>& volume_descs() const
+    const std::vector<volume_desc>& volume_descs() const
     {
         return pimpl_->volume_descs();
     }
@@ -78,7 +80,9 @@ public:
         , boost::iostreams::device_tag
     {};
 
+    typedef boost::filesystem::path path_type;
     typedef iso::header header_type;
+    typedef iso::volume_desc volume_desc;
 
     explicit raw_iso_file_source(const std::string& filename)
         : impl_(iostreams::file_source(filename, BOOST_IOS::binary))
@@ -231,6 +235,54 @@ private:
 };
 
 #if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+class wraw_iso_file_source
+{
+public:
+    typedef char char_type;
+
+    struct category
+        : boost::iostreams::input
+        , boost::iostreams::device_tag
+    {};
+
+    typedef boost::filesystem::wpath path_type;
+    typedef iso::wheader header_type;
+    typedef iso::wvolume_desc volume_desc;
+
+    explicit wraw_iso_file_source(const std::string& filename)
+        : impl_(iostreams::file_source(filename, BOOST_IOS::binary))
+    {
+    }
+
+    bool next_entry()
+    {
+        return impl_.next_entry();
+    }
+
+    iso::wheader header() const
+    {
+        return impl_.header();
+    }
+
+    const std::vector<iso::wvolume_desc>& volume_descs() const
+    {
+        return impl_.volume_descs();
+    }
+
+    void select_volume_desc(std::size_t index, bool use_rrip=true)
+    {
+        impl_.select_volume_desc(index, use_rrip);
+    }
+
+    std::streamsize read(char* s, std::streamsize n)
+    {
+        return impl_.read(s, n);
+    }
+
+private:
+    basic_raw_iso_file_source<iostreams::file_source,path_type> impl_;
+};
+
 class wraw_iso_file_sink
 {
 public:

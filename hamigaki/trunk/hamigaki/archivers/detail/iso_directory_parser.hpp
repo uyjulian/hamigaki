@@ -1,6 +1,6 @@
 // iso_directory_parser.hpp: ISO 9660 directory parser base class
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -17,9 +17,44 @@
 
 namespace hamigaki { namespace archivers { namespace detail {
 
+template<class CharT>
+struct iso_path_traits;
+
+template<>
+struct iso_path_traits<char>
+{
+    static const char* current_directory()
+    {
+        return ".";
+    }
+
+    static const char* parent_directory()
+    {
+        return "..";
+    }
+};
+
+template<>
+struct iso_path_traits<wchar_t>
+{
+    static const wchar_t* current_directory()
+    {
+        return L".";
+    }
+
+    static const wchar_t* parent_directory()
+    {
+        return L"..";
+    }
+};
+
+template<class Path>
 class iso_directory_parser : private boost::noncopyable
 {
 public:
+    typedef Path path_type;
+    typedef iso::basic_header<Path> header_type;
+
     virtual ~iso_directory_parser(){}
 
     void fix_records(std::vector<iso_directory_record>& records)
@@ -27,14 +62,14 @@ public:
         this->do_fix_records(records);
     }
 
-    iso::header make_header(const iso_directory_record& rec)
+    header_type make_header(const iso_directory_record& rec)
     {
         return this->do_make_header(rec);
     }
 
 private:
     virtual void do_fix_records(std::vector<iso_directory_record>& records) = 0;
-    virtual iso::header do_make_header(const iso_directory_record& rec) = 0;
+    virtual header_type do_make_header(const iso_directory_record& rec) = 0;
 };
 
 } } } // End namespaces detail, archivers, hamigaki.

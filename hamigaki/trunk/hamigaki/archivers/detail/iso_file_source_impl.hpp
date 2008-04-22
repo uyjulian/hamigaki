@@ -1,6 +1,6 @@
 // iso_file_source_impl.hpp: ISO file source implementation
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -14,16 +14,20 @@
 
 namespace hamigaki { namespace archivers { namespace detail {
 
-template<class Source>
+template<class Source, class Path=boost::filesystem::path>
 class basic_iso_file_source_impl : private boost::noncopyable
 {
 private:
-    typedef basic_iso_file_source_impl<Source> self;
-    typedef basic_raw_iso_file_source_impl<Source> impl_type;
+    typedef basic_iso_file_source_impl<Source,Path> self;
+    typedef basic_raw_iso_file_source_impl<Source,Path> impl_type;
 
     static const std::size_t logical_sector_size = 2048;
 
 public:
+    typedef Path path_type;
+    typedef iso::basic_header<Path> header_type;
+    typedef iso::basic_volume_desc<Path> volume_desc;
+
     explicit basic_iso_file_source_impl(const Source& src)
         : impl_(src), pos_(0), total_pos_(0)
     {
@@ -52,7 +56,7 @@ public:
         return result;
     }
 
-    iso::header header() const
+    header_type header() const
     {
         return header_;
     }
@@ -88,7 +92,7 @@ public:
             return impl_.read(s, n);
     }
 
-    const std::vector<iso::volume_desc>& volume_descs() const
+    const std::vector<volume_desc>& volume_descs() const
     {
         return impl_.volume_descs();
     }
@@ -100,7 +104,7 @@ public:
 
 private:
     impl_type impl_;
-    iso::header header_;
+    header_type header_;
     boost::uint64_t pos_;
     boost::uint64_t total_pos_;
 };

@@ -1,6 +1,6 @@
 // rock_ridge_directory_parser.hpp: IEEE P1282 Rock Ridge directory parser
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -90,8 +90,9 @@ inline bool rock_ridge_fix_record(iso_directory_record& rec)
     return true;
 }
 
+template<class Path>
 inline void parse_tf_system_use_entry(
-    iso::header& header, const char* s, std::size_t size)
+    iso::basic_header<Path>& header, const char* s, std::size_t size)
 {
     using iso::tf_flags;
 
@@ -224,8 +225,12 @@ inline void parse_tf_system_use_entry(
     }
 }
 
-inline void parse_rock_ridge(iso::header& header, iso::rrip_type rrip)
+template<class Path>
+inline void
+parse_rock_ridge(iso::basic_header<Path>& header, iso::rrip_type rrip)
 {
+    typedef typename Path::string_type string_type;
+
     const std::string& su = header.system_use;
 
     const std::size_t head_size =
@@ -320,20 +325,28 @@ inline void parse_rock_ridge(iso::header& header, iso::rrip_type rrip)
     }
 
     if (sl_parser.valid())
-        header.link_path = sl_parser.path();
+    {
+        header.link_path =
+            detail::from_iso9660_string<string_type>(sl_parser.path().string());
+    }
 };
 
-class rock_ridge_directory_parser : public iso_directory_parser
+template<class Path>
+class rock_ridge_directory_parser : public iso_directory_parser<Path>
 {
 public:
+    typedef Path path_type;
+    typedef iso::basic_header<Path> header_type;
+
     rock_ridge_directory_parser(
-            std::auto_ptr<iso_directory_parser>& pimpl, iso::rrip_type rrip)
+        std::auto_ptr<iso_directory_parser<Path> >& pimpl,
+        iso::rrip_type rrip)
         : pimpl_(pimpl), rrip_(rrip)
     {
     }
 
 private:
-    std::auto_ptr<iso_directory_parser> pimpl_;
+    std::auto_ptr<iso_directory_parser<Path> > pimpl_;
     iso::rrip_type rrip_;
 
     void do_fix_records(std::vector<iso_directory_record>& records) // virtual
@@ -350,11 +363,9 @@ private:
         records.swap(tmp);
     }
 
-    iso::header do_make_header(const iso_directory_record& rec) // virtual
+    header_type do_make_header(const iso_directory_record& rec) // virtual
     {
-        using namespace boost::filesystem;
-
-        iso::header head = pimpl_->make_header(rec);
+        header_type head = pimpl_->make_header(rec);
         detail::parse_rock_ridge(head, rrip_);
         return head;
     }

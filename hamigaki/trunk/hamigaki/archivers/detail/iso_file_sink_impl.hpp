@@ -14,7 +14,7 @@
 
 namespace hamigaki { namespace archivers { namespace detail {
 
-template<class Sink, class Path=boost::filesystem::path>
+template<class Sink, class Path>
 class basic_iso_file_sink_impl : private boost::noncopyable
 {
 private:

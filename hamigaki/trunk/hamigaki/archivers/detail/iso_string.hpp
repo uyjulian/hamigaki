@@ -28,6 +28,18 @@ inline std::string to_joliet_string(const std::string& s)
 {
     return detail::narrow_to_ucs2be(s);
 }
+
+template<class String>
+inline String from_iso9660_string(const std::string& s)
+{
+    return s;
+}
+
+template<class String>
+inline String from_joliet_string(const std::string& s)
+{
+    return detail::ucs2be_to_narrow(s);
+}
 #if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
 inline std::string to_iso9660_string(const std::wstring& s)
 {
@@ -37,6 +49,18 @@ inline std::string to_iso9660_string(const std::wstring& s)
 inline std::string to_joliet_string(const std::wstring& s)
 {
     return charset::to_utf16be(s);
+}
+
+template<>
+inline std::wstring from_iso9660_string<std::wstring>(const std::string& s)
+{
+    return charset::from_code_page(s,0);
+}
+
+template<>
+inline std::wstring from_joliet_string<std::wstring>(const std::string& s)
+{
+    return charset::from_utf16be(s);
 }
 #endif // !defined(BOOST_FILESYSTEM_NARROW_ONLY)
 

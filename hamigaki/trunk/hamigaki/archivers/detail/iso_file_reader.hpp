@@ -1,6 +1,6 @@
 // iso_file_reader.hpp: ISO image file reader
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -16,18 +16,21 @@
 #include <hamigaki/archivers/iso/file_flags.hpp>
 #include <hamigaki/integer/auto_min.hpp>
 #include <hamigaki/dec_format.hpp>
+#include <hamigaki/static_widen.hpp>
 #include <memory>
 #include <stack>
 
 namespace hamigaki { namespace archivers { namespace detail {
 
-inline void parse_iso_file_version(iso::header& h)
+template<class Path>
+inline void parse_iso_file_version(iso::basic_header<Path>& h)
 {
-    using namespace boost::filesystem;
+    typedef typename Path::string_type string_type;
+    typedef typename Path::value_type char_type;
 
-    const std::string id = h.path.string();
-    std::size_t delim = id.rfind(';');
-    if (delim == std::string::npos)
+    const string_type id = h.path.string();
+    std::size_t delim = id.rfind(static_widen<char_type,';'>::value);
+    if (delim == string_type::npos)
         return;
 
     std::size_t size = id.size();
@@ -37,23 +40,26 @@ inline void parse_iso_file_version(iso::header& h)
     for (std::size_t i = delim+1; i < size; ++i)
     {
         char c = id[i];
-        if ((c < '0') || (c > '9'))
+        if ((c < static_widen<char_type,'0'>::value) ||
+            (c > static_widen<char_type,'9'>::value) )
+        {
             return;
+        }
     }
 
-    const char* s = id.c_str();
-    const char* beg = s + delim + 1;
-    const char* end = s + size;
+    const char_type* s = id.c_str();
+    const char_type* beg = s + delim + 1;
+    const char_type* end = s + size;
 
     boost::uint32_t ver = hamigaki::from_dec<boost::uint32_t>(beg, end);
     if (ver > 32767u)
         return;
 
-    h.path = path(id.substr(0, delim), no_check);
+    h.path = Path(id.substr(0, delim));
     h.version = static_cast<boost::uint16_t>(ver);
 }
 
-template<class Source>
+template<class Source, class Path>
 class iso_file_reader : private boost::noncopyable
 {
 private:
@@ -61,9 +67,13 @@ private:
 
 public:
     typedef Source source_type;
+    typedef Path path_type;
+    typedef iso::basic_header<Path> header_type;
+    typedef iso::basic_volume_desc<Path> volume_desc;
 
-    iso_file_reader(Source& src, std::auto_ptr<iso_directory_parser>& parser,
-            const iso::volume_info& info, const iso::volume_desc& desc)
+    iso_file_reader(Source& src,
+            std::auto_ptr<iso_directory_parser<Path> >& parser,
+            const iso::volume_info& info, const volume_desc& desc)
         : src_(src), lbn_shift_(calc_lbn_shift(info.logical_block_size))
         , parser_(parser), pos_(0)
     {
@@ -105,7 +115,7 @@ public:
         return true;
     }
 
-    iso::header header() const
+    header_type header() const
     {
         return header_;
     }
@@ -140,10 +150,10 @@ public:
 private:
     Source& src_;
     const boost::uint32_t lbn_shift_;
-    std::auto_ptr<iso_directory_parser> parser_;
+    std::auto_ptr<iso_directory_parser<Path> > parser_;
     std::vector<directory_record> records_;
-    iso::header header_;
-    boost::filesystem::path dir_path_;
+    header_type header_;
+    Path dir_path_;
     std::stack<boost::uint32_t> stack_;
     std::size_t index_;
     boost::uint64_t pos_;
