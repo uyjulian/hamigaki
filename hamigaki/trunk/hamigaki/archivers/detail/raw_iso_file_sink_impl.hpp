@@ -274,13 +274,9 @@ private:
         s.append(buf, sizeof(buf));
     }
 
-    static iso_directory_record
-        make_rrip_dir_record(const header_type& head, iso::rrip_type rrip)
+    static iso_directory_record& make_rrip_dir_record(
+        iso_directory_record& rec, const header_type& head, iso::rrip_type rrip)
     {
-        iso_directory_record rec = self::make_dir_record(head);
-        if (rrip == iso::rrip_none)
-            return rec;
-
         if (head.attributes)
         {
             const iso::posix::file_attributes& attr = *head.attributes;
@@ -462,7 +458,13 @@ private:
         result.reserve(size);
 
         for (std::size_t i = 0; i < size; ++i)
-            result.push_back(self::make_rrip_dir_record(src[i], rrip));
+        {
+            const header_type& head = src[i];
+            iso_directory_record rec = self::make_dir_record(head);
+            if (rrip != iso::rrip_none)
+                self::make_rrip_dir_record(rec, head, rrip);
+            result.push_back(rec);
+        }
 
         dst.swap(result);
     }
@@ -476,7 +478,13 @@ private:
         result.reserve(size);
 
         for (std::size_t i = 0; i < size; ++i)
-            result.push_back(self::make_joliet_dir_record(src[i]));
+        {
+            const header_type& head = src[i];
+            iso_directory_record rec = self::make_joliet_dir_record(head);
+            if (rrip != iso::rrip_none)
+                self::make_rrip_dir_record(rec, head, rrip);
+            result.push_back(rec);
+        }
 
         dst.swap(result);
     }
@@ -523,9 +531,11 @@ private:
     {
         typedef std::map<Path,directory_entries>::const_iterator dirs_iter;
 
+        iso_directory_record root_rec = self::make_dir_record(root);
+        if (desc.rrip != iso::rrip_none)
+            self::make_rrip_dir_record(root_rec, root, desc.rrip);
         rock_ridge_directory_writer writer(
-            lbn_shift_, self::make_rrip_dir_record(root, desc.rrip),
-            desc.level, desc.rrip);
+            lbn_shift_, root_rec, desc.level, desc.rrip);
         for (dirs_iter i = dirs_.begin(), end = dirs_.end(); i != end; ++i)
         {
             std::vector<iso_directory_record> tmp;
@@ -545,8 +555,10 @@ private:
     {
         typedef std::map<Path,directory_entries>::const_iterator dirs_iter;
 
-        joliet_directory_writer<Path> writer(
-            lbn_shift_, self::make_rrip_dir_record(root, desc.rrip));
+        iso_directory_record root_rec = self::make_joliet_dir_record(root);
+        if (desc.rrip != iso::rrip_none)
+            self::make_rrip_dir_record(root_rec, root, desc.rrip);
+        joliet_directory_writer<Path> writer(lbn_shift_, root_rec);
         for (dirs_iter i = dirs_.begin(), end = dirs_.end(); i != end; ++i)
         {
             std::vector<iso_directory_record> tmp;
