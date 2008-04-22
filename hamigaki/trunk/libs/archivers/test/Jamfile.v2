@@ -52,6 +52,7 @@ local tests =
     [ run iso9660_lv3_test.cpp : ]
     [ run iso_date_time_test.cpp : ]
     [ run joliet_test.cpp : ]
+    [ run joliet_wide_test.cpp : ]
     [ run lzh_h0_test.cpp : ]
     [ run lzh_h1_test.cpp : ]
     [ run lzh_h2_test.cpp : ]
