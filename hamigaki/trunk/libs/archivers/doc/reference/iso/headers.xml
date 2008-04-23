@@ -4,7 +4,7 @@
 <!--
   Hamigaki.Archivers Library Document Source
 
-  Copyright Takeshi Mouri 2007.
+  Copyright Takeshi Mouri 2007, 2008.
   Distributed under the Boost Software License, Version 1.0.
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
@@ -15,8 +15,16 @@
   <namespace name="hamigaki">
     <namespace name="archivers">
       <namespace name="iso">
-        <struct name="header">
+        <struct name="basic_header">
+          <template>
+            <template-type-parameter name="Path"/>
+          </template>
+
           <purpose><para>ISO 9660 エントリのヘッダ情報を表す構造体</para></purpose>
+
+          <typedef name="path_type">
+            <type>Path</type>
+          </typedef>
 
           <method-group name="queries">
             <method name="is_regular" cv="const">
@@ -51,7 +59,7 @@
           </method-group>
 
           <data-member name="path">
-            <type>boost::filesystem::path</type>
+            <type>Path</type>
           </data-member>
 
           <data-member name="version">
@@ -59,7 +67,7 @@
           </data-member>
 
           <data-member name="link_path">
-            <type>boost::filesystem::path</type>
+            <type>Path</type>
           </data-member>
 
           <data-member name="data_pos">
@@ -217,6 +225,14 @@
           </description>
         </struct>
 
+        <typedef name="header">
+          <type><classname>basic_header</classname>&lt;boost::filesystem::path&gt;</type>
+        </typedef>
+
+        <typedef name="wheader">
+          <type><classname>basic_header</classname>&lt;boost::filesystem::wpath&gt;</type>
+        </typedef>
+
         <struct name="volume_info">
           <purpose><para>ボリューム記述子の共通部分を表す構造体</para></purpose>
 
@@ -320,8 +336,20 @@
           </description>
         </struct>
 
-        <struct name="volume_desc">
+        <struct name="basic_volume_desc">
+          <template>
+            <template-type-parameter name="Path"/>
+          </template>
+
           <purpose><para>ボリューム記述子を表す構造体</para></purpose>
+
+          <typedef name="path_type">
+            <type>Path</type>
+          </typedef>
+
+          <typedef name="string_type">
+            <type>typename Path::string_type</type>
+          </typedef>
 
           <method-group name="queries">
             <method name="is_joliet" cv="const">
@@ -373,11 +401,11 @@
           </data-member>
 
           <data-member name="system_id">
-            <type>std::string</type>
+            <type>string_type</type>
           </data-member>
 
           <data-member name="volume_id">
-            <type>std::string</type>
+            <type>string_type</type>
           </data-member>
 
           <data-member name="escape_sequences">
@@ -409,31 +437,31 @@
           </data-member>
 
           <data-member name="volume_set_id">
-            <type>std::string</type>
+            <type>string_type</type>
           </data-member>
 
           <data-member name="publisher_id">
-            <type>std::string</type>
+            <type>string_type</type>
           </data-member>
 
           <data-member name="data_preparer_id">
-            <type>std::string</type>
+            <type>string_type</type>
           </data-member>
 
           <data-member name="application_id">
-            <type>std::string</type>
+            <type>string_type</type>
           </data-member>
 
           <data-member name="copyright_file_id">
-            <type>boost::filesystem::path</type>
+            <type>Path</type>
           </data-member>
 
           <data-member name="abstract_file_id">
-            <type>boost::filesystem::path</type>
+            <type>Path</type>
           </data-member>
 
           <data-member name="bibliographic_file_id">
-            <type>boost::filesystem::path</type>
+            <type>Path</type>
           </data-member>
 
           <data-member name="file_structure_version">
@@ -577,6 +605,15 @@
             </para>
           </description>
         </struct>
+
+        <typedef name="volume_desc">
+          <type><classname>basic_volume_desc</classname>&lt;boost::filesystem::path&gt;</type>
+        </typedef>
+
+        <typedef name="wvolume_desc">
+          <type><classname>basic_volume_desc</classname>&lt;boost::filesystem::wpath&gt;</type>
+        </typedef>
+
       </namespace>
     </namespace>
   </namespace>

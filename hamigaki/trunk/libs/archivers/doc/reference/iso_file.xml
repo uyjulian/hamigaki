@@ -4,7 +4,7 @@
 <!--
   Hamigaki.Archivers Library Document Source
 
-  Copyright Takeshi Mouri 2007.
+  Copyright Takeshi Mouri 2007, 2008.
   Distributed under the Boost Software License, Version 1.0.
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
@@ -17,6 +17,9 @@
       <class name="basic_iso_file_source">
         <template>
           <template-type-parameter name="Source"/>
+          <template-type-parameter name="Path">
+            <default>boost::filesystem::path</default>
+          </template-type-parameter>
         </template>
 
         <purpose><para>ISOイメージファイルへの読み込み専用アクセスを提供するSourceモデル</para></purpose>
@@ -36,8 +39,16 @@
           <type><emphasis>implementation defined</emphasis></type>
         </typedef>
 
+        <typedef name="path_type">
+          <type>Path</type>
+        </typedef>
+
         <typedef name="header_type">
-          <type><classname>iso::header</classname></type>
+          <type><classname>iso::basic_header</classname>&lt;Path&gt;</type>
+        </typedef>
+
+        <typedef name="volume_desc">
+          <type><classname>iso::basic_volume_desc</classname>&lt;Path&gt;</type>
         </typedef>
 
         <constructor specifiers="explicit">
@@ -66,14 +77,14 @@
           </method>
 
           <method name="header" cv="const">
-            <type><classname>iso::header</classname></type>
+            <type><classname>iso::basic_header</classname>&lt;Path&gt;</type>
             <returns><simpara>ヘッダ情報</simpara></returns>
           </method>
         </method-group>
 
         <method-group name="queries">
           <method name="volume_descs" cv="const">
-            <type>std::vector&lt;<classname>iso::volume_desc</classname>&gt;</type>
+            <type>std::vector&lt;<classname>iso::basic_volume_desc</classname>&lt;Path&gt; &gt;</type>
             <returns><simpara>ボリューム記述子のベクタ</simpara></returns>
           </method>
         </method-group>
@@ -106,9 +117,25 @@
         </constructor>
       </class>
 
+      <class name="wiso_file_source">
+        <inherit access="public">
+          <type><classname>basic_iso_file_source</classname>&lt;<classname>hamigaki::iostreams::file_source</classname>, boost::filesystem::wpath&gt;</type>
+          <purpose>Exposition only</purpose>
+        </inherit>
+
+        <constructor specifiers="explicit">
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+        </constructor>
+      </class>
+
       <class name="basic_iso_file_sink">
         <template>
           <template-type-parameter name="Sink"/>
+          <template-type-parameter name="Path">
+            <default>boost::filesystem::path</default>
+          </template-type-parameter>
         </template>
 
         <purpose><para>ISOイメージファイルへの書き込み専用アクセスを提供するSinkモデル</para></purpose>
@@ -129,8 +156,16 @@
           <type><emphasis>implementation defined</emphasis></type>
         </typedef>
 
+        <typedef name="path_type">
+          <type>Path</type>
+        </typedef>
+
         <typedef name="header_type">
-          <type><classname>iso::header</classname></type>
+          <type><classname>iso::basic_header</classname>&lt;Path&gt;</type>
+        </typedef>
+
+        <typedef name="volume_desc">
+          <type><classname>iso::basic_volume_desc</classname>&lt;Path&gt;</type>
         </typedef>
 
         <constructor>
@@ -167,7 +202,7 @@
           <method name="create_entry">
             <type>void</type>
             <parameter name="head">
-              <paramtype>const <classname>iso::header</classname>&amp;</paramtype>
+              <paramtype>const <classname>iso::basic_header</classname>&lt;Path&gt;&amp;</paramtype>
             </parameter>
             <effects><simpara>新しいエントリを作成し、書き込みの対象とする。基本ボリューム記述子が<code><methodname>add_volume_desc</methodname>()</code>によって追加されていない場合は、空の基本ボリューム記述子が追加される。</simpara></effects>
           </method>
@@ -187,7 +222,7 @@
           <method name="add_volume_desc">
             <type>void</type>
             <parameter name="desc">
-              <paramtype>const <classname>iso::volume_desc</classname>&amp;</paramtype>
+              <paramtype>const <classname>iso::basic_volume_desc</classname>&lt;Path&gt;&amp;</paramtype>
             </parameter>
             <effects><simpara>ボリューム記述子<code>desc</code>を追加する。</simpara></effects>
           </method>
@@ -214,6 +249,28 @@
           </parameter>
         </constructor>
       </class>
+
+      <class name="wiso_file_sink">
+        <inherit access="public">
+          <type><classname>basic_iso_file_sink</classname>&lt;<classname>hamigaki::iostreams::file_sink</classname>, boost::filesystem::wpath&gt;</type>
+          <purpose>Exposition only</purpose>
+        </inherit>
+
+        <constructor>
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+          <parameter name="info">
+            <paramtype>const <classname>iso::volume_info</classname>&amp;</paramtype>
+            <default>iso::volume_info()</default>
+          </parameter>
+          <parameter name="max_extent_size">
+            <paramtype>boost::uint32_t</paramtype>
+            <default>0</default>
+          </parameter>
+        </constructor>
+      </class>
+
     </namespace>
   </namespace>
 </header>
