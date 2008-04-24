@@ -1,6 +1,6 @@
 // raw_cpio_file_source_impl.hpp: raw cpio file source implementation
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -132,21 +132,19 @@ public:
 
     bool next_entry()
     {
-        using namespace boost::filesystem;
-
         if (boost::uint32_t rest = header_.file_size - pos_)
             iostreams::skip(src_, rest);
         pos_ = 0;
 
         header_ = read_header();
-        if (header_.path == path("TRAILER!!!", no_check))
+        if (header_.path == "TRAILER!!!")
             return false;
         else if (header_.is_symlink())
         {
             boost::scoped_array<char> buf(new char[header_.file_size+1]);
             this->read(buf.get(), header_.file_size);
             buf[header_.file_size] = '\0';
-            header_.link_path = path(buf.get(), no_check);
+            header_.link_path = buf.get();
 
             pos_ = 0;
             header_.file_size = 0;
@@ -179,8 +177,6 @@ private:
 
     cpio::header read_header()
     {
-        using namespace boost::filesystem;
-
         cpio::header head;
         std::size_t name_size = 0;
 
@@ -227,7 +223,7 @@ private:
 
         boost::scoped_array<char> buf(new char[name_size]);
         iostreams::blocking_read(src_, buf.get(), name_size);
-        head.path = path(buf.get(), no_check);
+        head.path = buf.get();
 
         return head;
     }

@@ -1,6 +1,6 @@
 // tar.cpp: a simple tar archiver
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -41,7 +41,6 @@ int main(int argc, char* argv[])
         }
 
         std::setlocale(LC_ALL, "");
-        fs::path::default_name_check(fs::no_check);
 
         // file_descriptor_sink supports 64bit offset
         ar::basic_tar_file_sink<io_ex::file_descriptor_sink>
@@ -102,7 +101,7 @@ int main(int argc, char* argv[])
             {
                 io::copy(
                     io_ex::file_descriptor_source(
-                        head.path.native_file_string(),
+                        head.path.file_string(),
                         std::ios_base::binary),
                     tar
                 );

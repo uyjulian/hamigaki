@@ -1,6 +1,6 @@
 // archive.cpp: multi-format archiver
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -289,7 +289,6 @@ int main(int argc, char* argv[])
         }
 
         std::setlocale(LC_ALL, "");
-        fs::path::default_name_check(fs::no_check);
 
         std::auto_ptr<archiver_base> arc_ptr;
         const std::string filename(argv[1]);
@@ -418,7 +417,7 @@ int main(int argc, char* argv[])
                 {
                     io::copy(
                         io_ex::file_source(
-                            e.path.native_file_string(),
+                            e.path.file_string(),
                             std::ios_base::binary),
                         boost::ref(*arc_ptr)
                     );
@@ -429,7 +428,7 @@ int main(int argc, char* argv[])
 
                     io::copy(
                         io_ex::file_source(
-                            e.path.native_file_string(),
+                            e.path.file_string(),
                             std::ios_base::binary),
                         boost::ref(*arc_ptr)
                     );

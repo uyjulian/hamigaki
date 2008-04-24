@@ -91,8 +91,6 @@ inline T read_oct(const char (&s)[Size])
 
 inline tar::header read_tar_header(const char* block)
 {
-    using namespace boost::filesystem;
-
     tar::raw_header raw;
     hamigaki::binary_read(block, raw);
 
@@ -102,8 +100,8 @@ inline tar::header read_tar_header(const char* block)
     if (!detail::is_valid(raw.uname) || !detail::is_valid(raw.gname))
         throw BOOST_IOSTREAMS_FAILURE("invalid tar header");
 
-    const path name(detail::read_string(raw.name), no_check);
-    const path prefix(detail::read_string(raw.prefix), no_check);
+    const boost::filesystem::path name(detail::read_string(raw.name));
+    const boost::filesystem::path prefix(detail::read_string(raw.prefix));
 
     tar::header head;
 

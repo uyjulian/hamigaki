@@ -1,6 +1,6 @@
 // delete_zip.cpp: delete the specified entry from the ZIP file
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -52,7 +52,6 @@ int main(int argc, char* argv[])
         }
 
         std::setlocale(LC_ALL, "");
-        fs::path::default_name_check(fs::no_check);
 
         fs::path zip_name(argv[1], fs::native);
         const fs::path& bak_name = change_extension(zip_name, ".bak");
@@ -61,8 +60,8 @@ int main(int argc, char* argv[])
         fs::path del_name(argv[2], fs::native);
 
         {
-            ar::raw_zip_file_source src(bak_name.native_file_string());
-            ar::raw_zip_file_sink sink(zip_name.native_file_string());
+            ar::raw_zip_file_source src(bak_name.file_string());
+            ar::raw_zip_file_sink sink(zip_name.file_string());
 
             while (src.next_entry())
             {

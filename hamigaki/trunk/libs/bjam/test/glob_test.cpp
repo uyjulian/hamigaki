@@ -1,6 +1,6 @@
 // glob_test.cpp: test case for glob.hpp
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -23,7 +23,7 @@ void glob_test()
     bjam::string_list result;
     std::string expect;
 
-    fs::path work = fs::current_path();
+    fs::path work = fs::current_path<fs::path>();
 
 #if defined(BOOST_WINDOWS)
     expect = hamigaki_root + "\\Jamfile.v2";
@@ -31,12 +31,12 @@ void glob_test()
     expect = hamigaki_root + "/Jamfile.v2";
 #endif
 
-    result = bjam::glob(work.native_directory_string(), hamigaki_root, "J*.v2");
+    result = bjam::glob(work.directory_string(), hamigaki_root, "J*.v2");
     BOOST_CHECK(std::find(result.begin(),result.end(),expect) != result.end());
 
 
     result = bjam::glob(
-        work.native_directory_string(), hamigaki_root, "j*.v2", true);
+        work.directory_string(), hamigaki_root, "j*.v2", true);
     BOOST_CHECK(std::find(result.begin(),result.end(),expect) != result.end());
 
 
@@ -45,7 +45,7 @@ void glob_test()
 #else
     expect = "././Jamfile.v2";
 #endif
-    result = bjam::glob(work.native_directory_string(), "./.", "J*.v2");
+    result = bjam::glob(work.directory_string(), "./.", "J*.v2");
     BOOST_CHECK(std::find(result.begin(),result.end(),expect) != result.end());
 }
 
@@ -55,7 +55,7 @@ void glob_recursive_test()
     std::string pattern;
     std::string expect;
 
-    fs::path work = fs::current_path();
+    fs::path work = fs::current_path<fs::path>();
 
     pattern = hamigaki_root + "/libs/*/build/J*.v2";
 #if defined(BOOST_WINDOWS)
@@ -63,7 +63,7 @@ void glob_recursive_test()
 #else
     expect = hamigaki_root + "/libs/bjam/build/Jamfile.v2";
 #endif
-    result = bjam::glob_recursive(work.native_directory_string(), pattern);
+    result = bjam::glob_recursive(work.directory_string(), pattern);
     BOOST_CHECK(std::find(result.begin(),result.end(),expect) != result.end());
 
 
@@ -73,7 +73,7 @@ void glob_recursive_test()
 #else
     expect = "././Jamfile.v2";
 #endif
-    result = bjam::glob_recursive(work.native_directory_string(), pattern);
+    result = bjam::glob_recursive(work.directory_string(), pattern);
     BOOST_CHECK(std::find(result.begin(),result.end(),expect) != result.end());
 }
 

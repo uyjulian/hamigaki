@@ -1,6 +1,6 @@
 // iso.cpp: a simple ISO image archiver program
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -31,7 +31,6 @@ int main(int argc, char* argv[])
         }
 
         std::setlocale(LC_ALL, "");
-        fs::path::default_name_check(fs::no_check);
 
         ar::iso_file_sink iso(argv[1]);
 
@@ -89,7 +88,7 @@ int main(int argc, char* argv[])
             {
                 io::copy(
                     io_ex::file_source(
-                        head.path.native_file_string(),
+                        head.path.file_string(),
                         std::ios_base::binary),
                     iso
                 );

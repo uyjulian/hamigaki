@@ -1,4 +1,4 @@
-// simple_unzip.cpp: a simple ZIP decompressing program
+// unzip.cpp: a simple ZIP decompressing program
 
 // Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
@@ -44,7 +44,6 @@ int main(int argc, char* argv[])
         }
 
         std::setlocale(LC_ALL, "");
-        fs::path::default_name_check(fs::no_check);
 
         ar::zip_file_source zip(argv[1]);
 
@@ -71,7 +70,7 @@ int main(int argc, char* argv[])
                 io::copy(
                     zip,
                     io_ex::file_sink(
-                        head.path.native_file_string(), std::ios_base::binary)
+                        head.path.file_string(), std::ios_base::binary)
                 );
             }
 

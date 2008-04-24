@@ -270,7 +270,6 @@ int main(int argc, char* argv[])
         }
 
         std::setlocale(LC_ALL, "");
-        fs::path::default_name_check(fs::no_check);
 
         std::auto_ptr<extractor_base> ext_ptr;
         const std::string filename(argv[1]);
@@ -382,7 +381,7 @@ int main(int argc, char* argv[])
                 io::copy(
                     boost::ref(*ext_ptr),
                     io_ex::file_sink(
-                        e.path.native_file_string(), std::ios_base::binary),
+                        e.path.file_string(), std::ios_base::binary),
                     1024*8
                 );
             }

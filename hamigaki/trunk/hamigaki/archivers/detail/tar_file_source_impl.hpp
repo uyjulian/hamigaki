@@ -1,6 +1,6 @@
 // tar_file_source_impl.hpp: POSIX tar file source implementation
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -175,8 +175,6 @@ private:
 
     boost::filesystem::path read_long_link()
     {
-        using namespace boost::filesystem;
-
         std::string buf;
 
         boost::iostreams::copy(
@@ -186,13 +184,11 @@ private:
         if (!buf.empty() && (*(buf.rbegin()) == '\0'))
             buf.resize(buf.size()-1);
 
-        return path(buf, no_check);
+        return buf;
     }
 
     void read_extended_header(tar_ex_header& ext)
     {
-        using namespace boost::filesystem;
-
         boost::iostreams::stream<
             boost::reference_wrapper<ustar_type>
         > is(boost::ref(ustar_));
@@ -224,7 +220,7 @@ private:
             const char* end = beg + (size - 1);
 
             if (key == "path")
-                ext.path = path(beg, no_check);
+                ext.path = beg;
             else if (key == "uid")
                 ext.uid = hamigaki::from_dec<boost::intmax_t>(beg, end);
             else if (key == "gid")
@@ -238,7 +234,7 @@ private:
             else if (key == "ctime")
                 ext.change_time = detail::to_timestamp(beg, end);
             else if (key == "linkpath")
-                ext.link_path = path(beg, no_check);
+                ext.link_path = beg;
             else if (key == "uname")
                 ext.user_name = beg;
             else if (key == "gname")

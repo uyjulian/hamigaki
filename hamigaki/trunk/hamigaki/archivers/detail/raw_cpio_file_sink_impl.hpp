@@ -1,6 +1,6 @@
 // raw_cpio_file_sink_impl.hpp: raw cpio file sink implementation
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -269,12 +269,10 @@ public:
 
     void close_archive()
     {
-        using namespace boost::filesystem;
-
         cpio::header head;
         head.format = format_;
         head.permissions = 0;
-        head.path = path("TRAILER!!!", no_check);
+        head.path = "TRAILER!!!";
         create_entry(head);
 
         boost::iostreams::close(sink_, BOOST_IOS::out);

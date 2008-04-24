@@ -1,6 +1,6 @@
 // search.cpp: search the target file
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -80,7 +80,7 @@ std::string search_target(context& ctx, const std::string& name)
         compo.root.clear();
         fs::path ph(make_path(compo), fs::native);
         fs::path work(ctx.working_directory(), fs::native);
-        filename = fs::complete(ph, work).native_file_string();
+        filename = fs::complete(ph, work).file_string();
     }
 
     call_bind_rule(ctx, name, filename);

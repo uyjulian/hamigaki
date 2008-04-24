@@ -94,8 +94,6 @@ public:
 
     void create_entry(const tar::header& head)
     {
-        using namespace boost::filesystem;
-
         tar::header local = head;
 
         std::string name = head.path.string();
@@ -118,7 +116,7 @@ public:
                 ex += detail::make_ex_header_recoed("path", long_name);
 
                 long_name.resize(tar::raw_header::name_size);
-                local.path = path(long_name, no_check);
+                local.path = long_name;
             }
 
             if ((head.uid < 0) || (head.uid > tar::raw_header::max_uid))
@@ -171,7 +169,7 @@ public:
                 ex += detail::make_ex_header_recoed("linkpath", long_link);
 
                 long_link.resize(tar::raw_header::name_size);
-                local.link_path = path(long_link, no_check);
+                local.link_path = long_link;
             }
 
             if (detail::is_non_ascii(head.user_name))
@@ -215,7 +213,7 @@ public:
                 ustar_.close();
 
                 long_name.resize(tar::raw_header::name_size);
-                local.path = path(long_name, no_check);
+                local.path = long_name;
             }
 
             if (long_link.size() > tar::raw_header::name_size)
@@ -232,7 +230,7 @@ public:
                 ustar_.close();
 
                 long_link.resize(tar::raw_header::name_size);
-                local.link_path = path(long_link, no_check);
+                local.link_path = long_link;
             }
         }
 

@@ -1,6 +1,6 @@
 // bjam_test.cpp: test case for bjam_grammar
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -457,7 +457,7 @@ void include_test()
 
     std::string src;
     src += "include ";
-    src += algo::replace_all_copy(ph.native_file_string(), "\\", "\\\\");
+    src += algo::replace_all_copy(ph.file_string(), "\\", "\\\\");
     src += " ;";
 
     BOOST_CHECK(eval(ctx, src).empty());
@@ -469,7 +469,7 @@ void back_trace_test()
 
     fs::path ph(hamigaki_root, fs::native);
     ph /= "libs/bjam/test/back_trace_test.jam";
-    std::string filename = ph.native_file_string();
+    std::string filename = ph.file_string();
 
     std::string src;
     src += "include ";

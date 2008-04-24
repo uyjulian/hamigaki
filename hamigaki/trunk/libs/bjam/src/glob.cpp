@@ -1,6 +1,6 @@
 // glob.cpp: glob for bjam
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -97,7 +97,7 @@ glob_recursive_impl(
             const std::string& ph = make_path(compo);
 
             string_list tmp;
-            if (fs::exists(fs::complete(fs::path(ph, fs::no_check), work)))
+            if (fs::exists(fs::complete(ph, work)))
                 tmp.push_back(ph);
             return tmp;
         }
@@ -114,7 +114,7 @@ glob_recursive_impl(
             compo.base = ptn;
 
             const std::string& new_dir = make_path(compo);
-            fs::path ph(new_dir, fs::no_check);
+            fs::path ph(new_dir);
             ph = fs::complete(ph, work);
 
             if (fs::is_directory(ph))

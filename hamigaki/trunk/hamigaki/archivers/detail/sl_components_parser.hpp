@@ -1,6 +1,6 @@
 // sl_components_parser.hpp: IEEE P1282 "SL" components parser
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -66,8 +66,6 @@ private:
 
     std::size_t parse_components(const char* s, std::size_t size)
     {
-        using boost::filesystem::no_check;
-
         if (size < 2)
         {
             bad_ = true;
@@ -122,7 +120,7 @@ private:
 
             if ((flags & continue_) == 0)
             {
-                ph_ /= boost::filesystem::path(leaf_, no_check);
+                ph_ /= leaf_;
                 leaf_.clear();
             }
         }

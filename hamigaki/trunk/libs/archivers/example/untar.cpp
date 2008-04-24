@@ -1,4 +1,4 @@
-// simple_untar.cpp: a simple ZIP decompressing program
+// untar.cpp: a simple ZIP decompressing program
 
 // Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
@@ -39,7 +39,6 @@ int main(int argc, char* argv[])
         }
 
         std::setlocale(LC_ALL, "");
-        fs::path::default_name_check(fs::no_check);
 
         ar::tar_file_source tar(argv[1]);
 
@@ -80,7 +79,7 @@ int main(int argc, char* argv[])
                 io::copy(
                     tar,
                     io_ex::file_sink(
-                        head.path.native_file_string(), std::ios_base::binary)
+                        head.path.file_string(), std::ios_base::binary)
                 );
             }
 

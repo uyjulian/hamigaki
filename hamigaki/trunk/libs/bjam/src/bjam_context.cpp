@@ -159,7 +159,7 @@ void set_rule_argument(
 } // namespace
 
 context::context()
-    : working_directory_(fs::current_path().native_directory_string())
+    : working_directory_(fs::current_path<fs::path>().directory_string())
     , os_(&std::cout)
 {
     frames_.push_back(frame(root_module_));
