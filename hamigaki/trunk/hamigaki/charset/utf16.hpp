@@ -117,6 +117,7 @@ struct utf16_impl<4>
 
         char buf[2];
         boost::uint16_t surrogate = 0;
+        bool valid = true;
         for (std::size_t i = 0; i < n; i += 2)
         {
             buf[0] = s[i];
@@ -125,6 +126,12 @@ struct utf16_impl<4>
             boost::uint16_t u = hamigaki::decode_uint<E,2>(buf);
             if (surrogate != 0)
             {
+                if ((u & 0xFC00) != 0xDC00)
+                {
+                    valid = false;
+                    break;
+                }
+
                 boost::uint32_t tmp =
                     static_cast<boost::uint32_t>(surrogate & 0x3FF) << 10 |
                     static_cast<boost::uint32_t>(u & 0x3FF) ;
@@ -139,7 +146,7 @@ struct utf16_impl<4>
                 ws.push_back(static_cast<wchar_t>(u));
         }
 
-        if (surrogate != 0)
+        if ((surrogate != 0) || !valid)
             throw std::runtime_error("invalid UTF-16 string");
 
         return ws;
