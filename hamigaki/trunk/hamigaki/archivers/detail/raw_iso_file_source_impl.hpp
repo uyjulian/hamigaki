@@ -33,7 +33,7 @@ inline String make_iso_string(const char* data, std::size_t size, char fill)
     if (i != rend)
         return std::string(data, i.base());
     else
-        return std::string(data, size);
+        return std::string();
 }
 
 template<class String>
@@ -61,7 +61,7 @@ make_iso_string<std::wstring>(const char* data, std::size_t size, char fill)
     if (i != rend)
         return charset::from_code_page(std::string(data, i.base()),0);
     else
-        return charset::from_code_page(std::string(data, size),0);
+        return std::wstring();
 }
 
 template<>
