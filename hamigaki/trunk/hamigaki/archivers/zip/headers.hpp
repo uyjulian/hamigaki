@@ -36,7 +36,7 @@ struct consts
 struct os
 {
     static const boost::uint8_t ms_dos     = 0x00; // NTFS for PKZIP
-    static const boost::uint8_t unix       = 0x03; // includes Mac OS X
+    static const boost::uint8_t posix      = 0x03; // includes Mac OS X
     static const boost::uint8_t winnt      = 0x0B; // used by Info-ZIP, MS
 };
 

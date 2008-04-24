@@ -274,7 +274,7 @@ public:
     void select_entry(const Path& ph)
     {
         typedef std::vector<zip_internal_header<Path> > headers_type;
-        typedef headers_type::const_iterator iter_type;
+        typedef typename headers_type::const_iterator iter_type;
 
         iter_type pos = std::find_if(
             headers_.begin(), headers_.end(), zip::header_path_match(ph));
@@ -367,7 +367,7 @@ private:
             zip_internal_header<Path> head;
             head.os = static_cast<boost::uint8_t>(file_head.made_by >> 8);
             // compatibility for Explzh and Archive Utility
-            if (head.os == zip::os::unix)
+            if (head.os == zip::os::posix)
                 head.utf8_encoded = true;
             head.version =
                 static_cast<boost::uint8_t>(file_head.needed_to_extract);
