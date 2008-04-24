@@ -43,30 +43,15 @@ inline char* ui32_to_utf8(char* s, boost::uint32_t wc)
         *(s++) = to_char(0x80 | ((wc >>  6) & 0x3F));
         *(s++) = to_char(0x80 | ((wc      ) & 0x3F));
     }
-    else if ((wc & 0xFFE00000) == 0)
+    else if (wc <= 0x10FFFF)
     {
         *(s++) = to_char(0xF0 | ((wc >> 18) & 0x07));
         *(s++) = to_char(0x80 | ((wc >> 12) & 0x3F));
         *(s++) = to_char(0x80 | ((wc >>  6) & 0x3F));
         *(s++) = to_char(0x80 | ((wc      ) & 0x3F));
     }
-    else if ((wc & 0xFC000000) == 0)
-    {
-        *(s++) = to_char(0xF8 | ((wc >> 24) & 0x03));
-        *(s++) = to_char(0x80 | ((wc >> 18) & 0x3F));
-        *(s++) = to_char(0x80 | ((wc >> 12) & 0x3F));
-        *(s++) = to_char(0x80 | ((wc >>  6) & 0x3F));
-        *(s++) = to_char(0x80 | ((wc      ) & 0x3F));
-    }
     else
-    {
-        *(s++) = to_char(0xFC | ((wc >> 30) & 0x01));
-        *(s++) = to_char(0x80 | ((wc >> 24) & 0x3F));
-        *(s++) = to_char(0x80 | ((wc >> 18) & 0x3F));
-        *(s++) = to_char(0x80 | ((wc >> 12) & 0x3F));
-        *(s++) = to_char(0x80 | ((wc >>  6) & 0x3F));
-        *(s++) = to_char(0x80 | ((wc      ) & 0x3F));
-    }
+        return 0;
 
     return s;
 }
@@ -112,6 +97,14 @@ inline bool utf8_to_ui32(boost::uint32_t& wc, const char*& s, std::size_t n)
         wc = (uc & 0x03) << 24;
         shift = 24;
     }
+    else if ((uc & 0x02) == 0)
+    {
+        if (n < 6)
+            return false;
+
+        wc = (uc & 0x01) << 30;
+        shift = 30;
+    }
     else
         return false;
 
@@ -142,7 +135,7 @@ struct utf8_impl<2>
 
         std::string s;
 
-        char buf[5];
+        char buf[4];
         boost::uint16_t surrogate = 0;
         for (std::size_t i = 0; i < n; ++i)
         {
@@ -159,6 +152,8 @@ struct utf8_impl<2>
                 wc += 0x10000;
                 surrogate = 0;
             }
+            else if ((u & 0xFC00) == 0xDC00)
+                throw missing_high_surrogate(u);
             else if ((u & 0xF800) == 0xD800)
             {
                 surrogate = u;
@@ -166,6 +161,8 @@ struct utf8_impl<2>
             }
 
             char* end = ui32_to_utf8(buf, wc);
+            if (end == 0)
+                throw invalid_ucs4(wc);
             s.append(buf, end);
         }
 
@@ -211,11 +208,13 @@ struct utf8_impl<4>
 
         std::string s;
 
-        char buf[5];
+        char buf[4];
         for (std::size_t i = 0; i < n; ++i)
         {
             boost::uint32_t wc = static_cast<boost::uint32_t>(ws[i]);
             char* end = ui32_to_utf8(buf, wc);
+            if (end == 0)
+                throw invalid_ucs4(wc);
             s.append(buf, end);
         }
         return s;

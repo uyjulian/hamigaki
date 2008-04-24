@@ -78,6 +78,27 @@ private:
     boost::uint16_t low_;
 };
 
+class missing_high_surrogate : public encoding_error
+{
+public:
+    explicit missing_high_surrogate(boost::uint16_t low)
+        : encoding_error("missing high surrogate")
+    {
+    }
+
+    ~missing_high_surrogate() throw() // virtual
+    {
+    }
+
+    boost::uint16_t low() const
+    {
+        return low_;
+    }
+
+private:
+    boost::uint16_t low_;
+};
+
 class missing_low_surrogate : public encoding_error
 {
 public:
