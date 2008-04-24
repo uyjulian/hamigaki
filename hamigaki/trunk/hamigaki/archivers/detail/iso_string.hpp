@@ -10,12 +10,8 @@
 #ifndef HAMIGAKI_ARCHIVERS_DETAIL_ISO_STRING_HPP
 #define HAMIGAKI_ARCHIVERS_DETAIL_ISO_STRING_HPP
 
-#include <hamigaki/archivers/detail/ucs2.hpp>
-
-#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
-    #include <hamigaki/charset/code_page.hpp>
-    #include <hamigaki/charset/utf16.hpp>
-#endif
+#include <hamigaki/charset/code_page.hpp>
+#include <hamigaki/charset/utf16.hpp>
 
 namespace hamigaki { namespace archivers { namespace detail {
 
@@ -26,7 +22,7 @@ inline std::string to_iso9660_string(const std::string& s)
 
 inline std::string to_joliet_string(const std::string& s)
 {
-    return detail::narrow_to_ucs2be(s);
+    return charset::to_utf16be(charset::from_code_page(s, 0));
 }
 
 template<class String>
@@ -38,8 +34,9 @@ inline String from_iso9660_string(const std::string& s)
 template<class String>
 inline String from_joliet_string(const std::string& s)
 {
-    return detail::ucs2be_to_narrow(s);
+    return charset::to_code_page(charset::from_utf16be(s), 0, "_");
 }
+
 #if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
 inline std::string to_iso9660_string(const std::wstring& s)
 {

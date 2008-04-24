@@ -67,7 +67,7 @@ inline void copy_joliet_str(
     char (&buf)[Size], const std::string& s)
 {
     std::memset(buf, 0, sizeof(buf));
-    detail::narrow_to_ucs2be(s).copy(buf, sizeof(buf));
+    charset::to_utf16be(charset::from_code_page(s,0)).copy(buf, sizeof(buf));
 }
 
 template<std::size_t Size, class Path>

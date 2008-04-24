@@ -1,6 +1,6 @@
 // dec_format.hpp: decimal formatting
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -8,6 +8,7 @@
 #ifndef HAMIGAKI_DEC_FORMAT_HPP
 #define HAMIGAKI_DEC_FORMAT_HPP
 
+#include <hamigaki/static_widen.hpp>
 #include <boost/detail/workaround.hpp>
 #include <boost/mpl/bool.hpp>
 #include <boost/array.hpp>
@@ -36,6 +37,11 @@ struct dec_traits<char>
             throw std::runtime_error("bad decimal character");
         return c - '0';
     }
+
+    static const char* zero()
+    {
+        return "0";
+    }
 };
 
 template<>
@@ -51,6 +57,11 @@ struct dec_traits<wchar_t>
         if ((c < L'0') || (c > L'9'))
             throw std::runtime_error("bad decimal character");
         return c - L'0';
+    }
+
+    static const wchar_t* zero()
+    {
+        return L"0";
     }
 };
 
@@ -68,7 +79,7 @@ template<typename CharT, typename T>
 inline std::basic_string<CharT> to_dec_impl(T n, boost::mpl::bool_<false>)
 {
     if (n == T())
-        return "0";
+        return dec_traits<CharT>::zero();
 
     std::basic_string<CharT> s;
     while (n)
@@ -84,7 +95,7 @@ template<typename CharT, typename T>
 inline std::basic_string<CharT> to_dec_impl(T n, boost::mpl::bool_<true>)
 {
     if (n == T())
-        return "0";
+        return dec_traits<CharT>::zero();
 
     std::basic_string<CharT> s;
     if (n < T())
@@ -97,7 +108,7 @@ inline std::basic_string<CharT> to_dec_impl(T n, boost::mpl::bool_<true>)
             s += dec_traits<CharT>::to_dec(static_cast<int>(-tmp));
             n /= 10;
         }
-        s.push_back('-');
+        s.push_back(static_widen<CharT,'-'>::value);
     }
     else
     {
@@ -131,7 +142,7 @@ inline T from_dec_impl(
     if (first == last)
         return T();
 
-    if (*first == '-')
+    if (*first == static_widen<CharT,'-'>::value)
     {
         ++first;
         T tmp = 0;

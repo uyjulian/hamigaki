@@ -39,12 +39,9 @@ inline String make_iso_string(const char* data, std::size_t size, char fill)
 template<class String>
 inline String make_joliet_string(const char* data, std::size_t size)
 {
-    std::size_t src_size = size/2;
-    boost::scoped_array<wchar_t> src(new wchar_t[src_size + 1]);
-    detail::ucs2be_to_wide(src.get(), data, size);
-    src[src_size] = 0;
-
-    return detail::wide_to_narrow(src.get());
+    size &= ~1;
+    const charset::wstring& ws = charset::from_utf16be(std::string(data, size));
+    return charset::to_code_page(ws.substr(0, ws.find(L'\0')), 0, "_");
 }
 
 #if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
@@ -68,12 +65,9 @@ template<>
 inline std::wstring
 make_joliet_string<std::wstring>(const char* data, std::size_t size)
 {
-    std::size_t src_size = size/2;
-    boost::scoped_array<wchar_t> src(new wchar_t[src_size + 1]);
-    detail::ucs2be_to_wide(src.get(), data, size);
-    src[src_size] = 0;
-
-    return src.get();
+    size &= ~1;
+    const charset::wstring& ws = charset::from_utf16be(std::string(data, size));
+    return ws.substr(0, ws.find(L'\0'));
 }
 #endif // !defined(BOOST_FILESYSTEM_NARROW_ONLY)
 

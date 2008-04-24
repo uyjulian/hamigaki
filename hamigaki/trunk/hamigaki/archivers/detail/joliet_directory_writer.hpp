@@ -13,6 +13,7 @@
 #include <hamigaki/archivers/detail/iso_path_table.hpp>
 #include <hamigaki/archivers/detail/iso_string.hpp>
 #include <hamigaki/archivers/iso/headers.hpp>
+#include <hamigaki/charset/utf16.hpp>
 #include <hamigaki/dec_format.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
@@ -230,8 +231,8 @@ private:
             if (!rec.is_directory())
             {
                 id.append("\0;", 2);
-                id += detail::narrow_to_ucs2be(
-                    hamigaki::to_dec<char>(rec.version));
+                id += charset::to_utf16be(
+                    hamigaki::to_dec<wchar_t>(rec.version));
             }
             std::size_t id_size = id.size();
             std::size_t size = bin_size + id_size;
@@ -345,8 +346,8 @@ private:
             if (!rec.is_directory())
             {
                 id.append("\0;", 2);
-                id += detail::narrow_to_ucs2be(
-                    hamigaki::to_dec<char>(rec.version));
+                id += charset::to_utf16be(
+                    hamigaki::to_dec<wchar_t>(rec.version));
             }
             std::size_t id_size = id.size();
             std::size_t size = bin_size + id_size;

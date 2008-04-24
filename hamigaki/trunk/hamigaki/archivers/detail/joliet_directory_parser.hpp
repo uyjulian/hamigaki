@@ -12,7 +12,6 @@
 
 #include <hamigaki/archivers/detail/iso_directory_parser.hpp>
 #include <hamigaki/archivers/detail/iso_string.hpp>
-#include <hamigaki/archivers/detail/ucs2.hpp>
 
 namespace hamigaki { namespace archivers { namespace detail {
 
