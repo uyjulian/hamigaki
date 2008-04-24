@@ -10,9 +10,8 @@
 #ifndef HAMIGAKI_CHARSET_UTF8_HPP
 #define HAMIGAKI_CHARSET_UTF8_HPP
 
+#include <hamigaki/charset/exception.hpp>
 #include <hamigaki/charset/wstring.hpp>
-#include <boost/cstdint.hpp>
-#include <stdexcept>
 
 namespace hamigaki { namespace charset {
 
@@ -72,20 +71,19 @@ inline char* ui32_to_utf8(char* s, boost::uint32_t wc)
     return s;
 }
 
-inline const char*
-utf8_to_ui32(boost::uint32_t& wc, const char* s, std::size_t n)
+inline bool utf8_to_ui32(boost::uint32_t& wc, const char*& s, std::size_t n)
 {
-    boost::uint32_t uc = to_ui32(*(s++));
+    boost::uint32_t uc = to_ui32(*s);
 
     boost::uint32_t shift = 0;
     if ((uc & 0x80) == 0)
         wc = uc;
     else if ((uc & 0x40) == 0)
-        return 0;
+        return false;
     else if ((uc & 0x20) == 0)
     {
         if (n < 2)
-            return 0;
+            return false;
 
         wc = (uc & 0x1F) << 6;
         shift = 6;
@@ -93,7 +91,7 @@ utf8_to_ui32(boost::uint32_t& wc, const char* s, std::size_t n)
     else if ((uc & 0x10) == 0)
     {
         if (n < 3)
-            return 0;
+            return false;
 
         wc = (uc & 0x0F) << 12;
         shift = 12;
@@ -101,7 +99,7 @@ utf8_to_ui32(boost::uint32_t& wc, const char* s, std::size_t n)
     else if ((uc & 0x08) == 0)
     {
         if (n < 4)
-            return 0;
+            return false;
 
         wc = (uc & 0x07) << 18;
         shift = 18;
@@ -109,32 +107,27 @@ utf8_to_ui32(boost::uint32_t& wc, const char* s, std::size_t n)
     else if ((uc & 0x04) == 0)
     {
         if (n < 5)
-            return 0;
+            return false;
 
         wc = (uc & 0x03) << 24;
         shift = 24;
     }
-    else if ((uc & 0x02) == 0)
-    {
-        if (n < 6)
-            return 0;
-
-        wc = (uc & 0x01) << 30;
-        shift = 30;
-    }
     else
-        return 0;
+        return false;
+
+    ++s;
 
     while (shift != 0)
     {
         shift -= 6;
-        uc = to_ui32(*(s++));
+        uc = to_ui32(*s);
         if ((uc & 0xC0) != 0x80)
-            return 0;
+            return false;
+        ++s;
         wc |= (uc & 0x3F) << shift;
     }
 
-    return s;
+    return true;
 }
 
 template<std::size_t CharSize>
@@ -149,29 +142,26 @@ struct utf8_impl<2>
 
         std::string s;
 
-        char buf[6];
-        boost::uint32_t surrogate = 0;
-        bool valid = true;
+        char buf[5];
+        boost::uint16_t surrogate = 0;
         for (std::size_t i = 0; i < n; ++i)
         {
-            boost::uint32_t wc = static_cast<boost::uint32_t>(ws[i]);
+            boost::uint16_t u = static_cast<boost::uint16_t>(ws[i]);
+            boost::uint32_t wc = u;
 
             if (surrogate != 0)
             {
-                if ((wc & 0xFC00) != 0xDC00)
-                {
-                    valid = false;
-                    break;
-                }
+                if ((u & 0xFC00) != 0xDC00)
+                    throw invalid_surrogate_pair(surrogate, u);
 
                 wc &= 0x3FF;
                 wc |= (surrogate & 0x3FF) << 10;
                 wc += 0x10000;
                 surrogate = 0;
             }
-            else if ((wc & 0xF800) == 0xD800)
+            else if ((u & 0xF800) == 0xD800)
             {
-                surrogate = wc;
+                surrogate = u;
                 continue;
             }
 
@@ -179,8 +169,8 @@ struct utf8_impl<2>
             s.append(buf, end);
         }
 
-        if ((surrogate != 0) || !valid)
-            throw std::runtime_error("invalid UTF-16 string");
+        if (surrogate != 0)
+            throw missing_low_surrogate(surrogate);
 
         return s;
     }
@@ -188,38 +178,25 @@ struct utf8_impl<2>
     static wstring from_utf8(const std::string& s)
     {
         wstring ws;
-        bool valid = true;
         const char* first = s.c_str();
         const char* last = first + s.size();
         while (first != last)
         {
             boost::uint32_t wc;
-            const char* next = utf8_to_ui32(wc, first, last-first);
-            if (!next)
-            {
-                valid = false;
-                break;
-            }
+            if (!utf8_to_ui32(wc, first, last-first))
+                throw invalid_utf8(*first);
 
             if ((wc & 0xFFFF0000) == 0)
                 ws.push_back(static_cast<wchar_t>(wc));
-            else if ((wc & 0xE0000000) == 0)
+            else if (wc <= 0x10FFFF)
             {
                 wc -= 0x10000;
                 ws.push_back(static_cast<wchar_t>(0xD800 | ((wc>>10) & 0x3FF)));
                 ws.push_back(static_cast<wchar_t>(0xDC00 | ((wc    ) & 0x3FF)));
             }
             else
-            {
-                valid = false;
-                break;
-            }
-
-            first = next;
+                throw invalid_ucs4(wc);
         }
-
-        if (!valid)
-            throw std::runtime_error("invalid UTF-8 string");
 
         return ws;
     }
@@ -234,7 +211,7 @@ struct utf8_impl<4>
 
         std::string s;
 
-        char buf[6];
+        char buf[5];
         for (std::size_t i = 0; i < n; ++i)
         {
             boost::uint32_t wc = static_cast<boost::uint32_t>(ws[i]);
@@ -247,24 +224,19 @@ struct utf8_impl<4>
     static wstring from_utf8(const std::string& s)
     {
         wstring ws;
-        bool valid = true;
         const char* first = s.c_str();
         const char* last = first + s.size();
         while (first != last)
         {
             boost::uint32_t wc;
-            const char* next = utf8_to_ui32(wc, first, last-first);
-            if (!next)
-            {
-                valid = false;
-                break;
-            }
-            ws.push_back(static_cast<wchar_t>(wc));
-            first = next;
-        }
+            if (!utf8_to_ui32(wc, first, last-first))
+                throw invalid_utf8(*first);
 
-        if (!valid)
-            throw std::runtime_error("invalid UTF-8 string");
+            if (wc > 0x10FFFF)
+                throw invalid_ucs4(wc);
+
+            ws.push_back(static_cast<wchar_t>(wc));
+        }
 
         return ws;
     }
