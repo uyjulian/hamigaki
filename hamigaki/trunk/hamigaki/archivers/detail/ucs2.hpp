@@ -57,7 +57,7 @@ inline std::size_t ucs2be_to_wide(wchar_t* pwcs, const char* s, std::size_t n)
 {
     std::size_t size = n/2;
     for (std::size_t i = 0; i < size; ++i)
-        pwcs[i] = hamigaki::decode_int<big,2>(s + i*2);
+        pwcs[i] = hamigaki::decode_uint<big,2>(s + i*2);
     return size;
 }
 
@@ -80,7 +80,7 @@ inline std::size_t ucs2le_to_wide(wchar_t* pwcs, const char* s, std::size_t n)
 {
     std::size_t size = n/2;
     for (std::size_t i = 0; i < size; ++i)
-        pwcs[i] = hamigaki::decode_int<little,2>(s + i*2);
+        pwcs[i] = hamigaki::decode_uint<little,2>(s + i*2);
     return size;
 }
 
@@ -129,8 +129,8 @@ inline std::size_t wide_to_ucs2be(char* s, const wchar_t* pwcs, std::size_t n)
 {
     for (std::size_t i = 0; i < n; ++i)
     {
-        hamigaki::encode_int<big,2>(
-            s + i*2, static_cast<boost::int16_t>(pwcs[i]));
+        hamigaki::encode_uint<big,2>(
+            s + i*2, static_cast<boost::uint16_t>(pwcs[i]));
     }
     return n*2;
 }
@@ -160,8 +160,8 @@ inline std::size_t wide_to_ucs2le(char* s, const wchar_t* pwcs, std::size_t n)
 {
     for (std::size_t i = 0; i < n; ++i)
     {
-        hamigaki::encode_int<little,2>(
-            s + i*2, static_cast<boost::int16_t>(pwcs[i]));
+        hamigaki::encode_uint<little,2>(
+            s + i*2, static_cast<boost::uint16_t>(pwcs[i]));
     }
     return n*2;
 }
