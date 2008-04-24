@@ -23,6 +23,10 @@ void encode_test_impl(const size_tag<4>&)
 
     charset::wstring ws2(L"\U00029E3D.txt");
     BOOST_CHECK_EQUAL(charset::to_utf8(ws2), "\xF0\xA9\xB8\xBD.txt");
+
+    charset::wstring ws3(L"A\u00C0\u3042\U0001D11E\U00029E3D");
+    BOOST_CHECK_EQUAL(charset::to_utf8(ws3),
+        "A\xC3\x80\xE3\x81\x82\xF0\x9D\x84\x9E\xF0\xA9\xB8\xBD");
 }
 
 void encode_test_impl(const size_tag<2>&)
@@ -32,6 +36,10 @@ void encode_test_impl(const size_tag<2>&)
 
     charset::wstring ws2(L"\xD867\xDE3D.txt");
     BOOST_CHECK_EQUAL(charset::to_utf8(ws2), "\xF0\xA9\xB8\xBD.txt");
+
+    charset::wstring ws3(L"A\x00C0\x3042\xD834\xDD1E\xD867\xDE3D");
+    BOOST_CHECK_EQUAL(charset::to_utf8(ws3),
+        "A\xC3\x80\xE3\x81\x82\xF0\x9D\x84\x9E\xF0\xA9\xB8\xBD");
 }
 
 void encode_test()
@@ -46,6 +54,10 @@ void decode_test_impl(const size_tag<4>&)
 
     const charset::wstring ws2(L"\U00029E3D.txt");
     BOOST_CHECK(charset::from_utf8("\xF0\xA9\xB8\xBD.txt") == ws2);
+
+    const charset::wstring ws3(L"A\u00C0\u3042\U0001D11E\U00029E3D");
+    BOOST_CHECK(charset::from_utf8(
+        "A\xC3\x80\xE3\x81\x82\xF0\x9D\x84\x9E\xF0\xA9\xB8\xBD") == ws3);
 }
 
 void decode_test_impl(const size_tag<2>&)
@@ -55,6 +67,10 @@ void decode_test_impl(const size_tag<2>&)
 
     const charset::wstring ws2(L"\xD867\xDE3D.txt");
     BOOST_CHECK(charset::from_utf8("\xF0\xA9\xB8\xBD.txt") == ws2);
+
+    const charset::wstring ws3(L"A\x00C0\x3042\xD834\xDD1E\xD867\xDE3D");
+    BOOST_CHECK(charset::from_utf8(
+        "A\xC3\x80\xE3\x81\x82\xF0\x9D\x84\x9E\xF0\xA9\xB8\xBD") == ws3);
 }
 
 void decode_test()
