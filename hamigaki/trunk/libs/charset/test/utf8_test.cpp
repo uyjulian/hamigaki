@@ -77,6 +77,15 @@ void decode_test_impl(const size_tag<4>&)
     const charset::wstring ws3(L"A\u00C0\u3042\U0001D11E");
     BOOST_CHECK(charset::from_utf8(
         "A\xC3\x80\xE3\x81\x82\xF0\x9D\x84\x9E") == ws3);
+
+    const charset::wstring ws4(L"\U0010FFFF");
+    BOOST_CHECK(charset::from_utf8("\xF4\x8F\xBF\xBF") == ws4);
+
+    BOOST_CHECK_THROW(
+        charset::from_utf8("\xF4\xA0\x80\x80"), charset::invalid_ucs4);
+
+    BOOST_CHECK_THROW(charset::from_utf8("\x80"), charset::invalid_utf8);
+    BOOST_CHECK_THROW(charset::from_utf8("\xC3\xC0"), charset::invalid_utf8);
 }
 
 void decode_test_impl(const size_tag<2>&)
@@ -90,6 +99,15 @@ void decode_test_impl(const size_tag<2>&)
     const charset::wstring ws3(L"A\x00C0\x3042\xD834\xDD1E");
     BOOST_CHECK(charset::from_utf8(
         "A\xC3\x80\xE3\x81\x82\xF0\x9D\x84\x9E") == ws3);
+
+    const charset::wstring ws4(L"\xDBFF\xDFFF");
+    BOOST_CHECK(charset::from_utf8("\xF4\x8F\xBF\xBF") == ws4);
+
+    BOOST_CHECK_THROW(
+        charset::from_utf8("\xF4\xA0\x80\x80"), charset::invalid_ucs4);
+
+    BOOST_CHECK_THROW(charset::from_utf8("\x80"), charset::invalid_utf8);
+    BOOST_CHECK_THROW(charset::from_utf8("\xC3\xC0"), charset::invalid_utf8);
 }
 
 void decode_test()
