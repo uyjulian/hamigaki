@@ -22,6 +22,11 @@ void acp_test()
 
     const charset::wstring& ws2 = charset::from_code_page(s, 0);
     BOOST_CHECK_EQUAL_COLLECTIONS(ws2.begin(), ws2.end(), ws.begin(), ws.end());
+
+    BOOST_CHECK(
+        charset::from_code_page(std::string(32, ' '), 0) ==
+        charset::wstring(32, L' ')
+    );
 }
 
 void sjis_test()
