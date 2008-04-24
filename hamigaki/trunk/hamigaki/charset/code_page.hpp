@@ -305,7 +305,10 @@ inline wstring from_code_page(const std::string& s, unsigned cp)
 
         std::size_t res = cv.convert(src, src_size, dst, dst_size);
         if (res == detail::iconv_wrapper::error)
-            throw std::runtime_error("failed iconv()");
+        {
+            if (errno != E2BIG)
+                throw std::runtime_error("failed iconv()");
+        }
 
         std::size_t len = dst-dst_buf;
         std::memcpy(tmp, dst_buf, len);
