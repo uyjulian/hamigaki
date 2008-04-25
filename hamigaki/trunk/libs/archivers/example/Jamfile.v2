@@ -58,6 +58,7 @@ exe wtar
 
 exe wuniso : wuniso.cpp filesystems iostreams ;
 exe wunlha : wunlha.cpp filesystems iostreams ;
+exe wuntar : wuntar.cpp filesystems iostreams ;
 
 if ! $(NO_ZLIB)
 {
