@@ -11,8 +11,61 @@
 #define HAMIGAKI_ARCHIVERS_DETAIL_TAR_FILE_SINK_IMPL_HPP
 
 #include <hamigaki/archivers/detail/ustar_file_sink_impl.hpp>
+#include <hamigaki/charset/code_page.hpp>
+#include <hamigaki/charset/utf8.hpp>
 
-namespace hamigaki { namespace archivers { namespace detail {
+namespace hamigaki { namespace archivers { namespace tar_detail {
+
+inline std::string to_tar_string(const std::string& s)
+{
+    return s;
+}
+
+inline std::string to_pax_string(const std::string& s)
+{
+    return charset::to_utf8(charset::from_code_page(s, 0));
+}
+
+inline tar::header to_narrow(const tar::header& head)
+{
+    return head;
+}
+
+#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+inline std::string to_tar_string(const std::wstring& ws)
+{
+    return charset::to_code_page(ws, 0, "_");
+}
+
+inline std::string to_pax_string(const std::wstring& ws)
+{
+    return charset::to_utf8(ws);
+}
+
+inline tar::header to_narrow(const tar::wheader& head)
+{
+    tar::header tmp;
+
+    tmp.path = tar_detail::to_tar_string(head.path.string());
+    tmp.permissions = head.permissions;
+    tmp.uid = head.uid;
+    tmp.gid = head.gid;
+    tmp.file_size = head.file_size;
+    tmp.modified_time = head.modified_time;
+    tmp.access_time = head.access_time;
+    tmp.change_time = head.change_time;
+    tmp.type_flag = head.type_flag;
+    tmp.link_path = tar_detail::to_tar_string(head.link_path.string());
+    tmp.format = head.format;
+    tmp.user_name = charset::to_code_page(head.user_name, 0);
+    tmp.group_name = charset::to_code_page(head.group_name, 0);
+    tmp.dev_major = head.dev_major;
+    tmp.dev_minor = head.dev_minor;
+    tmp.comment = charset::to_code_page(head.comment, 0);
+
+    return tmp;
+}
+#endif
 
 inline std::string
 make_ex_header_recoed(const std::string& key, const std::string value)
@@ -38,9 +91,15 @@ struct is_non_ascii_func
     {
         return (static_cast<unsigned char>(c) & 0x80) != 0;
     }
+
+    bool operator()(wchar_t wc) const
+    {
+        return static_cast<boost::uint32_t>(wc) > 0x7F;
+    }
 };
 
-inline bool is_non_ascii(const std::string& s)
+template<class String>
+inline bool is_non_ascii(const String& s)
 {
     return std::find_if(s.begin(), s.end(), is_non_ascii_func()) != s.end();
 }
@@ -81,47 +140,60 @@ inline std::string from_timestamp(const filesystem::timestamp& x)
         return to_dec<char>(x.seconds);
 }
 
-template<class Sink>
+} } } // End namespaces tar_detail, archivers, hamigaki.
+
+namespace hamigaki { namespace archivers { namespace detail {
+
+template<class Sink, class Path>
 class basic_tar_file_sink_impl
 {
 private:
     typedef detail::basic_ustar_file_sink_impl<Sink> ustar_type;
 
 public:
+    typedef Path path_type;
+    typedef tar::basic_header<Path> header_type;
+
     explicit basic_tar_file_sink_impl(const Sink& sink) : ustar_(sink)
     {
     }
 
-    void create_entry(const tar::header& head)
+    void create_entry(const header_type& head)
     {
-        tar::header local = head;
+        tar::header local = tar_detail::to_narrow(head);
 
-        std::string name = head.path.string();
+        std::string name = tar_detail::to_tar_string(head.path.string());
         std::string prefix;
         if ((head.format != tar::gnu) &&
             (name.size() > tar::raw_header::name_size) )
         {
-            name = head.path.leaf();
-            prefix = head.path.branch_path().string();
+            name = tar_detail::to_tar_string(head.path.leaf());
+            prefix =
+                tar_detail::to_tar_string(head.path.branch_path().string());
         }
 
-        std::string long_link = head.link_path.string();
+        std::string long_link =
+            tar_detail::to_tar_string(head.link_path.string());
         if (head.format == tar::pax)
         {
             std::string ex;
             if ((name.size() > tar::raw_header::name_size) ||
-                (prefix.size() > tar::raw_header::prefix_size))
+                (prefix.size() > tar::raw_header::prefix_size) ||
+                tar_detail::is_non_ascii(head.path.string()) )
             {
-                std::string long_name = head.path.string();
-                ex += detail::make_ex_header_recoed("path", long_name);
+                std::string path =
+                    tar_detail::to_pax_string(head.path.string());
+                ex += tar_detail::make_ex_header_recoed("path", path);
 
+                std::string long_name =
+                    tar_detail::to_tar_string(head.path.string());
                 long_name.resize(tar::raw_header::name_size);
                 local.path = long_name;
             }
 
             if ((head.uid < 0) || (head.uid > tar::raw_header::max_uid))
             {
-                ex += detail::
+                ex += tar_detail::
                     make_ex_header_recoed("uid", to_dec<char>(head.uid));
 
                 local.uid = 0;
@@ -129,7 +201,7 @@ public:
 
             if ((head.gid < 0) || (head.gid > tar::raw_header::max_gid))
             {
-                ex += detail::
+                ex += tar_detail::
                     make_ex_header_recoed("gid", to_dec<char>(head.gid));
 
                 local.gid = 0;
@@ -137,7 +209,7 @@ public:
 
             if (head.file_size > tar::raw_header::max_size)
             {
-                ex += detail::
+                ex += tar_detail::
                     make_ex_header_recoed("size", to_dec<char>(head.file_size));
 
                 local.file_size = 0;
@@ -145,59 +217,72 @@ public:
 
             if (head.modified_time && (head.modified_time->nanoseconds != 0))
             {
-                ex += detail::make_ex_header_recoed(
+                ex += tar_detail::make_ex_header_recoed(
                     "mtime",
-                    detail::from_timestamp(head.modified_time.get()));
+                    tar_detail::from_timestamp(head.modified_time.get()));
             }
 
             if (head.access_time)
             {
-                ex += detail::make_ex_header_recoed(
+                ex += tar_detail::make_ex_header_recoed(
                     "atime",
-                    detail::from_timestamp(head.access_time.get()));
+                    tar_detail::from_timestamp(head.access_time.get()));
             }
 
             if (head.change_time)
             {
-                ex += detail::make_ex_header_recoed(
+                ex += tar_detail::make_ex_header_recoed(
                     "ctime",
-                    detail::from_timestamp(head.change_time.get()));
+                    tar_detail::from_timestamp(head.change_time.get()));
             }
 
-            if (long_link.size() > tar::raw_header::name_size)
+            if ((long_link.size() > tar::raw_header::name_size) ||
+                tar_detail::is_non_ascii(head.link_path.string()) )
             {
-                ex += detail::make_ex_header_recoed("linkpath", long_link);
+                std::string linkpath =
+                    tar_detail::to_tar_string(head.link_path.string());
+                ex += tar_detail::make_ex_header_recoed("linkpath", linkpath);
 
                 long_link.resize(tar::raw_header::name_size);
                 local.link_path = long_link;
             }
 
-            if (detail::is_non_ascii(head.user_name))
+            if (tar_detail::is_non_ascii(head.user_name))
             {
-                ex += detail::
-                    make_ex_header_recoed("uname", head.user_name);
+                ex +=
+                    tar_detail::make_ex_header_recoed(
+                        "uname",
+                        tar_detail::to_pax_string(head.user_name)
+                    );
             }
 
-            if (detail::is_non_ascii(head.group_name))
+            if (tar_detail::is_non_ascii(head.group_name))
             {
-                ex += detail::
-                    make_ex_header_recoed("gname", head.group_name);
+                ex +=
+                    tar_detail::make_ex_header_recoed(
+                        "gname",
+                        tar_detail::to_pax_string(head.group_name)
+                    );
             }
 
             if (!head.comment.empty())
             {
-                ex += detail::
-                    make_ex_header_recoed("comment", head.comment);
+                ex +=
+                    tar_detail::make_ex_header_recoed(
+                        "comment",
+                        tar_detail::to_pax_string(head.comment)
+                    );
             }
 
             if (!ex.empty())
-                write_extended_header(head.path, ex);
+                write_extended_header(local.path, ex);
         }
         else if (head.format == tar::gnu)
         {
             if (name.size() > tar::raw_header::name_size)
             {
-                std::string long_name = head.path.string();
+                std::string long_name =
+                    tar_detail::to_tar_string(head.path.string());
                 if (head.type_flag == tar::type_flag::directory)
                     long_name += '/';
 

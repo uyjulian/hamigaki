@@ -22,7 +22,7 @@
 #include <algorithm>
 #include <cstring>
 
-namespace hamigaki { namespace archivers { namespace detail {
+namespace hamigaki { namespace archivers { namespace tar_detail {
 
 template<std::size_t Size>
 inline bool is_valid(const char (&s)[Size])
@@ -97,11 +97,11 @@ inline tar::header read_tar_header(const char* block)
     if (std::memcmp(raw.magic, "ustar", 5) != 0)
         throw BOOST_IOSTREAMS_FAILURE("unknown tar header format");
 
-    if (!detail::is_valid(raw.uname) || !detail::is_valid(raw.gname))
+    if (!tar_detail::is_valid(raw.uname) || !tar_detail::is_valid(raw.gname))
         throw BOOST_IOSTREAMS_FAILURE("invalid tar header");
 
-    const boost::filesystem::path name(detail::read_string(raw.name));
-    const boost::filesystem::path prefix(detail::read_string(raw.prefix));
+    const boost::filesystem::path name(tar_detail::read_string(raw.name));
+    const boost::filesystem::path prefix(tar_detail::read_string(raw.prefix));
 
     tar::header head;
 
@@ -116,27 +116,28 @@ inline tar::header read_tar_header(const char* block)
         head.path = prefix / name;
     }
 
-    head.permissions = detail::read_oct<boost::uint16_t>(raw.mode);
-    head.uid = detail::read_oct<boost::int32_t>(raw.uid);
-    head.gid = detail::read_oct<boost::int32_t>(raw.gid);
-    head.file_size = detail::read_oct<boost::uint64_t>(raw.size);
+    head.permissions = tar_detail::read_oct<boost::uint16_t>(raw.mode);
+    head.uid = tar_detail::read_oct<boost::int32_t>(raw.uid);
+    head.gid = tar_detail::read_oct<boost::int32_t>(raw.gid);
+    head.file_size = tar_detail::read_oct<boost::uint64_t>(raw.size);
     head.modified_time =
         filesystem::timestamp::from_time_t(
-            detail::read_oct<std::time_t>(raw.mtime));
+            tar_detail::read_oct<std::time_t>(raw.mtime));
 
-    detail::uint17_t chksum = detail::read_oct<detail::uint17_t>(raw.chksum);
+    detail::uint17_t chksum =
+        tar_detail::read_oct<detail::uint17_t>(raw.chksum);
     if (detail::tar_checksum(block) != chksum)
         throw BOOST_IOSTREAMS_FAILURE("invalid tar checksum");
 
     head.type_flag = raw.typeflag ? raw.typeflag : '0';
-    head.link_path = detail::read_string(raw.linkname);
+    head.link_path = tar_detail::read_string(raw.linkname);
 
-    head.user_name = detail::read_c_string(raw.uname);
-    head.group_name = detail::read_c_string(raw.gname);
+    head.user_name = tar_detail::read_c_string(raw.uname);
+    head.group_name = tar_detail::read_c_string(raw.gname);
     if ((head.format != tar::gnu) || (head.is_device()))
     {
-        head.dev_major = detail::read_oct<boost::uint16_t>(raw.devmajor);
-        head.dev_minor = detail::read_oct<boost::uint16_t>(raw.devminor);
+        head.dev_major = tar_detail::read_oct<boost::uint16_t>(raw.devmajor);
+        head.dev_minor = tar_detail::read_oct<boost::uint16_t>(raw.devminor);
     }
     else
     {
@@ -146,6 +147,10 @@ inline tar::header read_tar_header(const char* block)
 
     return head;
 }
+
+} } } // End namespaces tar_detail, archivers, hamigaki.
+
+namespace hamigaki { namespace archivers { namespace detail {
 
 template<class Source>
 class basic_ustar_file_source_impl : private boost::noncopyable
@@ -184,7 +189,7 @@ public:
             iostreams::blocking_read(src_, block_, sizeof(block_));
             return false;
         }
-        header_ = detail::read_tar_header(block_);
+        header_ = tar_detail::read_tar_header(block_);
 
         return true;
     }

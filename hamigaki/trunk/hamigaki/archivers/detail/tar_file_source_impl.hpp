@@ -18,7 +18,7 @@
 #include <boost/ref.hpp>
 #include <boost/scoped_array.hpp>
 
-namespace hamigaki { namespace archivers { namespace detail {
+namespace hamigaki { namespace archivers { namespace tar_detail {
 
 inline boost::uint32_t decode_nsec(const char* beg, const char* end)
 {
@@ -58,10 +58,14 @@ inline filesystem::timestamp to_timestamp(const std::string& s)
 
 inline filesystem::timestamp to_timestamp(const char* beg, const char* end)
 {
-    return detail::to_timestamp(std::string(beg, end));
+    return tar_detail::to_timestamp(std::string(beg, end));
 }
 
-template<class Source>
+} } } // End namespaces tar_detail, archivers, hamigaki.
+
+namespace hamigaki { namespace archivers { namespace detail {
+
+template<class Source, class Path=boost::filesystem::path>
 class basic_tar_file_source_impl
 {
 private:
@@ -228,11 +232,11 @@ private:
             else if (key == "size")
                 ext.file_size = hamigaki::from_dec<boost::uintmax_t>(beg, end);
             else if (key == "mtime")
-                ext.modified_time = detail::to_timestamp(beg, end);
+                ext.modified_time = tar_detail::to_timestamp(beg, end);
             else if (key == "atime")
-                ext.access_time = detail::to_timestamp(beg, end);
+                ext.access_time = tar_detail::to_timestamp(beg, end);
             else if (key == "ctime")
-                ext.change_time = detail::to_timestamp(beg, end);
+                ext.change_time = tar_detail::to_timestamp(beg, end);
             else if (key == "linkpath")
                 ext.link_path = beg;
             else if (key == "uname")

@@ -1,6 +1,6 @@
 // headers.hpp: tar headers
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -22,9 +22,13 @@
 
 namespace hamigaki { namespace archivers { namespace tar {
 
-struct header
+template<class Path>
+struct basic_header
 {
-    boost::filesystem::path path;
+    typedef Path path_type;
+    typedef typename Path::string_type string_type;
+
+    Path path;
     boost::uint16_t permissions;
     boost::intmax_t uid;
     boost::intmax_t gid;
@@ -33,15 +37,15 @@ struct header
     boost::optional<filesystem::timestamp> access_time;
     boost::optional<filesystem::timestamp> change_time;
     char type_flag;
-    boost::filesystem::path link_path;
+    Path link_path;
     file_format format;
-    std::string user_name;
-    std::string group_name;
+    string_type user_name;
+    string_type group_name;
     boost::uint16_t dev_major;
     boost::uint16_t dev_minor;
-    std::string comment;
+    string_type comment;
 
-    header()
+    basic_header()
         : permissions(0644), uid(0), gid(0), file_size(0)
         , type_flag(tar::type_flag::regular), format(gnu)
         , dev_major(0), dev_minor(0)
@@ -97,6 +101,11 @@ struct header
             throw std::runtime_error("unsupported file type");
     }
 };
+
+typedef basic_header<boost::filesystem::path> header;
+#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+typedef basic_header<boost::filesystem::wpath> wheader;
+#endif
 
 } } } // End namespaces tar, archivers, hamigaki.
 

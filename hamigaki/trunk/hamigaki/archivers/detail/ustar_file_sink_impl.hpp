@@ -32,7 +32,7 @@
     #include <unistd.h>
 #endif
 
-namespace hamigaki { namespace archivers { namespace detail {
+namespace hamigaki { namespace archivers { namespace tar_detail {
 
 #if defined(BOOST_WINDOWS)
 inline unsigned long get_pid()
@@ -164,29 +164,32 @@ inline void write_tar_header(char* block, const tar::header& head)
 
     std::string prefix;
     if (head.is_long())
-        detail::write_string(raw.name, "././@LongLink");
+        tar_detail::write_string(raw.name, "././@LongLink");
     else if (head.type_flag == tar::type_flag::extended)
-        detail::write_string(raw.name, detail::make_ex_header_name(head.path));
+    {
+        tar_detail::write_string(
+            raw.name, tar_detail::make_ex_header_name(head.path));
+    }
     else
     {
         std::string name;
         split_path(head.path, prefix, name);
-        detail::write_string(raw.name, name);
+        tar_detail::write_string(raw.name, name);
     }
 
-    detail::write_oct(raw.mode, head.permissions);
-    detail::write_oct(raw.uid, head.uid);
-    detail::write_oct(raw.gid, head.gid);
-    detail::write_oct(raw.size, head.file_size);
+    tar_detail::write_oct(raw.mode, head.permissions);
+    tar_detail::write_oct(raw.uid, head.uid);
+    tar_detail::write_oct(raw.gid, head.gid);
+    tar_detail::write_oct(raw.size, head.file_size);
     if (head.modified_time)
-        detail::write_oct(raw.mtime, head.modified_time->seconds);
+        tar_detail::write_oct(raw.mtime, head.modified_time->seconds);
     else
-        detail::write_oct(raw.mtime, static_cast<std::time_t>(0));
+        tar_detail::write_oct(raw.mtime, static_cast<std::time_t>(0));
     std::memset(raw.chksum, ' ', sizeof(raw.chksum));
     raw.typeflag = head.type_flag;
 
     if (head.type_flag != tar::type_flag::extended)
-        detail::write_string(raw.linkname, linkname);
+        tar_detail::write_string(raw.linkname, linkname);
 
     std::strcpy(raw.magic, "ustar");
     if (head.format == tar::gnu)
@@ -198,15 +201,15 @@ inline void write_tar_header(char* block, const tar::header& head)
     else
         std::memcpy(raw.version, "00", 2);
 
-    detail::write_c_string(raw.uname, head.user_name);
-    detail::write_c_string(raw.gname, head.group_name);
+    tar_detail::write_c_string(raw.uname, head.user_name);
+    tar_detail::write_c_string(raw.gname, head.group_name);
 
     if ((head.format != tar::gnu) || (head.dev_major != 0))
-        detail::write_oct(raw.devmajor, head.dev_major);
+        tar_detail::write_oct(raw.devmajor, head.dev_major);
     if ((head.format != tar::gnu) || (head.dev_minor != 0))
-        detail::write_oct(raw.devminor, head.dev_minor);
+        tar_detail::write_oct(raw.devminor, head.dev_minor);
 
-    detail::write_string(raw.prefix, prefix);
+    tar_detail::write_string(raw.prefix, prefix);
 
     std::memset(block, 0, tar::raw_header::block_size);
     hamigaki::binary_write(block, raw);
@@ -218,6 +221,10 @@ inline void write_tar_header(char* block, const tar::header& head)
 
     hamigaki::binary_write(block, raw);
 }
+
+} } } // End namespaces tar_detail, archivers, hamigaki.
+
+namespace hamigaki { namespace archivers { namespace detail {
 
 template<class Sink>
 class basic_ustar_file_sink_impl : private boost::noncopyable
@@ -241,7 +248,7 @@ public:
         if (pos_ != size_)
             throw BOOST_IOSTREAMS_FAILURE("tar entry size mismatch");
 
-        detail::write_tar_header(block_, head);
+        tar_detail::write_tar_header(block_, head);
         iostreams::blocking_write(sink_, block_, sizeof(block_));
 
         pos_ = 0;
