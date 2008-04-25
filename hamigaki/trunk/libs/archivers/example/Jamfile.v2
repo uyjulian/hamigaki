@@ -51,6 +51,11 @@ exe wlha
     : <toolset>gcc,<os>NT:<find-static-library>shell32
     ;
 
+exe wtar
+    : wtar.cpp filesystems iostreams
+    : <toolset>gcc,<os>NT:<find-static-library>shell32
+    ;
+
 exe wuniso : wuniso.cpp filesystems iostreams ;
 exe wunlha : wunlha.cpp filesystems iostreams ;
 
