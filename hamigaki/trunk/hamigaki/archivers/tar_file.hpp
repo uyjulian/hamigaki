@@ -17,11 +17,11 @@
 
 namespace hamigaki { namespace archivers {
 
-template<class Source>
+template<class Source, class Path=boost::filesystem::path>
 class basic_tar_file_source
 {
 private:
-    typedef detail::basic_tar_file_source_impl<Source> impl_type;
+    typedef detail::basic_tar_file_source_impl<Source,Path> impl_type;
 
 public:
     typedef char char_type;
@@ -31,7 +31,8 @@ public:
         , boost::iostreams::device_tag
     {};
 
-    typedef tar::header header_type;
+    typedef Path path_type;
+    typedef tar::basic_header<Path> header_type;
 
     explicit basic_tar_file_source(const Source& src)
         : pimpl_(new impl_type(src))
@@ -43,7 +44,7 @@ public:
         return pimpl_->next_entry();
     }
 
-    tar::header header() const
+    header_type header() const
     {
         return pimpl_->header();
     }
@@ -67,6 +68,7 @@ public:
         , boost::iostreams::device_tag
     {};
 
+    typedef boost::filesystem::path path_type;
     typedef tar::header header_type;
 
     explicit tar_file_source(const std::string& filename)
@@ -195,6 +197,43 @@ private:
 };
 
 #if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+class wtar_file_source
+{
+public:
+    typedef char char_type;
+
+    struct category
+        : boost::iostreams::input
+        , boost::iostreams::device_tag
+    {};
+
+    typedef boost::filesystem::wpath path_type;
+    typedef tar::wheader header_type;
+
+    explicit wtar_file_source(const std::string& filename)
+        : impl_(iostreams::file_source(filename, BOOST_IOS::binary))
+    {
+    }
+
+    bool next_entry()
+    {
+        return impl_.next_entry();
+    }
+
+    tar::wheader header() const
+    {
+        return impl_.header();
+    }
+
+    std::streamsize read(char* s, std::streamsize n)
+    {
+        return impl_.read(s, n);
+    }
+
+private:
+    basic_tar_file_source<iostreams::file_source,path_type> impl_;
+};
+
 class wtar_file_sink
 {
 public:

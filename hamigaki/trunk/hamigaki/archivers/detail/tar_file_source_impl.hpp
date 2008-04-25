@@ -20,6 +20,64 @@
 
 namespace hamigaki { namespace archivers { namespace tar_detail {
 
+template<class String>
+inline String from_tar_string(const std::string& s)
+{
+    return s;
+}
+
+template<class String>
+inline String from_pax_string(const std::string& s)
+{
+    return charset::to_code_page(charset::from_utf8(s), 0, "_");
+}
+
+template<class Path>
+inline tar::basic_header<Path> to_wide(const tar::header& head)
+{
+    return head;
+}
+
+#if !defined(BOOST_FILESYSTEM_NARROW_ONLY)
+template<>
+inline std::wstring from_tar_string<std::wstring>(const std::string& s)
+{
+    return charset::from_code_page(s, 0);
+}
+
+template<>
+inline std::wstring from_pax_string<std::wstring>(const std::string& s)
+{
+    return charset::from_utf8(s);
+}
+
+template<>
+inline tar::wheader to_wide<boost::filesystem::wpath>(const tar::header& head)
+{
+    tar::wheader tmp;
+
+    tmp.path = tar_detail::from_tar_string<std::wstring>(head.path.string());
+    tmp.permissions = head.permissions;
+    tmp.uid = head.uid;
+    tmp.gid = head.gid;
+    tmp.file_size = head.file_size;
+    tmp.modified_time = head.modified_time;
+    tmp.access_time = head.access_time;
+    tmp.change_time = head.change_time;
+    tmp.type_flag = head.type_flag;
+    tmp.link_path =
+        tar_detail::from_tar_string<std::wstring>(head.link_path.string());
+    tmp.format = head.format;
+    tmp.user_name = charset::from_code_page(head.user_name, 0);
+    tmp.group_name = charset::from_code_page(head.group_name, 0);
+    tmp.dev_major = head.dev_major;
+    tmp.dev_minor = head.dev_minor;
+    tmp.comment = charset::from_code_page(head.comment, 0);
+
+    return tmp;
+}
+#endif
+
 inline boost::uint32_t decode_nsec(const char* beg, const char* end)
 {
     std::string buf(beg, end);
@@ -65,13 +123,18 @@ inline filesystem::timestamp to_timestamp(const char* beg, const char* end)
 
 namespace hamigaki { namespace archivers { namespace detail {
 
-template<class Source, class Path=boost::filesystem::path>
+template<class Source, class Path>
 class basic_tar_file_source_impl
 {
 private:
     typedef detail::basic_ustar_file_source_impl<Source> ustar_type;
+    typedef detail::tar_ex_header<Path> tar_ex_header;
 
 public:
+    typedef Path path_type;
+    typedef typename Path::string_type string_type;
+    typedef tar::basic_header<Path> header_type;
+
     explicit basic_tar_file_source_impl(const Source& src)
         : ustar_(src), is_pax_(false)
     {
@@ -82,7 +145,7 @@ public:
         if (!ustar_.next_entry())
             return false;
 
-        header_ = ustar_.header();
+        header_ = tar_detail::to_wide<Path>(ustar_.header());
 
         if (header_.type_flag == tar::type_flag::global)
         {
@@ -91,7 +154,7 @@ public:
             if (!ustar_.next_entry())
                 throw boost::iostreams::detail::bad_read();
 
-            header_ = ustar_.header();
+            header_ = tar_detail::to_wide<Path>(ustar_.header());
             is_pax_ = true;
         }
 
@@ -105,7 +168,7 @@ public:
             if (!ustar_.next_entry())
                 throw boost::iostreams::detail::bad_read();
 
-            header_ = ustar_.header();
+            header_ = tar_detail::to_wide<Path>(ustar_.header());
             is_pax = true;
         }
 
@@ -119,7 +182,7 @@ public:
             if (!ustar_.next_entry())
                 throw boost::iostreams::detail::bad_read();
 
-            header_ = ustar_.header();
+            header_ = tar_detail::to_wide<Path>(ustar_.header());
         }
 
         if (is_pax)
@@ -161,7 +224,7 @@ public:
         return true;
     }
 
-    tar::header header() const
+    header_type header() const
     {
         return header_;
     }
@@ -173,11 +236,11 @@ public:
 
 private:
     ustar_type ustar_;
-    tar::header header_;
+    header_type header_;
     tar_ex_header global_;
     bool is_pax_;
 
-    boost::filesystem::path read_long_link()
+    Path read_long_link()
     {
         std::string buf;
 
@@ -188,7 +251,7 @@ private:
         if (!buf.empty() && (*(buf.rbegin()) == '\0'))
             buf.resize(buf.size()-1);
 
-        return buf;
+        return tar_detail::from_tar_string<string_type>(buf);
     }
 
     void read_extended_header(tar_ex_header& ext)
@@ -224,7 +287,7 @@ private:
             const char* end = beg + (size - 1);
 
             if (key == "path")
-                ext.path = beg;
+                ext.path = tar_detail::from_pax_string<string_type>(beg);
             else if (key == "uid")
                 ext.uid = hamigaki::from_dec<boost::intmax_t>(beg, end);
             else if (key == "gid")
@@ -238,13 +301,13 @@ private:
             else if (key == "ctime")
                 ext.change_time = tar_detail::to_timestamp(beg, end);
             else if (key == "linkpath")
-                ext.link_path = beg;
+                ext.link_path = tar_detail::from_pax_string<string_type>(beg);
             else if (key == "uname")
-                ext.user_name = beg;
+                ext.user_name = tar_detail::from_pax_string<string_type>(beg);
             else if (key == "gname")
-                ext.group_name = beg;
+                ext.group_name = tar_detail::from_pax_string<string_type>(beg);
             else if (key == "comment")
-                ext.comment = beg;
+                ext.comment = tar_detail::from_pax_string<string_type>(beg);
         }
     }
 };
