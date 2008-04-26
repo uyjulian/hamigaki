@@ -240,7 +240,7 @@ public:
                 tar_detail::is_non_ascii(head.link_path.string()) )
             {
                 std::string linkpath =
-                    tar_detail::to_tar_string(head.link_path.string());
+                    tar_detail::to_pax_string(head.link_path.string());
                 ex += tar_detail::make_ex_header_recoed("linkpath", linkpath);
 
                 long_link.resize(tar::raw_header::name_size);
