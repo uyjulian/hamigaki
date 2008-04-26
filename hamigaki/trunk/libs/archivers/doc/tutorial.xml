@@ -4,7 +4,7 @@
 <!--
   Hamigaki.Archivers Library Document Source
 
-  Copyright Takeshi Mouri 2006, 2007.
+  Copyright Takeshi Mouri 2006-2008.
   Distributed under the Boost Software License, Version 1.0.
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
@@ -54,9 +54,9 @@ int main()
 
     <para>tarファイルを作成するには、クラス<classname>tar_file_sink</classname>を用いる。コンストラクタの引数は、作成するtarファイルのパス名である。</para>
 
-    <para>アーカイブに追加する個々のファイルは(アーカイブ)エントリと呼ばれ、それぞれ個別のヘッダ情報を持つ。エントリを追加するには、適切な値を設定した構造体<classname>tar::header</classname>を引数にして、メンバ関数<methodname>create_entry</methodname>()を呼び出す。</para>
+    <para>アーカイブに追加する個々のファイルは(アーカイブ)エントリと呼ばれ、それぞれ個別のヘッダ情報を持つ。エントリを追加するには、適切な値を設定した構造体<classname alt="tar::basic_header">tar::header</classname>を引数にして、メンバ関数<methodname>create_entry</methodname>()を呼び出す。</para>
 
-    <para><classname>tar::header</classname>のメンバ変数の内、<code>path</code>(ファイルのパス名)と<code>file_size</code>(ファイルサイズ)は必須項目である。それ以外のメンバに関しては<link linkend="hamigaki.archivers.tar.header">ドキュメント</link>を参照せよ。</para>
+    <para><classname alt="tar::basic_header">tar::header</classname>のメンバ変数の内、<code>path</code>(ファイルのパス名)と<code>file_size</code>(ファイルサイズ)は必須項目である。それ以外のメンバに関しては<link linkend="hamigaki.archivers.tar.header">ドキュメント</link>を参照せよ。</para>
 
     <para><methodname>create_entry</methodname>()を呼び出すと、アーカイブは<conceptname>Sink</conceptname>として書き込み可能となる。</para>
 
