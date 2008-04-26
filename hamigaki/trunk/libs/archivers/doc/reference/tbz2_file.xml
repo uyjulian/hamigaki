@@ -4,7 +4,7 @@
 <!--
   Hamigaki.Archivers Library Document Source
 
-  Copyright Takeshi Mouri 2006, 2007.
+  Copyright Takeshi Mouri 2006-2008.
   Distributed under the Boost Software License, Version 1.0.
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
@@ -17,10 +17,13 @@
       <class name="basic_tbz2_file_source">
         <template>
           <template-type-parameter name="Source"/>
+          <template-type-parameter name="Path">
+            <default>boost::filesystem::path</default>
+          </template-type-parameter>
         </template>
 
         <inherit access="public">
-          <type><classname>basic_tar_file_source</classname>&lt;boost::iostreams::composite&lt;boost::iostreams::bzip2_decompressor, Source&gt; &gt;</type>
+          <type><classname>basic_tar_file_source</classname>&lt;boost::iostreams::composite&lt;boost::iostreams::bzip2_decompressor, Source&gt;, Path&gt;</type>
           <purpose>Exposition only</purpose>
         </inherit>
 
@@ -50,13 +53,29 @@
         </constructor>
       </class>
 
+      <class name="wtbz2_file_source">
+        <inherit access="public">
+          <type><classname>basic_tbz2_file_source</classname>&lt;<classname>hamigaki::iostreams::file_source</classname>, boost::filesystem::wpath&gt;</type>
+          <purpose>Exposition only</purpose>
+        </inherit>
+
+        <constructor specifiers="explicit">
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+        </constructor>
+      </class>
+
       <class name="basic_tbz2_file_sink">
         <template>
           <template-type-parameter name="Sink"/>
+          <template-type-parameter name="Path">
+            <default>boost::filesystem::path</default>
+          </template-type-parameter>
         </template>
 
         <inherit access="public">
-          <type><classname>basic_tar_file_sink</classname>&lt;boost::iostreams::composite&lt;boost::iostreams::bzip2_compressor, Sink&gt; &gt;</type>
+          <type><classname>basic_tar_file_sink</classname>&lt;boost::iostreams::composite&lt;boost::iostreams::bzip2_compressor, Sink&gt;, Path&gt;</type>
           <purpose>Exposition only</purpose>
         </inherit>
 
@@ -76,6 +95,19 @@
       <class name="tbz2_file_sink">
         <inherit access="public">
           <type><classname>basic_tbz2_file_sink</classname>&lt;<classname>hamigaki::iostreams::file_sink</classname>&gt;</type>
+          <purpose>Exposition only</purpose>
+        </inherit>
+
+        <constructor>
+          <parameter name="path">
+            <paramtype>const std::string&amp;</paramtype>
+          </parameter>
+        </constructor>
+      </class>
+
+      <class name="wtbz2_file_sink">
+        <inherit access="public">
+          <type><classname>basic_tbz2_file_sink</classname>&lt;<classname>hamigaki::iostreams::file_sink</classname>, boost::filesystem::wpath&gt;</type>
           <purpose>Exposition only</purpose>
         </inherit>
 
