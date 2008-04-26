@@ -73,6 +73,7 @@ inline tar::wheader to_wide<boost::filesystem::wpath>(const tar::header& head)
     tmp.dev_major = head.dev_major;
     tmp.dev_minor = head.dev_minor;
     tmp.comment = charset::from_code_page(head.comment, 0);
+    tmp.charset = charset::from_code_page(head.charset, 0);
 
     return tmp;
 }
@@ -221,6 +222,9 @@ public:
         if (!ext.comment.empty())
             header_.comment = ext.comment;
 
+        if (!ext.charset.empty())
+            header_.charset = ext.charset;
+
         return true;
     }
 
@@ -308,6 +312,8 @@ private:
                 ext.group_name = tar_detail::from_pax_string<string_type>(beg);
             else if (key == "comment")
                 ext.comment = tar_detail::from_pax_string<string_type>(beg);
+            else if (key == "charset")
+                ext.charset = tar_detail::from_pax_string<string_type>(beg);
         }
     }
 };

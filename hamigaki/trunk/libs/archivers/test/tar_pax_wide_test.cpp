@@ -32,6 +32,7 @@ void check_header(const ar::tar::wheader& old, const ar::tar::wheader& now)
     BOOST_CHECK(old.change_time == now.change_time);
     BOOST_CHECK_EQUAL(old.permissions, now.permissions);
     BOOST_CHECK(old.comment == now.comment);
+    BOOST_CHECK(old.charset == now.charset);
 }
 
 void unicode_test()
@@ -45,6 +46,7 @@ void unicode_test()
     head.change_time = fs_ex::timestamp(12345, 0);
     head.permissions = 0123;
     head.comment = L"\xC548\xB155\xD558\xC2ED\xB2C8\xAE4C";
+    head.charset = L"BINARY";
 
     io_ex::tmp_file archive;
     ar::basic_tar_file_sink<

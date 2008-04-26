@@ -119,6 +119,10 @@
             <type>string_type</type>
           </data-member>
 
+          <data-member name="charset">
+            <type>string_type</type>
+          </data-member>
+
           <description>
             <para>
               <informaltable frame="all">
@@ -209,6 +213,11 @@
                     <row>
                       <entry>comment</entry>
                       <entry>コメント文字列</entry>
+                      <entry></entry>
+                    </row>
+                    <row>
+                      <entry>charset</entry>
+                      <entry>ファイルコンテンツの文字集合</entry>
                       <entry></entry>
                     </row>
                   </tbody>

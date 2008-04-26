@@ -1,6 +1,6 @@
 // tar_pax_test.cpp: test case for pax formatted tar
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -33,6 +33,7 @@ void check_header(const ar::tar::header& old, const ar::tar::header& now)
     BOOST_CHECK(old.change_time == now.change_time);
     BOOST_CHECK_EQUAL(old.permissions, now.permissions);
     BOOST_CHECK_EQUAL(old.comment, now.comment);
+    BOOST_CHECK_EQUAL(old.charset, now.charset);
 }
 
 void tar_test()
@@ -49,6 +50,7 @@ void tar_test()
     head.file_size = data.size();
     head.permissions = 0123;
     head.comment = "test comment";
+    head.charset = "ISO-IR 646 1990";
 
     io_ex::tmp_file archive;
     ar::basic_tar_file_sink<

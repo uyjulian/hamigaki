@@ -62,6 +62,7 @@ inline tar::header to_narrow(const tar::wheader& head)
     tmp.dev_major = head.dev_major;
     tmp.dev_minor = head.dev_minor;
     tmp.comment = charset::to_code_page(head.comment, 0);
+    tmp.charset = charset::to_code_page(head.charset, 0);
 
     return tmp;
 }
@@ -271,6 +272,15 @@ public:
                     tar_detail::make_ex_header_recoed(
                         "comment",
                         tar_detail::to_pax_string(head.comment)
+                    );
+            }
+
+            if (!head.charset.empty())
+            {
+                ex +=
+                    tar_detail::make_ex_header_recoed(
+                        "charset",
+                        tar_detail::to_pax_string(head.charset)
                     );
             }
 

@@ -44,6 +44,7 @@ struct basic_header
     boost::uint16_t dev_major;
     boost::uint16_t dev_minor;
     string_type comment;
+    string_type charset;
 
     basic_header()
         : permissions(0644), uid(0), gid(0), file_size(0)

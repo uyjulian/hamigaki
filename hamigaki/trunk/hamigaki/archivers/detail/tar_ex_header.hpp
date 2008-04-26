@@ -35,6 +35,7 @@ struct tar_ex_header
     string_type user_name;
     string_type group_name;
     string_type comment;
+    string_type charset;
 };
 
 } } } // End namespaces detail, archivers, hamigaki.
