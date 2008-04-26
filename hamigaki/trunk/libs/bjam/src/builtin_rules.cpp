@@ -590,8 +590,8 @@ HAMIGAKI_BJAM_DECL string_list check_if_file(context& ctx)
 
     const std::string& file = args[0][0];
 
-    fs::path ph(file, fs::native);
-    fs::path work(ctx.working_directory(), fs::native);
+    fs::path ph(file);
+    fs::path work(ctx.working_directory());
     ph = fs::complete(ph, work);
     if (fs::is_regular(ph))
         return string_list(std::string("true"));

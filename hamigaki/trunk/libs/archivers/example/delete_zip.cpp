@@ -53,11 +53,11 @@ int main(int argc, char* argv[])
 
         std::setlocale(LC_ALL, "");
 
-        fs::path zip_name(argv[1], fs::native);
+        fs::path zip_name(argv[1]);
         const fs::path& bak_name = change_extension(zip_name, ".bak");
         rename(zip_name, bak_name);
 
-        fs::path del_name(argv[2], fs::native);
+        fs::path del_name(argv[2]);
 
         {
             ar::raw_zip_file_source src(bak_name.file_string());

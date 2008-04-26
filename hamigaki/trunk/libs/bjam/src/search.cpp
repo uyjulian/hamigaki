@@ -67,7 +67,7 @@ std::string search_target(context& ctx, const std::string& name)
             compo.root = search_list[i];
             filename = make_path(compo);
 
-            if (fs::exists(fs::path(filename, fs::native)))
+            if (fs::exists(fs::path(filename)))
             {
                 found = true;
                 break;
@@ -78,8 +78,8 @@ std::string search_target(context& ctx, const std::string& name)
     if (!found)
     {
         compo.root.clear();
-        fs::path ph(make_path(compo), fs::native);
-        fs::path work(ctx.working_directory(), fs::native);
+        fs::path ph(make_path(compo));
+        fs::path work(ctx.working_directory());
         filename = fs::complete(ph, work).file_string();
     }
 

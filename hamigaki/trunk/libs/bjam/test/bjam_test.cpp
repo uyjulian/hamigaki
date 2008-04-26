@@ -452,7 +452,7 @@ void include_test()
 {
     bjam::context ctx;
 
-    fs::path ph(hamigaki_root, fs::native);
+    fs::path ph(hamigaki_root);
     ph /= "libs/bjam/test/include_test.jam";
 
     std::string src;
@@ -467,7 +467,7 @@ void back_trace_test()
 {
     bjam::context ctx;
 
-    fs::path ph(hamigaki_root, fs::native);
+    fs::path ph(hamigaki_root);
     ph /= "libs/bjam/test/back_trace_test.jam";
     std::string filename = ph.file_string();
 

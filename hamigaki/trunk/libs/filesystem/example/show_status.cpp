@@ -1,6 +1,6 @@
 // show_status.cpp: show the status of the file
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
             return 1;
         }
 
-        fs::path ph(argv[1], fs::native);
+        fs::path ph(argv[1]);
         const fs_ex::file_status& s = fs_ex::status(ph);
         if (s.type() == fs_ex::file_not_found)
             throw std::runtime_error("file not found");

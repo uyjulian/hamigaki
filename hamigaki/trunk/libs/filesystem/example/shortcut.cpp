@@ -1,6 +1,6 @@
 // shortcut.cpp: create shortcut
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -47,8 +47,8 @@ int main(int argc, char* argv[])
 
         com_library using_com;
 
-        fs::path target(argv[1], fs::native);
-        fs::path ph(argv[2], fs::native);
+        fs::path target(argv[1]);
+        fs::path ph(argv[2]);
         if (extension(ph) != ".lnk")
             ph = ph.branch_path() / (ph.leaf() + ".lnk");
         fs_ex::create_shell_link(target, ph);

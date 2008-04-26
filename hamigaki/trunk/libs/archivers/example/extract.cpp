@@ -273,7 +273,7 @@ int main(int argc, char* argv[])
 
         std::auto_ptr<extractor_base> ext_ptr;
         const std::string filename(argv[1]);
-        const fs::path ph(filename, fs::native);
+        const fs::path ph(filename);
         if (!fs::exists(ph))
             throw std::runtime_error("file not found");
 

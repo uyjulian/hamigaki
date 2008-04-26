@@ -331,7 +331,7 @@ int main(int argc, char* argv[])
                     "gzip cannot contain two files or more");
             }
 
-            fs::path ph(argv[2], fs::native);
+            fs::path ph(argv[2]);
             if (fs::is_directory(ph))
                 throw std::runtime_error("gzip cannot compress a directory");
 
@@ -356,7 +356,7 @@ int main(int argc, char* argv[])
                     "bzip2 cannot contain two files or more");
             }
 
-            fs::path ph(argv[2], fs::native);
+            fs::path ph(argv[2]);
             if (fs::is_directory(ph))
                 throw std::runtime_error("bzip2 cannot compress a directory");
 
@@ -375,7 +375,7 @@ int main(int argc, char* argv[])
         for (int i = 2; i < argc; ++i)
         {
             entry e;
-            e.path = fs::path(argv[i], fs::native);
+            e.path = fs::path(argv[i]);
 
             const fs_ex::file_status& s = fs_ex::symlink_status(e.path);
 

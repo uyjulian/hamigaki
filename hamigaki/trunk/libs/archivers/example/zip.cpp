@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
         for (int i = 2; i < argc; ++i)
         {
             ar::zip::header head;
-            head.path = fs::path(argv[i], fs::native);
+            head.path = fs::path(argv[i]);
 
             const fs_ex::file_status& s = fs_ex::symlink_status(head.path);
 

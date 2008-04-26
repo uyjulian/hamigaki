@@ -39,7 +39,7 @@ string_list glob_impl(
 
     string_list result;
 
-    fs::path ph(dir, fs::native);
+    fs::path ph(dir);
     ph = fs::complete(ph, work);
 
     if (!is_directory(ph))
@@ -141,13 +141,13 @@ HAMIGAKI_BJAM_DECL string_list glob(
     const std::string& pattern, bool case_insensitive)
 {
     return glob_impl(
-        fs::path(work, fs::native), dir, pattern, case_insensitive, false);
+        fs::path(work), dir, pattern, case_insensitive, false);
 }
 
 HAMIGAKI_BJAM_DECL string_list
 glob_recursive(const std::string& work, const std::string& pattern)
 {
-    fs::path work_ph(work, fs::native);
+    fs::path work_ph(work);
 
     if ((pattern.size() >= 3) && (pattern[1] == ':'))
     {

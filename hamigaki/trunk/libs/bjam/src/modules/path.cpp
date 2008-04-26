@@ -1,6 +1,6 @@
 // path.cpp: bjam path module
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -31,8 +31,8 @@ HAMIGAKI_BJAM_DECL string_list exists(context& ctx)
 
     const std::string& location = args[0][0];
 
-    fs::path ph(location, fs::native);
-    fs::path work(ctx.working_directory(), fs::native);
+    fs::path ph(location);
+    fs::path work(ctx.working_directory());
     ph = fs::complete(ph, work);
     if (fs::exists(ph))
         return string_list(std::string("true"));
