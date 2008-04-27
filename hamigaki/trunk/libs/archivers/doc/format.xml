@@ -78,6 +78,13 @@
       <listitem>System Use Sharing Protocol 終端 ("ST" System Use Entry)</listitem>
       <listitem>拡張の選択 ("ES" System Use Entry)</listitem>
     </itemizedlist>
+
+    <itemizedlist>
+      <title>Unicode対応</title>
+      <listitem>Joliet拡張はファイル名や追加情報にUCS-2(ビッグエンディアン)を用いる。</listitem>
+      <listitem><classname>wiso_file_sink</classname>では、<code>set_joliet()</code>メンバ関数でJoliet拡張を有効にしたボリューム記述子を追加することで、Unicodeファイル名を含んだ書庫を作成することができる。</listitem>
+      <listitem><classname>wiso_file_source</classname>では、<code>is_joliet()</code>が<code>true</code>となるボリューム記述子を選択することで、Unicodeファイル名を読み出すことができる。</listitem>
+    </itemizedlist>
   </section>
 
   <section id="archivers.format.lzh">
@@ -115,6 +122,12 @@
       <listitem>ユーザー名ヘッダ (0x53)</listitem>
       <listitem>更新日時ヘッダ (0x54)</listitem>
     </itemizedlist>
+
+    <itemizedlist>
+      <title>Unicode対応</title>
+      <listitem>Level 2ヘッダでは拡張ヘッダ「Unicode ファイル名ヘッダ」と「Unicode パス名ヘッダ」が利用可能である。これらの拡張ヘッダではUTF-16(リトルエンディアン)が用いられる。</listitem>
+      <listitem><classname>wlzh_file_sink</classname>では、<classname alt="lha::basic_header">wheader</classname>の<code>level</code>に2(既定値)を設定することで、Unicodeファイル名を含んだ書庫を作成することができる。</listitem>
+    </itemizedlist>
   </section>
 
   <section id="archivers.format.tar">
@@ -147,6 +160,12 @@
       <listitem>ユーザー名ヘッダ (uname)</listitem>
       <listitem>最終状態変更時間ヘッダ (ctime)</listitem>
     </itemizedlist>
+
+    <itemizedlist>
+      <title>Unicode対応</title>
+      <listitem>pax拡張ヘッダは全てのデータをUTF-8で記録することになっている。</listitem>
+      <listitem><classname>wtar_file_sink</classname>では、<classname alt="tar::basic_header">wheader</classname>の<code>format</code>に<code>tar::pax</code>を設定することで、Unicodeファイル名を含んだ書庫を作成することができる。</listitem>
+    </itemizedlist>
   </section>
 
   <section id="archivers.format.zip">
@@ -172,6 +191,12 @@
       <listitem>Zip64フィールド (0x0001)</listitem>
       <listitem>拡張タイムスタンプフィールド (0x5455)</listitem>
       <listitem>Info-ZIP互換 新UNIXフィールド (0x7855)</listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <title>Unicode対応</title>
+      <listitem>ファイル名とコメントにUTF-8を用いるオプション「Language encoding flag」が存在する。</listitem>
+      <listitem><classname>wzip_file_sink</classname>は、ファイル名とコメントをUTF-8に変換して出力する。</listitem>
     </itemizedlist>
   </section>
 </section>
