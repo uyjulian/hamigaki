@@ -7,13 +7,16 @@
 
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
+#include <boost/config.hpp>
+
 #include "png_reader.hpp"
-#include <csetjmp>
 #include <istream>
 #include <stdexcept>
-#include <png.h>
 
-#if !defined(NDEBUG)
+#include <png.h>
+#include <csetjmp>
+
+#if defined(BOOST_WINDOWS) && !defined(NDEBUG)
     #include <windows.h>
 #endif
 
@@ -30,7 +33,7 @@ void PNGAPI process_error(png_struct*, const char* msg)
     throw std::runtime_error(msg);
 }
 
-#if defined(NDEBUG)
+#if !defined(BOOST_WINDOWS) || defined(NDEBUG)
 void PNGAPI process_warning(png_struct*, const char*)
 {
 }
