@@ -103,6 +103,17 @@ exe keyboard_test
     gtk
     ;
 
+exe png_test
+    :
+    png_test.cpp
+    png_reader.cpp
+    render_context.cpp
+    texture.cpp
+    gtk
+    open-gl
+    /hamigaki/png//hamigaki_png
+    ;
+
 exe render_context_test
     :
     render_context_test.cpp
