@@ -58,8 +58,8 @@ public:
         ::glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
         ::glClear(GL_COLOR_BUFFER_BIT);
 
-        ::glAlphaFunc(GL_GREATER, 0.1f);
-        ::glEnable(GL_ALPHA_TEST);
+        ::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        ::glEnable(GL_BLEND);
         ::glEnable(GL_TEXTURE_2D);
         texture_.bind();
 
