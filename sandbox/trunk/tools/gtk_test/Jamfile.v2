@@ -97,6 +97,10 @@ alias open-gl : GL ;
 
 }
 
+obj png_reader : png_reader.cpp /hamigaki/png//hamigaki_png ;
+obj render_context : render_context.cpp gtk open-gl ;
+obj texture : texture.cpp gtk open-gl ;
+
 exe keyboard_test
     :
     keyboard_test.cpp
@@ -106,9 +110,9 @@ exe keyboard_test
 exe png_test
     :
     png_test.cpp
-    png_reader.cpp
-    render_context.cpp
-    texture.cpp
+    png_reader
+    render_context
+    texture
     gtk
     open-gl
     /hamigaki/png//hamigaki_png
@@ -117,7 +121,7 @@ exe png_test
 exe render_context_test
     :
     render_context_test.cpp
-    render_context.cpp
+    render_context
     gtk
     open-gl
     ;
@@ -125,8 +129,8 @@ exe render_context_test
 exe texture_test
     :
     texture_test.cpp
-    render_context.cpp
-    texture.cpp
+    render_context
+    texture
     gtk
     open-gl
     ;
