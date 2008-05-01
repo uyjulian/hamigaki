@@ -24,8 +24,8 @@ typedef character_list::iterator character_iterator;
 
 struct game_system
 {
-    explicit game_system(void* hwnd)
-        : sound(hwnd)
+    explicit game_system(void* widget)
+        : sound(widget)
         , screen_width(640), screen_height(480)
         , gravity(-0.6f), min_vy(-10.0f)
     {

@@ -1,6 +1,6 @@
 // action_game.cpp: an action game of the prototype
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -14,52 +14,43 @@
 #include <exception>
 #include <iostream>
 
-#include <windows.h>
+#include <unistd.h>
 
 namespace fs = boost::filesystem;
 using hamigaki::system::windows_error;
 
-int WINAPI WinMain(
-    ::HINSTANCE hInstance, ::HINSTANCE, ::LPSTR lpCmdLine, int nCmdShow)
+int main(int argc, char* argv[])
 {
     try
     {
-        const char* filename = (*lpCmdLine) ? lpCmdLine : "action_game.agp-yh";
+        ::gtk_set_locale();
+        ::gtk_init(&argc, &argv);
+
+        const char* filename = (argc >= 2) ? argv[1] : "action_game.agp-yh";
         game_project proj = load_game_project(filename);
 
         fs::path dir = fs::path(filename).branch_path();
         if (!dir.empty())
-            ::SetCurrentDirectoryA(dir.directory_string().c_str());
+            ::chdir(dir.directory_string().c_str());
 
-        ::ATOM cls = register_main_window_class(hInstance);
-        ::HWND hwnd = create_main_window(hInstance, cls, proj);
+        GtkWidget* window = ::gtk_window_new(GTK_WINDOW_TOPLEVEL);
+        if (window == 0)
+            throw std::runtime_error("gtk_window_new() failed");
 
-        ::ShowWindow(hwnd, nCmdShow);
-        ::UpdateWindow(hwnd);
-        connect_d3d_device(hwnd);
+        main_window_data* pimpl = 0;
+        connect_signal(window, "destroy", G_CALLBACK(destroy), &pimpl);
+        connect_signal(window, "realize", G_CALLBACK(realize), &pimpl);
+        connect_signal(window, "unrealize", G_CALLBACK(unrealize), &pimpl);
+        ::g_timeout_add(16, &render, &pimpl);
 
-        ::MSG msg;
-        msg.message = WM_NULL;
-        while (msg.message != WM_QUIT)
-        {
-            if (::PeekMessageA(&msg, 0, 0, 0, PM_REMOVE))
-            {
-                ::TranslateMessage(&msg);
-                ::DispatchMessageA(&msg);
-            }
-            else
-            {
-                if (process_input(hwnd))
-                    render(hwnd);
-            }
-        }
+        ::gtk_widget_show_all(window);
+        ::gtk_main();
 
-        ::UnregisterClassA(MAKEINTATOM(cls), hInstance);
-        return msg.wParam;
+        return 0;
     }
     catch (const std::exception& e)
     {
-        ::MessageBoxA(0, e.what(), "Action Game", MB_OK);
+        std::cerr << "Error: " << e.what() << std::endl;
     }
-    return 0;
+    return 1;
 }

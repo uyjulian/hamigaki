@@ -13,7 +13,6 @@
 #include "character_repository.hpp"
 #include "collision_utility.hpp"
 #include "draw.hpp"
-#include "direct3d9.hpp"
 #include "fire_man_routine.hpp"
 #include "game_character.hpp"
 #include "game_system.hpp"
@@ -41,7 +40,9 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/next_prior.hpp>
 #include <cmath>
+#include <cstdio>
 #include <list>
+#include <time.h>
 
 #if !defined(NDEBUG)
     #define HAMIGAKI_DISPLAY_FPS
@@ -62,6 +63,13 @@ namespace layer
     const float hidden  =-1.00f;
 
 } // namespace layer
+
+boost::uint64_t get_tick_count()
+{
+    timespec ts;
+    ::clock_gettime(CLOCK_REALTIME, &ts);
+    return static_cast<boost::uint64_t>(ts.tv_sec)*1000 + ts.tv_nsec/1000000;
+}
 
 const boost::uint32_t miss_form = static_four_char_code<'M','I','S','S'>::value;
 
@@ -527,14 +535,16 @@ collision_event_type find_collision_event(const hamigaki::uuid& id)
 class main_window::impl
 {
 public:
-    explicit impl(::HWND handle, const game_project& proj)
-        : handle_(handle), project_(proj)
+    explicit impl(GtkWidget* widget, const game_project& proj)
+        : widget_(widget), project_(proj)
         , input_(handle_), system_(handle_), textures_(device_)
-        , active_(false), last_time_(::GetTickCount()), frames_(0)
+        , active_(false), last_time_(get_tick_count()), frames_(0)
 #if defined(HAMIGAKI_DISPLAY_FPS)
         , last_fps_time_(0), fps_count_(0)
 #endif
     {
+        ::gtk_window_set_title(widget_, "ActionGame");
+
         system_.gravity = boost::lexical_cast<float>(project_.gravity);
         system_.min_vy = boost::lexical_cast<float>(project_.min_vy);
         system_.screen_width = project_.screen_width;
@@ -546,30 +556,15 @@ public:
         stage_file_ = project_.start_map;
 
         reset_characters();
+
+        last_time_ = get_tick_count();
+#if defined(HAMIGAKI_DISPLAY_FPS)
+        last_fps_time_ = last_time_;
+#endif
     }
 
     ~impl()
     {
-    }
-
-    void connect_d3d_device()
-    {
-        ::D3DPRESENT_PARAMETERS params; 
-        std::memset(&params, 0, sizeof(params));
-        params.Windowed = TRUE;
-        params.SwapEffect = D3DSWAPEFFECT_DISCARD;
-        params.BackBufferFormat = D3DFMT_UNKNOWN;
-        params.EnableAutoDepthStencil = TRUE;
-        params.AutoDepthStencilFormat = D3DFMT_D16;
-
-        device_ = d3d_.create_device(
-            D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, handle_,
-            D3DCREATE_HARDWARE_VERTEXPROCESSING, params);
-
-        last_time_ = ::GetTickCount();
-#if defined(HAMIGAKI_DISPLAY_FPS)
-        last_fps_time_ = last_time_;
-#endif
     }
 
     bool process_input()
@@ -580,8 +575,8 @@ public:
             system_.command  = input_command();
 
         const unsigned long table[] = { 16, 17, 17 };
-        unsigned long now = ::GetTickCount();
-        unsigned long elapsed = now - last_time_;
+        boost::uint64_t now = get_tick_count();
+        unsigned long elapsed = static_cast<unsigned long>(now - last_time_);
         bool updated = false;
         while (elapsed >= table[frames_ % 3])
         {
@@ -600,9 +595,9 @@ public:
         if (now - last_fps_time_ >= 1000)
         {
             char buf[64];
-            int fps = fps_count_*1000/(now-last_fps_time_);
-            ::wsprintfA(buf, "FPS = %d", fps);
-            ::SetWindowTextA(handle_, buf);
+            int fps = fps_count_*1000/static_cast<int>(now-last_fps_time_);
+            std::sprintf(buf, "FPS = %d", fps);
+            ::gtk_window_set_title(widget_, buf);
 
             last_fps_time_ = now;
             fps_count_ = 0;
@@ -645,7 +640,7 @@ public:
     }
 
 private:
-    ::HWND handle_;
+    GtkWidget* widget_;
     game_project project_;
     input_engine input_;
     game_system system_;
@@ -654,10 +649,10 @@ private:
     texture_cache textures_;
     character_repository char_repository_;
     bool active_;
-    unsigned long last_time_;
+    boost::uint64_t last_time_;
     unsigned frames_;
 #if defined(HAMIGAKI_DISPLAY_FPS)
-    unsigned long last_fps_time_;
+    boost::uint64_t last_fps_time_;
     int fps_count_;
 #endif
     std::string stage_file_;

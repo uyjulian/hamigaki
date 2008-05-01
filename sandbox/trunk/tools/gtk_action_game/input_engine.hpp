@@ -1,6 +1,6 @@
 // input_engine.hpp: input engine for action_game
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -32,7 +32,7 @@ struct input_command
 class input_engine
 {
 public:
-    explicit input_engine(void* hwnd);
+    explicit input_engine(void* widget);
     ~input_engine();
 
     input_command operator()();

@@ -7,25 +7,94 @@
 
 # See http://hamigaki.sourceforge.jp/ for library home page.
 
-import boost-version ;
+import os ;
 import exec ;
+import string ;
 
-rule user-interface-gui ( properties * )
+if [ os.name ] = NT
 {
-    if <toolset>gcc in $(properties)
-    {
-        return <linkflags>-mwindows ;
-    }
-    else
-    {
-        return <user-interface>gui ;
-    }
+
+local gtk-root = [ modules.peek : GTK_ROOT ] ;
+local gtk-inc = $(gtk-root)/include ;
+local gtk-lib = $(gtk-root)/lib $(gtk-root)/bin ;
+
+lib gtk-win32-2.0 : : <search>$(gtk-lib) ;
+lib gdk-win32-2.0 : : <search>$(gtk-lib) ;
+lib gdi32 imm32 shell32 ole32 ;
+lib atk-1.0 : : <search>$(gtk-lib) ;
+lib gdk_pixbuf-2.0 : : <search>$(gtk-lib) ;
+lib pangowin32-1.0 : : <search>$(gtk-lib) ;
+lib pangocairo-1.0 : : <search>$(gtk-lib) ;
+lib pango-1.0 : : <search>$(gtk-lib) ;
+lib cairo : : <search>$(gtk-lib) ;
+lib gobject-2.0 : : <search>$(gtk-lib) ;
+lib gmodule-2.0 : : <search>$(gtk-lib) ;
+lib glib-2.0 : : <search>$(gtk-lib) ;
+lib intl : : <search>$(gtk-lib) ;
+lib iconv : : <search>$(gtk-lib) ;
+
+
+alias gtk
+    :
+    gtk-win32-2.0
+    gdk-win32-2.0
+    gdi32
+    imm32
+    shell32
+    ole32
+    atk-1.0
+    gdk_pixbuf-2.0
+    pangowin32-1.0
+    pangocairo-1.0
+    pango-1.0
+    cairo
+    gobject-2.0
+    gmodule-2.0
+    glib-2.0
+    intl
+    iconv
+    :
+    :
+    :
+    <include>$(gtk-inc)/gtk-2.0
+    <include>$(gtk-lib)/gtk-2.0/include
+    <include>$(gtk-inc)/atk-1.0
+    <include>$(gtk-inc)/cairo
+    <include>$(gtk-inc)/pango-1.0
+    <include>$(gtk-inc)/glib-2.0
+    <include>$(gtk-lib)/glib-2.0/include
+    <toolset>gcc:<cxxflags>-mms-bitfields
+    ;
+
+lib opengl32 ;
+lib user32 ;
+
+alias open-gl : opengl32 user32 ;
+
 }
-
-local requirements = ;
-if [ boost-version.version ] >= 1.35.0
+else
 {
-    requirements += <library>/boost-lib//boost_system ;
+
+local gtk-cflags = [ SHELL "pkg-config --cflags gtk+-2.0" ] ;
+gtk-cflags = [ string.words $(gtk-cflags) ] ;
+
+local gtk-ldflags = [ SHELL "pkg-config --libs gtk+-2.0" ] ;
+gtk-ldflags = [ string.words $(gtk-ldflags) ] ;
+
+alias gtk
+    :
+    :
+    :
+    :
+    <cflags>$(gtk-cflags)
+    <cxxflags>$(gtk-cflags)
+    <linkflags>$(gtk-ldflags)
+    ;
+
+lib GL ;
+
+alias open-gl : GL ;
+
 }
 
 exe action_game
@@ -61,21 +130,17 @@ exe action_game
     vanish_routine.cpp
     velocity_routine.cpp
     wait_se_routine.cpp
-    /directx//d3d9
-    /directx//dxerr9
+    gtk
+    open-gl
     /boost-lib//boost_filesystem
     /boost-lib//boost_iostreams
     /boost-lib//boost_serialization
     /boost-lib//boost_thread
     /hamigaki/audio//hamigaki_audio
-    /hamigaki/input//hamigaki_input
     /hamigaki/png//hamigaki_png
     :
-    <find-static-library>user32
-    <conditional>@user-interface-gui
     <threading>multi
     <define>NOMINMAX=1
-    $(requirements)
     ;
 
 exec.register-exec-all ;
