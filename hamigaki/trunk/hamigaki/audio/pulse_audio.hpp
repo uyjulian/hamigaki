@@ -1,0 +1,67 @@
+// pulse_audio.hpp: PulseAudio device
+
+// Copyright Takeshi Mouri 2008.
+// Distributed under the Boost Software License, Version 1.0.
+// (See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt)
+
+// See http://hamigaki.sourceforge.jp/libs/audio for library home page.
+
+#ifndef HAMIGAKI_AUDIO_PULSE_AUDIO_HPP
+#define HAMIGAKI_AUDIO_PULSE_AUDIO_HPP
+
+#include <hamigaki/audio/detail/config.hpp>
+#include <hamigaki/audio/detail/auto_link/hamigaki_audio.hpp>
+#include <hamigaki/audio/pcm_format.hpp>
+#include <boost/iostreams/categories.hpp>
+#include <boost/shared_ptr.hpp>
+
+#ifdef BOOST_HAS_ABI_HEADERS
+    #include BOOST_ABI_PREFIX
+#endif
+
+#ifdef BOOST_MSVC
+    #pragma warning(push)
+    #pragma warning(disable : 4251)
+#endif
+
+namespace hamigaki { namespace audio {
+
+class HAMIGAKI_AUDIO_DECL pulse_audio_sink
+{
+public:
+    typedef char char_type;
+
+    struct category
+        : boost::iostreams::sink_tag
+        , boost::iostreams::closable_tag
+        , boost::iostreams::optimally_buffered_tag
+        , pcm_format_tag
+    {};
+
+    pulse_audio_sink(const char* app, const char* name, const pcm_format& fmt);
+    std::streamsize write(const char* s, std::streamsize n);
+    pcm_format format() const;
+    void close();
+
+    std::streamsize optimal_buffer_size() const
+    {
+        return this->format().optimal_buffer_size();
+    }
+
+private:
+    class impl;
+    boost::shared_ptr<impl> pimpl_;
+};
+
+} } // End namespaces audio, hamigaki.
+
+#ifdef BOOST_MSVC
+    #pragma warning(pop)
+#endif
+
+#ifdef BOOST_HAS_ABI_HEADERS
+    #include BOOST_ABI_SUFFIX
+#endif
+
+#endif // HAMIGAKI_AUDIO_PULSE_AUDIO_HPP
