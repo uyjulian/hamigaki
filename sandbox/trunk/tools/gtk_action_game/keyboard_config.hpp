@@ -10,6 +10,7 @@
 #ifndef KEYBOARD_CONFIG_HPP
 #define KEYBOARD_CONFIG_HPP
 
+#include "key_codes.hpp"
 #include <fstream>
 #include <utility>
 
@@ -20,7 +21,9 @@ struct keyboard_config
     int punch;
     int reset;
 
-    keyboard_config() : jump(0x2C), dash(0x2D), punch(0x2E), reset(-1)
+    keyboard_config()
+        : jump(hamigaki::key_z), dash(hamigaki::key_x)
+        , punch(hamigaki::key_c), reset(-1)
     {
     }
 };

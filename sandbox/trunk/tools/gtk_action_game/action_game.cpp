@@ -7,6 +7,8 @@
 
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
+#include <boost/config.hpp>
+
 #include "game_project_io.hpp"
 #include "main_window.hpp"
 #include <hamigaki/system/windows_error.hpp>
@@ -14,7 +16,11 @@
 #include <exception>
 #include <iostream>
 
-#include <unistd.h>
+#if defined(BOOST_WINDOWS)
+    #include <windows.h>
+#else
+    #include <unistd.h>
+#endif
 
 namespace fs = boost::filesystem;
 using hamigaki::system::windows_error;
@@ -31,18 +37,17 @@ int main(int argc, char* argv[])
 
         fs::path dir = fs::path(filename).branch_path();
         if (!dir.empty())
+        {
+#if defined(BOOST_WINDOWS)
+            ::SetCurrentDirectoryA(dir.directory_string().c_str());
+#else
             ::chdir(dir.directory_string().c_str());
+#endif
+        }
 
-        GtkWidget* window = ::gtk_window_new(GTK_WINDOW_TOPLEVEL);
-        if (window == 0)
-            throw std::runtime_error("gtk_window_new() failed");
-
-        main_window_data* pimpl = 0;
-        connect_signal(window, "destroy", G_CALLBACK(destroy), &pimpl);
-        connect_signal(window, "realize", G_CALLBACK(realize), &pimpl);
-        connect_signal(window, "unrealize", G_CALLBACK(unrealize), &pimpl);
-        ::g_timeout_add(16, &render, &pimpl);
-
+        main_window_data data;
+        data.proj = proj;
+        GtkWidget* window = create_main_window(data);
         ::gtk_widget_show_all(window);
         ::gtk_main();
 

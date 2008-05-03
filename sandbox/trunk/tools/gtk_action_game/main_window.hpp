@@ -11,16 +11,20 @@
 #define MAIN_WINDOW_HPP
 
 #include "game_project.hpp"
-#include <string>
-#include <windows.h>
+#include <gtk/gtk.h>
 
-::ATOM register_main_window_class(::HINSTANCE hInstance);
+class main_window;
 
-::HWND create_main_window(
-    ::HINSTANCE hInstance, ::ATOM cls, const game_project& proj);
+struct main_window_data
+{
+    main_window_data() : pimpl(0)
+    {
+    }
 
-void connect_d3d_device(::HWND hwnd);
-bool process_input(::HWND hwnd);
-void render(::HWND hwnd);
+    main_window* pimpl;
+    game_project proj;
+};
+
+GtkWidget* create_main_window(main_window_data& data);
 
 #endif // MAIN_WINDOW_HPP

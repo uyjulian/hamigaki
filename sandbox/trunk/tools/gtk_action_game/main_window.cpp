@@ -7,137 +7,83 @@
 
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
-#include <hamigaki/system/windows_error.hpp>
 #include "main_window_impl.hpp"
 #include "main_window.hpp"
-
-using hamigaki::system::windows_error;
+#include <iostream>
+#include <stdexcept>
 
 namespace
 {
 
-::LRESULT CALLBACK window_proc(
-    ::HWND hwnd, ::UINT uMsg, ::WPARAM wParam, ::LPARAM lParam)
+void destroy(GtkWidget*, gpointer)
 {
+    ::gtk_main_quit();
+}
+
+void realize(GtkWidget* widget, gpointer user_data)
+{
+    main_window_data& data = *static_cast<main_window_data*>(user_data);
     try
     {
-        main_window* pimpl =
-            reinterpret_cast<main_window*>(
-                GetWindowLongPtr(hwnd, GWLP_USERDATA)
-            );
-
-        if (uMsg == WM_CREATE)
-        {
-            ::CREATESTRUCTA& data =
-                *reinterpret_cast< ::CREATESTRUCTA*>(lParam);
-
-            const game_project& proj =
-                *reinterpret_cast<const game_project*>(data.lpCreateParams);
-
-            pimpl = new main_window(hwnd, proj);
-            SetWindowLongPtr(
-                hwnd, GWLP_USERDATA, reinterpret_cast< ::LONG_PTR>(pimpl));
-        }
-        else if (uMsg == WM_DESTROY)
-        {
-            SetWindowLongPtr(hwnd, GWLP_USERDATA, 0);
-            delete pimpl;
-            ::PostQuitMessage(0);
-        }
-        else if (uMsg == WM_ACTIVATEAPP)
-        {
-            if (pimpl)
-                pimpl->active(wParam != FALSE);
-        }
+        data.pimpl = new main_window(widget, data.proj);
     }
     catch (const std::exception& e)
     {
-        ::MessageBoxA(hwnd, e.what(), "Action Game", MB_OK);
+        std::cerr << "Error: " << e.what() << std::endl;
+        data.pimpl = 0;
     }
-    return ::DefWindowProc(hwnd, uMsg, wParam, lParam);
+}
+
+void unrealize(GtkWidget*, gpointer user_data)
+{
+    main_window*& pimpl = *static_cast<main_window**>(user_data);
+    delete pimpl;
+    pimpl = 0;
+}
+
+gboolean frame(gpointer user_data)
+{
+    if (main_window*& pimpl = *static_cast<main_window**>(user_data))
+    {
+        try
+        {
+            if (pimpl->process_input())
+                pimpl->render();
+        }
+        catch (const std::exception& e)
+        {
+            std::cerr << "Error: " << e.what() << std::endl;
+        }
+    }
+
+    return TRUE;
+}
+
+template<class Widget, class Arg>
+inline gulong connect_signal(
+    Widget* w, const char* sig, GCallback func, Arg* arg)
+{
+    gulong id = ::g_signal_connect(G_OBJECT(w), sig, func, arg);
+    if (id == 0)
+        throw std::runtime_error("g_signal_connect() failed");
+    return id;
 }
 
 } // namespace
 
-::ATOM register_main_window_class(::HINSTANCE hInstance)
+GtkWidget* create_main_window(main_window_data& data)
 {
-    ::WNDCLASSEXA wc;
-    std::memset(&wc, 0, sizeof(wc));
-    wc.cbSize = sizeof(wc);
-    wc.style = CS_CLASSDC;
-    wc.lpfnWndProc = &window_proc;
-    wc.cbClsExtra = 0;
-    wc.cbWndExtra = sizeof(::LONG_PTR);
-    wc.hInstance = hInstance;
-    wc.hIcon = ::LoadIcon(0, IDI_APPLICATION);
-    wc.hCursor = ::LoadCursor(0, IDC_ARROW);
-    wc.hbrBackground = 0;
-    wc.lpszMenuName = 0;
-    wc.lpszClassName = "MainWindow";
-    wc.hIconSm = 0;
+    GtkWidget* window = ::gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    if (window == 0)
+        throw std::runtime_error("gtk_window_new() failed");
 
-    ::ATOM cls = ::RegisterClassExA(&wc);
-    if (cls == 0)
-        throw windows_error(::GetLastError(), "RegisterClassExA()");
+    ::gtk_window_set_default_size(
+        GTK_WINDOW(window), data.proj.screen_width, data.proj.screen_height);
 
-    return cls;
-}
+    connect_signal(window, "destroy", G_CALLBACK(destroy), &data.pimpl);
+    connect_signal(window, "realize", G_CALLBACK(realize), &data);
+    connect_signal(window, "unrealize", G_CALLBACK(unrealize), &data.pimpl);
+    ::g_timeout_add(16, &frame, &data.pimpl);
 
-::HWND
-create_main_window(::HINSTANCE hInstance, ::ATOM cls, const game_project& proj)
-{
-    ::DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
-    ::DWORD ex_style = 0;
-
-    ::RECT r = { 0, 0, proj.screen_width, proj.screen_height };
-    ::AdjustWindowRectEx(&r, style, FALSE, ex_style);
-
-    std::string title = proj.title;
-    if (title.empty())
-        title = "Action Game";
-
-    ::HWND hwnd = ::CreateWindowExA(
-        ex_style, MAKEINTATOM(cls), title.c_str(), style,
-        CW_USEDEFAULT, CW_USEDEFAULT, r.right - r.left, r.bottom - r.top,
-        0, 0, hInstance, const_cast<game_project*>(&proj)
-    );
-    if (hwnd == 0)
-        throw windows_error(::GetLastError(), "CreateWindowExA()");
-
-    return hwnd;
-}
-
-void connect_d3d_device(::HWND hwnd)
-{
-    main_window* pimpl =
-        reinterpret_cast<main_window*>(
-            GetWindowLongPtr(hwnd, GWLP_USERDATA)
-        );
-
-    if (pimpl)
-        pimpl->connect_d3d_device();
-}
-
-bool process_input(::HWND hwnd)
-{
-    main_window* pimpl =
-        reinterpret_cast<main_window*>(
-            GetWindowLongPtr(hwnd, GWLP_USERDATA)
-        );
-
-    if (pimpl)
-        return pimpl->process_input();
-    else
-        return false;
-}
-
-void render(::HWND hwnd)
-{
-    main_window* pimpl =
-        reinterpret_cast<main_window*>(
-            GetWindowLongPtr(hwnd, GWLP_USERDATA)
-        );
-
-    if (pimpl)
-        pimpl->render();
+    return window;
 }

@@ -116,14 +116,16 @@ exe action_game
     main_window.cpp
     main_window_impl.cpp
     player_routine.cpp
-    png_loader.cpp
+    png_reader.cpp
     pipe_routine.cpp
     pop_up_routine.cpp
+    render_context.cpp
     side_scrolling_routine.cpp
     sound_engine.cpp
     sprite_info.cpp
     sprite_info_cache.cpp
     stage_map_load.cpp
+    texture.cpp
     texture_cache.cpp
     transfer_info.cpp
     turn_routine.cpp

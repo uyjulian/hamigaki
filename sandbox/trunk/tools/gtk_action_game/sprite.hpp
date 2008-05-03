@@ -10,51 +10,58 @@
 #ifndef SPRITE_HPP
 #define SPRITE_HPP
 
-#include "direct3d_device9.hpp"
+#include <boost/config.hpp>
 #include "sprite_form.hpp"
+#include "texture.hpp"
 
-struct transformed_vertex
-{
-    float x, y, z, rhw;
-    unsigned long color;
-    float tu, vu;
-};
+#if defined(BOOST_WINDOWS)
+    #include <windows.h>
+#endif
 
-inline void draw_sprite(direct3d_device9& device,
-    float x, float y, float z, direct3d_texture9& texture,
+#include <GL/gl.h>
+
+inline void draw_sprite(
+    float x, float y, float z, hamigaki::texture& texture,
     unsigned long color = 0xFFFFFFFFul)
 {
-    const ::D3DSURFACE_DESC& desc = texture.description(0);
-    float width = static_cast<float>(desc.Width);
-    float height = static_cast<float>(desc.Height);;
+    float width = static_cast<float>(texture.width());
+    float height = static_cast<float>(texture.height());;
 
     x -= 0.5f;
     y -= 0.5f;
 
-    const transformed_vertex vertices[] =
-    {
-        { x,       y,        z, 1.0f, color, 0.0f, 0.0f },
-        { x+width, y,        z, 1.0f, color, 1.0f, 0.0f },
-        { x,       y+height, z, 1.0f, color, 0.0f, 1.0f },
-        { x+width, y+height, z, 1.0f, color, 1.0f, 1.0f }
-    };
+    ::glColor4b(
+        static_cast<unsigned char>((color >> 16) & 0xFF),
+        static_cast<unsigned char>((color >>  8) & 0xFF),
+        static_cast<unsigned char>((color      ) & 0xFF),
+        static_cast<unsigned char>((color >> 24) & 0xFF)
+    );
 
-    device.set_vertex_format(D3DFVF_XYZRHW|D3DFVF_DIFFUSE|D3DFVF_TEX1);
-    device.set_texture(texture, 0);
-    device.draw_primitive(
-        D3DPT_TRIANGLESTRIP, 2, vertices, sizeof(vertices[0]));
+    texture.bind();
+    ::glBegin(GL_TRIANGLE_STRIP);
+    ::glTexCoord2f(0.0f, 0.0f);
+    ::glVertex3f(x,       y,        z);
+    ::glTexCoord2f(1.0f, 0.0f);
+    ::glVertex3f(x+width, y,        z);
+    ::glTexCoord2f(1.0f, 1.0f);
+    ::glVertex3f(x,       y+height, z);
+    ::glTexCoord2f(0.0f, 1.0f);
+    ::glVertex3f(x+width, y+height, z);
+    ::glEnd();
 }
 
-inline void draw_sprite(direct3d_device9& device,
+inline void draw_sprite(
     float x, float y, float z,
-    direct3d_texture9& texture, int tx, int ty, int tw, int th,
+    hamigaki::texture& texture, int tx, int ty, int tw, int th,
     boost::uint32_t options, unsigned long color = 0xFFFFFFFFul)
 {
-    const ::D3DSURFACE_DESC& desc = texture.description(0);
-    float tu1 = static_cast<float>(tx) / static_cast<float>(desc.Width);
-    float tu2 = static_cast<float>(tx+tw) / static_cast<float>(desc.Width);
-    float tv1 = static_cast<float>(ty) / static_cast<float>(desc.Height);
-    float tv2 = static_cast<float>(ty+th) / static_cast<float>(desc.Height);
+    float width = static_cast<float>(texture.width());
+    float height = static_cast<float>(texture.height());;
+
+    float tu1 = static_cast<float>(tx) / static_cast<float>(width);
+    float tu2 = static_cast<float>(tx+tw) / static_cast<float>(width);
+    float tv1 = static_cast<float>(ty) / static_cast<float>(height);
+    float tv2 = static_cast<float>(ty+th) / static_cast<float>(height);
 
     if ((options & sprite_options::back) != 0)
         std::swap(tu1, tu2);
@@ -64,18 +71,24 @@ inline void draw_sprite(direct3d_device9& device,
     x -= 0.5f;
     y -= 0.5f;
 
-    const transformed_vertex vertices[] =
-    {
-        { x,    y,    z, 1.0f, color, tu1, tv1 },
-        { x+tw, y,    z, 1.0f, color, tu2, tv1 },
-        { x,    y+th, z, 1.0f, color, tu1, tv2 },
-        { x+tw, y+th, z, 1.0f, color, tu2, tv2 }
-    };
+    ::glColor4b(
+        static_cast<unsigned char>((color >> 16) & 0xFF),
+        static_cast<unsigned char>((color >>  8) & 0xFF),
+        static_cast<unsigned char>((color      ) & 0xFF),
+        static_cast<unsigned char>((color >> 24) & 0xFF)
+    );
 
-    device.set_vertex_format(D3DFVF_XYZRHW|D3DFVF_DIFFUSE|D3DFVF_TEX1);
-    device.set_texture(texture, 0);
-    device.draw_primitive(
-        D3DPT_TRIANGLESTRIP, 2, vertices, sizeof(vertices[0]));
+    texture.bind();
+    ::glBegin(GL_TRIANGLE_STRIP);
+    ::glTexCoord2f(tu1, tv1);
+    ::glVertex3f(x,    y,    z);
+    ::glTexCoord2f(tu2, tv1);
+    ::glVertex3f(x+tw, y,    z);
+    ::glTexCoord2f(tu1, tv2);
+    ::glVertex3f(x,    y+th, z);
+    ::glTexCoord2f(tu2, tv2);
+    ::glVertex3f(x+tw, y+th, z);
+    ::glEnd();
 }
 
 #endif // SPRITE_HPP

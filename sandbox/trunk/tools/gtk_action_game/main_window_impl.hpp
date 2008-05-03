@@ -21,6 +21,7 @@ public:
     explicit main_window(GtkWidget* widget, const game_project& proj);
     bool process_input();
     void render();
+    void active(bool val);
 
 private:
     class impl;

@@ -8,17 +8,47 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "texture_cache.hpp"
-#include "direct3d_texture9.hpp"
-#include "png_loader.hpp"
-#include <map>
+#include "png_reader.hpp"
+#include <boost/ptr_container/ptr_map.hpp>
+#include <boost/scoped_array.hpp>
+#include <cstring>
+#include <fstream>
+
+namespace
+{
+
+void load_png_to_texture(hamigaki::texture& tex, const std::string& filename)
+{
+    std::ifstream is(filename.c_str(), std::ios_base::binary);
+
+    hamigaki::png_reader png(is);
+    const int width = static_cast<int>(png.width());
+    const int height = static_cast<int>(png.height());
+    const unsigned long pitch = png.pitch();
+
+    typedef unsigned char ubyte;
+    boost::scoped_array<ubyte> row(new ubyte[pitch]);
+    boost::scoped_array<ubyte> data(new ubyte[4*width*height]);
+
+    const std::size_t data_pitch = static_cast<std::size_t>(4*width);
+    for (int i = 0; i < height; ++i)
+    {
+        png.read_next_row(row.get());
+        std::memcpy(&data[data_pitch*i], row.get(), data_pitch);
+    }
+
+    tex.set_image(width, height, data.get());
+}
+
+} // namespace
 
 class texture_cache::impl
 {
 private:
-    typedef std::map<std::string,direct3d_texture9> table_type;
+    typedef boost::ptr_map<std::string,hamigaki::texture> table_type;
 
 public:
-    explicit impl(direct3d_device9& device) : device_(device)
+    explicit impl(hamigaki::render_context& rc) : rc_(rc)
     {
     }
 
@@ -26,15 +56,16 @@ public:
     {
     }
 
-    direct3d_texture9& operator[](const std::string& filename)
+    hamigaki::texture& operator[](const std::string& filename)
     {
         table_type::iterator pos = table_.lower_bound(filename);
         if ((pos == table_.end()) || (pos->first > filename))
         {
-            const direct3d_texture9& t = create_png_texture(device_, filename);
-            pos = table_.insert(pos, table_type::value_type(filename, t));
+            std::auto_ptr<hamigaki::texture> tmp(new hamigaki::texture(rc_));
+            load_png_to_texture(*tmp, filename);
+            pos = table_.insert(filename, tmp).first;
         }
-        return pos->second;
+        return *pos->second;
     }
 
     void clear()
@@ -43,12 +74,12 @@ public:
     }
 
 private:
-    direct3d_device9& device_;
-    std::map<std::string,direct3d_texture9> table_;
+    hamigaki::render_context& rc_;
+    table_type table_;
 };
 
-texture_cache::texture_cache(direct3d_device9& device)
-    : pimpl_(new impl(device))
+texture_cache::texture_cache(hamigaki::render_context& rc)
+    : pimpl_(new impl(rc))
 {
 }
 
@@ -56,7 +87,7 @@ texture_cache::~texture_cache()
 {
 }
 
-direct3d_texture9& texture_cache::operator[](const std::string& filename)
+hamigaki::texture& texture_cache::operator[](const std::string& filename)
 {
     return (*pimpl_)[filename];
 }

@@ -10,33 +10,31 @@
 #ifndef DRAW_HPP
 #define DRAW_HPP
 
-#include "direct3d_device9.hpp"
+#include <boost/config.hpp>
 
-struct transformed_lit_vertex
-{
-    float x, y, z, rhw;
-    unsigned long color;
-};
+#if defined(BOOST_WINDOWS)
+    #include <windows.h>
+#endif
 
-inline void draw_rectangle(direct3d_device9& device,
+#include <GL/gl.h>
+
+inline void draw_rectangle(
     float x, float y, float z,
     float width, float height, unsigned long color)
 {
-    x -= 0.5f;
-    y -= 0.5f;
+    ::glColor4b(
+        static_cast<unsigned char>((color >> 16) & 0xFF),
+        static_cast<unsigned char>((color >>  8) & 0xFF),
+        static_cast<unsigned char>((color      ) & 0xFF),
+        static_cast<unsigned char>((color >> 24) & 0xFF)
+    );
 
-    const transformed_lit_vertex vertices[] =
-    {
-        { x,       y,        z, 1.0f, color },
-        { x+width, y,        z, 1.0f, color },
-        { x,       y+height, z, 1.0f, color },
-        { x+width, y+height, z, 1.0f, color }
-    };
-
-    device.set_vertex_format(D3DFVF_XYZRHW|D3DFVF_DIFFUSE);
-    device.clear_texture(0);
-    device.draw_primitive(
-        D3DPT_TRIANGLESTRIP, 2, vertices, sizeof(vertices[0]));
+    ::glBegin(GL_TRIANGLE_STRIP);
+    ::glVertex3f(x,       y,        z);
+    ::glVertex3f(x+width, y,        z);
+    ::glVertex3f(x,       y+height, z);
+    ::glVertex3f(x+width, y+height, z);
+    ::glEnd();
 }
 
 #endif // DRAW_HPP

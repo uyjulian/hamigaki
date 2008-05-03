@@ -10,7 +10,6 @@
 #include "sound_engine.hpp"
 #include <hamigaki/audio/vorbis/comment.hpp>
 #include <hamigaki/audio/background_player.hpp>
-#include <hamigaki/audio/direct_sound.hpp>
 #include <hamigaki/audio/vorbis_file.hpp>
 #include <hamigaki/audio/wide_adaptor.hpp>
 #include <hamigaki/iostreams/background_copy.hpp>
@@ -19,6 +18,14 @@
 #include <hamigaki/iostreams/repeat.hpp>
 #include <boost/lexical_cast.hpp>
 #include <memory>
+
+#if defined(BOOST_WINDOWS)
+    #include <hamigaki/audio/direct_sound.hpp>
+    #include <gdk/gdkwin32.h>
+    #include <gtk/gtk.h>
+#else
+    #include <hamigaki/audio/pulse_audio.hpp>
+#endif
 
 namespace audio = hamigaki::audio;
 namespace ds = audio::direct_sound;
@@ -40,9 +47,13 @@ int vorbis_comment_int_value(
 class sound_engine::impl
 {
 public:
-    explicit impl(void* handle)
+    explicit impl(void* widget)
     {
-        dsound_.set_cooperative_level(handle, ds::priority_level);
+#if defined(BOOST_WINDOWS)
+        GdkWindow* window = static_cast<GtkWidget*>(widget)->window;
+        HWND hwnd = reinterpret_cast<HWND>(GDK_WINDOW_HWND(window));
+        dsound_.set_cooperative_level(hwnd, ds::priority_level);
+#endif
 
         audio::pcm_format fmt;
         fmt.type = audio::int_le16;
@@ -78,7 +89,7 @@ public:
         {
             bgm_player_.open(
                 io_ex::repeat(*bgm_file_, -1),
-                audio::widen<float>(dsound_.create_buffer(fmt, 4096)),
+                audio::widen<float>(this->create_sink("BGM", fmt)),
                 2048
             );
         }
@@ -89,7 +100,7 @@ public:
             bgm_player_.open(
                 io_ex::lazy_restrict(*bgm_file_, 0, offset+len) +
                 io_ex::lazy_restrict(*bgm_file_, offset, len) * -1,
-                audio::widen<float>(dsound_.create_buffer(fmt, 4096)),
+                audio::widen<float>(this->create_sink("BGM", fmt)),
                 2048
             );
         }
@@ -118,7 +129,7 @@ public:
         se_player_.reset(
             new io_ex::background_copy(
                 *se_file_,
-                audio::widen<float>(dsound_.create_buffer(fmt, 4096)),
+                audio::widen<float>(this->create_sink(filename.c_str(), fmt)),
                 2048
             )
         );
@@ -147,15 +158,31 @@ public:
     }
 
 private:
+#if defined(BOOST_WINDOWS)
     audio::direct_sound_device dsound_;
+#endif
     std::auto_ptr<audio::vorbis_file_source> bgm_file_;
     std::auto_ptr<audio::vorbis_file_source> se_file_;
     audio::background_player bgm_player_;
     std::auto_ptr<io_ex::background_copy> se_player_;
     std::string se_filename_;
+
+#if defined(BOOST_WINDOWS)
+    audio::direct_sound_sink
+    create_sink(const char*, const audio::pcm_format& fmt)
+    {
+        return dsound_.create_buffer(fmt, 4096);
+    }
+#else
+    audio::pulse_audio_sink
+    create_sink(const char* name, const audio::pcm_format& fmt)
+    {
+        return audio::pulse_audio_sink("ActionGame", name, fmt);
+    }
+#endif
 };
 
-sound_engine::sound_engine(void* handle) : pimpl_(new impl(handle))
+sound_engine::sound_engine(void* widget) : pimpl_(new impl(widget))
 {
 }
 

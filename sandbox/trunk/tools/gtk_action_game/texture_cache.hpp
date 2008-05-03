@@ -10,18 +10,16 @@
 #ifndef TEXTURE_CACHE_HPP
 #define TEXTURE_CACHE_HPP
 
+#include "texture.hpp"
 #include <boost/shared_ptr.hpp>
 #include <string>
-
-class direct3d_device9;
-class direct3d_texture9;
 
 class texture_cache
 {
 public:
-    explicit texture_cache(direct3d_device9& device);
+    explicit texture_cache(hamigaki::render_context& rc);
     ~texture_cache();
-    direct3d_texture9& operator[](const std::string& filename);
+    hamigaki::texture& operator[](const std::string& filename);
     void clear();
 
 private:

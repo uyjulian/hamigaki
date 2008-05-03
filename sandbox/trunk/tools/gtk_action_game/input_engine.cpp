@@ -8,6 +8,7 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "input_engine.hpp"
+#include "key_codes.hpp"
 #include "keyboard_config.hpp"
 #include "keyboard.hpp"
 #include <boost/optional.hpp>

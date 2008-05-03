@@ -24,6 +24,7 @@
 #include "png_loader.hpp"
 #include "pipe_routine.hpp"
 #include "pop_up_routine.hpp"
+#include "render_context.hpp"
 #include "side_scrolling_routine.hpp"
 #include "sprite.hpp"
 #include "stage_map_load.hpp"
@@ -42,7 +43,12 @@
 #include <cmath>
 #include <cstdio>
 #include <list>
-#include <time.h>
+
+#if defined(BOOST_WINDOWS)
+    #include <windows.h>
+#else
+    #include <time.h>
+#endif
 
 #if !defined(NDEBUG)
     #define HAMIGAKI_DISPLAY_FPS
@@ -64,11 +70,33 @@ namespace layer
 
 } // namespace layer
 
+#if defined(BOOST_WINDOWS)
+boost::uint64_t get_tick_count()
+{
+    return ::GetTickCount();
+}
+#else
 boost::uint64_t get_tick_count()
 {
     timespec ts;
     ::clock_gettime(CLOCK_REALTIME, &ts);
     return static_cast<boost::uint64_t>(ts.tv_sec)*1000 + ts.tv_nsec/1000000;
+}
+#endif
+
+float color_byte_to_float(unsigned char n)
+{
+    return static_cast<float>(n) / 255.0f;
+}
+
+void set_clear_color(unsigned long color)
+{
+    ::glClearColor(
+        color_byte_to_float((color >> 16) & 0xFF),
+        color_byte_to_float((color >>  8) & 0xFF),
+        color_byte_to_float((color      ) & 0xFF),
+        color_byte_to_float((color >> 24) & 0xFF)
+    );
 }
 
 const boost::uint32_t miss_form = static_four_char_code<'M','I','S','S'>::value;
@@ -537,13 +565,24 @@ class main_window::impl
 public:
     explicit impl(GtkWidget* widget, const game_project& proj)
         : widget_(widget), project_(proj)
-        , input_(handle_), system_(handle_), textures_(device_)
+        , input_(widget_), system_(widget_), rc_(widget_), textures_(rc_)
         , active_(false), last_time_(get_tick_count()), frames_(0)
 #if defined(HAMIGAKI_DISPLAY_FPS)
         , last_fps_time_(0), fps_count_(0)
 #endif
     {
-        ::gtk_window_set_title(widget_, "ActionGame");
+        ::gtk_window_set_title(GTK_WINDOW(widget_), "ActionGame");
+
+        ::glViewport(0, 0, proj.screen_width, proj.screen_height);
+
+        ::glMatrixMode(GL_PROJECTION);
+        ::glPushMatrix();
+        ::glLoadIdentity();
+        ::glOrtho(
+            0.0, static_cast<double>(proj.screen_width),
+            static_cast<double>(proj.screen_height), 0.0,
+            0.0, 1.0
+        );
 
         system_.gravity = boost::lexical_cast<float>(project_.gravity);
         system_.min_vy = boost::lexical_cast<float>(project_.min_vy);
@@ -597,7 +636,7 @@ public:
             char buf[64];
             int fps = fps_count_*1000/static_cast<int>(now-last_fps_time_);
             std::sprintf(buf, "FPS = %d", fps);
-            ::gtk_window_set_title(widget_, buf);
+            ::gtk_window_set_title(GTK_WINDOW(widget_), buf);
 
             last_fps_time_ = now;
             fps_count_ = 0;
@@ -611,27 +650,21 @@ public:
     {
         system_.characters.sort(character_ptr_z_greator());
 
-        device_.clear(project_.bg_color);
-        {
-            scoped_scene scene(device_);
+        set_clear_color(project_.bg_color);
+        ::glClear(GL_COLOR_BUFFER_BIT);
 
-            device_.set_render_state(D3DRS_ALPHABLENDENABLE, TRUE);
-            device_.set_render_state(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-            device_.set_render_state(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+        ::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        ::glEnable(GL_BLEND);
 
-            device_.set_texture_stage_state(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-            device_.set_texture_stage_state(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-            device_.set_texture_stage_state(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
+        ::glEnable(GL_TEXTURE_2D);
+        std::for_each(
+            boost::make_indirect_iterator(system_.characters.begin()),
+            boost::make_indirect_iterator(system_.characters.end()),
+            boost::bind(&impl::draw_character, this, _1)
+        );
+        ::glDisable(GL_TEXTURE_2D);
 
-            std::for_each(
-                boost::make_indirect_iterator(system_.characters.begin()),
-                boost::make_indirect_iterator(system_.characters.end()),
-                boost::bind(&impl::draw_character, this, _1)
-            );
-
-            device_.set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
-        }
-        device_.present();
+        rc_.swap_buffers();
     }
 
     void active(bool val)
@@ -644,8 +677,7 @@ private:
     game_project project_;
     input_engine input_;
     game_system system_;
-    direct3d9 d3d_;
-    direct3d_device9 device_;
+    hamigaki::render_context rc_;
     texture_cache textures_;
     character_repository char_repository_;
     bool active_;
@@ -1011,7 +1043,7 @@ private:
             if ((c.color & 0xFF000000ul) != 0ul)
             {
                 ::draw_rectangle(
-                    device_, 0.0f, 0.0f, 0.0f,
+                    0.0f, 0.0f, 0.0f,
                     static_cast<float>(system_.screen_width),
                     static_cast<float>(system_.screen_height),
                     c.color
@@ -1035,7 +1067,7 @@ private:
         if (!texture.empty())
         {
             ::draw_sprite(
-                device_, x, y, c.z, textures_[texture],
+                x, y, c.z, textures_[texture],
                 ptn.x * infos.width, ptn.y * infos.height,
                 infos.width, infos.height,
                 c.back, c.color
@@ -1044,14 +1076,9 @@ private:
     }
 };
 
-main_window::main_window(::HWND handle, const game_project& proj)
-    : pimpl_(new impl(handle, proj))
+main_window::main_window(GtkWidget* widget, const game_project& proj)
+    : pimpl_(new impl(widget, proj))
 {
-}
-
-void main_window::connect_d3d_device()
-{
-    pimpl_->connect_d3d_device();
 }
 
 bool main_window::process_input()
