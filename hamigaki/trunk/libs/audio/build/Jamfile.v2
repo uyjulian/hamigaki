@@ -1,6 +1,6 @@
 # Hamigaki Audio Library Jamfile
 
-# Copyright Takeshi Mouri 2007.
+# Copyright Takeshi Mouri 2007, 2008.
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
@@ -13,6 +13,7 @@ import os ;
 
 local NO_ASIO = [ modules.peek : NO_ASIO ] ;
 local NO_OGG = [ modules.peek : NO_OGG ] ;
+local NO_PULSE_AUDIO = [ modules.peek : NO_PULSE_AUDIO ] ;
 local NO_VORBIS = [ modules.peek : NO_VORBIS ] ;
 
 local rule make-project ( name )
@@ -46,6 +47,35 @@ if ! $(NO_ASIO) && ! [ project.find /asio : . ]
     }
 }
 
+if ! $(NO_PULSE_AUDIO) && ! [ project.find /pulse_audio : . ]
+{
+    if [ modules.peek : HAVE_PULSE_AUDIO ]
+    {
+        project.push-current [ project.current ] ;
+        make-project pulse_audio ;
+        module pulse_audio
+        {
+            local pa-inc = [ modules.peek : PULSE_AUDIO_INCLUDE ] ;
+            local pa-lib = [ modules.peek : PULSE_AUDIO_LIBPATH ] ;
+
+            lib pulse-simple
+                : :
+                <library-path>$(pa-lib)
+                : :
+                <include>$(pa-inc)
+                <library-path>$(pa-lib)
+                <link>shared:<dll-path>$(pa-lib)
+                ;
+        }
+        project.pop-current ;
+    }
+    else
+    {
+        NO_PULSE_AUDIO = 1 ;
+        modules.poke : NO_PULSE_AUDIO : 1 ;
+    }
+}
+
 project hamigaki/audio
     : requirements
       <link>shared:<define>HAMIGAKI_AUDIO_DYN_LINK=1
@@ -54,11 +84,14 @@ project hamigaki/audio
     : source-location ../src
     ;
 
-SOURCES =
+local SOURCES =
     pcm_device
     ;
 
-LIBRARIES =
+local LIBRARIES =
+    ;
+
+local REQUIREMENTS =
     ;
 
 if ! $(NO_ASIO)
@@ -94,25 +127,40 @@ if ! $(NO_OGG) && ! $(NO_VORBIS)
         ;
 }
 
+if ! $(NO_PULSE_AUDIO)
+{
+    if [ os.name ] = NT
+    {
+        REQUIREMENTS +=
+            <toolset>gcc:<source>pulse_audio.cpp
+            <toolset>gcc:<library>/pulse_audio//pulse-simple
+            ;
+    }
+    else
+    {
+        SOURCES += pulse_audio ;
+        LIBRARIES += /pulse_audio//pulse-simple ;
+    }
+}
+
+local IMPORT_LIBS =
+    <toolset>gcc,<os>NT:<find-static-library>ole32
+    <toolset>gcc,<os>NT:<find-static-library>winmm
+    <toolset>gcc,<os>CYGWIN:<find-static-library>ole32
+    <toolset>darwin:<framework>/System/Library/Frameworks/AudioToolbox.framework
+    <toolset>darwin:<framework>/System/Library/Frameworks/AudioUnit.framework
+    <toolset>darwin:<framework>/System/Library/Frameworks/CoreAudio.framework
+    <toolset>darwin:<framework>/System/Library/Frameworks/CoreServices.framework
+    ;
+
 lib hamigaki_audio
     :
     $(SOURCES).cpp
     $(LIBRARIES)
     :
-    <toolset>gcc,<os>NT:<find-static-library>ole32
-    <toolset>gcc,<os>NT:<find-static-library>winmm
-    <toolset>gcc,<os>CYGWIN:<find-static-library>ole32
-    <toolset>darwin:<framework>/System/Library/Frameworks/AudioToolbox.framework
-    <toolset>darwin:<framework>/System/Library/Frameworks/AudioUnit.framework
-    <toolset>darwin:<framework>/System/Library/Frameworks/CoreAudio.framework
-    <toolset>darwin:<framework>/System/Library/Frameworks/CoreServices.framework
+    $(REQUIREMENTS)
+    $(IMPORT_LIBS)
     :
     :
-    <toolset>gcc,<os>NT:<find-static-library>ole32
-    <toolset>gcc,<os>NT:<find-static-library>winmm
-    <toolset>gcc,<os>CYGWIN:<find-static-library>ole32
-    <toolset>darwin:<framework>/System/Library/Frameworks/AudioToolbox.framework
-    <toolset>darwin:<framework>/System/Library/Frameworks/AudioUnit.framework
-    <toolset>darwin:<framework>/System/Library/Frameworks/CoreAudio.framework
-    <toolset>darwin:<framework>/System/Library/Frameworks/CoreServices.framework
+    $(IMPORT_LIBS)
     ;
