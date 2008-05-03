@@ -566,21 +566,18 @@ public:
     explicit impl(GtkWidget* widget, const game_project& proj)
         : widget_(widget), project_(proj)
         , input_(widget_), system_(widget_), rc_(widget_), textures_(rc_)
-        , active_(false), last_time_(get_tick_count()), frames_(0)
+        , last_time_(get_tick_count()), frames_(0)
 #if defined(HAMIGAKI_DISPLAY_FPS)
         , last_fps_time_(0), fps_count_(0)
 #endif
     {
         ::gtk_window_set_title(GTK_WINDOW(widget_), "ActionGame");
 
-        ::glViewport(0, 0, proj.screen_width, proj.screen_height);
+        rc_.select();
 
-        ::glMatrixMode(GL_PROJECTION);
-        ::glPushMatrix();
-        ::glLoadIdentity();
         ::glOrtho(
-            0.0, static_cast<double>(proj.screen_width),
-            static_cast<double>(proj.screen_height), 0.0,
+            0.0, static_cast<double>(project_.screen_width),
+            static_cast<double>(project_.screen_height), 0.0,
             0.0, 1.0
         );
 
@@ -608,7 +605,7 @@ public:
 
     bool process_input()
     {
-        if (active_)
+        if (::gtk_window_is_active(GTK_WINDOW(widget_)))
             system_.command  = input_();
         else
             system_.command  = input_command();
@@ -650,8 +647,11 @@ public:
     {
         system_.characters.sort(character_ptr_z_greator());
 
+        rc_.select();
+
         set_clear_color(project_.bg_color);
-        ::glClear(GL_COLOR_BUFFER_BIT);
+        ::glClearDepth(1.0f);
+        ::glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
         ::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         ::glEnable(GL_BLEND);
@@ -1089,9 +1089,4 @@ bool main_window::process_input()
 void main_window::render()
 {
     pimpl_->render();
-}
-
-void main_window::active(bool val)
-{
-    pimpl_->active(val);
 }

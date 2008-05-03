@@ -30,11 +30,11 @@ inline void draw_sprite(
     x -= 0.5f;
     y -= 0.5f;
 
-    ::glColor4b(
-        static_cast<unsigned char>((color >> 16) & 0xFF),
-        static_cast<unsigned char>((color >>  8) & 0xFF),
-        static_cast<unsigned char>((color      ) & 0xFF),
-        static_cast<unsigned char>((color >> 24) & 0xFF)
+    ::glColor4f(
+        static_cast<float>((color >> 16) & 0xFF) / 255.0f,
+        static_cast<float>((color >>  8) & 0xFF) / 255.0f,
+        static_cast<float>((color      ) & 0xFF) / 255.0f,
+        static_cast<float>((color >> 24) & 0xFF) / 255.0f
     );
 
     texture.bind();
@@ -71,11 +71,11 @@ inline void draw_sprite(
     x -= 0.5f;
     y -= 0.5f;
 
-    ::glColor4b(
-        static_cast<unsigned char>((color >> 16) & 0xFF),
-        static_cast<unsigned char>((color >>  8) & 0xFF),
-        static_cast<unsigned char>((color      ) & 0xFF),
-        static_cast<unsigned char>((color >> 24) & 0xFF)
+    ::glColor4f(
+        static_cast<float>((color >> 16) & 0xFF) / 255.0f,
+        static_cast<float>((color >>  8) & 0xFF) / 255.0f,
+        static_cast<float>((color      ) & 0xFF) / 255.0f,
+        static_cast<float>((color >> 24) & 0xFF) / 255.0f
     );
 
     texture.bind();
