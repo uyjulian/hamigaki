@@ -119,8 +119,6 @@ public:
         else if ((type & PNG_COLOR_MASK_ALPHA) == 0)
             ::png_set_add_alpha(pimpl_, 0xFF, PNG_FILLER_AFTER);
 
-        ::png_set_bgr(pimpl_);
-
         ::png_read_update_info(pimpl_, info_ptr_);
     }
 
