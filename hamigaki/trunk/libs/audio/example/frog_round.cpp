@@ -1,28 +1,37 @@
-// frog_round.cpp: an example for DirectSound multi-buffer mixing
+// frog_round.cpp: an example for multi-buffer mixing
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 
 // See http://hamigaki.sourceforge.jp/libs/audio for library home page.
 
+#include <boost/config.hpp>
+
 #include <hamigaki/audio/amplify.hpp>
-#include <hamigaki/audio/direct_sound.hpp>
 #include <hamigaki/audio/square_wave.hpp>
 #include <hamigaki/audio/stereo.hpp>
 #include <hamigaki/audio/wide_adaptor.hpp>
 #include <hamigaki/iostreams/catable/restrict.hpp>
 #include <hamigaki/iostreams/tiny_restrict.hpp>
 #include <hamigaki/thread/utc_time.hpp>
+#include <hamigaki/dec_format.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/bind.hpp>
 #include <iostream>
 #include "../test/detail/utility.hpp"
 
+#if defined(BOOST_WINDOWS)
+    #include <hamigaki/audio/direct_sound.hpp>
+    typedef hamigaki::audio::direct_sound_sink sink_type;
+#else
+    #include <hamigaki/audio/pulse_audio.hpp>
+    typedef hamigaki::audio::pulse_audio_sink sink_type;
+#endif
+
 namespace audio = hamigaki::audio;
-namespace ds = audio::direct_sound;
 namespace io_ex = hamigaki::iostreams;
 namespace thread_ex = hamigaki::thread;
 namespace io = boost::iostreams;
@@ -67,7 +76,7 @@ const int tempo = 100;
 #define C2 NOTE(60,4)
 #define E2 NOTE(64,4)
 
-void frog_round(audio::direct_sound_sink sink, int wait)
+void frog_round(sink_type sink, int wait)
 {
     int msec = wait*8*60*1000/tempo;
 
@@ -99,15 +108,25 @@ int main()
         fmt.channels = 2;
         fmt.rate = 22050;
 
+#if defined(BOOST_WINDOWS)
         audio::direct_sound_device dev;
-        dev.set_cooperative_level(0, ds::priority_level);
+        dev.set_cooperative_level(0, audio::direct_sound::priority_level);
         dev.format(fmt);
+#endif
 
         boost::thread_group threads;
         for (int i = 0; i < 3; ++i)
         {
-            audio::direct_sound_sink sink =
+#if defined(BOOST_WINDOWS)
+            sink_type sink =
                 dev.create_buffer(fmt, fmt.optimal_buffer_size());
+#else
+            sink_type sink(
+                "frog_round",
+                ("Part " + hamigaki::to_dec<char>(i)).c_str(),
+                fmt
+            );
+#endif
             threads.create_thread(boost::bind(&frog_round, sink, i));
         }
         threads.join_all();
