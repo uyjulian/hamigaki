@@ -38,7 +38,7 @@ namespace hamigaki { namespace audio {
 class pulse_audio_sink::impl
 {
 public:
-    impl(const char* app, const char* name, const pcm_format& fmt)
+    impl(const char* app, const char* name, const pcm_format& fmt) : fmt_(fmt)
     {
         pa_sample_spec ss = {};
         ss.format = type_to_format(fmt.type);
