@@ -28,8 +28,11 @@
 #endif
 
 namespace audio = hamigaki::audio;
-namespace ds = audio::direct_sound;
 namespace io_ex = hamigaki::iostreams;
+
+#if defined(BOOST_WINDOWS)
+namespace ds = audio::direct_sound;
+#endif
 
 namespace
 {
@@ -53,7 +56,6 @@ public:
         GdkWindow* window = static_cast<GtkWidget*>(widget)->window;
         HWND hwnd = reinterpret_cast<HWND>(GDK_WINDOW_HWND(window));
         dsound_.set_cooperative_level(hwnd, ds::priority_level);
-#endif
 
         audio::pcm_format fmt;
         fmt.type = audio::int_le16;
@@ -61,6 +63,7 @@ public:
         fmt.rate = 44100;
 
         dsound_.format(fmt);
+#endif
     }
 
     void play_bgm(const std::string& filename)
