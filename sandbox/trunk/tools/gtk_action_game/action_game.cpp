@@ -11,7 +11,6 @@
 
 #include "game_project_io.hpp"
 #include "main_window.hpp"
-#include <hamigaki/system/windows_error.hpp>
 #include <boost/filesystem/path.hpp>
 #include <exception>
 #include <iostream>
@@ -23,7 +22,6 @@
 #endif
 
 namespace fs = boost::filesystem;
-using hamigaki::system::windows_error;
 
 int main(int argc, char* argv[])
 {
