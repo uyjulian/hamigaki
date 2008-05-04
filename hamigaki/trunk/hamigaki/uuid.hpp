@@ -21,9 +21,7 @@
 #include <iosfwd>
 #include <string>
 
-#if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
 struct _GUID;
-#endif
 
 namespace hamigaki {
 
@@ -76,7 +74,6 @@ public:
         from_string_impl<wchar_t>(s);
     }
 
-#if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
     uuid(const ::_GUID& id)
     {
 #if defined(BOOST_BIG_ENDIAN)
@@ -117,7 +114,6 @@ public:
 #endif
         return id;
     }
-#endif
 
     bool is_null() const
     {
