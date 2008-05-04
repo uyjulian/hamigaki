@@ -17,6 +17,7 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/cstdint.hpp>
 #include <map>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
