@@ -651,7 +651,7 @@ public:
 
         set_clear_color(project_.bg_color);
         ::glClearDepth(1.0f);
-        ::glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+        ::glClear(GL_COLOR_BUFFER_BIT);
 
         ::glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         ::glEnable(GL_BLEND);
@@ -1064,10 +1064,10 @@ private:
         float y = system_.screen_height - tr.y - tr.ly;
 
         const std::string& texture = infos.texture;
-        if (!texture.empty())
+        if (!texture.empty() && (c.z >= 0.0f))
         {
             ::draw_sprite(
-                x, y, c.z, textures_[texture],
+                x, y, 0.0f, textures_[texture],
                 ptn.x * infos.width, ptn.y * infos.height,
                 infos.width, infos.height,
                 c.back, c.color

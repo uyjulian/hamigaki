@@ -27,14 +27,11 @@ inline void draw_sprite(
     float width = static_cast<float>(texture.width());
     float height = static_cast<float>(texture.height());;
 
-    x -= 0.5f;
-    y -= 0.5f;
-
-    ::glColor4f(
-        static_cast<float>((color >> 16) & 0xFF) / 255.0f,
-        static_cast<float>((color >>  8) & 0xFF) / 255.0f,
-        static_cast<float>((color      ) & 0xFF) / 255.0f,
-        static_cast<float>((color >> 24) & 0xFF) / 255.0f
+    ::glColor4ub(
+        static_cast<unsigned char>((color >> 16) & 0xFF),
+        static_cast<unsigned char>((color >>  8) & 0xFF),
+        static_cast<unsigned char>((color      ) & 0xFF),
+        static_cast<unsigned char>((color >> 24) & 0xFF)
     );
 
     texture.bind();
@@ -68,14 +65,11 @@ inline void draw_sprite(
     if ((options & sprite_options::upside_down) != 0)
         std::swap(tv1, tv2);
 
-    x -= 0.5f;
-    y -= 0.5f;
-
-    ::glColor4f(
-        static_cast<float>((color >> 16) & 0xFF) / 255.0f,
-        static_cast<float>((color >>  8) & 0xFF) / 255.0f,
-        static_cast<float>((color      ) & 0xFF) / 255.0f,
-        static_cast<float>((color >> 24) & 0xFF) / 255.0f
+    ::glColor4ub(
+        static_cast<unsigned char>((color >> 16) & 0xFF),
+        static_cast<unsigned char>((color >>  8) & 0xFF),
+        static_cast<unsigned char>((color      ) & 0xFF),
+        static_cast<unsigned char>((color >> 24) & 0xFF)
     );
 
     texture.bind();
