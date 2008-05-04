@@ -10,9 +10,22 @@
 #ifndef GUID_IO_HPP
 #define GUID_IO_HPP
 
+#include <boost/config.hpp>
+
 #include <hamigaki/binary/struct_traits.hpp>
 #include <boost/mpl/list.hpp>
-#include <rpc.h>
+
+#if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
+    #include <rpc.h>
+#else
+    typedef struct _GUID
+    {
+        unsigned long Data1;
+        unsigned short Data2;
+        unsigned short Data3;
+        unsigned char Data4[8];
+    } GUID;
+#endif
 
 namespace hamigaki
 {
