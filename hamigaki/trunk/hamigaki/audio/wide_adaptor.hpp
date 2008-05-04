@@ -1,6 +1,6 @@
 // wide_adaptor.hpp: an adaptor for making wide character stream
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -20,6 +20,7 @@
 #include <boost/type_traits/is_floating_point.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/type_traits/is_convertible.hpp>
+#include <boost/shared_ptr.hpp>
 #include <limits>
 
 namespace hamigaki { namespace audio {
