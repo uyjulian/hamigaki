@@ -7,7 +7,6 @@
 
 # See http://hamigaki.sourceforge.jp/ for library home page.
 
-import boost-version ;
 import exec ;
 
 rule user-interface-gui ( properties * )
@@ -20,12 +19,6 @@ rule user-interface-gui ( properties * )
     {
         return <user-interface>gui ;
     }
-}
-
-local requirements = ;
-if [ boost-version.version ] >= 1.35.0
-{
-    requirements += <library>/boost-lib//boost_system ;
 }
 
 exe action_game
@@ -75,7 +68,6 @@ exe action_game
     <conditional>@user-interface-gui
     <threading>multi
     <define>NOMINMAX=1
-    $(requirements)
     ;
 
 exec.register-exec-all ;

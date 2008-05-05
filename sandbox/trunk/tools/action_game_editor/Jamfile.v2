@@ -7,7 +7,6 @@
 
 # See http://hamigaki.sourceforge.jp/ for library home page.
 
-import boost-version ;
 import exec ;
 
 rule user-interface-gui ( properties * )
@@ -20,12 +19,6 @@ rule user-interface-gui ( properties * )
     {
         return <user-interface>gui ;
     }
-}
-
-local requirements = ;
-if [ boost-version.version ] >= 1.35.0
-{
-    requirements += <library>/boost-lib//boost_system ;
 }
 
 exe action_game_editor
@@ -81,7 +74,6 @@ exe action_game_editor
     <define>NOMINMAX=1
     <variant>debug:<source>bjam_dll_path.cpp
     <variant>debug:<library>/hamigaki/process//hamigaki_process
-    $(requirements)
     ;
 
 exec.register-exec-all ;

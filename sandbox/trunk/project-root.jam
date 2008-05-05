@@ -8,6 +8,5 @@
 import modules ;
 
 path-constant HAMIGAKI_ROOT : [ modules.peek : HAMIGAKI_ROOT ] ;
-path-constant BOOST_ROOT : [ modules.peek : BOOST_ROOT ] ;
 
 use-project /hamigaki : $(HAMIGAKI_ROOT) ;
