@@ -1,6 +1,6 @@
 // posix_user_context.hpp: POSIX ucontext based context implementation
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -88,7 +88,7 @@ public:
 
     static std::ptrdiff_t fix_stack_size(std::ptrdiff_t stack_size)
     {
-        return stack_size == -1 ? 8192 : stack_size;
+        return stack_size == -1 ? 65536 : stack_size;
     }
 
     template<class Functor>
