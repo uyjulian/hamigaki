@@ -143,6 +143,7 @@ exe action_game
     :
     <threading>multi
     <define>NOMINMAX=1
+    <os>LINUX:<source>linux_joystick.cpp
     ;
 
 exec.register-exec-all ;
