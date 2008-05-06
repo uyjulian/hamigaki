@@ -8,6 +8,7 @@
 // See http://hamigaki.sourceforge.jp/ for library home page.
 
 #include "input_engine.hpp"
+#include "joystick_config.hpp"
 #include "key_codes.hpp"
 #include "keyboard_config.hpp"
 #include "keyboard.hpp"
@@ -16,8 +17,70 @@
 
 #if defined(__linux__)
     #include "linux_joystick.hpp"
+    #include <hamigaki/dec_format.hpp>
+    #include <map>
     #include <unistd.h>
 #endif
+
+namespace
+{
+
+#if defined(__linux__)
+boost::optional<hamigaki::linux_joystick>
+open_joystick(const char* cfg_path, joystick_config& cfg)
+{
+    joystick_config_list cfg_list;
+    load_joystick_config_list(cfg_path, cfg_list);
+
+    typedef std::map<std::string,std::string> table_type;
+    typedef table_type::iterator iter_type;
+    table_type table;
+
+    int first_index = -1;
+    std::string first_device;
+    for (int i = 0; i < 16; ++i)
+    {
+        std::string path = "/dev/input/js" + hamigaki::to_dec<char>(i);
+        if (::access(path.c_str(), R_OK) != 0)
+            continue;
+
+        hamigaki::linux_joystick js(path.c_str());
+
+        const std::string& name = js.name();
+        std::string& old = table[name];
+        if (old.empty())
+            old = path;
+
+        if (first_index == -1)
+        {
+            first_index = i;
+            first_device = name;
+        }
+    }
+
+    if (first_index == -1)
+        return boost::optional<hamigaki::linux_joystick>();
+
+    typedef joystick_config_list::const_iterator cfg_iter_type;
+    for (cfg_iter_type it = cfg_list.begin(); it != cfg_list.end(); ++it)
+    {
+        const std::string& name = it->first;
+
+        iter_type pos = table.find(name);
+        if (pos != table.end())
+        {
+            cfg = it->second;
+            return hamigaki::linux_joystick(pos->second.c_str());
+        }
+    }
+
+    std::string path = "/dev/input/js" + hamigaki::to_dec<char>(first_index);
+    append_joystick_config(cfg_path, first_device, cfg);
+    return hamigaki::linux_joystick(path.c_str());
+}
+#endif // defined(__linux__)
+
+} // namespace
 
 class input_engine::impl
 {
@@ -29,11 +92,7 @@ public:
         , old_key_lr_(false), old_key_ud_(false)
     {
 #if defined(__linux__)
-        // TODO
-        if (::access("/dev/input/js0", R_OK) == 0)
-        {
-            joystick_ = hamigaki::linux_joystick("/dev/input/js0");
-        }
+        joystick_ = open_joystick("joystick-config.txt", joy_cfg_);
 #endif
     }
 
@@ -61,6 +120,7 @@ private:
     keyboard_config key_cfg_;
     hamigaki::keyboard keyboard_;
 #if defined(__linux__)
+    joystick_config joy_cfg_;
     boost::optional<hamigaki::linux_joystick> joystick_;
 #endif
     float old_key_dx_;
@@ -164,10 +224,15 @@ private:
 
             cmd.x = dx;
             cmd.y = dy;
-            cmd.jump = ptr->button_value(0);
-            cmd.dash = ptr->button_value(1);
-            cmd.punch = ptr->button_value(2);
-            cmd.reset = ptr->button_value(3);
+
+            if (joy_cfg_.jump != -1)
+                cmd.jump = ptr->button_value(joy_cfg_.jump);
+            if (joy_cfg_.dash != -1)
+                cmd.dash = ptr->button_value(joy_cfg_.dash);
+            if (joy_cfg_.punch != -1)
+                cmd.punch = ptr->button_value(joy_cfg_.punch);
+            if (joy_cfg_.reset != -1)
+                cmd.reset = ptr->button_value(joy_cfg_.reset);
         }
 
         return cmd;
