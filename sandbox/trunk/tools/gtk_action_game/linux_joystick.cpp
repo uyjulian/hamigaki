@@ -39,18 +39,18 @@ public:
         ::close(fd_);
     }
 
-    int axes() const
+    boost::uint8_t axes() const
     {
-        int value;
+        boost::uint8_t value;
         if (::ioctl(fd_, JSIOCGAXES, &value) != -1)
             return value;
         else
             return 0;
     }
 
-    int buttons() const
+    boost::uint8_t buttons() const
     {
-        int value;
+        boost::uint8_t value;
         if (::ioctl(fd_, JSIOCGBUTTONS, &value) != -1)
             return value;
         else
@@ -59,9 +59,14 @@ public:
 
     std::string name() const
     {
-        char buf[256];
-        if (::ioctl(fd_, JSIOCGNAME(sizeof(buf)), buf) != -1)
-            return buf;
+        char buf[64];
+        int len = ::ioctl(fd_, JSIOCGNAME(sizeof(buf)), buf);
+        if (len > 0)
+        {
+            if (buf[len-1] == '\0')
+                --len;
+            return std::string(buf, len);
+        }
         else
             return std::string();
     }
