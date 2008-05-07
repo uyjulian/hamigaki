@@ -612,6 +612,8 @@ public:
 
         const unsigned long table[] = { 16, 17, 17 };
         boost::uint64_t now = get_tick_count();
+        if (now < last_time_)
+            last_time_ = now;
         unsigned long elapsed = static_cast<unsigned long>(now - last_time_);
         bool updated = false;
         while (elapsed >= table[frames_ % 3])
