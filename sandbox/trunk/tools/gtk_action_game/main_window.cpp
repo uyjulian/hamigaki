@@ -9,6 +9,7 @@
 
 #include "main_window_impl.hpp"
 #include "main_window.hpp"
+#include <boost/thread/thread.hpp>
 #include <iostream>
 #include <stdexcept>
 
@@ -49,6 +50,8 @@ gboolean frame(gpointer user_data)
         {
             if (pimpl->process_input())
                 pimpl->render();
+            else
+                boost::thread::yield();
         }
         catch (const std::exception& e)
         {
@@ -83,7 +86,7 @@ GtkWidget* create_main_window(main_window_data& data)
     connect_signal(window, "destroy", G_CALLBACK(destroy), &data.pimpl);
     connect_signal(window, "realize", G_CALLBACK(realize), &data);
     connect_signal(window, "unrealize", G_CALLBACK(unrealize), &data.pimpl);
-    ::g_timeout_add(16, &frame, &data.pimpl);
+    ::g_idle_add_full(GDK_PRIORITY_REDRAW, &frame, &data.pimpl, 0);
 
     return window;
 }
