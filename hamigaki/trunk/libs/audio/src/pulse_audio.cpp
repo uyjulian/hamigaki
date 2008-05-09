@@ -104,4 +104,71 @@ void pulse_audio_sink::close()
     pimpl_->close();
 }
 
+
+class pulse_audio_source::impl
+{
+public:
+    impl(const char* app, const char* name, const pcm_format& fmt) : fmt_(fmt)
+    {
+        pa_sample_spec ss = {};
+        ss.format = type_to_format(fmt.type);
+        ss.rate = fmt.rate;
+        ss.channels = fmt.channels;
+
+        int error;
+        handle_ = ::pa_simple_new(
+            0, app, PA_STREAM_RECORD, 0, name, &ss, 0, 0, &error);
+        if (handle_ == 0)
+            throw BOOST_IOSTREAMS_FAILURE("pa_simple_new() failed");
+    }
+
+    ~impl()
+    {
+        ::pa_simple_free(handle_);
+    }
+
+    std::streamsize read(char* s, std::streamsize n)
+    {
+        int error;
+        if (::pa_simple_read(handle_, s, n, &error) < 0)
+            throw BOOST_IOSTREAMS_FAILURE("pa_simple_read() failed");
+
+        return n;
+    }
+
+    pcm_format format() const
+    {
+        return fmt_;
+    }
+
+    void close()
+    {
+    }
+
+private:
+    pa_simple* handle_;
+    pcm_format fmt_;
+};
+
+pulse_audio_source::pulse_audio_source(
+    const char* app, const char* name, const pcm_format& fmt)
+    : pimpl_(new impl(app, name, fmt))
+{
+}
+
+std::streamsize pulse_audio_source::read(char* s, std::streamsize n)
+{
+    return pimpl_->read(s, n);
+}
+
+pcm_format pulse_audio_source::format() const
+{
+    return pimpl_->format();
+}
+
+void pulse_audio_source::close()
+{
+    pimpl_->close();
+}
+
 } } // End namespaces audio, hamigaki.

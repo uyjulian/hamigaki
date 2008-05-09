@@ -54,6 +54,35 @@ private:
     boost::shared_ptr<impl> pimpl_;
 };
 
+class HAMIGAKI_AUDIO_DECL pulse_audio_source
+{
+public:
+    typedef char char_type;
+
+    struct category
+        : boost::iostreams::source_tag
+        , boost::iostreams::closable_tag
+        , boost::iostreams::optimally_buffered_tag
+        , pcm_format_tag
+    {};
+
+    pulse_audio_source(
+        const char* app, const char* name, const pcm_format& fmt);
+
+    std::streamsize read(char* s, std::streamsize n);
+    pcm_format format() const;
+    void close();
+
+    std::streamsize optimal_buffer_size() const
+    {
+        return this->format().optimal_buffer_size();
+    }
+
+private:
+    class impl;
+    boost::shared_ptr<impl> pimpl_;
+};
+
 } } // End namespaces audio, hamigaki.
 
 #ifdef BOOST_MSVC
