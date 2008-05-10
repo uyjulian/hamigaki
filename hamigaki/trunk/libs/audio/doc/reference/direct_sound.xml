@@ -4,7 +4,7 @@
 <!--
   Hamigaki.Audio Library Document Source
 
-  Copyright Takeshi Mouri 2006, 2007.
+  Copyright Takeshi Mouri 2006-2008.
   Distributed under the Boost Software License, Version 1.0.
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
@@ -62,7 +62,7 @@
 
       <class name="direct_sound_device">
         <constructor>
-          <effects>規定のDirectSoundデバイスをオープンする。</effects>
+          <effects>既定のDirectSoundデバイスをオープンする。</effects>
         </constructor>
 
         <constructor specifiers="explicit">
@@ -97,7 +97,7 @@
             <parameter name="f">
               <paramtype>const <classname>pcm_format</classname>&amp;</paramtype>
             </parameter>
-            <effects><simpara>規定のバッファサイズでDirectSoundバッファを作成する。</simpara></effects>
+            <effects><simpara>既定のバッファサイズでDirectSoundバッファを作成する。</simpara></effects>
           </method>
 
           <method name="create_buffer">
@@ -161,7 +161,7 @@
 
       <class name="direct_sound_capture">
         <constructor>
-          <effects>規定のDirectSoundCaptureデバイスをオープンする。</effects>
+          <effects>既定のDirectSoundCaptureデバイスをオープンする。</effects>
         </constructor>
 
         <constructor specifiers="explicit">
@@ -177,7 +177,7 @@
             <parameter name="f">
               <paramtype>const <classname>pcm_format</classname>&amp;</paramtype>
             </parameter>
-            <effects><simpara>規定のバッファサイズでDirectSoundCaptureバッファを作成する。</simpara></effects>
+            <effects><simpara>既定のバッファサイズでDirectSoundCaptureバッファを作成する。</simpara></effects>
           </method>
 
           <method name="create_buffer">

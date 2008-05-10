@@ -4,7 +4,7 @@
 <!--
   Hamigaki.Binary Library Document Source
 
-  Copyright Takeshi Mouri 2007.
+  Copyright Takeshi Mouri 2007, 2008.
   Distributed under the Boost Software License, Version 1.0.
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
@@ -39,7 +39,7 @@
               </row>
               <row>
                 <entry>default_</entry>
-                <entry>既定のエンディアン (外部から指定される規定値に従い、ビッグエンディアンとリトルエンディアンのどちらかに切り替える)</entry>
+                <entry>既定のエンディアン (外部から指定される既定値に従い、ビッグエンディアンとリトルエンディアンのどちらかに切り替える)</entry>
               </row>
               <row>
                 <entry>native</entry>
