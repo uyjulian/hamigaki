@@ -4,7 +4,7 @@
 <!--
   Hamigaki.Audio Library Document Source
 
-  Copyright Takeshi Mouri 2006, 2007.
+  Copyright Takeshi Mouri 2006-2008.
   Distributed under the Boost Software License, Version 1.0.
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
@@ -21,6 +21,7 @@
   <xi:include href="direct_sound.xml"/>
   <xi:include href="pcm_device.xml"/>
   <xi:include href="pcm_format.xml"/>
+  <xi:include href="pulse_audio.xml"/>
   <xi:include href="sample_format.xml"/>
   <xi:include href="sine_wave.xml"/>
   <xi:include href="square_wave.xml"/>

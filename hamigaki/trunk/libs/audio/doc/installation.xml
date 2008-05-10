@@ -21,7 +21,7 @@
         <row>
           <entry>変数</entry>
           <entry>意味</entry>
-          <entry>規定値</entry>
+          <entry>既定値</entry>
         </row>
       </thead>
       <tbody>
@@ -88,6 +88,26 @@
         <row>
           <entry>NO_VORBIS</entry>
           <entry>1にするとVorbisサポートを無効にする</entry>
+          <entry>-</entry>
+        </row>
+        <row>
+          <entry>NO_PULSE_AUDIO</entry>
+          <entry>1にするとPulseAudioサポートを無効にする</entry>
+          <entry>-</entry>
+        </row>
+        <row>
+          <entry>HAVE_PULSE_AUDIO</entry>
+          <entry>1にするとPulseAudioサポートを有効にする</entry>
+          <entry>-</entry>
+        </row>
+        <row>
+          <entry>PULSE_AUDIO_INCLUDE</entry>
+          <entry>PulseAudioのヘッダファイルのあるディレクトリ</entry>
+          <entry>-</entry>
+        </row>
+        <row>
+          <entry>PULSE_AUDIO_LIBPATH</entry>
+          <entry>PulseAudioのライブラリファイルのあるディレクトリ</entry>
           <entry>-</entry>
         </row>
         <row>
@@ -164,6 +184,10 @@ module
         <row>
           <entry>/ogg//ogg</entry>
           <entry>liboggライブラリ</entry>
+        </row>
+        <row>
+          <entry>/pulse_audio//pulse-simple</entry>
+          <entry>pulse-simpleライブラリ</entry>
         </row>
         <row>
           <entry>/vorbis//vorbis</entry>

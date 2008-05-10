@@ -4,7 +4,7 @@
 <!--
   Hamigaki.Audio Library Document Source
 
-  Copyright Takeshi Mouri 2006, 2007.
+  Copyright Takeshi Mouri 2006-2008.
   Distributed under the Boost Software License, Version 1.0.
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
@@ -19,6 +19,7 @@
     <listitem>PCMデバイスによるサウンド再生と録音</listitem>
     <listitem>DirectSoundによるサウンド再生と録音(Windowsのみ)</listitem>
     <listitem>ASIOによるサウンド再生と録音(Windowsのみ)</listitem>
+    <listitem>PulseAudioによるサウンド再生と録音(gccのみ)</listitem>
     <listitem>マルチスレッドを用いたバックグラウンドでの再生</listitem>
     <listitem>正弦波/矩形波の生成</listitem>
   </itemizedlist>
