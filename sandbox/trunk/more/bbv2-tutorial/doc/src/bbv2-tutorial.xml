@@ -872,7 +872,7 @@ actions echo
 notfile echo-souces : @echo : in.cpp ;
 ]]></programlisting>
     <para><computeroutput>make</computeroutput>ルールと違い、<computeroutput>notfile</computeroutput>ルールのソースファイルにはBBv2に登録された拡張子のファイルしか使用できないので注意してください。<footnote>
-      <simpara>拡張子をBBv2登録することで、他の拡張子も使用できる。</simpara>
+      <simpara>次のように拡張子をBBv2登録することで、独自の拡張子も使用できます。</simpara>
       <programlisting><![CDATA[import type ;
 type.register TXT : txt ;
 ]]></programlisting>
