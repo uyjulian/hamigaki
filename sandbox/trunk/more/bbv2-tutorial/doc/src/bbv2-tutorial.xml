@@ -581,7 +581,7 @@ endlocal
     ;
 ]]></programlisting>
     <para>これで<filename class="directory">dist</filename>ディレクトリに<filename>hello.exe</filename>と<filename>hello.dll</filename>、<filename>hello.lib</filename>がコピーされます。Windowsでは実行ファイルと同じディレクトリのDLLは環境変数<envar>PATH</envar>に関係なく参照できるので、そのまま実行できるようになります。</para>
-    <para>なお、UNIX系のOSではBBv2が規定で共有ライブラリのパスを実行ファイルに埋め込むので、そのまま実行できます。逆に<computeroutput>install</computeroutput>ルールでコピーする際は共有ライブラリのパスを埋め込まない形で再リンクされるため、別途環境変数(<envar>LD_LIBRARY_PATH</envar>等)を設定する必要があります。</para>
+    <para>なお、UNIX系のOSではBBv2が既定で共有ライブラリのパスを実行ファイルに埋め込むので、そのまま実行できます。逆に<computeroutput>install</computeroutput>ルールでコピーする際は共有ライブラリのパスを埋め込まない形で再リンクされるため、別途環境変数(<envar>LD_LIBRARY_PATH</envar>等)を設定する必要があります。</para>
     <para>常にインストールされるのが不便であれば、次のJamスクリプトを追加してください。</para>
     <programlisting>explicit dist ;</programlisting>
     <para><computeroutput>explicit</computeroutput>ルールはターゲットが暗黙的にビルドされないようにします。よって、インストールしたい場合は明示的に行う必要があります。</para>
