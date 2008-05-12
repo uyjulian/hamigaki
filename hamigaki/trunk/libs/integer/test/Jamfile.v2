@@ -16,4 +16,5 @@ project
 
 run auto_max_test.cpp ;
 run auto_min_test.cpp ;
+run byte_swap_test.cpp ;
 run rotate_test.cpp ;
