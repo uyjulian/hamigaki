@@ -10,15 +10,13 @@
 #ifndef HAMIGAKI_CHECKSUM_SHA256_HPP
 #define HAMIGAKI_CHECKSUM_SHA256_HPP
 
+#include <hamigaki/integer/byte_swap.hpp>
+#include <hamigaki/integer/rotate.hpp>
 #include <boost/detail/endian.hpp>
 #include <boost/array.hpp>
 #include <boost/assert.hpp>
 #include <boost/cstdint.hpp>
 #include <cstddef>
-
-#if defined(_MSC_VER) && (_MSC_VER >= 1400)
-    #include <stdlib.h>
-#endif
 
 namespace hamigaki { namespace checksum {
 
@@ -28,45 +26,12 @@ namespace sha256_detail
 typedef boost::uint32_t word;
 typedef boost::array<word,16> block;
 
-inline word rotate_right(word n, word s)
-{
-    BOOST_ASSERT(s != 0);
-    BOOST_ASSERT(s < 32u);
-
-#if defined(_MSC_VER) && (_MSC_VER >= 1400)
-    return ::_rotr(n, static_cast<int>(s));
-#elif defined(__MWERKS__) && (defined(__MC68K__) || defined(__INTEL__))
-    return __ror(n, s);
-#else
-    return (n >> s) | (n << (32-s));
-#endif
-}
-
-#if (defined(_MSC_VER) || defined(__MWERKS__)) && defined(_M_IX86)
-inline word swap_word(word n)
-{
-    __asm
-    {
-        mov eax, n
-        bswap eax
-    }
-}
-#elif defined(__GNUC__) && defined(__i486__)
-inline word swap_word(word n)
-{
-    __asm__("bswap %0" : "=r"(n) : "0"(n));
-    return n;
-}
-#else
-    #define HAMIGAKI_CHECKSUM_NO_SWAP_WORD
-#endif
-
 inline void copy_word(boost::uint8_t* dst, word n)
 {
 #if defined(BOOST_BIG_ENDIAN)
     std::memcpy(dst, &n, sizeof(word));
-#elif !defined(HAMIGAKI_CHECKSUM_NO_SWAP_WORD)
-    *reinterpret_cast<word*>(dst) = swap_word(n);
+#elif defined(_M_IX86) || defined(__i386__)
+    *reinterpret_cast<word*>(dst) = byte_swap32(n);
 #else
     dst[0] = static_cast<boost::uint8_t>(n >> 24);
     dst[1] = static_cast<boost::uint8_t>(n >> 16);
@@ -74,7 +39,6 @@ inline void copy_word(boost::uint8_t* dst, word n)
     dst[3] = static_cast<boost::uint8_t>(n      );
 #endif
 }
-#undef HAMIGAKI_CHECKSUM_NO_SWAP_WORD
 
 class sha256_impl
 {

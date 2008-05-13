@@ -1,6 +1,6 @@
-// sha1.hpp: SHA1 checksum
+// sha1.hpp: SHA-1 checksum
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -10,14 +10,12 @@
 #ifndef HAMIGAKI_CHECKSUM_SHA1_HPP
 #define HAMIGAKI_CHECKSUM_SHA1_HPP
 
+#include <hamigaki/integer/byte_swap.hpp>
+#include <hamigaki/integer/rotate.hpp>
 #include <boost/array.hpp>
 #include <boost/assert.hpp>
 #include <boost/cstdint.hpp>
 #include <cstddef>
-
-#if defined(_MSC_VER) && (_MSC_VER >= 1400)
-    #include <stdlib.h>
-#endif
 
 namespace hamigaki { namespace checksum {
 
@@ -27,17 +25,17 @@ namespace sha1_detail
 typedef boost::uint32_t word;
 typedef boost::array<word,16> block;
 
-inline word rotate_left(word n, word s)
+inline void copy_word(boost::uint8_t* dst, word n)
 {
-    BOOST_ASSERT(s != 0);
-    BOOST_ASSERT(s < 32u);
-
-#if defined(_MSC_VER) && (_MSC_VER >= 1400)
-    return ::_rotl(n, static_cast<int>(s));
-#elif defined(__MWERKS__) && (defined(__MC68K__) || defined(__INTEL__))
-    return __rol(n, s);
+#if defined(BOOST_BIG_ENDIAN)
+    std::memcpy(dst, &n, sizeof(word));
+#elif defined(_M_IX86) || defined(__i386__)
+    *reinterpret_cast<word*>(dst) = byte_swap32(n);
 #else
-    return (n << s) | (n >> (32-s));
+    dst[0] = static_cast<boost::uint8_t>(n >> 24);
+    dst[1] = static_cast<boost::uint8_t>(n >> 16);
+    dst[2] = static_cast<boost::uint8_t>(n >>  8);
+    dst[3] = static_cast<boost::uint8_t>(n      );
 #endif
 }
 
@@ -93,26 +91,11 @@ public:
     value_type output()
     {
         value_type tmp;
-        tmp[ 0] = static_cast<boost::uint8_t>(h_[0] >> 24);
-        tmp[ 1] = static_cast<boost::uint8_t>(h_[0] >> 16);
-        tmp[ 2] = static_cast<boost::uint8_t>(h_[0] >>  8);
-        tmp[ 3] = static_cast<boost::uint8_t>(h_[0]      );
-        tmp[ 4] = static_cast<boost::uint8_t>(h_[1] >> 24);
-        tmp[ 5] = static_cast<boost::uint8_t>(h_[1] >> 16);
-        tmp[ 6] = static_cast<boost::uint8_t>(h_[1] >>  8);
-        tmp[ 7] = static_cast<boost::uint8_t>(h_[1]      );
-        tmp[ 8] = static_cast<boost::uint8_t>(h_[2] >> 24);
-        tmp[ 9] = static_cast<boost::uint8_t>(h_[2] >> 16);
-        tmp[10] = static_cast<boost::uint8_t>(h_[2] >>  8);
-        tmp[11] = static_cast<boost::uint8_t>(h_[2]      );
-        tmp[12] = static_cast<boost::uint8_t>(h_[3] >> 24);
-        tmp[13] = static_cast<boost::uint8_t>(h_[3] >> 16);
-        tmp[14] = static_cast<boost::uint8_t>(h_[3] >>  8);
-        tmp[15] = static_cast<boost::uint8_t>(h_[3]      );
-        tmp[16] = static_cast<boost::uint8_t>(h_[4] >> 24);
-        tmp[17] = static_cast<boost::uint8_t>(h_[4] >> 16);
-        tmp[18] = static_cast<boost::uint8_t>(h_[4] >>  8);
-        tmp[19] = static_cast<boost::uint8_t>(h_[4]      );
+        copy_word(&tmp.elems[ 0], h_[0]);
+        copy_word(&tmp.elems[ 4], h_[1]);
+        copy_word(&tmp.elems[ 8], h_[2]);
+        copy_word(&tmp.elems[12], h_[3]);
+        copy_word(&tmp.elems[16], h_[4]);
         return tmp;
     }
 
