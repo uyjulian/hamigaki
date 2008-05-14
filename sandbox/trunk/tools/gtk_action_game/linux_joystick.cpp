@@ -12,8 +12,8 @@
 #include <stdexcept>
 #include <vector>
 #include <linux/joystick.h>
+#include <sys/ioctl.h>
 #include <fcntl.h>
-#include <stropts.h>
 #include <unistd.h>
 
 namespace
