@@ -233,6 +233,94 @@ private:
     sha1_detail::sha1_impl impl_;
 };
 
+class sha1_optimal
+{
+    typedef sha1_detail::word word;
+
+public:
+    typedef boost::array<boost::uint8_t,20> value_type;
+
+    sha1_optimal()
+    {
+        reset();
+    }
+
+    void reset()
+    {
+        buffer_.assign(0);
+        byte_ = 0;
+        impl_.reset();
+    }
+
+    void process_byte(unsigned char byte)
+    {
+        std::size_t index = static_cast<std::size_t>((byte_ % 64) / 4);
+        std::size_t offset = static_cast<std::size_t>(byte_ % 4) * 8;
+        buffer_[index] |= byte << (24 - offset);
+        if ((++byte_ % 64) == 0)
+        {
+            impl_.process_block(buffer_);
+            buffer_.assign(0);
+        }
+    }
+
+    void process_block(const void* bytes_begin, const void* bytes_end)
+    {
+        typedef unsigned char uchar;
+        const uchar* beg = static_cast<const uchar*>(bytes_begin);
+        const uchar* end = static_cast<const uchar*>(bytes_end);
+        while (beg != end)
+            process_byte(*(beg++));
+    }
+
+    void process_bytes(const void* buffer, std::size_t byte_count)
+    {
+        typedef unsigned char uchar;
+        const uchar* beg = static_cast<const uchar*>(buffer);
+        process_block(beg, beg+byte_count);
+    }
+
+    value_type checksum() const
+    {
+        sha1_optimal tmp(*this);
+
+        boost::uint64_t total = tmp.byte_ * 8;
+
+        std::size_t pad_size =
+            static_cast<std::size_t>(64 - (tmp.byte_ + 8)%64);
+
+        tmp.process_byte(0x80);
+        while (--pad_size)
+            tmp.process_byte(0x00);
+
+        tmp.process_byte(static_cast<boost::uint8_t>(total >> 56));
+        tmp.process_byte(static_cast<boost::uint8_t>(total >> 48));
+        tmp.process_byte(static_cast<boost::uint8_t>(total >> 40));
+        tmp.process_byte(static_cast<boost::uint8_t>(total >> 32));
+        tmp.process_byte(static_cast<boost::uint8_t>(total >> 24));
+        tmp.process_byte(static_cast<boost::uint8_t>(total >> 16));
+        tmp.process_byte(static_cast<boost::uint8_t>(total >>  8));
+        tmp.process_byte(static_cast<boost::uint8_t>(total      ));
+
+        return tmp.impl_.output();
+    }
+
+    void operator()(unsigned char byte)
+    {
+        process_byte(byte);
+    }
+
+    value_type operator()() const
+    {
+        return checksum();
+    }
+
+private:
+    sha1_detail::block buffer_;
+    boost::uint64_t byte_;
+    sha1_detail::sha1_impl impl_;
+};
+
 } } // End namespaces checksum, hamigaki.
 
 #endif // HAMIGAKI_CHECKSUM_SHA1_HPP
