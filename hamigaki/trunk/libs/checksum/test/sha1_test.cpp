@@ -1,6 +1,6 @@
 // sha1_test.cpp: test case for SHA-1
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -14,35 +14,33 @@
 namespace cksum = hamigaki::checksum;
 namespace ut = boost::unit_test;
 
+template<class E>
 std::string sha1checksum(const std::string& s)
 {
-    cksum::sha1 cs;
+    E cs;
     cs.process_bytes(s.c_str(), s.size());
     return hamigaki::to_hex<char>(cs.checksum(), false);
 }
 
-void sha1_test()
+template<class E>
+void sha1_test1()
 {
-    BOOST_CHECK_EQUAL(sha1checksum("abc").size(), 40u);
+    BOOST_CHECK_EQUAL(sha1checksum<E>("abc").size(), 40u);
 
     BOOST_CHECK_EQUAL(
-        sha1checksum("abc"),
+        sha1checksum<E>("abc"),
         std::string("a9993e364706816aba3e25717850c26c9cd0d89d")
     );
 
     BOOST_CHECK_EQUAL(
-        sha1checksum(
+        sha1checksum<E>(
             "abcdbcdecdefdefgefghfghighijhi"
             "jkijkljklmklmnlmnomnopnopq"),
         std::string("84983e441c3bd26ebaae4aa1f95129e5e54670f1")
     );
-
-    BOOST_CHECK_EQUAL(
-        sha1checksum(""),
-        std::string("da39a3ee5e6b4b0d3255bfef95601890afd80709")
-    );
 }
 
+template<class E>
 void sha1_test2()
 {
     cksum::sha1 cs;
@@ -54,6 +52,7 @@ void sha1_test2()
         digest, std::string("34aa973cd4c4daa4f61eeb2bdbad27316534016f"));
 }
 
+template<class E>
 void sha1_test3()
 {
     const char data[] =
@@ -69,11 +68,40 @@ void sha1_test3()
         digest, std::string("dea356a2cddd90c7a7ecedc5ebb563934f460452"));
 }
 
+template<class E>
+void sha1_test4()
+{
+    BOOST_CHECK_EQUAL(
+        sha1checksum<E>(""),
+        std::string("da39a3ee5e6b4b0d3255bfef95601890afd80709")
+    );
+
+    BOOST_CHECK_EQUAL(
+        sha1checksum<E>(std::string(448u, 'a')),
+        std::string("7c6d6ed601becc0a68dbca91800a634cd1e5e5df")
+    );
+}
+
+void sha1_test()
+{
+    sha1_test1<cksum::sha1>();
+    sha1_test2<cksum::sha1>();
+    sha1_test3<cksum::sha1>();
+    sha1_test4<cksum::sha1>();
+}
+
+void sha1_optimal_test()
+{
+    sha1_test1<cksum::sha1_optimal>();
+    sha1_test2<cksum::sha1_optimal>();
+    sha1_test3<cksum::sha1_optimal>();
+    sha1_test4<cksum::sha1_optimal>();
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("SHA-1 test");
     test->add(BOOST_TEST_CASE(&sha1_test));
-    test->add(BOOST_TEST_CASE(&sha1_test2));
-    test->add(BOOST_TEST_CASE(&sha1_test3));
+    test->add(BOOST_TEST_CASE(&sha1_optimal_test));
     return test;
 }

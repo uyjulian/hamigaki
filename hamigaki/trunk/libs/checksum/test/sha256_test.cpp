@@ -14,41 +14,37 @@
 namespace cksum = hamigaki::checksum;
 namespace ut = boost::unit_test;
 
+template<class E>
 std::string sha256checksum(const std::string& s)
 {
-    cksum::sha256 cs;
+    E cs;
     cs.process_bytes(s.c_str(), s.size());
     return hamigaki::to_hex<char>(cs.checksum(), false);
 }
 
-void sha256_test()
+template<class E>
+void sha256_test1()
 {
-    BOOST_CHECK_EQUAL(sha256checksum("abc").size(), 64u);
+    BOOST_CHECK_EQUAL(sha256checksum<E>("abc").size(), 64u);
 
     BOOST_CHECK_EQUAL(
-        sha256checksum("abc"),
+        sha256checksum<E>("abc"),
         std::string(
             "ba7816bf8f01cfea414140de5dae2223"
             "b00361a396177a9cb410ff61f20015ad")
     );
 
     BOOST_CHECK_EQUAL(
-        sha256checksum(
+        sha256checksum<E>(
             "abcdbcdecdefdefgefghfghighijhi"
             "jkijkljklmklmnlmnomnopnopq"),
         std::string(
             "248d6a61d20638b8e5c026930c3e6039"
             "a33ce45964ff2167f6ecedd419db06c1")
     );
-
-    BOOST_CHECK_EQUAL(
-        sha256checksum(""),
-        std::string(
-            "e3b0c44298fc1c149afbf4c8996fb924"
-            "27ae41e4649b934ca495991b7852b855")
-    );
 }
 
+template<class E>
 void sha256_test2()
 {
     cksum::sha256 cs;
@@ -64,6 +60,7 @@ void sha256_test2()
     );
 }
 
+template<class E>
 void sha256_test3()
 {
     const char data[] =
@@ -83,11 +80,44 @@ void sha256_test3()
     );
 }
 
+template<class E>
+void sha256_test4()
+{
+    BOOST_CHECK_EQUAL(
+        sha256checksum<E>(""),
+        std::string(
+            "e3b0c44298fc1c149afbf4c8996fb924"
+            "27ae41e4649b934ca495991b7852b855")
+    );
+
+    BOOST_CHECK_EQUAL(
+        sha256checksum<E>(std::string(448u, 'a')),
+        std::string(
+            "8984f047b9332de349e82f5f855bf0d2"
+            "24bcec9b3c7f59f9ae022cad44119f65")
+    );
+}
+
+void sha256_test()
+{
+    sha256_test1<cksum::sha256>();
+    sha256_test2<cksum::sha256>();
+    sha256_test3<cksum::sha256>();
+    sha256_test4<cksum::sha256>();
+}
+
+void sha256_optimal_test()
+{
+    sha256_test1<cksum::sha256_optimal>();
+    sha256_test2<cksum::sha256_optimal>();
+    sha256_test3<cksum::sha256_optimal>();
+    sha256_test4<cksum::sha256_optimal>();
+}
+
 ut::test_suite* init_unit_test_suite(int, char* [])
 {
     ut::test_suite* test = BOOST_TEST_SUITE("SHA-256 test");
     test->add(BOOST_TEST_CASE(&sha256_test));
-    test->add(BOOST_TEST_CASE(&sha256_test2));
-    test->add(BOOST_TEST_CASE(&sha256_test3));
+    test->add(BOOST_TEST_CASE(&sha256_optimal_test));
     return test;
 }
