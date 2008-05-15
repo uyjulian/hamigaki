@@ -64,10 +64,11 @@ public:
 
     void process_block(const block& x)
     {
-        std::copy(x.begin(), x.end(), &w_[0]);
+        word w[64];
+        std::copy(x.begin(), x.end(), &w[0]);
 
         for (word t = 16; t < 64; ++t)
-            w_[t] = ssig1(w_[t-2]) + w_[t-7] + ssig0(w_[t-15]) + w_[t-16];
+            w[t] = ssig1(w[t-2]) + w[t-7] + ssig0(w[t-15]) + w[t-16];
 
         word a = h_[0];
         word b = h_[1];
@@ -80,7 +81,7 @@ public:
 
         for (word t = 0; t < 64; ++t)
         {
-            word t1 = h + bsig1(e) + ch(e, f, g) + k(t) + w_[t];
+            word t1 = h + bsig1(e) + ch(e, f, g) + k(t) + w[t];
             word t2 = bsig0(a) + maj(a, b, c);
             h = g;
             g = f;
@@ -117,7 +118,6 @@ public:
     }
 
 private:
-    word w_[64];
     word h_[8];
 
     static word ch(word x, word y, word z)
@@ -180,9 +180,10 @@ private:
 class sha256
 {
     typedef sha256_detail::word word;
+    typedef sha256_detail::sha256_impl impl_type;
 
 public:
-    typedef boost::array<boost::uint8_t,32> value_type;
+    typedef impl_type::value_type value_type;
 
     sha256()
     {
@@ -192,16 +193,16 @@ public:
     void reset()
     {
         buffer_.assign(0);
-        bit_ = 0;
+        bits_ = 0;
         impl_.reset();
     }
 
     void process_bit(bool bit)
     {
-        std::size_t index = static_cast<std::size_t>((bit_ % 512) / 32);
-        std::size_t offset = static_cast<std::size_t>(bit_ % 32);
+        std::size_t index = static_cast<std::size_t>((bits_ % 512) / 32);
+        std::size_t offset = static_cast<std::size_t>(bits_ % 32);
         buffer_[index] |= static_cast<word>(bit) << (31 - offset);
-        if ((++bit_ % 512) == 0)
+        if ((++bits_ % 512) == 0)
         {
             impl_.process_block(buffer_);
             buffer_.assign(0);
@@ -239,10 +240,10 @@ public:
     {
         sha256 tmp(*this);
 
-        boost::uint64_t total = tmp.bit_;
+        boost::uint64_t total = tmp.bits_;
 
         std::size_t pad_size =
-            static_cast<std::size_t>(512 - (tmp.bit_ + 64)%512);
+            static_cast<std::size_t>(512 - (tmp.bits_ + 64)%512);
 
         tmp.process_bit(true);
         while (--pad_size)
@@ -266,16 +267,17 @@ public:
 
 private:
     sha256_detail::block buffer_;
-    boost::uint64_t bit_;
-    sha256_detail::sha256_impl impl_;
+    boost::uint64_t bits_;
+    impl_type impl_;
 };
 
 class sha256_optimal
 {
     typedef sha256_detail::word word;
+    typedef sha256_detail::sha256_impl impl_type;
 
 public:
-    typedef boost::array<boost::uint8_t,32> value_type;
+    typedef impl_type::value_type value_type;
 
     sha256_optimal()
     {
@@ -285,16 +287,16 @@ public:
     void reset()
     {
         buffer_.assign(0);
-        byte_ = 0;
+        bytes_ = 0;
         impl_.reset();
     }
 
     void process_byte(unsigned char byte)
     {
-        std::size_t index = static_cast<std::size_t>((byte_ % 64) / 4);
-        std::size_t offset = static_cast<std::size_t>(byte_ % 4) * 8;
-        buffer_[index] |= byte << (24 - offset);
-        if ((++byte_ % 64) == 0)
+        std::size_t index = static_cast<std::size_t>((bytes_ % 64) / 4);
+        std::size_t offset = static_cast<std::size_t>(bytes_ % 4) * 8;
+        buffer_[index] |= static_cast<boost::uint32_t>(byte) << (24 - offset);
+        if ((++bytes_ % 64) == 0)
         {
             impl_.process_block(buffer_);
             buffer_.assign(0);
@@ -306,8 +308,26 @@ public:
         typedef unsigned char uchar;
         const uchar* beg = static_cast<const uchar*>(bytes_begin);
         const uchar* end = static_cast<const uchar*>(bytes_end);
+        std::size_t index = static_cast<std::size_t>((bytes_ % 64) / 4);
+        std::size_t offset = 24 - static_cast<std::size_t>(bytes_ % 4) * 8;
+        bytes_ += (end - beg);
         while (beg != end)
-            process_byte(*(beg++));
+        {
+            boost::uint32_t b = *(beg++);
+            buffer_[index] |= b << offset;
+            if (offset == 0)
+            {
+                offset = 24;
+                if (++index == 16)
+                {
+                    index = 0;
+                    impl_.process_block(buffer_);
+                    buffer_.assign(0);
+                }
+            }
+            else
+                offset -= 8;
+        }
     }
 
     void process_bytes(const void* buffer, std::size_t byte_count)
@@ -317,29 +337,22 @@ public:
         process_block(beg, beg+byte_count);
     }
 
-    value_type checksum() const
+    value_type checksum()
     {
-        sha256_optimal tmp(*this);
+        boost::uint64_t total = bytes_ * 8;
 
-        boost::uint64_t total = tmp.byte_ * 8;
+        process_byte(0x80);
+        if (bytes_ % 64 >= 64-8)
+        {
+            impl_.process_block(buffer_);
+            buffer_.assign(0);
+        }
 
-        std::size_t pad_size =
-            static_cast<std::size_t>(64 - (tmp.byte_ + 8)%64);
+        buffer_[14] = static_cast<boost::uint32_t>(total >> 32);
+        buffer_[15] = static_cast<boost::uint32_t>(total      );
+        impl_.process_block(buffer_);
 
-        tmp.process_byte(0x80);
-        while (--pad_size)
-            tmp.process_byte(0x00);
-
-        tmp.process_byte(static_cast<boost::uint8_t>(total >> 56));
-        tmp.process_byte(static_cast<boost::uint8_t>(total >> 48));
-        tmp.process_byte(static_cast<boost::uint8_t>(total >> 40));
-        tmp.process_byte(static_cast<boost::uint8_t>(total >> 32));
-        tmp.process_byte(static_cast<boost::uint8_t>(total >> 24));
-        tmp.process_byte(static_cast<boost::uint8_t>(total >> 16));
-        tmp.process_byte(static_cast<boost::uint8_t>(total >>  8));
-        tmp.process_byte(static_cast<boost::uint8_t>(total      ));
-
-        return tmp.impl_.output();
+        return impl_.output();
     }
 
     void operator()(unsigned char byte)
@@ -347,15 +360,15 @@ public:
         process_byte(byte);
     }
 
-    value_type operator()() const
+    value_type operator()()
     {
         return checksum();
     }
 
 private:
     sha256_detail::block buffer_;
-    boost::uint64_t byte_;
-    sha256_detail::sha256_impl impl_;
+    boost::uint64_t bytes_;
+    impl_type impl_;
 };
 
 } } // End namespaces checksum, hamigaki.
