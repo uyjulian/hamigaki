@@ -17,7 +17,7 @@
   <itemizedlist>
     <listitem><link linkend="hamigaki.checksum.md5">MD5</link></listitem>
     <listitem><link linkend="hamigaki.checksum.sha1">SHA-1</link></listitem>
-    <listitem><link linkend="hamigaki.checksum.sha256">SHA-256</link></listitem>
+    <listitem><link linkend="hamigaki.checksum.sha2_optimal">SHA-2</link> (SHA-224/256/384/512)</listitem>
     <listitem><link linkend="hamigaki.checksum.sum8">sum8</link></listitem>
     <listitem><link linkend="hamigaki.checksum.sum16">sum16</link></listitem>
     <listitem><link linkend="hamigaki.checksum.xor8">xor8</link></listitem>

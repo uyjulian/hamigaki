@@ -15,7 +15,7 @@
   <title>リファレンス</title>
   <xi:include href="md5.xml"/>
   <xi:include href="sha1.xml"/>
-  <xi:include href="sha256.xml"/>
+  <xi:include href="sha2.xml"/>
   <xi:include href="sum16.xml"/>
   <xi:include href="sum8.xml"/>
   <xi:include href="xor8.xml"/>
