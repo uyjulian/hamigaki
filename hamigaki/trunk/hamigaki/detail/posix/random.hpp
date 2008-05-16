@@ -1,6 +1,6 @@
 // random.hpp: random number generator
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -37,14 +37,7 @@ inline boost::uint32_t random_seed()
 #if defined(__i386__)
     boost::uint32_t low;
     boost::uint32_t high;
-    __asm__
-    (
-        "rdtsc\n\t"
-        "movl %%eax, %0\n\t"
-        "movl %%edx, %1" ::
-        "m"(low), "m"(high) :
-        "%eax", "%edx"
-    );
+    __asm__("rdtsc" : "=a"(low), "=d"(high));
     boost::hash_combine(seed, low);
     boost::hash_combine(seed, high);
 #elif defined(BOOST_HAS_GETTIMEOFDAY)
