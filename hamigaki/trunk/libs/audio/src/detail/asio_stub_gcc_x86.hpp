@@ -1,6 +1,6 @@
 // asio_stub_gcc_x86.hpp: ASIO API stub functions for gcc/x86
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -14,10 +14,10 @@
 
 namespace hamigaki { namespace audio { namespace detail {
 
-inline ::ASIOBool asio_init(::IASIO* this_ptr, void *sys_handle)
+inline ::ASIOBool asio_init(::IASIO* this_ptr, void* sys_handle)
 {
     ::ASIOBool result;
-    __asm__
+    __asm__ __volatile__
     (
         "mov %2, %%eax\n\t"
         "push %%eax\n\t"
@@ -28,7 +28,7 @@ inline ::ASIOBool asio_init(::IASIO* this_ptr, void *sys_handle)
         "call *%%eax" :
         "=a" (result) :
         "m" (this_ptr), "m" (sys_handle) :
-        "%ecx", "%edx"
+        "%ecx", "%edx", "cc", "memory"
     );
     return result;
 }
@@ -36,7 +36,7 @@ inline ::ASIOBool asio_init(::IASIO* this_ptr, void *sys_handle)
 inline ::ASIOError asio_start(::IASIO* this_ptr)
 {
     ::ASIOError result;
-    __asm__
+    __asm__ __volatile__
     (
         "mov %1, %%eax\n\t"
         "mov (%%eax), %%edx\n\t"
@@ -45,7 +45,7 @@ inline ::ASIOError asio_start(::IASIO* this_ptr)
         "call *%%eax" :
         "=a" (result) :
         "m" (this_ptr) :
-        "%ecx", "%edx"
+        "%ecx", "%edx", "cc", "memory"
     );
     return result;
 }
@@ -53,7 +53,7 @@ inline ::ASIOError asio_start(::IASIO* this_ptr)
 inline ::ASIOError asio_stop(::IASIO* this_ptr)
 {
     ::ASIOError result;
-    __asm__
+    __asm__ __volatile__
     (
         "mov %1, %%eax\n\t"
         "mov (%%eax), %%edx\n\t"
@@ -62,7 +62,7 @@ inline ::ASIOError asio_stop(::IASIO* this_ptr)
         "call *%%eax" : 
         "=a" (result) :
         "m" (this_ptr) :
-        "%ecx", "%edx"
+        "%ecx", "%edx", "cc", "memory"
     );
     return result;
 }
@@ -71,7 +71,7 @@ inline ::ASIOError asio_get_buffer_size(::IASIO* this_ptr,
     long* min_size, long* max_size, long* preferred_size, long* granularity)
 {
     ::ASIOError result;
-    __asm__
+    __asm__ __volatile__
     (
         "mov %5, %%eax\n\t"
         "push %%eax\n\t"
@@ -89,7 +89,7 @@ inline ::ASIOError asio_get_buffer_size(::IASIO* this_ptr,
         "=a" (result) :
         "m" (this_ptr), "m" (min_size), "m" (max_size),
         "m" (preferred_size), "m" (granularity) :
-        "%ecx", "%edx"
+        "%ecx", "%edx", "cc", "memory"
     );
     return result;
 }
@@ -98,7 +98,7 @@ inline ::ASIOError asio_get_sample_rate(
     ::IASIO* this_ptr, ::ASIOSampleRate* sample_rate)
 {
     ::ASIOError result;
-    __asm__
+    __asm__ __volatile__
     (
         "mov %2, %%eax\n\t"
         "push %%eax\n\t"
@@ -109,7 +109,7 @@ inline ::ASIOError asio_get_sample_rate(
         "call *%%eax" :
         "=a" (result) :
         "m" (this_ptr), "m" (sample_rate) :
-        "%ecx", "%edx"
+        "%ecx", "%edx", "cc", "memory"
     );
     return result;
 }
@@ -118,7 +118,7 @@ inline ::ASIOError asio_set_sample_rate(
     ::IASIO* this_ptr, ::ASIOSampleRate sample_rate)
 {
     ::ASIOError result;
-    __asm__
+    __asm__ __volatile__
     (
         "sub $0x8, %%esp\n\t"
         "fldl %2\n\t"
@@ -130,7 +130,7 @@ inline ::ASIOError asio_set_sample_rate(
         "call *%%eax" :
         "=a" (result) :
         "m" (this_ptr), "m" (sample_rate) :
-        "%ecx", "%edx"
+        "%ecx", "%edx", "cc", "memory"
     );
     return result;
 }
@@ -139,7 +139,7 @@ inline ::ASIOError asio_get_channel_info(
     ::IASIO* this_ptr, ::ASIOChannelInfo* info)
 {
     ::ASIOError result;
-    __asm__
+    __asm__ __volatile__
     (
         "mov %2, %%eax\n\t"
         "push %%eax\n\t"
@@ -150,7 +150,7 @@ inline ::ASIOError asio_get_channel_info(
         "call *%%eax" :
         "=a" (result) :
         "m" (this_ptr), "m" (info) :
-        "%ecx", "%edx"
+        "%ecx", "%edx", "cc", "memory"
     );
     return result;
 }
@@ -160,7 +160,7 @@ inline ::ASIOError asio_create_buffers(::IASIO* this_ptr,
     long buffer_size, ::ASIOCallbacks* callbacks)
 {
     ::ASIOError result;
-    __asm__
+    __asm__ __volatile__
     (
         "mov %5, %%eax\n\t"
         "push %%eax\n\t"
@@ -178,7 +178,7 @@ inline ::ASIOError asio_create_buffers(::IASIO* this_ptr,
         "=a" (result) :
         "m" (this_ptr), "m" (buffer_infos), "m" (num_channels),
         "m" (buffer_size), "m" (callbacks) :
-        "%ecx", "%edx"
+        "%ecx", "%edx", "cc", "memory"
     );
     return result;
 }
@@ -186,7 +186,7 @@ inline ::ASIOError asio_create_buffers(::IASIO* this_ptr,
 inline ::ASIOError asio_output_ready(::IASIO* this_ptr)
 {
     ::ASIOError result;
-    __asm__
+    __asm__ __volatile__
     (
         "mov %1, %%eax\n\t"
         "mov (%%eax), %%edx\n\t"
@@ -195,7 +195,7 @@ inline ::ASIOError asio_output_ready(::IASIO* this_ptr)
         "call *%%eax" :
         "=a" (result) :
         "m" (this_ptr) :
-        "%ecx", "%edx"
+        "%ecx", "%edx", "cc", "memory"
     );
     return result;
 }
