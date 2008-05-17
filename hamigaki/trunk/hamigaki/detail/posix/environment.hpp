@@ -13,18 +13,16 @@
 #include <string>
 #include <unistd.h>
 
-#if defined(__APPLE__)
-    #if defined(__DYNAMIC__)
-        #include <crt_externs.h>
-        #if !defined(environ)
-            #define environ (*_NSGetEnviron())
-        #endif
-    #else
-        extern "C"
-        {
-            extern char** environ;
-        }
+#if defined(__APPLE__) && defined(__DYNAMIC__)
+    #include <crt_externs.h>
+    #if !defined(environ)
+        #define environ (*_NSGetEnviron())
     #endif
+#else
+    extern "C"
+    {
+        extern char** environ;
+    }
 #endif
 
 namespace hamigaki { namespace detail { namespace posix {

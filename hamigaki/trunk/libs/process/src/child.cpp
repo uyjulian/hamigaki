@@ -41,10 +41,8 @@
     #include <fcntl.h>
     #include <signal.h>
     #include <unistd.h>
-#endif
 
-#if defined(__APPLE__)
-    #if defined(__DYNAMIC__)
+    #if defined(__APPLE__) && defined(__DYNAMIC__)
         #include <crt_externs.h>
         #if !defined(environ)
             #define environ (*_NSGetEnviron())
