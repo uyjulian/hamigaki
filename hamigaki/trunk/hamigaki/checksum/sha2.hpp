@@ -454,17 +454,20 @@ public:
     void reset()
     {
         buffer_.assign(0);
-        bits_ = 0;
+        bits_high_ = 0;
+        bits_low_ = 0;
         impl_.reset();
     }
 
     void process_bit(bool bit)
     {
         std::size_t index =
-            static_cast<std::size_t>((bits_ % block_bits) / word_bits);
-        std::size_t offset = static_cast<std::size_t>(bits_ % word_bits);
+            static_cast<std::size_t>((bits_low_ % block_bits) / word_bits);
+        std::size_t offset = static_cast<std::size_t>(bits_low_ % word_bits);
         buffer_[index] |= static_cast<word>(bit) << (word_bits-1 - offset);
-        if ((++bits_ % block_bits) == 0)
+        if (++bits_low_ == 0)
+            ++bits_high_;
+        if ((bits_low_ % block_bits) == 0)
         {
             impl_.process_block(buffer_);
             buffer_.assign(0);
@@ -502,19 +505,23 @@ public:
     {
         sha2_basic tmp(*this);
 
-        boost::uint64_t total = tmp.bits_;
+        word total_high = tmp.bits_high_;
+        word total_low = tmp.bits_low_;
 
         std::size_t pad_size =
             static_cast<std::size_t>(
-                block_bits - (tmp.bits_ + word_bits*2)%block_bits
+                block_bits - (tmp.bits_low_ + word_bits*2)%block_bits
             );
 
         tmp.process_bit(true);
         while (--pad_size)
             tmp.process_bit(false);
 
-        for (int i = word_bits*2-8; i >= 0; i -= 8)
-            tmp.process_byte(static_cast<unsigned char>(total >> i));
+        for (int i = word_bits-8; i >= 0; i -= 8)
+            tmp.process_byte(static_cast<unsigned char>(total_high >> i));
+
+        for (int i = word_bits-8; i >= 0; i -= 8)
+            tmp.process_byte(static_cast<unsigned char>(total_low >> i));
 
         return tmp.impl_.output();
     }
@@ -531,7 +538,8 @@ public:
 
 private:
     block buffer_;
-    boost::uint64_t bits_;
+    word bits_high_;
+    word bits_low_;
     impl_type impl_;
 };
 
