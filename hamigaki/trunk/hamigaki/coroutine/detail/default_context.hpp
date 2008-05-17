@@ -1,6 +1,6 @@
 // default_context.hpp: default context implementation
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -17,7 +17,7 @@
 namespace hamigaki { namespace coroutines { namespace detail {
     typedef windows::fiber_context_impl default_context_impl;
 } } } // End namespaces detail, coroutines, hamigaki.
-#elif defined(_XOPEN_SOURCE) && (_XOPEN_SOURCE >= 500)
+#elif (defined(_XOPEN_SOURCE) && (_XOPEN_SOURCE >= 500)) || defined(__NetBSD__)
 #include <hamigaki/coroutine/detail/posix_user_context.hpp>
 namespace hamigaki { namespace coroutines { namespace detail {
     typedef posix::user_context_impl default_context_impl;
