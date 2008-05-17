@@ -249,7 +249,7 @@ rule libraries-to-install ( existing-libraries * )
        ECHO "error: wrong library name '$(wrong[1])' in the --with-<library> option." ;
        EXIT ;
    }
-   local wrong = [ set.difference $(without-parameter) : $(existing-libraries) ] ;
+   local wrong = [ set.difference $(without-parameter) : $(existing-libraries) python ] ;
    if $(wrong)
    {
        ECHO "error: wrong library name '$(wrong[1])' in the --without-<library> option." ;
