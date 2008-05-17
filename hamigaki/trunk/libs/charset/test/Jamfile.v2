@@ -13,6 +13,7 @@ project
     : requirements
       <library>/boost-lib//boost_unit_test_framework/<link>static
       <os>CYGWIN:<find-static-library>iconv
+      <os>SOLARIS:<find-shared-library>iconv
       <toolset>darwin:<find-static-library>iconv
     ;
 
