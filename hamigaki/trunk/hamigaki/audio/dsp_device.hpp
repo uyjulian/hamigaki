@@ -35,7 +35,7 @@ public:
         pcm_format_tag {};
 
     explicit dsp_sink(const pcm_format& f);
-    dsp_sink(const pcm_format& f, std::size_t buffer_size);
+    dsp_sink(const char* ph, const pcm_format& f);
 
     std::streamsize optimal_buffer_size() const
     {
@@ -65,7 +65,7 @@ public:
         pcm_format_tag {};
 
     explicit dsp_source(const pcm_format& f);
-    dsp_source(const pcm_format& f, std::size_t buffer_size);
+    dsp_source(const char* ph, const pcm_format& f);
 
     std::streamsize optimal_buffer_size() const
     {

@@ -144,7 +144,7 @@ private:
 class pcm_sink::impl
 {
 public:
-    impl(const pcm_format& f, std::size_t buffer_size) : impl_(f, buffer_size)
+    impl(const pcm_format& f, std::size_t) : impl_(f)
     {
     }
 
@@ -175,7 +175,7 @@ private:
 class pcm_source::impl
 {
 public:
-    impl(const pcm_format& f, std::size_t buffer_size) : impl_(f, buffer_size)
+    impl(const pcm_format& f, std::size_t) : impl_(f)
     {
     }
 
@@ -202,7 +202,7 @@ private:
 class pcm_sink::impl
 {
 public:
-    impl(const pcm_format& f, std::size_t buffer_size) : impl_(f, buffer_size)
+    impl(const pcm_format& f, std::size_t) : impl_(f)
     {
     }
 
@@ -233,7 +233,7 @@ private:
 class pcm_source::impl
 {
 public:
-    impl(const pcm_format& f, std::size_t buffer_size) : impl_(f, buffer_size)
+    impl(const pcm_format& f, std::size_t) : impl_(f)
     {
     }
 

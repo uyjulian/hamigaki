@@ -45,6 +45,8 @@ public:
 
     explicit mme_sink(const pcm_format& f);
     mme_sink(const pcm_format& f, std::size_t buffer_size);
+    mme_sink(unsigned id, const pcm_format& f);
+    mme_sink(unsigned id, const pcm_format& f, std::size_t buffer_size);
 
     std::streamsize optimal_buffer_size() const
     {
@@ -75,6 +77,8 @@ public:
 
     explicit mme_source(const pcm_format& f);
     mme_source(const pcm_format& f, std::size_t buffer_size);
+    mme_source(unsigned id, const pcm_format& f);
+    mme_source(unsigned id, const pcm_format& f, std::size_t buffer_size);
 
     std::streamsize optimal_buffer_size() const
     {

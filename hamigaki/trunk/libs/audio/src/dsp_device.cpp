@@ -25,14 +25,16 @@ namespace hamigaki { namespace audio {
 namespace
 {
 
+const char default_path[] = "/dev/dsp";
+
 class dev_dsp : boost::noncopyable
 {
 public:
-    explicit dev_dsp(int mode) :
-        fd_(::open("/dev/dsp", mode))
+    explicit dev_dsp(const char* ph, int mode) :
+        fd_(::open(ph, mode))
     {
         if (fd_ == -1)
-            throw BOOST_IOSTREAMS_FAILURE("cannot open /dev/dsp");
+            throw BOOST_IOSTREAMS_FAILURE("cannot open DSP");
     }
 
     ~dev_dsp()
@@ -120,8 +122,8 @@ private:
 class dsp_sink::impl : public dev_dsp
 {
 public:
-    impl(const pcm_format& f, std::size_t buffer_size)
-        : dev_dsp(O_WRONLY), format_(f)
+    impl(const char* ph, const pcm_format& f)
+        : dev_dsp(ph, O_WRONLY), format_(f)
     {
         if (f.type == uint8)
             dev_dsp::format(AFMT_U8);
@@ -145,8 +147,8 @@ private:
 class dsp_source::impl : public dev_dsp
 {
 public:
-    impl(const pcm_format& f, std::size_t buffer_size)
-        : dev_dsp(O_RDONLY), format_(f)
+    impl(const char* ph, const pcm_format& f)
+        : dev_dsp(ph, O_RDONLY), format_(f)
     {
         if (f.type == uint8)
             dev_dsp::format(AFMT_U8);
@@ -168,12 +170,12 @@ private:
 };
 
 dsp_sink::dsp_sink(const pcm_format& f)
-    : pimpl_(new impl(f, f.optimal_buffer_size()))
+    : pimpl_(new impl(default_path, f))
 {
 }
 
-dsp_sink::dsp_sink(const pcm_format& f, std::size_t buffer_size)
-    : pimpl_(new impl(f, buffer_size))
+dsp_sink::dsp_sink(const char* ph, const pcm_format& f)
+    : pimpl_(new impl(ph, f))
 {
 }
 
@@ -198,12 +200,12 @@ void dsp_sink::close()
 }
 
 dsp_source::dsp_source(const pcm_format& f)
-    : pimpl_(new impl(f, f.optimal_buffer_size()))
+    : pimpl_(new impl(default_path, f))
 {
 }
 
-dsp_source::dsp_source(const pcm_format& f, std::size_t buffer_size)
-    : pimpl_(new impl(f, buffer_size))
+dsp_source::dsp_source(const char* ph, const pcm_format& f)
+    : pimpl_(new impl(ph, f))
 {
 }
 

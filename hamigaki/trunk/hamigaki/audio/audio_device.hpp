@@ -35,7 +35,7 @@ public:
         pcm_format_tag {};
 
     explicit audio_sink(const pcm_format& f);
-    audio_sink(const pcm_format& f, std::size_t buffer_size);
+    audio_sink(const char* ph, const pcm_format& f);
 
     std::streamsize optimal_buffer_size() const
     {
@@ -65,7 +65,7 @@ public:
         pcm_format_tag {};
 
     explicit audio_source(const pcm_format& f);
-    audio_source(const pcm_format& f, std::size_t buffer_size);
+    audio_source(const char* ph, const pcm_format& f);
 
     std::streamsize optimal_buffer_size() const
     {

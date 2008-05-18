@@ -191,7 +191,7 @@ class mme_sink::impl
     friend class hamigaki::iostreams::core_access;
 
 public:
-    impl(const pcm_format& f, std::size_t buffer_size)
+    impl(unsigned id, const pcm_format& f, std::size_t buffer_size)
         : impl::arbitrary_positional_facade_(f.block_size())
         , sema_(wave_buffer_count, wave_buffer_count)
         , block_size_(f.block_size())
@@ -203,7 +203,7 @@ public:
         detail::wave_format_ex fmt(f);
 
         ::MMRESULT res = ::waveOutOpen(
-            &handle_, WAVE_MAPPER, &fmt,
+            &handle_, id, &fmt,
             reinterpret_cast< ::DWORD_PTR>(&mme_sink::impl::Callback),
             reinterpret_cast< ::DWORD_PTR>(&sema_),
             CALLBACK_FUNCTION);
@@ -305,7 +305,7 @@ class mme_source::impl
     friend class hamigaki::iostreams::core_access;
 
 public:
-    impl(const pcm_format& f, std::size_t buffer_size)
+    impl(unsigned id, const pcm_format& f, std::size_t buffer_size)
         : impl::arbitrary_positional_facade_(f.block_size())
         , sema_(0, wave_buffer_count)
         , block_size_(f.block_size())
@@ -317,7 +317,7 @@ public:
         detail::wave_format_ex fmt(f);
 
         ::MMRESULT res = ::waveInOpen(
-            &handle_, WAVE_MAPPER, &fmt,
+            &handle_, id, &fmt,
             reinterpret_cast< ::DWORD_PTR>(&mme_source::impl::Callback),
             reinterpret_cast< ::DWORD_PTR>(&sema_),
             CALLBACK_FUNCTION);
@@ -408,12 +408,22 @@ private:
 };
 
 mme_sink::mme_sink(const pcm_format& f)
-    : pimpl_(new impl(f, f.optimal_buffer_size()))
+    : pimpl_(new impl(WAVE_MAPPER, f, f.optimal_buffer_size()))
 {
 }
 
 mme_sink::mme_sink(const pcm_format& f, std::size_t buffer_size)
-    : pimpl_(new impl(f, buffer_size))
+    : pimpl_(new impl(WAVE_MAPPER, f, buffer_size))
+{
+}
+
+mme_sink::mme_sink(unsigned id, const pcm_format& f)
+    : pimpl_(new impl(id, f, f.optimal_buffer_size()))
+{
+}
+
+mme_sink::mme_sink(unsigned id, const pcm_format& f, std::size_t buffer_size)
+    : pimpl_(new impl(id, f, buffer_size))
 {
 }
 
@@ -438,12 +448,23 @@ void mme_sink::close()
 }
 
 mme_source::mme_source(const pcm_format& f)
-    : pimpl_(new impl(f, f.optimal_buffer_size()))
+    : pimpl_(new impl(WAVE_MAPPER, f, f.optimal_buffer_size()))
 {
 }
 
 mme_source::mme_source(const pcm_format& f, std::size_t buffer_size)
-    : pimpl_(new impl(f, buffer_size))
+    : pimpl_(new impl(WAVE_MAPPER, f, buffer_size))
+{
+}
+
+mme_source::mme_source(unsigned id, const pcm_format& f)
+    : pimpl_(new impl(id, f, f.optimal_buffer_size()))
+{
+}
+
+mme_source::mme_source(
+    unsigned id, const pcm_format& f, std::size_t buffer_size)
+    : pimpl_(new impl(id, f, buffer_size))
 {
 }
 

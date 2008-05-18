@@ -41,14 +41,16 @@ namespace hamigaki { namespace audio {
 namespace
 {
 
+const char default_path[] = "/dev/audio";
+
 class dev_audio : boost::noncopyable
 {
 public:
-    explicit dev_audio(int mode) :
-        fd_(::open("/dev/audio", mode))
+    explicit dev_audio(const char* ph, int mode) :
+        fd_(::open(ph, mode))
     {
         if (fd_ == -1)
-            throw BOOST_IOSTREAMS_FAILURE("cannot open /dev/audio");
+            throw BOOST_IOSTREAMS_FAILURE("cannot open audio");
     }
 
     ~dev_audio()
@@ -148,8 +150,8 @@ void make_audio_prinfo(audio_prinfo_t& prinfo, const pcm_format& f)
 class audio_sink::impl : public dev_audio
 {
 public:
-    impl(const pcm_format& f, std::size_t buffer_size)
-        : dev_audio(O_WRONLY), format_(f)
+    impl(const char* ph, const pcm_format& f)
+        : dev_audio(ph, O_WRONLY), format_(f)
     {
         audio_info_t info;
         AUDIO_INITINFO(&info);
@@ -170,8 +172,8 @@ private:
 class audio_source::impl : public dev_audio
 {
 public:
-    impl(const pcm_format& f, std::size_t buffer_size)
-        : dev_audio(O_RDONLY), format_(f)
+    impl(const char* ph, const pcm_format& f)
+        : dev_audio(ph, O_RDONLY), format_(f)
     {
         audio_info_t info;
         AUDIO_INITINFO(&info);
@@ -190,12 +192,12 @@ private:
 };
 
 audio_sink::audio_sink(const pcm_format& f)
-    : pimpl_(new impl(f, f.optimal_buffer_size()))
+    : pimpl_(new impl(default_path, f))
 {
 }
 
-audio_sink::audio_sink(const pcm_format& f, std::size_t buffer_size)
-    : pimpl_(new impl(f, buffer_size))
+audio_sink::audio_sink(const char* ph, const pcm_format& f)
+    : pimpl_(new impl(ph, f))
 {
 }
 
@@ -220,12 +222,12 @@ void audio_sink::close()
 }
 
 audio_source::audio_source(const pcm_format& f)
-    : pimpl_(new impl(f, f.optimal_buffer_size()))
+    : pimpl_(new impl(default_path, f))
 {
 }
 
-audio_source::audio_source(const pcm_format& f, std::size_t buffer_size)
-    : pimpl_(new impl(f, buffer_size))
+audio_source::audio_source(const char* ph, const pcm_format& f)
+    : pimpl_(new impl(ph, f))
 {
 }
 
