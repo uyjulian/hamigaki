@@ -15,6 +15,9 @@
     #include <hamigaki/audio/mme_device.hpp>
 #elif defined(__APPLE__)
     #include <hamigaki/audio/audio_unit.hpp>
+#elif defined(__NetBSD__)||defined(__OpenBSD__)||defined(sun)||defined(__sun)
+    #include <hamigaki/audio/audio_device.hpp>
+    #define HAMIGAKI_AUDIO_USE_DEV_AUDIO
 #else
     #include <hamigaki/audio/dsp_device.hpp>
 #endif
@@ -137,7 +140,65 @@ private:
     audio_unit_source impl_;
 };
 
-#else // not defined(BOOST_WINDOWS) and not defined(__APPLE__)
+#elif defined(HAMIGAKI_AUDIO_USE_DEV_AUDIO)
+class pcm_sink::impl
+{
+public:
+    impl(const pcm_format& f, std::size_t buffer_size) : impl_(f, buffer_size)
+    {
+    }
+
+    pcm_format format() const
+    {
+        return impl_.format();
+    }
+
+    std::streamsize write(const char* s, std::streamsize n)
+    {
+        return impl_.write(s, n);
+    }
+
+    bool flush()
+    {
+        return impl_.flush();
+    }
+
+    void close()
+    {
+        impl_.close();
+    }
+
+private:
+    audio_sink impl_;
+};
+
+class pcm_source::impl
+{
+public:
+    impl(const pcm_format& f, std::size_t buffer_size) : impl_(f, buffer_size)
+    {
+    }
+
+    pcm_format format() const
+    {
+        return impl_.format();
+    }
+
+    std::streamsize read(char* s, std::streamsize n)
+    {
+        return impl_.read(s, n);
+    }
+
+    void close()
+    {
+        impl_.close();
+    }
+
+private:
+    audio_source impl_;
+};
+
+#else // use /dev/dsp
 class pcm_sink::impl
 {
 public:

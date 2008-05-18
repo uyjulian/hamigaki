@@ -103,6 +103,10 @@ else if $(os-name) = MACOSX
 {
     SOURCES += audio_unit ;
 }
+else if $(os-name) in NETBSD OPENBSD SOLARIS
+{
+    SOURCES += audio_device ;
+}
 else if $(os-name) = CYGWIN
 {
     SOURCES += dsp_device mme_device ;
