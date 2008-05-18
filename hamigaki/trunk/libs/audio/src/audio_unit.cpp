@@ -198,7 +198,7 @@ public:
     }
 
     template<class T>
-    T get_proprty(
+    T get_property(
         ::AudioUnitPropertyID id, ::AudioUnitScope scope,
         ::AudioUnitElement elem) const
     {
@@ -214,9 +214,9 @@ public:
     }
 
     template<class T>
-    T get_proprty(::AudioUnitPropertyID id) const
+    T get_property(::AudioUnitPropertyID id) const
     {
-        return get_proprty<T>(id, kAudioUnitScope_Global, 0);
+        return get_property<T>(id, kAudioUnitScope_Global, 0);
     }
 
     template<class T>
@@ -285,7 +285,7 @@ public:
 
     ::AudioStreamBasicDescription input_format(::UInt32 elem) const
     {
-        return base_.get_proprty< ::AudioStreamBasicDescription>(
+        return base_.get_property< ::AudioStreamBasicDescription>(
             kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, elem);
     }
 
@@ -304,7 +304,7 @@ public:
     ::UInt32 device_buffer_size() const
     {
         return
-            base_.get_proprty< ::UInt32>(kAudioDevicePropertyBufferFrameSize);
+            base_.get_property< ::UInt32>(kAudioDevicePropertyBufferFrameSize);
     }
 
     void set_render_callback(::AURenderCallback proc, void* ctx)
