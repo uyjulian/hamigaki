@@ -220,7 +220,7 @@ public:
     }
 
     template<class T>
-    void set_proprty(
+    void set_property(
         ::AudioUnitPropertyID id, ::AudioUnitScope scope,
         ::AudioUnitElement elem, const T& data) const
     {
@@ -231,9 +231,9 @@ public:
     }
 
     template<class T>
-    void set_proprty(::AudioUnitPropertyID id, const T& data) const
+    void set_property(::AudioUnitPropertyID id, const T& data) const
     {
-        set_proprty(id, kAudioUnitScope_Global, 0, data);
+        set_property(id, kAudioUnitScope_Global, 0, data);
     }
 
     void render(
@@ -280,7 +280,7 @@ public:
 
     void device_id(::AudioDeviceID id)
     {
-        base_.set_proprty(kAudioOutputUnitProperty_CurrentDevice, id);
+        base_.set_property(kAudioOutputUnitProperty_CurrentDevice, id);
     }
 
     ::AudioStreamBasicDescription input_format(::UInt32 elem) const
@@ -291,13 +291,13 @@ public:
 
     void input_format(::UInt32 elem, const ::AudioStreamBasicDescription& fmt)
     {
-        base_.set_proprty(
+        base_.set_property(
             kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, elem, fmt);
     }
 
     void output_format(::UInt32 elem, const ::AudioStreamBasicDescription& fmt)
     {
-        base_.set_proprty(
+        base_.set_property(
             kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output, elem, fmt);
     }
 
@@ -313,7 +313,7 @@ public:
         data.inputProc = proc;
         data.inputProcRefCon = ctx;
 
-        base_.set_proprty(
+        base_.set_property(
             kAudioUnitProperty_SetRenderCallback,
             kAudioUnitScope_Input, 0, data);
     }
@@ -324,13 +324,13 @@ public:
         data.inputProc = proc;
         data.inputProcRefCon = ctx;
 
-        base_.set_proprty(kAudioOutputUnitProperty_SetInputCallback, data);
+        base_.set_property(kAudioOutputUnitProperty_SetInputCallback, data);
     }
 
     void enable_input(::UInt32 elem, bool on)
     {
         ::UInt32 data = on;
-        base_.set_proprty(
+        base_.set_property(
             kAudioOutputUnitProperty_EnableIO,
             kAudioUnitScope_Input, elem, data);
     }
@@ -338,7 +338,7 @@ public:
     void enable_output(::UInt32 elem, bool on)
     {
         ::UInt32 data = on;
-        base_.set_proprty(
+        base_.set_property(
             kAudioOutputUnitProperty_EnableIO,
             kAudioUnitScope_Output, elem, data);
     }
