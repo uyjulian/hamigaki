@@ -1,6 +1,6 @@
 // device_number.hpp: the device number class
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -19,7 +19,7 @@
 
     #if defined(__hpux) || defined(__sgi) || defined(sun) || defined(__sun)
         #include <sys/mkdev.h>
-    #else
+    #elif !defined(__NetBSD__) && !defined(__OpenBSD__)
         #include <sys/sysmacros.h>
     #endif
 #endif
