@@ -94,6 +94,24 @@ local LIBRARIES =
 local REQUIREMENTS =
     ;
 
+local os-name = [ os.name ] ;
+if $(os-name) = NT
+{
+    SOURCES += mme_device ;
+}
+else if $(os-name) = MACOSX
+{
+    SOURCES += audio_unit ;
+}
+else if $(os-name) = CYGWIN
+{
+    SOURCES += dsp_device mme_device ;
+}
+else
+{
+    SOURCES += dsp_device ;
+}
+
 if ! $(NO_ASIO)
 {
     SOURCES +=
@@ -147,6 +165,7 @@ local IMPORT_LIBS =
     <toolset>gcc,<os>NT:<find-static-library>ole32
     <toolset>gcc,<os>NT:<find-static-library>winmm
     <toolset>gcc,<os>CYGWIN:<find-static-library>ole32
+    <toolset>gcc,<os>CYGWIN:<find-static-library>winmm
     <toolset>darwin:<framework>/System/Library/Frameworks/AudioToolbox.framework
     <toolset>darwin:<framework>/System/Library/Frameworks/AudioUnit.framework
     <toolset>darwin:<framework>/System/Library/Frameworks/CoreAudio.framework
