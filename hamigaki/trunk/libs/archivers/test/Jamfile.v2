@@ -18,6 +18,9 @@ project
       <library>/boost-lib//boost_unit_test_framework/<link>static
       <library>/boost-lib//boost_filesystem
       <library>/hamigaki/iostreams//hamigaki_iostreams
+      <os>CYGWIN:<find-static-library>iconv
+      <os>SOLARIS:<find-shared-library>iconv
+      <toolset>darwin:<find-static-library>iconv
     ;
 
 rule test-with-bzip2 ( sources * : requirements * ) {
