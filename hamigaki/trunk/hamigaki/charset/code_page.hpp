@@ -185,7 +185,7 @@ struct to_code_page_impl<2>
             std::size_t dst_size = sizeof(dst_buf);
 
             std::size_t res = cv.convert(src, src_size, dst, dst_size);
-            if (res == detail::iconv_wrapper::error)
+            if (res != 0)
             {
                 cv.flush(dst, dst_size);
                 s.append(&dst_buf[0], dst);
@@ -246,7 +246,7 @@ struct to_code_page_impl<4>
             std::size_t dst_size = sizeof(dst_buf);
 
             std::size_t res = cv.convert(src, src_size, dst, dst_size);
-            if (res == detail::iconv_wrapper::error)
+            if (res != 0)
             {
                 cv.flush(dst, dst_size);
                 s.append(&dst_buf[0], dst);
