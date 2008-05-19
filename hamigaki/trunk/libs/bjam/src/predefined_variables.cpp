@@ -112,7 +112,7 @@ HAMIGAKI_BJAM_DECL void set_predefined_variables(context& ctx)
     );
 
 #if defined(__unix__)
-    ::utsname buf;
+    struct utsname buf;
     if (uname(&buf) == 0)
     {
         m.variables.set_values(
