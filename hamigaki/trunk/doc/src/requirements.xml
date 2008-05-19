@@ -31,12 +31,20 @@
     <listitem>GNU C++ 3.4.4</listitem>
   </itemizedlist>
   <itemizedlist>
-    <title>Fedora 8 (x86)</title>
-    <listitem>GNU C++ 4.1.2</listitem>
+    <title>Fedora 9 (Linux, x86)</title>
+    <listitem>GNU C++ 4.3.0</listitem>
   </itemizedlist>
   <itemizedlist>
     <title>Mac OS X 10.5 (x86/ppc)</title>
     <listitem>GNU C++ 4.0.1</listitem>
+  </itemizedlist>
+  <itemizedlist>
+    <title>NexentaCore 1.0 (Open Solaris, x86)</title>
+    <listitem>GNU C++ 4.0.3</listitem>
+  </itemizedlist>
+  <itemizedlist>
+    <title>NetBSD 4.0 (x86)</title>
+    <listitem>GNU C++ 4.1.2</listitem>
   </itemizedlist>
   <para>詳細な対応状況は、<ulink url="http://hamigaki.sourceforge.jp/status/">退行テストのログ</ulink>を参照せよ。</para>
 </chapter>
