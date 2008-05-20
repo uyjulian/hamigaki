@@ -1,6 +1,6 @@
 // sample_format.hpp: sample format type
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -41,6 +41,8 @@ enum sample_format_type
     float_be32,
     float_le64,
     float_be64,
+    mu_law,
+    a_law,
 };
 
 inline std::streamsize sample_size(sample_format_type type)
@@ -49,9 +51,10 @@ inline std::streamsize sample_size(sample_format_type type)
     {
         1, 1, 2, 2, 3, 3, 4, 4,
         4, 4, 4, 4, 4, 4, 4, 4,
-        4, 4, 8, 8
+        4, 4, 8, 8,
+        1, 1
     };
-    BOOST_STATIC_ASSERT(sizeof(table)/sizeof(table[0]) == 20);
+    BOOST_STATIC_ASSERT(sizeof(table)/sizeof(table[0]) == 22);
 
     return table[type];
 }
@@ -62,9 +65,10 @@ inline int sample_bits(sample_format_type type)
     {
         8, 8, 16, 16, 24, 24, 32, 32,
         16, 16, 18, 18, 20, 20, 24, 24,
-        32, 32, 64, 64
+        32, 32, 64, 64,
+        8, 8
     };
-    BOOST_STATIC_ASSERT(sizeof(table)/sizeof(table[0]) == 20);
+    BOOST_STATIC_ASSERT(sizeof(table)/sizeof(table[0]) == 22);
 
     return table[type];
 }

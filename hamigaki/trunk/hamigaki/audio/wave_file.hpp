@@ -81,7 +81,7 @@ private:
         boost::uint32_t rate = fmt.samples_per_sec;
         boost::uint16_t bits = fmt.bits_per_sample;
 
-        if ((tag != 1) && (tag != 3))
+        if ((tag != 1) && (tag != 3) && (tag != 6) && (tag != 7))
             throw BOOST_IOSTREAMS_FAILURE("unsupoorted pcm format");
 
         if ((channels == 0) || (rate == 0) || (bits == 0))
@@ -96,12 +96,26 @@ private:
             else
                 throw BOOST_IOSTREAMS_FAILURE("unsupported pcm format");
         }
-        else
+        else if (tag == 3)
         {
             if (bits == 32)
                 format_.type = float_le32;
             else if (bits == 64)
                 format_.type = float_le64;
+            else
+                throw BOOST_IOSTREAMS_FAILURE("unsupported pcm format");
+        }
+        else if (tag == 6)
+        {
+            if (bits == 8)
+                format_.type = a_law;
+            else
+                throw BOOST_IOSTREAMS_FAILURE("unsupported pcm format");
+        }
+        else
+        {
+            if (bits == 8)
+                format_.type = mu_law;
             else
                 throw BOOST_IOSTREAMS_FAILURE("unsupported pcm format");
         }
@@ -156,6 +170,10 @@ private:
         unsigned block_sz = format_.block_size();
         if ((format_.type == float_le32) || (format_.type == float_le64))
             fmt.format_tag = 3;
+        else if (format_.type == a_law)
+            fmt.format_tag = 6;
+        else if (format_.type == mu_law)
+            fmt.format_tag = 7;
         else
             fmt.format_tag = 1;
         fmt.channels = format_.channels;

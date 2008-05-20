@@ -1,6 +1,6 @@
 // cvt_int32.hpp: integer <-> int32_t converter
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -12,6 +12,7 @@
 
 #include <hamigaki/audio/sample_format.hpp>
 #include <hamigaki/binary/endian.hpp>
+#include <boost/assert.hpp>
 #include <boost/cstdint.hpp>
 
 namespace hamigaki { namespace audio { namespace detail {
@@ -238,6 +239,147 @@ template<> struct cvt_int32<int_a4_be24>
     static void encode(char* s, boost::int32_t n)
     {
         hamigaki::encode_int<big,4>(s, n/256);
+    }
+};
+
+template<> struct cvt_int32<mu_law>
+{
+private:
+    static boost::uint16_t decode_impl(boost::uint8_t x)
+    {
+        unsigned high = (x >> 4);
+        boost::uint16_t low = static_cast<boost::uint16_t>(x & 0x0F);
+
+        switch (high)
+        {
+            default:
+                BOOST_ASSERT(0);
+            case 0x0:
+                return low << 1;
+            case 0x1:
+                return (low << 2) + 31;
+            case 0x2:
+                return (low << 3) + 95;
+            case 0x3:
+                return (low << 4) + 223;
+            case 0x4:
+                return (low << 5) + 479;
+            case 0x5:
+                return (low << 6) + 991;
+            case 0x6:
+                return (low << 7) + 2015;
+            case 0x7:
+                return (low << 8) + 4063;
+        }
+    }
+
+    static boost::uint8_t encode_impl(boost::uint16_t x)
+    {
+        if (x < 31)
+            return 0x00 + (x >> 1);
+        else if (x < 95)
+            return 0x10 + ((x-31) >> 2);
+        else if (x < 223)
+            return 0x20 + ((x-95) >> 3);
+        else if (x < 479)
+            return 0x30 + ((x-223) >> 4);
+        else if (x < 991)
+            return 0x40 + ((x-479) >> 5);
+        else if (x < 2015)
+            return 0x50 + ((x-991) >> 6);
+        else if (x < 4063)
+            return 0x60 + ((x-2015) >> 7);
+        else if (x < 8159)
+            return 0x70 + ((x-4063) >> 8);
+        else
+            return 0x7F;
+    }
+
+public:
+    static boost::int32_t decode(const char* s)
+    {
+        boost::uint8_t x = static_cast<unsigned char>(*s);
+        if ((x & 0x80) == 0)
+            return -static_cast<boost::int32_t>(decode_impl(0x7F-x) << 18) - 1;
+        else
+            return static_cast<boost::int32_t>(decode_impl(~x) << 18);
+    }
+
+    static void encode(char* s, boost::int32_t n)
+    {
+        if (n < 0)
+        {
+            boost::uint32_t x = static_cast<boost::uint32_t>(-(n+1)) >> 18;
+            boost::uint8_t y = encode_impl(static_cast<boost::uint16_t>(x));
+            *s = static_cast<char>(static_cast<unsigned char>(0x7F - y));
+        }
+        else
+        {
+            boost::uint32_t x = static_cast<boost::uint32_t>(n) >> 18;
+            boost::uint8_t y = encode_impl(static_cast<boost::uint16_t>(x));
+            *s = static_cast<char>(static_cast<unsigned char>(~y));
+        }
+    }
+};
+
+template<> struct cvt_int32<a_law>
+{
+private:
+    static boost::uint16_t decode_impl(boost::uint8_t x)
+    {
+        unsigned high = (x >> 4);
+        boost::uint16_t low = static_cast<boost::uint16_t>(x & 0x0F);
+
+        if (high < 2)
+            return low << 1;
+        else
+            return (low | 0x10) << high;
+    }
+
+    static boost::uint8_t encode_impl(boost::uint16_t x)
+    {
+        if (x < 64)
+            return x >> 1;
+        else if (x < 128)
+            return 0x20 + (((x & 0x07F) >> 2) & 0x0F);
+        else if (x < 256)
+            return 0x30 + (((x & 0x0FF) >> 3) & 0x0F);
+        else if (x < 512)
+            return 0x40 + (((x & 0x1FF) >> 4) & 0x0F);
+        else if (x < 1024)
+            return 0x50 + (((x & 0x3FF) >> 5) & 0x0F);
+        else if (x < 2048)
+            return 0x60 + (((x & 0x7FF) >> 6) & 0x0F);
+        else if (x < 4096)
+            return 0x70 + (((x & 0xFFF) >> 7) & 0x0F);
+        else
+            return 0x7F;
+    }
+
+public:
+    static boost::int32_t decode(const char* s)
+    {
+        boost::uint8_t x = static_cast<unsigned char>(*s);
+        if ((x & 0x80) == 0)
+            return -static_cast<boost::int32_t>(decode_impl(x) << 19) - 1;
+        else
+            return static_cast<boost::int32_t>(decode_impl(x & 0x7F) << 19);
+    }
+
+    static void encode(char* s, boost::int32_t n)
+    {
+        if (n < 0)
+        {
+            boost::uint32_t x = static_cast<boost::uint32_t>(-(n+1)) >> 19;
+            boost::uint8_t y = encode_impl(static_cast<boost::uint16_t>(x));
+            *s = static_cast<char>(static_cast<unsigned char>(y));
+        }
+        else
+        {
+            boost::uint32_t x = static_cast<boost::uint32_t>(n) >> 19;
+            boost::uint8_t y = encode_impl(static_cast<boost::uint16_t>(x));
+            *s = static_cast<char>(static_cast<unsigned char>(y | 0x80));
+        }
     }
 };
 

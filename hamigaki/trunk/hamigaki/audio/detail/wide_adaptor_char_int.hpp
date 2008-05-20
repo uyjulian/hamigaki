@@ -1,6 +1,6 @@
 // wide_adaptor_char_int.hpp: char <-> integer converter
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -132,6 +132,10 @@ private:
             return read_float<little,ieee754_double>(s, n);
         else if (type_ == float_be64)
             return read_float<big,ieee754_double>(s, n);
+        else if (type_ == mu_law)
+            return read_int<mu_law>(s, n);
+        else if (type_ == a_law)
+            return read_int<a_law>(s, n);
         else
             throw BOOST_IOSTREAMS_FAILURE("unsupported format");
         BOOST_UNREACHABLE_RETURN(-1)
@@ -181,6 +185,10 @@ private:
             return write_float<little,ieee754_double>(s, n);
         else if (type_ == float_be64)
             return write_float<big,ieee754_double>(s, n);
+        else if (type_ == mu_law)
+            return write_int<mu_law>(s, n);
+        else if (type_ == a_law)
+            return write_int<a_law>(s, n);
         else
             throw BOOST_IOSTREAMS_FAILURE("unsupported format");
         BOOST_UNREACHABLE_RETURN(-1)

@@ -129,6 +129,10 @@ public:
             dev_dsp::format(AFMT_U8);
         else if (f.type == int_le16)
             dev_dsp::format(AFMT_S16_LE);
+        else if (f.type == mu_law)
+            dev_dsp::format(AFMT_MU_LAW);
+        else if (f.type == a_law)
+            dev_dsp::format(AFMT_A_LAW);
         else
             throw BOOST_IOSTREAMS_FAILURE("unsupported DSP format");
         dev_dsp::channels(f.channels);
@@ -154,6 +158,10 @@ public:
             dev_dsp::format(AFMT_U8);
         else if (f.type == int_le16)
             dev_dsp::format(AFMT_S16_LE);
+        else if (f.type == mu_law)
+            dev_dsp::format(AFMT_MU_LAW);
+        else if (f.type == a_law)
+            dev_dsp::format(AFMT_A_LAW);
         else
             throw BOOST_IOSTREAMS_FAILURE("unsupported DSP format");
         dev_dsp::channels(f.channels);

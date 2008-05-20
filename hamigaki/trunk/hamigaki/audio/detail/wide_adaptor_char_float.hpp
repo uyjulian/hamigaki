@@ -1,6 +1,6 @@
 // wide_adaptor_char_float.hpp: char <-> floating point converter
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -10,8 +10,10 @@
 #ifndef HAMIGAKI_AUDIO_DETAIL_WIDE_ADAPTOR_CHAR_FLOAT_HPP
 #define HAMIGAKI_AUDIO_DETAIL_WIDE_ADAPTOR_CHAR_FLOAT_HPP
 
+#include <hamigaki/audio/detail/a_law.hpp>
 #include <hamigaki/audio/detail/cvt_int32.hpp>
 #include <hamigaki/audio/detail/float.hpp>
+#include <hamigaki/audio/detail/mu_law.hpp>
 #include <hamigaki/iostreams/positioning.hpp>
 #include <boost/iostreams/operations.hpp>
 #include <vector>
@@ -124,6 +126,10 @@ private:
             return read_float<little,ieee754_double>(s, n);
         else if (type_ == float_be64)
             return read_float<big,ieee754_double>(s, n);
+        else if (type_ == mu_law)
+            return read_mu_law(s, n);
+        else if (type_ == a_law)
+            return read_a_law(s, n);
         else
             throw BOOST_IOSTREAMS_FAILURE("unsupported format");
         BOOST_UNREACHABLE_RETURN(-1)
@@ -171,6 +177,10 @@ private:
             return write_float<little,ieee754_double>(s, n);
         else if (type_ == float_be64)
             return write_float<big,ieee754_double>(s, n);
+        else if (type_ == mu_law)
+            return write_mu_law(s, n);
+        else if (type_ == a_law)
+            return write_a_law(s, n);
         else
             throw BOOST_IOSTREAMS_FAILURE("unsupported format");
         BOOST_UNREACHABLE_RETURN(-1)
@@ -285,6 +295,92 @@ private:
         }
 
         boost::iostreams::write(dev_, &buffer_[0], count*smp_sz);
+
+        return count;
+    }
+
+    std::streamsize read_mu_law(CharT* s, std::streamsize n)
+    {
+        std::streamsize count =
+            (std::min)(
+                n,
+                static_cast<std::streamsize>(buffer_.size())
+            );
+
+        std::streamsize amt = boost::iostreams::read(dev_, &buffer_[0], count);
+        if (amt == -1)
+            return -1;
+        count = amt;
+
+        for (std::streamsize i = 0; i < count; ++i)
+        {
+            s[i] = detail::decode_mu_law<CharT>(
+                static_cast<unsigned char>(buffer_[i])
+            );
+        }
+
+        return count;
+    }
+
+    std::streamsize write_mu_law(const CharT* s, std::streamsize n)
+    {
+        std::streamsize count =
+            (std::min)(
+                n,
+                static_cast<std::streamsize>(buffer_.size())
+            );
+
+        for (std::streamsize i = 0; i < count; ++i)
+        {
+            buffer_[i] = static_cast<char>(
+                static_cast<unsigned char>(detail::encode_mu_law<CharT>(s[i]))
+            );
+        }
+
+        boost::iostreams::write(dev_, &buffer_[0], count);
+
+        return count;
+    }
+
+    std::streamsize read_a_law(CharT* s, std::streamsize n)
+    {
+        std::streamsize count =
+            (std::min)(
+                n,
+                static_cast<std::streamsize>(buffer_.size())
+            );
+
+        std::streamsize amt = boost::iostreams::read(dev_, &buffer_[0], count);
+        if (amt == -1)
+            return -1;
+        count = amt;
+
+        for (std::streamsize i = 0; i < count; ++i)
+        {
+            s[i] = detail::decode_a_law<CharT>(
+                static_cast<unsigned char>(buffer_[i])
+            );
+        }
+
+        return count;
+    }
+
+    std::streamsize write_a_law(const CharT* s, std::streamsize n)
+    {
+        std::streamsize count =
+            (std::min)(
+                n,
+                static_cast<std::streamsize>(buffer_.size())
+            );
+
+        for (std::streamsize i = 0; i < count; ++i)
+        {
+            buffer_[i] = static_cast<char>(
+                static_cast<unsigned char>(detail::encode_a_law<CharT>(s[i]))
+            );
+        }
+
+        boost::iostreams::write(dev_, &buffer_[0], count);
 
         return count;
     }

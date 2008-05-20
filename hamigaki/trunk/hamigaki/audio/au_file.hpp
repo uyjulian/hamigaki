@@ -66,7 +66,9 @@ public:
         else
             size_ = -1;
 
-        if (encoding == 2)
+        if (encoding == 1)
+            format_.type = mu_law;
+        else if (encoding == 2)
             format_.type = int8;
         else if (encoding == 3)
             format_.type = int_be16;
@@ -78,6 +80,8 @@ public:
             format_.type = float_be32;
         else if (encoding == 7)
             format_.type = float_be64;
+        else if (encoding == 27)
+            format_.type = a_law;
         else
             throw BOOST_IOSTREAMS_FAILURE("unsupported pcm format");
 
@@ -236,7 +240,9 @@ private:
 
     static boost::uint32_t to_au_encording(sample_format_type type)
     {
-        if (type == int8)
+        if (type == mu_law)
+            return 1;
+        else if (type == int8)
             return 2;
         else if (type == int_be16)
             return 3;
@@ -248,6 +254,8 @@ private:
             return 6;
         else if (type == float_be64)
             return 7;
+        else if (type == a_law)
+            return 27;
         else
             throw BOOST_IOSTREAMS_FAILURE("unsupported pcm format");
     }

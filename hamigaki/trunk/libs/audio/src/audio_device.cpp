@@ -114,7 +114,17 @@ private:
 
 void make_audio_prinfo(audio_prinfo_t& prinfo, const pcm_format& f)
 {
-    if (f.type == uint8)
+    if (f.type == mu_law)
+    {
+        prinfo.encoding = AUDIO_ENCODING_ULAW;
+        prinfo.precision = 8;
+    }
+    else if (f.type == a_law)
+    {
+        prinfo.encoding = AUDIO_ENCODING_ALAW;
+        prinfo.precision = 8;
+    }
+    else if (f.type == uint8)
     {
         prinfo.encoding = AUDIO_ENCODING_LINEAR8;
         prinfo.precision = 8;
