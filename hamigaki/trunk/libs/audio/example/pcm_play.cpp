@@ -37,12 +37,7 @@ int main(int argc, char* argv[])
         std::cout << "bits = " << fmt.bits() << std::endl;
         std::cout << "channels = " << fmt.channels << std::endl;
 
-        fmt.type = audio::int_le16;
-
-        io::copy(
-            audio::widen<float>(wav),
-            audio::widen<float>(audio::pcm_sink(fmt))
-        );
+        io::copy(wav, audio::pcm_sink(fmt));
 
         return 0;
     }
