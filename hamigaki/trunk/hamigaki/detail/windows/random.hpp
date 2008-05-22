@@ -12,6 +12,10 @@
 #include <boost/cstdint.hpp>
 #include <windows.h>
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1300)
+    #include <intrin.h>
+#endif
+
 namespace hamigaki { namespace detail { namespace windows {
 
 #if defined(_M_IX86) && defined(__BORLANDC__)
@@ -26,7 +30,9 @@ __declspec(naked) inline unsigned long long rdstc()
 inline boost::uint32_t random_seed()
 {
     std::size_t seed = 0;
-#if defined(_M_IX86) && (defined(_MSC_VER) || defined(__MWERKS__))
+#if defined(_MSC_VER) && (_MSC_VER >= 1300)
+    seed ^= hamigaki::hash_value_ui64(__rdstc());
+#elif defined(_M_IX86) && (defined(_MSC_VER) || defined(__MWERKS__))
     boost::uint32_t low_val;
     boost::uint32_t high_val;
     __asm
@@ -47,8 +53,8 @@ inline boost::uint32_t random_seed()
     boost::uint32_t low;
     boost::uint32_t high;
     __asm__("rdtsc" : "=a"(low), "=d"(high));
-    boost::hash_combine(seed, low);
     boost::hash_combine(seed, high);
+    boost::hash_combine(seed, low);
 #else
     boost::hash_combine(seed, ::GetTickCount());
 #endif
