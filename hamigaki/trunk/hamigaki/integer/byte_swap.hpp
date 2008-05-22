@@ -12,11 +12,17 @@
 
 #include <boost/cstdint.hpp>
 
+#if defined(_MSC_VER)
+    #include <stdlib.h>
+#endif
+
 namespace hamigaki {
 
 inline boost::uint16_t byte_swap16(boost::uint16_t n)
 {
-#if (defined(_MSC_VER) || defined(__MWERKS__)) && defined(_M_IX86)
+#if defined(_MSC_VER)
+    return _byteswap_ushort(n);
+#elif defined(__MWERKS__) && defined(_M_IX86)
     __asm
     {
         mov ax, n
@@ -32,7 +38,9 @@ inline boost::uint16_t byte_swap16(boost::uint16_t n)
 
 inline boost::uint32_t byte_swap32(boost::uint32_t n)
 {
-#if (defined(_MSC_VER) || defined(__MWERKS__)) && defined(_M_IX86)
+#if defined(_MSC_VER)
+    return _byteswap_ulong(n);
+#elif defined(__MWERKS__) && defined(_M_IX86)
     __asm
     {
         mov eax, n
