@@ -27,7 +27,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
 {
     enum
     {
-        run_id,
+        run_id = 1,
         block_id,
         rules_id,
         local_set_stmt_id,
@@ -118,15 +118,6 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
 
             block
                 =   !rules
-                ;
-
-            rules
-                =   rule >> !rules
-                |   keyword_p("local")
-                    >> list
-                    >> !assign_list
-                    >> keyword_p(";")
-                    >> block
                 ;
 
             rules
