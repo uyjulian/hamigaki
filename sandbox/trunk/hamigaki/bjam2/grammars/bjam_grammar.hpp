@@ -10,11 +10,14 @@
 #ifndef HAMIGAKI_BJAM2_GRAMMARS_BJAM_GRAMMAR_HPP
 #define HAMIGAKI_BJAM2_GRAMMARS_BJAM_GRAMMAR_HPP
 
-#include <boost/config.hpp>
-
+#include <hamigaki/bjam2/bjam_config.hpp>
+#include <hamigaki/bjam2/grammars/bjam_grammar_gen.hpp>
+#include <hamigaki/bjam2/grammars/bjam_grammar_id.hpp>
 #include <hamigaki/bjam2/util/argument_parser.hpp>
 #include <hamigaki/bjam2/util/keyword_parser.hpp>
+#include <hamigaki/bjam2/util/skip_parser.hpp>
 #include <hamigaki/bjam2/util/string_parser.hpp>
+#include <boost/spirit/tree/parse_tree.hpp>
 #include <boost/spirit/core.hpp>
 
 #ifdef BOOST_HAS_ABI_HEADERS
@@ -25,45 +28,6 @@ namespace hamigaki { namespace bjam2 {
 
 struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
 {
-    enum
-    {
-        run_id = 1,
-        block_id,
-        rules_id,
-        local_set_stmt_id,
-        assign_list_id,
-        arglist_id,
-        rule_id,
-        include_stmt_id,
-        invoke_stmt_id,
-        set_stmt_id,
-        set_on_stmt_id,
-        assign_id,
-        for_stmt_id,
-        switch_stmt_id,
-        cases_id,
-        module_stmt_id,
-        class_stmt_id,
-        while_stmt_id,
-        if_stmt_id,
-        rule_stmt_id,
-        on_stmt_id,
-        actions_stmt_id,
-        expr_id,
-        and_expr_id,
-        eq_expr_id,
-        rel_expr_id,
-        not_expr_id,
-        prim_expr_id,
-        lol_id,
-        list_id,
-        non_punct_id,
-        arg_id,
-        func_id,
-        eflags_id,
-        bindlist_id,
-    };
-
     template<class ScannerT>
     struct definition
     {
@@ -438,6 +402,25 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
         const rule_t& start() const { return run; }
     };
 };
+
+#if HAMIGAKI_BJAM_SEPARATE_GRAMMAR_INSTANTIATION != 0
+    #define HAMIGAKI_BJAM_GRAMMAR_GEN_INLINE
+#else
+    #define HAMIGAKI_BJAM_GRAMMAR_GEN_INLINE inline
+#endif 
+
+template<class IteratorT>
+HAMIGAKI_BJAM_GRAMMAR_GEN_INLINE
+boost::spirit::tree_parse_info<IteratorT>
+bjam_grammar_gen<IteratorT>::parse_bjam_grammar(
+    const IteratorT& first, const IteratorT& last)
+{
+    bjam2::bjam_grammar g;
+    bjam2::skip_parser skip;
+    return boost::spirit::pt_parse(first, last, g, skip);
+}
+
+#undef HAMIGAKI_BJAM_GRAMMAR_GEN_INLINE
 
 } } // End namespaces bjam2, hamigaki.
 

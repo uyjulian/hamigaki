@@ -41,15 +41,15 @@ SOURCES =
 #    class
 #    glob
 #    instantiate_bjam_exprgr
-#    instantiate_bjam_grammar
+    instantiate_bjam_grammar
 #    native_rules
 #    pattern
 #    predefined_variables
 #    search
 #    shell
-#    util_path
+    util_path
 #    util_regex
-#    variable_expansion
+    variable_expansion
 #    modules/$(MODULES)
     ;
 
