@@ -20,7 +20,7 @@ namespace hamigaki { namespace detail { namespace windows {
 
 #if defined(_M_IX86) && defined(__BORLANDC__)
 #pragma option push -w-8070
-__declspec(naked) inline unsigned long long rdstc()
+__declspec(naked) inline unsigned long long rdtsc()
 {
     __emit__(0x0F, 0x31, 0xC3);
 }
@@ -31,7 +31,7 @@ inline boost::uint32_t random_seed()
 {
     std::size_t seed = 0;
 #if defined(_MSC_VER) && (_MSC_VER >= 1300)
-    seed ^= hamigaki::hash_value_ui64(__rdstc());
+    seed ^= hamigaki::hash_value_ui64(__rdtsc());
 #elif defined(_M_IX86) && (defined(_MSC_VER) || defined(__MWERKS__))
     boost::uint32_t low_val;
     boost::uint32_t high_val;
@@ -48,7 +48,7 @@ inline boost::uint32_t random_seed()
     boost::hash_combine(seed, low_val);
     boost::hash_combine(seed, high_val);
 #elif defined(_M_IX86) && defined(__BORLANDC__)
-    seed ^= hamigaki::hash_value_ui64(rdstc());
+    seed ^= hamigaki::hash_value_ui64(rdtsc());
 #elif defined(__i386__) && defined(__GNUC__)
     boost::uint32_t low;
     boost::uint32_t high;
