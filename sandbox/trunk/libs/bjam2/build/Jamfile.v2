@@ -38,12 +38,12 @@ SOURCES =
     bjam_context
     bjam_exceptions
 #    builtin_rules
-#    class
+    class
 #    glob
 #    instantiate_bjam_exprgr
     instantiate_bjam_grammar
 #    native_rules
-#    pattern
+    pattern
 #    predefined_variables
 #    search
 #    shell

@@ -1,0 +1,71 @@
+# Test Jamfile
+
+# Copyright Takeshi Mouri 2008.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
+
+rule dummy_rule { }
+rule dummy_rule2 ( ) { }
+
+rule h
+{
+	ECHO hello ;
+}
+
+h ;
+
+X = 123 ;
+ECHO a b $(X) ;
+
+for x in a b $(X)
+{
+	ECHO $(x) ;
+}
+ECHO $(x) ;
+
+for xx in { }
+
+for local x in x y z
+{
+	ECHO $(x) ;
+}
+ECHO $(x) ;
+
+switch { }
+
+switch $(x)
+{
+	case dummy :
+	case xxx :
+		ECHO NG1 ;
+	case 123 :
+		ECHO OK ;
+	case yyy :
+		ECHO NG2 ;
+}
+
+module { }
+
+module mmm
+{
+	x = 345 ;
+	ECHO $(x) ;
+}
+ECHO $(x) ;
+
+class cc { }
+class ccc { ECHO ccc ; }
+
+#while "" { }
+W = ;
+#W = w ;
+#while $(W) != www
+#{
+#	ECHO $(W) ;
+#	W = $(W)w ;
+#}
+
+return hoge ;
