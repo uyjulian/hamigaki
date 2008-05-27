@@ -20,12 +20,12 @@ struct action_modifier
 {
     enum values
     {
-        updated,
-        together,
-        ignore,
-        quietly,
-        piecemeal,
-        existing
+        updated     = 1u << 0,
+        together    = 1u << 1,
+        ignore      = 1u << 2,
+        quietly     = 1u << 3,
+        piecemeal   = 1u << 4,
+        existing    = 1u << 5,
     };
 };
 
@@ -37,21 +37,49 @@ operator|(action_modifier::values lhs, action_modifier::values rhs)
     );
 }
 
+inline action_modifier::values
+operator&(action_modifier::values lhs, action_modifier::values rhs)
+{
+    return static_cast<action_modifier::values>(
+        static_cast<unsigned>(lhs) & static_cast<unsigned>(rhs)
+    );
+}
+
 #if defined(BOOST_SPIRIT_DEBUG)
 inline std::ostream& operator<<(std::ostream& os, action_modifier::values x)
 {
-    if (x == action_modifier::updated)
-        return os << "updated";
-    else if (x == action_modifier::together)
-        return os << "together";
-    else if (x == action_modifier::ignore)
-        return os << "ignore";
-    else if (x == action_modifier::quietly)
-        return os << "quietly";
-    else if (x == action_modifier::piecemeal)
-        return os << "piecemeal";
-    else
-        return os << "existing";
+    const char* delim = "";
+    if (x & action_modifier::updated)
+    {
+        os << delim << "updated";
+        delim = " ";
+    }
+    if (x & action_modifier::together)
+    {
+        os << delim << "together";
+        delim = " ";
+    }
+    if (x & action_modifier::ignore)
+    {
+        os << delim << "ignore";
+        delim = " ";
+    }
+    if (x & action_modifier::quietly)
+    {
+        os << delim << "quietly";
+        delim = " ";
+    }
+    if (x & action_modifier::piecemeal)
+    {
+        os << delim << "piecemeal";
+        delim = " ";
+    }
+    if (x & action_modifier::existing)
+    {
+        os << delim << "existing";
+        delim = " ";
+    }
+    return os;
 }
 #endif
 

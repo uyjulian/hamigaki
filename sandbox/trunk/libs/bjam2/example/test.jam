@@ -40,11 +40,11 @@ switch $(x)
 {
 	case dummy :
 	case xxx :
-		ECHO NG1 ;
+		ECHO "NG1: switch" ;
 	case 123 :
-		ECHO OK ;
+		ECHO "OK: switch" ;
 	case yyy :
-		ECHO NG2 ;
+		ECHO "NG2: switch" ;
 }
 
 module { }
@@ -59,13 +59,39 @@ ECHO $(x) ;
 class cc { }
 class ccc { ECHO ccc ; }
 
-#while "" { }
+while "" { }
 W = ;
-#W = w ;
-#while $(W) != www
-#{
-#	ECHO $(W) ;
-#	W = $(W)w ;
-#}
+W = w ;
+while $(W) != www
+{
+	ECHO $(W) ;
+	W = $(W)w ;
+}
+
+if "" { }
+
+IF = xxx ;
+if $(IF)
+{
+	ECHO "OK: if" ;
+}
+else
+	ECHO "NG: if" ;
+
+if ! $(IF)
+{
+	ECHO "NG: else" ;
+}
+else
+	ECHO "OK: else" ;
+
+E = ;
+on $(E) ECHO NG ;
+on xxx ECHO OK ;
+
+actions aaa { echo hoge}
+
+include inner.jam ;
+inner_rule ;
 
 return hoge ;

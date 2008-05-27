@@ -42,11 +42,13 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
         rule_t arglist;
         rule_t rule;
         rule_t local_set_stmt;
+        rule_t block_stmt;
         rule_t include_stmt;
         rule_t invoke_stmt;
         rule_t set_stmt;
         rule_t set_on_stmt;
         rule_t assign;
+        rule_t return_stmt;
         rule_t for_stmt;
         rule_t switch_stmt;
         rule_t cases;
@@ -106,16 +108,12 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             rule
-                =   keyword_p("{")
-                    >> block
-                    >> keyword_p("}")
+                =   block_stmt
                 |   include_stmt
                 |   invoke_stmt
                 |   set_stmt
                 |   set_on_stmt
-                |   keyword_p("return")
-                    >> list
-                    >> keyword_p(";")
+                |   return_stmt
                 |   for_stmt
                 |   switch_stmt
                 |   module_stmt
@@ -125,6 +123,12 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 |   rule_stmt
                 |   on_stmt
                 |   actions_stmt
+                ;
+
+            block_stmt
+                =   keyword_p("{")
+                    >> block
+                    >> keyword_p("}")
                 ;
 
             include_stmt
@@ -161,6 +165,12 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 |   keyword_p("?=")
                 |   keyword_p("default")
                     >> keyword_p("=")
+                ;
+
+            return_stmt
+                =   keyword_p("return")
+                    >> list
+                    >> keyword_p(";")
                 ;
 
             for_stmt
@@ -336,11 +346,13 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
             assign_list.set_id(assign_list_id);
             arglist.set_id(arglist_id);
             rule.set_id(rule_id);
+            block_stmt.set_id(block_stmt_id);
             include_stmt.set_id(include_stmt_id);
             invoke_stmt.set_id(invoke_stmt_id);
             set_stmt.set_id(set_stmt_id);
             set_on_stmt.set_id(set_on_stmt_id);
             assign.set_id(assign_id);
+            return_stmt.set_id(return_stmt_id);
             for_stmt.set_id(for_stmt_id);
             switch_stmt.set_id(switch_stmt_id);
             cases.set_id(cases_id);
@@ -372,10 +384,13 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
             BOOST_SPIRIT_DEBUG_RULE(assign_list);
             BOOST_SPIRIT_DEBUG_RULE(arglist);
             BOOST_SPIRIT_DEBUG_RULE(rule);
+            BOOST_SPIRIT_DEBUG_RULE(block_stmt);
+            BOOST_SPIRIT_DEBUG_RULE(include_stmt);
             BOOST_SPIRIT_DEBUG_RULE(invoke_stmt);
             BOOST_SPIRIT_DEBUG_RULE(set_stmt);
             BOOST_SPIRIT_DEBUG_RULE(set_on_stmt);
             BOOST_SPIRIT_DEBUG_RULE(assign);
+            BOOST_SPIRIT_DEBUG_RULE(return_stmt);
             BOOST_SPIRIT_DEBUG_RULE(for_stmt);
             BOOST_SPIRIT_DEBUG_RULE(switch_stmt);
             BOOST_SPIRIT_DEBUG_RULE(cases);

@@ -12,13 +12,13 @@ import os ;
 project hamigaki/bjam2
     : requirements
       <toolset>gcc-mingw:<link>static
-      <link>shared:<define>HAMIGAKI_BJAM_DYN_LINK
+      <link>shared:<define>HAMIGAKI_BJAM2_DYN_LINK
       <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
       <library>/boost-lib//boost_filesystem
       <library>/boost-lib//boost_regex
       <library>/hamigaki/process//hamigaki_process
     : usage-requirements
-      <link>shared:<define>HAMIGAKI_BJAM_DYN_LINK
+      <link>shared:<define>HAMIGAKI_BJAM2_DYN_LINK
       <link>shared:<define>BOOST_FILESYSTEM_DYN_LINK=1
       <library>/boost-lib//boost_filesystem
       <library>/boost-lib//boost_regex
@@ -45,7 +45,7 @@ SOURCES =
 #    native_rules
     pattern
 #    predefined_variables
-#    search
+    search
 #    shell
     util_path
 #    util_regex
