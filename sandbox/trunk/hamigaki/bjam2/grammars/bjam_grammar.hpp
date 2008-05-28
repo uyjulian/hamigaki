@@ -418,14 +418,14 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
     };
 };
 
-#if HAMIGAKI_BJAM_SEPARATE_GRAMMAR_INSTANTIATION != 0
-    #define HAMIGAKI_BJAM_GRAMMAR_GEN_INLINE
+#if HAMIGAKI_BJAM2_SEPARATE_GRAMMAR_INSTANTIATION != 0
+    #define HAMIGAKI_BJAM2_GRAMMAR_GEN_INLINE
 #else
-    #define HAMIGAKI_BJAM_GRAMMAR_GEN_INLINE inline
+    #define HAMIGAKI_BJAM2_GRAMMAR_GEN_INLINE inline
 #endif 
 
 template<class IteratorT>
-HAMIGAKI_BJAM_GRAMMAR_GEN_INLINE
+HAMIGAKI_BJAM2_GRAMMAR_GEN_INLINE
 boost::spirit::tree_parse_info<IteratorT>
 bjam_grammar_gen<IteratorT>::parse_bjam_grammar(
     const IteratorT& first, const IteratorT& last)
@@ -435,7 +435,7 @@ bjam_grammar_gen<IteratorT>::parse_bjam_grammar(
     return boost::spirit::pt_parse(first, last, g, skip);
 }
 
-#undef HAMIGAKI_BJAM_GRAMMAR_GEN_INLINE
+#undef HAMIGAKI_BJAM2_GRAMMAR_GEN_INLINE
 
 } } // End namespaces bjam2, hamigaki.
 
