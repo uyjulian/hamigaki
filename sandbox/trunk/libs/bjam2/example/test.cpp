@@ -9,7 +9,6 @@
 
 #include <hamigaki/bjam2/grammars/bjam_grammar_gen.hpp>
 #include <hamigaki/bjam2/grammars/bjam_grammar_id.hpp>
-#include <hamigaki/bjam2/util/argument_parser.hpp>
 #include <hamigaki/bjam2/util/class.hpp>
 #include <hamigaki/bjam2/util/list_of_list.hpp>
 #include <hamigaki/bjam2/util/pattern.hpp>
@@ -29,13 +28,15 @@
 namespace bj = hamigaki::bjam2;
 namespace bs = boost::spirit;
 
-typedef bs::tree_match<const char*> parse_tree_match_t;
+typedef bj::node_val_data_factory<> node_factory_t;
+typedef bs::tree_match<const char*,node_factory_t> parse_tree_match_t;
 typedef parse_tree_match_t::node_t node_t;
 typedef parse_tree_match_t::const_tree_iterator iter_t;
+typedef bj::tree_parse_info<> parse_info_t;
 
 std::list<node_t> trees; // FIXME
 
-bs::tree_parse_info<> parse_bjam(const char* s, std::size_t n)
+parse_info_t parse_bjam(const char* s, std::size_t n)
 {
     return bj::bjam_grammar_gen<const char*>::parse_bjam_grammar(s, s+n);
 }
@@ -47,13 +48,7 @@ std::string node_value(const node_t& node)
 
 std::string eval_arg_p(const node_t& node)
 {
-    typedef node_t::parse_node_t::const_iterator_t const_iterator_t;
-
-    const_iterator_t beg = node.value.begin();
-    const_iterator_t end = node.value.end();
-
-    bs::scanner<const_iterator_t> scan(beg, end);
-    return bj::arg_p.parse(scan).value();
+    return ::node_value(node);
 }
 
 void set_true(bj::string_list& lhs, const bj::string_list& rhs)
@@ -402,7 +397,7 @@ bj::string_list eval_include_stmt(bj::context& ctx, const node_t& tree)
     is.close();
 
     bj::scoped_change_filename guard(ctx.current_frame(), filename);
-    bs::tree_parse_info<> info = ::parse_bjam(str.c_str(), str.size());
+    parse_info_t info = ::parse_bjam(str.c_str(), str.size());
 
     trees.push_back(node_t());
     trees.back().swap(info.trees[0]);
@@ -462,9 +457,6 @@ bj::string_list eval_set_on_stmt(bj::context& ctx, const node_t& tree)
     bj::string_list values;
     if (beg->value.id() == bj::list_id)
         values = ::eval_list(ctx, *(beg++));
-
-    bj::frame& f = ctx.current_frame();
-    bj::module& m = f.current_module();
 
     for (std::size_t i = 0; i < targets.size(); ++i)
     {
@@ -984,7 +976,7 @@ bj::string_list eval_run(bj::context& ctx, const node_t& tree)
         return bj::string_list();
 }
 
-bj::string_list evaluate(bj::context& ctx, const bs::tree_parse_info<>& info)
+bj::string_list evaluate(bj::context& ctx, const parse_info_t& info)
 {
     return ::eval_run(ctx, info.trees[0]);
 }
@@ -1009,23 +1001,30 @@ int main()
         );
         is.close();
 
-        bs::tree_parse_info<> info = ::parse_bjam(src.c_str(), src.size());
+        parse_info_t info = ::parse_bjam(src.c_str(), src.size());
 
-        if (info.full)
+        if (!info.full)
         {
-            bj::context ctx;
-
-            // setup the built-in rules
-            bj::list_of_list params;
-            ctx.set_builtin_rule("ECHO", params, &echo);
-
-            std::cout << ::evaluate(ctx, info) << std::endl;
+            std::cerr
+                << "test.jam:" << info.line
+                << ": syntax error at "
+                << *info.stop
+                << std::endl;
+            return 1;
         }
-        else
-            std::cerr << "failed" << std::endl;
+
+        bj::context ctx;
+
+        // setup the built-in rules
+        bj::list_of_list params;
+        ctx.set_builtin_rule("ECHO", params, &echo);
+
+        std::cout << ::evaluate(ctx, info) << std::endl;
+        return 0;
     }
     catch (const std::exception& e)
     {
         std::cerr << e.what() << std::endl;
     }
+    return 1;
 }

@@ -12,6 +12,7 @@
 
 #include <hamigaki/bjam2/bjam_config.hpp>
 #include <hamigaki/bjam2/util/list.hpp>
+#include <hamigaki/bjam2/util/node_val_data.hpp>
 #include <boost/spirit/tree/common.hpp>
 
 #ifdef BOOST_HAS_ABI_HEADERS
@@ -27,7 +28,7 @@ struct HAMIGAKI_BJAM2_DECL bjam_grammar_gen
 {
     typedef IteratorT iterator_type;
 
-    static boost::spirit::tree_parse_info<IteratorT>
+    static hamigaki::bjam2::tree_parse_info<IteratorT>
     parse_bjam_grammar(
         const iterator_type& first, const iterator_type& last
     );

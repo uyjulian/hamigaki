@@ -15,6 +15,7 @@
 #include <hamigaki/bjam2/grammars/bjam_grammar_id.hpp>
 #include <hamigaki/bjam2/util/argument_parser.hpp>
 #include <hamigaki/bjam2/util/keyword_parser.hpp>
+#include <hamigaki/bjam2/util/parse_tree.hpp>
 #include <hamigaki/bjam2/util/skip_parser.hpp>
 #include <hamigaki/bjam2/util/string_parser.hpp>
 #include <boost/spirit/tree/parse_tree.hpp>
@@ -418,6 +419,9 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
     };
 };
 
+// FIXME: to avoid C2491
+#if defined(HAMIGAKI_BJAM2_SOURCE)
+
 #if HAMIGAKI_BJAM2_SEPARATE_GRAMMAR_INSTANTIATION != 0
     #define HAMIGAKI_BJAM2_GRAMMAR_GEN_INLINE
 #else
@@ -426,16 +430,36 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
 
 template<class IteratorT>
 HAMIGAKI_BJAM2_GRAMMAR_GEN_INLINE
-boost::spirit::tree_parse_info<IteratorT>
+hamigaki::bjam2::tree_parse_info<IteratorT>
 bjam_grammar_gen<IteratorT>::parse_bjam_grammar(
-    const IteratorT& first, const IteratorT& last)
+    const IteratorT& first0, const IteratorT& last0)
 {
+    typedef hamigaki::line_counting_iterator<IteratorT> iter_t;
+    typedef hamigaki::bjam2::node_val_data_factory<> node_factory_t;
+
+    iter_t first(first0, 1);
+    iter_t last(last0);
+
     bjam2::bjam_grammar g;
     bjam2::skip_parser skip;
-    return boost::spirit::pt_parse(first, last, g, skip);
+
+    boost::spirit::tree_parse_info<iter_t,node_factory_t> tmp =
+        bjam2::tree_parse(first, last, g, skip);
+
+    hamigaki::bjam2::tree_parse_info<IteratorT> info;
+    info.stop = tmp.stop.base();
+    info.match = tmp.match;
+    info.full = tmp.full;
+    info.length = tmp.length;
+    info.line = tmp.stop.line();
+    info.trees.swap(tmp.trees);
+
+    return info;
 }
 
 #undef HAMIGAKI_BJAM2_GRAMMAR_GEN_INLINE
+
+#endif // !defined(HAMIGAKI_BJAM2_SOURCE)
 
 } } // End namespaces bjam2, hamigaki.
 
