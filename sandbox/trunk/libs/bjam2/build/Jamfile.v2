@@ -37,6 +37,7 @@ MODULES =
 SOURCES =
     bjam_context
     bjam_exceptions
+    bjam_interpreter
 #    builtin_rules
     class
 #    glob

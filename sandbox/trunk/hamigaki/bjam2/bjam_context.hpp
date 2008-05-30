@@ -12,6 +12,7 @@
 
 #include <hamigaki/bjam2/bjam_config.hpp>
 #include <hamigaki/bjam2/util/frame.hpp>
+#include <hamigaki/bjam2/util/node_val_data.hpp>
 #include <hamigaki/bjam2/util/target.hpp>
 #include <boost/shared_ptr.hpp>
 #include <list>
@@ -131,6 +132,13 @@ public:
         os_ = &os;
     }
 
+    tree_node& push_parse_tree(tree_node& tree)
+    {
+        trees_.push_back(tree_node());
+        trees_.back().swap(tree);
+        return trees_.back();
+    }
+
 private:
     module root_module_;
     std::map<std::string,module> modules_;
@@ -139,6 +147,7 @@ private:
     frame_stack frames_;
     std::string working_directory_;
     std::ostream* os_;
+    std::list<tree_node> trees_;
 };
 
 class scoped_change_module : private boost::noncopyable
