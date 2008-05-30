@@ -730,8 +730,11 @@ string_list eval_rule_stmt(context& ctx, const tree_node& tree)
     def.body = boost::bind(&eval_rule, _1, boost::cref(*beg));
 
     frame& f = ctx.current_frame();
+    def.filename = f.filename();
+    def.line = tree.value.line();
+
     rule_table& table = f.current_module().rules;
-    table.set_rule_definition(name, def);
+    table.set_rule_body(name, def);
 
     return string_list();
 }

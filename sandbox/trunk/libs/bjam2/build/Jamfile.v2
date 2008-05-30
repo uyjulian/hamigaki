@@ -38,26 +38,25 @@ SOURCES =
     bjam_context
     bjam_exceptions
     bjam_interpreter
-#    builtin_rules
+    builtin_rules
     class
-#    glob
-#    instantiate_bjam_exprgr
+    glob
     instantiate_bjam_grammar
-#    native_rules
+    native_rules
     pattern
-#    predefined_variables
+    predefined_variables
     search
-#    shell
+    shell
     util_path
-#    util_regex
+    util_regex
     variable_expansion
-#    modules/$(MODULES)
+    modules/$(MODULES)
     ;
 
-#if [ os.name ] in NT CYGWIN
-#{
-#    SOURCES += registry ;
-#}
+if [ os.name ] in NT CYGWIN
+{
+    SOURCES += registry ;
+}
 
 lib hamigaki_bjam2
     :
