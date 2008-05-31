@@ -131,6 +131,10 @@ void glob_recursive_test()
 
     args.push_back(boost::assign::list_of("./*.v2"));
     BOOST_CHECK(!ctx.invoke_rule("GLOB-RECURSIVELY", args).empty());
+
+    args.clear();
+    args.push_back(boost::assign::list_of("[Jj]amfile.v2"));
+    BOOST_CHECK(!ctx.invoke_rule("GLOB-RECURSIVELY", args).empty());
 }
 
 void includes_test()
@@ -699,8 +703,8 @@ void w32_getreg_test()
 
     args.push_back(boost::assign::list_of
         ("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion")
-        ("ProgramFilesDir")
     );
+    args.push_back(boost::assign::list_of("ProgramFilesDir"));
     result = ctx.invoke_rule("W32_GETREG", args);
     BOOST_CHECK_EQUAL(result.size(), 1u);
     if (!result.empty())
@@ -714,8 +718,8 @@ void w32_getreg_test()
     args.clear();
     args.push_back(boost::assign::list_of
         ("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion")
-        ("ProgramFilesPath")
     );
+    args.push_back(boost::assign::list_of("ProgramFilesPath"));
     result = ctx.invoke_rule("W32_GETREG", args);
     BOOST_CHECK_EQUAL(result.size(), 1u);
     if (!result.empty())
@@ -736,8 +740,8 @@ void w32_getreg_test()
     args.clear();
     args.push_back(boost::assign::list_of
         ("HKCU\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon")
-        ("BuildNumber")
     );
+    args.push_back(boost::assign::list_of("BuildNumber"));
     result = ctx.invoke_rule("W32_GETREG", args);
     BOOST_CHECK_EQUAL(result.size(), 1u);
     if (!result.empty())
@@ -747,8 +751,8 @@ void w32_getreg_test()
     args.clear();
     args.push_back(boost::assign::list_of
         ("HKLM\\HARDWARE\\DESCRIPTION\\System")
-        ("SystemBiosVersion")
     );
+    args.push_back(boost::assign::list_of("SystemBiosVersion"));
     result = ctx.invoke_rule("W32_GETREG", args);
     BOOST_CHECK(result.size() >= 1);
 }

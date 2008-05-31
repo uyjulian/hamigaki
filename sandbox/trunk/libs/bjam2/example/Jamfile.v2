@@ -1,6 +1,6 @@
-# Hamigaki Bjam Library Jamfile for examples
+# Hamigaki Bjam Library Example Jamfile
 
-# Copyright Takeshi Mouri 2008.
+# Copyright Takeshi Mouri 2007, 2008.
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
@@ -9,12 +9,13 @@
 
 import exec ;
 
-exe test
-    :
-    test.cpp
-    /hamigaki/bjam2//hamigaki_bjam2
-    /boost-lib//boost_filesystem
+project
+    : requirements
+      <library>/hamigaki/bjam2//hamigaki_bjam2
     ;
 
-exec run : test ;
-explicit run ;
+exe test : test.cpp ;
+exe bjam_check : bjam_check.cpp ;
+exe bjam_dump : bjam_dump.cpp ;
+
+exec.register-exec-all ;

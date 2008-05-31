@@ -606,10 +606,7 @@ HAMIGAKI_BJAM2_DECL string_list w32_getreg(context& ctx)
     const list_of_list& args = f.arguments();
 
     const string_list& arg1 = args[0];
-
-    boost::optional<std::string> name;
-    if (arg1.size() >= 2)
-        name = arg1[1];
+    boost::optional<std::string> name = args[1].try_front();
 
     return win32::registry_values(arg1[0], name);
 }
@@ -789,7 +786,8 @@ HAMIGAKI_BJAM2_DECL void set_builtin_rules(context& ctx)
 
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
     params.clear();
-    params.push_back(boost::assign::list_of("key_path")("data")("?"));
+    params.push_back(boost::assign::list_of("key_path"));
+    params.push_back(boost::assign::list_of("data")("?"));
     ctx.set_builtin_rule("W32_GETREG", params, &builtins::w32_getreg);
 #endif
 

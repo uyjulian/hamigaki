@@ -206,11 +206,22 @@ list_of_list eval_lol(context& ctx, const tree_node& tree)
     assert(beg != end);
 
     list_of_list values;
+    bool colon = true;
     for ( ; beg != end; ++beg)
     {
         if (beg->value.id() == bjam2::list_id)
+        {
             values.push_back(bjam2::eval_list(ctx, *beg));
+            colon = false;
+        }
+        else if (colon)
+            values.push_back(string_list());
+        else
+            colon = true;
     }
+
+    if (colon)
+        values.push_back(string_list());
 
     return values;
 }
@@ -438,14 +449,22 @@ string_list eval_invoke_stmt(context& ctx, const tree_node& tree)
     assert(beg != end);
 
     const std::string& name = bjam2::eval_arg_p(*(beg++));
+
+    frame& f = ctx.current_frame();
+    const variable_table& table = f.current_module().variables;
+    const string_list& args0 =
+        bjam2::expand_variable(name, table, f.arguments());
+
     list_of_list args;
     if (beg->value.id() == bjam2::lol_id)
         args = bjam2::eval_lol(ctx, *beg);
 
-    frame& f = ctx.current_frame();
+    if (args0.empty())
+        return string_list();
+
     f.line(tree.children.front().value.line());
 
-    return ctx.invoke_rule(name, args);
+    return ctx.invoke_rule(args0[0], concatenate_args(args0, args));
 }
 
 assign_mode::values eval_assign(context& ctx, const tree_node& tree)
@@ -755,6 +774,7 @@ string_list eval_rule_stmt(context& ctx, const tree_node& tree)
     def.body = boost::bind(&eval_rule, _1, boost::cref(*beg));
 
     frame& f = ctx.current_frame();
+    def.module_name = f.module_name();
     def.filename = f.filename();
     def.line = tree.children.front().value.line();
 
@@ -789,7 +809,7 @@ action_modifier::values eval_eflags(const tree_node& tree)
     iter_t end = tree.children.end();
 
     action_modifier::values eflags = action_modifier::values();
-    while (beg != end)
+    for ( ; beg != end; ++beg)
     {
         switch (*beg->value.begin())
         {
@@ -929,7 +949,7 @@ string_list eval_assign_list(context& ctx, const tree_node& tree)
     assert(beg != end);
 
     ++beg;
-    if (beg->value.id() == bjam2::list_id)
+    if ((beg != end) && (beg->value.id() == bjam2::list_id))
         return bjam2::eval_list(ctx, *beg);
     else
         return string_list();

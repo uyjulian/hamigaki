@@ -15,6 +15,7 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/version.hpp>
+                    #include <iostream>
 
 namespace algo = boost::algorithm;
 namespace fs = boost::filesystem;
@@ -40,7 +41,12 @@ string_list glob_impl(
     string_list result;
 
     fs::path ph(dir);
-    ph = fs::complete(ph, work);
+    if (ph.empty())
+        ph = work;
+    else if (ph.has_root_name() && !ph.has_root_directory())
+        ph /= "\\";
+    else
+        ph = fs::complete(ph, work);
 
     if (!is_directory(ph))
         return result;
