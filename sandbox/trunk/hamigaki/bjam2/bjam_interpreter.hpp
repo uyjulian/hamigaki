@@ -13,14 +13,13 @@
 #include <hamigaki/bjam2/bjam_config.hpp>
 #include <hamigaki/bjam2/util/list.hpp>
 #include <hamigaki/bjam2/util/node_val_data.hpp>
+#include <hamigaki/bjam2/bjam_context.hpp>
 
 #ifdef BOOST_HAS_ABI_HEADERS
     #include BOOST_ABI_PREFIX
 #endif
 
 namespace hamigaki { namespace bjam2 {
-
-class context;
 
 HAMIGAKI_BJAM2_DECL
 string_list evaluate_expression(context& ctx, const tree_node& tree);
