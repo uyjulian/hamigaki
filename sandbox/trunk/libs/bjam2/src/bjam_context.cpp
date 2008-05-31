@@ -319,6 +319,9 @@ context::invoke_rule(const std::string& name, const list_of_list& args)
     scoped_push_frame guard(*this, f);
     this->change_module(rule.module_name);
 
+    if (rule.native)
+        return rule.body(*this);
+
     frame& cur_frame = current_frame();
     module& cur_module = cur_frame.current_module();
 
@@ -326,6 +329,8 @@ context::invoke_rule(const std::string& name, const list_of_list& args)
     const list_of_list& params = rule.parameters;
     for (std::size_t i = 0; i < params.size(); ++i)
         set_rule_argument(local, params[i], args[i]);
+
+    scoped_push_local_variables using_local(cur_module.variables, local);
 
     if (rule.body)
         return rule.body(*this);

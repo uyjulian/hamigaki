@@ -23,13 +23,24 @@ namespace hamigaki { namespace bjam2 {
 class context;
 
 HAMIGAKI_BJAM2_DECL
+string_list evaluate_expression(context& ctx, const tree_node& tree);
+
+HAMIGAKI_BJAM2_DECL
 string_list evaluate_bjam(context& ctx, const tree_node& tree);
 
 template<class IteratorT>
 inline string_list evaluate_bjam(
-    context& ctx, const tree_parse_info<IteratorT>& info)
+    context& ctx, tree_parse_info<IteratorT>& info)
 {
-    return hamigaki::bjam2::evaluate_bjam(ctx, info.trees[0]);
+    if (!info.trees.empty())
+    {
+        return hamigaki::bjam2::evaluate_bjam(
+            ctx,
+            ctx.push_parse_tree(info.trees.front())
+        );
+    }
+    else
+        return string_list();
 }
 
 } } // End namespaces bjam2, hamigaki.

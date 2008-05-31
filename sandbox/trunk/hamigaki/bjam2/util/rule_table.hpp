@@ -80,6 +80,7 @@ public:
         x.parameters = def.parameters;
         x.body = def.body;
         x.module_name = def.module_name;
+        x.native = true;
         x.exported = def.exported;
     }
 

@@ -22,7 +22,7 @@ class context;
 struct rule_definition
 {
     rule_definition()
-        : exported(true)
+        : native(false), exported(true)
         , modifiers(static_cast<action_modifier::values>(0))
         , line(1)
     {
@@ -31,6 +31,7 @@ struct rule_definition
     list_of_list parameters;
     boost::function1<string_list,context&> body;
     boost::optional<std::string> module_name;
+    bool native;
     bool exported;
     std::string commands;
     action_modifier::values modifiers;

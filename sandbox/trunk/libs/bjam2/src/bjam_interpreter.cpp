@@ -108,13 +108,20 @@ string_list eval_run(context& ctx, const tree_node& tree);
 
 string_list eval_func_impl(context& ctx, iter_t beg, iter_t end)
 {
+    int line = beg->children.front().value.line();
+
     const string_list& args0 = bjam2::eval_arg(ctx, *(beg++));
     list_of_list args;
     if (beg != end)
         args = bjam2::eval_lol(ctx, *beg);
 
     if (!args0.empty())
+    {
+        frame& f = ctx.current_frame();
+        f.line(line);
+
         return ctx.invoke_rule(args0[0], concatenate_args(args0, args));
+    }
     else
         return string_list();
 }
@@ -140,7 +147,13 @@ string_list eval_func(context& ctx, const tree_node& tree)
         if (beg->value.id() == bjam2::arg_id)
             return bjam2::eval_func_impl(ctx, beg, end);
         else
-            return bjam2::eval_list(ctx, *beg);
+        {
+            ++beg;
+            if (beg->value.id() == bjam2::list_id)
+                return bjam2::eval_list(ctx, *beg);
+            else
+                return string_list();
+        }
     }
 }
 
@@ -194,7 +207,10 @@ list_of_list eval_lol(context& ctx, const tree_node& tree)
 
     list_of_list values;
     for ( ; beg != end; ++beg)
-        values.push_back(bjam2::eval_list(ctx, *beg));
+    {
+        if (beg->value.id() == bjam2::list_id)
+            values.push_back(bjam2::eval_list(ctx, *beg));
+    }
 
     return values;
 }
@@ -328,10 +344,15 @@ string_list eval_and_expr(context& ctx, const tree_node& tree)
     assert(beg != end);
 
     string_list values = bjam2::eval_eq_expr(ctx, *(beg++));
-    while (values && (beg != end))
+    if (!values)
+        return values;
+
+    while (beg != end)
     {
         ++beg;
-        values = bjam2::eval_eq_expr(ctx, *(beg++));
+        const string_list& rhs = bjam2::eval_eq_expr(ctx, *(beg++));
+        if (!rhs)
+            return rhs;
     }
 
     return values;
@@ -420,6 +441,10 @@ string_list eval_invoke_stmt(context& ctx, const tree_node& tree)
     list_of_list args;
     if (beg->value.id() == bjam2::lol_id)
         args = bjam2::eval_lol(ctx, *beg);
+
+    frame& f = ctx.current_frame();
+    f.line(tree.children.front().value.line());
+
     return ctx.invoke_rule(name, args);
 }
 
@@ -731,7 +756,7 @@ string_list eval_rule_stmt(context& ctx, const tree_node& tree)
 
     frame& f = ctx.current_frame();
     def.filename = f.filename();
-    def.line = tree.value.line();
+    def.line = tree.children.front().value.line();
 
     rule_table& table = f.current_module().rules;
     table.set_rule_body(name, def);
@@ -935,8 +960,13 @@ string_list eval_local_set_stmt(context& ctx, const tree_node& tree)
     module& m = f.current_module();
     scoped_push_local_variables using_local(m.variables, local);
 
-    if (beg->value.id() == bjam2::block_id)
-        return bjam2::eval_block(ctx, *beg);
+    if (++beg != end)
+    {
+        if (beg->value.id() == bjam2::block_id)
+            return bjam2::eval_block(ctx, *beg);
+        else
+            return string_list();
+    }
     else
         return string_list();
 }
@@ -951,8 +981,8 @@ string_list eval_rules(context& ctx, const tree_node& tree)
 
     if (beg->value.id() == bjam2::rule_id)
     {
-        string_list values = bjam2::eval_rule(ctx, *beg);
-        while (++beg != end)
+        string_list values = bjam2::eval_rule(ctx, *(beg++));
+        if (beg != end)
             values = bjam2::eval_rules(ctx, *beg);
         return values;
     }
@@ -978,11 +1008,25 @@ string_list eval_run(context& ctx, const tree_node& tree)
     assert(tree.value.id() == bjam2::run_id);
 
     if (!tree.children.empty())
-        return bjam2::eval_rules(ctx, tree.children.front());
+    {
+        const tree_node& child = tree.children.front();
+
+        if (child.value.id() == bjam2::rules_id)
+            return bjam2::eval_rules(ctx, child);
+        else
+            return string_list();
+    }
     else
         return string_list();
 }
 
+HAMIGAKI_BJAM2_DECL
+string_list evaluate_expression(context& ctx, const tree_node& tree)
+{
+    return bjam2::eval_expr(ctx, tree);
+}
+
+HAMIGAKI_BJAM2_DECL
 string_list evaluate_bjam(context& ctx, const tree_node& tree)
 {
     return bjam2::eval_run(ctx, tree);
