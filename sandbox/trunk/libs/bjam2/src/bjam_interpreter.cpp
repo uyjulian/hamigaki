@@ -157,15 +157,31 @@ string_list eval_func(context& ctx, const tree_node& tree)
     }
 }
 
-string_list eval_arg(context& ctx, const tree_node& tree)
+string_list eval_non_punct(context& ctx, const tree_node& tree)
 {
-    assert(
-        (tree.value.id() == bjam2::arg_id) ||
-        (tree.value.id() == bjam2::non_punct_id)
-    );
+    assert(tree.value.id() == bjam2::non_punct_id);
     assert(!tree.children.empty());
 
-    if (tree.children.size() == 1)
+    if (tree.children.front().value.id() != bjam2::func_id)
+    {
+        frame& f = ctx.current_frame();
+        const variable_table& table = f.current_module().variables;
+        const list_of_list& args = f.arguments();
+
+        const std::string& name =
+            bjam2::eval_non_punct_p(tree.children.front());
+        return bjam2::expand_variable(name, table, args);
+    }
+    else
+        return bjam2::eval_func(ctx, tree.children.front());
+}
+
+string_list eval_arg(context& ctx, const tree_node& tree)
+{
+    assert(tree.value.id() == bjam2::arg_id);
+    assert(!tree.children.empty());
+
+    if (tree.children.front().value.id() != bjam2::func_id)
     {
         frame& f = ctx.current_frame();
         const variable_table& table = f.current_module().variables;
@@ -175,9 +191,7 @@ string_list eval_arg(context& ctx, const tree_node& tree)
         return bjam2::expand_variable(name, table, args);
     }
     else
-    {
-        return bjam2::eval_func(ctx, tree.children[1]);
-    }
+        return bjam2::eval_func(ctx, tree.children.front());
 }
 
 string_list eval_list(context& ctx, const tree_node& tree)
@@ -192,7 +206,7 @@ string_list eval_list(context& ctx, const tree_node& tree)
     for ( ; beg != end; ++beg)
     {
         if (beg->value.id() == bjam2::non_punct_id)
-            list += bjam2::eval_arg(ctx, *beg);
+            list += bjam2::eval_non_punct(ctx, *beg);
     }
     return list;
 }
@@ -203,7 +217,6 @@ list_of_list eval_lol(context& ctx, const tree_node& tree)
 
     iter_t beg = tree.children.begin();
     iter_t end = tree.children.end();
-    assert(beg != end);
 
     list_of_list values;
     bool colon = true;
@@ -239,7 +252,6 @@ string_list eval_prim_expr(context& ctx, const tree_node& tree)
         string_list values = bjam2::eval_arg(ctx, *(beg++));
         if (beg != end)
         {
-            ++beg;
             if (values.empty())
                 return string_list("1");
             else if (beg == end)
@@ -254,7 +266,7 @@ string_list eval_prim_expr(context& ctx, const tree_node& tree)
         return values;
     }
     else
-        return bjam2::eval_expr(ctx, tree.children[1]);
+        return bjam2::eval_expr(ctx, tree.children.front());
 }
 
 string_list eval_not_expr(context& ctx, const tree_node& tree)
@@ -360,7 +372,6 @@ string_list eval_and_expr(context& ctx, const tree_node& tree)
 
     while (beg != end)
     {
-        ++beg;
         const string_list& rhs = bjam2::eval_eq_expr(ctx, *(beg++));
         if (!rhs)
             return rhs;
@@ -379,10 +390,7 @@ string_list eval_expr(context& ctx, const tree_node& tree)
 
     string_list values = bjam2::eval_and_expr(ctx, *(beg++));
     while (!values && (beg != end))
-    {
-        ++beg;
         values = bjam2::eval_and_expr(ctx, *(beg++));
-    }
 
     return values;
 }
@@ -393,10 +401,8 @@ string_list eval_block_stmt(context& ctx, const tree_node& tree)
 
     iter_t beg = tree.children.begin();
     iter_t end = tree.children.end();
-    assert(beg != end);
 
-    ++beg;
-    if (beg->value.id() == bjam2::block_id)
+    if (beg != end)
         return bjam2::eval_block(ctx, *beg);
     else
         return string_list();
@@ -408,10 +414,8 @@ string_list eval_include_stmt(context& ctx, const tree_node& tree)
 
     iter_t beg = tree.children.begin();
     iter_t end = tree.children.end();
-    assert(beg != end);
 
-    ++beg;
-    if (beg->value.id() != bjam2::list_id)
+    if (beg == end)
         return string_list();
 
     const string_list& names = bjam2::eval_list(ctx, *beg);
@@ -456,7 +460,7 @@ string_list eval_invoke_stmt(context& ctx, const tree_node& tree)
         bjam2::expand_variable(name, table, f.arguments());
 
     list_of_list args;
-    if (beg->value.id() == bjam2::lol_id)
+    if (beg != end)
         args = bjam2::eval_lol(ctx, *beg);
 
     if (args0.empty())
@@ -495,14 +499,13 @@ string_list eval_set_on_stmt(context& ctx, const tree_node& tree)
     assert(beg != end);
 
     const string_list& names = bjam2::eval_arg(ctx, *(beg++));
-    ++beg;
     string_list targets;
     if (beg->value.id() == bjam2::list_id)
         targets = bjam2::eval_list(ctx, *(beg++));
     assign_mode::values mode = bjam2::eval_assign(ctx, *(beg++));
     string_list values;
-    if (beg->value.id() == bjam2::list_id)
-        values = bjam2::eval_list(ctx, *(beg++));
+    if (beg != end)
+        values = bjam2::eval_list(ctx, *beg);
 
     for (std::size_t i = 0; i < targets.size(); ++i)
     {
@@ -524,8 +527,8 @@ string_list eval_set_stmt(context& ctx, const tree_node& tree)
     const string_list& names = bjam2::eval_arg(ctx, *(beg++));
     assign_mode::values mode = bjam2::eval_assign(ctx, *(beg++));
     string_list values;
-    if (beg->value.id() == bjam2::list_id)
-        values = bjam2::eval_list(ctx, *(beg++));
+    if (beg != end)
+        values = bjam2::eval_list(ctx, *beg);
 
     frame& f = ctx.current_frame();
     module& m = f.current_module();
@@ -540,13 +543,26 @@ string_list eval_return_stmt(context& ctx, const tree_node& tree)
 
     iter_t beg = tree.children.begin();
     iter_t end = tree.children.end();
-    assert(beg != end);
 
-    ++beg;
-    if (beg->value.id() == bjam2::list_id)
+    if (beg != end)
         return bjam2::eval_list(ctx, *beg);
     else
         return string_list();
+}
+
+inline bool is_for_local(const tree_node::children_t& children)
+{
+    typedef tree_node::children_t::const_reverse_iterator iter_t;
+
+    iter_t beg = children.rbegin();
+    iter_t end = children.rend();
+
+    if (beg->value.id() == bjam2::block_id)
+        ++beg;
+    if (beg->value.id() == bjam2::list_id)
+        ++beg;
+
+    return ++beg != end;
 }
 
 string_list eval_for_stmt(context& ctx, const tree_node& tree)
@@ -555,23 +571,15 @@ string_list eval_for_stmt(context& ctx, const tree_node& tree)
 
     iter_t beg = tree.children.begin();
     iter_t end = tree.children.end();
-    assert(beg != end);
 
-    ++beg;
-
-    bool local = false;
-    if (node_value(*beg) == "local")
-    {
-        local = true;
+    bool local = is_for_local(tree.children);
+    if (local)
         ++beg;
-    }
 
     const std::string& var = bjam2::eval_arg_p(*(beg++));
-    ++beg;
     string_list values;
-    if (beg->value.id() == bjam2::list_id)
+    if ((beg != end) && (beg->value.id() == bjam2::list_id))
         values = bjam2::eval_list(ctx, *(beg++));
-    ++beg;
 
     frame& f = ctx.current_frame();
     variable_table& table = f.current_module().variables;
@@ -579,7 +587,7 @@ string_list eval_for_stmt(context& ctx, const tree_node& tree)
     for (std::size_t i = 0; i < values.size(); ++i)
     {
         table.set_values(var, string_list(values[i]));
-        if (beg->value.id() == bjam2::block_id)
+        if (beg != end)
             bjam2::eval_block(ctx, *beg);
     }
 
@@ -596,19 +604,23 @@ eval_cases(context& ctx, const tree_node& tree, const std::string& value)
 
     while (beg != end)
     {
-        ++beg;
         const std::string& pattern = bjam2::eval_arg_p(*(beg++));
 
-        if (++beg == end)
+        if (beg == end)
             break;
 
-        if (beg->value.id() != bjam2::block_id)
-            continue;
-
         if (bjam2::pattern_match(pattern, value))
-            return bjam2::eval_block(ctx, *beg);
+        {
+            if (beg->value.id() == bjam2::block_id)
+                return bjam2::eval_block(ctx, *beg);
+            else
+                return string_list();
+        }
         else
-            ++beg;
+        {
+            if (beg->value.id() == bjam2::block_id)
+                ++beg;
+        }
     }
     return string_list();
 }
@@ -620,9 +632,8 @@ string_list eval_switch_stmt(context& ctx, const tree_node& tree)
     iter_t beg = tree.children.begin();
     iter_t end = tree.children.end();
 
-    ++beg;
     std::string value;
-    if (beg->value.id() == bjam2::list_id)
+    if ((beg != end) && (beg->value.id() == bjam2::list_id))
     {
         const string_list& list = bjam2::eval_list(ctx, *beg);
         if (!list.empty())
@@ -630,8 +641,7 @@ string_list eval_switch_stmt(context& ctx, const tree_node& tree)
         ++beg;
     }
 
-    ++beg;
-    if (beg->value.id() == bjam2::cases_id)
+    if (beg != end)
         return bjam2::eval_cases(ctx, *beg, value);
     else
         return string_list();
@@ -644,15 +654,13 @@ string_list eval_module_stmt(context& ctx, const tree_node& tree)
     iter_t beg = tree.children.begin();
     iter_t end = tree.children.end();
 
-    ++beg;
     string_list list;
-    if (beg->value.id() == bjam2::list_id)
+    if ((beg != end) && (beg->value.id() == bjam2::list_id))
         list = bjam2::eval_list(ctx, *(beg++));
 
     scoped_change_module guard(ctx, list.try_front());
 
-    ++beg;
-    if (beg->value.id() == bjam2::block_id)
+    if (beg != end)
         return bjam2::eval_block(ctx, *beg);
     else
         return string_list();
@@ -665,8 +673,7 @@ string_list eval_class_stmt(context& ctx, const tree_node& tree)
     iter_t beg = tree.children.begin();
     iter_t end = tree.children.end();
 
-    ++beg;
-    if (beg->value.id() != bjam2::lol_id)
+    if ((beg != end) && (beg->value.id() != bjam2::lol_id))
         throw std::runtime_error("missing class name"); // FIXME
 
     const list_of_list& lol = bjam2::eval_lol(ctx, *(beg++));
@@ -677,8 +684,7 @@ string_list eval_class_stmt(context& ctx, const tree_node& tree)
     const std::string& module_name = bjam2::make_class(ctx, lol[0][0], lol[1]);
 
     scoped_change_module guard(ctx, module_name);
-    ++beg;
-    if (beg->value.id() == bjam2::block_id)
+    if (beg != end)
         bjam2::eval_block(ctx, *beg);
 
     return string_list();
@@ -691,10 +697,8 @@ string_list eval_while_stmt(context& ctx, const tree_node& tree)
     iter_t beg = tree.children.begin();
     iter_t end = tree.children.end();
 
-    ++beg;
     const tree_node& cond = *(beg++);
-    ++beg;
-    bool has_block = (beg->value.id() == bjam2::block_id);
+    bool has_block = (beg != end);
 
     string_list values;
     while (bjam2::eval_expr(ctx, cond))
@@ -712,27 +716,21 @@ string_list eval_if_stmt(context& ctx, const tree_node& tree)
     iter_t beg = tree.children.begin();
     iter_t end = tree.children.end();
 
-    ++beg;
     const string_list& cond = bjam2::eval_expr(ctx, *(beg++));
-    ++beg;
 
     string_list values;
     if (cond)
     {
-        if (beg->value.id() == bjam2::block_id)
+        if ((beg != end) && (beg->value.id() == bjam2::block_id))
             values = bjam2::eval_block(ctx, *beg);
     }
     else
     {
-        if (beg->value.id() == bjam2::block_id)
+        if ((beg != end) && (beg->value.id() == bjam2::block_id))
             ++beg;
-        ++beg;
 
         if (beg != end)
-        {
-            ++beg;
             values = bjam2::eval_rule(ctx, *beg);
-        }
     }
     return values;
 }
@@ -743,13 +741,26 @@ list_of_list eval_arglist(context& ctx, const tree_node& tree)
 
     iter_t beg = tree.children.begin();
     iter_t end = tree.children.end();
-    assert(beg != end);
 
-    ++beg;
-    if (beg->value.id() == bjam2::lol_id)
+    if (beg != end)
         return bjam2::eval_lol(ctx, *beg);
     else
         return list_of_list();
+}
+
+inline bool is_local_rule(const tree_node::children_t& children)
+{
+    typedef tree_node::children_t::const_reverse_iterator iter_t;
+
+    iter_t beg = children.rbegin();
+    iter_t end = children.rend();
+
+    if (beg->value.id() == bjam2::rule_id)
+        ++beg;
+    if (beg->value.id() == bjam2::arglist_id)
+        ++beg;
+
+    return ++beg != end;
 }
 
 string_list eval_rule_stmt(context& ctx, const tree_node& tree)
@@ -761,15 +772,14 @@ string_list eval_rule_stmt(context& ctx, const tree_node& tree)
     assert(beg != end);
 
     rule_definition def;
-    if (node_value(*beg) == "local")
+    if (is_local_rule(tree.children))
     {
         def.exported = false;
         ++beg;
     }
-    ++beg;
 
     const std::string& name = bjam2::eval_arg_p(*(beg++));
-    if (beg->value.id() == bjam2::arglist_id)
+    if ((beg != end) && (beg->value.id() == bjam2::arglist_id))
         def.parameters = bjam2::eval_arglist(ctx, *(beg++));
     def.body = boost::bind(&eval_rule, _1, boost::cref(*beg));
 
@@ -792,7 +802,6 @@ string_list eval_on_stmt(context& ctx, const tree_node& tree)
     iter_t end = tree.children.end();
     assert(beg != end);
 
-    ++beg;
     const string_list& targets = bjam2::eval_arg(ctx, *(beg++));
     if (targets.empty())
         return string_list();
@@ -844,9 +853,6 @@ string_list eval_bindlist(context& ctx, const tree_node& tree)
 
     iter_t beg = tree.children.begin();
     iter_t end = tree.children.end();
-    assert(beg != end);
-
-    ++beg;
 
     if (beg == end)
         return bjam2::eval_list(ctx, *beg);
@@ -862,8 +868,6 @@ string_list eval_actions_stmt(context& ctx, const tree_node& tree)
     iter_t end = tree.children.end();
     assert(beg != end);
 
-    ++beg;
-
     rule_definition def;
     if (beg->value.id() == bjam2::eflags_id)
         def.modifiers = bjam2::eval_eflags(*(beg++));
@@ -873,7 +877,6 @@ string_list eval_actions_stmt(context& ctx, const tree_node& tree)
     if (beg->value.id() == bjam2::bindlist_id)
         def.binds = bjam2::eval_bindlist(ctx, *(beg++));
 
-    ++beg;
     def.commands = node_value(*beg);
 
     frame& f = ctx.current_frame();
@@ -946,10 +949,8 @@ string_list eval_assign_list(context& ctx, const tree_node& tree)
 
     iter_t beg = tree.children.begin();
     iter_t end = tree.children.end();
-    assert(beg != end);
 
-    ++beg;
-    if ((beg != end) && (beg->value.id() == bjam2::list_id))
+    if (beg != end)
         return bjam2::eval_list(ctx, *beg);
     else
         return string_list();
@@ -980,7 +981,7 @@ string_list eval_local_set_stmt(context& ctx, const tree_node& tree)
     module& m = f.current_module();
     scoped_push_local_variables using_local(m.variables, local);
 
-    if (++beg != end)
+    if (beg != end)
     {
         if (beg->value.id() == bjam2::block_id)
             return bjam2::eval_block(ctx, *beg);

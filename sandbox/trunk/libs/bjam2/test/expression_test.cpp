@@ -32,7 +32,7 @@ bjam::string_list eval(bjam::context& ctx, const std::string& expr)
 
     return bjam::evaluate_expression(ctx,
         info.trees.front().children.front().
-        children.front().children.front().children[1]
+        children.front().children.front().children[0]
     );
 }
 

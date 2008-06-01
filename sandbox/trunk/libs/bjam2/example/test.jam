@@ -34,6 +34,12 @@ for local x in x y z
 }
 ECHO $(x) ;
 
+"local" = NG:\ for\ \"local\" ;
+for "local" in OK:\ for\ \"local\"
+{
+}
+ECHO $(local) ;
+
 switch { }
 
 switch $(x)
@@ -93,5 +99,15 @@ actions aaa { echo hoge}
 
 include inner.jam ;
 inner_rule ;
+
+local LLL ;
+local LLL = ;
+local LLL = xxx ;
+
+rule rrr ( X * : Y * )
+{
+	ECHO $(Y:E=NG) ;
+}
+rrr : "OK: empty arg" ;
 
 return hoge ;

@@ -96,16 +96,18 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 =   keyword_p("local")
                     >> list
                     >> !assign_list
-                    >> keyword_p(";")
+                    >> no_node_d[keyword_p(";")]
                     >> block
                 ;
 
             assign_list
-                =   keyword_p("=") >> list
+                =   no_node_d[keyword_p("=")] >> list
                 ;
 
             arglist
-                =   keyword_p("(") >> lol >> keyword_p(")")
+                =   no_node_d[keyword_p("(")]
+                    >> lol
+                    >> no_node_d[keyword_p(")")]
                 ;
 
             rule
@@ -127,37 +129,37 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             block_stmt
-                =   keyword_p("{")
+                =   no_node_d[keyword_p("{")]
                     >> block
-                    >> keyword_p("}")
+                    >> no_node_d[keyword_p("}")]
                 ;
 
             include_stmt
-                =   keyword_p("include")
+                =   no_node_d[keyword_p("include")]
                     >> list
-                    >> keyword_p(";")
+                    >> no_node_d[keyword_p(";")]
                 ;
 
             invoke_stmt
                 =   arg_p
                     >> lol
-                    >> keyword_p(";")
+                    >> no_node_d[keyword_p(";")]
                 ;
 
             set_stmt
                 =   arg
                     >> assign
                     >> list
-                    >> keyword_p(";")
+                    >> no_node_d[keyword_p(";")]
                 ;
 
             set_on_stmt
                 =   arg
-                    >> keyword_p("on")
+                    >> no_node_d[keyword_p("on")]
                     >> list
                     >> assign
                     >> list
-                    >> keyword_p(";")
+                    >> no_node_d[keyword_p(";")]
                 ;
 
             assign
@@ -169,111 +171,117 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             return_stmt
-                =   keyword_p("return")
+                =   no_node_d[keyword_p("return")]
                     >> list
-                    >> keyword_p(";")
+                    >> no_node_d[keyword_p(";")]
                 ;
 
             for_stmt
-                =   keyword_p("for")
+                =   no_node_d[keyword_p("for")]
                     >> !keyword_p("local")
                     >> arg_p
-                    >> keyword_p("in")
+                    >> no_node_d[keyword_p("in")]
                     >> list
-                    >> keyword_p("{")
+                    >> no_node_d[keyword_p("{")]
                     >> block
-                    >> keyword_p("}")
+                    >> no_node_d[keyword_p("}")]
                 ;
 
             switch_stmt
-                =   keyword_p("switch")
+                =   no_node_d[keyword_p("switch")]
                     >> list
-                    >> keyword_p("{")
+                    >> no_node_d[keyword_p("{")]
                     >> cases
-                    >> keyword_p("}")
+                    >> no_node_d[keyword_p("}")]
                 ;
 
             cases
-                =  *(   keyword_p("case")
+                =  *(   no_node_d[keyword_p("case")]
                         >> arg_p
-                        >> keyword_p(":")
+                        >> no_node_d[keyword_p(":")]
                         >> block
                     )
                 ;
 
             module_stmt
-                =   keyword_p("module")
+                =   no_node_d[keyword_p("module")]
                     >> list
-                    >> keyword_p("{")
+                    >> no_node_d[keyword_p("{")]
                     >> block
-                    >> keyword_p("}")
+                    >> no_node_d[keyword_p("}")]
                 ;
 
             class_stmt
-                =   keyword_p("class")
+                =   no_node_d[keyword_p("class")]
                     >> lol
-                    >> keyword_p("{")
+                    >> no_node_d[keyword_p("{")]
                     >> block
-                    >> keyword_p("}")
+                    >> no_node_d[keyword_p("}")]
                 ;
 
             while_stmt
-                =   keyword_p("while")
+                =   no_node_d[keyword_p("while")]
                     >> expr
-                    >> keyword_p("{")
+                    >> no_node_d[keyword_p("{")]
                     >> block
-                    >> keyword_p("}")
+                    >> no_node_d[keyword_p("}")]
                 ;
 
             if_stmt
-                =   keyword_p("if")
+                =   no_node_d[keyword_p("if")]
                     >> expr
-                    >> keyword_p("{")
+                    >> no_node_d[keyword_p("{")]
                     >> block
-                    >> keyword_p("}")
-                    >> !( keyword_p("else") >> rule )
+                    >> no_node_d[keyword_p("}")]
+                    >> !( no_node_d[keyword_p("else")] >> rule )
                 ;
 
             rule_stmt
                 =   !keyword_p("local")
-                    >> keyword_p("rule")
+                    >> no_node_d[keyword_p("rule")]
                     >> arg_p
                     >> !arglist
                     >> rule
                 ;
 
             on_stmt
-                =   keyword_p("on")
+                =   no_node_d[keyword_p("on")]
                     >> arg
                     >> rule
                 ;
 
             actions_stmt
-                =   keyword_p("actions")
+                =   no_node_d[keyword_p("actions")]
                     >> eflags
                     >> arg_p
                     >> !bindlist
                     >> eps_p(keyword_p("{"))
                     >> lexeme_d
                     [
-                        '{'
+                        no_node_d[ch_p('{')]
                         >> string_p
                     ]
-                    >> keyword_p("}")
+                    >> no_node_d[keyword_p("}")]
                 ;
 
             expr
                 =   and_expr
-                    %   (   keyword_p("|")
-                        |   keyword_p("||")
-                        )
+                    %   no_node_d
+                        [
+                            (   keyword_p("|")
+                            |   keyword_p("||")
+                            )
+                        ]
                 ;
 
             and_expr
                 =   eq_expr
-                    %   (   keyword_p("&")
-                        |   keyword_p("&&")
-                        )
+                    %   no_node_d
+                        [
+                            (   keyword_p("&")
+                            |   keyword_p("&&")
+                            )
+                        ]
                 ;
 
             eq_expr
@@ -297,8 +305,10 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             prim_expr
-                =   arg >> !(keyword_p("in")  >> list)
-                |   keyword_p("(") >> expr >> keyword_p(")")
+                =   arg >> !(no_node_d[keyword_p("in")]  >> list)
+                |   no_node_d[keyword_p("(")]
+                    >> expr
+                    >> no_node_d[keyword_p(")")]
                 ;
 
             lol
@@ -311,12 +321,16 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
 
             non_punct
                 =   non_punct_p
-                |   keyword_p("[") >> func >> keyword_p("]")
+                |   no_node_d[keyword_p("[")]
+                    >> func
+                    >> no_node_d[keyword_p("]")]
                 ;
 
             arg
                 =   arg_p
-                |   keyword_p("[") >> func >> keyword_p("]")
+                |   no_node_d[keyword_p("[")]
+                    >> func
+                    >> no_node_d[keyword_p("]")]
                 ;
 
             func
@@ -337,7 +351,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             bindlist
-                =   keyword_p("bind") >> list
+                =   no_node_d[keyword_p("bind")] >> list
                 ;
 
             run.set_id(run_id);
