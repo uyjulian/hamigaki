@@ -82,7 +82,7 @@ public:
 
         if (may_keyword)
         {
-            if (std::isalpha(buf[0]))
+            if (std::islower(buf[0]))
             {
                 if (!punct_only_ && bjam2::is_keyword(buf))
                     return scan.no_match();
