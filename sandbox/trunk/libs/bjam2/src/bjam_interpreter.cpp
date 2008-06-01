@@ -901,45 +901,43 @@ string_list eval_actions_stmt(context& ctx, const tree_node& tree)
 string_list eval_rule(context& ctx, const tree_node& tree)
 {
     assert(tree.value.id() == bjam2::rule_id);
+    assert(!tree.children.empty());
 
-    iter_t beg = tree.children.begin();
-    iter_t end = tree.children.end();
-    assert(beg != end);
-
-    if (beg->value.id() == bjam2::block_stmt_id)
-        return bjam2::eval_block_stmt(ctx, *beg);
-    else if (beg->value.id() == bjam2::include_stmt_id)
-        return bjam2::eval_include_stmt(ctx, *beg);
-    else if (beg->value.id() == bjam2::invoke_stmt_id)
-        return bjam2::eval_invoke_stmt(ctx, *beg);
-    else if (beg->value.id() == bjam2::set_stmt_id)
-        return bjam2::eval_set_stmt(ctx, *beg);
-    else if (beg->value.id() == bjam2::set_on_stmt_id)
-        return bjam2::eval_set_on_stmt(ctx, *beg);
-    else if (beg->value.id() == bjam2::return_stmt_id)
-        return bjam2::eval_return_stmt(ctx, *beg);
-    else if (beg->value.id() == bjam2::for_stmt_id)
-        return bjam2::eval_for_stmt(ctx, *beg);
-    else if (beg->value.id() == bjam2::switch_stmt_id)
-        return bjam2::eval_switch_stmt(ctx, *beg);
-    else if (beg->value.id() == bjam2::module_stmt_id)
-        return bjam2::eval_module_stmt(ctx, *beg);
-    else if (beg->value.id() == bjam2::class_stmt_id)
-        return bjam2::eval_class_stmt(ctx, *beg);
-    else if (beg->value.id() == bjam2::while_stmt_id)
-        return bjam2::eval_while_stmt(ctx, *beg);
-    else if (beg->value.id() == bjam2::if_stmt_id)
-        return bjam2::eval_if_stmt(ctx, *beg);
-    else if (beg->value.id() == bjam2::rule_stmt_id)
-        return bjam2::eval_rule_stmt(ctx, *beg);
-    else if (beg->value.id() == bjam2::on_stmt_id)
-        return bjam2::eval_on_stmt(ctx, *beg);
-    else if (beg->value.id() == bjam2::actions_stmt_id)
-        return bjam2::eval_actions_stmt(ctx, *beg);
-    else
+    const tree_node& child = tree.children.front();
+    switch (child.value.id().to_long())
     {
-        // TODO
-        return string_list();
+        default:
+            assert(0);
+        case bjam2::block_stmt_id:
+            return bjam2::eval_block_stmt(ctx, child);
+        case bjam2::include_stmt_id:
+            return bjam2::eval_include_stmt(ctx, child);
+        case bjam2::invoke_stmt_id:
+            return bjam2::eval_invoke_stmt(ctx, child);
+        case bjam2::set_stmt_id:
+            return bjam2::eval_set_stmt(ctx, child);
+        case bjam2::set_on_stmt_id:
+            return bjam2::eval_set_on_stmt(ctx, child);
+        case bjam2::return_stmt_id:
+            return bjam2::eval_return_stmt(ctx, child);
+        case bjam2::for_stmt_id:
+            return bjam2::eval_for_stmt(ctx, child);
+        case bjam2::switch_stmt_id:
+            return bjam2::eval_switch_stmt(ctx, child);
+        case bjam2::module_stmt_id:
+            return bjam2::eval_module_stmt(ctx, child);
+        case bjam2::class_stmt_id:
+            return bjam2::eval_class_stmt(ctx, child);
+        case bjam2::while_stmt_id:
+            return bjam2::eval_while_stmt(ctx, child);
+        case bjam2::if_stmt_id:
+            return bjam2::eval_if_stmt(ctx, child);
+        case bjam2::rule_stmt_id:
+            return bjam2::eval_rule_stmt(ctx, child);
+        case bjam2::on_stmt_id:
+            return bjam2::eval_on_stmt(ctx, child);
+        case bjam2::actions_stmt_id:
+            return bjam2::eval_actions_stmt(ctx, child);
     }
 }
 
@@ -962,15 +960,13 @@ string_list eval_local_set_stmt(context& ctx, const tree_node& tree)
 
     iter_t beg = tree.children.begin();
     iter_t end = tree.children.end();
-    assert(beg != end);
 
-    ++beg;
     string_list names;
-    if (beg->value.id() == bjam2::list_id)
+    if ((beg != end) && (beg->value.id() == bjam2::list_id))
         names = bjam2::eval_list(ctx, *(beg++));
 
     string_list values;
-    if (beg->value.id() == bjam2::assign_list_id)
+    if ((beg != end) && (beg->value.id() == bjam2::assign_list_id))
         values = bjam2::eval_assign_list(ctx, *(beg++));
 
     variable_table local;
@@ -982,12 +978,7 @@ string_list eval_local_set_stmt(context& ctx, const tree_node& tree)
     scoped_push_local_variables using_local(m.variables, local);
 
     if (beg != end)
-    {
-        if (beg->value.id() == bjam2::block_id)
-            return bjam2::eval_block(ctx, *beg);
-        else
-            return string_list();
-    }
+        return bjam2::eval_block(ctx, *beg);
     else
         return string_list();
 }

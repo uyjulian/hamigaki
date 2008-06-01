@@ -93,7 +93,7 @@ struct bjam_grammar : boost::spirit::grammar<bjam_grammar>
                 ;
 
             local_set_stmt
-                =   keyword_p("local")
+                =   no_node_d[keyword_p("local")]
                     >> list
                     >> !assign_list
                     >> no_node_d[keyword_p(";")]
