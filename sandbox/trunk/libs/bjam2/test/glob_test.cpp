@@ -23,7 +23,8 @@ void glob_test()
     bjam::string_list result;
     std::string expect;
 
-    fs::path work = fs::current_path<fs::path>();
+    bjam::file_status_cache cache;
+    cache.working_directory(fs::current_path<fs::path>().directory_string());
 
 #if defined(BOOST_WINDOWS)
     expect = hamigaki_root + "\\Jamfile.v2";
@@ -31,12 +32,11 @@ void glob_test()
     expect = hamigaki_root + "/Jamfile.v2";
 #endif
 
-    result = bjam::glob(work.directory_string(), hamigaki_root, "J*.v2");
+    result = bjam::glob(cache, hamigaki_root, "J*.v2");
     BOOST_CHECK(std::find(result.begin(),result.end(),expect) != result.end());
 
 
-    result = bjam::glob(
-        work.directory_string(), hamigaki_root, "j*.v2", true);
+    result = bjam::glob(cache, hamigaki_root, "j*.v2", true);
     BOOST_CHECK(std::find(result.begin(),result.end(),expect) != result.end());
 
 
@@ -45,7 +45,7 @@ void glob_test()
 #else
     expect = "././Jamfile.v2";
 #endif
-    result = bjam::glob(work.directory_string(), "./.", "J*.v2");
+    result = bjam::glob(cache, "./.", "J*.v2");
     BOOST_CHECK(std::find(result.begin(),result.end(),expect) != result.end());
 }
 
@@ -55,7 +55,8 @@ void glob_recursive_test()
     std::string pattern;
     std::string expect;
 
-    fs::path work = fs::current_path<fs::path>();
+    bjam::file_status_cache cache;
+    cache.working_directory(fs::current_path<fs::path>().directory_string());
 
     pattern = hamigaki_root + "/libs/*/build/J*.v2";
 #if defined(BOOST_WINDOWS)
@@ -63,7 +64,7 @@ void glob_recursive_test()
 #else
     expect = hamigaki_root + "/libs/bjam/build/Jamfile.v2";
 #endif
-    result = bjam::glob_recursive(work.directory_string(), pattern);
+    result = bjam::glob_recursive(cache, pattern);
     BOOST_CHECK(std::find(result.begin(),result.end(),expect) != result.end());
 
 
@@ -73,7 +74,7 @@ void glob_recursive_test()
 #else
     expect = "././Jamfile.v2";
 #endif
-    result = bjam::glob_recursive(work.directory_string(), pattern);
+    result = bjam::glob_recursive(cache, pattern);
     BOOST_CHECK(std::find(result.begin(),result.end(),expect) != result.end());
 }
 

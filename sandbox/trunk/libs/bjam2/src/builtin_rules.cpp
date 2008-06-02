@@ -141,10 +141,7 @@ HAMIGAKI_BJAM2_DECL string_list glob(context& ctx)
     for (std::size_t i = 0; i < dirs.size(); ++i)
     {
         for (std::size_t j = 0; j < patterns.size(); ++j)
-        {
-            result += bjam2::glob(
-                ctx.working_directory(), dirs[i], patterns[j], flag);
-        }
+            result += ctx.glob(dirs[i], patterns[j], flag);
     }
 
     return result;
@@ -160,10 +157,7 @@ HAMIGAKI_BJAM2_DECL string_list glob_recursive(context& ctx)
     string_list result;
 
     for (std::size_t i = 0; i < patterns.size(); ++i)
-    {
-        result += bjam2::glob_recursive(
-            ctx.working_directory(), patterns[i]);
-    }
+        result += ctx.glob_recursive(patterns[i]);
 
     return result;
 }
@@ -590,10 +584,7 @@ HAMIGAKI_BJAM2_DECL string_list check_if_file(context& ctx)
 
     const std::string& file = args[0][0];
 
-    fs::path ph(file);
-    fs::path work(ctx.working_directory());
-    ph = fs::complete(ph, work);
-    if (fs::is_regular(ph))
+    if (ctx.check_if_file(file))
         return string_list(std::string("true"));
     else
         return string_list();

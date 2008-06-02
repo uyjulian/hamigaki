@@ -11,6 +11,7 @@
 #define HAMIGAKI_BJAM2_BJAM_CONTEXT_HPP
 
 #include <hamigaki/bjam2/bjam_config.hpp>
+#include <hamigaki/bjam2/util/file_status_cache.hpp>
 #include <hamigaki/bjam2/util/frame.hpp>
 #include <hamigaki/bjam2/util/node_val_data.hpp>
 #include <hamigaki/bjam2/util/target.hpp>
@@ -119,7 +120,9 @@ public:
 
     void working_directory(const std::string& dir)
     {
-        working_directory_ = dir;
+        std::string tmp(dir);
+        cache_.working_directory(dir);
+        working_directory_.swap(tmp);
     }
 
     std::ostream& output_stream() const
@@ -139,6 +142,14 @@ public:
         return trees_.back();
     }
 
+    string_list glob(
+        const std::string& dir,
+        const std::string& pattern, bool case_insensitive = false);
+
+    string_list glob_recursive(const std::string& pattern);
+
+    bool check_if_file(const std::string& file);
+
 private:
     module root_module_;
     std::map<std::string,module> modules_;
@@ -148,6 +159,7 @@ private:
     std::string working_directory_;
     std::ostream* os_;
     std::list<tree_node> trees_;
+    file_status_cache cache_;
 };
 
 class scoped_change_module : private boost::noncopyable

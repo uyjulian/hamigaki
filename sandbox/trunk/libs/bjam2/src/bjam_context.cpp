@@ -9,6 +9,7 @@
 
 #define HAMIGAKI_BJAM2_SOURCE
 #include <hamigaki/bjam2/bjam_context.hpp>
+#include <hamigaki/bjam2/util/glob.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <iostream>
@@ -336,6 +337,23 @@ context::invoke_rule(const std::string& name, const list_of_list& args)
         return rule.body(*this);
     else
         return string_list();
+}
+
+string_list context::glob(
+    const std::string& dir, const std::string& pattern, bool case_insensitive)
+{
+    return hamigaki::bjam2::glob(cache_, dir, pattern, case_insensitive);
+}
+
+string_list
+context::glob_recursive(const std::string& pattern)
+{
+    return hamigaki::bjam2::glob_recursive(cache_, pattern);
+}
+
+bool context::check_if_file(const std::string& file)
+{
+    return fs::is_regular(cache_.status(file));
 }
 
 } } // End namespaces bjam2, hamigaki.

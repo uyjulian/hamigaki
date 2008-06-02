@@ -11,6 +11,7 @@
 #define HAMIGAKI_BJAM2_UTIL_GLOB_HPP
 
 #include <hamigaki/bjam2/bjam_config.hpp>
+#include <hamigaki/bjam2/util/file_status_cache.hpp>
 #include <hamigaki/bjam2/util/list.hpp>
 
 #ifdef BOOST_HAS_ABI_HEADERS
@@ -20,11 +21,11 @@
 namespace hamigaki { namespace bjam2 {
 
 HAMIGAKI_BJAM2_DECL string_list glob(
-    const std::string& work, const std::string& dir,
+    file_status_cache& cache, const std::string& dir,
     const std::string& pattern, bool case_insensitive = false);
 
 HAMIGAKI_BJAM2_DECL string_list
-glob_recursive(const std::string& work, const std::string& pattern);
+glob_recursive(file_status_cache& cache, const std::string& pattern);
 
 } } // End namespaces bjam2, hamigaki.
 

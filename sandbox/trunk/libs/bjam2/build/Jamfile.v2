@@ -40,6 +40,7 @@ SOURCES =
     bjam_interpreter
     builtin_rules
     class
+    file_status_cache
     glob
     instantiate_bjam_grammar
     native_rules
