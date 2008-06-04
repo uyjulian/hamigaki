@@ -67,6 +67,24 @@ struct tree_match_policy
     }
 
     template<class Iterator1T, class Iterator2T>
+    static boost::spirit::tree_match<IteratorT,NodeFactoryT,char>
+    create_match(
+        std::size_t length,
+        const char& val,
+        const Iterator1T& first,
+        const Iterator2T& last)
+    {
+        typedef typename common_tree_match_policy_::tree_policy_t tree_policy_t;
+
+        boost::spirit::tree_match<IteratorT,NodeFactoryT,char> tmp(
+            length,
+            tree_policy_t::create_node(length, first, last, true)
+        );
+        tmp.value(val);
+        return tmp;
+    }
+
+    template<class Iterator1T, class Iterator2T>
     static boost::spirit::tree_match<
         IteratorT,
         NodeFactoryT,
