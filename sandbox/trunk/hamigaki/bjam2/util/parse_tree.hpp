@@ -17,32 +17,27 @@ namespace hamigaki { namespace bjam2 {
 
 template<
     class IteratorT,
-    class NodeFactoryT = node_val_data_factory<boost::spirit::nil_t>,
-    class T = boost::spirit::nil_t
+    class NodeFactoryT = node_val_data_factory<boost::spirit::nil_t>
 >
 struct tree_match_policy
     : public boost::spirit::common_tree_match_policy<
-        tree_match_policy<IteratorT,NodeFactoryT,T>,
+        tree_match_policy<IteratorT,NodeFactoryT>,
         IteratorT,
         NodeFactoryT,
         boost::spirit::pt_tree_policy<
-            tree_match_policy<IteratorT,NodeFactoryT,T>,
-            NodeFactoryT,
-            T
-        >,
-        T
+            tree_match_policy<IteratorT,NodeFactoryT>,
+            NodeFactoryT
+        >
     >
 {
     typedef boost::spirit::common_tree_match_policy<
-        tree_match_policy<IteratorT,NodeFactoryT,T>,
+        tree_match_policy<IteratorT,NodeFactoryT>,
         IteratorT,
         NodeFactoryT,
         boost::spirit::pt_tree_policy<
-            tree_match_policy<IteratorT,NodeFactoryT,T>,
-            NodeFactoryT,
-            T
-        >,
-        T
+            tree_match_policy<IteratorT,NodeFactoryT>,
+            NodeFactoryT
+        >
     > common_tree_match_policy_;
 
     tree_match_policy()
