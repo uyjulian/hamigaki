@@ -456,6 +456,9 @@ string_list expand_variable(
         expand_variable_impl(values, prefix, names[i], table, args, is_last);
     }
 
+    if (name_end == s.size()-1)
+        return values;
+
     string_list rests =
         bjam2::expand_variable(s.substr(name_end+1), table, args);
 
