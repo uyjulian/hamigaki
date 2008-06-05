@@ -9,14 +9,13 @@
 
 #define HAMIGAKI_BJAM2_SOURCE
 #include <hamigaki/bjam2/util/glob.hpp>
+#include <hamigaki/bjam2/util/case_conv.hpp>
 #include <hamigaki/bjam2/util/pattern.hpp>
 #include <hamigaki/bjam2/util/path.hpp>
-#include <boost/algorithm/string/case_conv.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/version.hpp>
 
-namespace algo = boost::algorithm;
 namespace fs = boost::filesystem;
 
 namespace hamigaki { namespace bjam2 {
@@ -52,7 +51,7 @@ string_list glob_impl(
 
     std::string ptn = pattern;
     if (case_insensitive)
-        algo::to_lower(ptn);
+        bjam2::to_lower(ptn);
 
     for (; it != end; ++it)
     {
@@ -64,7 +63,7 @@ string_list glob_impl(
 
         std::string s = compo.base;
         if (case_insensitive)
-            algo::to_lower(s);
+            bjam2::to_lower(s);
 
         if (pattern_match(ptn, s))
             result += ph;

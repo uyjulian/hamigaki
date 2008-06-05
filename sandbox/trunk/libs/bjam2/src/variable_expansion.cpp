@@ -8,10 +8,11 @@
 // See http://hamigaki.sourceforge.jp/libs/bjam for library home page.
 
 #define HAMIGAKI_BJAM2_SOURCE
+#include <hamigaki/bjam2/util/variable_expansion.hpp>
 #include <hamigaki/bjam2/util/cartesian_product.hpp>
+#include <hamigaki/bjam2/util/case_conv.hpp>
 #include <hamigaki/bjam2/util/ctype.hpp>
 #include <hamigaki/bjam2/util/path.hpp>
-#include <hamigaki/bjam2/util/variable_expansion.hpp>
 #include <hamigaki/integer/auto_max.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/replace.hpp>
@@ -261,9 +262,9 @@ std::string apply_modifiers(const std::string& value, const modifiers& mods)
 #endif
 
     if ((mods.flags & modifiers::upper) != 0)
-        boost::algorithm::to_upper(result, std::locale::classic());
+        bjam2::to_upper(result);
     else if ((mods.flags & modifiers::lower) != 0)
-        boost::algorithm::to_lower(result, std::locale::classic());
+        bjam2::to_lower(result);
 
     if ((mods.flags & modifiers::slash) != 0)
         boost::algorithm::replace_all(result, "\\", "/");
