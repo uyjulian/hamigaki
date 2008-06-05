@@ -10,8 +10,8 @@
 #ifndef HAMIGAKI_BJAM2_UTIL_SKIP_PARSER_HPP
 #define HAMIGAKI_BJAM2_UTIL_SKIP_PARSER_HPP
 
+#include <hamigaki/bjam2/util/ctype.hpp>
 #include <boost/spirit/core.hpp>
-#include <cctype>
 
 namespace hamigaki { namespace bjam2 {
 
@@ -41,7 +41,7 @@ struct skip_parser : public boost::spirit::parser<skip_parser>
         if (!scan.at_end())
         {
             char c = *scan;
-            if (std::isspace(c))
+            if (is_space(c))
             {
                 ++scan.first;
                 ++len;

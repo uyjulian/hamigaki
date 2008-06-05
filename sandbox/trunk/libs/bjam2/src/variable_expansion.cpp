@@ -9,6 +9,7 @@
 
 #define HAMIGAKI_BJAM2_SOURCE
 #include <hamigaki/bjam2/util/cartesian_product.hpp>
+#include <hamigaki/bjam2/util/ctype.hpp>
 #include <hamigaki/bjam2/util/path.hpp>
 #include <hamigaki/bjam2/util/variable_expansion.hpp>
 #include <hamigaki/integer/auto_max.hpp>
@@ -80,7 +81,7 @@ int parse_int(const std::string& s, std::size_t& pos)
     }
 
     int n = 0;
-    while (std::isdigit(s[pos], std::locale::classic()))
+    while (is_digit(s[pos]))
         n = n*10 + (s[pos++] - '0');
 
     if (minus)
@@ -92,7 +93,7 @@ int parse_int(const std::string& s, std::size_t& pos)
 std::pair<int,int> parse_index_range(const std::string& s)
 {
     std::size_t pos = 0;
-    if ((s[pos] != '-') && !std::isdigit(s[pos], std::locale::classic()))
+    if ((s[pos] != '-') && !is_digit(s[pos]))
         return std::pair<int,int>(0,0);
 
     int lower = parse_int(s, pos);
@@ -106,7 +107,7 @@ std::pair<int,int> parse_index_range(const std::string& s)
     if (++pos == s.size())
         return std::pair<int,int>(lower,-1);
 
-    if ((s[pos] != '-') && !std::isdigit(s[pos], std::locale::classic()))
+    if ((s[pos] != '-') && !is_digit(s[pos]))
         return std::pair<int,int>(lower,0);
 
     int upper = parse_int(s, pos);
@@ -197,40 +198,52 @@ void parse_modifiers(modifiers& mods, const std::string& s)
     for (std::size_t i = 0, size = s.size(); i < size;)
     {
         char c = s[i++];
-        if (c == 'L')
-            mods.flags |= modifiers::lower;
-        else if (c == 'U')
-            mods.flags |= modifiers::upper;
-        else if (c == 'P')
-            mods.flags |= modifiers::parent;
-        else if (c == 'E')
+        switch (c)
         {
-            mods.flags |= modifiers::empty;
-            mods.empty_value = parse_modifier_string(s, i);
+            case 'L':
+                mods.flags |= modifiers::lower;
+                break;
+            case 'U':
+                mods.flags |= modifiers::upper;
+                break;
+            case 'P':
+                mods.flags |= modifiers::parent;
+                break;
+            case 'E':
+                mods.flags |= modifiers::empty;
+                mods.empty_value = parse_modifier_string(s, i);
+                break;
+            case 'J':
+                mods.flags |= modifiers::join;
+                mods.join_value = parse_modifier_string(s, i);
+                break;
+            case 'G':
+                mods.grist_value = parse_modifier_filename(mods_ptr, s, i);
+                break;
+            case 'R':
+                mods.root_value = parse_modifier_filename(mods_ptr, s, i);
+                break;
+            case 'D':
+                mods.dir_value = parse_modifier_filename(mods_ptr, s, i);
+                break;
+            case 'B':
+                mods.base_value = parse_modifier_filename(mods_ptr, s, i);
+                break;
+            case 'S':
+                mods.suffix_value = parse_modifier_filename(mods_ptr, s, i);
+                break;
+            case 'M':
+                mods.member_value = parse_modifier_filename(mods_ptr, s, i);
+                break;
+            case 'T':
+                mods.flags |= modifiers::slash;
+                break;
+            case 'W':
+                mods.flags |= modifiers::windows;
+                break;
+            default:
+                return;
         }
-        else if (c == 'J')
-        {
-            mods.flags |= modifiers::join;
-            mods.join_value = parse_modifier_string(s, i);
-        }
-        else if (c == 'G')
-            mods.grist_value = parse_modifier_filename(mods_ptr, s, i);
-        else if (c == 'R')
-            mods.root_value = parse_modifier_filename(mods_ptr, s, i);
-        else if (c == 'D')
-            mods.dir_value = parse_modifier_filename(mods_ptr, s, i);
-        else if (c == 'B')
-            mods.base_value = parse_modifier_filename(mods_ptr, s, i);
-        else if (c == 'S')
-            mods.suffix_value = parse_modifier_filename(mods_ptr, s, i);
-        else if (c == 'M')
-            mods.member_value = parse_modifier_filename(mods_ptr, s, i);
-        else if (c == 'T')
-            mods.flags |= modifiers::slash;
-        else if (c == 'W')
-            mods.flags |= modifiers::windows;
-        else
-            break;
     }
 }
 
@@ -446,7 +459,7 @@ string_list expand_variable(
         boost::make_transform_iterator<convert_to_magic>(s.begin()+name_end)
     );
 
-    string_list names = bjam2::expand_variable(name, table, args);
+    const string_list& names = bjam2::expand_variable(name, table, args);
 
     const std::string prefix(s, 0, dol);
     string_list values;

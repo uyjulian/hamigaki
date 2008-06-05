@@ -10,10 +10,10 @@
 #ifndef HAMIGAKI_BJAM2_UTIL_IMPL_ARGUMENT_PARSER_IPP
 #define HAMIGAKI_BJAM2_UTIL_IMPL_ARGUMENT_PARSER_IPP
 
+#include <hamigaki/bjam2/util/ctype.hpp>
 #include <hamigaki/bjam2/util/keywords.hpp>
 #include <hamigaki/bjam2/util/punctuators.hpp>
 #include <boost/spirit/core.hpp>
-#include <cctype>
 #include <string>
 
 namespace hamigaki { namespace bjam2 { namespace impl {
@@ -53,7 +53,7 @@ public:
         while (!scan.at_end())
         {
             char c = *scan;
-            if (!quoting && std::isspace(c))
+            if (!quoting && is_space(c))
                 break;
             ++scan.first;
             ++len;
@@ -82,7 +82,7 @@ public:
 
         if (may_keyword)
         {
-            if (std::islower(buf[0]))
+            if (is_lower(buf[0]))
             {
                 if (!punct_only_ && bjam2::is_keyword(buf))
                     return scan.no_match();

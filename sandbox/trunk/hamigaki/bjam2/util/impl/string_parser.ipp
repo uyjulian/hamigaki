@@ -13,7 +13,6 @@
 #include <hamigaki/bjam/util/keywords.hpp>
 #include <hamigaki/bjam/util/punctuators.hpp>
 #include <boost/spirit/core.hpp>
-#include <cctype>
 #include <string>
 
 namespace hamigaki { namespace bjam2 { namespace impl {
