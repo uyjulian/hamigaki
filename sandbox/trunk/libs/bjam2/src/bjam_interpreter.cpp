@@ -33,6 +33,8 @@ namespace
 typedef tree_parse_info<> parse_info_t;
 typedef tree_node::const_tree_iterator iter_t;
 
+const string_list true_value("1");
+
 parse_info_t parse_bjam(const char* s, std::size_t n)
 {
     return bjam2::bjam_grammar_gen<const char*>::parse_bjam_grammar(s, s+n);
@@ -61,7 +63,7 @@ void set_true(string_list& lhs, const string_list& rhs)
     if (rhs)
         lhs = rhs;
     else
-        lhs = string_list("1");
+        lhs = true_value;
 }
 
 list_of_list
@@ -253,7 +255,7 @@ string_list eval_prim_expr(context& ctx, const tree_node& tree)
         if (beg != end)
         {
             if (values.empty())
-                return string_list("1");
+                return true_value;
             else if (beg == end)
                 return string_list();
 
@@ -291,7 +293,7 @@ string_list eval_not_expr(context& ctx, const tree_node& tree)
         if (values)
             return string_list();
         else
-            return string_list("1");
+            return true_value;
     }
     else
         return values;
