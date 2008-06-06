@@ -20,6 +20,7 @@ rule exec ( target-name : sources * : requirements * : default-build * )
 {
     # localize testing.make-test for "--dump-test"
     import project ;
+    import regex ;
     import targets ;
     IMPORT testing : make-test : $(__name__) : make-test : LOCALIZE ;
 
