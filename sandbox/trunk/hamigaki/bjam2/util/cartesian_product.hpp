@@ -59,6 +59,16 @@ inline void append_production(
     );
 }
 
+inline void append_production(
+    string_list& out, const string_list& lhs, const std::string& rhs)
+{
+    std::transform(
+        lhs.begin(), lhs.end(),
+        std::back_inserter(out),
+        boost::bind2nd(std::plus<std::string>(), rhs)
+    );
+}
+
 } } // End namespaces bjam2, hamigaki.
 
 #endif // HAMIGAKI_BJAM2_UTIL_CARTESIAN_PRODUCT_HPP

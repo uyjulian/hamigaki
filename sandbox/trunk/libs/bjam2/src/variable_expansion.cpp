@@ -470,6 +470,9 @@ string_list expand_variable(
         expand_variable_impl(values, prefix, names[i], table, args, is_last);
     }
 
+    if (values.empty())
+        return string_list();
+
     if (name_end == s.size()-1)
         return values;
 
@@ -477,7 +480,15 @@ string_list expand_variable(
         bjam2::expand_variable(s.substr(name_end+1), table, args);
 
     string_list result;
-    bjam2::append_production(result, values, rests);
+    if (rests.size() == 1)
+    {
+        if (values.size() == 1)
+            result.push_back(values[0] + rests[0]);
+        else
+            bjam2::append_production(result, values, rests[0]);
+    }
+    else if (!rests.empty())
+        bjam2::append_production(result, values, rests);
     return result;
 }
 
