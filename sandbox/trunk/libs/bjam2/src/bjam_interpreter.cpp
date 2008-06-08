@@ -509,7 +509,7 @@ string_list eval_set_on_stmt(context& ctx, const tree_node& tree)
     if (beg != end)
         values = bjam2::eval_list(ctx, *beg);
 
-    for (std::size_t i = 0; i < targets.size(); ++i)
+    for (std::size_t i = 0, size = targets.size(); i < size; ++i)
     {
         variable_table& table = ctx.get_target(targets[i]).variables;
         bjam2::set_variables(table, mode, names, values);
@@ -586,7 +586,7 @@ string_list eval_for_stmt(context& ctx, const tree_node& tree)
     frame& f = ctx.current_frame();
     variable_table& table = f.current_module().variables;
     scoped_swap_values guard(table, var, local);
-    for (std::size_t i = 0; i < values.size(); ++i)
+    for (std::size_t i = 0, size = values.size(); i < size; ++i)
     {
         table.set_values(var, string_list(values[i]));
         if (beg != end)
@@ -972,7 +972,7 @@ string_list eval_local_set_stmt(context& ctx, const tree_node& tree)
         values = bjam2::eval_assign_list(ctx, *(beg++));
 
     variable_table local;
-    for (std::size_t i = 0; i < names.size(); ++i)
+    for (std::size_t i = 0, size = names.size(); i < size; ++i)
         local.set_values(names[i], values);
 
     frame& f = ctx.current_frame();

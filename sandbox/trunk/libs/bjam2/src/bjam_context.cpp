@@ -328,7 +328,7 @@ context::invoke_rule(const std::string& name, const list_of_list& args)
 
     variable_table local;
     const list_of_list& params = rule.parameters;
-    for (std::size_t i = 0; i < params.size(); ++i)
+    for (std::size_t i = 0, size = params.size(); i < size; ++i)
         set_rule_argument(local, params[i], args[i]);
 
     scoped_push_local_variables using_local(cur_module.variables, local);

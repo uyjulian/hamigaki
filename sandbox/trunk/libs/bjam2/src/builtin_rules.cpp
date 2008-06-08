@@ -59,7 +59,7 @@ inline void set_target_flags(context& ctx, unsigned flag)
     const list_of_list& args = f.arguments();
     const string_list& targets = args[0];
 
-    for (std::size_t i = 0; i < targets.size(); ++i)
+    for (std::size_t i = 0, size = targets.size(); i < size; ++i)
         ctx.get_target(targets[i]).flags |= flag;
 }
 
@@ -138,9 +138,9 @@ HAMIGAKI_BJAM2_DECL string_list glob(context& ctx)
 
     string_list result;
 
-    for (std::size_t i = 0; i < dirs.size(); ++i)
+    for (std::size_t i = 0, size = dirs.size(); i < size; ++i)
     {
-        for (std::size_t j = 0; j < patterns.size(); ++j)
+        for (std::size_t j = 0, size = patterns.size(); j < size; ++j)
             result += ctx.glob(dirs[i], patterns[j], flag);
     }
 
@@ -156,7 +156,7 @@ HAMIGAKI_BJAM2_DECL string_list glob_recursive(context& ctx)
 
     string_list result;
 
-    for (std::size_t i = 0; i < patterns.size(); ++i)
+    for (std::size_t i = 0, size = patterns.size(); i < size; ++i)
         result += ctx.glob_recursive(patterns[i]);
 
     return result;
@@ -212,13 +212,13 @@ HAMIGAKI_BJAM2_DECL string_list match(context& ctx)
 
     string_list result;
 
-    for (std::size_t j = 0; j < regexps.size(); ++j)
+    for (std::size_t j = 0, rsize = regexps.size(); j < rsize; ++j)
     {
         const std::string& pattern = bjam2::convert_regex(regexps[j]);
 
         // Note: bjam's regex is not the same as "egrep" and "ECMAScript"
         boost::regex rex(pattern);
-        for (std::size_t i = 0; i < list.size(); ++i)
+        for (std::size_t i = 0, lsize = list.size(); i < lsize; ++i)
         {
             boost::smatch what;
             if (regex_search(list[i], what, rex))

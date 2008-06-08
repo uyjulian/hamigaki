@@ -38,7 +38,7 @@ HAMIGAKI_BJAM2_DECL string_list transform(context& ctx)
     else
     {
         indices.reserve(arg3.size());
-        for (std::size_t i = 0; i < arg3.size(); ++i)
+        for (std::size_t i = 0, size = arg3.size(); i < size; ++i)
             indices.push_back(std::atoi(arg3[i].c_str()));
     }
 
@@ -46,12 +46,12 @@ HAMIGAKI_BJAM2_DECL string_list transform(context& ctx)
 
     // Note: bjam's regex is not the same as "egrep" and "ECMAScript"
     boost::regex rex(pattern);
-    for (std::size_t i = 0; i < list.size(); ++i)
+    for (std::size_t i = 0, lsize = list.size(); i < lsize; ++i)
     {
         boost::smatch what;
         if (regex_search(list[i], what, rex))
         {
-            for (std::size_t j = 0; j < indices.size(); ++j)
+            for (std::size_t j = 0, isize = indices.size(); j < isize; ++j)
             {
                 const std::string& s = what[indices[j]].str();
                 if (!s.empty())

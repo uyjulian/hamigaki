@@ -464,7 +464,7 @@ string_list expand_variable(
 
     const std::string prefix(s, 0, dol);
     string_list values;
-    for (std::size_t i = 0; i < names.size(); ++i)
+    for (std::size_t i = 0, size = names.size(); i < size; ++i)
     {
         bool is_last = i == (names.size() - 1);
         expand_variable_impl(values, prefix, names[i], table, args, is_last);

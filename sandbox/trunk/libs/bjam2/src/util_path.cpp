@@ -244,7 +244,7 @@ HAMIGAKI_BJAM2_DECL std::string normalize_path(const string_list& parts)
     tokenizer tokens(cat, sep);
 
     std::vector<std::string> tmp;
-    for (tokenizer::iterator i = tokens.begin(); i != tokens.end(); ++i)
+    for (tokenizer::iterator i=tokens.begin(), end=tokens.end(); i != end; ++i)
     {
         const std::string& part = *i;
         if (part == ".")

@@ -70,7 +70,7 @@ HAMIGAKI_BJAM2_DECL string_list order(context& ctx)
     {
         const string_list& values = vt.get_values(objects[i]);
 
-        for (std::size_t j = 0; j < values.size(); ++j)
+        for (std::size_t j = 0, vsize = values.size(); j < vsize; ++j)
         {
             int index = name_to_index(objects, values[j]);
             if (index != -1)
@@ -89,7 +89,8 @@ HAMIGAKI_BJAM2_DECL string_list order(context& ctx)
     >::type id = boost::get(boost::vertex_index, g);
 
     string_list result;
-    for (buffer_type::reverse_iterator i = tmp.rbegin(); i != tmp.rend(); ++i)
+    typedef buffer_type::reverse_iterator iter_type;
+    for (iter_type i = tmp.rbegin(), end = tmp.rend(); i != end; ++i)
         result += objects[id[*i]];
 
     return result;
