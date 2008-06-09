@@ -10,9 +10,9 @@
 #define HAMIGAKI_BJAM2_SOURCE
 #define NOMINMAX
 #include <hamigaki/bjam2/util/win32/registry.hpp>
+#include <hamigaki/dec_format.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/scoped_array.hpp>
-#include <locale>
 #include <sstream>
 #include <windows.h>
 
@@ -135,10 +135,8 @@ public:
             if (size != 4)
                 return string_list();
 
-            std::ostringstream os;
-            os.imbue(std::locale::classic());
-            os << *reinterpret_cast< ::DWORD*>(buf.get());
-            return string_list(os.str());
+            DWORD value = *reinterpret_cast<DWORD*>(buf.get());
+            return string_list(hamigaki::to_dec<char>(value));
         }
         else if (type == REG_SZ)
         {

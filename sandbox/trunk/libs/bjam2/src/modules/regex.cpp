@@ -45,7 +45,7 @@ HAMIGAKI_BJAM2_DECL string_list transform(context& ctx)
     string_list result;
 
     // Note: bjam's regex is not the same as "egrep" and "ECMAScript"
-    boost::regex rex(pattern);
+    boost::basic_regex<char,boost::c_regex_traits<char> > rex(pattern);
     for (std::size_t i = 0, lsize = list.size(); i < lsize; ++i)
     {
         boost::smatch what;

@@ -10,11 +10,10 @@
 #define HAMIGAKI_BJAM2_SOURCE
 #include <hamigaki/bjam2/bjam_context.hpp>
 #include <hamigaki/bjam2/util/glob.hpp>
+#include <hamigaki/dec_format.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 #include <iostream>
-#include <locale>
-#include <sstream>
 
 namespace fs = boost::filesystem;
 
@@ -206,12 +205,7 @@ string_list context::back_trace(std::size_t level, std::size_t skip) const
 
         result.push_back(f.filename());
 
-        {
-            std::ostringstream os;
-            os.imbue(std::locale::classic());
-            os << f.line();
-            result.push_back(os.str());
-        }
+        result.push_back(hamigaki::to_dec<char>(f.line()));
 
         if (f.module_name())
             result.push_back(*f.module_name() + ".");

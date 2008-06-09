@@ -18,6 +18,7 @@
 #include <hamigaki/bjam2/bjam_exceptions.hpp>
 #include <hamigaki/iterator/first_iterator.hpp>
 #include <hamigaki/iterator/ostream_iterator.hpp>
+#include <hamigaki/dec_format.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
@@ -26,7 +27,6 @@
 #include <boost/next_prior.hpp>
 #include <boost/regex.hpp>
 #include <cstdlib>
-#include <locale>
 #include <sstream>
 
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
@@ -217,7 +217,7 @@ HAMIGAKI_BJAM2_DECL string_list match(context& ctx)
         const std::string& pattern = bjam2::convert_regex(regexps[j]);
 
         // Note: bjam's regex is not the same as "egrep" and "ECMAScript"
-        boost::regex rex(pattern);
+        boost::basic_regex<char,boost::c_regex_traits<char> > rex(pattern);
         for (std::size_t i = 0, lsize = list.size(); i < lsize; ++i)
         {
             boost::smatch what;
@@ -294,7 +294,7 @@ HAMIGAKI_BJAM2_DECL string_list subst(context& ctx)
     const std::string& pattern = bjam2::convert_regex(arg1[1]);
 
     // Note: bjam's regex is not the same as "egrep" and "ECMAScript"
-    boost::regex rex(pattern);
+    boost::basic_regex<char,boost::c_regex_traits<char> > rex(pattern);
 
     string_list result;
 
@@ -522,10 +522,7 @@ HAMIGAKI_BJAM2_DECL string_list calc(context& ctx)
     else
         return string_list();
 
-    std::ostringstream os;
-    os.imbue(std::locale::classic());
-    os << value;
-    return string_list(os.str());
+    return string_list(hamigaki::to_dec<char>(value));
 }
 
 HAMIGAKI_BJAM2_DECL string_list native_rule(context& ctx)

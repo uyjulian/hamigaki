@@ -10,9 +10,9 @@
 #define HAMIGAKI_BJAM2_SOURCE
 #include <hamigaki/bjam2/util/shell.hpp>
 #include <hamigaki/process/shell.hpp>
+#include <hamigaki/dec_format.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
 #include <boost/iostreams/copy.hpp>
-#include <locale>
 #include <sstream>
 
 namespace hamigaki { namespace bjam2 {
@@ -42,12 +42,7 @@ shell(const std::string& cmd, bool need_status, bool need_capture)
     if (need_status)
     {
         if (stat.get_type() == process::status::exited)
-        {
-            std::ostringstream os;
-            os.imbue(std::locale::classic());
-            os << stat.code();
-            result += os.str();
-        }
+            result += hamigaki::to_dec<char>(stat.code());
         else
             result += std::string("-1");
     }
