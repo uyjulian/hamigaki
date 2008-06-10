@@ -150,6 +150,11 @@ struct modifiers
             base_value || suffix_value || member_value ||
             ((flags & parent) != 0);
     }
+
+    bool has_any() const
+    {
+        return (flags != 0) || has_path_components();
+    }
 };
 
 std::string parse_modifier_string(const std::string& s, std::size_t& pos)
@@ -372,6 +377,13 @@ void expand_variable_impl(
                 tmp += apply_modifiers(values[i], mods);
             }
             result.push_back(tmp);
+        }
+        else if (
+            (start == 0) && (last == values.size()) && prefix.empty() &&
+            result.empty() && !mods.has_any()
+        )
+        {
+            result = values;
         }
         else
         {
