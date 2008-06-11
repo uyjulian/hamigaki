@@ -57,9 +57,11 @@ public:
         table_.clear();
     }
 
-    void swap_values(const std::string& name, string_list& values)
+    string_list& swap_values(const std::string& name, string_list& values)
     {
-        table_[name].swap(values);
+        string_list& result = table_[name];
+        result.swap(values);
+        return result;
     }
 
     std::pair<iterator,iterator> entries() const
@@ -123,13 +125,13 @@ public:
         : table_(table), name_(name), is_local_(is_local)
     {
         if (is_local_)
-            table_.swap_values(name_, old_values_);
+            ptr_ = &table_.swap_values(name_, old_values_);
     }
 
     ~scoped_swap_values()
     {
         if (is_local_)
-            table_.swap_values(name_, old_values_);
+            ptr_->swap(old_values_);
     }
 
 private:
@@ -137,6 +139,7 @@ private:
     std::string name_;
     bool is_local_;
     string_list old_values_;
+    string_list* ptr_;
 };
 
 class scoped_push_local_variables : boost::noncopyable
