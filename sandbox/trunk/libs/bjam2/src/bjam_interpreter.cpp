@@ -441,6 +441,9 @@ string_list eval_include_stmt(context& ctx, const tree_node& tree)
     scoped_change_filename guard(ctx.current_frame(), filename);
     parse_info_t info = parse_bjam(str.c_str(), str.size());
 
+    if (!info.full)
+        throw std::runtime_error("syntax error");
+
     bjam2::eval_run(ctx, ctx.push_parse_tree(info.trees.front()));
 
     return string_list();
