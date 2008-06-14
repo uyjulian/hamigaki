@@ -13,4 +13,5 @@
   <title>インストール</title>
   <xi:include href="boost.xml"/>
   <xi:include href="hamigaki.xml"/>
+  <xi:include href="documents.xml"/>
 </chapter>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki Library Document Source
+
+  Copyright Takeshi Mouri 2008.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+-->
+<section id="installation.documents">
+  <title>ドキュメントのビルド</title>
+  <para>SourceForge.jpから<ulink url="http://sourceforge.jp/projects/hamigaki/files/?release_id=30253">リリースパッケージ</ulink>をダウンロードした場合、パッケージにはHTML形式のドキュメントが付属しているが、HTML形式以外のドキュメントが必要な場合やソースコードをSVNリポジトリから取得した場合は、ドキュメントのビルドが必要となる。</para>
+  <section id="installation.documents.tools">
+    <title>ツール</title>
+    <para>ドキュメントのビルドには以下のツールが利用される。</para>
+    <itemizedlist>
+      <listitem><ulink url="http://www.boost.org/doc/tools/jam/index.html">Boost.Jam</ulink></listitem>
+      <listitem><ulink url="http://www.boost.org/doc/tools/build/index.html">Boost.Build</ulink></listitem>
+      <listitem><ulink url="http://xmlsoft.org/XSLT/">xsltproc</ulink> (Windows版バイナリは<ulink url="http://www.meta-comm.com/engineering/boost/xsltproc-win32.zip">こちら</ulink>)</listitem>
+      <listitem><ulink url="http://docbook.sourceforge.net/">docbook-xsl</ulink></listitem>
+      <listitem><ulink url="http://www.oasis-open.org/docbook/xml/4.2/index.1.shtml">docbook-dtd</ulink></listitem>
+    </itemizedlist>
+  </section>
+  <section id="installation.documents.settings">
+    <title>設定</title>
+    <para>以下は、MS Windows環境において、xsltprocを<filename class="directory">C:\Boost\bin</filename>に、docbook-xslを<filename class="directory">C:\Boost\share\docbook-xsl</filename>に、docbook-dtdを<filename class="directory">C:\Boost\share\docbook-xml</filename>に配置し、Boostパッケージの<filename class="directory">tools/boostbook</filename>ディレクトリを<filename class="directory">C:\Boost\share\boostbook</filename>にコピーした場合のuser-config.jamの設定例である。</para>
+    <informalexample><programlisting><![CDATA[import xsltproc-config ;
+import boostbook-config ;
+]]></programlisting></informalexample>
+  </section>
+  <section id="installation.documents.build">
+    <title>ビルド</title>
+    <para>実際にビルドするには、Hamigakiライブラリのdocディレクトリでbjamを実行する。bjamターゲットは次の通りである。</para>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <thead>
+          <row>
+            <entry>ターゲット名</entry>
+            <entry>意味</entry>
+          </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>html</entry>
+            <entry>分割HTML</entry>
+          </row>
+          <row>
+            <entry>onehtml</entry>
+            <entry>単一HTML</entry>
+          </row>
+          <row>
+            <entry>man</entry>
+            <entry>UNIX man ページ</entry>
+          </row>
+          <row>
+            <entry>pdf</entry>
+            <entry>PDF</entry>
+          </row>
+          <row>
+            <entry>ps</entry>
+            <entry>Postscript</entry>
+          </row>
+          <row>
+            <entry>docbook</entry>
+            <entry>DocBook XML</entry>
+          </row>
+          <row>
+            <entry>fo</entry>
+            <entry>XSL Formatting Objects</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>ターゲットを指定しない場合はhtmlが選択される。</para>
+  </section>
+</section>
