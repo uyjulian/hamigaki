@@ -20,12 +20,75 @@
       <listitem><ulink url="http://www.boost.org/doc/tools/build/index.html">Boost.Build</ulink></listitem>
       <listitem><ulink url="http://xmlsoft.org/XSLT/">xsltproc</ulink> (Windows版バイナリは<ulink url="http://www.meta-comm.com/engineering/boost/xsltproc-win32.zip">こちら</ulink>)</listitem>
       <listitem><ulink url="http://docbook.sourceforge.net/">docbook-xsl</ulink></listitem>
-      <listitem><ulink url="http://www.oasis-open.org/docbook/xml/4.2/index.1.shtml">docbook-dtd</ulink></listitem>
+      <listitem><ulink url="http://www.oasis-open.org/docbook/xml/4.2/index.1.shtml">docbook-dtd</ulink> (バージョン4.2)</listitem>
     </itemizedlist>
   </section>
   <section id="installation.documents.settings">
     <title>設定</title>
-    <para>以下は、MS Windows環境において、xsltprocを<filename class="directory">C:\Boost\bin</filename>に、docbook-xslを<filename class="directory">C:\Boost\share\docbook-xsl</filename>に、docbook-dtdを<filename class="directory">C:\Boost\share\docbook-xml</filename>に配置し、Boostパッケージの<filename class="directory">tools/boostbook</filename>ディレクトリを<filename class="directory">C:\Boost\share\boostbook</filename>にコピーした場合のuser-config.jamの設定例である。</para>
+    <para>ドキュメントのビルドには、bjamツールセットxsltproc及びboostbookの設定が必要である。</para>
+    <section id="installation.documents.settings.xsltproc">
+      <title>xsltproc</title>
+      <programlisting><emphasis role="bold">class</emphasis><![CDATA[ xsltproc {
+    ]]><emphasis role="bold">rule</emphasis><![CDATA[ init ( xsltproc ? )
+}]]></programlisting>
+      <informaltable frame="all">
+        <tgroup cols="3">
+          <thead>
+            <row>
+              <entry>引数</entry>
+              <entry>意味</entry>
+              <entry>既定値</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>xsltproc</entry>
+              <entry>xsltprocの実行ファイルパス</entry>
+              <entry>$(XSLTPROC)</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </section>
+    <section id="installation.documents.settings.boostbook">
+      <title>boostbook</title>
+      <programlisting><emphasis role="bold">class</emphasis><![CDATA[ boostbook {
+    ]]><emphasis role="bold">rule</emphasis><![CDATA[ init ( docbook-xsl-dir ? : docbook-dtd-dir ? : boostbook-dir ? )
+}]]></programlisting>
+      <informaltable frame="all">
+        <tgroup cols="3">
+          <thead>
+            <row>
+              <entry>引数</entry>
+              <entry>意味</entry>
+              <entry>既定値</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>docbook-xsl-dir</entry>
+              <entry>DocBook XSLのインストール先ディレクトリ</entry>
+              <entry>$(DOCBOOK_XSL_DIR)</entry>
+            </row>
+            <row>
+              <entry>docbook-dtd-dir</entry>
+              <entry>DocBook DTDのインストール先ディレクトリ</entry>
+              <entry>$(DOCBOOK_DTD_DIR)</entry>
+            </row>
+            <row>
+              <entry>boostbook-dir</entry>
+              <entry>BoostBookのインストール先ディレクトリ</entry>
+              <entry>$(BOOST_ROOT)/tools/boostbook</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </section>
+    <para>xsltprocを<filename class="directory">C:\Boost\bin</filename>に、docbook-xslを<filename class="directory">C:\Boost\share\docbook-xsl</filename>に、docbook-dtdを<filename class="directory">C:\Boost\share\docbook-xml</filename>に配置し、Boostパッケージの<filename class="directory">tools/boostbook</filename>ディレクトリを<filename class="directory">C:\Boost\share\boostbook</filename>にコピーした場合は、user-config.jamに次のコードを追加する。</para>
+    <informalexample><programlisting><![CDATA[import toolset : using ;
+using xsltproc : C:/Boost/bin/xsltproc\.exe ;
+using boostbook : C:/Boost/share/docbook-xsl : C:/Boost/share/docbook-dtd : C:/Boost/share/boostbook ;]]></programlisting></informalexample>
+    <para>xsltproc-configモジュール及びboostbook-configモジュールを利用すれば次のように記述することもできる。</para>
     <informalexample><programlisting><![CDATA[import xsltproc-config ;
 import boostbook-config ;
 ]]></programlisting></informalexample>
