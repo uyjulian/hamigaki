@@ -21,14 +21,15 @@
       <listitem><ulink url="http://xmlsoft.org/XSLT/">xsltproc</ulink> (Windows版バイナリは<ulink url="http://www.meta-comm.com/engineering/boost/xsltproc-win32.zip">こちら</ulink>)</listitem>
       <listitem><ulink url="http://docbook.sourceforge.net/">docbook-xsl</ulink></listitem>
       <listitem><ulink url="http://www.oasis-open.org/docbook/xml/4.2/index.1.shtml">docbook-dtd</ulink> (バージョン4.2)</listitem>
+      <listitem><ulink url="http://xml.apache.org/fop/download.html">Apache FOP</ulink> (バージョン0.20.5、PDF/Postscriptを生成する場合のみ)</listitem>
     </itemizedlist>
   </section>
   <section id="installation.documents.settings">
     <title>設定</title>
-    <para>ドキュメントのビルドには、bjamツールセットxsltproc及びboostbookの設定が必要である。</para>
+    <para>ドキュメントのビルドには、bjamツールセットxsltproc及びboostbookの設定が必要である。また、PDFやPostscriptを生成する場合はfopの設定が必要である。</para>
     <section id="installation.documents.settings.xsltproc">
       <title>xsltproc</title>
-      <programlisting><emphasis role="bold">class</emphasis><![CDATA[ xsltproc {
+      <programlisting><emphasis role="bold">module</emphasis><![CDATA[ xsltproc {
     ]]><emphasis role="bold">rule</emphasis><![CDATA[ init ( xsltproc ? )
 }]]></programlisting>
       <informaltable frame="all">
@@ -52,7 +53,7 @@
     </section>
     <section id="installation.documents.settings.boostbook">
       <title>boostbook</title>
-      <programlisting><emphasis role="bold">class</emphasis><![CDATA[ boostbook {
+      <programlisting><emphasis role="bold">module</emphasis><![CDATA[ boostbook {
     ]]><emphasis role="bold">rule</emphasis><![CDATA[ init ( docbook-xsl-dir ? : docbook-dtd-dir ? : boostbook-dir ? )
 }]]></programlisting>
       <informaltable frame="all">
@@ -79,6 +80,35 @@
               <entry>boostbook-dir</entry>
               <entry>BoostBookのインストール先ディレクトリ</entry>
               <entry>$(BOOST_ROOT)/tools/boostbook</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </section>
+    <section id="installation.documents.settings.fop">
+      <title>fop</title>
+      <programlisting><emphasis role="bold">module</emphasis><![CDATA[ fop {
+    ]]><emphasis role="bold">rule</emphasis><![CDATA[ init ( fop-command ? : java-home ? )
+}]]></programlisting>
+      <informaltable frame="all">
+        <tgroup cols="3">
+          <thead>
+            <row>
+              <entry>引数</entry>
+              <entry>意味</entry>
+              <entry>既定値</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>fop-command</entry>
+              <entry>FOPの実行ファイルパス</entry>
+              <entry>$(FOP_DIR)/fop</entry>
+            </row>
+            <row>
+              <entry>java-home</entry>
+              <entry>Javaのインストール先ディレクトリ</entry>
+              <entry></entry>
             </row>
           </tbody>
         </tgroup>
