@@ -481,7 +481,7 @@ assign_mode::values eval_assign(context& ctx, const tree_node& tree)
     assert(tree.value.id() == bjam2::assign_id);
     assert((tree.children.size() == 1) || (tree.children.size() == 2));
 
-    switch (*tree.children[0].value.begin())
+    switch (*tree.children.front().value.begin())
     {
         default:
             assert(0);
