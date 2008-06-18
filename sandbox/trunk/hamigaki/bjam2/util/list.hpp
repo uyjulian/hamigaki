@@ -10,7 +10,6 @@
 #ifndef HAMIGAKI_BJAM2_UTIL_LIST_HPP
 #define HAMIGAKI_BJAM2_UTIL_LIST_HPP
 
-#include <hamigaki/iterator/optional_iterator.hpp>
 #include <boost/assert.hpp>
 #include <boost/operators.hpp>
 #include <boost/optional.hpp>
@@ -40,18 +39,16 @@ private:
 public:
     typedef impl_type::reference reference;
     typedef impl_type::const_reference const_reference;
-    typedef optional_iterator<impl_type::iterator> iterator;
-    typedef optional_iterator<impl_type::const_iterator> const_iterator;
+    typedef impl_type::pointer iterator;
+    typedef impl_type::const_pointer const_iterator;
     typedef impl_type::size_type size_type;
     typedef impl_type::difference_type difference_type;
     typedef impl_type::value_type value_type;
     typedef impl_type::allocator_type allocator_type;
     typedef impl_type::pointer pointer;
     typedef impl_type::const_pointer const_pointer;
-    typedef optional_iterator<impl_type::reverse_iterator> reverse_iterator;
-    typedef optional_iterator<
-        impl_type::const_reverse_iterator
-    > const_reverse_iterator;
+    typedef std::reverse_iterator<iterator> reverse_iterator;
+    typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
     string_list()
     {
@@ -74,7 +71,7 @@ public:
     iterator begin()
     {
         if (impl_type* p = pimpl_.get())
-            return p->begin();
+            return &p->front();
         else
             return iterator();
     }
@@ -82,7 +79,7 @@ public:
     const_iterator begin() const
     {
         if (const impl_type* p = pimpl_.get())
-            return p->begin();
+            return &p->front();
         else
             return const_iterator();
     }
@@ -90,7 +87,7 @@ public:
     iterator end()
     {
         if (impl_type* p = pimpl_.get())
-            return p->end();
+            return &p->front() + p->size();
         else
             return iterator();
     }
@@ -98,7 +95,7 @@ public:
     const_iterator end() const
     {
         if (const impl_type* p = pimpl_.get())
-            return p->end();
+            return &p->front() + p->size();
         else
             return const_iterator();
     }
@@ -106,7 +103,7 @@ public:
     reverse_iterator rbegin()
     {
         if (impl_type* p = pimpl_.get())
-            return p->rbegin();
+            return reverse_iterator(&p->front() + p->size());
         else
             return reverse_iterator();
     }
@@ -114,7 +111,7 @@ public:
     const_reverse_iterator rbegin() const
     {
         if (const impl_type* p = pimpl_.get())
-            return p->rbegin();
+            return const_reverse_iterator(&p->front() + p->size());
         else
             return const_reverse_iterator();
     }
@@ -122,7 +119,7 @@ public:
     reverse_iterator rend()
     {
         if (impl_type* p = pimpl_.get())
-            return p->rend();
+            return reverse_iterator(&p->front());
         else
             return reverse_iterator();
     }
@@ -130,7 +127,7 @@ public:
     const_reverse_iterator rend() const
     {
         if (const impl_type* p = pimpl_.get())
-            return p->rend();
+            return const_reverse_iterator(&p->front());
         else
             return const_reverse_iterator();
     }
@@ -176,11 +173,15 @@ public:
             pimpl_.reset(new impl_type(first, last));
         }
         else if (pimpl_.unique())
-            pimpl_->insert(position.base(), first, last);
+        {
+            std::ptrdiff_t dist = position - &pimpl_->front();
+            typename impl_type::iterator pos = pimpl_->begin() + dist;
+            pimpl_->insert(pos, first, last);
+        }
         else
         {
             boost::shared_ptr<impl_type> tmp(new impl_type(*pimpl_));
-            std::ptrdiff_t dist = position.base() - pimpl_->begin();
+            std::ptrdiff_t dist = position - &pimpl_->front();
             typename impl_type::iterator pos = tmp->begin() + dist;
             tmp->insert(pos, first, last);
             pimpl_.swap(tmp);
