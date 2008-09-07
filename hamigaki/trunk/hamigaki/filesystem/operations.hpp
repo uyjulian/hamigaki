@@ -514,9 +514,11 @@ remove_all(const Path& p)
             n += hamigaki::filesystem::remove_all HAMIGAKI_FS_SPEC (*it);
     }
 
-    if (remove(p))
+    if (exists(s))
+    {
+        remove(p);
         ++n;
-
+    }
     return n;
 }
 

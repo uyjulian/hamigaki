@@ -12,6 +12,7 @@
 
 #include <boost/config.hpp>
 
+#include <hamigaki/archivers/detail/path.hpp>
 #include <hamigaki/archivers/detail/tar_checksum.hpp>
 #include <hamigaki/archivers/tar/headers.hpp>
 #include <hamigaki/integer/auto_min.hpp>
@@ -109,7 +110,7 @@ inline void write_oct(char (&buf)[Size], T x)
 inline std::string make_ex_header_name(const boost::filesystem::path& ph)
 {
     std::string buf;
-    if (ph.has_branch_path())
+    if (detail::has_parent_path(ph))
         buf += ph.branch_path().string();
     else
         buf += '.';

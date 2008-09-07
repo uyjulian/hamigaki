@@ -28,6 +28,16 @@ namespace io_ex = hamigaki::iostreams;
 namespace fs = boost::filesystem;
 namespace io = boost::iostreams;
 
+template<class Path>
+inline bool has_parent_path(const Path& ph)
+{
+#if BOOST_VERSION < 103600
+    return ph.has_branch_path();
+#else
+    return ph.has_parent_path();
+#endif
+}
+
 inline fs_ex::timestamp make_timestamp(boost::uint64_t ft)
 {
     return fs_ex::timestamp::from_windows_file_time(ft);
@@ -55,7 +65,7 @@ int main(int argc, char* argv[])
 
             if (!head.link_path.empty())
             {
-                if (head.path.has_branch_path())
+                if (::has_parent_path(head.path))
                     fs::create_directories(head.path.branch_path());
 
                 fs_ex::create_symlink(head.link_path, head.path);
@@ -64,7 +74,7 @@ int main(int argc, char* argv[])
                 fs::create_directories(head.path);
             else
             {
-                if (head.path.has_branch_path())
+                if (::has_parent_path(head.path))
                     fs::create_directories(head.path.branch_path());
 
                 io::copy(

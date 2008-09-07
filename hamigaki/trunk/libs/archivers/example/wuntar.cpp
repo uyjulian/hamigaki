@@ -29,6 +29,16 @@ namespace io_ex = hamigaki::iostreams;
 namespace fs = boost::filesystem;
 namespace io = boost::iostreams;
 
+template<class Path>
+inline bool has_parent_path(const Path& ph)
+{
+#if BOOST_VERSION < 103600
+    return ph.has_branch_path();
+#else
+    return ph.has_parent_path();
+#endif
+}
+
 int main(int argc, char* argv[])
 {
     try
@@ -51,14 +61,14 @@ int main(int argc, char* argv[])
 
             if (head.type_flag == ar::tar::type_flag::link)
             {
-                if (head.path.has_branch_path())
+                if (::has_parent_path(head.path))
                     fs::create_directories(head.path.branch_path());
 
                 fs_ex::create_hard_link(head.link_path, head.path);
             }
             else if (head.type_flag == ar::tar::type_flag::symlink)
             {
-                if (head.path.has_branch_path())
+                if (::has_parent_path(head.path))
                     fs::create_directories(head.path.branch_path());
 
                 fs_ex::create_symlink(head.link_path, head.path);
@@ -74,7 +84,7 @@ int main(int argc, char* argv[])
             // Note: All unknown types are treated as a regular file.
             else
             {
-                if (head.path.has_branch_path())
+                if (::has_parent_path(head.path))
                     fs::create_directories(head.path.branch_path());
 
                 fs::ofstream os(head.path, std::ios_base::binary);

@@ -11,6 +11,7 @@
 #define HAMIGAKI_ARCHIVERS_DETAIL_PATH_HPP
 
 #include <boost/filesystem/path.hpp>
+#include <boost/version.hpp>
 
 namespace hamigaki { namespace archivers { namespace detail {
 
@@ -21,6 +22,16 @@ inline Path remove_root_name(const Path& ph)
         return ph.root_directory() / ph.relative_path();
     else
         return ph;
+}
+
+template<class Path>
+inline bool has_parent_path(const Path& ph)
+{
+#if BOOST_VERSION < 103600
+    return ph.has_branch_path();
+#else
+    return ph.has_parent_path();
+#endif
 }
 
 } } } // End namespaces detail, archivers, hamigaki.

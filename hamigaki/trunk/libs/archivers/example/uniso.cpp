@@ -17,6 +17,7 @@
 #include <hamigaki/archivers/iso_file.hpp>
 #include <boost/filesystem/convenience.hpp>
 #include <boost/iostreams/copy.hpp>
+#include <boost/version.hpp>
 #include <clocale>
 #include <exception>
 #include <functional>
@@ -26,6 +27,16 @@ namespace ar = hamigaki::archivers;
 namespace io_ex = hamigaki::iostreams;
 namespace fs = boost::filesystem;
 namespace io = boost::iostreams;
+
+template<class Path>
+inline bool has_parent_path(const Path& ph)
+{
+#if BOOST_VERSION < 103600
+    return ph.has_branch_path();
+#else
+    return ph.has_parent_path();
+#endif
+}
 
 int main(int argc, char* argv[])
 {
@@ -73,7 +84,7 @@ int main(int argc, char* argv[])
                 fs::create_directories(head.path);
             else if (head.is_regular())
             {
-                if (head.path.has_branch_path())
+                if (::has_parent_path(head.path))
                     fs::create_directories(head.path.branch_path());
 
                 io::copy(
