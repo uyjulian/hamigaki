@@ -291,7 +291,7 @@ private:
         }
 
         std::copy(beg, ph.end(),
-            std::ostream_iterator<std::wstring,wchar_t>(os, L"\uFFFF"));
+            std::ostream_iterator<std::wstring,wchar_t>(os, L"\xFFFF"));
         return os.str();
     }
 #endif
