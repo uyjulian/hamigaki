@@ -1,6 +1,6 @@
 // utc_time.hpp: boost::xtime wrapper for UTC
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -11,7 +11,13 @@
 #define HAMIGAKI_THREAD_UTC_TIME_HPP
 
 #include <boost/thread/xtime.hpp>
-#include <boost/strong_typedef.hpp>
+#include <boost/version.hpp>
+
+#if BOOST_VERSION < 103700
+    #include <boost/strong_typedef.hpp>
+#else
+    #include <boost/serialization/strong_typedef.hpp>
+#endif
 
 namespace hamigaki { namespace thread {
 
