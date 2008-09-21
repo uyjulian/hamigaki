@@ -65,6 +65,7 @@ local tests =
     [ run tar_gnu_test.cpp : ]
     [ run tar_pax_test.cpp : ]
     [ run tar_pax_wide_test.cpp : ]
+    [ run tar_replace_test.cpp : ]
     [ run tar_ustar_test.cpp : ]
 ;
 
