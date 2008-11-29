@@ -9,36 +9,24 @@
 <td><img border="0" src="../hamigaki.png" width="96" height="72"></td>
 <td>
 <h1>Compiler Status: Win32</h1>
-<b>Run Date:</b> 13:24:50 UTC, Sunday 14 September 2008
+<b>Run Date:</b> 03:42:24 UTC, Saturday 29 November 2008
 </td>
 </table>
 <br>
-<h2><a name="config-config_info-gcc-mingw-3.4.5">config - config_info - gcc-mingw-3.4.5</a></h2>
-<h3>Run output:</h3><pre>
-GNU C++ version 3.4.5 (mingw-vista special r3)
-Detected Platform: Win32
-Boost version 103700
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="config-config_info-msvc-8.0">config - config_info - msvc-8.0</a></h2>
-<h3>Run output:</h3><pre>
-Microsoft Visual C++ version 8.0
-Detected Platform: Win32
-Boost version 103700
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="config-config_info-msvc-9.0express">config - config_info - msvc-9.0express</a></h2>
-<h3>Run output:</h3><pre>
-Microsoft Visual C++ version 9.0
-Detected Platform: Win32
-Boost version 103700
- 
-EXIT STATUS: 0 
-</pre>
 <h2><a name="archivers-iso9660_1999_test-gcc-mingw-3.4.5">archivers - iso9660_1999_test - gcc-mingw-3.4.5</a></h2>
 <h3>Compiler output:</h3><pre>
+In file included from C:/Boost/src/svn/boost/date_time/microsec_time_clock.hpp:23,
+                 from C:/Boost/src/svn/boost/date_time/posix_time/posix_time_types.hpp:11,
+                 from ../hamigaki/archivers/iso/date_time.hpp:16,
+                 from ../hamigaki/archivers/detail/iso_directory_record.hpp:13,
+                 from ../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:13,
+                 from ../hamigaki/archivers/detail/iso_file_sink_impl.hpp:13,
+                 from ../hamigaki/archivers/iso_file.hpp:13,
+                 from ..\libs\archivers\test\iso9660_1999_test.cpp:10:
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `uint64_t boost::date_time::winapi::file_time_to_microseconds(const FileTimeT&amp;)':
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:100: warning: left shift count &gt;= width of type
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `TimeT boost::date_time::time_from_ftime(const FileTimeT&amp;)':
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:163: error: `Jan' was not declared in this scope
 ../hamigaki/archivers/detail/iso_file_reader.hpp: In function `void hamigaki::archivers::detail::parse_iso_file_version(hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Path = boost::filesystem::wpath]':
 ../hamigaki/archivers/detail/iso_file_reader.hpp:110:   instantiated from `bool hamigaki::archivers::detail::iso_file_reader&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
 ../hamigaki/archivers/detail/raw_iso_file_source_impl.hpp:125:   instantiated from `bool hamigaki::archivers::detail::basic_raw_iso_file_source_impl&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
@@ -79,16 +67,23 @@ C:/Boost/src/svn/boost/filesystem/path.hpp:901:   instantiated from `String boos
 C:/Boost/src/svn/boost/filesystem/path.hpp:230:   instantiated from `String boost::filesystem::basic_path&lt;String, Traits&gt;::leaf() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
 ../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:127:   instantiated from `void hamigaki::archivers::detail::basic_raw_iso_file_sink_impl&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iostreams::file_sink, Path = boost::filesystem::wpath]'
 ../hamigaki/archivers/detail/iso_file_sink_impl.hpp:74:   instantiated from `void hamigaki::archivers::detail::basic_iso_file_sink_impl&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iostreams::file_sink, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:155:   instantiated from `void hamigaki::archivers::basic_iso_file_sink&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iostreams::file_sink, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:324:   instantiated from here
-C:/Boost/src/svn/boost/filesystem/path.hpp:732: warning: comparison between signed and unsigned integer expressions
-C:/Boost/src/svn/boost/filesystem/path.hpp:901:   instantiated from `String boost::filesystem::basic_path&lt;String, Traits&gt;::filename() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
-C:/Boost/src/svn/boost/filesystem/path.hpp:230:   instantiated from `String boost::filesystem::basic_path&lt;String, Traits&gt;::leaf() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
-../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:127:   instantiated from `void hamigaki::archivers::detail::basic_raw_iso_file_sink_impl&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iost...
+../hamigaki/archivers/iso_file.hpp:155:   instan...
    (remainder deleted because of excessive size)
 </pre>
 <h2><a name="archivers-iso9660_lv1_test-gcc-mingw-3.4.5">archivers - iso9660_lv1_test - gcc-mingw-3.4.5</a></h2>
 <h3>Compiler output:</h3><pre>
+In file included from C:/Boost/src/svn/boost/date_time/microsec_time_clock.hpp:23,
+                 from C:/Boost/src/svn/boost/date_time/posix_time/posix_time_types.hpp:11,
+                 from ../hamigaki/archivers/iso/date_time.hpp:16,
+                 from ../hamigaki/archivers/detail/iso_directory_record.hpp:13,
+                 from ../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:13,
+                 from ../hamigaki/archivers/detail/iso_file_sink_impl.hpp:13,
+                 from ../hamigaki/archivers/iso_file.hpp:13,
+                 from ..\libs\archivers\test\iso9660_lv1_test.cpp:10:
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `uint64_t boost::date_time::winapi::file_time_to_microseconds(const FileTimeT&amp;)':
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:100: warning: left shift count &gt;= width of type
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `TimeT boost::date_time::time_from_ftime(const FileTimeT&amp;)':
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:163: error: `Jan' was not declared in this scope
 ../hamigaki/archivers/detail/iso_file_reader.hpp: In function `void hamigaki::archivers::detail::parse_iso_file_version(hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Path = boost::filesystem::wpath]':
 ../hamigaki/archivers/detail/iso_file_reader.hpp:110:   instantiated from `bool hamigaki::archivers::detail::iso_file_reader&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
 ../hamigaki/archivers/detail/raw_iso_file_source_impl.hpp:125:   instantiated from `bool hamigaki::archivers::detail::basic_raw_iso_file_source_impl&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
@@ -129,16 +124,23 @@ C:/Boost/src/svn/boost/filesystem/path.hpp:901:   instantiated from `String boos
 C:/Boost/src/svn/boost/filesystem/path.hpp:230:   instantiated from `String boost::filesystem::basic_path&lt;String, Traits&gt;::leaf() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
 ../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:127:   instantiated from `void hamigaki::archivers::detail::basic_raw_iso_file_sink_impl&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iostreams::file_sink, Path = boost::filesystem::wpath]'
 ../hamigaki/archivers/detail/iso_file_sink_impl.hpp:74:   instantiated from `void hamigaki::archivers::detail::basic_iso_file_sink_impl&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iostreams::file_sink, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:155:   instantiated from `void hamigaki::archivers::basic_iso_file_sink&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iostreams::file_sink, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:324:   instantiated from here
-C:/Boost/src/svn/boost/filesystem/path.hpp:732: warning: comparison between signed and unsigned integer expressions
-C:/Boost/src/svn/boost/filesystem/path.hpp:901:   instantiated from `String boost::filesystem::basic_path&lt;String, Traits&gt;::filename() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
-C:/Boost/src/svn/boost/filesystem/path.hpp:230:   instantiated from `String boost::filesystem::basic_path&lt;String, Traits&gt;::leaf() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
-../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:127:   instantiated from `void hamigaki::archivers::detail::basic_raw_iso_file_sink_impl&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iost...
+../hamigaki/archivers/iso_file.hpp:155:   instant...
    (remainder deleted because of excessive size)
 </pre>
 <h2><a name="archivers-iso9660_lv2_test-gcc-mingw-3.4.5">archivers - iso9660_lv2_test - gcc-mingw-3.4.5</a></h2>
 <h3>Compiler output:</h3><pre>
+In file included from C:/Boost/src/svn/boost/date_time/microsec_time_clock.hpp:23,
+                 from C:/Boost/src/svn/boost/date_time/posix_time/posix_time_types.hpp:11,
+                 from ../hamigaki/archivers/iso/date_time.hpp:16,
+                 from ../hamigaki/archivers/detail/iso_directory_record.hpp:13,
+                 from ../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:13,
+                 from ../hamigaki/archivers/detail/iso_file_sink_impl.hpp:13,
+                 from ../hamigaki/archivers/iso_file.hpp:13,
+                 from ..\libs\archivers\test\iso9660_lv2_test.cpp:10:
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `uint64_t boost::date_time::winapi::file_time_to_microseconds(const FileTimeT&amp;)':
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:100: warning: left shift count &gt;= width of type
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `TimeT boost::date_time::time_from_ftime(const FileTimeT&amp;)':
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:163: error: `Jan' was not declared in this scope
 ../hamigaki/archivers/detail/iso_file_reader.hpp: In function `void hamigaki::archivers::detail::parse_iso_file_version(hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Path = boost::filesystem::wpath]':
 ../hamigaki/archivers/detail/iso_file_reader.hpp:110:   instantiated from `bool hamigaki::archivers::detail::iso_file_reader&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
 ../hamigaki/archivers/detail/raw_iso_file_source_impl.hpp:125:   instantiated from `bool hamigaki::archivers::detail::basic_raw_iso_file_source_impl&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
@@ -179,16 +181,23 @@ C:/Boost/src/svn/boost/filesystem/path.hpp:901:   instantiated from `String boos
 C:/Boost/src/svn/boost/filesystem/path.hpp:230:   instantiated from `String boost::filesystem::basic_path&lt;String, Traits&gt;::leaf() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
 ../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:127:   instantiated from `void hamigaki::archivers::detail::basic_raw_iso_file_sink_impl&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iostreams::file_sink, Path = boost::filesystem::wpath]'
 ../hamigaki/archivers/detail/iso_file_sink_impl.hpp:74:   instantiated from `void hamigaki::archivers::detail::basic_iso_file_sink_impl&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iostreams::file_sink, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:155:   instantiated from `void hamigaki::archivers::basic_iso_file_sink&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iostreams::file_sink, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:324:   instantiated from here
-C:/Boost/src/svn/boost/filesystem/path.hpp:732: warning: comparison between signed and unsigned integer expressions
-C:/Boost/src/svn/boost/filesystem/path.hpp:901:   instantiated from `String boost::filesystem::basic_path&lt;String, Traits&gt;::filename() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
-C:/Boost/src/svn/boost/filesystem/path.hpp:230:   instantiated from `String boost::filesystem::basic_path&lt;String, Traits&gt;::leaf() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
-../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:127:   instantiated from `void hamigaki::archivers::detail::basic_raw_iso_file_sink_impl&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iost...
+../hamigaki/archivers/iso_file.hpp:155:   instant...
    (remainder deleted because of excessive size)
 </pre>
 <h2><a name="archivers-iso9660_lv3_test-gcc-mingw-3.4.5">archivers - iso9660_lv3_test - gcc-mingw-3.4.5</a></h2>
 <h3>Compiler output:</h3><pre>
+In file included from C:/Boost/src/svn/boost/date_time/microsec_time_clock.hpp:23,
+                 from C:/Boost/src/svn/boost/date_time/posix_time/posix_time_types.hpp:11,
+                 from ../hamigaki/archivers/iso/date_time.hpp:16,
+                 from ../hamigaki/archivers/detail/iso_directory_record.hpp:13,
+                 from ../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:13,
+                 from ../hamigaki/archivers/detail/iso_file_sink_impl.hpp:13,
+                 from ../hamigaki/archivers/iso_file.hpp:13,
+                 from ..\libs\archivers\test\iso9660_lv3_test.cpp:10:
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `uint64_t boost::date_time::winapi::file_time_to_microseconds(const FileTimeT&amp;)':
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:100: warning: left shift count &gt;= width of type
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `TimeT boost::date_time::time_from_ftime(const FileTimeT&amp;)':
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:163: error: `Jan' was not declared in this scope
 ../hamigaki/archivers/detail/iso_file_reader.hpp: In function `void hamigaki::archivers::detail::parse_iso_file_version(hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Path = boost::filesystem::wpath]':
 ../hamigaki/archivers/detail/iso_file_reader.hpp:110:   instantiated from `bool hamigaki::archivers::detail::iso_file_reader&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
 ../hamigaki/archivers/detail/raw_iso_file_source_impl.hpp:125:   instantiated from `bool hamigaki::archivers::detail::basic_raw_iso_file_source_impl&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
@@ -229,16 +238,37 @@ C:/Boost/src/svn/boost/filesystem/path.hpp:901:   instantiated from `String boos
 C:/Boost/src/svn/boost/filesystem/path.hpp:230:   instantiated from `String boost::filesystem::basic_path&lt;String, Traits&gt;::leaf() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
 ../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:127:   instantiated from `void hamigaki::archivers::detail::basic_raw_iso_file_sink_impl&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iostreams::file_sink, Path = boost::filesystem::wpath]'
 ../hamigaki/archivers/detail/iso_file_sink_impl.hpp:74:   instantiated from `void hamigaki::archivers::detail::basic_iso_file_sink_impl&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iostreams::file_sink, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:155:   instantiated from `void hamigaki::archivers::basic_iso_file_sink&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iostreams::file_sink, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:324:   instantiated from here
-C:/Boost/src/svn/boost/filesystem/path.hpp:732: warning: comparison between signed and unsigned integer expressions
-C:/Boost/src/svn/boost/filesystem/path.hpp:901:   instantiated from `String boost::filesystem::basic_path&lt;String, Traits&gt;::filename() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
-C:/Boost/src/svn/boost/filesystem/path.hpp:230:   instantiated from `String boost::filesystem::basic_path&lt;String, Traits&gt;::leaf() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
-../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:127:   instantiated from `void hamigaki::archivers::detail::basic_raw_iso_file_sink_impl&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iost...
+../hamigaki/archivers/iso_file.hpp:155:   instant...
    (remainder deleted because of excessive size)
+</pre>
+<h2><a name="archivers-iso_date_time_test-gcc-mingw-3.4.5">archivers - iso_date_time_test - gcc-mingw-3.4.5</a></h2>
+<h3>Compiler output:</h3><pre>
+In file included from C:/Boost/src/svn/boost/date_time/microsec_time_clock.hpp:23,
+                 from C:/Boost/src/svn/boost/date_time/posix_time/posix_time_types.hpp:11,
+                 from ../hamigaki/archivers/iso/date_time.hpp:16,
+                 from ..\libs\archivers\test\iso_date_time_test.cpp:10:
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `uint64_t boost::date_time::winapi::file_time_to_microseconds(const FileTimeT&amp;)':
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:100: warning: left shift count &gt;= width of type
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `TimeT boost::date_time::time_from_ftime(const FileTimeT&amp;)':
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:163: error: `Jan' was not declared in this scope
+
+    "C:/MinGW/bin/g++.exe"  -ftemplate-depth-128 -IC:\msys\1.0\home\hamigaki\libstdc++\include\c++\3.4.5 -O0 -fno-inline -Wall -g  -DBOOST_ALL_NO_LIB=1 -DBOOST_FILESYSTEM_DYN_LINK=1 -DBOOST_SYSTEM_DYN_LINK=1 -DBOOST_TEST_NO_AUTO_LINK=1 -DHAMIGAKI_IOSTREAMS_DYN_LINK=1  -I".." -I"C:\Boost\src\svn" -c -o "..\bin.v2\libs\archivers\test\iso_date_time_test.test\gcc-mingw-3.4.5\debug\iso_date_time_test.o" "..\libs\archivers\test\iso_date_time_test.cpp"
+
 </pre>
 <h2><a name="archivers-joliet_test-gcc-mingw-3.4.5">archivers - joliet_test - gcc-mingw-3.4.5</a></h2>
 <h3>Compiler output:</h3><pre>
+In file included from C:/Boost/src/svn/boost/date_time/microsec_time_clock.hpp:23,
+                 from C:/Boost/src/svn/boost/date_time/posix_time/posix_time_types.hpp:11,
+                 from ../hamigaki/archivers/iso/date_time.hpp:16,
+                 from ../hamigaki/archivers/detail/iso_directory_record.hpp:13,
+                 from ../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:13,
+                 from ../hamigaki/archivers/detail/iso_file_sink_impl.hpp:13,
+                 from ../hamigaki/archivers/iso_file.hpp:13,
+                 from ..\libs\archivers\test\joliet_test.cpp:10:
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `uint64_t boost::date_time::winapi::file_time_to_microseconds(const FileTimeT&amp;)':
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:100: warning: left shift count &gt;= width of type
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `TimeT boost::date_time::time_from_ftime(const FileTimeT&amp;)':
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:163: error: `Jan' was not declared in this scope
 ../hamigaki/archivers/detail/iso_file_reader.hpp: In function `void hamigaki::archivers::detail::parse_iso_file_version(hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Path = boost::filesystem::wpath]':
 ../hamigaki/archivers/detail/iso_file_reader.hpp:110:   instantiated from `bool hamigaki::archivers::detail::iso_file_reader&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
 ../hamigaki/archivers/detail/raw_iso_file_source_impl.hpp:125:   instantiated from `bool hamigaki::archivers::detail::basic_raw_iso_file_source_impl&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
@@ -279,16 +309,23 @@ C:/Boost/src/svn/boost/filesystem/path.hpp:901:   instantiated from `String boos
 C:/Boost/src/svn/boost/filesystem/path.hpp:230:   instantiated from `String boost::filesystem::basic_path&lt;String, Traits&gt;::leaf() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
 ../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:127:   instantiated from `void hamigaki::archivers::detail::basic_raw_iso_file_sink_impl&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iostreams::file_sink, Path = boost::filesystem::wpath]'
 ../hamigaki/archivers/detail/iso_file_sink_impl.hpp:74:   instantiated from `void hamigaki::archivers::detail::basic_iso_file_sink_impl&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iostreams::file_sink, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:155:   instantiated from `void hamigaki::archivers::basic_iso_file_sink&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iostreams::file_sink, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:324:   instantiated from here
-C:/Boost/src/svn/boost/filesystem/path.hpp:732: warning: comparison between signed and unsigned integer expressions
-C:/Boost/src/svn/boost/filesystem/path.hpp:901:   instantiated from `String boost::filesystem::basic_path&lt;String, Traits&gt;::filename() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
-C:/Boost/src/svn/boost/filesystem/path.hpp:230:   instantiated from `String boost::filesystem::basic_path&lt;String, Traits&gt;::leaf() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
-../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:127:   instantiated from `void hamigaki::archivers::detail::basic_raw_iso_file_sink_impl&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iost...
+../hamigaki/archivers/iso_file.hpp:155:   instantiated...
    (remainder deleted because of excessive size)
 </pre>
 <h2><a name="archivers-joliet_wide_test-gcc-mingw-3.4.5">archivers - joliet_wide_test - gcc-mingw-3.4.5</a></h2>
 <h3>Compiler output:</h3><pre>
+In file included from C:/Boost/src/svn/boost/date_time/microsec_time_clock.hpp:23,
+                 from C:/Boost/src/svn/boost/date_time/posix_time/posix_time_types.hpp:11,
+                 from ../hamigaki/archivers/iso/date_time.hpp:16,
+                 from ../hamigaki/archivers/detail/iso_directory_record.hpp:13,
+                 from ../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:13,
+                 from ../hamigaki/archivers/detail/iso_file_sink_impl.hpp:13,
+                 from ../hamigaki/archivers/iso_file.hpp:13,
+                 from ..\libs\archivers\test\joliet_wide_test.cpp:10:
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `uint64_t boost::date_time::winapi::file_time_to_microseconds(const FileTimeT&amp;)':
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:100: warning: left shift count &gt;= width of type
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `TimeT boost::date_time::time_from_ftime(const FileTimeT&amp;)':
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:163: error: `Jan' was not declared in this scope
 C:/Boost/src/svn/boost/filesystem/path.hpp: In member function `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const typename String::value_type*) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]':
 C:/Boost/src/svn/boost/filesystem/path.hpp:179:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator=(const typename String::value_type*) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
 ..\libs\archivers\test\joliet_wide_test.cpp:88:   instantiated from here
@@ -333,12 +370,7 @@ C:/Boost/src/svn/boost/filesystem/path.hpp:339:   instantiated from `bool boost:
 C:/Boost/src/svn/boost/filesystem/path.hpp:382:   instantiated from `bool boost::filesystem::operator==(const boost::filesystem::basic_path&lt;String, Traits&gt;&amp;, const boost::filesystem::basic_path&lt;String, Traits&gt;&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
 ..\libs\archivers\test\joliet_wide_test.cpp:39:   instantiated from here
 C:/Boost/src/svn/boost/filesystem/path.hpp:782: warning: comparison between signed and unsigned integer expressions
-C:/Boost/src/svn/boost/filesystem/path.hpp:1318:   instantiated from `typename boost::filesystem::basic_path&lt;String, Traits&gt;::iterator boost::filesystem::basic_path&lt;String, Traits&gt;::begin() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
-C:/Boost/src/svn/boost/filesystem/path.hpp:339:   instantiated from `bool boost::filesystem::operator&lt;(const boost::filesystem::basic_path&lt;String, Traits&gt;&amp;, const boost::filesystem::basic_path&lt;String, Traits&gt;&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
-C:/Boost/src/svn/boost/filesystem/path.hpp:382:   instantiated from `bool boost::filesystem::operator==(const boost::filesystem::basic_path&lt;String, Traits&gt;&amp;, const boost::filesystem::basic_path&lt;String, Traits&gt;&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
-..\libs\archivers\test\joliet_wide_test.cpp:39:   instantiated from here
-C:/Boost/src/svn/boost/filesystem/path.hpp:782: warning: comparison between signed and unsigned integer expressions
-C:/Boost/src/svn/boost/filesystem/path.hpp:1318:   instantiated from `typename boost::file...
+C:/Boost/src/svn/boost/filesystem/path.hpp:1318:   instan...
    (remainder deleted because of excessive size)
 </pre>
 <h2><a name="archivers-lzh_h0_test-gcc-mingw-3.4.5">archivers - lzh_h0_test - gcc-mingw-3.4.5</a></h2>
@@ -638,6 +670,18 @@ C:/Boost/src/svn/boost/filesystem/path.hpp: In function `bool boost::filesystem:
 </pre>
 <h2><a name="archivers-rock_ridge_test-gcc-mingw-3.4.5">archivers - rock_ridge_test - gcc-mingw-3.4.5</a></h2>
 <h3>Compiler output:</h3><pre>
+In file included from C:/Boost/src/svn/boost/date_time/microsec_time_clock.hpp:23,
+                 from C:/Boost/src/svn/boost/date_time/posix_time/posix_time_types.hpp:11,
+                 from ../hamigaki/archivers/iso/date_time.hpp:16,
+                 from ../hamigaki/archivers/detail/iso_directory_record.hpp:13,
+                 from ../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:13,
+                 from ../hamigaki/archivers/detail/iso_file_sink_impl.hpp:13,
+                 from ../hamigaki/archivers/iso_file.hpp:13,
+                 from ..\libs\archivers\test\rock_ridge_test.cpp:10:
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `uint64_t boost::date_time::winapi::file_time_to_microseconds(const FileTimeT&amp;)':
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:100: warning: left shift count &gt;= width of type
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `TimeT boost::date_time::time_from_ftime(const FileTimeT&amp;)':
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:163: error: `Jan' was not declared in this scope
 ../hamigaki/archivers/detail/iso_file_reader.hpp: In function `void hamigaki::archivers::detail::parse_iso_file_version(hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Path = boost::filesystem::wpath]':
 ../hamigaki/archivers/detail/iso_file_reader.hpp:110:   instantiated from `bool hamigaki::archivers::detail::iso_file_reader&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
 ../hamigaki/archivers/detail/raw_iso_file_source_impl.hpp:125:   instantiated from `bool hamigaki::archivers::detail::basic_raw_iso_file_source_impl&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
@@ -678,12 +722,7 @@ C:/Boost/src/svn/boost/filesystem/path.hpp:901:   instantiated from `String boos
 C:/Boost/src/svn/boost/filesystem/path.hpp:230:   instantiated from `String boost::filesystem::basic_path&lt;String, Traits&gt;::leaf() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
 ../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:127:   instantiated from `void hamigaki::archivers::detail::basic_raw_iso_file_sink_impl&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iostreams::file_sink, Path = boost::filesystem::wpath]'
 ../hamigaki/archivers/detail/iso_file_sink_impl.hpp:74:   instantiated from `void hamigaki::archivers::detail::basic_iso_file_sink_impl&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iostreams::file_sink, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:155:   instantiated from `void hamigaki::archivers::basic_iso_file_sink&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iostreams::file_sink, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:324:   instantiated from here
-C:/Boost/src/svn/boost/filesystem/path.hpp:732: warning: comparison between signed and unsigned integer expressions
-C:/Boost/src/svn/boost/filesystem/path.hpp:901:   instantiated from `String boost::filesystem::basic_path&lt;String, Traits&gt;::filename() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
-C:/Boost/src/svn/boost/filesystem/path.hpp:230:   instantiated from `String boost::filesystem::basic_path&lt;String, Traits&gt;::leaf() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
-../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:127:   instantiated from `void hamigaki::archivers::detail::basic_raw_iso_file_sink_impl&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iost...
+../hamigaki/archivers/iso_file.hpp:155:   instanti...
    (remainder deleted because of excessive size)
 </pre>
 <h2><a name="archivers-tar_gnu_test-gcc-mingw-3.4.5">archivers - tar_gnu_test - gcc-mingw-3.4.5</a></h2>
@@ -843,6 +882,58 @@ C:/Boost/src/svn/boost/filesystem/path.hpp:231:   instantiated from `boost::file
 ../hamigaki/archivers/tar_file.hpp:258:   instantiated from here
 C:/Boost/src/svn/boost/filesystem/path.hpp:941: warning: comparison between signed and unsigned integer expressions
 C:/Boost/src/svn/boost/filesystem/path.hpp: In function `void boost...
+   (remainder deleted because of excessive size)
+</pre>
+<h2><a name="archivers-tar_replace_test-gcc-mingw-3.4.5">archivers - tar_replace_test - gcc-mingw-3.4.5</a></h2>
+<h3>Compiler output:</h3><pre>
+C:/Boost/src/svn/boost/filesystem/path.hpp: In member function `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const typename String::value_type*) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]':
+C:/Boost/src/svn/boost/filesystem/path.hpp:190:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:169:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+../hamigaki/archivers/detail/tar_file_source_impl.hpp:59:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1076: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:190:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:169:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+../hamigaki/archivers/detail/tar_file_source_impl.hpp:59:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1076: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:190:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:169:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+../hamigaki/archivers/detail/tar_file_source_impl.hpp:59:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1076: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp: In function `bool boost::filesystem::detail::is_separator(typename Path::string_type::value_type) [with Path = boost::filesystem::basic_path&lt;std::wstring, boost::filesystem::wpath_traits&gt;]':
+C:/Boost/src/svn/boost/filesystem/path.hpp:1081:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const typename String::value_type*) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:190:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:169:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+../hamigaki/archivers/detail/tar_file_source_impl.hpp:59:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:713: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:1081:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const typename String::value_type*) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:190:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:169:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+../hamigaki/archivers/detail/tar_file_source_impl.hpp:59:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:713: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp: In member function `void boost::filesystem::basic_path&lt;String, Traits&gt;::m_append_separator_if_needed() [with String = std::wstring, Traits = boost::filesystem::wpath_traits]':
+C:/Boost/src/svn/boost/filesystem/path.hpp:1083:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const typename String::value_type*) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:190:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:169:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+../hamigaki/archivers/detail/tar_file_source_impl.hpp:59:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1042: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp:1083:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const typename String::value_type*) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:190:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:169:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+../hamigaki/archivers/detail/tar_file_source_impl.hpp:59:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1042: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp: In member function `void boost::filesystem::basic_path&lt;String, Traits&gt;::m_append(typename String::value_type) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]':
+C:/Boost/src/svn/boost/filesystem/path.hpp:1085:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const typename String::value_type*) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:190:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+C:/Boost/src/svn/boost/filesystem/path.hpp:169:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator=(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+../hamigaki/archivers/detail/tar_file_source_impl.hpp:59:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:1061: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp: In member function `String boost::filesystem::basic_path&lt;String, Traits&gt;::filename() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]':
+C:/Boost/src/svn/boost/filesystem/path.hpp:230:   instantiated from `String boost::filesystem::basic_path&lt;String, Traits&gt;::leaf() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
+../hamigaki/archivers/detail/tar_file_sink_impl.hpp:171:   instantiated from `void hamigaki::archivers::detail::basic_tar_file_sink_impl&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::tar::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iostreams::file_sink, Path = boost::filesystem::wpath]'
+../hamigaki/archivers/tar_file.hpp:124:   instantiated from `void hamigaki::archivers::basic_tar_file_sink&lt;Sink, Path&gt;::create_entry(const hamigaki::archivers::tar::basic_header&lt;Path&gt;&amp;) [with Sink = hamigaki::iostreams::file_sink, Path = boost::filesystem::wpath]'
+../hamigaki/archivers/tar_file.hpp:258:   instantiated from here
+C:/Boost/src/svn/boost/filesystem/path.hpp:902: warning: comparison between signed and unsigned integer expressions
+C:/Boost/src/svn/boost/filesystem/path.hpp: In member function `boost::filesystem::basic_path&lt;String, Traits&gt; boost::filesystem::basic_path&lt;String, Traits&gt;::parent_path() const [with String = std::wstring, Trait...
    (remainder deleted because of excessive size)
 </pre>
 <h2><a name="archivers-tar_ustar_test-gcc-mingw-3.4.5">archivers - tar_ustar_test - gcc-mingw-3.4.5</a></h2>
@@ -1101,6 +1192,21 @@ C:/Boost/src/svn/boost/filesystem/path.hpp:382:   instantiated from `bool boost:
 C:/msys/1.0/home/hamigaki/libstdc++/include/c++/3.4.5/bits/stl_algo.h:259:   instantiated from `_RandomAccessIterator std::find_if(_RandomAccessIterator, _RandomAccessIterator, _Predicate, std::random_access_iterator_tag) [with _RandomAccessIterator = __gnu_cxx::__normal_iterator&lt;hamigaki::archivers::detail::zip_internal_header&lt;boost::filesyst...
    (remainder deleted because of excessive size)
 </pre>
+<h2><a name="archivers-zip_test-msvc-9.0express">archivers - zip_test - msvc-9.0express</a></h2>
+<h3>Linker output:</h3><pre>
+ライブラリ ..\bin.v2\libs\archivers\test\zip_test.test\msvc-9.0express\debug\threading-multi\zip_test.lib とオブジェクト ..\bin.v2\libs\archivers\test\zip_test.test\msvc-9.0express\debug\threading-multi\zip_test.exp を作成中
+msvc.manifest ..\bin.v2\libs\archivers\test\zip_test.test\msvc-9.0express\debug\threading-multi\zip_test.exe
+
+mt.exe : general error c101008d: Failed to write the updated manifest to the resource of file "..\bin.v2\libs\archivers\test\zip_test.test\msvc-9.0express\debug\threading-multi\zip_test.exe". Wm;9oU!$kk"/;9gM~[%nWm;9L(-gY
+
+        
+        if exist "..\bin.v2\libs\archivers\test\zip_test.test\msvc-9.0express\debug\threading-multi\zip_test.exe.manifest" (
+            call "C:\Program Files\Microsoft Visual Studio 9.0\VC\vcvarsall.bat" x86 &gt;nul
+mt -nologo -manifest "..\bin.v2\libs\archivers\test\zip_test.test\msvc-9.0express\debug\threading-multi\zip_test.exe.manifest" "-outputresource:..\bin.v2\libs\archivers\test\zip_test.test\msvc-9.0express\debug\threading-multi\zip_test.exe;1"
+        )
+    
+...failed msvc.manifest ..\bin.v2\libs\archivers\test\zip_test.test\msvc-9.0express\debug\threading-multi\zip_test.exe...
+</pre>
 <h2><a name="archivers-zip_wide_test-gcc-mingw-3.4.5">archivers - zip_wide_test - gcc-mingw-3.4.5</a></h2>
 <h3>Compiler output:</h3><pre>
 C:/Boost/src/svn/boost/filesystem/path.hpp: In member function `boost::filesystem::basic_path&lt;String, Traits&gt;&amp; boost::filesystem::basic_path&lt;String, Traits&gt;::operator/=(const typename String::value_type*) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]':
@@ -1206,6 +1312,50 @@ The installed DirectSoundCapture drivers:
  
 EXIT STATUS: 0 
 </pre>
+<h2><a name="bjam-arg_p_test-gcc-mingw-3.4.5">bjam - arg_p_test - gcc-mingw-3.4.5</a></h2>
+<h3>Compiler output:</h3><pre>
+In file included from ../hamigaki/bjam/util/keywords.hpp:14,
+                 from ../hamigaki/bjam/util/impl/argument_parser.ipp:13,
+                 from ../hamigaki/bjam/util/argument_parser.hpp:13,
+                 from ..\libs\bjam\test\arg_p_test.cpp:10:
+C:/Boost/src/svn/boost/spirit/phoenix.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/phoenix1.hpp"
+In file included from ../hamigaki/bjam/util/impl/argument_parser.ipp:15,
+                 from ../hamigaki/bjam/util/argument_parser.hpp:13,
+                 from ..\libs\bjam\test\arg_p_test.cpp:10:
+C:/Boost/src/svn/boost/spirit/core.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/classic_core.hpp"
+In file included from ..\libs\bjam\test\arg_p_test.cpp:11:
+C:/Boost/src/svn/boost/spirit/actor/assign_actor.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/classic_assign_actor.hpp"
+</pre>
+<h2><a name="bjam-arg_p_test-msvc-8.0">bjam - arg_p_test - msvc-8.0</a></h2>
+<h3>Compiler output:</h3><pre>
+arg_p_test.cpp
+Warning: This header is deprecated. Please use: boost/spirit/include/phoenix1.hpp
+Warning: This header is deprecated. Please use: boost/spirit/include/classic_core.hpp
+Warning: This header is deprecated. Please use: boost/spirit/include/classic_assign_actor.hpp
+</pre>
+<h2><a name="bjam-arg_p_test-msvc-9.0express">bjam - arg_p_test - msvc-9.0express</a></h2>
+<h3>Compiler output:</h3><pre>
+arg_p_test.cpp
+Warning: This header is deprecated. Please use: boost/spirit/include/phoenix1.hpp
+Warning: This header is deprecated. Please use: boost/spirit/include/classic_core.hpp
+Warning: This header is deprecated. Please use: boost/spirit/include/classic_assign_actor.hpp
+</pre>
+<h2><a name="bjam-expression_test-gcc-mingw-3.4.5">bjam - expression_test - gcc-mingw-3.4.5</a></h2>
+<h3>Compiler output:</h3><pre>
+In file included from ../hamigaki/bjam/grammars/bjam_expression_grammar_gen.hpp:15,
+                 from ..\libs\bjam\test\expression_test.cpp:10:
+C:/Boost/src/svn/boost/spirit/core.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/classic_core.hpp"
+</pre>
+<h2><a name="bjam-expression_test-msvc-8.0">bjam - expression_test - msvc-8.0</a></h2>
+<h3>Compiler output:</h3><pre>
+expression_test.cpp
+Warning: This header is deprecated. Please use: boost/spirit/include/classic_core.hpp
+</pre>
+<h2><a name="bjam-expression_test-msvc-9.0express">bjam - expression_test - msvc-9.0express</a></h2>
+<h3>Compiler output:</h3><pre>
+expression_test.cpp
+Warning: This header is deprecated. Please use: boost/spirit/include/classic_core.hpp
+</pre>
 <h2><a name="bjam-glob_test-gcc-mingw-3.4.5">bjam - glob_test - gcc-mingw-3.4.5</a></h2>
 <h3>Compiler output:</h3><pre>
 C:/Boost/src/svn/boost/filesystem/path.hpp: In member function `String boost::filesystem::basic_path&lt;String, Traits&gt;::root_name() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]':
@@ -1263,6 +1413,74 @@ C:/Boost/src/svn/boost/filesystem/path.hpp:1263:   instantiated from `const Stri
 C:/Boost/src/svn/boost/filesystem/path.hpp:217:   instantiated from `const typename Traits::external_string_type boost::filesystem::basic_path&lt;String, Traits&gt;::external_file_string() const [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
 C:/Boost/src/svn/boost/filesystem/operations.hpp:256:   instantiated from `typename boost::enable_if&lt;boost::fil...
    (remainder deleted because of excessive size)
+</pre>
+<h2><a name="bjam-keyword_p_test-gcc-mingw-3.4.5">bjam - keyword_p_test - gcc-mingw-3.4.5</a></h2>
+<h3>Compiler output:</h3><pre>
+In file included from ../hamigaki/bjam/util/keyword_parser.hpp:13,
+                 from ..\libs\bjam\test\keyword_p_test.cpp:10:
+C:/Boost/src/svn/boost/spirit/core.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/classic_core.hpp"
+</pre>
+<h2><a name="bjam-keyword_p_test-msvc-8.0">bjam - keyword_p_test - msvc-8.0</a></h2>
+<h3>Compiler output:</h3><pre>
+keyword_p_test.cpp
+Warning: This header is deprecated. Please use: boost/spirit/include/classic_core.hpp
+</pre>
+<h2><a name="bjam-keyword_p_test-msvc-9.0express">bjam - keyword_p_test - msvc-9.0express</a></h2>
+<h3>Compiler output:</h3><pre>
+keyword_p_test.cpp
+Warning: This header is deprecated. Please use: boost/spirit/include/classic_core.hpp
+</pre>
+<h2><a name="bjam-non_punct_p_test-gcc-mingw-3.4.5">bjam - non_punct_p_test - gcc-mingw-3.4.5</a></h2>
+<h3>Compiler output:</h3><pre>
+In file included from ../hamigaki/bjam/util/keywords.hpp:14,
+                 from ../hamigaki/bjam/util/impl/argument_parser.ipp:13,
+                 from ../hamigaki/bjam/util/argument_parser.hpp:13,
+                 from ..\libs\bjam\test\non_punct_p_test.cpp:10:
+C:/Boost/src/svn/boost/spirit/phoenix.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/phoenix1.hpp"
+In file included from ../hamigaki/bjam/util/impl/argument_parser.ipp:15,
+                 from ../hamigaki/bjam/util/argument_parser.hpp:13,
+                 from ..\libs\bjam\test\non_punct_p_test.cpp:10:
+C:/Boost/src/svn/boost/spirit/core.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/classic_core.hpp"
+</pre>
+<h2><a name="bjam-non_punct_p_test-msvc-8.0">bjam - non_punct_p_test - msvc-8.0</a></h2>
+<h3>Compiler output:</h3><pre>
+non_punct_p_test.cpp
+Warning: This header is deprecated. Please use: boost/spirit/include/phoenix1.hpp
+Warning: This header is deprecated. Please use: boost/spirit/include/classic_core.hpp
+</pre>
+<h2><a name="bjam-non_punct_p_test-msvc-9.0express">bjam - non_punct_p_test - msvc-9.0express</a></h2>
+<h3>Compiler output:</h3><pre>
+non_punct_p_test.cpp
+Warning: This header is deprecated. Please use: boost/spirit/include/phoenix1.hpp
+Warning: This header is deprecated. Please use: boost/spirit/include/classic_core.hpp
+</pre>
+<h2><a name="bjam-string_p_test-gcc-mingw-3.4.5">bjam - string_p_test - gcc-mingw-3.4.5</a></h2>
+<h3>Compiler output:</h3><pre>
+In file included from ../hamigaki/bjam/util/keywords.hpp:14,
+                 from ../hamigaki/bjam/util/impl/string_parser.ipp:13,
+                 from ../hamigaki/bjam/util/string_parser.hpp:13,
+                 from ..\libs\bjam\test\string_p_test.cpp:10:
+C:/Boost/src/svn/boost/spirit/phoenix.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/phoenix1.hpp"
+In file included from ../hamigaki/bjam/util/impl/string_parser.ipp:15,
+                 from ../hamigaki/bjam/util/string_parser.hpp:13,
+                 from ..\libs\bjam\test\string_p_test.cpp:10:
+C:/Boost/src/svn/boost/spirit/core.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/classic_core.hpp"
+In file included from ..\libs\bjam\test\string_p_test.cpp:11:
+C:/Boost/src/svn/boost/spirit/actor/assign_actor.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/classic_assign_actor.hpp"
+</pre>
+<h2><a name="bjam-string_p_test-msvc-8.0">bjam - string_p_test - msvc-8.0</a></h2>
+<h3>Compiler output:</h3><pre>
+string_p_test.cpp
+Warning: This header is deprecated. Please use: boost/spirit/include/phoenix1.hpp
+Warning: This header is deprecated. Please use: boost/spirit/include/classic_core.hpp
+Warning: This header is deprecated. Please use: boost/spirit/include/classic_assign_actor.hpp
+</pre>
+<h2><a name="bjam-string_p_test-msvc-9.0express">bjam - string_p_test - msvc-9.0express</a></h2>
+<h3>Compiler output:</h3><pre>
+string_p_test.cpp
+Warning: This header is deprecated. Please use: boost/spirit/include/phoenix1.hpp
+Warning: This header is deprecated. Please use: boost/spirit/include/classic_core.hpp
+Warning: This header is deprecated. Please use: boost/spirit/include/classic_assign_actor.hpp
 </pre>
 <h2><a name="coroutine-coroutine_test-gcc-mingw-3.4.5">coroutine - coroutine_test - gcc-mingw-3.4.5</a></h2>
 <h3>Run output:</h3><pre>
@@ -1863,6 +2081,22 @@ C:/Boost/src/svn/boost/filesystem/path.hpp:190:   instantiated from `boost::file
 C:/Boost/src/svn/boost/filesystem/path.hpp:152:   instantiated from `boost::filesystem::basic_path&lt;String, Traits&gt;::basic_path(const String&amp;) [with String = std::wstring, Traits = boost::filesystem::wpath_traits]'
 C:/Boost/src/s...
    (remainder deleted because of excessive size)
+</pre>
+<h2><a name="iostreams-background_copy_test-gcc-mingw-3.4.5">iostreams - background_copy_test - gcc-mingw-3.4.5</a></h2>
+<h3>Compiler output:</h3><pre>
+In file included from C:/Boost/src/svn/boost/date_time/microsec_time_clock.hpp:23,
+                 from C:/Boost/src/svn/boost/thread/thread_time.hpp:9,
+                 from C:/Boost/src/svn/boost/thread/win32/thread_data.hpp:10,
+                 from C:/Boost/src/svn/boost/thread/thread.hpp:15,
+                 from ../hamigaki/iostreams/background_copy.hpp:20,
+                 from ..\libs\iostreams\test\background_copy_test.cpp:11:
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `uint64_t boost::date_time::winapi::file_time_to_microseconds(const FileTimeT&amp;)':
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:100: warning: left shift count &gt;= width of type
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `TimeT boost::date_time::time_from_ftime(const FileTimeT&amp;)':
+C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:163: error: `Jan' was not declared in this scope
+
+    "C:/MinGW/bin/g++.exe"  -ftemplate-depth-128 -IC:\msys\1.0\home\hamigaki\libstdc++\include\c++\3.4.5 -O0 -fno-inline -Wall -g -mthreads  -DBOOST_ALL_NO_LIB=1 -DBOOST_TEST_NO_AUTO_LINK=1 -DBOOST_THREAD_USE_DLL=1  -I".." -I"C:\Boost\src\svn" -c -o "..\bin.v2\libs\iostreams\test\background_copy_test.test\gcc-mingw-3.4.5\debug\threading-multi\background_copy_test.o" "..\libs\iostreams\test\background_copy_test.cpp"
+
 </pre>
 </body>
 </html>
