@@ -11,12 +11,17 @@
 #define HAMIGAKI_AUDIO_BACKGROUND_PLAYER_HPP
 
 #include <boost/config.hpp>
+#include <boost/detail/workaround.hpp>
+#include <boost/version.hpp>
 
 #ifdef BOOST_MSVC
     #pragma warning(push)
     #pragma warning(disable : 4251)
 #endif
 
+#if BOOST_WORKAROUND(BOOST_VERSION, == 103800)
+    #include <boost/date_time/date_defs.hpp> // kepp above thread.hpp
+#endif
 #include <boost/thread/thread.hpp>
 
 #ifdef BOOST_MSVC

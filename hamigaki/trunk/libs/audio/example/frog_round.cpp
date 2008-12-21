@@ -8,6 +8,8 @@
 // See http://hamigaki.sourceforge.jp/libs/audio for library home page.
 
 #include <boost/config.hpp>
+#include <boost/detail/workaround.hpp>
+#include <boost/version.hpp>
 
 #include <hamigaki/audio/amplify.hpp>
 #include <hamigaki/audio/square_wave.hpp>
@@ -18,6 +20,9 @@
 #include <hamigaki/thread/utc_time.hpp>
 #include <hamigaki/dec_format.hpp>
 #include <boost/iostreams/copy.hpp>
+#if BOOST_WORKAROUND(BOOST_VERSION, == 103800)
+    #include <boost/date_time/date_defs.hpp> // kepp above thread.hpp
+#endif
 #include <boost/thread/thread.hpp>
 #include <boost/bind.hpp>
 #include <iostream>
