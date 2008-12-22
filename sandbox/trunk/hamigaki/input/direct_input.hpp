@@ -1,6 +1,6 @@
 // direct_input.hpp: DirectInput devices
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -32,8 +32,6 @@
 #if defined(BOOST_WINDOWS) && !defined(__GNUC__)
     #pragma comment(lib, "user32.lib")
 #endif
-
-struct IDirectInputDevice2A;
 
 namespace hamigaki { namespace input {
 
@@ -404,7 +402,7 @@ struct HAMIGAKI_INPUT_DECL device_object
 {
 public:
     device_object(
-        const boost::shared_ptr< ::IDirectInputDevice2A>& p,
+        const boost::shared_ptr<void>& p,
         unsigned long how, unsigned long key);
 
     ~device_object();
@@ -421,7 +419,7 @@ public:
     void saturation(unsigned long val);
 
 private:
-    boost::shared_ptr< ::IDirectInputDevice2A> pimpl_;
+    boost::shared_ptr<void> pimpl_;
     unsigned long how_;
     unsigned long key_;
 };
@@ -447,7 +445,7 @@ class HAMIGAKI_INPUT_DECL direct_input_keyboard
 public:
     typedef direct_input::object_info_iterator object_info_iterator;
 
-    explicit direct_input_keyboard(::IDirectInputDevice2A* p);
+    explicit direct_input_keyboard(void* p);
     ~direct_input_keyboard();
 
     void set_cooperative_level(void* hwnd, unsigned long level);
@@ -473,7 +471,7 @@ class HAMIGAKI_INPUT_DECL direct_input_joystick
 public:
     typedef direct_input::object_info_iterator object_info_iterator;
 
-    explicit direct_input_joystick(::IDirectInputDevice2A* p);
+    explicit direct_input_joystick(void* p);
     ~direct_input_joystick();
 
     void set_cooperative_level(void* hwnd, unsigned long level);

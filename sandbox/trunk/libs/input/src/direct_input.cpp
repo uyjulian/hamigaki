@@ -1,6 +1,6 @@
 // direct_input.cpp: DirectInput devices
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007, 2008.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -47,6 +47,99 @@ const unsigned long aspect_force = DIDOI_ASPECTFORCE;
 namespace
 {
 
+#if DIRECTINPUT_VERSION >= 0x0800
+
+#define HAMIGAKI_DI_CONTEXT "IDirectInput8A::"
+#define HAMIGAKI_DI_DEVICE "IDirectInputDevice8A::"
+
+typedef IDirectInput8A di_context;
+typedef IDirectInputDevice8A di_device;
+
+inline di_context* direct_input_create(HINSTANCE hInstance)
+{
+    // IID_IDirectInput8A
+    const GUID iid =
+    {
+        0xBF798030, 0x483A, 0x4DA2,
+        { 0xAA, 0x99, 0x5D, 0x64, 0xED, 0x36, 0x97, 0x00 }
+    };
+
+    void* tmp = 0;
+    HRESULT res =
+        ::DirectInput8Create(hInstance, DIRECTINPUT_VERSION, iid, &tmp, 0);
+    if (FAILED(res))
+        throw direct_input_error(res, "DirectInput8Create()");
+
+    return static_cast<di_context*>(tmp);
+}
+
+inline di_device* create_device(di_context* pimpl, const GUID& guid)
+{
+    di_device* ptr = 0;
+    ::HRESULT res = pimpl->CreateDevice(guid, &ptr, 0);
+    if (FAILED(res))
+        throw direct_input_error(res, HAMIGAKI_DI_CONTEXT "CreateDevice()");
+    return ptr;
+}
+#else
+
+#define HAMIGAKI_DI_CONTEXT "IDirectInput2A::"
+#define HAMIGAKI_DI_DEVICE "IDirectInputDevice2A::"
+
+typedef IDirectInput2A di_context;
+typedef IDirectInputDevice2A di_device;
+
+inline di_context* direct_input_create(HINSTANCE hInstance)
+{
+    IDirectInputA* base;
+    HRESULT res =
+        ::DirectInputCreateA(hInstance, DIRECTINPUT_VERSION, &base, 0);
+
+    // IID_IDirectInput2A
+    const GUID iid =
+    {
+        0x5944E662, 0xAA8A, 0x11CF,
+        { 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00 }
+    };
+
+    void* tmp = 0;
+    res = base->QueryInterface(iid, &tmp);
+    base->Release();
+    if (FAILED(res))
+        throw direct_input_error(res, "IDirectInputA::QueryInterface()");
+
+    return static_cast<di_context*>(tmp);
+}
+
+inline di_device* create_device(di_context* pimpl, const GUID& guid)
+{
+    IDirectInputDeviceA* base = 0;
+    HRESULT res = pimpl->CreateDevice(guid, &base, 0);
+    if (FAILED(res))
+        throw direct_input_error(res, HAMIGAKI_DI_CONTEXT "CreateDevice()");
+
+    // IID_IDirectInputDevice2A
+    const GUID iid =
+    {
+        0x5944E682, 0xC92E, 0x11CF,
+        { 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00 }
+    };
+
+    void* tmp = 0;
+    res = base->QueryInterface(iid, &tmp);
+    base->Release();
+    if (FAILED(res))
+        throw direct_input_error(res, "IDirectInputDeviceA::QueryInterface()");
+
+    return static_cast<di_device*>(tmp);
+}
+#endif
+
+inline di_device& get_device(const boost::shared_ptr<void>& sp)
+{
+    return *static_cast<di_device*>(sp.get());
+}
+
 object_info convert_obj_info(const ::DIDEVICEOBJECTINSTANCEA& ddoi)
 {
     object_info info;
@@ -69,7 +162,7 @@ object_info convert_obj_info(const ::DIDEVICEOBJECTINSTANCEA& ddoi)
 }
 
 unsigned long get_dword_property(
-    ::IDirectInputDevice2A* pimpl, unsigned long how, unsigned long key,
+    void* pimpl, unsigned long how, unsigned long key,
     const ::GUID& guid)
 {
     ::DIPROPDWORD data;
@@ -79,15 +172,16 @@ unsigned long get_dword_property(
     data.diph.dwObj = key;
     data.diph.dwHow = how;
 
-    ::HRESULT res = pimpl->GetProperty(guid, &data.diph);
+    ::HRESULT res =
+        static_cast<di_device*>(pimpl)->GetProperty(guid, &data.diph);
     if (FAILED(res))
-        throw direct_input_error(res, "IDirectInputDevice2A::GetProperty()");
+        throw direct_input_error(res, HAMIGAKI_DI_DEVICE "GetProperty()");
 
     return data.dwData;
 }
 
 void set_dword_property(
-    ::IDirectInputDevice2A* pimpl, unsigned long how, unsigned long key,
+    void* pimpl, unsigned long how, unsigned long key,
     const ::GUID& guid, unsigned long val)
 {
     ::DIPROPDWORD data;
@@ -98,15 +192,16 @@ void set_dword_property(
     data.diph.dwHow = how;
     data.dwData = val;
 
-    ::HRESULT res = pimpl->SetProperty(guid, &data.diph);
+    ::HRESULT res =
+        static_cast<di_device*>(pimpl)->SetProperty(guid, &data.diph);
     if (FAILED(res))
-        throw direct_input_error(res, "IDirectInputDevice2A::SetProperty()");
+        throw direct_input_error(res, HAMIGAKI_DI_DEVICE "SetProperty()");
 }
 
 } // namespace
 
 device_object::device_object(
-    const boost::shared_ptr< ::IDirectInputDevice2A>& p,
+    const boost::shared_ptr<void>& p,
     unsigned long how, unsigned long key
 )
     : pimpl_(p), how_(how), key_(key)
@@ -121,9 +216,9 @@ object_info device_object::info() const
 {
     ::DIDEVICEOBJECTINSTANCEA tmp;
 
-    ::HRESULT res = pimpl_->GetObjectInfo(&tmp, key_, how_);
+    HRESULT res = get_device(pimpl_).GetObjectInfo(&tmp, key_, how_);
     if (FAILED(res))
-        throw direct_input_error(res, "IDirectInputDevice2A::GetObjectInfo()");
+        throw direct_input_error(res, HAMIGAKI_DI_DEVICE "GetObjectInfo()");
 
     return convert_obj_info(tmp);
 }
@@ -137,9 +232,9 @@ std::pair<long,long> device_object::range()
     data.diph.dwObj = key_;
     data.diph.dwHow = how_;
 
-    ::HRESULT res = pimpl_->GetProperty(DIPROP_RANGE, &data.diph);
+    ::HRESULT res = get_device(pimpl_).GetProperty(DIPROP_RANGE, &data.diph);
     if (FAILED(res))
-        throw direct_input_error(res, "IDirectInputDevice2A::GetProperty()");
+        throw direct_input_error(res, HAMIGAKI_DI_DEVICE "GetProperty()");
 
     return std::make_pair(data.lMin, data.lMax);
 }
@@ -155,9 +250,9 @@ void device_object::range(long min_val, long max_val)
     data.lMin = min_val;
     data.lMax = max_val;
 
-    ::HRESULT res = pimpl_->SetProperty(DIPROP_RANGE, &data.diph);
+    ::HRESULT res = get_device(pimpl_).SetProperty(DIPROP_RANGE, &data.diph);
     if (FAILED(res))
-        throw direct_input_error(res, "IDirectInputDevice2A::SetProperty()");
+        throw direct_input_error(res, HAMIGAKI_DI_DEVICE "SetProperty()");
 }
 
 unsigned long device_object::dead_zone()
@@ -192,26 +287,9 @@ class direct_input_manager::impl : private boost::noncopyable
 public:
     typedef direct_input::device_info_iterator device_info_iterator;
 
-    explicit impl(::HINSTANCE hInstance) : pimpl_(0)
+    explicit impl(HINSTANCE hInstance) : pimpl_(0)
     {
-        ::IDirectInputA* base;
-        ::HRESULT res =
-            ::DirectInputCreateA(hInstance, DIRECTINPUT_VERSION, &base, 0);
-
-        // IID_IDirectInput2A
-        const ::GUID iid =
-        {
-            0x5944E662, 0xAA8A, 0x11CF,
-            { 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00 }
-        };
-
-        void* tmp = 0;
-        res = base->QueryInterface(iid, &tmp);
-        base->Release();
-        if (FAILED(res))
-            throw direct_input_error(res, "IDirectInputA::QueryInterface()");
-
-        pimpl_ = static_cast< ::IDirectInput2A*>(tmp);
+        pimpl_ = direct_input::direct_input_create(hInstance);
     }
 
     ~impl()
@@ -234,34 +312,13 @@ public:
         );
     }
 
-    ::IDirectInputDevice2A* create_device(const ::GUID& guid)
+    direct_input::di_device* create_device(const ::GUID& guid)
     {
-        ::IDirectInputDeviceA* base = 0;
-        ::HRESULT res = pimpl_->CreateDevice(guid, &base, 0);
-        if (FAILED(res))
-            throw direct_input_error(res, "IDirectInput2A::CreateDevice()");
-
-        // IID_IDirectInputDevice2A
-        const ::GUID iid =
-        {
-            0x5944E682, 0xC92E, 0x11CF,
-            { 0xBF, 0xC7, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00 }
-        };
-
-        void* tmp = 0;
-        res = base->QueryInterface(iid, &tmp);
-        base->Release();
-        if (FAILED(res))
-        {
-            throw direct_input_error(
-                res, "IDirectInputDeviceA::QueryInterface()");
-        }
-
-        return static_cast< ::IDirectInputDevice2A*>(tmp);
+        return direct_input::create_device(pimpl_, guid);
     }
 
 private:
-    ::IDirectInput2A* pimpl_;
+    direct_input::di_context* pimpl_;
 
     static int __stdcall enum_devices_callback(
         const ::DIDEVICEINSTANCEA* lpddi, void* pvRef)
@@ -301,7 +358,7 @@ private:
             pimpl_->EnumDevices(
                 type, &impl::enum_devices_callback, &self, flags);
         if (FAILED(res))
-            throw direct_input_error(res, "IDirectInput2A::EnumDevices()");
+            throw direct_input_error(res, HAMIGAKI_DI_CONTEXT "EnumDevices()");
 
         self.exit();
         HAMIGAKI_COROUTINE_UNREACHABLE_RETURN(direct_input::device_info())
@@ -358,7 +415,7 @@ direct_input_manager::create_joystick_device(const uuid& instance)
 class direct_input::device_impl
 {
 public:
-    explicit device_impl(const boost::shared_ptr< ::IDirectInputDevice2A>& ptr)
+    explicit device_impl(const boost::shared_ptr<di_device>& ptr)
         : pimpl_(ptr)
     {
     }
@@ -380,7 +437,7 @@ public:
         if (FAILED(res))
         {
             throw direct_input_error(
-                res, "IDirectInputDevice2A::SetDataFormat()");
+                res, HAMIGAKI_DI_DEVICE "SetDataFormat()");
         }
     }
 
@@ -390,7 +447,7 @@ public:
         if (FAILED(res))
         {
             throw direct_input_error(
-                res, "IDirectInputDevice2A::SetCooperativeLevel()");
+                res, HAMIGAKI_DI_DEVICE "SetCooperativeLevel()");
         }
     }
 
@@ -429,14 +486,14 @@ public:
     {
         ::HRESULT res = pimpl_->Acquire();
         if (FAILED(res))
-            throw direct_input_error(res, "IDirectInputDevice2A::Acquire()");
+            throw direct_input_error(res, HAMIGAKI_DI_DEVICE "Acquire()");
     }
 
     void unacquire()
     {
         ::HRESULT res = pimpl_->Unacquire();
         if (FAILED(res))
-            throw direct_input_error(res, "IDirectInputDevice2A::Unacquire()");
+            throw direct_input_error(res, HAMIGAKI_DI_DEVICE "Unacquire()");
     }
 
     void get_state(void* buf, std::size_t size)
@@ -448,18 +505,18 @@ public:
             res = pimpl_->Poll();
         }
         if (FAILED(res))
-            throw direct_input_error(res, "IDirectInputDevice2A::Poll()");
+            throw direct_input_error(res, HAMIGAKI_DI_DEVICE "Poll()");
 
         res = pimpl_->GetDeviceState(size, buf);
         if (FAILED(res))
         {
             throw direct_input_error(
-                res, "IDirectInputDevice2A::GetDeviceState()");
+                res, HAMIGAKI_DI_DEVICE "GetDeviceState()");
         }
     }
 
 private:
-    boost::shared_ptr< ::IDirectInputDevice2A> pimpl_;
+    boost::shared_ptr<di_device> pimpl_;
 
     static int __stdcall enum_objects_callback(
         const ::DIDEVICEOBJECTINSTANCEA* lpddoi, void* pvRef)
@@ -491,7 +548,7 @@ private:
         if (FAILED(res))
         {
             throw direct_input_error(
-                res, "IDirectInputDevice2A::EnumObjects()");
+                res, HAMIGAKI_DI_DEVICE "EnumObjects()");
         }
 
         self.exit();
@@ -500,9 +557,10 @@ private:
 };
 
 
-direct_input_keyboard::direct_input_keyboard(::IDirectInputDevice2A* p)
+direct_input_keyboard::direct_input_keyboard(void* p)
 {
-    boost::shared_ptr< ::IDirectInputDevice2A> tmp(p, com_release());
+    boost::shared_ptr<direct_input::di_device> tmp(
+        static_cast<direct_input::di_device*>(p), com_release());
 
     pimpl_.reset(new direct_input::device_impl(tmp));
     pimpl_->set_data_format(direct_input::keyboard_data_format);
@@ -557,9 +615,10 @@ void direct_input_keyboard::get_state(direct_input::keyboard_state& state)
 }
 
 
-direct_input_joystick::direct_input_joystick(::IDirectInputDevice2A* p)
+direct_input_joystick::direct_input_joystick(void* p)
 {
-    boost::shared_ptr< ::IDirectInputDevice2A> tmp(p, com_release());
+    boost::shared_ptr<direct_input::di_device> tmp(
+        static_cast<direct_input::di_device*>(p), com_release());
 
     pimpl_.reset(new direct_input::device_impl(tmp));
     pimpl_->set_data_format(direct_input::joystick_data_format);
