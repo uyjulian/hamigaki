@@ -1,6 +1,6 @@
 // direct_sound.cpp: DirectSound device
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -348,8 +348,12 @@ public:
                 std::streamsize amt = buffer_size_ - offset_%buffer_size_;
                 base_type::fill(offset_, 0, amt);
                 play(0);
+                offset_ += amt;
+                offset_ %= (buffer_size_*buffer_count);
             }
             std::size_t index = offset_ / buffer_size_;
+            events_[index].wait();
+            base_type::fill(offset_, 0, buffer_size_);
             events_[(index+buffer_count-1)%buffer_count].wait();
         }
         catch (...)
