@@ -4,7 +4,7 @@
 <!--
   Hamigaki Library Document Source
 
-  Copyright Takeshi Mouri 2007, 2008.
+  Copyright Takeshi Mouri 2007-2009.
   Distributed under the Boost Software License, Version 1.0.
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
@@ -75,7 +75,7 @@
       </tgroup>
     </informaltable>
     <para>ここで、<emphasis>a</emphasis>と<emphasis>b</emphasis>は文字列のリスト、変数、ルールの戻り値のいずれかであり、<emphasis>cond</emphasis>は条件式である。</para>
-    <para>なお、「=」、「!=」、「&lt;」、「&lt;=」、「&gt;」、「&gt;=」の６つの比較演算において、一方のリストのサイズが他方よりも短い場合、短いリストの後方に空文字列の要素続いているかのように振舞う。</para>
+    <para>なお、「=」、「!=」、「&lt;」、「&lt;=」、「&gt;」、「&gt;=」の６つの比較演算において、一方のリストのサイズが他方よりも短い場合、短いリストの後方に空文字列の要素が続いているかのように振舞う。</para>
     <para>演算子の優先順位は以下のようになっている。上の方ほど優先順位は高い。</para>
     <itemizedlist>
       <listitem>
