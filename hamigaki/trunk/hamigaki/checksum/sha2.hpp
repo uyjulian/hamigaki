@@ -1,6 +1,6 @@
 // sha2.hpp: SHA-2 checksum
 
-// Copyright Takeshi Mouri 2008.
+// Copyright Takeshi Mouri 2008, 2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -601,7 +601,7 @@ public:
             word_bits-8 - static_cast<std::size_t>(bytes_low_ % word_bytes) * 8;
 
         word old_low = bytes_low_;
-        bytes_low_ += (end - beg);
+        bytes_low_ += static_cast<word>(end - beg);
         if (bytes_low_ < old_low)
             ++bytes_high_;
 
