@@ -1,6 +1,6 @@
 // vorbis_file.hpp: vorbis_file device adaptor
 
-// Copyright Takeshi Mouri 2006-2008.
+// Copyright Takeshi Mouri 2006-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -198,8 +198,11 @@ struct vorbis_seekable_source_traits
         try
         {
             Source& src = *static_cast<Source*>(datasource);
-            return boost::iostreams::position_to_offset(
-                boost::iostreams::seek(src, 0, BOOST_IOS::cur));
+            return static_cast<long>(
+                boost::iostreams::position_to_offset(
+                    boost::iostreams::seek(src, 0, BOOST_IOS::cur)
+                )
+            );
         }
         catch (...)
         {
@@ -310,7 +313,7 @@ private:
         while (n > 0)
         {
             float** buffer;
-            long res = base_.read_samples(buffer, n);
+            long res = base_.read_samples(buffer, static_cast<int>(n));
             if (res == 0)
                 break;
 

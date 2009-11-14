@@ -1,6 +1,6 @@
 // asio.cpp: ASIO devices
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -30,7 +30,11 @@ const std::size_t buffer_count = 8;
 struct asio_callbacks
 {
     hamigaki::detail::cdecl_thunk<2> buffer_switch;
+#if !defined(_M_AMD64)
     hamigaki::detail::cdecl_thunk<2> sample_rate_changed;
+#else
+    hamigaki::detail::cdecl_thunk_double sample_rate_changed;
+#endif
     hamigaki::detail::cdecl_thunk<4> asio_message;
     hamigaki::detail::cdecl_thunk<3> buffer_switch_time_info;
 };
@@ -370,7 +374,8 @@ void asio_device::impl::create_buffers(long in_channels, long out_channels)
     }
 
     ::ASIOError err = detail::asio_create_buffers(pimpl_.get(),
-        &info_[0], info_.size(), buffer_size_, &callbacks_);
+        &info_[0], static_cast<long>(info_.size()),
+        static_cast<long>(buffer_size_), &callbacks_);
     if (err != ASE_OK)
         throw std::runtime_error("cannot create ASIO buffers");
 
