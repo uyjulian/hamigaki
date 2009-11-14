@@ -1,6 +1,6 @@
 // fiber.hpp: Win32 fiber API declaration
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -12,10 +12,16 @@
 
 #include <boost/config.hpp>
 
-#if defined(_MSC_FULL_VER) && (_MSC_FULL_VER >= 13012035)
+#if defined(_MSC_FULL_VER) && (_MSC_FULL_VER >= 13012035) && defined(_M_IX86)
     #define HAMIGAKI_COROUTINE_HAS_READFSDWORD
     extern "C" unsigned long __readfsdword(unsigned long);
     #pragma intrinsic(__readfsdword)
+#endif
+
+#if defined(_MSC_VER) && defined(_M_AMD64)
+    #define HAMIGAKI_COROUTINE_HAS_READGSQWORD
+    extern "C" unsigned long long __readgsqword(unsigned long);
+    #pragma intrinsic(__readgsqword)
 #endif
 
 #if defined(BOOST_HAS_DECLSPEC) && !defined(HAMIGAKI_COROUTINE_NO_DLLIMPORT)
@@ -28,8 +34,13 @@ extern "C" {
 
 typedef void (__stdcall* start_routine)(void*);
 
+#if !defined(_WIN64)
 HAMIGAKI_COROUTINE_DLLIMPORT
 void* __stdcall CreateFiber(unsigned long, start_routine, void*);
+#else
+HAMIGAKI_COROUTINE_DLLIMPORT
+void* __stdcall CreateFiber(unsigned long long, start_routine, void*);
+#endif
 
 HAMIGAKI_COROUTINE_DLLIMPORT void __stdcall DeleteFiber(void*);
 HAMIGAKI_COROUTINE_DLLIMPORT void* __stdcall ConvertThreadToFiber(void*);
@@ -47,6 +58,13 @@ inline void* get_current_fiber()
 {
     return reinterpret_cast<void*>(
         static_cast< ::uintptr_t>(::__readfsdword(0x10))
+    );
+}
+#elif defined(HAMIGAKI_COROUTINE_HAS_READGSQWORD)
+inline void* get_current_fiber()
+{
+    return reinterpret_cast<void*>(
+        static_cast< ::uintptr_t>(::__readgsqword(0x20))
     );
 }
 #elif (defined(_MSC_VER) || defined(__MWERKS__)) && defined(_M_IX86)
