@@ -1,6 +1,6 @@
 // pipe_device.cpp: pipe device
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -40,7 +40,7 @@ public:
     std::streamsize read(char* s, std::streamsize n)
     {
         ::DWORD amt = 0;
-        ::DWORD buf_size = n;
+        ::DWORD buf_size = static_cast<DWORD>(n);
         if (::ReadFile(handle_, s, buf_size, &amt, 0) == FALSE)
         {
             ::DWORD code = ::GetLastError();
@@ -77,7 +77,7 @@ public:
     std::streamsize write(const char* s, std::streamsize n)
     {
         ::DWORD amt = 0;
-        ::DWORD buf_size = n;
+        ::DWORD buf_size = static_cast<DWORD>(n);
         if (::WriteFile(handle_, s, buf_size, &amt, 0) == FALSE)
             throw BOOST_IOSTREAMS_FAILURE("bad write");
 
