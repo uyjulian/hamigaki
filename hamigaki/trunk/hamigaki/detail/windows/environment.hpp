@@ -1,6 +1,6 @@
 // environment.hpp: an utility for Windows environment variables
 
-// Copyright Takeshi Mouri 2006-2008.
+// Copyright Takeshi Mouri 2006-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -22,7 +22,8 @@ struct iless
     {
         return ::CompareStringA(
             LOCALE_USER_DEFAULT, NORM_IGNORECASE,
-            lhs.c_str(), lhs.size(), rhs.c_str(), rhs.size()
+            lhs.c_str(), static_cast<int>(lhs.size()),
+            rhs.c_str(), static_cast<int>(rhs.size())
         ) == CSTR_LESS_THAN;
     }
 };
