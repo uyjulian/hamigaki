@@ -1,6 +1,6 @@
 // reparse_point.hpp: the functions for the reparse points
 
-// Copyright Takeshi Mouri 2006-2008.
+// Copyright Takeshi Mouri 2006-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -197,16 +197,19 @@ inline error_code set_mount_point(HANDLE handle,
 
     reparse_data_header top_head;
     top_head.tag = mount_point_tag;
-    top_head.length = full_size - sizeof(top_head);
+    top_head.length = static_cast<WORD>(full_size - sizeof(top_head));
     top_head.reserved = 0;
     std::memcpy(buf_ptr, &top_head, sizeof(top_head));
     buf_ptr += sizeof(top_head);
 
     mount_point_header mt_head;
     mt_head.sub_name_offset = 0;
-    mt_head.sub_name_length = sub_name_length * sizeof(wchar_t);
-    mt_head.print_name_offset = mt_head.sub_name_length + sizeof(wchar_t);
-    mt_head.print_name_length = print_name_length * sizeof(wchar_t);
+    mt_head.sub_name_length =
+        static_cast<WORD>(sub_name_length * sizeof(wchar_t));
+    mt_head.print_name_offset =
+        static_cast<WORD>(mt_head.sub_name_length + sizeof(wchar_t));
+    mt_head.print_name_length =
+        static_cast<WORD>(print_name_length * sizeof(wchar_t));
     std::memcpy(buf_ptr, &mt_head, sizeof(mt_head));
     buf_ptr += sizeof(mt_head);
 
@@ -221,7 +224,7 @@ inline error_code set_mount_point(HANDLE handle,
 
     DWORD dummy = 0;
     if (::DeviceIoControl(handle, FSCTL_SET_REPARSE_POINT,
-        buf.get(), full_size, 0, 0, &dummy, 0) == 0)
+        buf.get(), static_cast<DWORD>(full_size), 0, 0, &dummy, 0) == 0)
     {
         return last_error();
     }
@@ -312,13 +315,14 @@ inline error_code get_reparse_point(HANDLE handle, std::string& target)
         }
 
         int size = ::WideCharToMultiByte(
-            CP_ACP, 0, &wbuf[0], wbuf.size(), 0, 0, 0, 0);
+            CP_ACP, 0, &wbuf[0], static_cast<int>(wbuf.size()), 0, 0, 0, 0);
         if (size == 0)
             return last_error();
 
         boost::scoped_array<char> buf(new char[size]);
         size = ::WideCharToMultiByte(
-            CP_ACP, 0, &wbuf[0], wbuf.size(), buf.get(), size, 0, 0);
+            CP_ACP, 0, &wbuf[0], static_cast<int>(wbuf.size()),
+            buf.get(), size, 0, 0);
         if (size == 0)
             return last_error();
         target.assign(buf.get(), buf.get()+size);
@@ -328,7 +332,8 @@ inline error_code get_reparse_point(HANDLE handle, std::string& target)
 
 inline error_code set_mount_point(HANDLE handle, const std::string& ph)
 {
-    int w_size = ::MultiByteToWideChar(CP_ACP, 0, ph.c_str(), ph.size(), 0, 0);
+    int w_size = ::MultiByteToWideChar(
+        CP_ACP, 0, ph.c_str(), static_cast<int>(ph.size()), 0, 0);
     if (w_size == 0)
         return last_error();
 
@@ -348,8 +353,8 @@ inline error_code set_mount_point(HANDLE handle, const std::string& ph)
         ptr += 3;
     }
 
-    w_size =
-        ::MultiByteToWideChar(CP_ACP, 0, ph.c_str(), ph.size(), ptr, w_size);
+    w_size = ::MultiByteToWideChar(
+        CP_ACP, 0, ph.c_str(), static_cast<int>(ph.size()), ptr, w_size);
     if (w_size == 0)
         return last_error();
 
