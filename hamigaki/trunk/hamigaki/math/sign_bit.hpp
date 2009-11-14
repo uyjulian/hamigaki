@@ -1,6 +1,6 @@
 // sign_bit.hpp: test for sign
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -30,7 +30,7 @@ inline bool sign_bit_helper(T t, const boost::true_type&)
     return signbit(t) != 0;
 }
 
-#elif defined(_M_IX86) || defined(__i386__)
+#elif defined(_M_IX86) || defined(_M_AMD64) || defined(__i386__)
 
 template<class T>
 inline bool sign_bit_helper_for_float(T t, const boost::mpl::size_t<4>&)

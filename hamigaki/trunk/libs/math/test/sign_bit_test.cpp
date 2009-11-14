@@ -1,6 +1,6 @@
 // sign_bit_test.cpp: test case for sign_bit
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -37,6 +37,34 @@ std::_Dconst _LSnan = {{ 0x0001, 0x0000, 0x0000, 0x8000, 0x7FFF }};
 namespace math_ex = hamigaki::math;
 namespace ut = boost::unit_test;
 
+#if defined(_MSC_VER) && defined(_M_AMD64)
+float flip_to_minus(float x)
+{
+    return static_cast<float>(_copysign(static_cast<double>(x), -1.0));
+}
+
+double flip_to_minus(double x)
+{
+    return _copysign(x, -1.0);
+}
+
+long double flip_to_minus(long double x)
+{
+    return _copysignl(x, -1.0l);
+}
+
+int flip_to_minus(int x)
+{
+    return -x;
+}
+#else
+template<typename T>
+T flip_to_minus(T x)
+{
+    return -x;
+}
+#endif
+
 template<typename T>
 void sign_bit_test_aux()
 {
@@ -49,25 +77,25 @@ void sign_bit_test_aux()
     if (traits::is_specialized)
     {
         BOOST_CHECK(!math_ex::sign_bit((traits::max)()));
-        BOOST_CHECK(math_ex::sign_bit(-(traits::max)()));
+        BOOST_CHECK(math_ex::sign_bit(flip_to_minus((traits::max)())));
     }
 
     if (traits::has_infinity)
     {
         BOOST_CHECK(!math_ex::sign_bit(traits::infinity()));
-        BOOST_CHECK(math_ex::sign_bit(-traits::infinity()));
+        BOOST_CHECK(math_ex::sign_bit(flip_to_minus(traits::infinity())));
     }
 
     if (traits::has_quiet_NaN)
     {
         BOOST_CHECK(!math_ex::sign_bit(traits::quiet_NaN()));
-        BOOST_CHECK(math_ex::sign_bit(-traits::quiet_NaN()));
+        BOOST_CHECK(math_ex::sign_bit(flip_to_minus(traits::quiet_NaN())));
     }
 
     if (traits::has_signaling_NaN)
     {
         BOOST_CHECK(!math_ex::sign_bit(traits::signaling_NaN()));
-        BOOST_CHECK(math_ex::sign_bit(-traits::signaling_NaN()));
+        BOOST_CHECK(math_ex::sign_bit(flip_to_minus(traits::signaling_NaN())));
     }
 }
 
