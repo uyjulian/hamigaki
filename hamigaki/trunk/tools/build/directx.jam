@@ -1,6 +1,6 @@
 # DirectX SDK toolset
 
-# Copyright Takeshi Mouri 2007, 2008.
+# Copyright Takeshi Mouri 2007-2009.
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
@@ -10,6 +10,7 @@
 import os ;
 import project ;
 
+modules.poke modules : $(__name__).__binding__ : $(__file__) ;
 project.initialize $(__name__) ;
 project directx ;
 
