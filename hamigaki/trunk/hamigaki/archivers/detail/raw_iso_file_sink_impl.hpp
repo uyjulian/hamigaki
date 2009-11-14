@@ -1,6 +1,6 @@
 // raw_iso_file_sink_impl.hpp: raw ISO file sink implementation
 
-// Copyright Takeshi Mouri 2007, 2008.
+// Copyright Takeshi Mouri 2007-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -140,7 +140,7 @@ public:
             dirs_[head.path];
 
         pos_ = 0;
-        size_ = h.file_size;
+        size_ = static_cast<boost::uint32_t>(h.file_size);
     }
 
     std::streamsize write(const char* s, std::streamsize n)
@@ -148,7 +148,7 @@ public:
         boost::uint32_t rest = size_ - pos_;
         std::streamsize amt = hamigaki::auto_min(n, rest);
         amt = boost::iostreams::write(sink_, s, amt);
-        pos_ += amt;
+        pos_ += static_cast<boost::uint32_t>(amt);
         return amt;
     }
 
@@ -177,7 +177,9 @@ public:
         root.flags = iso::file_flags::directory;
         iso::posix::file_attributes attr;
         attr.permissions = 040755;
-        attr.links = 2u + this->count_directory(Path());
+        attr.links = static_cast<boost::uint32_t>(
+            2u + this->count_directory(Path())
+        );
         attr.uid = 0u;
         attr.gid = 0u;
         attr.serial_no = 0;
@@ -229,7 +231,7 @@ private:
     {
         iso_directory_record rec;
         rec.data_pos = head.data_pos;
-        rec.data_size = head.file_size;
+        rec.data_size = static_cast<boost::uint32_t>(head.file_size);
         rec.recorded_time = head.recorded_time;
         rec.flags = head.flags;
         rec.file_id = detail::to_iso9660_string(head.path.leaf());
@@ -242,7 +244,7 @@ private:
     {
         iso_directory_record rec;
         rec.data_pos = head.data_pos;
-        rec.data_size = head.file_size;
+        rec.data_size = static_cast<boost::uint32_t>(head.file_size);
         rec.recorded_time = head.recorded_time;
         rec.flags = head.flags;
         rec.file_id = detail::to_joliet_string(head.path.leaf());
@@ -367,7 +369,8 @@ private:
             iso::system_use_entry_header head;
             head.signature[0] = 'T';
             head.signature[1] = 'F';
-            head.entry_size = sizeof(buf) + tf_buf.size();
+            head.entry_size =
+                static_cast<boost::uint8_t>(sizeof(buf) + tf_buf.size());
             head.version = 1u;
 
             hamigaki::binary_write(buf, head);
@@ -381,8 +384,8 @@ private:
         {
             const filesystem::device_number& dev = *head.device_number;
             iso::pn_system_use_entry_data data;
-            data.device_number_high = dev.major;
-            data.device_number_low = dev.minor;
+            data.device_number_high = static_cast<boost::uint32_t>(dev.major);
+            data.device_number_low = static_cast<boost::uint32_t>(dev.minor);
 
             self::append_system_use_entry(rec.system_use, 'P', 'N', data);
         }
@@ -434,8 +437,9 @@ private:
             {
                 if (head.is_directory())
                 {
-                    head.attributes->links
-                        = 2u + this->count_directory(ph/head.path);
+                    head.attributes->links = static_cast<boost::uint32_t>(
+                        2u + this->count_directory(ph/head.path)
+                    );
                 }
                 else
                     head.attributes->links = 1u;
@@ -497,7 +501,9 @@ private:
     {
         iostreams::stream_offset offset = iostreams::tell_offset(sink_);
         BOOST_ASSERT((offset & (volume_info_.logical_block_size - 1u)) == 0);
-        return static_cast<boost::uint64_t>(offset) >> lbn_shift_;
+        return static_cast<boost::uint32_t>(
+            static_cast<boost::uint64_t>(offset) >> lbn_shift_
+        );
     }
 
     bool has_primary_volume_desc() const

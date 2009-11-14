@@ -1,6 +1,6 @@
 // tar_pax_test.cpp: test case for pax formatted tar
 
-// Copyright Takeshi Mouri 2006-2008.
+// Copyright Takeshi Mouri 2006-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -47,7 +47,7 @@ void tar_test()
     head.modified_time = fs_ex::timestamp(std::time(0), 123456789);
     head.access_time = fs_ex::timestamp(1, 123456789);
     head.change_time = fs_ex::timestamp(12345, 0);
-    head.file_size = data.size();
+    head.file_size = static_cast<boost::uint32_t>(data.size());
     head.permissions = 0123;
     head.comment = "test comment";
     head.charset = "ISO-IR 646 1990";
@@ -158,7 +158,7 @@ void path_length_test_aux(const fs::path& ph)
     head.modified_time = fs_ex::timestamp(std::time(0), 123456789);
     head.access_time = fs_ex::timestamp(1, 123456789);
     head.change_time = fs_ex::timestamp(12345, 0);
-    head.file_size = data.size();
+    head.file_size = static_cast<boost::uint32_t>(data.size());
     head.permissions = 0123;
     head.comment = "test comment";
 

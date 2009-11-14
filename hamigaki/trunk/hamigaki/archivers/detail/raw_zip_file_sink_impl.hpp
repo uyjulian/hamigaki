@@ -1,6 +1,6 @@
 // raw_zip_file_sink_impl.hpp: raw ZIP file sink implementation
 
-// Copyright Takeshi Mouri 2006-2008.
+// Copyright Takeshi Mouri 2006-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -134,11 +134,20 @@ write_local_ex_timestamp(Sink& sink, const zip::basic_header<Path>& head)
         iostreams::binary_write(sink, ex_head);
         iostreams::write_uint8<little>(sink, flags);
         if (flags & 0x01)
-            iostreams::write_int32<little>(sink, head.modified_time.get());
+        {
+            iostreams::write_int32<little>(
+                sink, static_cast<boost::uint32_t>(head.modified_time.get()));
+        }
         if (flags & 0x02)
-            iostreams::write_int32<little>(sink, head.access_time.get());
+        {
+            iostreams::write_int32<little>(
+                sink, static_cast<boost::uint32_t>(head.access_time.get()));
+        }
         if (flags & 0x04)
-            iostreams::write_int32<little>(sink, head.creation_time.get());
+        {
+            iostreams::write_int32<little>(
+                sink, static_cast<boost::uint32_t>(head.creation_time.get()));
+        }
     }
 }
 
@@ -165,7 +174,10 @@ write_central_ex_timestamp(Sink& sink, const zip::basic_header<Path>& head)
         iostreams::binary_write(sink, ex_head);
         iostreams::write_uint8<little>(sink, flags);
         if (flags & 0x01)
-            iostreams::write_int32<little>(sink, head.modified_time.get());
+        {
+            iostreams::write_int32<little>(
+                sink, static_cast<boost::uint32_t>(head.modified_time.get()));
+        }
     }
 }
 
@@ -270,7 +282,9 @@ public:
 
     std::streamsize write(const char* s, std::streamsize n)
     {
-        boost::uint32_t max_size = header_.file_size;
+        // Note: If header_.file_size >= 2^32, use ZIP64.
+        boost::uint32_t max_size =
+            static_cast<boost::uint32_t>(header_.file_size);
         if (header_.encrypted)
             max_size += zip::consts::encryption_header_size;
 
@@ -281,7 +295,7 @@ public:
         }
 
         iostreams::blocking_write(sink_, s, n);
-        size_ += n;
+        size_ += static_cast<boost::uint32_t>(n);
         return n;
     }
 
@@ -352,12 +366,16 @@ public:
 
             file_head.method = head.method;
             file_head.update_date_time = msdos::date_time(head.update_time);
-            file_head.compressed_size = head.compressed_size;
+            file_head.compressed_size =
+                static_cast<boost::uint32_t>(head.compressed_size);
             file_head.crc32_checksum = head.crc32_checksum;
-            file_head.file_size = head.file_size;
-            file_head.file_name_length = filename.size();
-            file_head.extra_field_length = extra_field.size();
-            file_head.comment_length = comment.size();
+            file_head.file_size = static_cast<boost::uint32_t>(head.file_size);
+            file_head.file_name_length =
+                static_cast<boost::uint16_t>(filename.size());
+            file_head.extra_field_length =
+                static_cast<boost::uint16_t>(extra_field.size());
+            file_head.comment_length =
+                static_cast<boost::uint16_t>(comment.size());
             file_head.disk_number_start = 0; // TODO
             file_head.internal_attributes = 0; // TODO
             file_head.external_attributes =
@@ -365,7 +383,7 @@ public:
                 (static_cast<boost::uint32_t>(head.permissions) << 16);
 
             if (head.offset < 0xFFFFFFFFull)
-                file_head.offset = head.offset;
+                file_head.offset = static_cast<boost::uint32_t>(head.offset);
             else
                 file_head.offset = 0xFFFFFFFFu;
 
@@ -428,18 +446,18 @@ public:
         footer.disk_number = 0; // TODO
         footer.start_disk_number = 0; // TODO
         if (headers_.size() < 0xFFFFu)
-            footer.entries = headers_.size();
+            footer.entries = static_cast<boost::uint16_t>(headers_.size());
         else
             footer.entries = 0xFFFFu;
         footer.total_entries = footer.entries; // TODO
 
         if (cent_dir_size < 0xFFFFFFFFull)
-            footer.size = cent_dir_size;
+            footer.size = static_cast<boost::uint32_t>(cent_dir_size);
         else
             footer.size = 0xFFFFFFFFu;
 
         if (start_offset < 0xFFFFFFFFull)
-            footer.offset = start_offset;
+            footer.offset = static_cast<boost::uint32_t>(start_offset);
         else
             footer.offset = 0xFFFFFFFFu;
 
@@ -502,8 +520,9 @@ private:
         else
             local.file_size = static_cast<boost::uint32_t>(head.file_size);
 
-        local.file_name_length = filename.size();
-        local.extra_field_length = extra_field.size();
+        local.file_name_length = static_cast<boost::uint16_t>(filename.size());
+        local.extra_field_length =
+            static_cast<boost::uint16_t>(extra_field.size());
 
         iostreams::write_uint32<little>(
             sink_, zip::local_file_header::signature);

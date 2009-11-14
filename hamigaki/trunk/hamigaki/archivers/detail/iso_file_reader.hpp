@@ -1,6 +1,6 @@
 // iso_file_reader.hpp: ISO image file reader
 
-// Copyright Takeshi Mouri 2007, 2008.
+// Copyright Takeshi Mouri 2007-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -39,7 +39,7 @@ inline void parse_iso_file_version(iso::basic_header<Path>& h)
 
     for (std::size_t i = delim+1; i < size; ++i)
     {
-        char c = id[i];
+        char_type c = id[i];
         if ((c < static_widen<char_type,'0'>::value) ||
             (c > static_widen<char_type,'9'>::value) )
         {
@@ -87,7 +87,7 @@ public:
         if (header_.is_directory())
         {
             dir_path_ = header_.path;
-            stack_.push(index_);
+            stack_.push(static_cast<boost::uint32_t>(index_));
             select_directory(records_[index_].data_pos);
         }
         else

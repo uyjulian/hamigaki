@@ -1,6 +1,6 @@
 // rock_ridge_test.cpp: test case for ISO 9660 with Rock Ridge
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -129,7 +129,7 @@ void rock_ridge_test_aux(ar::iso::rrip_type rrip)
     ar::iso::header head;
     head.path = "rock_ridge_test.txt";
     head.version = 1u;
-    head.file_size = data.size();
+    head.file_size = static_cast<boost::uint32_t>(data.size());
 
     head.recorded_time.year     = 2000u-1900u;
     head.recorded_time.month    = 12u;
@@ -316,7 +316,7 @@ void deep_dir_test_aux(ar::iso::rrip_type rrip, bool is_enhanced)
         attr.links = 0u;
         attr.uid = 1234u;
         attr.gid = 5678u;
-        attr.serial_no = i;
+        attr.serial_no = static_cast<boost::uint32_t>(i);
         heads[i].attributes = attr;
     }
 

@@ -1,6 +1,6 @@
 // iso9660_lv2_test.cpp: test case for ISO 9660 Level 2
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -99,7 +99,7 @@ void iso9660_test()
     ar::iso::header head;
     head.path = "ISO_LEVEL_2_TEST_FILE.EXTENSION";
     head.version = 1u;
-    head.file_size = data.size();
+    head.file_size = static_cast<boost::uint32_t>(data.size());
 
     head.recorded_time.year     = 2000u-1900u;
     head.recorded_time.month    = 12u;

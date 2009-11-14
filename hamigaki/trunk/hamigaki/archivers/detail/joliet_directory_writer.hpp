@@ -1,6 +1,6 @@
 // joliet_directory_writer.hpp: Joliet directory extent writer
 
-// Copyright Takeshi Mouri 2007, 2008.
+// Copyright Takeshi Mouri 2007-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -202,7 +202,7 @@ private:
         if ((i == table.end()) || (x < *i))
             throw std::runtime_error("directory not found");
 
-        return i - table.begin();
+        return static_cast<boost::uint16_t>(i - table.begin());
     }
 
     std::pair<std::size_t,boost::uint16_t> find_directory(const Path& ph) const
@@ -260,7 +260,7 @@ private:
             ++pos;
         }
 
-        return pos;
+        return static_cast<boost::uint32_t>(pos);
     }
 
     void set_directory_sizes(boost::uint32_t pos)
@@ -324,7 +324,7 @@ private:
 
                 pos += (dir_size >> lbn_shift_);
             }
-            prev_count = table.size();
+            prev_count = static_cast<boost::uint16_t>(table.size());
             base += prev_count;
         }
     }
@@ -370,7 +370,7 @@ private:
             }
 
             iso::directory_record raw;
-            raw.record_size = size;
+            raw.record_size = static_cast<boost::uint8_t>(size);
             raw.ext_record_size = 0;
             raw.data_pos = rec.data_pos;
             raw.data_size = rec.data_size;
@@ -379,7 +379,7 @@ private:
             raw.unit_size = 0;
             raw.interleave_gap_size = 0;
             raw.volume_seq_number = 1;
-            raw.file_id_size = id_size;
+            raw.file_id_size = static_cast<boost::uint8_t>(id_size);
 
             char* out = block_+offset;
             hamigaki::binary_write(out, raw);
@@ -412,7 +412,8 @@ private:
             {
                 const iso_path_table_record& rec = table[i];
                 iso::path_table_record raw;
-                raw.dir_id_size = rec.dir_id.size();
+                raw.dir_id_size =
+                    static_cast<boost::uint8_t>(rec.dir_id.size());
                 raw.ext_record_size = 0;
                 raw.data_pos = rec.data_pos;
                 raw.parent_dir_number = rec.parent_index;
@@ -440,7 +441,7 @@ private:
         if (pad_size != 0)
             iostreams::blocking_write(sink, block_, pad_size);
 
-        return buffer.size();
+        return static_cast<boost::uint32_t>(buffer.size());
     }
 };
 

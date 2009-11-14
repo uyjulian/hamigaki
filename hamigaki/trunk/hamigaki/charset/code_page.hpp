@@ -1,6 +1,6 @@
 // code_page.hpp: utility for Windows code pages
 
-// Copyright Takeshi Mouri 2008.
+// Copyright Takeshi Mouri 2008, 2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -52,7 +52,8 @@ inline std::string to_code_page(
 
     int used_def = 0;
     len = ::WideCharToMultiByte(
-        cp, 0, ws.c_str(), ws.size(), buf.get(), len, def_char,
+        cp, 0, ws.c_str(), static_cast<int>(ws.size()),
+        buf.get(), len, def_char,
         used_def_char ? &used_def : static_cast<int*>(0));
     if (len == 0)
         throw std::runtime_error("failed WideCharToMultiByte()");
@@ -76,7 +77,7 @@ inline wstring from_code_page(const std::string& s, unsigned cp)
     boost::scoped_array<wchar_t> buf(new wchar_t[len]);
 
     len = ::MultiByteToWideChar(
-        cp, 0, s.c_str(), s.size(), buf.get(), len);
+        cp, 0, s.c_str(), static_cast<int>(s.size()), buf.get(), len);
     if (len == 0)
         throw std::runtime_error("failed MultiByteToWideChar()");
 

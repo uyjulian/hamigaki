@@ -1,6 +1,6 @@
 // zip_crypt_test.cpp: test case for ZIP encryption
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -43,7 +43,7 @@ void zip_crypt_test()
     head.encrypted = true;
     head.method = ar::zip::method::deflate;
     head.update_time = std::time(0);
-    head.file_size = data.size();
+    head.file_size = static_cast<boost::uint32_t>(data.size());
     head.attributes = ar::msdos::attributes::read_only;
     head.permissions = 0123;
     head.comment = "test comment";

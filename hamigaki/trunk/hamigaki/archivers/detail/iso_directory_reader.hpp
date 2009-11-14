@@ -1,6 +1,6 @@
 // iso_directory_reader.hpp: ISO 9660 directory extent reader
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -60,7 +60,8 @@ public:
             self.system_use.assign(&block[bin_size + 1], su_len);
         tmp.push_back(self);
 
-        const boost::uint32_t lbn_mask = block_size - 1;
+        const boost::uint32_t lbn_mask =
+            static_cast<boost::uint32_t>(block_size - 1);
         boost::uint32_t pos = raw.record_size;
         while (pos < self.data_size)
         {
@@ -103,7 +104,7 @@ public:
                 pos += raw.record_size;
             }
             else
-                pos += (block_size - offset);
+                pos += static_cast<boost::uint32_t>(block_size - offset);
         }
 
         if (pos != self.data_size)

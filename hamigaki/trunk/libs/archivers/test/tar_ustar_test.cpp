@@ -1,6 +1,6 @@
 // tar_gnu_test.cpp: test case for ustar formatted tar
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -45,7 +45,7 @@ void tar_test()
     head.type_flag = ar::tar::type_flag::regular;
     head.path = "tar_test.dat";
     head.modified_time = fs_ex::timestamp::from_time_t(std::time(0));
-    head.file_size = data.size();
+    head.file_size = static_cast<boost::uint32_t>(data.size());
     head.permissions = 0123;
     head.comment = "test comment";
 
@@ -149,7 +149,7 @@ void path_length_test_aux(const fs::path& ph)
     head.type_flag = ar::tar::type_flag::regular;
     head.path = ph;
     head.modified_time = fs_ex::timestamp::from_time_t(std::time(0));
-    head.file_size = data.size();
+    head.file_size = static_cast<boost::uint32_t>(data.size());
     head.permissions = 0123;
     head.comment = "test comment";
 

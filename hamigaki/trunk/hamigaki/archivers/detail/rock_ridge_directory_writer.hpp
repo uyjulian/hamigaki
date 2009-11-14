@@ -1,6 +1,6 @@
 // rock_ridge_directory_writer.hpp: IEEE P1282 Rock Ridge directory writer
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -358,7 +358,8 @@ private:
             iso::system_use_entry_header head;
             head.signature[0] = 'N';
             head.signature[1] = 'M';
-            head.entry_size = sys_entry_head_size+1u+amt;
+            head.entry_size =
+                static_cast<boost::uint8_t>(sys_entry_head_size+1u+amt);
             head.version = 1u;
 
             char buf[sys_entry_head_size];
@@ -488,12 +489,17 @@ private:
             static_cast<boost::uint64_t>(offset) >> lbn_shift_);
     }
 
-    boost::uint32_t round_to_block_size(boost::uint32_t n)
+    boost::uint32_t round_to_block_size_impl(boost::uint32_t n)
     {
         if ((n & lbn_mask_) != 0u)
             return (n | lbn_mask_) + 1u;
         else
             return n;
+    }
+
+    std::size_t round_to_block_size(std::size_t n)
+    {
+        return round_to_block_size_impl(static_cast<boost::uint32_t>(n));
     }
 
 
@@ -511,7 +517,7 @@ private:
         if ((i == table.end()) || (x < *i))
             throw std::runtime_error("directory not found");
 
-        return i - table.begin();
+        return static_cast<boost::uint16_t>(i - table.begin());
     }
 
     std::pair<std::size_t,boost::uint16_t> find_directory(const path& ph) const
@@ -532,7 +538,7 @@ private:
         if ((limit & 1u) != 0)
             --limit;
 
-        boost::uint32_t su_size = su.size();
+        boost::uint32_t su_size = static_cast<boost::uint32_t>(su.size());
         if (su_size <= limit)
             return result_type(round_to_even(su_size), 0u);
 
@@ -544,7 +550,12 @@ private:
         {
             boost::uint32_t n = static_cast<unsigned char>(su[pos+2]);
             if (pos + n > limit)
-                return result_type(round_to_even(pos+ce_size), su_size - pos);
+            {
+                return result_type(
+                    round_to_even(pos+static_cast<boost::uint32_t>(ce_size)),
+                    su_size - pos
+                );
+            }
 
             pos += n;
         }
@@ -576,7 +587,9 @@ private:
             boost::uint32_t sys_size;
             boost::uint32_t rest_size;
             boost::tie(sys_size, rest_size) =
-                calc_system_use_size(rec.system_use, 0xFFu-size);
+                calc_system_use_size(
+                    rec.system_use, static_cast<boost::uint32_t>(0xFFu-size)
+                );
             size += sys_size;
             cont_size += rest_size;
 
@@ -590,7 +603,10 @@ private:
         pos = round_to_block_size(pos);
         cont_size = round_to_block_size(cont_size);
 
-        return std::pair<boost::uint32_t,boost::uint32_t>(pos, cont_size);
+        return std::make_pair(
+            static_cast<boost::uint32_t>(pos),
+            static_cast<boost::uint32_t>(cont_size)
+        );
     }
 
     void set_directory_sizes(boost::uint32_t pos)
@@ -656,7 +672,7 @@ private:
 
                 pos += ((dir_size+cont_size) >> lbn_shift_);
             }
-            prev_count = table.size();
+            prev_count = static_cast<boost::uint16_t>(table.size());
             base += prev_count;
         }
     }
@@ -721,7 +737,9 @@ private:
             boost::uint32_t sys_size;
             boost::uint32_t rest_size;
             boost::tie(sys_size, rest_size) =
-                calc_system_use_size(su, 0xFFu-size);
+                calc_system_use_size(
+                    su, static_cast<boost::uint32_t>(0xFFu-size)
+                );
             size += sys_size;
 
             std::size_t offset = pos & lbn_mask_;
@@ -734,7 +752,7 @@ private:
             }
 
             iso::directory_record raw;
-            raw.record_size = size;
+            raw.record_size = static_cast<boost::uint8_t>(size);
             raw.ext_record_size = 0;
             raw.data_pos = rec.data_pos;
             raw.data_size = rec.data_size;
@@ -743,7 +761,7 @@ private:
             raw.unit_size = 0;
             raw.interleave_gap_size = 0;
             raw.volume_seq_number = 1;
-            raw.file_id_size = id_size;
+            raw.file_id_size = static_cast<boost::uint8_t>(id_size);
 
             char* out = block_+offset;
             hamigaki::binary_write(out, raw);
@@ -770,9 +788,11 @@ private:
                 out += sys_entry_head_size;
 
                 iso::ce_system_use_entry_data data;
-                data.next_pos = cont_base + (cont_off & lbn_mask_);
-                data.next_offset = cont_off;
-                data.next_size = rest_size;
+                data.next_pos = static_cast<boost::uint32_t>(
+                    cont_base + (cont_off & lbn_mask_)
+                );
+                data.next_offset = static_cast<boost::uint32_t>(cont_off);
+                data.next_size = static_cast<boost::uint32_t>(rest_size);
 
                 hamigaki::binary_write(out, data);
                 out += ce_data_size;
@@ -802,7 +822,8 @@ private:
 
             if (std::size_t off = size & lbn_mask_)
             {
-                std::size_t rest = (1ul << lbn_shift_) - off;
+                std::size_t rest =
+                    static_cast<std::size_t>(1ul << lbn_shift_) - off;
                 iostreams::blocking_write(sink, block_, rest);
             }
         }
@@ -820,7 +841,8 @@ private:
             {
                 const iso_path_table_record& rec = table[i];
                 iso::path_table_record raw;
-                raw.dir_id_size = rec.dir_id.size();
+                raw.dir_id_size =
+                    static_cast<boost::uint8_t>(rec.dir_id.size());
                 raw.ext_record_size = 0;
                 raw.data_pos = rec.data_pos;
                 raw.parent_dir_number = rec.parent_index;
@@ -846,7 +868,7 @@ private:
         if (pad_size != 0)
             iostreams::blocking_write(sink, block_, pad_size);
 
-        return buffer.size();
+        return static_cast<boost::uint32_t>(buffer.size());
     }
 
     boost::uint16_t create_rr_moved()

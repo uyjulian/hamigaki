@@ -1,6 +1,6 @@
 // raw_cpio_file_sink_impl.hpp: raw cpio file sink implementation
 
-// Copyright Takeshi Mouri 2006-2008.
+// Copyright Takeshi Mouri 2006-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -144,11 +144,11 @@ inline void write_cpio_header(
 
     bin.magic = 070707;
     bin.dev = detail::to_cpio_dev_num(head.parent_device);
-    bin.ino = head.file_id;
+    bin.ino = static_cast<boost::uint16_t>(head.file_id);
     bin.mode = head.permissions;
-    bin.uid = head.uid;
-    bin.gid = head.gid;
-    bin.nlink = head.links;
+    bin.uid = static_cast<boost::uint16_t>(head.uid);
+    bin.gid = static_cast<boost::uint16_t>(head.gid);
+    bin.nlink = static_cast<boost::uint16_t>(head.links);
     bin.rdev = detail::to_cpio_dev_num(head.device);
 
     boost::uint32_t t =
@@ -158,7 +158,7 @@ inline void write_cpio_header(
     bin.mtime[0] = static_cast<boost::uint16_t>(t >> 16);
     bin.mtime[1] = static_cast<boost::uint16_t>(t & 0xFFFF);
 
-    bin.namesize = head.path.string().size()+1;
+    bin.namesize = static_cast<boost::uint16_t>(head.path.string().size()+1);
 
     bin.filesize[0] = static_cast<boost::uint16_t>(head.file_size >> 16);
     bin.filesize[1] = static_cast<boost::uint16_t>(head.file_size & 0xFFFF);
@@ -191,7 +191,8 @@ inline void write_cpio_header(cpio::svr4_header& raw, const cpio::header& head)
     cpio_write_hex(raw.rdev_minor,
         static_cast<boost::uint16_t>(head.device.minor));
 
-    cpio_write_hex(raw.namesize, head.path.string().size()+1);
+    cpio_write_hex(raw.namesize,
+		static_cast<boost::uint32_t>(head.path.string().size()+1));
 
     if ((head.format == cpio::svr4_chksum) && head.checksum)
         cpio_write_hex(raw.checksum, *head.checksum);
@@ -221,7 +222,7 @@ public:
         cpio::header local = head;
         std::string link_path = local.link_path.string();
         if (local.is_symlink())
-            local.file_size = link_path.size();
+            local.file_size = static_cast<boost::uint32_t>(link_path.size());
 
         write_header(local);
 
@@ -238,7 +239,7 @@ public:
             throw BOOST_IOSTREAMS_FAILURE("out of cpio entry size");
 
         iostreams::blocking_write(sink_, s, n);
-        pos_ += n;
+        pos_ += static_cast<boost::uint32_t>(n);
 
         return n;
     }

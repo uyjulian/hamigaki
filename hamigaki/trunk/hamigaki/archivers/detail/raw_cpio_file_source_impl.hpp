@@ -1,6 +1,6 @@
 // raw_cpio_file_source_impl.hpp: raw cpio file source implementation
 
-// Copyright Takeshi Mouri 2006-2008.
+// Copyright Takeshi Mouri 2006-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -44,13 +44,13 @@ inline boost::uint16_t read_cpio_header(
 {
     head.format = cpio::posix;
     head.parent_device =
-        cpio_make_device(cpio_read_oct<boost::uint32_t>(raw.dev));
+        cpio_make_device(cpio_read_oct<boost::uint16_t>(raw.dev));
     head.file_id = cpio_read_oct<boost::uint32_t>(raw.ino);
     head.permissions = cpio_read_oct<boost::uint16_t>(raw.mode);
     head.uid = cpio_read_oct<boost::uint32_t>(raw.uid);
     head.gid = cpio_read_oct<boost::uint32_t>(raw.gid);
     head.links = cpio_read_oct<boost::uint32_t>(raw.nlink);
-    head.device = cpio_make_device(cpio_read_oct<boost::uint32_t>(raw.rdev));
+    head.device = cpio_make_device(cpio_read_oct<boost::uint16_t>(raw.rdev));
     head.modified_time =
         static_cast<std::time_t>(cpio_read_oct<boost::int32_t>(raw.mtime));
 
@@ -94,7 +94,8 @@ inline boost::uint16_t read_cpio_header(
         head.format = cpio::svr4_chksum;
 
     head.file_id = cpio_read_hex<boost::uint32_t>(raw.ino);
-    head.permissions = cpio_read_hex<boost::uint16_t>(raw.mode);
+    head.permissions =
+        static_cast<boost::uint16_t>(cpio_read_hex<boost::uint32_t>(raw.mode));
     head.uid = cpio_read_hex<boost::uint32_t>(raw.uid);
     head.gid = cpio_read_hex<boost::uint32_t>(raw.gid);
     head.links = cpio_read_hex<boost::uint32_t>(raw.nlink);
@@ -115,9 +116,14 @@ inline boost::uint16_t read_cpio_header(
         );
 
     if (head.format == cpio::svr4_chksum)
-        head.checksum = cpio_read_hex<boost::uint16_t>(raw.checksum);
+    {
+        head.checksum = static_cast<boost::uint16_t>(
+            cpio_read_hex<boost::uint32_t>(raw.checksum));
+    }
 
-    return cpio_read_hex<boost::uint16_t>(raw.namesize);
+    return static_cast<boost::uint16_t>(
+        cpio_read_hex<boost::uint32_t>(raw.namesize)
+    );
 }
 
 template<class Source>
@@ -166,7 +172,7 @@ public:
         std::streamsize amt = auto_min(n, rest);
 
         iostreams::blocking_read(src_, s, amt);
-        pos_ += amt;
+        pos_ += static_cast<boost::uint32_t>(amt);
         return amt;
     }
 

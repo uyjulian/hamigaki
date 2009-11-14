@@ -1,6 +1,6 @@
 // sl_components_composer.hpp: IEEE P1282 "SL" components composer
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -79,7 +79,8 @@ private:
         iso::system_use_entry_header head;
         head.signature[0] = 'S';
         head.signature[1] = 'L';
-        head.entry_size = head_size + 1u + buffer_.size();
+        head.entry_size =
+            static_cast<boost::uint8_t>(head_size + 1u + buffer_.size());
         head.version = 1u;
         hamigaki::binary_write(entry_, head);
 
