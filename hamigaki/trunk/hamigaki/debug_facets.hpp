@@ -1,6 +1,6 @@
 // debug_facets.hpp: some facets for debugging
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2009.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -187,7 +187,7 @@ private:
     static iter_type put_message(iter_type s)
     {
         const char msg[] = "(debug_num_put)";
-        return std::copy(msg, msg+sizeof(msg), s);
+        return std::copy(msg, msg+sizeof(msg)-1, s);
     }
 };
 
