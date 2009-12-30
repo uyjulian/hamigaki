@@ -191,6 +191,46 @@ private:
     }
 };
 
+class debug_numpunct : public std::numpunct<char>
+{
+private:
+    typedef std::numpunct<char> base_type;
+
+public:
+    typedef char char_type;
+    typedef base_type::string_type string_type;
+
+    explicit debug_numpunct(std::size_t ref=0) : base_type(ref)
+    {
+    }
+
+protected:
+    char_type do_decimal_point() const // virtual
+    {
+        return ':';
+    }
+
+    char_type do_thousands_sep() const // virtual
+    {
+        return ';';
+    }
+
+    std::string do_grouping() const // virtual
+    {
+        return "\1";
+    }
+
+    string_type truename() const // virtual
+    {
+        return "true(debug_numpunct)";
+    }
+
+    string_type falsename() const // virtual
+    {
+        return "false(debug_numpunct)";
+    }
+};
+
 } // End namespace hamigaki.
 
 #endif // HAMIGAKI_DEBUG_FACETS_HPP
