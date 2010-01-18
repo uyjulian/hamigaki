@@ -5,7 +5,7 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 
-// See http://hamigaki.sourceforge.jp/libs/container for library home page.
+// See http://hamigaki.sourceforge.jp/libs/xor_list for library home page.
 
 #ifndef HAMIGAKI_XOR_LIST_HPP
 #define HAMIGAKI_XOR_LIST_HPP
