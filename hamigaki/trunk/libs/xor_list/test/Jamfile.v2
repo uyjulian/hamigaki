@@ -1,0 +1,18 @@
+# Hamigaki XOR List Library Test Jamfile
+
+# Copyright Takeshi Mouri 2010.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
+
+# See http://hamigaki.sourceforge.jp/libs/xor_list for library home page.
+
+import testing ;
+
+project
+    : requirements
+      <include>.
+      <library>/boost-lib//boost_unit_test_framework/<link>static
+    ;
+
+run test.cpp ;

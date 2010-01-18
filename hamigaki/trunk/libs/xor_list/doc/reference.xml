@@ -1,0 +1,670 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE library-reference PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.XOR_List Library Document Source
+
+  Copyright Takeshi Mouri 2010.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/xor_list for library home page.
+-->
+<library-reference xmlns:xi="http://www.w3.org/2001/XInclude">
+  <title>リファレンス</title>
+  <header name="hamigaki/xor_list.hpp">
+    <namespace name="hamigaki">
+      <class name="xor_list">
+        <template>
+          <template-type-parameter name="T"/>
+          <template-type-parameter name="Allocator">
+            <default>std::allocator&lt;T&gt;</default>
+          </template-type-parameter>
+        </template>
+
+        <purpose>
+          <simpara>XOR連結リストを表現するクラス。</simpara>
+        </purpose>
+
+        <typedef name="reference">
+          <type>typename Allocator::reference</type>
+        </typedef>
+        <typedef name="const_reference">
+          <type>typename Allocator::const_reference</type>
+        </typedef>
+        <typedef name="iterator">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+        <typedef name="const_iterator">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+        <typedef name="size_type">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+        <typedef name="difference_type">
+          <type><emphasis>implementation defined</emphasis></type>
+        </typedef>
+        <typedef name="value_type">
+          <type>T</type>
+        </typedef>
+        <typedef name="allocator_type">
+          <type>Allocator</type>
+        </typedef>
+        <typedef name="pointer">
+          <type>typename Allocator::pointer</type>
+        </typedef>
+        <typedef name="const_pointer">
+          <type>typename Allocator::const_pointer</type>
+        </typedef>
+        <typedef name="reverse_iterator">
+          <type>std::reverse_iterator&lt;iterator&gt;</type>
+        </typedef>
+        <typedef name="const_reverse_iterator">
+          <type>std::reverse_iterator&lt;const_iterator&gt;</type>
+        </typedef>
+
+        <constructor specifiers="explicit">
+          <parameter name="a">
+            <paramtype>const Allocator&amp;</paramtype>
+            <default>Allocator()</default>
+          </parameter>
+          <effects><simpara>空のリストを構築する。</simpara></effects>
+          <postconditions><simpara><code>get_allocator() == a</code></simpara></postconditions>
+          <complexity><simpara>定数時間</simpara></complexity>
+        </constructor>
+
+        <constructor specifiers="explicit">
+          <parameter name="n">
+            <paramtype>size_type</paramtype>
+          </parameter>
+          <parameter name="value">
+            <paramtype>const T&amp;</paramtype>
+            <default>T()</default>
+          </parameter>
+          <parameter name="a">
+            <paramtype>const Allocator&amp;</paramtype>
+            <default>Allocator()</default>
+          </parameter>
+          <effects><simpara>割付け子 <code>a</code> を用いてコピーした <code>n</code> 個の <code>value</code> からなるリストを構築する。</simpara></effects>
+          <postconditions><simpara><code>get_allocator() == a</code></simpara></postconditions>
+          <complexity><simpara><code>n</code> に比例する。</simpara></complexity>
+        </constructor>
+
+        <constructor>
+          <template>
+            <template-type-parameter name="InputIterator"/>
+          </template>
+          <parameter name="first">
+            <paramtype>InputIterator</paramtype>
+          </parameter>
+          <parameter name="last">
+            <paramtype>InputIterator</paramtype>
+          </parameter>
+          <parameter name="a">
+            <paramtype>const Allocator&amp;</paramtype>
+            <default>Allocator()</default>
+          </parameter>
+          <effects><simpara>割付け子 <code>a</code> を用いて区間 <code>[first, last)</code> をコピーした要素からなるリストを構築する。</simpara></effects>
+          <postconditions><simpara><code>get_allocator() == a</code></simpara></postconditions>
+          <complexity><simpara><code>std::distance(first, last)</code> に比例する。</simpara></complexity>
+        </constructor>
+
+        <constructor>
+          <parameter name="x">
+            <paramtype>const xor_list&lt;T,Allocator&gt;&amp;</paramtype>
+          </parameter>
+          <complexity><simpara>定数時間</simpara></complexity>
+        </constructor>
+
+        <destructor>
+          <complexity><simpara>線形時間</simpara></complexity>
+        </destructor>
+
+        <copy-assignment>
+          <type>xor_list&lt;T,Allocator&gt;&amp;</type>
+          <parameter name="x">
+            <paramtype>const xor_list&lt;T,Allocator&gt;&amp;</paramtype>
+          </parameter>
+          <complexity><simpara>線形時間</simpara></complexity>
+        </copy-assignment>
+
+        <method name="assign">
+          <template>
+            <template-type-parameter name="InputIterator"/>
+          </template>
+          <type>void</type>
+          <parameter name="first">
+            <paramtype>InputIterator</paramtype>
+          </parameter>
+          <parameter name="last">
+            <paramtype>InputIterator</paramtype>
+          </parameter>
+          <effects><para><programlisting><![CDATA[erase(begin(), end());
+insert(begin(), first, last);
+]]></programlisting></para></effects>
+        </method>
+
+        <method name="assign">
+          <type>void</type>
+          <parameter name="n">
+            <paramtype>size_type</paramtype>
+          </parameter>
+          <parameter name="value">
+            <paramtype>const T&amp;</paramtype>
+          </parameter>
+          <effects><para><programlisting><![CDATA[erase(begin(), end());
+insert(begin(), n, value);
+]]></programlisting></para></effects>
+        </method>
+
+        <method name="get_allocator" cv="const">
+          <type>allocator_type</type>
+          <complexity><simpara>定数時間</simpara></complexity>
+        </method>
+
+        <method-group name="iterators">
+          <overloaded-method name="begin">
+            <signature>
+              <type>iterator</type>
+            </signature>
+            <signature cv="const">
+              <type>const_iterator</type>
+            </signature>
+            <returns><simpara>先頭要素を指す反復子。そのような要素が存在しない場合は<code>end()</code></simpara></returns>
+            <complexity><simpara>定数時間</simpara></complexity>
+          </overloaded-method>
+
+          <overloaded-method name="end">
+            <signature>
+              <type>iterator</type>
+            </signature>
+            <signature cv="const">
+              <type>const_iterator</type>
+            </signature>
+            <returns><simpara>末尾要素の次を指す反復子</simpara></returns>
+            <complexity><simpara>定数時間</simpara></complexity>
+          </overloaded-method>
+
+          <overloaded-method name="rbegin">
+            <signature>
+              <type>reverse_iterator</type>
+            </signature>
+            <signature cv="const">
+              <type>const_reverse_iterator</type>
+            </signature>
+            <returns><simpara><code>reverse_iterator(end())</code></simpara></returns>
+            <complexity><simpara>定数時間</simpara></complexity>
+          </overloaded-method>
+
+          <overloaded-method name="rend">
+            <signature>
+              <type>reverse_iterator</type>
+            </signature>
+            <signature cv="const">
+              <type>const_reverse_iterator</type>
+            </signature>
+            <returns><simpara><code>reverse_iterator(begin())</code></simpara></returns>
+            <complexity><simpara>定数時間</simpara></complexity>
+          </overloaded-method>
+        </method-group>
+
+        <method-group name="capacity">
+          <method name="empty" cv="const">
+            <type>bool</type>
+            <returns><simpara>リストに要素が存在しなければ<code>true</code>。存在すれば<code>false</code>。</simpara></returns>
+            <complexity><simpara>定数時間</simpara></complexity>
+          </method>
+
+          <method name="size" cv="const">
+            <type>size_type</type>
+            <returns><simpara>リスト中の要素数</simpara></returns>
+            <complexity><simpara>線形時間</simpara></complexity>
+            <notes><simpara>Hamigaki.XOL_Listでは要素数をメンバとして保持しないため、線形時間を要する。</simpara></notes>
+          </method>
+
+          <method name="max_size" cv="const">
+            <type>size_type</type>
+            <returns><simpara>リストに格納できる要素の最大数</simpara></returns>
+            <complexity><simpara>定数時間</simpara></complexity>
+          </method>
+
+          <method name="resize">
+            <type>void</type>
+            <parameter name="sz">
+              <paramtype>size_type</paramtype>
+            </parameter>
+            <parameter name="c">
+              <paramtype>const T&amp;</paramtype>
+              <default>T()</default>
+            </parameter>
+            <effects><para><programlisting><![CDATA[if (sz > size())
+  insert(end(), sz-size(), c);
+else if (sz < size()) {
+  iterator i = begin();
+  advance(i, sz);
+  erase(i, end());
+}
+else
+    ; // 何もしない
+]]></programlisting></para></effects>
+          </method>
+        </method-group>
+
+        <method-group name="element access">
+          <method name="front">
+            <type>reference</type>
+            <returns><simpara><code>*begin()</code></simpara></returns>
+            <throws><simpara>なし</simpara></throws>
+            <complexity><simpara>定数時間</simpara></complexity>
+          </method>
+
+          <method name="front" cv="const">
+            <type>const_reference</type>
+            <returns><simpara><code>*begin()</code></simpara></returns>
+            <throws><simpara>なし</simpara></throws>
+            <complexity><simpara>定数時間</simpara></complexity>
+          </method>
+
+          <method name="back">
+            <type>reference</type>
+            <returns><simpara><code>*--end()</code></simpara></returns>
+            <throws><simpara>なし</simpara></throws>
+            <complexity><simpara>定数時間</simpara></complexity>
+          </method>
+
+          <method name="back" cv="const">
+            <type>const_reference</type>
+            <returns><simpara><code>*--end()</code></simpara></returns>
+            <throws><simpara>なし</simpara></throws>
+            <complexity><simpara>定数時間</simpara></complexity>
+          </method>
+        </method-group>
+
+        <method-group name="modifiers">
+          <method name="push_front">
+            <type>void</type>
+            <parameter name="x">
+              <paramtype>const T&amp;</paramtype>
+            </parameter>
+            <effects><para><programlisting><![CDATA[insert(begin(), x);]]></programlisting></para></effects>
+            <complexity><simpara>定数時間</simpara></complexity>
+          </method>
+
+          <method name="pop_front">
+            <type>void</type>
+            <effects><para><programlisting><![CDATA[erase(begin());]]></programlisting></para></effects>
+            <throws><simpara>なし</simpara></throws>
+            <complexity><simpara>定数時間</simpara></complexity>
+          </method>
+
+          <method name="push_back">
+            <type>void</type>
+            <parameter name="x">
+              <paramtype>const T&amp;</paramtype>
+            </parameter>
+            <effects><para><programlisting><![CDATA[insert(end(), x);]]></programlisting></para></effects>
+            <complexity><simpara>定数時間</simpara></complexity>
+          </method>
+
+          <method name="pop_back">
+            <type>void</type>
+            <effects><para><programlisting><![CDATA[erase(--end());]]></programlisting></para></effects>
+            <throws><simpara>なし</simpara></throws>
+            <complexity><simpara>定数時間</simpara></complexity>
+          </method>
+
+          <method name="insert">
+            <type>iterator</type>
+            <parameter name="position">
+              <paramtype>iterator</paramtype>
+            </parameter>
+            <parameter name="x">
+              <paramtype>const T&amp;</paramtype>
+            </parameter>
+            <effects><simpara><code>position</code> の前に <code>x</code> のコピーを挿入する。<code>position</code> とその一つ前の反復子が無効になる。</simpara></effects>
+            <returns><simpara>挿入された要素を指す反復子</simpara></returns>
+            <complexity><simpara>定数時間</simpara></complexity>
+          </method>
+
+          <method name="insert">
+            <type>void</type>
+            <parameter name="position">
+              <paramtype>iterator</paramtype>
+            </parameter>
+            <parameter name="n">
+              <paramtype>size_type</paramtype>
+            </parameter>
+            <parameter name="x">
+              <paramtype>const T&amp;</paramtype>
+            </parameter>
+            <effects><simpara><code>position</code> の前に <code>x</code> のコピーを <code>n</code> 個挿入する。<code>position</code> とその一つ前の反復子が無効になる。</simpara></effects>
+            <complexity><simpara><code>n</code> に比例する。</simpara></complexity>
+          </method>
+
+          <method name="insert">
+            <template>
+              <template-type-parameter name="InputIterator"/>
+            </template>
+            <type>void</type>
+            <parameter name="position">
+              <paramtype>iterator</paramtype>
+            </parameter>
+            <parameter name="first">
+              <paramtype>InputIterator</paramtype>
+            </parameter>
+            <parameter name="last">
+              <paramtype>InputIterator</paramtype>
+            </parameter>
+            <requires><simpara><code>first</code> と <code>last</code> は <code>*this</code> の反復子ではない。</simpara></requires>
+            <effects><simpara><code>position</code> の前に区間 <code>[first, last)</code> の要素のコピーを挿入する。<code>position</code> とその一つ前の反復子が無効になる。</simpara></effects>
+            <complexity><simpara><code>std::distance(first, last)</code> に比例する。</simpara></complexity>
+          </method>
+
+          <method name="erase">
+            <type>iterator</type>
+            <parameter name="position">
+              <paramtype>iterator</paramtype>
+            </parameter>
+            <effects><simpara><code>position</code> の指す要素を削除する。<code>position</code> とその一つ前の反復子が無効になる。</simpara></effects>
+            <returns><simpara>削除された要素の次の要素を指す反復子。そのような要素が存在しない場合は <code>end()</code>。また、削除された要素への参照が無効になる。</simpara></returns>
+            <throws><simpara>なし</simpara></throws>
+            <complexity><simpara>定数時間</simpara></complexity>
+          </method>
+
+          <method name="erase">
+            <type>iterator</type>
+            <parameter name="position">
+              <paramtype>iterator</paramtype>
+            </parameter>
+            <parameter name="last">
+              <paramtype>iterator</paramtype>
+            </parameter>
+            <effects><simpara>区間 <code>[position, last)</code> の要素を削除する。<code>position != begin()</code> ならば区間 <code>[--position, last]</code> の反復子が無効になる。それ以外の場合は区間 <code>[position, last]</code> の反復子が無効になる。また、削除された要素への参照が無効になる。</simpara></effects>
+            <returns><simpara>削除前に <code>last</code> の指していた要素を指す反復子。そのような要素が存在しない場合は <code>end()</code>。</simpara></returns>
+            <throws><simpara>なし</simpara></throws>
+            <complexity><simpara><code>std::distance(position, last)</code> に比例する。</simpara></complexity>
+          </method>
+
+          <method name="swap">
+            <type>void</type>
+            <parameter name="x">
+              <paramtype>xor_list&lt;T,Allocator&gt;&amp;</paramtype>
+            </parameter>
+            <effects><simpara><code>*this</code> と <code>x</code> の要素を交換する。<code>get_allocator() == x.get_allocator()</code> ならば、<code>*this</code> と <code>x</code> の要素を指す参照、ポインタ、反復子は無効にならない。それ以外の場合は参照、ポインタ、反復子すべてが無効になる。</simpara></effects>
+            <throws><simpara><code>get_allocator() == x.get_allocator()</code> ならば例外は送出されない。</simpara></throws>
+            <complexity><simpara><code>get_allocator() == x.get_allocator()</code> ならば定数時間。それ以外の場合は <code>size() + x.size()</code> に比例する。</simpara></complexity>
+          </method>
+
+          <method name="clear">
+            <type>void</type>
+            <effects><simpara>リスト中のすべての要素を削除する。リスト中の要素を指す参照、ポインタ、反復子はすべて無効になる。</simpara></effects>
+            <throws><simpara>なし</simpara></throws>
+            <complexity><simpara>線形時間</simpara></complexity>
+          </method>
+        </method-group>
+
+        <method-group name="list operations">
+          <method name="splice">
+            <type>void</type>
+            <parameter name="position">
+              <paramtype>iterator</paramtype>
+            </parameter>
+            <parameter name="x">
+              <paramtype>xor_list&lt;T,Allocator&gt;&amp;</paramtype>
+            </parameter>
+            <requires><simpara><code>&amp;x != this</code></simpara></requires>
+            <effects><simpara><code>x</code> の全要素を <code>position</code> の前に挿入し、<code>x</code> を空にする。<code>get_allocator() == x.get_allocator()</code> ならば <code>x.begin()</code> と <code>x.end()</code> が無効になる。それ以外の場合は <code>x</code> の要素を指す参照、ポインタ、反復子すべてが無効になる。また、<code>position</code> とその一つ前の反復子が無効になる。</simpara></effects>
+            <throws><simpara><code>get_allocator() == x.get_allocator()</code> ならば例外は送出されない。</simpara></throws>
+            <complexity><simpara><code>get_allocator() == x.get_allocator()</code> ならば定数時間。それ以外の場合は <code>x.size()</code> に比例する。</simpara></complexity>
+          </method>
+
+          <method name="splice">
+            <type>void</type>
+            <parameter name="position">
+              <paramtype>iterator</paramtype>
+            </parameter>
+            <parameter name="x">
+              <paramtype>xor_list&lt;T,Allocator&gt;&amp;</paramtype>
+            </parameter>
+            <parameter name="i">
+              <paramtype>iterator</paramtype>
+            </parameter>
+            <effects><simpara><code>i</code> の指す要素を <code>position</code> の前に挿入し、<code>x</code> からその要素を削除する。<code>get_allocator() != x.get_allocator()</code> ならば <code>i</code> の要素を指す参照、ポインタが無効になる。また、<code>position</code> とその一つ前の反復子、<code>i</code> とその前後の反復子が無効になる。</simpara></effects>
+            <throws><simpara><code>get_allocator() == x.get_allocator()</code> ならば例外は送出されない。</simpara></throws>
+            <complexity><simpara>定数時間</simpara></complexity>
+          </method>
+
+          <method name="splice">
+            <template>
+              <template-type-parameter name="InputIterator"/>
+            </template>
+            <type>void</type>
+            <parameter name="position">
+              <paramtype>iterator</paramtype>
+            </parameter>
+            <parameter name="x">
+              <paramtype>xor_list&lt;T,Allocator&gt;&amp;</paramtype>
+            </parameter>
+            <parameter name="first">
+              <paramtype>InputIterator</paramtype>
+            </parameter>
+            <parameter name="last">
+              <paramtype>InputIterator</paramtype>
+            </parameter>
+            <requires><simpara>区間 <code>[first, last)</code> は <code>x</code> に対する正当な区間である。<code>position</code> は 区間 <code>[first, last)</code> の反復子ではない。</simpara></requires>
+            <effects><simpara>区間 <code>[first, last)</code> の指す要素を <code>position</code> の前に挿入し、<code>x</code> からそれらの要素を削除する。<code>get_allocator() != x.get_allocator()</code> ならば区間 <code>[first, last)</code> の要素を指す参照、ポインタ、反復子が無効になる。また、<code>position</code> とその一つ前の反復子、<code>first</code> とその前後の反復子、<code>last</code> とその前方二つの反復子が無効になる。</simpara></effects>
+            <throws><simpara><code>get_allocator() == x.get_allocator()</code> ならば例外は送出されない。</simpara></throws>
+            <complexity><simpara><code>get_allocator() == x.get_allocator()</code> ならば定数時間。それ以外の場合は <code>std::distance(first, last)</code> に比例する。</simpara></complexity>
+          </method>
+
+          <method name="remove">
+            <type>void</type>
+            <parameter name="value">
+              <paramtype>const T&amp;</paramtype>
+            </parameter>
+            <effects><simpara><code>*i == value</code> となるような反復子 <code>i</code> の指す要素をすべて削除する。</simpara></effects>
+            <throws><simpara><code>*i == value</code> の評価以外では例外を送出しない。</simpara></throws>
+            <complexity><simpara><code>size()</code> 回の比較。</simpara></complexity>
+          </method>
+
+          <method name="remove_if">
+            <template>
+              <template-type-parameter name="Predicate"/>
+            </template>
+            <type>void</type>
+            <parameter name="pred">
+              <paramtype>Predicate</paramtype>
+            </parameter>
+            <effects><simpara><code>pred(*i) != false</code> となるような反復子 <code>i</code> の指す要素をすべて削除する。</simpara></effects>
+            <throws><simpara><code>pred(*i) != false</code> の評価以外では例外を送出しない。</simpara></throws>
+            <complexity><simpara><code>size()</code> 回の比較。</simpara></complexity>
+          </method>
+
+          <overloaded-method name="unique">
+            <signature>
+              <type>void</type>
+            </signature>
+            <signature>
+              <template>
+                <template-type-parameter name="BinaryPredicate"/>
+              </template>
+              <type>void</type>
+              <parameter name="binary_pred">
+                <paramtype>BinaryPredicate</paramtype>
+              </parameter>
+            </signature>
+            <effects><simpara>リスト中の連続する等価な要素を最初の要素を除いてすべて削除する。ここで「連続する等価な要素」とは、<code>*i == *j</code> (関数版)または <code>binary_pred(*i, *j) != false</code> (テンプレート版)となるような反復子 <code>i</code> と <code>j</code> の指す要素である。ただし、<code>j == --i</code> とする。</simpara></effects>
+            <complexity><simpara>コンテナが空でない場合、<code>size() - 1</code> 回の比較。それ以外の場合は比較を行わない。</simpara></complexity>
+          </overloaded-method>
+
+          <overloaded-method name="merge">
+            <signature>
+              <type>void</type>
+              <parameter name="x">
+                <paramtype>xor_list&lt;T,Allocator&gt;&amp;</paramtype>
+              </parameter>
+            </signature>
+            <signature>
+              <template>
+                <template-type-parameter name="Compare"/>
+              </template>
+              <type>void</type>
+              <parameter name="x">
+                <paramtype>xor_list&lt;T,Allocator&gt;&amp;</paramtype>
+              </parameter>
+              <parameter name="comp">
+                <paramtype>Compare</paramtype>
+              </parameter>
+            </signature>
+            <requires><simpara><code>operator&lt;</code> (関数版)または <code>comp</code> (テンプレート版) は弱全順序を定義していなければならない。<code>*this</code> 及び <code>x</code> はこの弱全順序に従って整列されていなければならない。</simpara></requires>
+            <effects><simpara>弱全順序を保ったまま、<code>x</code> のすべての要素を <code>*this</code> に併合する。<code>get_allocator() != x.get_allocator()</code> ならば <code>x</code> の要素を指す参照、ポインタが無効になる。また、<code>*this</code> と <code>x</code> のすべての反復子が無効になる。</simpara></effects>
+            <complexity><simpara>高々<code>size() + x.size() - 1</code> 回の比較。比較以外で例外が送出された場合は何もしない。</simpara></complexity>
+            <notes><simpara>二つのリストに同値な要素が含まれる場合、併合先のリストの要素が優先される。</simpara></notes>
+          </overloaded-method>
+
+          <overloaded-method name="sort">
+            <signature>
+              <type>void</type>
+            </signature>
+            <signature>
+              <template>
+                <template-type-parameter name="Compare"/>
+              </template>
+              <type>void</type>
+              <parameter name="comp">
+                <paramtype>Compare</paramtype>
+              </parameter>
+            </signature>
+            <requires><simpara><code>operator&lt;</code> (関数版)または <code>comp</code> (テンプレート版) は弱全順序を定義していなければならない。</simpara></requires>
+            <effects><simpara>弱全順序に従い、リスト中の要素を整列する。リスト中のすべての反復子が無効になる。</simpara></effects>
+            <complexity><simpara>およそ NlogN 回の比較。ただし、N = <code>size()</code> とする。</simpara></complexity>
+            <notes><simpara>この操作は安定ソートである。同値な要素の相対順序は保持される。要素の比較で例外が送出された場合、要素の順序は不定とする。</simpara></notes>
+          </overloaded-method>
+
+          <method name="reverse">
+            <type>void</type>
+            <effects><simpara>リスト中の要素の順序を逆転する。リスト中のすべての反復子が無効になる。</simpara></effects>
+            <throws><simpara>なし</simpara></throws>
+            <complexity><simpara>定数時間</simpara></complexity>
+          </method>
+        </method-group>
+
+        <free-function-group name="comparisons">
+          <function name="operator==">
+            <template>
+              <template-type-parameter name="T"/>
+              <template-type-parameter name="Allocator"/>
+            </template>
+            <type>bool</type>
+            <parameter name="x">
+              <paramtype>const xor_list&lt;T,Allocator&gt;&amp;</paramtype>
+            </parameter>
+            <parameter name="y">
+              <paramtype>const xor_list&lt;T,Allocator&gt;&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code>x.size() == y.size() &amp;&amp; std::equal(x.begin(), x.end(), y.begin(), y.end())</code></simpara></returns>
+            <complexity><simpara>線形時間</simpara></complexity>
+          </function>
+
+          <function name="operator&lt;">
+            <template>
+              <template-type-parameter name="T"/>
+              <template-type-parameter name="Allocator"/>
+            </template>
+            <type>bool</type>
+            <parameter name="x">
+              <paramtype>const xor_list&lt;T,Allocator&gt;&amp;</paramtype>
+            </parameter>
+            <parameter name="y">
+              <paramtype>const xor_list&lt;T,Allocator&gt;&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code>std::lexicographical_compare(x.begin(), x.end(), y.begin(), y.end())</code></simpara></returns>
+            <complexity><simpara>線形時間</simpara></complexity>
+          </function>
+
+          <function name="operator!=">
+            <template>
+              <template-type-parameter name="T"/>
+              <template-type-parameter name="Allocator"/>
+            </template>
+            <type>bool</type>
+            <parameter name="x">
+              <paramtype>const xor_list&lt;T,Allocator&gt;&amp;</paramtype>
+            </parameter>
+            <parameter name="y">
+              <paramtype>const xor_list&lt;T,Allocator&gt;&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code>!(x == y)</code></simpara></returns>
+            <complexity><simpara>線形時間</simpara></complexity>
+          </function>
+
+          <function name="operator&gt;">
+            <template>
+              <template-type-parameter name="T"/>
+              <template-type-parameter name="Allocator"/>
+            </template>
+            <type>bool</type>
+            <parameter name="x">
+              <paramtype>const xor_list&lt;T,Allocator&gt;&amp;</paramtype>
+            </parameter>
+            <parameter name="y">
+              <paramtype>const xor_list&lt;T,Allocator&gt;&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code>y &lt; x</code></simpara></returns>
+            <complexity><simpara>線形時間</simpara></complexity>
+          </function>
+
+          <function name="operator&gt;=">
+            <template>
+              <template-type-parameter name="T"/>
+              <template-type-parameter name="Allocator"/>
+            </template>
+            <type>bool</type>
+            <parameter name="x">
+              <paramtype>const xor_list&lt;T,Allocator&gt;&amp;</paramtype>
+            </parameter>
+            <parameter name="y">
+              <paramtype>const xor_list&lt;T,Allocator&gt;&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code>!(x &lt; y)</code></simpara></returns>
+            <complexity><simpara>線形時間</simpara></complexity>
+          </function>
+
+          <function name="operator&lt;=">
+            <template>
+              <template-type-parameter name="T"/>
+              <template-type-parameter name="Allocator"/>
+            </template>
+            <type>bool</type>
+            <parameter name="x">
+              <paramtype>const xor_list&lt;T,Allocator&gt;&amp;</paramtype>
+            </parameter>
+            <parameter name="y">
+              <paramtype>const xor_list&lt;T,Allocator&gt;&amp;</paramtype>
+            </parameter>
+            <returns><simpara><code>!(x &gt; y)</code></simpara></returns>
+            <complexity><simpara>線形時間</simpara></complexity>
+          </function>
+        </free-function-group>
+
+        <free-function-group name="specialized algorithms">
+          <function name="swap">
+            <template>
+              <template-type-parameter name="T"/>
+              <template-type-parameter name="Allocator"/>
+            </template>
+            <type>void</type>
+            <parameter name="x">
+              <paramtype>xor_list&lt;T,Allocator&gt;&amp;</paramtype>
+            </parameter>
+            <parameter name="y">
+              <paramtype>xor_list&lt;T,Allocator&gt;&amp;</paramtype>
+            </parameter>
+            <effects><para><programlisting><![CDATA[x.swap(y);]]></programlisting></para></effects>
+          </function>
+        </free-function-group>
+      </class>
+    </namespace>
+  </header>
+</library-reference>

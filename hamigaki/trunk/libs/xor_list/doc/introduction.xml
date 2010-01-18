@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//Boost//DTD BoostBook XML V1.0//EN"
+  "http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+<!--
+  Hamigaki.XOR_List Library Document Source
+
+  Copyright Takeshi Mouri 2010.
+  Distributed under the Boost Software License, Version 1.0.
+  (See accompanying file LICENSE_1_0.txt or copy at
+  http://www.boost.org/LICENSE_1_0.txt)
+
+  See http://hamigaki.sourceforge.jp/libs/xor_list for library home page.
+-->
+<section id="xor_list.introduction">
+  <title>紹介</title>
+  <using-namespace name="hamigaki"/>
+  <blockquote>
+    <attribution><emphasis role="bold">霧間誠一</emphasis></attribution>
+    <simpara><emphasis>人は目の前しか見えないと言うのは間違いだ。人は目の前すら見えていない</emphasis></simpara>
+  </blockquote>
+  <para>Hamigaki.XOR_Listライブラリは、STLコンテナ風のXOR連結リスト(XOR linked list)のクラステンプレート<classname>xor_list</classname>を提供する。</para>
+  <para>XOR連結リストは双方向連結リストの変種であるが、前後の要素へのポインタをリストノードに含めず、二つのポインタ値の排他的論理和を保持する点が異なる。</para>
+  <note><classname>xor_list</classname>は標準の<code>std::list</code>の要件を満たさず、多くの操作で反復子が無効となる。必ずしも<code>std::list</code>の代替とはならないので注意すること。</note>
+</section>
