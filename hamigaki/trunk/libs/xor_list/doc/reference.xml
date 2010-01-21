@@ -87,7 +87,7 @@
             <default>Allocator()</default>
           </parameter>
           <effects><simpara>割付け子 <code>a</code> を用いてコピーした <code>n</code> 個の <code>value</code> からなるリストを構築する。</simpara></effects>
-          <postconditions><simpara><code>get_allocator() == a</code></simpara></postconditions>
+          <postconditions><simpara><code>n == 0</code> なら <code>get_allocator() == a</code></simpara></postconditions>
           <complexity><simpara><code>n</code> に比例する。</simpara></complexity>
         </constructor>
 
@@ -106,7 +106,7 @@
             <default>Allocator()</default>
           </parameter>
           <effects><simpara>割付け子 <code>a</code> を用いて区間 <code>[first, last)</code> をコピーした要素からなるリストを構築する。</simpara></effects>
-          <postconditions><simpara><code>get_allocator() == a</code></simpara></postconditions>
+          <postconditions><simpara><code>first == last</code> なら <code>get_allocator() == a</code></simpara></postconditions>
           <complexity><simpara><code>std::distance(first, last)</code> に比例する。</simpara></complexity>
         </constructor>
 
