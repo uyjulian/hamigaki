@@ -16,6 +16,21 @@ project directx ;
 
 .project = [ project.current ] ;
 
+rule address-model-check ( properties * )
+{
+    local address-model =
+        [ MATCH ^<address-model>\(.*\)$ : $(properties) ] ;
+    address-model ?= 32 ;
+    if $(address-model) = 64
+    {
+        return <library-path>$(DXSDK_DIR)/Lib/x64 ;
+    }
+    else
+    {
+        return <library-path>$(DXSDK_DIR)/Lib/x86 ;
+    }
+}
+
 # Initializes the DirectX SDK toolset.
 #
 rule init (
@@ -46,10 +61,7 @@ rule init (
     {
         path-constant DXSDK_DIR : $(root) ;
         headers ?= $(DXSDK_DIR)/Include ;
-        libpath ?=
-            <library-path>$(DXSDK_DIR)/Lib/x86
-            <address-model>64:<library-path>$(DXSDK_DIR)/Lib/x64
-            ;
+        libpath ?= <conditional>@address-model-check ;
     }
 
     alias sdk
