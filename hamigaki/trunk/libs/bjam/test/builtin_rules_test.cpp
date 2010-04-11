@@ -1,6 +1,6 @@
 // builtin_rules_test.cpp: test case for bjam builtin rules
 
-// Copyright Takeshi Mouri 2007, 2008.
+// Copyright Takeshi Mouri 2007-2010.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -677,6 +677,19 @@ void check_if_file_test()
 
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
 #include <windows.h>
+int get_native_system_arch()
+{
+    HMODULE hmod = ::GetModuleHandleA("kernel32.dll");
+    FARPROC proc = ::GetProcAddress(hmod, "GetNativeSystemInfo");
+    if (proc == 0)
+        return 0;
+
+    typedef void (WINAPI *func_ptr_type)(SYSTEM_INFO*);
+    func_ptr_type GetNativeSystemInfo = (func_ptr_type)proc;
+    SYSTEM_INFO info;
+    GetNativeSystemInfo(&info);
+    return info.wProcessorArchitecture;
+}
 void w32_getreg_test()
 {
     char win_dir[MAX_PATH];
@@ -685,6 +698,8 @@ void w32_getreg_test()
     // should use SHGetSpecialFolderPath()
     std::string prog_dir(win_dir, 0, 3);
     prog_dir += "Program Files";
+    if (get_native_system_arch() != 0)
+        prog_dir += " (x86)";
 
     ::OSVERSIONINFOA info;
     std::memset(&info, 0, sizeof(info));
