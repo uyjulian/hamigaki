@@ -1,6 +1,6 @@
 // posix_error.hpp: POSIX error class
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007-2010.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -11,6 +11,7 @@
 #define HAMIGAKI_SYSTEM_POSIX_ERROR_HPP
 
 #include <hamigaki/system/system_error.hpp>
+#include <cstring>
 #include <new>
 #include <errno.h>
 #include <string.h>
