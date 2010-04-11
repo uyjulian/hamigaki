@@ -9,356 +9,115 @@
 <td><img border="0" src="../hamigaki.png" width="96" height="72"></td>
 <td>
 <h1>Compiler Status: Win32</h1>
-<b>Run Date:</b> 06:18:46 UTC, Sunday 10 May 2009
+<b>Run Date:</b> 12:15:31 UTC, Sunday 11 April 2010
 </td>
 </table>
 <br>
-<h2><a name="config-config_info-gcc-mingw-3.4.5">config - config_info - gcc-mingw-3.4.5</a></h2>
-<h3>Run output:</h3><pre>
-GNU C++ version 3.4.5 (mingw-vista special r3)
-Detected Platform: Win32
-Boost version 103900
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="config-config_info-msvc-8.0">config - config_info - msvc-8.0</a></h2>
-<h3>Run output:</h3><pre>
-Microsoft Visual C++ version 8.0
-Detected Platform: Win32
-Boost version 103900
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="config-config_info-msvc-9.0express">config - config_info - msvc-9.0express</a></h2>
-<h3>Run output:</h3><pre>
-Microsoft Visual C++ version 9.0
-Detected Platform: Win32
-Boost version 103900
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="archivers-iso9660_1999_test-gcc-mingw-3.4.5">archivers - iso9660_1999_test - gcc-mingw-3.4.5</a></h2>
-<h3>Compiler output:</h3><pre>
-In file included from C:/Boost/src/svn/boost/date_time/microsec_time_clock.hpp:23,
-                 from C:/Boost/src/svn/boost/date_time/posix_time/posix_time_types.hpp:11,
-                 from ../hamigaki/archivers/iso/date_time.hpp:22,
-                 from ../hamigaki/archivers/detail/iso_directory_record.hpp:13,
-                 from ../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:13,
-                 from ../hamigaki/archivers/detail/iso_file_sink_impl.hpp:13,
-                 from ../hamigaki/archivers/iso_file.hpp:13,
-                 from ..\libs\archivers\test\iso9660_1999_test.cpp:10:
-C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `uint64_t boost::date_time::winapi::file_time_to_microseconds(const FileTimeT&amp;)':
-C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:101: warning: left shift count &gt;= width of type
-../hamigaki/archivers/detail/iso_file_reader.hpp: In function `void hamigaki::archivers::detail::parse_iso_file_version(hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Path = boost::filesystem::wpath]':
-../hamigaki/archivers/detail/iso_file_reader.hpp:110:   instantiated from `bool hamigaki::archivers::detail::iso_file_reader&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/detail/raw_iso_file_source_impl.hpp:125:   instantiated from `bool hamigaki::archivers::detail::basic_raw_iso_file_source_impl&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/detail/iso_file_source_impl.hpp:45:   instantiated from `bool hamigaki::archivers::detail::basic_iso_file_source_impl&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:46:   instantiated from `bool hamigaki::archivers::basic_iso_file_source&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:264:   instantiated from here
-../hamigaki/archivers/detail/iso_file_reader.hpp:43: warning: comparison between signed and unsigned integer expressions
-../hamigaki/archivers/detail/iso_file_reader.hpp:43: warning: comparison between signed and unsigned integer expressions
-</pre>
-<h2><a name="archivers-iso9660_lv1_test-gcc-mingw-3.4.5">archivers - iso9660_lv1_test - gcc-mingw-3.4.5</a></h2>
-<h3>Compiler output:</h3><pre>
-In file included from C:/Boost/src/svn/boost/date_time/microsec_time_clock.hpp:23,
-                 from C:/Boost/src/svn/boost/date_time/posix_time/posix_time_types.hpp:11,
-                 from ../hamigaki/archivers/iso/date_time.hpp:22,
-                 from ../hamigaki/archivers/detail/iso_directory_record.hpp:13,
-                 from ../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:13,
-                 from ../hamigaki/archivers/detail/iso_file_sink_impl.hpp:13,
-                 from ../hamigaki/archivers/iso_file.hpp:13,
-                 from ..\libs\archivers\test\iso9660_lv1_test.cpp:10:
-C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `uint64_t boost::date_time::winapi::file_time_to_microseconds(const FileTimeT&amp;)':
-C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:101: warning: left shift count &gt;= width of type
-../hamigaki/archivers/detail/iso_file_reader.hpp: In function `void hamigaki::archivers::detail::parse_iso_file_version(hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Path = boost::filesystem::wpath]':
-../hamigaki/archivers/detail/iso_file_reader.hpp:110:   instantiated from `bool hamigaki::archivers::detail::iso_file_reader&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/detail/raw_iso_file_source_impl.hpp:125:   instantiated from `bool hamigaki::archivers::detail::basic_raw_iso_file_source_impl&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/detail/iso_file_source_impl.hpp:45:   instantiated from `bool hamigaki::archivers::detail::basic_iso_file_source_impl&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:46:   instantiated from `bool hamigaki::archivers::basic_iso_file_source&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:264:   instantiated from here
-../hamigaki/archivers/detail/iso_file_reader.hpp:43: warning: comparison between signed and unsigned integer expressions
-../hamigaki/archivers/detail/iso_file_reader.hpp:43: warning: comparison between signed and unsigned integer expressions
-</pre>
-<h2><a name="archivers-iso9660_lv2_test-gcc-mingw-3.4.5">archivers - iso9660_lv2_test - gcc-mingw-3.4.5</a></h2>
-<h3>Compiler output:</h3><pre>
-In file included from C:/Boost/src/svn/boost/date_time/microsec_time_clock.hpp:23,
-                 from C:/Boost/src/svn/boost/date_time/posix_time/posix_time_types.hpp:11,
-                 from ../hamigaki/archivers/iso/date_time.hpp:22,
-                 from ../hamigaki/archivers/detail/iso_directory_record.hpp:13,
-                 from ../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:13,
-                 from ../hamigaki/archivers/detail/iso_file_sink_impl.hpp:13,
-                 from ../hamigaki/archivers/iso_file.hpp:13,
-                 from ..\libs\archivers\test\iso9660_lv2_test.cpp:10:
-C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `uint64_t boost::date_time::winapi::file_time_to_microseconds(const FileTimeT&amp;)':
-C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:101: warning: left shift count &gt;= width of type
-../hamigaki/archivers/detail/iso_file_reader.hpp: In function `void hamigaki::archivers::detail::parse_iso_file_version(hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Path = boost::filesystem::wpath]':
-../hamigaki/archivers/detail/iso_file_reader.hpp:110:   instantiated from `bool hamigaki::archivers::detail::iso_file_reader&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/detail/raw_iso_file_source_impl.hpp:125:   instantiated from `bool hamigaki::archivers::detail::basic_raw_iso_file_source_impl&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/detail/iso_file_source_impl.hpp:45:   instantiated from `bool hamigaki::archivers::detail::basic_iso_file_source_impl&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:46:   instantiated from `bool hamigaki::archivers::basic_iso_file_source&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:264:   instantiated from here
-../hamigaki/archivers/detail/iso_file_reader.hpp:43: warning: comparison between signed and unsigned integer expressions
-../hamigaki/archivers/detail/iso_file_reader.hpp:43: warning: comparison between signed and unsigned integer expressions
-</pre>
-<h2><a name="archivers-iso9660_lv3_test-gcc-mingw-3.4.5">archivers - iso9660_lv3_test - gcc-mingw-3.4.5</a></h2>
-<h3>Compiler output:</h3><pre>
-In file included from C:/Boost/src/svn/boost/date_time/microsec_time_clock.hpp:23,
-                 from C:/Boost/src/svn/boost/date_time/posix_time/posix_time_types.hpp:11,
-                 from ../hamigaki/archivers/iso/date_time.hpp:22,
-                 from ../hamigaki/archivers/detail/iso_directory_record.hpp:13,
-                 from ../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:13,
-                 from ../hamigaki/archivers/detail/iso_file_sink_impl.hpp:13,
-                 from ../hamigaki/archivers/iso_file.hpp:13,
-                 from ..\libs\archivers\test\iso9660_lv3_test.cpp:10:
-C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `uint64_t boost::date_time::winapi::file_time_to_microseconds(const FileTimeT&amp;)':
-C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:101: warning: left shift count &gt;= width of type
-../hamigaki/archivers/detail/iso_file_reader.hpp: In function `void hamigaki::archivers::detail::parse_iso_file_version(hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Path = boost::filesystem::wpath]':
-../hamigaki/archivers/detail/iso_file_reader.hpp:110:   instantiated from `bool hamigaki::archivers::detail::iso_file_reader&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/detail/raw_iso_file_source_impl.hpp:125:   instantiated from `bool hamigaki::archivers::detail::basic_raw_iso_file_source_impl&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/detail/iso_file_source_impl.hpp:45:   instantiated from `bool hamigaki::archivers::detail::basic_iso_file_source_impl&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:46:   instantiated from `bool hamigaki::archivers::basic_iso_file_source&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:264:   instantiated from here
-../hamigaki/archivers/detail/iso_file_reader.hpp:43: warning: comparison between signed and unsigned integer expressions
-../hamigaki/archivers/detail/iso_file_reader.hpp:43: warning: comparison between signed and unsigned integer expressions
-</pre>
-<h2><a name="archivers-iso_date_time_test-gcc-mingw-3.4.5">archivers - iso_date_time_test - gcc-mingw-3.4.5</a></h2>
-<h3>Compiler output:</h3><pre>
-In file included from C:/Boost/src/svn/boost/date_time/microsec_time_clock.hpp:23,
-                 from C:/Boost/src/svn/boost/date_time/posix_time/posix_time_types.hpp:11,
-                 from ../hamigaki/archivers/iso/date_time.hpp:22,
-                 from ..\libs\archivers\test\iso_date_time_test.cpp:10:
-C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `uint64_t boost::date_time::winapi::file_time_to_microseconds(const FileTimeT&amp;)':
-C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:101: warning: left shift count &gt;= width of type
-</pre>
-<h2><a name="archivers-joliet_test-gcc-mingw-3.4.5">archivers - joliet_test - gcc-mingw-3.4.5</a></h2>
-<h3>Compiler output:</h3><pre>
-In file included from C:/Boost/src/svn/boost/date_time/microsec_time_clock.hpp:23,
-                 from C:/Boost/src/svn/boost/date_time/posix_time/posix_time_types.hpp:11,
-                 from ../hamigaki/archivers/iso/date_time.hpp:22,
-                 from ../hamigaki/archivers/detail/iso_directory_record.hpp:13,
-                 from ../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:13,
-                 from ../hamigaki/archivers/detail/iso_file_sink_impl.hpp:13,
-                 from ../hamigaki/archivers/iso_file.hpp:13,
-                 from ..\libs\archivers\test\joliet_test.cpp:10:
-C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `uint64_t boost::date_time::winapi::file_time_to_microseconds(const FileTimeT&amp;)':
-C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:101: warning: left shift count &gt;= width of type
-../hamigaki/archivers/detail/iso_file_reader.hpp: In function `void hamigaki::archivers::detail::parse_iso_file_version(hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Path = boost::filesystem::wpath]':
-../hamigaki/archivers/detail/iso_file_reader.hpp:110:   instantiated from `bool hamigaki::archivers::detail::iso_file_reader&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/detail/raw_iso_file_source_impl.hpp:125:   instantiated from `bool hamigaki::archivers::detail::basic_raw_iso_file_source_impl&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/detail/iso_file_source_impl.hpp:45:   instantiated from `bool hamigaki::archivers::detail::basic_iso_file_source_impl&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:46:   instantiated from `bool hamigaki::archivers::basic_iso_file_source&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:264:   instantiated from here
-../hamigaki/archivers/detail/iso_file_reader.hpp:43: warning: comparison between signed and unsigned integer expressions
-../hamigaki/archivers/detail/iso_file_reader.hpp:43: warning: comparison between signed and unsigned integer expressions
-</pre>
-<h2><a name="archivers-joliet_wide_test-gcc-mingw-3.4.5">archivers - joliet_wide_test - gcc-mingw-3.4.5</a></h2>
-<h3>Compiler output:</h3><pre>
-In file included from C:/Boost/src/svn/boost/date_time/microsec_time_clock.hpp:23,
-                 from C:/Boost/src/svn/boost/date_time/posix_time/posix_time_types.hpp:11,
-                 from ../hamigaki/archivers/iso/date_time.hpp:22,
-                 from ../hamigaki/archivers/detail/iso_directory_record.hpp:13,
-                 from ../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:13,
-                 from ../hamigaki/archivers/detail/iso_file_sink_impl.hpp:13,
-                 from ../hamigaki/archivers/iso_file.hpp:13,
-                 from ..\libs\archivers\test\joliet_wide_test.cpp:10:
-C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `uint64_t boost::date_time::winapi::file_time_to_microseconds(const FileTimeT&amp;)':
-C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:101: warning: left shift count &gt;= width of type
-../hamigaki/archivers/detail/iso_file_reader.hpp: In function `void hamigaki::archivers::detail::parse_iso_file_version(hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Path = boost::filesystem::wpath]':
-../hamigaki/archivers/detail/iso_file_reader.hpp:110:   instantiated from `bool hamigaki::archivers::detail::iso_file_reader&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/detail/raw_iso_file_source_impl.hpp:125:   instantiated from `bool hamigaki::archivers::detail::basic_raw_iso_file_source_impl&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/detail/iso_file_source_impl.hpp:45:   instantiated from `bool hamigaki::archivers::detail::basic_iso_file_source_impl&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:46:   instantiated from `bool hamigaki::archivers::basic_iso_file_source&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:264:   instantiated from here
-../hamigaki/archivers/detail/iso_file_reader.hpp:43: warning: comparison between signed and unsigned integer expressions
-../hamigaki/archivers/detail/iso_file_reader.hpp:43: warning: comparison between signed and unsigned integer expressions
-</pre>
-<h2><a name="archivers-rock_ridge_test-gcc-mingw-3.4.5">archivers - rock_ridge_test - gcc-mingw-3.4.5</a></h2>
-<h3>Compiler output:</h3><pre>
-In file included from C:/Boost/src/svn/boost/date_time/microsec_time_clock.hpp:23,
-                 from C:/Boost/src/svn/boost/date_time/posix_time/posix_time_types.hpp:11,
-                 from ../hamigaki/archivers/iso/date_time.hpp:22,
-                 from ../hamigaki/archivers/detail/iso_directory_record.hpp:13,
-                 from ../hamigaki/archivers/detail/raw_iso_file_sink_impl.hpp:13,
-                 from ../hamigaki/archivers/detail/iso_file_sink_impl.hpp:13,
-                 from ../hamigaki/archivers/iso_file.hpp:13,
-                 from ..\libs\archivers\test\rock_ridge_test.cpp:10:
-C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `uint64_t boost::date_time::winapi::file_time_to_microseconds(const FileTimeT&amp;)':
-C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:101: warning: left shift count &gt;= width of type
-../hamigaki/archivers/detail/iso_file_reader.hpp: In function `void hamigaki::archivers::detail::parse_iso_file_version(hamigaki::archivers::iso::basic_header&lt;Path&gt;&amp;) [with Path = boost::filesystem::wpath]':
-../hamigaki/archivers/detail/iso_file_reader.hpp:110:   instantiated from `bool hamigaki::archivers::detail::iso_file_reader&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/detail/raw_iso_file_source_impl.hpp:125:   instantiated from `bool hamigaki::archivers::detail::basic_raw_iso_file_source_impl&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/detail/iso_file_source_impl.hpp:45:   instantiated from `bool hamigaki::archivers::detail::basic_iso_file_source_impl&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:46:   instantiated from `bool hamigaki::archivers::basic_iso_file_source&lt;Source, Path&gt;::next_entry() [with Source = hamigaki::iostreams::file_source, Path = boost::filesystem::wpath]'
-../hamigaki/archivers/iso_file.hpp:264:   instantiated from here
-../hamigaki/archivers/detail/iso_file_reader.hpp:43: warning: comparison between signed and unsigned integer expressions
-../hamigaki/archivers/detail/iso_file_reader.hpp:43: warning: comparison between signed and unsigned integer expressions
-</pre>
-<h2><a name="audio-ds_enum_test-gcc-mingw-3.4.5">audio - ds_enum_test - gcc-mingw-3.4.5</a></h2>
+<h2><a name="audio-ds_enum_test-gcc-mingw-4.4.0">audio - ds_enum_test - gcc-mingw-4.4.0</a></h2>
 <h3>Run output:</h3><pre>
 Running 2 test cases...
 The installed DirectSound drivers:
-プライマリ サウンド ドライバ
-スピーカー (SoundMAX Integrated Digital Audio)
+プライマリ サウンド ドライバー
+デジタル出力 (USB Multi-Channel Audio Device)
+スピーカー (USB Multi-Channel Audio Device)
+スピーカー / ヘッドフォン (Realtek High Definition Audio)
 
 The installed DirectSoundCapture drivers:
-プライマリ サウンド キャプチャ ドライバ
-マイク (SoundMAX Integrated Digita
-ライン入力 (SoundMAX Integrated Digi
+プライマリ サウンド キャプチャ ドライバー
+マイク (USB Multi-Channel Audio De
+ライン入力 (USB Multi-Channel Audio 
+Stereo Mix (USB Multi-Channel A
+マイク (Realtek High Definition Au
+SPDIF In (USB Multi-Channel Aud
 
 
 *** No errors detected
  
 EXIT STATUS: 0 
 </pre>
-<h2><a name="audio-ds_enum_test-msvc-8.0">audio - ds_enum_test - msvc-8.0</a></h2>
+<h2><a name="audio-ds_enum_test-msvc-9.0">audio - ds_enum_test - msvc-9.0</a></h2>
 <h3>Run output:</h3><pre>
 Running 2 test cases...
 The installed DirectSound drivers:
-プライマリ サウンド ドライバ
-スピーカー (SoundMAX Integrated Digital Audio)
+プライマリ サウンド ドライバー
+デジタル出力 (USB Multi-Channel Audio Device)
+スピーカー (USB Multi-Channel Audio Device)
+スピーカー / ヘッドフォン (Realtek High Definition Audio)
 
 The installed DirectSoundCapture drivers:
-プライマリ サウンド キャプチャ ドライバ
-マイク (SoundMAX Integrated Digita
-ライン入力 (SoundMAX Integrated Digi
+プライマリ サウンド キャプチャ ドライバー
+マイク (USB Multi-Channel Audio De
+ライン入力 (USB Multi-Channel Audio 
+Stereo Mix (USB Multi-Channel A
+マイク (Realtek High Definition Au
+SPDIF In (USB Multi-Channel Aud
 
 
 *** No errors detected
  
 EXIT STATUS: 0 
 </pre>
-<h2><a name="audio-ds_enum_test-msvc-9.0express">audio - ds_enum_test - msvc-9.0express</a></h2>
-<h3>Run output:</h3><pre>
-Running 2 test cases...
-The installed DirectSound drivers:
-プライマリ サウンド ドライバ
-スピーカー (SoundMAX Integrated Digital Audio)
-
-The installed DirectSoundCapture drivers:
-プライマリ サウンド キャプチャ ドライバ
-マイク (SoundMAX Integrated Digita
-ライン入力 (SoundMAX Integrated Digi
-
-
-*** No errors detected
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="bjam-arg_p_test-gcc-mingw-3.4.5">bjam - arg_p_test - gcc-mingw-3.4.5</a></h2>
+<h2><a name="bjam-arg_p_test-gcc-mingw-4.4.0">bjam - arg_p_test - gcc-mingw-4.4.0</a></h2>
 <h3>Compiler output:</h3><pre>
 In file included from ../hamigaki/bjam/util/keywords.hpp:14,
                  from ../hamigaki/bjam/util/impl/argument_parser.ipp:13,
                  from ../hamigaki/bjam/util/argument_parser.hpp:13,
                  from ..\libs\bjam\test\arg_p_test.cpp:10:
-C:/Boost/src/svn/boost/spirit/phoenix.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/phoenix1.hpp"
+C:\Boost\src\svn/boost/spirit/phoenix.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/phoenix1.hpp"
 In file included from ../hamigaki/bjam/util/impl/argument_parser.ipp:15,
                  from ../hamigaki/bjam/util/argument_parser.hpp:13,
                  from ..\libs\bjam\test\arg_p_test.cpp:10:
-C:/Boost/src/svn/boost/spirit/core.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/classic_core.hpp"
+C:\Boost\src\svn/boost/spirit/core.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/classic_core.hpp"
 In file included from ..\libs\bjam\test\arg_p_test.cpp:11:
-C:/Boost/src/svn/boost/spirit/actor/assign_actor.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/classic_assign_actor.hpp"
+C:\Boost\src\svn/boost/spirit/actor/assign_actor.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/classic_assign_actor.hpp"
 </pre>
-<h2><a name="bjam-arg_p_test-msvc-8.0">bjam - arg_p_test - msvc-8.0</a></h2>
-<h3>Compiler output:</h3><pre>
-arg_p_test.cpp
-Warning: This header is deprecated. Please use: boost/spirit/include/phoenix1.hpp
-Warning: This header is deprecated. Please use: boost/spirit/include/classic_core.hpp
-Warning: This header is deprecated. Please use: boost/spirit/include/classic_assign_actor.hpp
-</pre>
-<h2><a name="bjam-arg_p_test-msvc-9.0express">bjam - arg_p_test - msvc-9.0express</a></h2>
-<h3>Compiler output:</h3><pre>
-arg_p_test.cpp
-Warning: This header is deprecated. Please use: boost/spirit/include/phoenix1.hpp
-Warning: This header is deprecated. Please use: boost/spirit/include/classic_core.hpp
-Warning: This header is deprecated. Please use: boost/spirit/include/classic_assign_actor.hpp
-</pre>
-<h2><a name="bjam-expression_test-gcc-mingw-3.4.5">bjam - expression_test - gcc-mingw-3.4.5</a></h2>
+<h2><a name="bjam-expression_test-gcc-mingw-4.4.0">bjam - expression_test - gcc-mingw-4.4.0</a></h2>
 <h3>Compiler output:</h3><pre>
 In file included from ../hamigaki/bjam/grammars/bjam_expression_grammar_gen.hpp:15,
                  from ..\libs\bjam\test\expression_test.cpp:10:
-C:/Boost/src/svn/boost/spirit/core.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/classic_core.hpp"
+C:\Boost\src\svn/boost/spirit/core.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/classic_core.hpp"
 </pre>
-<h2><a name="bjam-expression_test-msvc-8.0">bjam - expression_test - msvc-8.0</a></h2>
-<h3>Compiler output:</h3><pre>
-expression_test.cpp
-Warning: This header is deprecated. Please use: boost/spirit/include/classic_core.hpp
-</pre>
-<h2><a name="bjam-expression_test-msvc-9.0express">bjam - expression_test - msvc-9.0express</a></h2>
-<h3>Compiler output:</h3><pre>
-expression_test.cpp
-Warning: This header is deprecated. Please use: boost/spirit/include/classic_core.hpp
-</pre>
-<h2><a name="bjam-keyword_p_test-gcc-mingw-3.4.5">bjam - keyword_p_test - gcc-mingw-3.4.5</a></h2>
+<h2><a name="bjam-keyword_p_test-gcc-mingw-4.4.0">bjam - keyword_p_test - gcc-mingw-4.4.0</a></h2>
 <h3>Compiler output:</h3><pre>
 In file included from ../hamigaki/bjam/util/keyword_parser.hpp:13,
                  from ..\libs\bjam\test\keyword_p_test.cpp:10:
-C:/Boost/src/svn/boost/spirit/core.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/classic_core.hpp"
+C:\Boost\src\svn/boost/spirit/core.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/classic_core.hpp"
 </pre>
-<h2><a name="bjam-keyword_p_test-msvc-8.0">bjam - keyword_p_test - msvc-8.0</a></h2>
-<h3>Compiler output:</h3><pre>
-keyword_p_test.cpp
-Warning: This header is deprecated. Please use: boost/spirit/include/classic_core.hpp
-</pre>
-<h2><a name="bjam-keyword_p_test-msvc-9.0express">bjam - keyword_p_test - msvc-9.0express</a></h2>
-<h3>Compiler output:</h3><pre>
-keyword_p_test.cpp
-Warning: This header is deprecated. Please use: boost/spirit/include/classic_core.hpp
-</pre>
-<h2><a name="bjam-non_punct_p_test-gcc-mingw-3.4.5">bjam - non_punct_p_test - gcc-mingw-3.4.5</a></h2>
+<h2><a name="bjam-non_punct_p_test-gcc-mingw-4.4.0">bjam - non_punct_p_test - gcc-mingw-4.4.0</a></h2>
 <h3>Compiler output:</h3><pre>
 In file included from ../hamigaki/bjam/util/keywords.hpp:14,
                  from ../hamigaki/bjam/util/impl/argument_parser.ipp:13,
                  from ../hamigaki/bjam/util/argument_parser.hpp:13,
                  from ..\libs\bjam\test\non_punct_p_test.cpp:10:
-C:/Boost/src/svn/boost/spirit/phoenix.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/phoenix1.hpp"
+C:\Boost\src\svn/boost/spirit/phoenix.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/phoenix1.hpp"
 In file included from ../hamigaki/bjam/util/impl/argument_parser.ipp:15,
                  from ../hamigaki/bjam/util/argument_parser.hpp:13,
                  from ..\libs\bjam\test\non_punct_p_test.cpp:10:
-C:/Boost/src/svn/boost/spirit/core.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/classic_core.hpp"
+C:\Boost\src\svn/boost/spirit/core.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/classic_core.hpp"
 </pre>
-<h2><a name="bjam-non_punct_p_test-msvc-8.0">bjam - non_punct_p_test - msvc-8.0</a></h2>
-<h3>Compiler output:</h3><pre>
-non_punct_p_test.cpp
-Warning: This header is deprecated. Please use: boost/spirit/include/phoenix1.hpp
-Warning: This header is deprecated. Please use: boost/spirit/include/classic_core.hpp
-</pre>
-<h2><a name="bjam-non_punct_p_test-msvc-9.0express">bjam - non_punct_p_test - msvc-9.0express</a></h2>
-<h3>Compiler output:</h3><pre>
-non_punct_p_test.cpp
-Warning: This header is deprecated. Please use: boost/spirit/include/phoenix1.hpp
-Warning: This header is deprecated. Please use: boost/spirit/include/classic_core.hpp
-
-</pre>
-<h2><a name="bjam-string_p_test-gcc-mingw-3.4.5">bjam - string_p_test - gcc-mingw-3.4.5</a></h2>
+<h2><a name="bjam-string_p_test-gcc-mingw-4.4.0">bjam - string_p_test - gcc-mingw-4.4.0</a></h2>
 <h3>Compiler output:</h3><pre>
 In file included from ../hamigaki/bjam/util/keywords.hpp:14,
                  from ../hamigaki/bjam/util/impl/string_parser.ipp:13,
                  from ../hamigaki/bjam/util/string_parser.hpp:13,
                  from ..\libs\bjam\test\string_p_test.cpp:10:
-C:/Boost/src/svn/boost/spirit/phoenix.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/phoenix1.hpp"
+C:\Boost\src\svn/boost/spirit/phoenix.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/phoenix1.hpp"
 In file included from ../hamigaki/bjam/util/impl/string_parser.ipp:15,
                  from ../hamigaki/bjam/util/string_parser.hpp:13,
                  from ..\libs\bjam\test\string_p_test.cpp:10:
-C:/Boost/src/svn/boost/spirit/core.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/classic_core.hpp"
+C:\Boost\src\svn/boost/spirit/core.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/classic_core.hpp"
 In file included from ..\libs\bjam\test\string_p_test.cpp:11:
-C:/Boost/src/svn/boost/spirit/actor/assign_actor.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/classic_assign_actor.hpp"
-
+C:\Boost\src\svn/boost/spirit/actor/assign_actor.hpp:18:4: warning: #warning "This header is deprecated. Please use: boost/spirit/include/classic_assign_actor.hpp"
 </pre>
-<h2><a name="bjam-string_p_test-msvc-8.0">bjam - string_p_test - msvc-8.0</a></h2>
+<h2><a name="coroutine-coroutine_test-gcc-mingw-4.4.0">coroutine - coroutine_test - gcc-mingw-4.4.0</a></h2>
 <h3>Compiler output:</h3><pre>
-string_p_test.cpp
-Warning: This header is deprecated. Please use: boost/spirit/include/phoenix1.hpp
-Warning: This header is deprecated. Please use: boost/spirit/include/classic_core.hpp
-Warning: This header is deprecated. Please use: boost/spirit/include/classic_assign_actor.hpp
+..\libs\coroutine\test\coroutine_test.cpp: In function 'int twice_body(hamigaki::coroutines::detail::coroutine_data1&lt;int, int, hamigaki::coroutines::detail::windows::fiber_context_impl&gt;::self_with_result&amp;, int)':
+..\libs\coroutine\test\coroutine_test.cpp:39: warning: no return statement in function returning non-void
+..\libs\coroutine\test\coroutine_test.cpp: In function 'int add_body(hamigaki::coroutines::detail::coroutine_data2&lt;int, int, int, hamigaki::coroutines::detail::windows::fiber_context_impl&gt;::self_with_result&amp;, int, int)':
+..\libs\coroutine\test\coroutine_test.cpp:45: warning: no return statement in function returning non-void
+..\libs\coroutine\test\coroutine_test.cpp: In function 'std::string append_number_body(hamigaki::coroutines::detail::coroutine_data3&lt;std::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;, std::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;, int, int, hamigaki::coroutines::detail::windows::fiber_context_impl&gt;::self_with_result&amp;, std::string, int, int)':
+..\libs\coroutine\test\coroutine_test.cpp:56: warning: no return statement in function returning non-void
 </pre>
-<h2><a name="bjam-string_p_test-msvc-9.0express">bjam - string_p_test - msvc-9.0express</a></h2>
-<h3>Compiler output:</h3><pre>
-string_p_test.cpp
-Warning: This header is deprecated. Please use: boost/spirit/include/phoenix1.hpp
-Warning: This header is deprecated. Please use: boost/spirit/include/classic_core.hpp
-Warning: This header is deprecated. Please use: boost/spirit/include/classic_assign_actor.hpp
-</pre>
-<h2><a name="coroutine-coroutine_test-gcc-mingw-3.4.5">coroutine - coroutine_test - gcc-mingw-3.4.5</a></h2>
 <h3>Run output:</h3><pre>
 Running 1 test case...
 hello
@@ -401,7 +160,7 @@ s22
  
 EXIT STATUS: 0 
 </pre>
-<h2><a name="coroutine-coroutine_test-msvc-8.0">coroutine - coroutine_test - msvc-8.0</a></h2>
+<h2><a name="coroutine-coroutine_test-msvc-9.0">coroutine - coroutine_test - msvc-9.0</a></h2>
 <h3>Run output:</h3><pre>
 Running 1 test case...
 hello
@@ -444,59 +203,7 @@ s22
  
 EXIT STATUS: 0 
 </pre>
-<h2><a name="coroutine-coroutine_test-msvc-9.0express">coroutine - coroutine_test - msvc-9.0express</a></h2>
-<h3>Run output:</h3><pre>
-Running 1 test case...
-hello
-hello
-hello
-
-0
-2
-4
-6
-8
-10
-12
-14
-16
-18
-
-0
-1
-2
-1
-2
-3
-2
-3
-4
-
-s00
-s01
-s02
-s10
-s11
-s12
-s20
-s21
-s22
-
-
-*** No errors detected
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="coroutine-coro_config_test-gcc-mingw-3.4.5">coroutine - coro_config_test - gcc-mingw-3.4.5</a></h2>
-<h3>Run output:</h3><pre>
-Running 1 test case...
-use Win32 Fiber with SjLj-exceptions support
-
-*** No errors detected
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="coroutine-coro_config_test-msvc-8.0">coroutine - coro_config_test - msvc-8.0</a></h2>
+<h2><a name="coroutine-coro_config_test-gcc-mingw-4.4.0">coroutine - coro_config_test - gcc-mingw-4.4.0</a></h2>
 <h3>Run output:</h3><pre>
 Running 1 test case...
 use Win32 Fiber
@@ -505,7 +212,7 @@ use Win32 Fiber
  
 EXIT STATUS: 0 
 </pre>
-<h2><a name="coroutine-coro_config_test-msvc-9.0express">coroutine - coro_config_test - msvc-9.0express</a></h2>
+<h2><a name="coroutine-coro_config_test-msvc-9.0">coroutine - coro_config_test - msvc-9.0</a></h2>
 <h3>Run output:</h3><pre>
 Running 1 test case...
 use Win32 Fiber
@@ -514,280 +221,191 @@ use Win32 Fiber
  
 EXIT STATUS: 0 
 </pre>
-<h2><a name="coroutine-generator_test-gcc-mingw-3.4.5">coroutine - generator_test - gcc-mingw-3.4.5</a></h2>
-<h3>Run output:</h3><pre>
-Running 1 test case...
-0
-1
-2
-3
-4
-5
-6
-7
-8
-9
-
-*** No errors detected
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="coroutine-generator_test-msvc-8.0">coroutine - generator_test - msvc-8.0</a></h2>
-<h3>Run output:</h3><pre>
-Running 1 test case...
-0
-1
-2
-3
-4
-5
-6
-7
-8
-9
-
-*** No errors detected
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="coroutine-generator_test-msvc-9.0express">coroutine - generator_test - msvc-9.0express</a></h2>
-<h3>Run output:</h3><pre>
-Running 1 test case...
-0
-1
-2
-3
-4
-5
-6
-7
-8
-9
-
-*** No errors detected
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="coroutine-processor_test-gcc-mingw-3.4.5">coroutine - processor_test - gcc-mingw-3.4.5</a></h2>
-<h3>Run output:</h3><pre>
-Running 1 test case...
-0
-1
-2
-3
-4
-5
-6
-7
-8
-9
-
-*** No errors detected
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="coroutine-processor_test-msvc-8.0">coroutine - processor_test - msvc-8.0</a></h2>
-<h3>Run output:</h3><pre>
-Running 1 test case...
-0
-1
-2
-3
-4
-5
-6
-7
-8
-9
-
-*** No errors detected
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="coroutine-processor_test-msvc-9.0express">coroutine - processor_test - msvc-9.0express</a></h2>
-<h3>Run output:</h3><pre>
-Running 1 test case...
-0
-1
-2
-3
-4
-5
-6
-7
-8
-9
-
-*** No errors detected
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="coroutine-yield_to_arg_test-gcc-mingw-3.4.5">coroutine - yield_to_arg_test - gcc-mingw-3.4.5</a></h2>
-<h3>Run output:</h3><pre>
-Running 1 test case...
-A(10)
-B(11)
-
-A(20)
-B(21)
-A(22)
-
-OK
-
-*** No errors detected
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="coroutine-yield_to_arg_test-msvc-8.0">coroutine - yield_to_arg_test - msvc-8.0</a></h2>
-<h3>Run output:</h3><pre>
-Running 1 test case...
-A(10)
-B(11)
-
-A(20)
-B(21)
-A(22)
-
-OK
-
-*** No errors detected
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="coroutine-yield_to_arg_test-msvc-9.0express">coroutine - yield_to_arg_test - msvc-9.0express</a></h2>
-<h3>Run output:</h3><pre>
-Running 1 test case...
-A(10)
-B(11)
-
-A(20)
-B(21)
-A(22)
-
-OK
-
-*** No errors detected
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="coroutine-yield_to_res_test-gcc-mingw-3.4.5">coroutine - yield_to_res_test - gcc-mingw-3.4.5</a></h2>
-<h3>Run output:</h3><pre>
-Running 1 test case...
-A
-B
-
-A
-B
-A
-
-A
-B
-C
-
-OK
-
-*** No errors detected
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="coroutine-yield_to_res_test-msvc-8.0">coroutine - yield_to_res_test - msvc-8.0</a></h2>
-<h3>Run output:</h3><pre>
-Running 1 test case...
-A
-B
-
-A
-B
-A
-
-A
-B
-C
-
-OK
-
-*** No errors detected
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="coroutine-yield_to_res_test-msvc-9.0express">coroutine - yield_to_res_test - msvc-9.0express</a></h2>
-<h3>Run output:</h3><pre>
-Running 1 test case...
-A
-B
-
-A
-B
-A
-
-A
-B
-C
-
-OK
-
-*** No errors detected
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="coroutine-yield_to_test-gcc-mingw-3.4.5">coroutine - yield_to_test - gcc-mingw-3.4.5</a></h2>
-<h3>Run output:</h3><pre>
-Running 1 test case...
-A
-B
-
-A
-B
-A
-
-OK
-
-*** No errors detected
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="coroutine-yield_to_test-msvc-8.0">coroutine - yield_to_test - msvc-8.0</a></h2>
-<h3>Run output:</h3><pre>
-Running 1 test case...
-A
-B
-
-A
-B
-A
-
-OK
-
-*** No errors detected
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="coroutine-yield_to_test-msvc-9.0express">coroutine - yield_to_test - msvc-9.0express</a></h2>
-<h3>Run output:</h3><pre>
-Running 1 test case...
-A
-B
-
-A
-B
-A
-
-OK
-
-*** No errors detected
- 
-EXIT STATUS: 0 
-</pre>
-<h2><a name="iostreams-background_copy_test-gcc-mingw-3.4.5">iostreams - background_copy_test - gcc-mingw-3.4.5</a></h2>
+<h2><a name="coroutine-exit_other_test-gcc-mingw-4.4.0">coroutine - exit_other_test - gcc-mingw-4.4.0</a></h2>
 <h3>Compiler output:</h3><pre>
-In file included from C:/Boost/src/svn/boost/date_time/microsec_time_clock.hpp:23,
-                 from C:/Boost/src/svn/boost/thread/thread_time.hpp:9,
-                 from C:/Boost/src/svn/boost/thread/win32/thread_data.hpp:10,
-                 from C:/Boost/src/svn/boost/thread/thread.hpp:15,
-                 from ../hamigaki/iostreams/background_copy.hpp:25,
-                 from ..\libs\iostreams\test\background_copy_test.cpp:11:
-C:/Boost/src/svn/boost/date_time/filetime_functions.hpp: In function `uint64_t boost::date_time::winapi::file_time_to_microseconds(const FileTimeT&amp;)':
-C:/Boost/src/svn/boost/date_time/filetime_functions.hpp:101: warning: left shift count &gt;= width of type
+..\libs\coroutine\test\exit_other_test.cpp: In function 'int body2(hamigaki::coroutines::detail::coroutine_data1&lt;int, coroutine_type1*, hamigaki::coroutines::detail::windows::fiber_context_impl&gt;::self_with_result&amp;, coroutine_type1*)':
+..\libs\coroutine\test\exit_other_test.cpp:33: warning: no return statement in function returning non-void
+</pre>
+<h2><a name="coroutine-generator_test-gcc-mingw-4.4.0">coroutine - generator_test - gcc-mingw-4.4.0</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-generator_test-msvc-9.0">coroutine - generator_test - msvc-9.0</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-processor_test-gcc-mingw-4.4.0">coroutine - processor_test - gcc-mingw-4.4.0</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-processor_test-msvc-9.0">coroutine - processor_test - msvc-9.0</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-restart_test-gcc-mingw-4.4.0">coroutine - restart_test - gcc-mingw-4.4.0</a></h2>
+<h3>Compiler output:</h3><pre>
+..\libs\coroutine\test\restart_test.cpp: In function 'int count_body(hamigaki::coroutines::detail::coroutine_data0&lt;int, hamigaki::coroutines::detail::windows::fiber_context_impl&gt;::self_with_result&amp;)':
+..\libs\coroutine\test\restart_test.cpp:26: warning: no return statement in function returning non-void
+</pre>
+<h2><a name="coroutine-yield_to_arg_test-gcc-mingw-4.4.0">coroutine - yield_to_arg_test - gcc-mingw-4.4.0</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+A(10)
+B(11)
+
+A(20)
+B(21)
+A(22)
+
+OK
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-yield_to_arg_test-msvc-9.0">coroutine - yield_to_arg_test - msvc-9.0</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+A(10)
+B(11)
+
+A(20)
+B(21)
+A(22)
+
+OK
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-yield_to_res_test-gcc-mingw-4.4.0">coroutine - yield_to_res_test - gcc-mingw-4.4.0</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+A
+B
+
+A
+B
+A
+
+A
+B
+C
+
+OK
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-yield_to_res_test-msvc-9.0">coroutine - yield_to_res_test - msvc-9.0</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+A
+B
+
+A
+B
+A
+
+A
+B
+C
+
+OK
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-yield_to_test-gcc-mingw-4.4.0">coroutine - yield_to_test - gcc-mingw-4.4.0</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+A
+B
+
+A
+B
+A
+
+OK
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="coroutine-yield_to_test-msvc-9.0">coroutine - yield_to_test - msvc-9.0</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+A
+B
+
+A
+B
+A
+
+OK
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
 </pre>
 </body>
 </html>

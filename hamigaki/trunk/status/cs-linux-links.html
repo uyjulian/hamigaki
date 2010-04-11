@@ -9,19 +9,82 @@
 <td><img border="0" src="../hamigaki.png" width="96" height="72"></td>
 <td>
 <h1>Compiler Status: linux</h1>
-<b>Run Date:</b> 14:48:10 UTC, Sunday 14 September 2008
+<b>Run Date:</b> 11:51:07 UTC, Sunday 11 April 2010
 </td>
 </table>
 <br>
-<h2><a name="config-config_info-gcc-4.3.0">config - config_info - gcc-4.3.0</a></h2>
+<h2><a name="config-config_info-gcc-4.4.3">config - config_info - gcc-4.4.3</a></h2>
 <h3>Run output:</h3><pre>
-GNU C++ version 4.3.0 20080428 (Red Hat 4.3.0-8)
+GNU C++ version 4.4.3 20100127 (Red Hat 4.4.3-4)
 Detected Platform: linux
-Boost version 103401
+Boost version 103900
 
 EXIT STATUS: 0
 </pre>
-<h2><a name="coroutine-yield_to_arg_test-gcc-4.3.0">coroutine - yield_to_arg_test - gcc-4.3.0</a></h2>
+<h2><a name="coroutine-yield_to_test-gcc-4.4.3">coroutine - yield_to_test - gcc-4.4.3</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+A
+B
+
+A
+B
+A
+
+OK
+
+*** No errors detected
+
+EXIT STATUS: 0
+</pre>
+<h2><a name="coroutine-processor_test-gcc-4.4.3">coroutine - processor_test - gcc-4.4.3</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+
+*** No errors detected
+
+EXIT STATUS: 0
+</pre>
+<h2><a name="coroutine-coro_config_test-gcc-4.4.3">coroutine - coro_config_test - gcc-4.4.3</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+use POSIX user context
+
+*** No errors detected
+
+EXIT STATUS: 0
+</pre>
+<h2><a name="coroutine-yield_to_res_test-gcc-4.4.3">coroutine - yield_to_res_test - gcc-4.4.3</a></h2>
+<h3>Run output:</h3><pre>
+Running 1 test case...
+A
+B
+
+A
+B
+A
+
+A
+B
+C
+
+OK
+
+*** No errors detected
+
+EXIT STATUS: 0
+</pre>
+<h2><a name="coroutine-yield_to_arg_test-gcc-4.4.3">coroutine - yield_to_arg_test - gcc-4.4.3</a></h2>
 <h3>Run output:</h3><pre>
 Running 1 test case...
 A(10)
@@ -37,7 +100,7 @@ OK
 
 EXIT STATUS: 0
 </pre>
-<h2><a name="coroutine-generator_test-gcc-4.3.0">coroutine - generator_test - gcc-4.3.0</a></h2>
+<h2><a name="coroutine-generator_test-gcc-4.4.3">coroutine - generator_test - gcc-4.4.3</a></h2>
 <h3>Run output:</h3><pre>
 Running 1 test case...
 0
@@ -55,41 +118,7 @@ Running 1 test case...
 
 EXIT STATUS: 0
 </pre>
-<h2><a name="coroutine-yield_to_test-gcc-4.3.0">coroutine - yield_to_test - gcc-4.3.0</a></h2>
-<h3>Run output:</h3><pre>
-Running 1 test case...
-A
-B
-
-A
-B
-A
-
-OK
-
-*** No errors detected
-
-EXIT STATUS: 0
-</pre>
-<h2><a name="coroutine-processor_test-gcc-4.3.0">coroutine - processor_test - gcc-4.3.0</a></h2>
-<h3>Run output:</h3><pre>
-Running 1 test case...
-0
-1
-2
-3
-4
-5
-6
-7
-8
-9
-
-*** No errors detected
-
-EXIT STATUS: 0
-</pre>
-<h2><a name="coroutine-coroutine_test-gcc-4.3.0">coroutine - coroutine_test - gcc-4.3.0</a></h2>
+<h2><a name="coroutine-coroutine_test-gcc-4.4.3">coroutine - coroutine_test - gcc-4.4.3</a></h2>
 <h3>Run output:</h3><pre>
 Running 1 test case...
 hello
@@ -132,34 +161,15 @@ s22
 
 EXIT STATUS: 0
 </pre>
-<h2><a name="coroutine-yield_to_res_test-gcc-4.3.0">coroutine - yield_to_res_test - gcc-4.3.0</a></h2>
+<h2><a name="process-child_test-gcc-4.4.3">process - child_test - gcc-4.4.3</a></h2>
 <h3>Run output:</h3><pre>
-Running 1 test case...
-A
-B
+Running 4 test cases...
+unknown location(0): fatal error in "terminate_test": child was killed; pid: 2814; uid: 500; exit value: 9
+child_test.cpp(61): last checkpoint
 
-A
-B
-A
+*** 1 failure detected in test suite "Master Test Suite"
 
-A
-B
-C
-
-OK
-
-*** No errors detected
-
-EXIT STATUS: 0
-</pre>
-<h2><a name="coroutine-coro_config_test-gcc-4.3.0">coroutine - coro_config_test - gcc-4.3.0</a></h2>
-<h3>Run output:</h3><pre>
-Running 1 test case...
-use POSIX user context
-
-*** No errors detected
-
-EXIT STATUS: 0
+EXIT STATUS: 201
 </pre>
 </body>
 </html>
