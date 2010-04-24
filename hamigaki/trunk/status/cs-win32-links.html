@@ -9,7 +9,7 @@
 <td><img border="0" src="../hamigaki.png" width="96" height="72"></td>
 <td>
 <h1>Compiler Status: Win32</h1>
-<b>Run Date:</b> 04:52:24 UTC, Saturday 24 April 2010
+<b>Run Date:</b> 06:17:38 UTC, Saturday 24 April 2010
 </td>
 </table>
 <br>
@@ -3030,78 +3030,7 @@ C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/archivers/detail/zip_f
             Sink=ha...
    (remainder deleted because of excessive size)
 </pre>
-<h2><a name="audio-aiff_file_test-msvc-10.0">audio - aiff_file_test - msvc-10.0</a></h2>
-<h3>Library build failure: </h3>
-See <a href="#audio-msvc-10.0-msvc-10.0">audio - msvc-10.0 - msvc-10.0</a><h2><a name="audio-msvc-10.0-msvc-10.0">audio - msvc-10.0 - msvc-10.0</a></h2>
-<h3>Compiler output:</h3><pre>
-vorbis_encoder.cpp
-C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/iostreams/device/file.hpp(65) : warning C4244: '引数' : 'std::streamsize' から 'size_t' への変換です。データが失われる可能性があります。
-C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/iostreams/device/file.hpp(79) : warning C4244: '引数' : 'std::streamsize' から 'size_t' への変換です。データが失われる可能性があります。
-..\libs\audio\src\vorbis_encoder.cpp(96) : warning C4244: '引数' : 'std::streamsize' から 'int' への変換です。データが失われる可能性があります。
-..\libs\audio\src\vorbis_encoder.cpp(104) : warning C4244: '引数' : 'std::streamsize' から 'int' への変換です。データが失われる可能性があります。
-C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/iostreams/arbitrary_positional_facade.hpp(74) : error C2039: 'close_with_flush' : 'hamigaki::audio::detail::vorbis_encoder_base' のメンバーではありません。
-        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_encoder.hpp(50) : 'hamigaki::audio::detail::vorbis_encoder_base' の宣言を確認してください。
-        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/iostreams/arbitrary_positional_facade.hpp(194) : コンパイルされたクラスの テンプレート のインスタンス化 'void hamigaki::iostreams::core_access::close_with_flush&lt;Derived,float&gt;(RepositionalSink &amp;,const CharT *,std::streamsize)' の参照を確認してください
-        with
-        [
-            Derived=hamigaki::audio::detail::vorbis_encoder_base,
-            RepositionalSink=hamigaki::audio::detail::vorbis_encoder_base,
-            CharT=float
-        ]
-        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/iostreams/arbitrary_positional_facade.hpp(192): クラス テンプレート のメンバー関数 'void hamigaki::iostreams::arbitrary_positional_facade&lt;Derived,CharT,MaxBlockSize&gt;::close(void)' のコンパイル中
-        with
-        [
-            Derived=hamigaki::audio::detail::vorbis_encoder_base,
-            CharT=float,
-            MaxBlockSize=0x0ff
-        ]
-        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_encoder.hpp(53) : コンパイルされたクラスの テンプレート のインスタンス化 'hamigaki::iostreams::arbitrary_positional_facade&lt;Derived,CharT,MaxBlockSize&gt;' の参照を確認してください
-        with
-        [
-            Derived=hamigaki::audio::detail::vorbis_encoder_base,
-            CharT=float,
-            MaxBlockSize=0x0ff
-        ]
-C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/iostreams/arbitrary_positional_facade.hpp(91) : error C2039: 'seek_blocks' : 'hamigaki::audio::detail::vorbis_encoder_base' のメンバーではありません。
-        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_encoder.hpp(50) : 'hamigaki::audio::detail::vorbis_encoder_base' の宣言を確認してください。
-        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/iostreams/arbitrary_positional_facade.hpp(209) : コンパイルされたクラスの テンプレート のインスタンス化 'std::streampos hamigaki::iostreams::core_access::seek_blocks&lt;Derived&gt;(RepositionalDevice &amp;,boost::iostreams::stream_offset,std::ios_base::seekdir)' の参照を確認してください
-        with
-        [
-            Derived=hamigaki::audio::detail::vorbis_encoder_base,
-            RepositionalDevice=hamigaki::audio::detail::vorbis_encoder_base
-        ]
-        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/iostreams/arbitrary_positional_facade.hpp(206): クラス テンプレート のメンバー関数 'std::streampos hamigaki::iostreams::arbitrary_positional_facade&lt;Derived,CharT,MaxBlockSize&gt;::seek(boost::iostreams::stream_offset,std::ios_base::seekdir)' のコンパイル中
-        with
-        [
-            Derived=hamigaki::audio::detail::vorbis_encoder_base,
-            CharT=float,
-            MaxBlockSize=0x0ff
-        ]
-C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/iostreams/arbitrary_positional_facade.hpp(42) : error C2039: 'read_blocks' : 'hamigaki::audio::detail::vorbis_encoder_base' のメンバーではありません。
-        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_encoder.hpp(50) : 'hamigaki::audio::detail::vorbis_encoder_base' の宣言を確認してください。
-        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/iostreams/arbitrary_positional_facade.hpp(218) : コンパイルされたクラスの テンプレート のインスタンス化 'std::streamsize hamigaki::iostreams::core_access::read_blocks&lt;Derived,float&gt;(RepositionalSource &amp;,CharT *,std::streamsize)' の参照を確認してください
-        with
-        [
-            Derived=hamigaki::audio::detail::vorbis_encoder_base,
-            RepositionalSource=hamigaki::audio::detail::vorbis_encoder_base,
-            CharT=float
-        ]
-
-    call "C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\vcvarsall.bat" x86 &gt;nul
-cl /Zm800 -nologo @"..\bin.v2\libs\audio\build\msvc-10.0\debug\threading-multi\vorbis_encoder.obj.rsp" 
-
-</pre>
-<h2><a name="audio-asio_sink_test-msvc-10.0">audio - asio_sink_test - msvc-10.0</a></h2>
-<h3>Library build failure: </h3>
-See <a href="#audio-msvc-10.0-msvc-10.0">audio - msvc-10.0 - msvc-10.0</a><h2><a name="audio-asio_source_test-msvc-10.0">audio - asio_source_test - msvc-10.0</a></h2>
-<h3>Library build failure: </h3>
-See <a href="#audio-msvc-10.0-msvc-10.0">audio - msvc-10.0 - msvc-10.0</a><h2><a name="audio-au_file_test-msvc-10.0">audio - au_file_test - msvc-10.0</a></h2>
-<h3>Library build failure: </h3>
-See <a href="#audio-msvc-10.0-msvc-10.0">audio - msvc-10.0 - msvc-10.0</a><h2><a name="audio-direct_sound_test-msvc-10.0">audio - direct_sound_test - msvc-10.0</a></h2>
-<h3>Library build failure: </h3>
-See <a href="#audio-msvc-10.0-msvc-10.0">audio - msvc-10.0 - msvc-10.0</a><h2><a name="audio-ds_capture_test-msvc-10.0">audio - ds_capture_test - msvc-10.0</a></h2>
-<h3>Library build failure: </h3>
-See <a href="#audio-msvc-10.0-msvc-10.0">audio - msvc-10.0 - msvc-10.0</a><h2><a name="audio-ds_enum_test-gcc-mingw-4.4.0">audio - ds_enum_test - gcc-mingw-4.4.0</a></h2>
+<h2><a name="audio-ds_enum_test-gcc-mingw-4.4.0">audio - ds_enum_test - gcc-mingw-4.4.0</a></h2>
 <h3>Run output:</h3><pre>
 Running 2 test cases...
 The installed DirectSound drivers:
@@ -3124,8 +3053,6 @@ SPDIF In (USB Multi-Channel Aud
 EXIT STATUS: 0 
 </pre>
 <h2><a name="audio-ds_enum_test-msvc-10.0">audio - ds_enum_test - msvc-10.0</a></h2>
-<h3>Library build failure: </h3>
-See <a href="#audio-msvc-10.0-msvc-10.0">audio - msvc-10.0 - msvc-10.0</a><h2><a name="audio-ds_enum_test-msvc-9.0">audio - ds_enum_test - msvc-9.0</a></h2>
 <h3>Run output:</h3><pre>
 Running 2 test cases...
 The installed DirectSound drivers:
@@ -3147,15 +3074,197 @@ SPDIF In (USB Multi-Channel Aud
  
 EXIT STATUS: 0 
 </pre>
-<h2><a name="audio-pcm_sink_test-msvc-10.0">audio - pcm_sink_test - msvc-10.0</a></h2>
-<h3>Library build failure: </h3>
-See <a href="#audio-msvc-10.0-msvc-10.0">audio - msvc-10.0 - msvc-10.0</a><h2><a name="audio-pcm_source_test-msvc-10.0">audio - pcm_source_test - msvc-10.0</a></h2>
-<h3>Library build failure: </h3>
-See <a href="#audio-msvc-10.0-msvc-10.0">audio - msvc-10.0 - msvc-10.0</a><h2><a name="audio-vorbis_file_test-msvc-10.0">audio - vorbis_file_test - msvc-10.0</a></h2>
-<h3>Library build failure: </h3>
-See <a href="#audio-msvc-10.0-msvc-10.0">audio - msvc-10.0 - msvc-10.0</a><h2><a name="audio-wave_file_test-msvc-10.0">audio - wave_file_test - msvc-10.0</a></h2>
-<h3>Library build failure: </h3>
-See <a href="#audio-msvc-10.0-msvc-10.0">audio - msvc-10.0 - msvc-10.0</a><h2><a name="bjam-arg_p_test-gcc-mingw-4.4.0">bjam - arg_p_test - gcc-mingw-4.4.0</a></h2>
+<h2><a name="audio-ds_enum_test-msvc-9.0">audio - ds_enum_test - msvc-9.0</a></h2>
+<h3>Run output:</h3><pre>
+Running 2 test cases...
+The installed DirectSound drivers:
+プライマリ サウンド ドライバー
+デジタル出力 (USB Multi-Channel Audio Device)
+スピーカー (USB Multi-Channel Audio Device)
+スピーカー / ヘッドフォン (Realtek High Definition Audio)
+
+The installed DirectSoundCapture drivers:
+プライマリ サウンド キャプチャ ドライバー
+マイク (USB Multi-Channel Audio De
+ライン入力 (USB Multi-Channel Audio 
+Stereo Mix (USB Multi-Channel A
+マイク (Realtek High Definition Au
+SPDIF In (USB Multi-Channel Aud
+
+
+*** No errors detected
+ 
+EXIT STATUS: 0 
+</pre>
+<h2><a name="audio-vorbis_file_test-msvc-10.0">audio - vorbis_file_test - msvc-10.0</a></h2>
+<h3>Compiler output:</h3><pre>
+vorbis_file_test.cpp
+C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/iostreams/device/file.hpp(65) : warning C4244: '引数' : 'std::streamsize' から 'size_t' への変換です。データが失われる可能性があります。
+C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/iostreams/device/file.hpp(79) : warning C4244: '引数' : 'std::streamsize' から 'size_t' への変換です。データが失われる可能性があります。
+C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_file.hpp(129) : warning C4244: 'return' : 'std::streamsize' から 'size_t' への変換です。データが失われる可能性があります。
+        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_file.hpp(120): クラス テンプレート のメンバー関数 'size_t hamigaki::audio::detail::vorbis_nonseekable_source_traits&lt;Source&gt;::read_func(void *,size_t,size_t,void *)' のコンパイル中
+        with
+        [
+            Source=hamigaki::iostreams::file_source
+        ]
+        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_file.hpp(167) : コンパイルされたクラスの テンプレート のインスタンス化 'hamigaki::audio::detail::vorbis_nonseekable_source_traits&lt;Source&gt;' の参照を確認してください
+        with
+        [
+            Source=hamigaki::iostreams::file_source
+        ]
+        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_file.hpp(263) : コンパイルされたクラスの テンプレート のインスタンス化 'hamigaki::audio::detail::vorbis_seekable_source_traits&lt;Source&gt;' の参照を確認してください
+        with
+        [
+            Source=hamigaki::iostreams::file_source
+        ]
+        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_file.hpp(258): クラス テンプレート のメンバー関数 'hamigaki::audio::detail::vorbis_file_source_impl&lt;Source&gt;::vorbis_file_source_impl(const Source &amp;)' のコンパイル中
+        with
+        [
+            Source=hamigaki::iostreams::file_source
+        ]
+        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_file.hpp(373) : コンパイルされたクラスの テンプレート のインスタンス化 'hamigaki::audio::detail::vorbis_file_source_impl&lt;Source&gt;' の参照を確認してください
+        with
+        [
+            Source=hamigaki::iostreams::file_source
+        ]
+        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_file.hpp(373): クラス テンプレート のメンバー関数 'hamigaki::audio::basic_vorbis_file_source&lt;Source&gt;::basic_vorbis_file_source(const Source &amp;)' のコンパイル中
+        with
+        [
+            Source=hamigaki::iostreams::file_source
+        ]
+        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_file.hpp(430) : コンパイルされたクラスの テンプレート のインスタンス化 'hamigaki::audio::basic_vorbis_file_source&lt;Source&gt;' の参照を確認してください
+        with
+        [
+            Source=hamigaki::iostreams::file_source
+        ]
+C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/detail/wide_adaptor_char_float.hpp(32) : warning C4244: '引数' : 'std::streamsize' から 'unsigned int' への変換です。データが失われる可能性があります。
+        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/detail/wide_adaptor_char_float.hpp(29): クラス テンプレート のメンバー関数 'hamigaki::audio::detail::wide_adaptor_char_float&lt;CharT,Device&gt;::wide_adaptor_char_float(const Device &amp;,std::streamsize)' のコンパイル中
+        with
+        [
+            CharT=float,
+            Device=hamigaki::audio::pcm_sink
+        ]
+        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/wide_adaptor.hpp(72) : コンパイルされたクラスの テンプレート のインスタンス化 'hamigaki::audio::detail::wide_adaptor_char_float&lt;CharT,Device&gt;' の参照を確認してください
+        with
+        [
+            CharT=float,
+            Device=hamigaki::audio::pcm_sink
+        ]
+        ..\libs\audio\test\vorbis_file_test.cpp(59) : コンパイルされたクラスの テンプレート のインスタンス化 'hamigaki::audio::wide_adaptor&lt;CharT,Device&gt;' の参照を確認してください
+        with
+        [
+            CharT=float,
+            Device=hamigaki::audio::pcm_sink
+        ]
+C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_file.hpp(129) : warning C4244: 'return' : 'std::streamsize' から 'size_t' への変換です。データが失われる可能性があります。
+        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_file.hpp(120): クラス テンプレート のメンバー関数 'size_t hamigaki::audio::detail::vorbis_nonseekable_source_traits&lt;Source&gt;::read_func(void *,size_t,size_t,void *)' のコンパイル中
+        with
+        [
+            Source=hamigaki::iostreams::tmp_file
+        ]
+        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_file.hpp(167) : コンパイルされたクラスの テンプレート のインスタンス化 'hamigaki::audio::detail::vorbis_nonseekable_source_traits&lt;Source&gt;' の参照を確認してください
+        with
+        [
+            Source=hamigaki::iostreams::tmp_file
+        ]
+        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_file.hpp(263) : コンパイルされたクラスの テンプレート のインスタンス化 'hamigaki::audio::detail::vorbis_seekable_source_traits&lt;Source&gt;' の参照を確認してください
+        with
+        [
+            Source=hamigaki::iostreams::tmp_file
+        ]
+        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_file.hpp(258): クラス テンプレート のメンバー関数 'hamigaki::audio::detail::vorbis_file_source_impl&lt;Source&gt;::vorbis_file_source_impl(const Source &amp;)' のコンパイル中
+        with
+        [
+            Source=hamigaki::iostreams::tmp_file
+        ]
+        C:\Boost\src\svn\boost/smart_ptr/detail/sp_convertible.hpp(48) : コンパイルされたクラスの テンプレート のインスタンス化 'hamigaki::audio::detail::vorbis_file_source_impl&lt;Source&gt;' の参照を確認してください
+        with
+        [
+            Source=hamigaki::iostreams::tmp_file
+        ]
+        C:\Boost\src\svn\boost/smart_ptr/detail/sp_convertible.hpp(66) : コンパイルされたクラスの テンプレート のインスタンス化 'boost::detail::sp_convertible&lt;Y,T&gt;' の参照を確認してください
+        with
+        [
+            Y=hamigaki::audio::detail::vorbis_file_source_impl&lt;hamigaki::iostreams::tmp_file&gt;,
+            T=hamigaki::audio::detail::vorbis_file_source_impl&lt;hamigaki::iostreams::tmp_file&gt;
+        ]
+        C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\INCLUDE\xmemory(217) : コンパイルされたクラスの テンプレート のインスタンス化 'boost::detail::sp_enable_if_convertible&lt;Y,T&gt;' の参照を確認してください
+        with
+        [
+            Y=hamigaki::audio::detail::vorbis_file_source_impl&lt;hamigaki::iostreams::tmp_file&gt;,
+            T=hamigaki::audio::detail::vorbis_file_source_impl&lt;hamigaki::iostreams::tmp_file&gt;
+        ]
+        C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\INCLUDE\xmemory(186): クラス テンプレート のメンバー関数 'wchar_t *std::allocator&lt;_Ty&gt;::allocate(std::allocator&lt;_Ty&gt;::size_type)' のコンパイル中
+        with
+        [
+            _Ty=wchar_t
+        ]
+        C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\INCLUDE\xstring(462) : コンパイルされたクラスの テンプレート のインスタンス化 'std::allocator&lt;_Ty&gt;' の参照を確認してください
+        with
+        [
+            _Ty=wchar_t
+        ]
+        C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\INCLUDE\xstring(522) : コンパイルされたクラスの テンプレート のインスタンス化 'std::_String_val&lt;_Elem,_Alloc&gt;' の参照を確認してください
+        with
+        [
+            _Elem=wchar_t,
+            _Alloc=std::allocator&lt;wchar_t&gt;
+        ]
+        C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\INCLUDE\string(698) : コンパイルされたクラスの テンプレート のインスタンス化 'std::basic_string&lt;_Elem,_Traits,_Ax&gt;' の参照を確認してください
+        with
+        [
+            _Elem=wchar_t,
+            _Traits=std::char_traits&lt;wchar_t&gt;,
+            _Ax=std::allocator&lt;wchar_t&gt;
+        ]
+C:\Boost\src\svn\boost/iostreams/copy.hpp(128) : warning C4244: '引数' : 'std::streamsize' から 'int' への変換です。データが失われる可能性があります。
+        C:\Boost\src\svn\boost/iostreams/copy.hpp(159) : コンパイルされたクラスの テンプレート のインスタンス化 'std::streamsize boost::iostreams::detail::copy_impl&lt;Source,Sink&gt;(Source &amp;,Sink &amp;,std::streamsize,boost::mpl::false_,boost::mpl::false_)' の参照を確認してください
+        with
+        [
+            Source=hamigaki::iostreams::tiny_restriction&lt;hamigaki::audio::stereophony&lt;hamigaki::audio::amplifier&lt;hamigaki::audio::basic_sine_wave_source&lt;&gt;&gt;&gt;&gt;,
+            Sink=hamigaki::audio::basic_vorbis_file_sink&lt;hamigaki::iostreams::dont_close_device&lt;hamigaki::iostreams::tmp_file&gt;&gt;
+        ]
+        C:\Boost\src\svn\boost/iostreams/copy.hpp(157): クラス テンプレート のメンバー関数 'std::streamsize boost::iostreams::detail::copy_operation&lt;Source,Sink&gt;::operator ()(void)' のコンパイル中
+        with
+        [
+            Source=hamigaki::iostreams::tiny_restriction&lt;hamigaki::audio::stereophony&lt;hamigaki::audio::amplifier&lt;hamigaki::audio::basic_sine_wave_source&lt;&gt;&gt;&gt;&gt;,
+            Sink=hamigaki::audio::basic_vorbis_file_sink&lt;hamigaki::iostreams::dont_close_device&lt;hamigaki::iostreams::tmp_file&gt;&gt;
+        ]
+        C:\Boost\src\svn\boost/iostreams/copy.hpp(180) : コンパイルされたクラスの テンプレート のインスタンス化 'boost::iostreams::detail::copy_operation&lt;Source,Sink&gt;' の参照を確認してください
+        with
+        [
+            Source=hamigaki::iostreams::tiny_restriction&lt;hamigaki::audio::stereophony&lt;hamigaki::audio::amplifier&lt;hamigaki::audio::basic_sine_wave_source&lt;&gt;&gt;&gt;&gt;,
+            Sink=hamigaki::audio::basic_vorbis_file_sink&lt;hamigaki::iostreams::dont_close_device&lt;hamigaki::iostreams::...
+   (remainder deleted because of excessive size)
+</pre>
+<h2><a name="audio-vorbis_file_test-msvc-9.0">audio - vorbis_file_test - msvc-9.0</a></h2>
+<h3>Compiler output:</h3><pre>
+vorbis_file_test.cpp
+C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_file.hpp(339) : warning C4244: '引数' : 'boost::iostreams::stream_offset' から 'std::streamoff' への変換です。データが失われる可能性があります。
+        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_file.hpp(335): クラス テンプレート のメンバ関数 'std::streampos hamigaki::audio::detail::vorbis_file_source_impl&lt;Source&gt;::seek_blocks(boost::iostreams::stream_offset,std::ios_base::seekdir)' のコンパイル中
+        with
+        [
+            Source=hamigaki::iostreams::file_source
+        ]
+        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_file.hpp(373) : コンパイルされたクラスの テンプレート のインスタンス化 'hamigaki::audio::detail::vorbis_file_source_impl&lt;Source&gt;' の参照を確認してください
+        with
+        [
+            Source=hamigaki::iostreams::file_source
+        ]
+        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_file.hpp(373): クラス テンプレート のメンバ関数 'hamigaki::audio::basic_vorbis_file_source&lt;Source&gt;::basic_vorbis_file_source(const Source &amp;)' のコンパイル中
+        with
+        [
+            Source=hamigaki::iostreams::file_source
+        ]
+        C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_file.hpp(430) : コンパイルされたクラスの テンプレート のインスタンス化 'hamigaki::audio::basic_vorbis_file_source&lt;Source&gt;' の参照を確認してください
+        with
+        [
+            Source=hamigaki::iostreams::file_source
+        ]
+C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_file.hpp(345) : warning C4244: '引数' : 'boost::iostreams::stream_offset' から 'std::streamoff' への変換です。データが失われる可能性があります。
+C:\Users\hamigaki\Documents\Src\Library\hamigaki\hamigaki/audio/vorbis_file.hpp(351) : warning C4244: '引数' : 'boost::iostreams::stream_offset' から 'std::streamoff' への変換です。データが失われる可能性があります。
+</pre>
+<h2><a name="bjam-arg_p_test-gcc-mingw-4.4.0">bjam - arg_p_test - gcc-mingw-4.4.0</a></h2>
 <h3>Compiler output:</h3><pre>
 In file included from ../hamigaki/bjam/util/keywords.hpp:14,
                  from ../hamigaki/bjam/util/impl/argument_parser.ipp:13,
