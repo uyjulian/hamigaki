@@ -1,6 +1,6 @@
 // raw_cpio_file_sink_impl.hpp: raw cpio file sink implementation
 
-// Copyright Takeshi Mouri 2006-2009.
+// Copyright Takeshi Mouri 2006-2010.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -192,7 +192,7 @@ inline void write_cpio_header(cpio::svr4_header& raw, const cpio::header& head)
         static_cast<boost::uint16_t>(head.device.minor));
 
     cpio_write_hex(raw.namesize,
-		static_cast<boost::uint32_t>(head.path.string().size()+1));
+        static_cast<boost::uint32_t>(head.path.string().size()+1));
 
     if ((head.format == cpio::svr4_chksum) && head.checksum)
         cpio_write_hex(raw.checksum, *head.checksum);
