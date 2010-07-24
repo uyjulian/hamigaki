@@ -1,6 +1,6 @@
 // operations.hpp: the file operations
 
-// Copyright Takeshi Mouri 2006-2008.
+// Copyright Takeshi Mouri 2006-2010.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -26,7 +26,7 @@
     #define HAMIGAKI_FS_FUNC(r) \
         template<class Path> \
         inline typename boost::enable_if< \
-            boost::filesystem::is_basic_path<Path>, \
+            boost::HAMIGAKI_BOOST_FS_NAMESPACE::is_basic_path<Path>, \
             r \
         >::type
     #define HAMIGAKI_FS_TYPENAME typename
