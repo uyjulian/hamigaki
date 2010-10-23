@@ -1,6 +1,6 @@
 // registry.cpp: Win32 registry utilities
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007-2010.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -154,6 +154,68 @@ public:
             return string_list();
     }
 
+    std::string get_subkey_name(std::size_t i) const
+    {
+        char name[256];
+        DWORD name_size = sizeof(name);
+
+        int err = ::RegEnumKeyExA(
+            handle_, static_cast<DWORD>(i), name, &name_size, 0, 0, 0, 0);
+
+        if (err == ERROR_SUCCESS)
+            return std::string(name);
+        else
+            return std::string();
+    }
+
+    string_list get_subkey_names() const
+    {
+        if (handle_ == 0)
+            return string_list();
+
+        string_list result;
+        for (std::size_t i = 0; ; ++i)
+        {
+            const std::string& name = get_subkey_name(i);
+            if (name.empty())
+                break;
+            result.push_back(name);
+        }
+
+        return result;
+    }
+
+    std::string get_value_name(std::size_t i) const
+    {
+        char name[16384];
+        DWORD name_size = sizeof(name);
+
+        int err = ::RegEnumValueA(
+            handle_, static_cast<DWORD>(i), name, &name_size, 0, 0, 0, 0);
+
+        if (err == ERROR_SUCCESS)
+            return std::string(name);
+        else
+            return std::string();
+    }
+
+    string_list get_value_names() const
+    {
+        if (handle_ == 0)
+            return string_list();
+
+        string_list result;
+        for (std::size_t i = 0; ; ++i)
+        {
+            const std::string& name = get_value_name(i);
+            if (name.empty())
+                break;
+            result.push_back(name);
+        }
+
+        return result;
+    }
+
 private:
     ::HKEY handle_;
 };
@@ -176,6 +238,40 @@ string_list registry_values(
 
     registry_key reg(parent, key.substr(start), KEY_READ);
     return reg.get_values(name);
+}
+
+HAMIGAKI_BJAM_DECL
+string_list registry_subkey_names(const std::string& key)
+{
+    std::string::size_type delim = key.find("\\");
+
+    ::HKEY parent = root_key(key.substr(0, delim));
+    if (parent == 0)
+        return string_list();
+
+    std::string::size_type start = delim;
+    if (start != std::string::npos)
+        ++start;
+
+    registry_key reg(parent, key.substr(start), KEY_ENUMERATE_SUB_KEYS);
+    return reg.get_subkey_names();
+}
+
+HAMIGAKI_BJAM_DECL
+string_list registry_value_names(const std::string& key)
+{
+    std::string::size_type delim = key.find("\\");
+
+    ::HKEY parent = root_key(key.substr(0, delim));
+    if (parent == 0)
+        return string_list();
+
+    std::string::size_type start = delim;
+    if (start != std::string::npos)
+        ++start;
+
+    registry_key reg(parent, key.substr(start), KEY_QUERY_VALUE);
+    return reg.get_value_names();
 }
 
 } } } // End namespaces win32, bjam, hamigaki.

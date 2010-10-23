@@ -1,6 +1,6 @@
 // builtin_rules.cpp: bjam builtin rules
 
-// Copyright Takeshi Mouri 2007, 2008.
+// Copyright Takeshi Mouri 2007-2010.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -12,10 +12,12 @@
 #include <hamigaki/bjam/util/glob.hpp>
 #include <hamigaki/bjam/util/path.hpp>
 #include <hamigaki/bjam/util/regex.hpp>
+#include <hamigaki/bjam/util/search.hpp>
 #include <hamigaki/bjam/util/shell.hpp>
 #include <hamigaki/bjam/bjam_context.hpp>
 #include <hamigaki/bjam/builtin_rules.hpp>
 #include <hamigaki/bjam/bjam_exceptions.hpp>
+#include <hamigaki/checksum/md5.hpp>
 #include <hamigaki/iterator/first_iterator.hpp>
 #include <hamigaki/iterator/ostream_iterator.hpp>
 #include <boost/assign/list_of.hpp>
@@ -26,12 +28,18 @@
 #include <boost/next_prior.hpp>
 #include <boost/regex.hpp>
 #include <cstdlib>
+#include <iomanip>
 #include <locale>
 #include <sstream>
 
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
     #include <hamigaki/bjam/util/win32/registry.hpp>
 #endif
+
+#if defined(BOOST_WINDOWS) && !defined(__CYGWIN__)
+    #include <io.h>
+#endif
+#include <fcntl.h>
 
 namespace fs = boost::filesystem;
 
@@ -268,6 +276,12 @@ HAMIGAKI_BJAM_DECL string_list is_file(context& ctx)
     return string_list();
 }
 
+HAMIGAKI_BJAM_DECL string_list hdr_macro(context& ctx)
+{
+    // TODO: not implemented
+    return string_list();
+}
+
 HAMIGAKI_BJAM_DECL string_list fail_expected(context& ctx)
 {
     set_target_flags(ctx, target::fail_expected);
@@ -288,6 +302,22 @@ HAMIGAKI_BJAM_DECL string_list update(context& ctx)
     string_list old = ctx.targets_to_update();
     ctx.targets_to_update(args[0]);
     return old;
+}
+
+HAMIGAKI_BJAM_DECL string_list update_now(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+    const string_list& arg2 = args[1];
+    const string_list& arg3 = args[2];
+
+    const string_list& targets = args[0];
+    const boost::optional<std::string>& log = arg2.try_front();
+    const boost::optional<std::string>& force = arg3.try_front();
+
+    // TODO: not implemented
+
+    return string_list(std::string("ok"));
 }
 
 HAMIGAKI_BJAM_DECL string_list subst(context& ctx)
@@ -463,6 +493,49 @@ HAMIGAKI_BJAM_DECL string_list pwd(context& ctx)
     return string_list(ctx.working_directory());
 }
 
+HAMIGAKI_BJAM_DECL string_list search_for_target(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    const string_list& targets = args[0];
+    const string_list& path = args[1];
+
+    const std::string& name = targets[0];
+
+    path_components compo;
+    split_path(compo, name);
+    compo.grist.clear();
+    compo.member.clear();
+
+    bool found = false;
+    std::string filename;
+
+    for (std::size_t i = 0, size = path.size(); i < size; ++i)
+    {
+        compo.root = path[i];
+        filename = make_path(compo);
+
+        if (fs::exists(fs::path(filename)))
+        {
+            found = true;
+            break;
+        }
+    }
+
+    if (!found)
+    {
+        compo.root.clear();
+        fs::path ph(make_path(compo));
+        fs::path work(ctx.working_directory());
+        filename = fs::complete(ph, work).file_string();
+    }
+
+    call_bind_rule(ctx, name, filename);
+
+    return string_list(name);
+}
+
 HAMIGAKI_BJAM_DECL string_list import_module(context& ctx)
 {
     frame& f = ctx.current_frame();
@@ -474,6 +547,19 @@ HAMIGAKI_BJAM_DECL string_list import_module(context& ctx)
     tgt_module.imported_modules.insert(imported.begin(), imported.end());
 
     return string_list();
+}
+
+HAMIGAKI_BJAM_DECL string_list imported_modules(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    module& m = ctx.get_module(args[0].try_front());
+
+    return string_list(
+        m.imported_modules.begin(),
+        m.imported_modules.end()
+    );
 }
 
 HAMIGAKI_BJAM_DECL string_list instance(context& ctx)
@@ -583,6 +669,44 @@ HAMIGAKI_BJAM_DECL string_list has_native_rule(context& ctx)
     return string_list();
 }
 
+HAMIGAKI_BJAM_DECL string_list user_module(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    const string_list& modules = args[0];
+    module& m = ctx.get_module(args[0].try_front());
+
+    for (std::size_t i = 0, size = modules.size(); i < size; ++i)
+    {
+        module& m = ctx.get_module(modules[i]);
+        m.user_module = true;
+    }
+
+    return string_list();
+}
+
+HAMIGAKI_BJAM_DECL string_list nearest_user_location(context& ctx)
+{
+    frame& f = ctx.current_frame();
+
+    frame* user_frame =
+        f.current_module().user_module ? &f : f.prev_user_frame();
+    if (!user_frame)
+        return string_list();
+
+    string_list result;
+    result.push_back(user_frame->filename());
+    {
+        std::ostringstream os;
+        os.imbue(std::locale::classic());
+        os << user_frame->line();
+        result.push_back(os.str());
+    }
+
+    return result;
+}
+
 HAMIGAKI_BJAM_DECL string_list check_if_file(context& ctx)
 {
     frame& f = ctx.current_frame();
@@ -606,12 +730,31 @@ HAMIGAKI_BJAM_DECL string_list w32_getreg(context& ctx)
     const list_of_list& args = f.arguments();
 
     const string_list& arg1 = args[0];
+    const string_list& arg2 = args[1];
 
-    boost::optional<std::string> name;
-    if (arg1.size() >= 2)
-        name = arg1[1];
+    const std::string& path = arg1[0];
+    boost::optional<std::string> name = arg2.try_front();
 
-    return win32::registry_values(arg1[0], name);
+    return win32::registry_values(path, name);
+}
+
+HAMIGAKI_BJAM_DECL string_list w32_getregnames(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    const string_list& arg1 = args[0];
+    const string_list& arg2 = args[1];
+
+    const std::string& path = arg1[0];
+    const std::string& result_type = arg2[0];
+
+    if (result_type == "subkeys")
+        return win32::registry_subkey_names(path);
+    else if (result_type == "values")
+        return win32::registry_value_names(path);
+    else
+        return string_list();
 }
 #endif
 
@@ -634,6 +777,77 @@ HAMIGAKI_BJAM_DECL string_list shell(context& ctx)
     }
 
     return bjam::shell(cmd, need_status, need_capture);
+}
+
+HAMIGAKI_BJAM_DECL string_list md5(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    const std::string& s = args[0][0];
+
+    checksum::md5 md5;
+    md5.process_bytes(s.c_str(), s.size());
+
+    typedef checksum::md5::value_type value_type;
+    const value_type& v = md5.checksum();
+
+    std::ostringstream os;
+    os.imbue(std::locale::classic());
+    os << std::hex << std::setfill('0');
+    for (std::size_t i = 0; i < value_type::static_size; ++i)
+        os << std::setw(2) << static_cast<unsigned>(v[i]);
+
+    return string_list(os.str());
+}
+
+HAMIGAKI_BJAM_DECL string_list file_open(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    const std::string& name = args[0][0];
+    const std::string& mode = args[1][0];
+
+    int fd;
+    if (mode == "w")
+        fd = ::open(name.c_str(), O_WRONLY|O_CREAT|O_TRUNC, 0666);
+    else
+        fd = ::open(name.c_str(), O_RDONLY);
+
+    if (fd == -1)
+        return string_list();
+
+    std::ostringstream os;
+    os.imbue(std::locale::classic());
+    os << fd;
+    return string_list(os.str());
+}
+
+HAMIGAKI_BJAM_DECL string_list pad(context& ctx)
+{
+    frame& f = ctx.current_frame();
+    const list_of_list& args = f.arguments();
+
+    std::string str = args[0][0];
+    std::size_t width = static_cast<std::size_t>(std::atoi(args[1][0].c_str()));
+
+    if (str.size() < width)
+        str.resize(width, ' ');
+
+    return string_list(str);
+}
+
+HAMIGAKI_BJAM_DECL string_list precious(context& ctx)
+{
+    set_target_flags(ctx, target::precious);
+    return string_list();
+}
+
+HAMIGAKI_BJAM_DECL string_list self_path(context& ctx)
+{
+    // FIXME
+    return string_list("bjam");
 }
 
 } // namespace builtins
@@ -711,6 +925,10 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     ctx.set_builtin_rule("ISFILE", params, &builtins::is_file);
 
     params.clear();
+    ctx.set_builtin_rule("HDRMACRO", params, &builtins::hdr_macro);
+    ctx.set_builtin_rule("HdrMacro", params, &builtins::hdr_macro, false);
+
+    params.clear();
     ctx.set_builtin_rule("FAIL_EXPECTED", params, &builtins::fail_expected);
 
     params.clear();
@@ -720,6 +938,12 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     params.push_back(
         boost::assign::list_of("targets")("*"));
     ctx.set_builtin_rule("UPDATE", params, &builtins::update);
+
+    params.clear();
+    params.push_back(boost::assign::list_of("targets")("*"));
+    params.push_back(boost::assign::list_of("log")("?"));
+    params.push_back(boost::assign::list_of("ignore-minus-n")("?"));
+    ctx.set_builtin_rule("UPDATE_NOW", params, &builtins::update_now);
 
     params.clear();
     params.push_back(
@@ -755,9 +979,20 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     ctx.set_builtin_rule("PWD", params, &builtins::pwd);
 
     params.clear();
+    params.push_back(boost::assign::list_of("target")("*"));
+    params.push_back(boost::assign::list_of("path")("*"));
+    ctx.set_builtin_rule(
+        "SEARCH_FOR_TARGET", params, &builtins::search_for_target);
+
+    params.clear();
     params.push_back(boost::assign::list_of("modules_to_import")("+"));
     params.push_back(boost::assign::list_of("target_module")("?"));
     ctx.set_builtin_rule("IMPORT_MODULE", params, &builtins::import_module);
+
+    params.clear();
+    params.push_back(boost::assign::list_of("module")("?"));
+    ctx.set_builtin_rule(
+        "IMPORTED_MODULES", params, &builtins::imported_modules);
 
     params.clear();
     params.push_back(boost::assign::list_of("instance_module"));
@@ -784,13 +1019,27 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     ctx.set_builtin_rule("HAS_NATIVE_RULE", params, &builtins::has_native_rule);
 
     params.clear();
+    params.push_back(boost::assign::list_of("module")("*"));
+    ctx.set_builtin_rule("USER_MODULE", params, &builtins::user_module);
+
+    params.clear();
+    ctx.set_builtin_rule(
+        "NEAREST_USER_LOCATION", params, &builtins::nearest_user_location);
+
+    params.clear();
     params.push_back(boost::assign::list_of("file"));
     ctx.set_builtin_rule("CHECK_IF_FILE", params, &builtins::check_if_file);
 
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
     params.clear();
-    params.push_back(boost::assign::list_of("key_path")("data")("?"));
+    params.push_back(boost::assign::list_of("key_path"));
+    params.push_back(boost::assign::list_of("data")("?"));
     ctx.set_builtin_rule("W32_GETREG", params, &builtins::w32_getreg);
+
+    params.clear();
+    params.push_back(boost::assign::list_of("key_path"));
+    params.push_back(boost::assign::list_of("result-type"));
+    ctx.set_builtin_rule("W32_GETREGNAMES", params, &builtins::w32_getregnames);
 #endif
 
     params.clear();
@@ -798,6 +1047,27 @@ HAMIGAKI_BJAM_DECL void set_builtin_rules(context& ctx)
     params.push_back(boost::assign::list_of("*"));
     ctx.set_builtin_rule("SHELL", params, &builtins::shell);
     ctx.set_builtin_rule("COMMAND", params, &builtins::shell);
+
+    params.clear();
+    params.push_back(boost::assign::list_of("string"));
+    ctx.set_builtin_rule("MD5", params, &builtins::md5);
+
+    params.clear();
+    params.push_back(boost::assign::list_of("name"));
+    params.push_back(boost::assign::list_of("mode"));
+    ctx.set_builtin_rule("FILE_OPEN", params, &builtins::file_open);
+
+    params.clear();
+    params.push_back(boost::assign::list_of("string"));
+    params.push_back(boost::assign::list_of("width"));
+    ctx.set_builtin_rule("PAD", params, &builtins::pad);
+
+    params.clear();
+    params.push_back(boost::assign::list_of("targets")("*"));
+    ctx.set_builtin_rule("PRECIOUS", params, &builtins::precious);
+
+    params.clear();
+    ctx.set_builtin_rule("SELF_PATH", params, &builtins::self_path);
 }
 
 } } // End namespaces bjam, hamigaki.

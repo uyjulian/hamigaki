@@ -1,6 +1,6 @@
 // registry.hpp: Win32 registry utility
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007-2010.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -23,6 +23,12 @@ namespace hamigaki { namespace bjam { namespace win32 {
 HAMIGAKI_BJAM_DECL
 string_list registry_values(
     const std::string& key, const boost::optional<std::string>& name);
+
+HAMIGAKI_BJAM_DECL
+string_list registry_subkey_names(const std::string& key);
+
+HAMIGAKI_BJAM_DECL
+string_list registry_value_names(const std::string& key);
 
 } } } // End namespaces win32, bjam, hamigaki.
 

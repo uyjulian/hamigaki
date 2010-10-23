@@ -16,6 +16,11 @@
 #include <boost/none.hpp>
 #include <cstdlib>
 
+#if defined(BOOST_WINDOWS) && !defined(__CYGWIN__)
+    #include <io.h>
+#endif
+#include <fcntl.h>
+
 namespace bjam = hamigaki::bjam;
 namespace ut = boost::unit_test;
 
@@ -366,33 +371,45 @@ void rule_names_test()
             ("EXIT")
             ("EXPORT")
             ("FAIL_EXPECTED")
+            ("FILE_OPEN")
             ("GLOB")
             ("GLOB-RECURSIVELY")
             ("HAS_NATIVE_RULE")
+            ("HDRMACRO")
             ("IMPORT")
+            ("IMPORTED_MODULES")
             ("IMPORT_MODULE")
             ("INCLUDES")
             ("INSTANCE")
             ("ISFILE")
             ("LEAVES")
             ("MATCH")
+            ("MD5")
             ("NATIVE_RULE")
+            ("NEAREST_USER_LOCATION")
             ("NOCARE")
             ("NORMALIZE_PATH")
             ("NOTFILE")
             ("NOUPDATE")
+            ("PAD")
+            ("PRECIOUS")
             ("PWD")
             ("REBUILDS")
             ("RMOLD")
             ("RULENAMES")
+            ("SEARCH_FOR_TARGET")
+            ("SELF_PATH")
             ("SHELL")
             ("SORT")
             ("SUBST")
             ("TEMPORARY")
             ("UPDATE")
+            ("UPDATE_NOW")
+            ("USER_MODULE")
             ("VARNAMES")
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
             ("W32_GETREG")
+            ("W32_GETREGNAMES")
 #endif
         ;
     result = ctx.invoke_rule("RULENAMES", args);
@@ -569,6 +586,25 @@ void import_module_test()
         result.begin(), result.end(), expect.begin(), expect.end());
 }
 
+void imported_modules_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+
+    args.push_back(boost::assign::list_of("m1")("m2"));
+    args.push_back(boost::assign::list_of("m3"));
+    ctx.invoke_rule("IMPORT_MODULE", args);
+
+    args.clear();
+    args.push_back(boost::assign::list_of("m3"));
+
+    bjam::string_list expect = boost::assign::list_of("m1")("m2");
+    const bjam::string_list& result = ctx.invoke_rule("IMPORTED_MODULES", args);
+
+    BOOST_CHECK_EQUAL_COLLECTIONS(
+        result.begin(), result.end(), expect.begin(), expect.end());
+}
+
 void instance_test()
 {
     bjam::context ctx;
@@ -657,6 +693,21 @@ void has_native_rule_test()
     // TODO: add the positive tests
 }
 
+void user_module_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+
+    const std::string m1("m1");
+
+    BOOST_CHECK(!ctx.get_module(m1).user_module);
+
+    args.push_back(boost::assign::list_of(m1));
+    BOOST_CHECK(ctx.invoke_rule("USER_MODULE", args).empty());
+
+    BOOST_CHECK(ctx.get_module(m1).user_module);
+}
+
 void check_if_file_test()
 {
     bjam::context ctx;
@@ -698,8 +749,10 @@ void w32_getreg_test()
     // should use SHGetSpecialFolderPath()
     std::string prog_dir(win_dir, 0, 3);
     prog_dir += "Program Files";
+#if !defined(_WIN64)
     if (get_native_system_arch() != 0)
         prog_dir += " (x86)";
+#endif
 
     ::OSVERSIONINFOA info;
     std::memset(&info, 0, sizeof(info));
@@ -714,8 +767,8 @@ void w32_getreg_test()
 
     args.push_back(boost::assign::list_of
         ("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion")
-        ("ProgramFilesDir")
     );
+    args.push_back(boost::assign::list_of("ProgramFilesDir"));
     result = ctx.invoke_rule("W32_GETREG", args);
     BOOST_CHECK_EQUAL(result.size(), 1u);
     if (!result.empty())
@@ -729,8 +782,8 @@ void w32_getreg_test()
     args.clear();
     args.push_back(boost::assign::list_of
         ("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion")
-        ("ProgramFilesPath")
     );
+    args.push_back(boost::assign::list_of("ProgramFilesPath"));
     result = ctx.invoke_rule("W32_GETREG", args);
     BOOST_CHECK_EQUAL(result.size(), 1u);
     if (!result.empty())
@@ -751,8 +804,8 @@ void w32_getreg_test()
     args.clear();
     args.push_back(boost::assign::list_of
         ("HKCU\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon")
-        ("BuildNumber")
     );
+    args.push_back(boost::assign::list_of("BuildNumber"));
     result = ctx.invoke_rule("W32_GETREG", args);
     BOOST_CHECK_EQUAL(result.size(), 1u);
     if (!result.empty())
@@ -762,10 +815,36 @@ void w32_getreg_test()
     args.clear();
     args.push_back(boost::assign::list_of
         ("HKLM\\HARDWARE\\DESCRIPTION\\System")
-        ("SystemBiosVersion")
     );
+    args.push_back(boost::assign::list_of("SystemBiosVersion"));
     result = ctx.invoke_rule("W32_GETREG", args);
     BOOST_CHECK(result.size() >= 1);
+}
+
+void w32_getregnames_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+    bjam::string_list result;
+
+    args.push_back(boost::assign::list_of
+        ("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion")
+    );
+    args.push_back(boost::assign::list_of("subkeys"));
+    result = ctx.invoke_rule("W32_GETREGNAMES", args);
+    BOOST_CHECK(
+        std::find(result.begin(), result.end(), "Control Panel") != result.end()
+    );
+
+    args.clear();
+    args.push_back(boost::assign::list_of
+        ("HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion")
+    );
+    args.push_back(boost::assign::list_of("values"));
+    result = ctx.invoke_rule("W32_GETREGNAMES", args);
+    BOOST_CHECK(
+        std::find(result.begin(), result.end(), "DevicePath") != result.end()
+    );
 }
 #endif
 
@@ -786,6 +865,84 @@ void shell_test()
         BOOST_CHECK_EQUAL(result[0], "hello\n");
 #endif
     }
+}
+
+void md5_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+    bjam::string_list result;
+
+    args.push_back(boost::assign::list_of("abc"));
+    result = ctx.invoke_rule("MD5", args);
+    BOOST_CHECK_EQUAL(result.size(), 1u);
+    if (!result.empty())
+        BOOST_CHECK_EQUAL(result[0], "900150983cd24fb0d6963f7d28e17f72");
+}
+
+void file_open_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+    bjam::string_list result;
+
+    args.push_back(boost::assign::list_of("file_open.txt"));
+    args.push_back(boost::assign::list_of("w"));
+    result = ctx.invoke_rule("FILE_OPEN", args);
+    BOOST_REQUIRE_EQUAL(result.size(), 1u);
+
+    int fd = std::atoi(result[0].c_str());
+    BOOST_REQUIRE_NE(fd, -1);
+
+    static const char msg[] = "file_open_test\n";
+    int n = ::write(fd, msg, sizeof(msg)-1);
+    BOOST_CHECK_EQUAL(n, static_cast<int>(sizeof(msg)-1));
+
+    ::close(fd);
+
+
+    args.clear();
+    args.push_back(boost::assign::list_of("file_open.txt"));
+    args.push_back(boost::assign::list_of("r"));
+    result = ctx.invoke_rule("FILE_OPEN", args);
+    BOOST_REQUIRE_EQUAL(result.size(), 1u);
+
+    fd = std::atoi(result[0].c_str());
+    BOOST_REQUIRE_NE(fd, -1);
+
+    char buf[64];
+    n = ::read(fd, buf, sizeof(buf));
+
+    BOOST_CHECK_EQUAL(n, static_cast<int>(sizeof(msg)-1));
+    if (n != -1)
+        BOOST_CHECK_EQUAL(std::string(buf, n), std::string(msg));
+
+    ::close(fd);
+    std::remove("file_open.txt");
+}
+
+void pad_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+    bjam::string_list result;
+
+    args.push_back(boost::assign::list_of("abc"));
+    args.push_back(boost::assign::list_of("8"));
+    result = ctx.invoke_rule("PAD", args);
+    BOOST_CHECK_EQUAL(result.size(), 1u);
+    if (!result.empty())
+        BOOST_CHECK_EQUAL(result[0], "abc     ");
+}
+
+void precious_test()
+{
+    bjam::context ctx;
+    bjam::list_of_list args;
+
+    args.push_back(boost::assign::list_of("t1"));
+    BOOST_CHECK(ctx.invoke_rule("PRECIOUS", args).empty());
+    BOOST_CHECK(ctx.get_target("t1").flags & bjam::target::precious);
 }
 
 ut::test_suite* init_unit_test_suite(int, char* [])
@@ -819,16 +976,23 @@ ut::test_suite* init_unit_test_suite(int, char* [])
     test->add(BOOST_TEST_CASE(&back_trace_test));
     test->add(BOOST_TEST_CASE(&pwd_test));
     test->add(BOOST_TEST_CASE(&import_module_test));
+    test->add(BOOST_TEST_CASE(&imported_modules_test));
     test->add(BOOST_TEST_CASE(&instance_test));
     test->add(BOOST_TEST_CASE(&sort_test));
     test->add(BOOST_TEST_CASE(&normalize_path_test));
     test->add(BOOST_TEST_CASE(&calc_test));
     test->add(BOOST_TEST_CASE(&native_rule_test));
     test->add(BOOST_TEST_CASE(&has_native_rule_test));
+    test->add(BOOST_TEST_CASE(&user_module_test));
     test->add(BOOST_TEST_CASE(&check_if_file_test));
 #if defined(BOOST_WINDOWS) || defined(__CYGWIN__)
     test->add(BOOST_TEST_CASE(&w32_getreg_test));
+    test->add(BOOST_TEST_CASE(&w32_getregnames_test));
 #endif
     test->add(BOOST_TEST_CASE(&shell_test));
+    test->add(BOOST_TEST_CASE(&md5_test));
+    test->add(BOOST_TEST_CASE(&file_open_test));
+    test->add(BOOST_TEST_CASE(&pad_test));
+    test->add(BOOST_TEST_CASE(&precious_test));
     return test;
 }

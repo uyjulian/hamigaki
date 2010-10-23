@@ -1,6 +1,6 @@
 // order.cpp: bjam order module
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007-2010.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -34,7 +34,7 @@ int name_to_index(const string_list& objects, const std::string& name)
     typedef string_list::const_iterator iter_type;
     iter_type it = std::find(objects.begin(), objects.end(), name);
     if (it != objects.end())
-        return std::distance(objects.begin(), it);
+        return static_cast<int>(std::distance(objects.begin(), it));
     else
         return -1;
 }

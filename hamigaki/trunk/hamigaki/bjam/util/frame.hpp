@@ -1,6 +1,6 @@
 // frame.hpp: bjam frame
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007-2010.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -18,12 +18,12 @@ namespace hamigaki { namespace bjam {
 struct frame
 {
 public:
-    explicit frame(module& m) : module_(&m), line_(1)
+    explicit frame(module& m) : module_(&m), line_(1), prev_user_(0)
     {
     }
 
     frame(module& m, const boost::optional<std::string>& name)
-        : module_(&m), module_name_(name)
+        : module_(&m), module_name_(name), prev_user_(0)
     {
     }
 
@@ -88,6 +88,21 @@ public:
         line_ = n;
     }
 
+    frame* prev_user_frame()
+    {
+        return prev_user_;
+    }
+
+    const frame* prev_user_frame() const
+    {
+        return prev_user_;
+    }
+
+    void prev_user_frame(frame* f)
+    {
+        prev_user_ = f;
+    }
+
 private:
     module* module_;
     boost::optional<std::string> module_name_;
@@ -95,6 +110,7 @@ private:
     list_of_list arguments_;
     std::string filename_;
     int line_;
+    frame* prev_user_;
 };
 
 class scoped_change_filename : private boost::noncopyable

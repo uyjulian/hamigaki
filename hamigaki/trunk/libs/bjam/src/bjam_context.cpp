@@ -1,6 +1,6 @@
 // bjam_context.cpp: the context information for bjam
 
-// Copyright Takeshi Mouri 2007, 2008.
+// Copyright Takeshi Mouri 2007-2010.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -316,6 +316,7 @@ context::invoke_rule(const std::string& name, const list_of_list& args)
     f.arguments() = args;
     f.filename(rule.filename);
     f.line(rule.line);
+    f.prev_user_frame(old.prev_user_frame());
 
     scoped_push_frame guard(*this, f);
     this->change_module(rule.module_name);

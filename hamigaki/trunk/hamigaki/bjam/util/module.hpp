@@ -1,6 +1,6 @@
 // module.hpp: bjam module
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007-2010.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -25,6 +25,11 @@ struct module
     boost::optional<std::string> class_module;
     std::set<std::string> imported_modules;
     std::map<std::string,native_rule> native_rules;
+    bool user_module;
+
+    module() : user_module(false)
+    {
+    }
 };
 
 } } // End namespaces bjam, hamigaki.

@@ -1,6 +1,6 @@
 // target.hpp: bjam target
 
-// Copyright Takeshi Mouri 2007.
+// Copyright Takeshi Mouri 2007-2010.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -26,6 +26,7 @@ struct target
     static const unsigned rm_old        = 0x0040;
     static const unsigned fail_expected = 0x0080;
     static const unsigned is_file       = 0x0100;
+    static const unsigned precious      = 0x0200;
 
     variable_table variables;
     std::set<std::string> depended_targets;
