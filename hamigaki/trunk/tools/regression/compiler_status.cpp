@@ -1,6 +1,6 @@
 // Generate Compiler Status HTML from jam regression test output  -----------//
 
-// Copyright Takeshi Mouri 2006, 2007.
+// Copyright Takeshi Mouri 2006-2011.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -388,6 +388,8 @@ namespace
         if ( (*itr).leaf() == "SunWS_cache" ) continue;
         // SGI does something similar for template instantiations. Jens Maurer
         if(  (*itr).leaf() == "ii_files" ) continue; 
+        // for config_info
+        if ( (*itr).leaf() == "libs" ) continue;
 
         if ( child.empty() ) child = *itr;
         else
