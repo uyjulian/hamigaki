@@ -1,11 +1,12 @@
 # Hamigaki Library root settings
 #
-# Copyright Takeshi Mouri 2006-2009.
+# Copyright Takeshi Mouri 2006-2011.
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 # http://www.boost.org/LICENSE_1_0.txt)
 
 import modules ;
+import project ;
 
 path-constant HAMIGAKI_ROOT : . ;
 modules.poke : HAMIGAKI_ROOT : $(HAMIGAKI_ROOT) ;
