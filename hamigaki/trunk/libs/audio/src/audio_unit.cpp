@@ -1,6 +1,6 @@
 // audio_unit.cpp: Mac OS X Audio Unit device
 
-// Copyright Takeshi Mouri 2006-2008.
+// Copyright Takeshi Mouri 2006-2011.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -19,6 +19,7 @@
 #include "detail/circular_buffer.hpp"
 #include <AudioToolbox/AudioConverter.h>
 #include <AudioUnit/AudioUnit.h>
+#include <CoreAudio/AudioHardware.h>
 #include <CoreServices/CoreServices.h>
 #include <pthread.h>
 
