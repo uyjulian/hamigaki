@@ -1,6 +1,6 @@
 // unzip.cpp: a simple ZIP decompressing program
 
-// Copyright Takeshi Mouri 2006-2008.
+// Copyright Takeshi Mouri 2006-2018.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -38,6 +38,21 @@ inline bool has_parent_path(const Path& ph)
 #endif
 }
 
+template<class Path>
+bool is_valid_path(const Path& ph)
+{
+#if !defined(HAMIGAKI_ALLOW_DIRECTORY_TRAVERSAL)
+    if (ph.has_root_name() || ph.has_root_directory())
+        return false;
+    for (typename Path::iterator it = ph.begin(); it != ph.end(); ++it)
+    {
+        if (*it == "..")
+            return false;
+    }
+#endif
+    return true;
+}
+
 inline fs_ex::timestamp make_timestamp(std::time_t t)
 {
     return fs_ex::timestamp::from_time_t(t);
@@ -62,6 +77,11 @@ int main(int argc, char* argv[])
             const ar::zip::header& head = zip.header();
 
             std::cout << head.path.string() << '\n';
+            if (!is_valid_path(head.path))
+            {
+                std::cerr << "Warning: invalid path" << '\n';
+                continue;
+            }
 
             if (!head.link_path.empty())
             {

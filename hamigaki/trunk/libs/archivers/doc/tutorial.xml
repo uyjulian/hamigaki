@@ -4,7 +4,7 @@
 <!--
   Hamigaki.Archivers Library Document Source
 
-  Copyright Takeshi Mouri 2006-2008.
+  Copyright Takeshi Mouri 2006-2018.
   Distributed under the Boost Software License, Version 1.0.
   (See accompanying file LICENSE_1_0.txt or copy at
   http://www.boost.org/LICENSE_1_0.txt)
@@ -78,9 +78,25 @@ namespace ar = hamigaki::archivers;
 namespace fs = boost::filesystem;
 namespace io = boost::iostreams;
 
+bool is_valid_path(const fs::path& ph)
+{
+    if (ph.has_root_name() || ph.has_root_directory())
+        return false;
+    for (typename Path::iterator it = ph.begin(); it != ph.end(); ++it)
+    {
+        if (*it == "..")
+            return false;
+    }
+    return true;
+}
+
 void extract_file(ar::tar_file_source& tar)
 {
     const ar::tar::header& head = tar.header();
+    if (!is_valid_path(head.path))
+    {
+        std::cerr << "Warning: skip invalid path: " << head.path.string() << std::endl;
+    }
 
     fs::ofstream file(head.path, std::ios_base::binary);
     io::copy(tar, file);
@@ -99,7 +115,7 @@ int main()
 
     <para>tarファイルのオープンに成功したら、メンバ関数<methodname>next_entry</methodname>()を呼び出し、次のエントリを確認する。この関数は未読のエントリがある場合<code>true</code>を返す。全てのエントリを読み終わり、これ以上のエントリが見つからない場合は<code>false</code>が返され、ループは終了する。</para>
 
-    <para><methodname>next_entry</methodname>()の呼び出しに成功したら、アーカイブは<conceptname>Source</conceptname>として読み出し可能である。また、メンバ関数<methodname>header</methodname>()を呼び出すことで、ヘッダ情報を取得することもできる。ここでは、ヘッダから取得したパス名と同名のファイルを作成し、エントリから読み出した内容を書き出している。</para>
+    <para><methodname>next_entry</methodname>()の呼び出しに成功したら、アーカイブは<conceptname>Source</conceptname>として読み出し可能である。また、メンバ関数<methodname>header</methodname>()を呼び出すことで、ヘッダ情報を取得することもできる。ここでは、ヘッダから取得したパス名と同名のファイルを作成し、エントリから読み出した内容を書き出している。特に意図していない限り、絶対パスやカレントディレクトリより上への相対パスを含むアーカイブは悪意のあるものである。ファイルシステムへ出力する前には必ずパス名を検証する必要がある。</para>
   </section>
 
   <section id="archivers.tutorial.zip">

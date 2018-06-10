@@ -1,6 +1,6 @@
 // uniso.cpp: a simple ISO image extractor program (Unicode version)
 
-// Copyright Takeshi Mouri 2008.
+// Copyright Takeshi Mouri 2008-2018.
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -37,6 +37,21 @@ inline bool has_parent_path(const Path& ph)
 #else
     return ph.has_parent_path();
 #endif
+}
+
+template<class Path>
+bool is_valid_path(const Path& ph)
+{
+#if !defined(HAMIGAKI_ALLOW_DIRECTORY_TRAVERSAL)
+    if (ph.has_root_name() || ph.has_root_directory())
+        return false;
+    for (typename Path::iterator it = ph.begin(); it != ph.end(); ++it)
+    {
+        if (*it == L"..")
+            return false;
+    }
+#endif
+    return true;
 }
 
 int main(int argc, char* argv[])
@@ -78,6 +93,11 @@ int main(int argc, char* argv[])
             const ar::iso::wheader& head = iso.header();
 
             std::wcout << head.path << '\n';
+            if (!is_valid_path(head.path))
+            {
+                std::cerr << "Warning: invalid path" << '\n';
+                continue;
+            }
 
             if (head.is_symlink())
                 std::wcout << "-> " << head.link_path << '\n';
